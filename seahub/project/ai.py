@@ -404,7 +404,7 @@ class RelatedRecordsView(APIView):
     def _process_ticket_result(self, result, ticket, ai_summary):
         """process ticket search results"""
         return {
-            '_id': result.get('pk'),
+            '_id': result.get('_id'),
             'score': result.get('score', 0.0),
             'type': 'ticket',
             'ai_summary': ai_summary,
@@ -417,7 +417,7 @@ class RelatedRecordsView(APIView):
     def _process_connection_result(self, result, conn, record, ai_summary):
         """process connection record search results"""
         connection_type = conn.type
-        pk = result.get('pk')
+        pk = result.get('_id')
         result_connection_id = int(result.get('connection_id'))
 
         processed_result = {
@@ -569,7 +569,7 @@ class RelatedRecordsView(APIView):
             'project_uuid': project_uuid,
             'count': 51,
             'connection_ids': search_connection_ids,
-            'include_tickets': is_ticket_source or current_category == ConnectionCategory.ISSUE,
+            'extra_sources': ['ticket'] if is_ticket_source or current_category == ConnectionCategory.ISSUE else [],
         }
 
         try:
@@ -587,9 +587,9 @@ class RelatedRecordsView(APIView):
 
             for result in search_results:
                 result_type = result.get('source_type', 'connection')
-                pk = result.get('pk')
+                pk = result.get('_id')
 
-                if result_type == 'ticket':
+                if result_type == 'ticket_summary':
                     if is_ticket_source and pk == int(ticket_id): 
                         # skip if the result is the same as the query ticket
                         continue
@@ -635,10 +635,10 @@ class RelatedRecordsView(APIView):
             top_candidates = []
             for result in search_results:
                 result_type = result.get('source_type', 'connection')
-                pk = result.get('pk')
+                pk = result.get('_id')
                 ai_summary = result.get('ai_summary', '')
 
-                if result_type == 'ticket':
+                if result_type == 'ticket_summary':
                     if is_ticket_source and pk == int(ticket_id):
                         continue
                     ticket = records_map.get('tickets', {}).get(pk)
