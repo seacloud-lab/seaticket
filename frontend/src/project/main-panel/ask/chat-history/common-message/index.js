@@ -45,7 +45,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
       const {
-        type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title,
+        type, connection_name, url, ai_summary, bumped_at, mtime, updated_at, score, connection_id, _id, title,
         filename, path, slug, topic_id,
       } = source;
       let validURL = url || '';
@@ -62,7 +62,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
         connection_name: connection_name,
         url: urlObject.href,
         title: title.replaceAll('"', '\''),
-        content: content_preview,
+        content: ai_summary,
         mtime: bumped_at || mtime || updated_at || '',
         score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
         filename,
