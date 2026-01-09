@@ -17,7 +17,7 @@ export const BAR_TYPE = {
 };
 
 export const BAR_TYPE_CONFIG = {
-  [BAR_TYPE.CHAT]: { key: BAR_TYPE.CHAT, name: gettext('Chat'), icon: 'ask' },
+  [BAR_TYPE.CHAT]: { key: BAR_TYPE.CHAT, name: gettext('Chat'), icon: 'chat' },
   [BAR_TYPE.SEARCH]: { key: BAR_TYPE.SEARCH, name: gettext('Search'), icon: 'search' },
   [BAR_TYPE.CONNECTION]: { key: BAR_TYPE.CONNECTION, name: gettext('Connections'), icon: 'connection' },
   [BAR_TYPE.SETTINGS]: { key: BAR_TYPE.SETTINGS, name: gettext('Settings'), icon: 'set-up' },
