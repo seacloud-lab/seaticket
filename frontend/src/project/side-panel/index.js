@@ -24,26 +24,32 @@ const SidePanel = ({ activeBar, toggleBar }) => {
     ref.current.style.width = `${width}px`;
   }, []);
 
+  const commonProps = {
+    activeBar: activeBar,
+    level: 1,
+    onClick: toggleBar
+  };
+
   return (
     <>
       <div className="sea-qa-project-side-panel" ref={ref}>
         <div className="sea-qa-project-side-panel-container">
           <Header />
           <div className="sea-qa-project-navigation sea-qa-nav-list">
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            {isProjectAdmin && (
-              <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            )}
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} {...commonProps} />
+            <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
+            {isProjectAdmin &&
+              <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
+            }
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
             <TicketsMoreNav onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
