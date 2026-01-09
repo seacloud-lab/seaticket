@@ -10,7 +10,7 @@ import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import {
   generatorTicketsRowsTools,
-  cascadeUpdateSubState, generatorTicketsContextMenuOptions
+  cascadeUpdate, generatorTicketsContextMenuOptions
 } from '../../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -162,7 +162,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
 
       t={t}
-      cascadeUpdateCells={cascadeUpdateSubState}
+      cascadeUpdateCells={cascadeUpdate}
     />
   );
 };

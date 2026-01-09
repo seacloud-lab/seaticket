@@ -8,6 +8,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
 import { TicketForAI } from './models';
+import { username } from '@/constants';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -121,30 +122,53 @@ export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectN
   return tools;
 };
 
-// When the value of state is modified, the values of substate are updated in a cascading fashion.
-export const cascadeUpdateSubState = (table, rowId, rowUpdate, oldRowData) => {
+
+export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
   const row = getRowById(table, rowId);
   if (!row || !rowUpdate) return;
   const updatedColumnKeys = Object.keys(rowUpdate);
-  const stateColumn = getColumnByName(table.columns, 'state');
-  if (!stateColumn || !updatedColumnKeys.includes(stateColumn?.key)) return;
 
-  const subStateColumn = getColumnByName(table.columns, 'substate');
-  if (!subStateColumn) return;
+  // When the value of state is modified, the values of substate are updated in a cascading fashion.
+  const stateColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.STATE);
+  if (stateColumn && updatedColumnKeys.includes(stateColumn?.key)) {
+    const subStateColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE);
+    if (subStateColumn) {
+      const { cascade_settings = {} } = subStateColumn.data || {};
+      const options = getColumnOptions(subStateColumn);
+      if (cascade_settings) {
+        const cellValue = rowUpdate[stateColumn.key];
+        const cascadeOptionIds = cellValue ? (cascade_settings[cellValue] || []) : [];
+        const oldCascadeCellValue = getCellValueByColumn(rowUpdate, subStateColumn) || getCellValueByColumn(row, subStateColumn);
+        if (!cascadeOptionIds.includes(oldCascadeCellValue)) {
+          const validCascadeOptionIds = cascadeOptionIds.filter(id => getOption(options, id));
+          const cascadeCellValue = validCascadeOptionIds[0] || null;
+          rowUpdate[subStateColumn.key] = cascadeCellValue;
+          oldRowData[subStateColumn.key] = oldCascadeCellValue;
+        }
+      }
+    }
+  }
 
-  const { cascade_settings = {} } = subStateColumn.data || {};
-  const options = getColumnOptions(subStateColumn);
-  if (!cascade_settings) return;
-
-  const cellValue = rowUpdate[stateColumn.key];
-  const cascadeOptionIds = cellValue ? (cascade_settings[cellValue] || []) : [];
-  const oldCascadeCellValue = getCellValueByColumn(rowUpdate, subStateColumn) || getCellValueByColumn(row, subStateColumn);
-  if (cascadeOptionIds.includes(oldCascadeCellValue)) return;
-
-  const validCascadeOptionIds = cascadeOptionIds.filter(id => getOption(options, id));
-  const cascadeCellValue = validCascadeOptionIds[0] || null;
-  rowUpdate[subStateColumn.key] = cascadeCellValue;
-  oldRowData[subStateColumn.key] = oldCascadeCellValue;
+  // User A modifies the data and A becomes a participant.
+  // const assigneesColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
+  const participantsColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS);
+  const oldParticipants = row[participantsColumn?.key] || [];
+  let newParticipants = oldParticipants.slice(0);
+  // if (assigneesColumn && updatedColumnKeys.includes(assigneesColumn?.key)) {
+  //   const assignees = rowUpdate[assigneesColumn.key];
+  //   assignees.forEach(assignee => {
+  //     if (!newParticipants.includes(assignee)) {
+  //       newParticipants.push(assignee);
+  //     }
+  //   });
+  // }
+  if (!newParticipants.includes(username)) {
+    newParticipants.push(username);
+  }
+  if (participantsColumn) {
+    rowUpdate[participantsColumn.key] = newParticipants;
+    oldRowData[participantsColumn.key] = newParticipants;
+  }
 };
 
 export const generatorTicketsContextMenuOptions = ({
