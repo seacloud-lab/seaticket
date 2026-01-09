@@ -43,11 +43,9 @@ const Inbox = ({ toggleBar }) => {
     <div className="sea-qa-inbox-panel" ref={inboxPanelRef}>
       <div className="sea-qa-inbox-header">
         <span className="heading">{title}</span>
-        <div className="sea-qa-inbox-actions">
+        <div className="sea-qa-inbox-actions" onClick={markAllAsRead}>
           <Icon symbol="mark-all-as-read" />
-          <div className="mark-all-as-read" onClick={markAllAsRead}>
-            {gettext('Mark all as read')}
-          </div>
+          <div className="mark-all-as-read">{gettext('Mark all as read')}</div>
         </div>
       </div>
       <div className="sea-qa-inbox-list" onScroll={Utils.debounce(onScroll)}>

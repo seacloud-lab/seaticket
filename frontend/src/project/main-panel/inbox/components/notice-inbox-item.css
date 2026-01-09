@@ -7,8 +7,8 @@
 .inbox-notification-item:not(:last-child)::after {
   content: "";
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: 24px;
+  right: 8px;
   bottom: 0;
   height: 1px;
   background: var(--bs-border-secondary-color);
@@ -28,7 +28,7 @@
   justify-content: space-between;
   flex: 1;
   margin-left: 8px;
-  margin-right: 28px;
+  margin-right: 20px;
   overflow-x: hidden;
 }
 
@@ -68,7 +68,7 @@
 .inbox-notification-item .notification-point {
   width: 8px;
   height: 8px;
-  right: 16px;
+  right: 8px;
   border-radius: 50%;
   background: #FC6440;
   position: absolute;
@@ -77,7 +77,7 @@
 .inbox-notification-item .notification-content-wrapper {
   font-size: 14px;
   margin-left: 40px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .inbox-notification-item .notification-content-quotes {
