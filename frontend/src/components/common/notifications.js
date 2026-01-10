@@ -25,10 +25,6 @@ class Notification extends React.Component {
     };
   }
 
-  isProjectOnlyMode = () => {
-    return this.props && this.props.mode === 'project' && this.props.projectUuid;
-  };
-
   getTriggerId = () => {
     return (this.props && this.props.triggerId) ? this.props.triggerId : 'notice-icon';
   };
@@ -38,19 +34,6 @@ class Notification extends React.Component {
   };
 
   componentDidMount() {
-    if (this.isProjectOnlyMode()) {
-      notificationAPI.listProjectNotifications(this.props.projectUuid, 1, 20).then(res => {
-        const notificationList = res.data.notification_list || [];
-        const unseenCount = res.data.unseen_count || 0;
-        this.setState({
-          projectNoticeList: notificationList,
-          totalUnseenCount: unseenCount,
-          generalNoticeListUnseen: 0,
-          projectNoticeListUnseen: unseenCount
-        });
-      });
-      return;
-    }
     notificationAPI.listAllNotifications(1, 25).then(res => {
       this.setState({
         totalUnseenCount: res.data.total_unseen_count,
@@ -67,11 +50,7 @@ class Notification extends React.Component {
     if (this.state.showNotice) {
       this.setState({ showNotice: false });
     } else {
-      if (this.isProjectOnlyMode()) {
-        this.setState({ showNotice: true, currentTab: 'project', activeProject: { project_uuid: this.props.projectUuid } });
-      } else {
-        this.setState({ showNotice: true });
-      }
+      this.setState({ showNotice: true });
     }
   };
 
@@ -173,19 +152,6 @@ class Notification extends React.Component {
   onMarkAllNotifications = () => {
     let generalNoticeListUnseen = this.state.generalNoticeListUnseen;
     let projectNoticeListUnseen = this.state.projectNoticeListUnseen;
-    if (this.isProjectOnlyMode()) {
-      notificationAPI.markAllProjectRead(this.props.projectUuid).then(() => {
-        this.setState({
-          projectNoticeList: this.state.projectNoticeList.map(item => {
-            item.seen = true;
-            return item;
-          }),
-          projectNoticeListUnseen: 0,
-          totalUnseenCount: 0
-        });
-      });
-      return;
-    }
     if (this.state.currentTab === 'general') {
       notificationAPI.markAllRead().then(() => {
         this.setState({
@@ -252,7 +218,6 @@ class Notification extends React.Component {
 
   render() {
     const { totalUnseenCount, currentTab, generalNoticeList, projectList, projectNoticeList, activeProject, generalNoticeListUnseen, projectNoticeListUnseen } = this.state;
-    const hideTabs = this.isProjectOnlyMode();
     const triggerId = this.getTriggerId();
     const targetId = this.getTargetId();
     return (
@@ -267,7 +232,6 @@ class Notification extends React.Component {
             bodyText={gettext('Mark all as read')}
             footerText={gettext('View all notifications')}
             currentTab={currentTab}
-            hideTabs={hideTabs}
             triggerId={triggerId}
             targetId={targetId}
             onNotificationListToggle={this.onNotificationListToggle}
@@ -277,7 +241,7 @@ class Notification extends React.Component {
             generalNoticeListUnseen={generalNoticeListUnseen}
             projectNoticeListUnseen={projectNoticeListUnseen}
           >
-            {!hideTabs && currentTab === 'general' &&
+            {currentTab === 'general' &&
               <ul className="notice-list list-unstyled" id="notice-popover">
                 {generalNoticeList.map(item => {
                   return (
@@ -286,9 +250,9 @@ class Notification extends React.Component {
                 })}
               </ul>
             }
-            {(hideTabs || currentTab === 'project') &&
+            {currentTab === 'project' &&
               <ul className="notice-list list-unstyled" id="notice-popover">
-                {!hideTabs && !activeProject && (projectList || []).filter(item => item.unseen_count > 0).map(item => {
+                {!activeProject && (projectList || []).filter(item => item.unseen_count > 0).map(item => {
                   return (
                     <li
                       key={item.project_uuid}
@@ -311,22 +275,20 @@ class Notification extends React.Component {
                     </li>
                   );
                 })}
-                {(hideTabs || activeProject) && (
+                {activeProject && (
                   <>
-                    {!hideTabs && (
-                      <li
-                        className='notification-item'
-                        onClick={this.onBackToProjectList}
-                        tabIndex={0}
-                        role="button"
-                        aria-label={gettext('Back')}
-                        onKeyDown={Utils.onKeyDown}
-                      >
-                        <div className="notification-content-wrapper">
-                          <span>{gettext('Back')}</span>
-                        </div>
-                      </li>
-                    )}
+                    <li
+                      className='notification-item'
+                      onClick={this.onBackToProjectList}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={gettext('Back')}
+                      onKeyDown={Utils.onKeyDown}
+                    >
+                      <div className="notification-content-wrapper">
+                        <span>{gettext('Back')}</span>
+                      </div>
+                    </li>
                     {projectNoticeList.map(item => {
                       return (
                         <NoticeItem key={item.id} noticeItem={item} onNoticeItemClick={this.onNoticeItemClick}/>

@@ -1,0 +1,96 @@
+.inbox-notification-item {
+  padding: 16px 8px 20px 16px;
+  position: relative;
+  cursor: pointer;
+}
+
+.inbox-notification-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 8px;
+  bottom: 0;
+  height: 1px;
+  background: var(--bs-border-secondary-color);
+}
+
+.inbox-notification-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.inbox-notification-item .inbox-notification-item-header {
+  display: flex;
+  align-items: center
+}
+
+.inbox-notification-item .notification-header-info {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  margin-left: 8px;
+  margin-right: 20px;
+  overflow-x: hidden;
+}
+
+.inbox-notification-item .notification-user-detail {
+  display: flex;
+  width: 50%;
+}
+
+.inbox-notification-item .notification-user-detail .notification-user-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.inbox-notification-item .notification-user-detail .notification-user-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 600;
+  margin-left: 12px;
+  font-size: 16px;
+  line-height: 20px;
+  height: 20px;
+}
+
+.inbox-notification-item .notification-header-info .notification-time {
+  color: var(--bs-body-secondary-color);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  height: 20px;
+}
+
+.inbox-notification-item .notification-point {
+  width: 8px;
+  height: 8px;
+  right: 8px;
+  border-radius: 50%;
+  background: #FC6440;
+  position: absolute;
+}
+
+.inbox-notification-item .notification-content-wrapper {
+  font-size: 14px;
+  margin-left: 40px;
+  margin-top: 8px;
+}
+
+.inbox-notification-item .notification-content-wrapper .inbox-text-orange {
+  color: #ed7109;
+}
+
+.inbox-notification-item .notification-content-quotes {
+  width: 8px;
+}
+
+.inbox-notification-item .notification-comment-content {
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

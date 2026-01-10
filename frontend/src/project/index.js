@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { CollaboratorsProvider } from '@/sea-metadata';
+import { NotificationProvider } from '@/project/main-panel/inbox/hooks/notification';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -57,6 +58,10 @@ const Project = () => {
         return;
       }
       if (activeBarKey === BAR_TYPE.TICKET) {
+        if (newActiveBar[1]) {
+          eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, newActiveBar[1]);
+          return;
+        }
         if (!location.pathname.endsWith('tickets/')) {
           eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
         }
@@ -148,10 +153,12 @@ const Project = () => {
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <AIChatToolsProvider >
               <ConnectionsProvider projectUuid={projectUuid} >
-                <AnalyzeTaskProvider>
-                  <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                  <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-                </AnalyzeTaskProvider>
+                <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
+                  <AnalyzeTaskProvider>
+                    <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+                    <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+                  </AnalyzeTaskProvider>
+                </NotificationProvider>
               </ConnectionsProvider>
             </AIChatToolsProvider>
           </CollaboratorsProvider>

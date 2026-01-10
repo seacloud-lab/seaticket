@@ -138,3 +138,17 @@ export const isActiveOtherPopover = (curPopover) => {
   const otherPopover = otherPopovers.find(p => document.getElementById(p));
   return !!otherPopover;
 };
+
+export const isNearBottom = (element, threshold = 50) => {
+  const el = getTarget(element);
+
+  if (!el) return false;
+
+  const scrollTop = el.scrollTop;
+  const clientHeight = el.clientHeight;
+  const scrollHeight = el.scrollHeight;
+
+  // Triggered when the distance from the bottom is less than the threshold
+  const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
+  return distanceToBottom <= threshold;
+};

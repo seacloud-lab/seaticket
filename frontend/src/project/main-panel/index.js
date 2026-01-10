@@ -8,6 +8,8 @@ import Ask from './ask';
 import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
+import Inbox from './inbox';
+import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 
 import './index.css';
 
@@ -46,9 +48,12 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
 };
 
 const MainPanel = (props) => {
+  const { showInboxDrawer } = useNotification();
+
   return (
     <div className="sea-qa-project-main-panel">
       <Container { ...props } />
+      {showInboxDrawer && <Inbox toggleBar={props.toggleBar} />}
     </div>
   );
 };
