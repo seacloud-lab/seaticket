@@ -94,7 +94,6 @@
 
 .inbox-notification-item .notification-comment-content p {
   display: inline-block;
-  letter-spacing: 1px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -106,14 +105,4 @@
   max-width: 70%;
   height: auto;
   max-height: 60px;
-}
-
-.inbox-notification-item .comment-content-preview {
-  color: var(--bs-body-secondary-color);
-  display: block;
-  margin-top: 4px;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }

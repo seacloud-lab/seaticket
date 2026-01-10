@@ -82,13 +82,22 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
 
   const renderContent = useCallback(() => {
     const noticeType = noticeItem.msg_type;
-
-    if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED || noticeType === MSG_TYPE_TICKET_COMMENTED) {
+    if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED) {
+      return (
+        <div className="notification-content-wrapper">
+          <Trans i18nKey="notification-text-2">
+            You are added as a assignee for ticket named
+            <span className="inbox-text-orange"> {title}</span>
+          </Trans>
+        </div>
+      );
+    }
+    if (noticeType === MSG_TYPE_TICKET_COMMENTED) {
       return (
         <>
           <div className="notification-content-wrapper">
             <Trans i18nKey="notification-text-1">
-              Added a new comment for ticket
+              Added a new comment for ticket named
               <span className="inbox-text-orange"> {title}</span>
             </Trans>
           </div>
