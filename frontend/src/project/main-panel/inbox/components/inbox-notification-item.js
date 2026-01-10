@@ -93,10 +93,8 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           </div>
           <div className="notification-content-wrapper d-flex">
             <span className="notification-content-quotes">"</span>
-            <div
-              dangerouslySetInnerHTML={{ __html: commentContent }}
-              className="notification-comment-content"
-            >
+            <div className="notification-comment-content">
+              {commentContent}
             </div>
             <span className="notification-content-quotes text-end">"</span>
           </div>
