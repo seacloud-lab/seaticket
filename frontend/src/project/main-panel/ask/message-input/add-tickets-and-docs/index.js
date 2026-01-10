@@ -53,7 +53,7 @@ const AddTicketsAndDocs = ({ projectUuid, value: attachments = [], onChange: pro
       >
         <div className="selected-option">
           <Icon symbol="plus" />
-          <div className="selected-option-show">{gettext('Add tickets and Docs')}</div>
+          <div className="selected-option-show">{gettext('Add tickets and docs')}</div>
         </div>
       </div>
       {isShowSelector && (
