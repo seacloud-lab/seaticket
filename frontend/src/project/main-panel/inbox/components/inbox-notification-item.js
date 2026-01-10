@@ -48,18 +48,19 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         ticket_id,
         workspace_id,
         project_name,
+        ticket_title
       } = detail;
 
       const username = from_user_name || from_user_id || gettext('System');
+      const ticketTitle = ticket_title;
 
       let ticketUrl = null;
       if (workspace_id && project_name && ticket_id !== undefined && ticket_id !== null) {
         ticketUrl = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
       }
-      const ticketTitle = detail.ticket_title;
       return { username, title: ticketTitle, ticketUrl };
     }
-    return { username: null, title: null, ticketUrl: null, };
+    return { username: null, title: null, ticketUrl: null };
   }, [noticeItem]);
 
   const { username, title, ticketUrl } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
@@ -78,6 +79,33 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
     }
   }, [noticeItem, onNoticeItemClick]);
+
+  const renderContent = useCallback(() => {
+    const noticeType = noticeItem.msg_type;
+
+    if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED || noticeType === MSG_TYPE_TICKET_COMMENTED) {
+      return (
+        <>
+          <div className="notification-content-wrapper">
+            <Trans i18nKey="notification-text-1">
+              Added a new comment for ticket
+              <span className="inbox-text-orange">{title}</span>
+            </Trans>
+          </div>
+          <div className="notification-content-wrapper d-flex">
+            <span className="notification-content-quotes">"</span>
+            <div
+              dangerouslySetInnerHTML={{ __html: notificationContent }}
+              className="notification-comment-content"
+            >
+            </div>
+            <span className="notification-content-quotes text-end">"</span>
+          </div>
+        </>
+      );
+    }
+    return null;
+  }, [noticeItem, title, notificationContent]);
 
   return (
     <div
@@ -98,21 +126,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           <span className="notification-point" onClick={handleMarkNotificationRead} />
         )}
       </div>
-      <div className="notification-content-wrapper">
-        <Trans i18nKey="notification-text-1">
-          Added a new comment for ticket
-          <span className="inbox-text-orange">{title}</span>
-        </Trans>
-      </div>
-      <div className="notification-content-wrapper d-flex">
-        <span className="notification-content-quotes">"</span>
-        <div
-          dangerouslySetInnerHTML={{ __html: notificationContent }}
-          className="notification-comment-content"
-        >
-        </div>
-        <span className="notification-content-quotes text-end">"</span>
-      </div>
+      {renderContent()}
     </div>
   );
 };
