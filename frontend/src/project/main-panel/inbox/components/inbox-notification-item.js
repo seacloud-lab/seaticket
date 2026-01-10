@@ -89,7 +89,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           <div className="notification-content-wrapper">
             <Trans i18nKey="notification-text-1">
               Added a new comment for ticket
-              <span className="inbox-text-orange">{title}</span>
+              <span className="inbox-text-orange"> {title}</span>
             </Trans>
           </div>
           <div className="notification-content-wrapper d-flex">
