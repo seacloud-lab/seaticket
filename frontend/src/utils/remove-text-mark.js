@@ -40,9 +40,9 @@ export const removeTextBreakMark = (text) => {
   return text.replace(/\r?\n|\r/g, ' ');
 };
 
-export const removeTextMark = (text) => {
+export const removeTextMark = (text, isHTML = true) => {
   if (!text) return '';
-  let cleanText = removeTextHTMLMark(text);
+  let cleanText = isHTML ? removeTextHTMLMark(text) : text;
   cleanText = removeTextMdMark(cleanText);
   cleanText = removeTextBreakMark(cleanText);
   return cleanText.trim();
