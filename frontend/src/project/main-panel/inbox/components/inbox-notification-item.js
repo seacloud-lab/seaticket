@@ -1,11 +1,12 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { processor } from '@seafile/seafile-editor';
 import { Trans } from 'react-i18next';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
 import { BAR_TYPE } from '@/project/constants';
+import { Utils } from '@/utils/utils';
+import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './inbox-notification-item.css';
 
@@ -22,20 +23,6 @@ const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
 dayjs.extend(relativeTime);
 
 const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDrawer }) => {
-  const [notificationContent, setNotificationContent] = useState(null);
-
-  const convertNotification = useCallback(() => {
-    const detail = noticeItem.detail || {};
-    const { comment_content } = detail;
-    processor.process(comment_content).then((result) => {
-      const newNotificationContent = String(result);
-      setNotificationContent(newNotificationContent);
-    });
-  }, []);
-
-  useEffect(() => {
-    convertNotification();
-  }, []);
 
   const generatorNoticeInfo = useCallback(() => {
     const noticeType = noticeItem.msg_type;
@@ -48,22 +35,25 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         ticket_id,
         workspace_id,
         project_name,
-        ticket_title
+        ticket_title,
+        comment_content,
       } = detail;
 
       const username = from_user_name || from_user_id || gettext('System');
       const ticketTitle = ticket_title;
+      const newCommentContent = removeTextMark(comment_content);
+      const escapedContent = Utils.HTMLescape(newCommentContent);
 
       let ticketUrl = null;
       if (workspace_id && project_name && ticket_id !== undefined && ticket_id !== null) {
         ticketUrl = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
       }
-      return { username, title: ticketTitle, ticketUrl };
+      return { username, title: ticketTitle, ticketUrl, commentContent: escapedContent };
     }
-    return { username: null, title: null, ticketUrl: null };
+    return { username: null, title: null, ticketUrl: null, commentContent: '' };
   }, [noticeItem]);
 
-  const { username, title, ticketUrl } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
+  const { username, title, ticketUrl, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
 
   const handleMarkNotificationRead = useCallback((e) => {
     e.preventDefault();
@@ -104,7 +94,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           <div className="notification-content-wrapper d-flex">
             <span className="notification-content-quotes">"</span>
             <div
-              dangerouslySetInnerHTML={{ __html: notificationContent }}
+              dangerouslySetInnerHTML={{ __html: commentContent }}
               className="notification-comment-content"
             >
             </div>
@@ -114,7 +104,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       );
     }
     return null;
-  }, [noticeItem, title, notificationContent]);
+  }, [noticeItem, title, commentContent]);
 
   return (
     <div
