@@ -90,19 +90,7 @@
 
 .inbox-notification-item .notification-comment-content {
   max-width: calc(100% - 16px);
-}
-
-.inbox-notification-item .notification-comment-content p {
-  display: inline-block;
-  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 0;
-}
-
-.inbox-notification-item .notification-comment-content p img {
-  max-width: 70%;
-  height: auto;
-  max-height: 60px;
 }
