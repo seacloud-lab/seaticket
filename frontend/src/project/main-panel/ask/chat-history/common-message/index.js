@@ -236,7 +236,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     <>
       <Attachments value={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} />
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
-        <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
+        <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} settings={settings} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
         {aiReply && (
           <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
