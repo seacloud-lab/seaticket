@@ -27,7 +27,7 @@
   display: flex;
   justify-content: space-between;
   flex: 1;
-  margin-left: 8px;
+  margin-left: 4px;
   margin-right: 20px;
   overflow-x: hidden;
 }
@@ -38,8 +38,8 @@
 }
 
 .inbox-notification-item .notification-user-detail .notification-user-avatar {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
 }
 
@@ -50,8 +50,8 @@
   font-weight: 600;
   margin-left: 12px;
   font-size: 16px;
-  line-height: 20px;
-  height: 20px;
+  line-height: 24px;
+  height: 24px;
 }
 
 .inbox-notification-item .notification-header-info .notification-time {
@@ -59,7 +59,6 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   height: 20px;
@@ -75,9 +74,8 @@
 }
 
 .inbox-notification-item .notification-content-wrapper {
-  font-size: 14px;
   margin-left: 40px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .inbox-notification-item .notification-content-wrapper .inbox-text-orange {
