@@ -27,12 +27,11 @@
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-name {
-  color: #333;
-  font-size: 13px;
+  font-size: 14px;
   max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -161,4 +160,5 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  font-size: 14px;
 }

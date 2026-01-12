@@ -29,11 +29,14 @@ const SettingsPanel = ({
       </div>
       <div className="analyze-settings-body">
         {/* Add connections Setting */}
-        <ConnectionSetting
-          selectedConnections={selectedConnections}
-          onConnectionsChange={onConnectionsChange}
-          onRemoveConnection={onRemoveConnection}
-        />
+        <div className="analyze-settings-section">
+          <div className="analyze-settings-label">{gettext('Connection')}</div>
+          <ConnectionSetting
+            selectedConnections={selectedConnections}
+            onConnectionsChange={onConnectionsChange}
+            onRemoveConnection={onRemoveConnection}
+          />
+        </div>
         {/* Date Range Setting */}
         <div className="analyze-settings-section">
           <div className="analyze-settings-label">{gettext('Date range')}</div>

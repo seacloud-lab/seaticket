@@ -37,11 +37,11 @@
   overflow: visible;
 }
 
-.analyze-settings-section {
+.analyze-settings-body .analyze-settings-section {
   margin-bottom: 14px;
 }
 
-.analyze-settings-label {
+.analyze-settings-body .analyze-settings-label {
   margin-bottom: 8px;
 }
 

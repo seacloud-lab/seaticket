@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { gettext } from '@/constants';
-import { Icon, IconTooltip, toaster } from '@/components';
-import CustomizePopover from '@/components/customize-popover';
+import { Icon, IconTooltip, toaster, CustomizePopover } from '@/components';
 import { connectionsAPI } from '@/project/api';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
@@ -15,8 +14,8 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
   const [tempSelectedConnections, setTempSelectedConnections] = useState([]);
   const dropdownRef = useRef(null);
 
-  const closeDropdown = useCallback(() => {
-    if (!isDropdownOpen) return;
+  const closeDropdown = useCallback((e) => {
+    if (!isDropdownOpen || dropdownRef.current.contains(e.target)) return;
 
     const currentIds = [...selectedConnections.map(c => c.id)].sort();
     const tempIds = [...tempSelectedConnections.map(c => c.id)].sort();
@@ -25,14 +24,14 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
       onConnectionsChange(tempSelectedConnections);
     }
     setIsDropdownOpen(false);
-  }, [isDropdownOpen, selectedConnections, tempSelectedConnections, onConnectionsChange]);
+  }, [isDropdownOpen, selectedConnections, tempSelectedConnections, onConnectionsChange, dropdownRef]);
 
   const loadConnections = useCallback(async () => {
     try {
       const res = await connectionsAPI.listConnections(projectUuid, 1, 1000);
       const allConnections = res.data.records || [];
       setConnections(allConnections);
-    } catch (error) {
+    } catch {
       toaster.danger(gettext('Failed to load connections'));
     }
   }, []);
@@ -41,10 +40,8 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
     if (!isDropdownOpen) {
       setTempSelectedConnections(selectedConnections);
       setIsDropdownOpen(true);
-    } else {
-      closeDropdown();
     }
-  }, [isDropdownOpen, selectedConnections, closeDropdown]);
+  }, [isDropdownOpen, selectedConnections,]);
 
   const handleToggleConnection = useCallback((connection) => {
     const isSelected = tempSelectedConnections.some(c => c.id === connection.id);
@@ -60,8 +57,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
   }, []);
 
   return (
-    <div className="analyze-settings-section">
-      <div className="analyze-settings-label">{gettext('Connection')}</div>
+    <>
       {selectedConnections.length > 0 && (
         <div className="analyze-selected-connections">
           {selectedConnections.map(connection => (
@@ -119,7 +115,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
           </CustomizePopover>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
