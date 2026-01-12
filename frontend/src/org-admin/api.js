@@ -136,10 +136,14 @@ class OrgAdminAPI {
 
   // users
   orgAdminListOrgUsers(orgID, isStaff, page, perPage) {
-    const url = this.server + '/api/v1/org/' + orgID + '/admin/users/?is_staff=' + isStaff + '&page=' + page;
-    const params = {
-      per_page: perPage,
-    };
+    let url = this.server + '/api/v1/org/' + orgID + '/admin/users/?is_staff=' + isStaff;
+    if (page) {
+      url += '&page=' + page;
+    }
+    let params = {};
+    if (perPage) {
+      params.per_page = perPage;
+    }
     return this.req.get(url, { params });
   }
 
