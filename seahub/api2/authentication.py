@@ -81,7 +81,6 @@ class TokenAuthentication(BaseAuthentication):
         return self.authenticate_v1(request, key)
 
     def authenticate_v1(self, request, key):
-
         try:
             token = Token.objects.get(key=key)
         except Token.DoesNotExist:
