@@ -1,6 +1,7 @@
 export const EVENT_BUS_TYPE = {
   TICKET_PAGE: 'ticket_page',
   CONNECTION_PAGE: 'connection_page',
+  KNOWLEDGE_PAGE: 'knowledge_page',
   NEW_CONNECTION: 'new_connection',
   NEW_TAG: 'new_tag',
   ASK_PAGE: 'ask_page',

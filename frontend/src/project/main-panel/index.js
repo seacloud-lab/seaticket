@@ -36,7 +36,8 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.SETTINGS: {
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     }
-    case BAR_TYPE.KNOWLEDGE: {
+    case BAR_TYPE.KNOWLEDGE:
+    case BAR_TYPE.KNOWLEDGE_TRASH: {
       return (<KnowledgeBase title={title} />);
     }
     case BAR_TYPE.ANALYZE: {

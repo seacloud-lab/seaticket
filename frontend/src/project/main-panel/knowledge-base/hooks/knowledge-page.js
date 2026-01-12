@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@//utils/type-detection';
-import { BAR_TYPE } from '../../../constants';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../constants';
 import { Utils } from '@/utils/utils';
+import eventBus from '@//utils/event-bus';
 
 const KnowledgePageContext = React.createContext(null);
 
@@ -70,6 +71,13 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     setPageSlugId(pageSlugId);
     setLoading(false);
   }, [projectName]);
+
+  useEffect(() => {
+    const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, togglePageSlugId);
+    return () => {
+      allSubscribe();
+    };
+  }, [togglePageSlugId]);
 
   useEffect(() => {
     resetURL(pageSlugId, childrenPageSlugId, viewID);
