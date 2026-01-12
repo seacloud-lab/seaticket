@@ -678,7 +678,7 @@ def validate_llm_models_and_prices(models, ai_prices):
     for model in models:
         if not isinstance(model, dict):
             continue
-        if model.get('type') == 'proxy':
+        if model.get('type') in ('proxy', 'other', 'hosted_vllm'):
             required_fields = ('model', 'url')
         else:
             required_fields = ('model', 'key')
