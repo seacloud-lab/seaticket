@@ -21,7 +21,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState({ text: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [tags, setTags] = useState([]);
@@ -109,9 +109,9 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   useEffect(() => {
     if (!Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) {
       knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
-        const { title = '', content = '', tags = [] } = res?.data.record || {};
+        const { title = '', content, tags = [] } = res?.data.record || {};
         setTitle(title);
-        setContent({ text: content });
+        setContent({ text: content || '' });
         setTags(tags);
         setLoading(false);
       }).catch(error => {
@@ -179,7 +179,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
                 ref={contentEditorRef}
                 lang={lang}
                 headerName={gettext('Content')}
-                value={content || ''}
+                value={content}
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
