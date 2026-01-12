@@ -814,12 +814,14 @@ class ProjectConnectionRecordsView(APIView):
 
         update_rows = []
         modified_time = datetime.datetime.now(datetime.UTC).isoformat()
+        sync_time = modified_time
         for record_id in record_ids:
             update_rows.append({
                 'pk': record_id,
                 'row': {
                     ThreadTable.deleted.name: True,
                     ThreadTable.modified_time.name: modified_time,
+                    ThreadTable.sync_time.name: sync_time,
                 }
             })
 
