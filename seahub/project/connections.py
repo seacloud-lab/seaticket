@@ -695,7 +695,6 @@ class ProjectConnectionRecordView(APIView):
         # currently only unread field is supported
         if 'unread' in row_data:
             update_row['row']['unread'] = row_data.get('unread')
-            update_row['row']['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
         if not update_row['row']:
             return Response({'success': True})
@@ -757,7 +756,6 @@ class ProjectConnectionRecordsView(APIView):
             update_row = {'pk': int(row_id), 'row': {}}
             if 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
-                update_row['row']['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
             if update_row['row']:
                 update_rows.append(update_row)
 
@@ -813,14 +811,12 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        modified_time = datetime.datetime.now(datetime.UTC).isoformat()
-        sync_time = modified_time
+        sync_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
             update_rows.append({
                 'pk': record_id,
                 'row': {
                     ThreadTable.deleted.name: True,
-                    ThreadTable.modified_time.name: modified_time,
                     ThreadTable.sync_time.name: sync_time,
                 }
             })
@@ -902,18 +898,15 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             table_cls = ThreadTable
 
         outdated_field = getattr(table_cls, 'outdated', None)
-        modified_time_field = getattr(table_cls, 'modified_time', None)
         sync_time_field = getattr(table_cls, 'sync_time', None)
         if not outdated_field:
             error_msg = 'Outdated field not supported for this connection.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        modified_time = datetime.datetime.now(datetime.UTC).isoformat()
-        sync_time = modified_time
+        sync_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
             row = {outdated_field.name: True}
-            row[modified_time_field.name] = modified_time
             row[sync_time_field.name] = sync_time
             update_rows.append({'pk': record_id, 'row': row})
 
