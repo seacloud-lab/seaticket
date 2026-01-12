@@ -8,6 +8,7 @@ import operator
 from functools import cmp_to_key
 
 from django.db import models
+from django.db.models.manager import EmptyManager
 from django.utils import timezone
 
 from seahub.base.fields import LowerCaseCharField
@@ -197,3 +198,82 @@ class TokenV2(models.Model):
                     last_accessed=self.last_accessed,
                     last_login_ip=self.last_login_ip,
                     wiped_at=self.wiped_at)
+
+
+class AnonymousUser(object):
+    id = None
+    username = ''
+    is_staff = False
+    is_active = False
+    is_superuser = False
+    _groups = EmptyManager(object)
+    _user_permissions = EmptyManager(object)
+
+    def __init__(self):
+        pass
+
+    def __unicode__(self):
+        return 'AnonymousUser'
+
+    def __str__(self):
+        return str(self).encode('utf-8')
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return 1  # instances always return the same hash value
+
+    def save(self):
+        raise NotImplementedError
+
+    def delete(self):
+        raise NotImplementedError
+
+    def set_password(self, raw_password):
+        raise NotImplementedError
+
+    def check_password(self, raw_password):
+        raise NotImplementedError
+
+    def _get_groups(self):
+        return self._groups
+
+    groups = property(_get_groups)
+
+    def _get_user_permissions(self):
+        return self._user_permissions
+
+    user_permissions = property(_get_user_permissions)
+
+    def get_group_permissions(self, obj=None):
+        return set()
+
+    def get_all_permissions(self, obj=None):
+        return _user_get_all_permissions(self, obj=obj)
+
+    def has_perm(self, perm, obj=None):
+        return _user_has_perm(self, perm, obj=obj)
+
+    def has_perms(self, perm_list, obj=None):
+        for perm in perm_list:
+            if not self.has_perm(perm, obj):
+                return False
+        return True
+
+    def has_module_perms(self, module):
+        return _user_has_module_perms(self, module)
+
+    def get_and_delete_messages(self):
+        return []
+
+    @property
+    def is_anonymous(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        return False
