@@ -909,14 +909,12 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        modified_time = datetime.datetime.now(datetime.UTC).isoformat() if modified_time_field else None
-        sync_time = datetime.datetime.now(datetime.UTC).isoformat() if sync_time_field else None
+        modified_time = datetime.datetime.now(datetime.UTC).isoformat()
+        sync_time = modified_time
         for record_id in record_ids:
             row = {outdated_field.name: True}
-            if modified_time:
-                row[modified_time_field.name] = modified_time
-            if sync_time:
-                row[sync_time_field.name] = sync_time
+            row[modified_time_field.name] = modified_time
+            row[sync_time_field.name] = sync_time
             update_rows.append({'pk': record_id, 'row': row})
 
         table_name = table_cls.gen_table_name(connection_id)
