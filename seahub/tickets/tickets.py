@@ -17,6 +17,10 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
+from seahub.utils.decorators import (
+    require_org_context, require_project, require_project_permission,
+    require_seadb_api, require_ticket, require_ticket_permission, require_comment_permission
+)
 from seahub.project.models import Projects
 from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
@@ -43,16 +47,15 @@ class TicketsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         view_id = request.GET.get('view_id', '')
         start = request.GET.get('start', 0)
@@ -77,18 +80,7 @@ class TicketsAPIView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
         try:
@@ -106,16 +98,15 @@ class TicketsAPIView(APIView):
             'columns': columns,
         })
 
-    def post(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def post(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         title = request.POST.get('title')
         if not title:
@@ -160,23 +151,12 @@ class TicketsAPIView(APIView):
         substate = request.POST.get('substate', '')
 
         username = request.user.username
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
+        
         if assignees:
             for assignee in assignees:
                 if not check_project_permission(assignee, workspace.owner):
                     error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # permission check
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         type_name = request.POST.get('type')
 
@@ -261,28 +241,16 @@ class TicketsAPIView(APIView):
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
-    def put(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def put(self, request, project_uuid, project, workspace):
         tickets_data = request.data.get('tickets_data')
         if not tickets_data:
             error_msg = 'tickets_data is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
 
@@ -397,28 +365,16 @@ class TicketsAPIView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def delete(self, request, project_uuid, project, workspace):
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'ticket_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             seadb_api = SeaDBAPI(username)
@@ -465,37 +421,19 @@ class TicketAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, ticket_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    @require_ticket()
+    def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
-            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-            if not ticket:
-                error_msg = 'Ticket not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            convert_ticket_select_column_name_to_option_id(metadata, ticket)
+            convert_ticket_select_column_name_to_option_id(ticket_metadata, ticket)
             start = 0
             end = 25
             ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
@@ -518,16 +456,17 @@ class TicketAPIView(APIView):
 
         return Response({'ticket': ticket})
 
-    def put(self, request, project_uuid, ticket_id):
+    @require_org_context
+    @require_project()
+    @require_seadb_api
+    @require_ticket()
+    @require_ticket_permission
+    def put(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
         """
         Permission:
         1. creator
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         title = request.data.get('title')
         username = request.user.username
@@ -555,24 +494,6 @@ class TicketAPIView(APIView):
             link_urls = content_dict.get('links')
             if link_urls and isinstance(link_urls, list):
                 file_urls = (file_urls or []) + link_urls
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        seadb_api = SeaDBAPI(username)
-        ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # permission check
-        if not check_ticket_permission(username, workspace.owner, ticket):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         ticket_state_name = request.data.get('state')
 
@@ -705,39 +626,16 @@ class TicketAPIView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, ticket_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    @require_ticket()
+    def delete(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
         """
         Permission:
         1. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            seadb_api = SeaDBAPI(username)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         update_row = {
             'pk': ticket.get('_pk'),
@@ -763,16 +661,15 @@ class TicketsSearchAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         query = request.GET.get('query', '')
         limit = 100
@@ -780,18 +677,7 @@ class TicketsSearchAPIView(APIView):
         if query:
             limit = 50
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check, same as AI
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # project_uuid, username, search_text, start, end
         try:
@@ -811,16 +697,17 @@ class TicketCommentsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, ticket_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    @require_ticket()
+    def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         try:
             current_page = int(request.GET.get('page', '2'))
@@ -832,25 +719,7 @@ class TicketCommentsAPIView(APIView):
         start = (current_page - 1) * per_page
         end = start + per_page
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
-            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-            if not ticket:
-                error_msg = 'Ticket not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             comments_data = get_ticket_comments(seadb_api, project_uuid, ticket.get('_pk'), start, end)
         except Exception as e:
             logger.error(e)
@@ -861,16 +730,17 @@ class TicketCommentsAPIView(APIView):
             'ticket_comments': comments_data,
         })
 
-    def post(self, request, project_uuid, ticket_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    @require_ticket()
+    def post(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         content_dict = request.POST.get('content')
         if not content_dict:
@@ -896,29 +766,7 @@ class TicketCommentsAPIView(APIView):
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
         username = request.user.username
-
-        try:
-            seadb_api = SeaDBAPI(username)
-            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-            if not ticket:
-                error_msg = 'Ticket not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        # permission check
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket.get('_pk')):
             error_msg = 'Cannot be created again within 30 seconds.'
@@ -996,16 +844,17 @@ class TicketCommentAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def put(self, request, project_uuid, ticket_id, comment_id):
+    @require_org_context
+    @require_project()
+    @require_seadb_api
+    @require_ticket()
+    @require_comment_permission()
+    def put(self, request, project_uuid, ticket_id, comment_id, project, workspace, seadb_api, ticket, ticket_metadata, ticket_comment_data):
         """
         Permission:
         1. creator
         2. group admin
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         content_dict = request.data.get('content')
         if not content_dict:
@@ -1031,34 +880,7 @@ class TicketCommentAPIView(APIView):
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-
-        try:
-            seadb_api = SeaDBAPI(username)
-            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-            if not ticket:
-                error_msg = 'Ticket not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            ticket_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket.get('_pk'), comment_id)
-            if not ticket_comment_data:
-                error_msg = 'Comment not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            # permission check
-            if not check_comment_permission(username, workspace.owner, ticket_comment_data):
-                error_msg = 'Permission denied.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         modified_time = ticket_comment_data.get('modified_time')
         if modified_time:
@@ -1110,44 +932,18 @@ class TicketCommentAPIView(APIView):
 
         return Response({'ticket_comment': ticket_comment_data})
 
-    def delete(self, request, project_uuid, ticket_id, comment_id):
+    @require_org_context
+    @require_project()
+    @require_seadb_api
+    @require_ticket()
+    @require_comment_permission()
+    def delete(self, request, project_uuid, ticket_id, comment_id, project, workspace, seadb_api, ticket, ticket_metadata, ticket_comment_data):
         """
         Permission:
         1. creator
         2. group admin
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
         username = request.user.username
-
-        try:
-            seadb_api = SeaDBAPI(username)
-            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
-            if not ticket:
-                error_msg = 'Ticket not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            ticket_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket_id, comment_id)
-            if not ticket_comment_data:
-                error_msg = 'Comment not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        # permission check
-        if not check_comment_permission(username, workspace.owner, ticket_comment_data):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
@@ -1184,16 +980,15 @@ class MyTicketAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def post(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         view_id = request.POST.get('view_id', 'open')
         start = request.POST.get('start', 0)
@@ -1221,18 +1016,7 @@ class MyTicketAPIView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
         try:
@@ -1252,25 +1036,12 @@ class TicketMetadataAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, project, workspace, seadb_api):
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
@@ -1299,11 +1070,10 @@ class TicketTrashAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
         try:
@@ -1321,18 +1091,7 @@ class TicketTrashAPIView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
         try:
@@ -1343,28 +1102,16 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({'tickets': tickets, 'columns': columns})
 
-    def put(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def put(self, request, project_uuid, project, workspace):
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'tickets_data is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
         update_rows = []
@@ -1393,26 +1140,12 @@ class TicketTrashAPIView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def delete(self, request, project_uuid, project, workspace, seadb_api):
         try:
-            seadb_api = SeaDBAPI(username)
             need_delete_ticket_ids = get_deleted_tickets_ids(seadb_api, project_uuid)
             if not need_delete_ticket_ids:
                 return Response({'success': True}, status=status.HTTP_200_OK)

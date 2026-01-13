@@ -12,6 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
@@ -48,11 +49,11 @@ class KnowledgeBasesAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def post(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def post(self, request, project_uuid, project, workspace, seadb_api):
         title = request.data.get('title')
         if not title:
             error_msg = 'title invalid.'
@@ -73,18 +74,6 @@ class KnowledgeBasesAPIView(APIView):
         tag_names = json.loads(tag_names)
 
         username = request.user.username
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        seadb_api = SeaDBAPI(request.user.username)
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         if file_urls:
             try:
@@ -122,11 +111,11 @@ class KnowledgeBasesAPIView(APIView):
         return Response({'row': row}, status=status.HTTP_201_CREATED)
 
 
-    def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, project, workspace, seadb_api):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 100)
         view_id = request.GET.get('view_id')
@@ -150,19 +139,9 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
             view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
         except Exception as e:
@@ -175,11 +154,11 @@ class KnowledgeBasesAPIView(APIView):
             'columns': columns,
         })
 
-    def delete(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def delete(self, request, project_uuid, project, workspace, seadb_api):
         username = request.user.username
         record_ids = request.data.get('record_ids')
         if not record_ids:
@@ -193,18 +172,6 @@ class KnowledgeBasesAPIView(APIView):
         except (ValueError, TypeError):
             return api_error(status.HTTP_400_BAD_REQUEST, 'record_ids must be a list of integers')
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        seadb_api = SeaDBAPI(request.user.username)
         update_rows = []
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for r_id in record_ids:
@@ -233,24 +200,14 @@ class KnowledgeBaseAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, knowledge_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, knowledge_id, project, workspace, seadb_api):
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
             record = convert_kb_record_tags_name_to_id(columns, record)
         except Exception as e:
@@ -263,11 +220,11 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         return Response({'record': record})
 
-    def put(self, request, project_uuid, knowledge_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def put(self, request, project_uuid, knowledge_id, project, workspace, seadb_api):
         row = {}
         username = request.user.username
 
@@ -299,22 +256,10 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.tags.name] = tags
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         if not row:
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        seadb_api = SeaDBAPI(request.user.username)
         record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
@@ -356,25 +301,11 @@ class KnowledgeBaseMetadataAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        seadb_api = SeaDBAPI(username)
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, project, workspace, seadb_api):
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
@@ -400,11 +331,10 @@ class KnowledgeBasesTrashAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
         try:
@@ -422,16 +352,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             seadb_api = SeaDBAPI(username)
@@ -453,11 +374,11 @@ class KnowledgeBasesTrashAPIView(APIView):
 
         return Response({'records': records, 'columns': display_columns})
 
-    def put(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def put(self, request, project_uuid, project, workspace, seadb_api):
         record_ids = request.data.get('record_ids')
         if not record_ids:
             error_msg = 'record_ids is required.'
@@ -466,19 +387,9 @@ class KnowledgeBasesTrashAPIView(APIView):
             error_msg = 'record_ids must be a list'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = []
             for r_id in record_ids:
