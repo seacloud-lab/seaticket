@@ -65,8 +65,6 @@ def token_view(request, token):
         inviter_org = Organization.objects.get_org_by_username(i.inviter)
         if inviter_org:
             try:
-                if not OrgUser.objects.org_user_exists(inviter_org.org_id, user.username):
-                    OrgUser.objects.add_org_user(inviter_org.org_id, user.username, 0)
                 workspace = Workspaces.objects.get_workspace_by_owner(user.username)
                 if workspace:
                     if workspace.org_id != inviter_org.org_id:
