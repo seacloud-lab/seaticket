@@ -58,49 +58,49 @@ def mock_project(mock_workspace):
 @pytest.fixture
 def mock_org_context():
     """Mock is_org_context to return True."""
-    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=True) as mock:
-        yield mock
+    with patch('seahub.utils.decorators.is_org_context', return_value=True) as mock1:
+        yield mock1
 
 
 @pytest.fixture
 def mock_org_context_false():
     """Mock is_org_context to return False."""
-    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=False) as mock:
-        yield mock
+    with patch('seahub.utils.decorators.is_org_context', return_value=False) as mock1:
+        yield mock1
 
 
 @pytest.fixture
 def mock_get_project_by_uuid(mock_project):
     """Mock Projects.objects.get_project_by_uuid to return a mock project."""
-    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=mock_project) as mock:
+    with patch('seahub.utils.decorators.Projects.objects.get_project_by_uuid', return_value=mock_project) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_get_project_by_uuid_none():
     """Mock Projects.objects.get_project_by_uuid to return None (project not found)."""
-    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=None) as mock:
+    with patch('seahub.utils.decorators.Projects.objects.get_project_by_uuid', return_value=None) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_check_permission_granted():
     """Mock check_project_permission to return permission granted."""
-    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=PERMISSION_READ_WRITE) as mock:
+    with patch('seahub.project.utils.check_project_permission', return_value=PERMISSION_READ_WRITE) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_check_permission_denied():
     """Mock check_project_permission to return None (permission denied)."""
-    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=None) as mock:
+    with patch('seahub.project.utils.check_project_permission', return_value=None) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_seadb_api():
     """Mock SeaDBAPI class."""
-    with patch('seahub.knowledge_base.knowledge_base.SeaDBAPI') as mock_class:
+    with patch('seahub.project.seadb_api.SeaDBAPI') as mock_class:
         mock_instance = MagicMock()
         mock_class.return_value = mock_instance
         yield mock_instance
