@@ -669,4 +669,4 @@ CREATE TABLE `invitations_invitation` (
   PRIMARY KEY (`id`),
   KEY `invitations_invitation_inviter_b0a7b855` (`inviter`),
   KEY `invitations_invitation_token_25a92a38` (`token`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

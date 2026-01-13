@@ -24,7 +24,7 @@ def token_view(request, token):
     """
     i = get_object_or_404(Invitation, token=token)
     if i.is_expired():
-        raise Http404
+        return render_error(request, _('Invitation link is invalid or expired.'))
 
     if request.method == 'GET':
         from seahub.auth.utils import get_virtual_id_by_email
@@ -34,7 +34,7 @@ def token_view(request, token):
             if user.is_active is True:
                 messages.error(request, _('A user with this email already exists.'))
         except User.DoesNotExist:
-            pass
+            return render_error(request, _('Invitation link is invalid or expired.'))
 
         return render(request, 'invitations/token_view.html', {'iv': i, })
 
@@ -57,16 +57,7 @@ def token_view(request, token):
                 user = authenticate(username=user.username, password=passwd)
 
         except User.DoesNotExist:
-            if user_number_over_limit():
-                error_msg = _("The number of users exceeds the limit.")
-                return render_error(request, error_msg)
-
-            # Create user, set that user as guest.
-            user = User.objects.create_user(
-                email=i.accepter, password=passwd, is_active=True)
-            User.objects.update_role(user.username, GUEST_USER)
-            for backend in get_backends():
-                user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+            return render_error(request, _('Invitation link is invalid or expired.'))
 
         # Update invitation accept time.
         i.accept()

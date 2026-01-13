@@ -50,7 +50,7 @@ class InviteUserDialog extends React.Component {
           <Form>
             <FormGroup>
               <Label>{gettext('You can enter multiple emails, each will receive an invitation link.')}</Label>
-                <br />
+              <br />
               <Label>{gettext('Email')}</Label>
               <Input
                 type="textarea"
