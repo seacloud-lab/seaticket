@@ -6,7 +6,7 @@ class AttachmentObject {
     this.type = object.type || '';
     this.connection_id = object.connection_id || '';
     this.key = `${this.type}_${this.connection_id}_${this._id}`;
-    this.icon = this.type === 'ticket' ? 'dot-circle-stroked' : 'document';
+    this.icon = (this.type === 'ticket' || this.type === CONNECTION_TYPE.GITHUB_ISSUE || this.type === CONNECTION_TYPE.DISCOURSE_FORUM) ? 'dot-circle-stroked' : 'document';
   }
 }
 
