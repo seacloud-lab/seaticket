@@ -6,8 +6,9 @@ import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import Legend from './components/legend';
 import EmbeddingView from './components/embedding-view';
+import PointDetailsDialog from './components/point-details-dialog';
 import { useAnalyzeTask } from './hooks/analyze-task';
-import { SETTINGS_STORAGE_KEY } from './constants';
+import { SETTINGS_STORAGE_KEY, projectUuid } from './constants';
 
 import './index.css';
 
@@ -25,6 +26,8 @@ const Analyze = ({ title }) => {
   const [embeddingData, setEmbeddingData] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const storedSettings = getStoredSettings();
   const [selectedConnections, setSelectedConnections] = useState(storedSettings.connections || []);
@@ -236,11 +239,11 @@ const Analyze = ({ title }) => {
 
   const filteredData = useMemo(() => {
     if (!embeddingData || !baseCategoryData) {
-      return { embeddingData, categoryData: baseCategoryData };
+      return { embeddingData, categoryData: baseCategoryData, metadata };
     }
 
     if (selectedCategories.length === 0) {
-      return { embeddingData, categoryData: baseCategoryData };
+      return { embeddingData, categoryData: baseCategoryData, metadata };
     }
 
     const selectedIndices = [];
@@ -253,12 +256,14 @@ const Analyze = ({ title }) => {
     const filteredX = new Float32Array(selectedIndices.length);
     const filteredY = new Float32Array(selectedIndices.length);
     const filteredCategories = new Uint8Array(selectedIndices.length);
+    const filteredRecords = [];
 
     for (let i = 0; i < selectedIndices.length; i++) {
       const originalIndex = selectedIndices[i];
       filteredX[i] = embeddingData.x[originalIndex];
       filteredY[i] = embeddingData.y[originalIndex];
       filteredCategories[i] = baseCategoryData.originalCategories[originalIndex];
+      filteredRecords.push(metadata.records[originalIndex]);
     }
 
     return {
@@ -266,9 +271,10 @@ const Analyze = ({ title }) => {
       categoryData: {
         ...baseCategoryData,
         categories: filteredCategories
-      }
+      },
+      metadata: { records: filteredRecords }
     };
-  }, [embeddingData, baseCategoryData, selectedCategories]);
+  }, [embeddingData, baseCategoryData, selectedCategories, metadata]);
 
   const handleLegendItemClick = (categoryIndex, event) => {
     if (event.shiftKey || event.metaKey) {
@@ -307,6 +313,18 @@ const Analyze = ({ title }) => {
     setEndYear(newEndYear);
   }, []);
 
+  const handlePointClick = useCallback((record) => {
+    if (record) {
+      setSelectedRecord(record);
+      setIsDetailsDialogOpen(true);
+    }
+  }, []);
+
+  const handleCloseDetailsDialog = useCallback(() => {
+    setIsDetailsDialogOpen(false);
+    setSelectedRecord(null);
+  }, []);
+
   const renderContent = () => {
     if (selectedConnections.length === 0) {
       return (
@@ -343,7 +361,7 @@ const Analyze = ({ title }) => {
       );
     }
 
-    const { embeddingData: displayData, categoryData } = filteredData;
+    const { embeddingData: displayData, categoryData, metadata: displayMetadata } = filteredData;
 
     const useCategory = !!colorBy;
 
@@ -352,11 +370,12 @@ const Analyze = ({ title }) => {
         <EmbeddingView
           embeddingData={displayData}
           categoryData={categoryData}
-          metadata={metadata}
+          metadata={displayMetadata}
           useCategory={useCategory}
           displayMode={displayMode}
           width={dimensions.width}
           height={dimensions.height}
+          onPointClick={handlePointClick}
         />
 
         {useCategory && baseCategoryData?.legend && (
@@ -401,6 +420,13 @@ const Analyze = ({ title }) => {
           />
         )}
       </div>
+      {isDetailsDialogOpen && selectedRecord && (
+        <PointDetailsDialog
+          projectUuid={projectUuid}
+          record={selectedRecord}
+          onClose={handleCloseDetailsDialog}
+        />
+      )}
     </>
   );
 };
