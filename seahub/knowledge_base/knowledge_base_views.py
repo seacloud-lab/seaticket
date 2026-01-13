@@ -14,6 +14,7 @@ from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.utils import check_project_permission
+from seahub.utils.decorators import require_project, require_project_permission
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -26,20 +27,9 @@ class KnowledgeBaseViewsAPI(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_project
+    @require_project_permission
+    def get(self, request, project_uuid, project, workspace):
         try:
             views = KnowledgeBaseViews.objects.list_views(project_uuid)
         except Exception as e:
@@ -49,7 +39,9 @@ class KnowledgeBaseViewsAPI(APIView):
 
         return Response(views)
 
-    def post(self, request, project_uuid):
+    @require_project
+    @require_project_permission
+    def post(self, request, project_uuid, project, workspace):
         #  Add a view
         view_name = request.data.get('name')
         view_type = request.data.get('type', 'table')
@@ -59,19 +51,6 @@ class KnowledgeBaseViewsAPI(APIView):
         if not view_name:
             error_msg = 'view name is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
@@ -95,20 +74,9 @@ class KnowledgeBaseViewView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid, view_id):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+    @require_project
+    @require_project_permission
+    def get(self, request, project_uuid, view_id, project, workspace):
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
             error_msg = 'The views does not exists.'
@@ -123,26 +91,15 @@ class KnowledgeBaseViewView(APIView):
 
         return Response({'view': view})
 
-    def put(self, request, project_uuid, view_id):
+    @require_project
+    @require_project_permission
+    def put(self, request, project_uuid, view_id, project, workspace):
         # Update a view, including rename, change filters and so on
         # by a json data
         view_data = request.data.get('view_data', None)
         if not view_data:
             error_msg = 'view_data is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
@@ -162,23 +119,12 @@ class KnowledgeBaseViewView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, view_id):
+    @require_project
+    @require_project_permission
+    def delete(self, request, project_uuid, view_id, project, workspace):
         if not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
@@ -205,24 +151,13 @@ class KnowledgeBaseViewsDuplicateView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    @require_project
+    @require_project_permission
+    def post(self, request, project_uuid, project, workspace):
         view_id = request.data.get('view_id')
         if not view_id:
             error_msg = 'view_id invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
@@ -250,7 +185,9 @@ class KnowledgeBaseViewsMoveView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    @require_project
+    @require_project_permission
+    def post(self, request, project_uuid, project, workspace):
         # move view to another position
         source_view_id = request.data.get('source_view_id')
         target_view_id = request.data.get('target_view_id')
@@ -262,19 +199,6 @@ class KnowledgeBaseViewsMoveView(APIView):
         # must move above to view
         if not target_view_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'target_view_id is invalid')
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:

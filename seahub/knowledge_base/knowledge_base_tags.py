@@ -17,7 +17,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, get_column_from_columns_by_name, batch_delete_select_option
 from seahub.knowledge_base.knowledge_base_utils import TABLE_KNOWLEDGE_BASE, get_kb_counts_group_by_column_name, filter_kb_by_select
-
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
 
 logger = logging.getLogger(__name__)
 
@@ -27,29 +27,18 @@ class KnowledgeBaseTagsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
             tag_options, _ = get_kb_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
         except Exception as e:
             logger.error(e)
@@ -58,16 +47,17 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         return Response({'tags': tag_options})
 
-    def post(self, request, project_uuid):
+
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def post(self, request, project_uuid, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         data = request.data or {}
         name = data.get('name')
         if not name:
@@ -88,19 +78,8 @@ class KnowledgeBaseTagsAPIView(APIView):
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
             table_id = table_meta.get('id')
@@ -121,34 +100,23 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         return Response({'tag': tag_option}, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def delete(self, request, project_uuid, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         tag_ids = request.data.get('tag_ids', [])
         if not tag_ids:
             error_msg = 'tag_ids invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
@@ -167,30 +135,19 @@ class KnowledgeBaseTagAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, tag_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def get(self, request, project_uuid, tag_id, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             tag_option = None
-            seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
             table_columns = table_meta.get('columns')
@@ -222,16 +179,16 @@ class KnowledgeBaseTagAPIView(APIView):
             'columns': columns,
         })
 
-    def put(self, request, project_uuid, tag_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def put(self, request, project_uuid, tag_id, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         name = request.data.get('name')
         description = request.data.get('description')
         color = request.data.get('color')
@@ -257,19 +214,7 @@ class KnowledgeBaseTagAPIView(APIView):
                 error_msg = 'text_color invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         tag_option = None
-        seadb_api = SeaDBAPI(username)
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
         column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
@@ -303,29 +248,17 @@ class KnowledgeBaseTagAPIView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, tag_id):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    @require_seadb_api
+    def delete(self, request, project_uuid, tag_id, project, workspace, seadb_api):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             kb_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
             column = get_column_from_columns_by_name(kb_table_metadata.get('columns'), 'tags')

@@ -18,6 +18,7 @@ from seahub.project.utils import check_project_permission
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.settings import TEMP_EXPORT_VIEW_DIR
 from seahub.knowledge_base.utils import convert_kb_view_to_excel, query_kb_task_status, import_kb_from_excel
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 
 
 logger = logging.getLogger(__name__)
@@ -28,20 +29,14 @@ class KnowledgeBaseConvertViewToExcel(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         view_id = request.GET.get('view_id', '')
         if not view_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'view_id invalid.')
 
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-        workspace = project.workspace
-
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         params = {
             'project_uuid': str(project_uuid),
@@ -85,7 +80,9 @@ class KnowledgeBaseExportExcel(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (ExportRateThrottle,)
 
-    def get(self, request, project_uuid):
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         task_id = request.GET.get('task_id', '')
         if not task_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'task_id invalid.')
@@ -93,15 +90,6 @@ class KnowledgeBaseExportExcel(APIView):
         view_id = request.GET.get('view_id', '')
         if not view_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'view_id invalid.')
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         view = KnowledgeBaseViews.objects.get_view(project_uuid, view_id)
         if not view:
@@ -125,15 +113,11 @@ class KnowledgeBaseImportExcel(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (ImportRateThrottle,)
 
-    def post(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-        workspace = project.workspace
+    @require_project()
+    @require_project_permission()
+    def post(self, request, project_uuid, project, workspace):
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         preview_only = request.data.get('preview_only')
         preview_only = str(preview_only).lower() in ('true', '1', 'yes') if preview_only is not None else False
