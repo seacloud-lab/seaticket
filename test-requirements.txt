@@ -5,4 +5,3 @@ exam
 splinter
 pytest==8.4.0
 pytest-django==4.11.1
-django-constance==4.1.*
