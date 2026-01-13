@@ -36,8 +36,10 @@ KEY_WEBDAV_SECRET = "webdav_secret"
 KEY_FILE_UPDATES_EMAIL_INTERVAL = "file_updates_email_interval"
 KEY_FILE_UPDATES_LAST_EMAILED_TIME = "file_updates_last_emailed_time"
 KEY_PROJECT_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
-KEY_PROJECT_UPDATES_LAST_EMAILED_TIME = "project_updates_last_emailed_time"
-KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL = 'project_collaborate_email_interval'
+KEY_COLLABORATE_EMAIL_INTERVAL = 'collaborate_email_interval'
+KEY_COLLABORATE_LAST_EMAILED_TIME = 'collaborate_last_emailed_time'
+
+COLLABORATE_EMAIL_INTERVAL_DEFAULT = 3600
 
 
 class CryptoOptionNotSetError(Exception):
@@ -168,12 +170,12 @@ class UserOptionsManager(models.Manager):
     def unset_project_updates_email_interval(self, username):
         return self.unset_user_option(username, KEY_PROJECT_UPDATES_EMAIL_INTERVAL)
 
-    def set_project_collaborate_email_interval(self, username, seconds):
-        return self.set_user_option(username, KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL,
+    def set_collaborate_email_interval(self, username, seconds):
+        return self.set_user_option(username, KEY_COLLABORATE_EMAIL_INTERVAL,
                                     str(seconds))
 
-    def get_project_collaborate_email_interval(self, username):
-        val = self.get_user_option(username, KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL)
+    def get_collaborate_email_interval(self, username):
+        val = self.get_user_option(username, KEY_COLLABORATE_EMAIL_INTERVAL)
         if not val:
             return None
         try:
@@ -181,6 +183,11 @@ class UserOptionsManager(models.Manager):
         except ValueError:
             logger.error('Failed to convert string %s to int', val)
             return None
+
+    def set_collaborate_last_emailed_time(self, username, time_dt):
+        return self.set_user_option(
+            username, KEY_COLLABORATE_LAST_EMAILED_TIME,
+            time_dt.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 class UserOptions(models.Model):

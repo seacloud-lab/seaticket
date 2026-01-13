@@ -161,9 +161,8 @@ class AccountInfo(APIView):
         project_updates_email_interval = UserOptions.objects.get_project_updates_email_interval(email)
         info[
             'project_updates_email_interval'] = project_updates_email_interval if project_updates_email_interval is not None else 0
-        project_collaborate_email_interval = UserOptions.objects.get_project_collaborate_email_interval(email)
-        info[
-            'project_collaborate_email_interval'] = project_collaborate_email_interval if project_collaborate_email_interval is not None else 0
+        collaborate_email_interval = UserOptions.objects.get_collaborate_email_interval(email)
+        info['collaborate_email_interval'] = collaborate_email_interval if collaborate_email_interval is not None else 0
 
         # AI statistics
         if getattr(settings, 'SEAQA_AI_INNER_SERVER_URL', ''):
@@ -208,13 +207,13 @@ class AccountInfo(APIView):
                 return api_error(
                     status.HTTP_400_BAD_REQUEST, 'project_updates_email_interval invalid')
 
-        project_collaborate_email_interval = request.data.get("project_collaborate_email_interval", None)
-        if project_collaborate_email_interval is not None:
+        collaborate_email_interval = request.data.get("collaborate_email_interval", None)
+        if collaborate_email_interval is not None:
             try:
-                project_collaborate_email_interval = int(project_collaborate_email_interval)
+                collaborate_email_interval = int(collaborate_email_interval)
             except ValueError:
                 return api_error(
-                    status.HTTP_400_BAD_REQUEST, 'project_collaborate_email_interval invalid')
+                    status.HTTP_400_BAD_REQUEST, 'collaborate_email_interval invalid')
 
         # update user info
 
@@ -232,8 +231,8 @@ class AccountInfo(APIView):
                 UserOptions.objects.set_project_updates_email_interval(
                     username, project_updates_email_interval)
 
-        if project_collaborate_email_interval is not None:
-            UserOptions.objects.set_project_collaborate_email_interval(
-                username, project_collaborate_email_interval)
+        if collaborate_email_interval is not None:
+            UserOptions.objects.set_collaborate_email_interval(
+                username, collaborate_email_interval)
 
         return Response(self._get_account_info(request))

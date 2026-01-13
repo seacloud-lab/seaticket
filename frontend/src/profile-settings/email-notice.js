@@ -5,7 +5,7 @@ import profileSettingsAPI from './api';
 import { Utils } from '@/utils/utils';
 
 const {
-  initialProjectUpdatesEmailInterval, initialProjectCollaborateEmailInterval,
+  initialProjectUpdatesEmailInterval, initialCollaborateEmailInterval,
 } = window.app.pageOptions;
 
 class EmailNotice extends React.Component {
@@ -26,7 +26,7 @@ class EmailNotice extends React.Component {
 
     this.state = {
       projectUpdatesEmailInterval: initialProjectUpdatesEmailInterval,
-      projectCollaborateEmailInterval: initialProjectCollaborateEmailInterval,
+      collaborateEmailInterval: initialCollaborateEmailInterval,
     };
   }
 
@@ -41,15 +41,15 @@ class EmailNotice extends React.Component {
   onCollaborateEmailIntervalChange = (e) => {
     if (e.target.checked) {
       this.setState({
-        projectCollaborateEmailInterval: parseInt(e.target.value)
+        collaborateEmailInterval: parseInt(e.target.value)
       });
     }
   };
 
   formSubmit = (e) => {
     e.preventDefault();
-    const { projectUpdatesEmailInterval, projectCollaborateEmailInterval } = this.state;
-    profileSettingsAPI.updateEmailNotificationInterval(projectUpdatesEmailInterval, projectCollaborateEmailInterval).then((res) => {
+    const { projectUpdatesEmailInterval, collaborateEmailInterval } = this.state;
+    profileSettingsAPI.updateEmailNotificationInterval(projectUpdatesEmailInterval, collaborateEmailInterval).then((res) => {
       toaster.success(gettext('Email notification updated'));
     }).catch((error) => {
       let errorMsg = Utils.getErrorMsg(error);
@@ -58,7 +58,7 @@ class EmailNotice extends React.Component {
   };
 
   render() {
-    const { projectCollaborateEmailInterval } = this.state;
+    const { collaborateEmailInterval } = this.state;
     return (
       <div className="setting-item" id="email-notice">
         <h3 className="setting-item-heading">{gettext('Email notification')}</h3>
@@ -72,7 +72,7 @@ class EmailNotice extends React.Component {
                   name="set-collaborate-email-interval"
                   value={item.interval}
                   label={item.text}
-                  isChecked={projectCollaborateEmailInterval === item.interval}
+                  isChecked={collaborateEmailInterval === item.interval}
                   onCheckedChange={this.onCollaborateEmailIntervalChange}
                 />
                 <br />

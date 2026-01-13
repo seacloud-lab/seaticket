@@ -97,7 +97,7 @@ class ProfileSettingsAPI {
     const url = this.server + '/api2/account/info/';
     const data = {
       'project_updates_email_interval': emailInterval,
-      'project_collaborate_email_interval': collaborateEmailInterval,
+      'collaborate_email_interval': collaborateEmailInterval,
     };
     return this.req.put(url, data);
   }
