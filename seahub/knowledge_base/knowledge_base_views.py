@@ -27,8 +27,8 @@ class KnowledgeBaseViewsAPI(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def get(self, request, project_uuid, project, workspace):
         try:
             views = KnowledgeBaseViews.objects.list_views(project_uuid)
@@ -39,8 +39,8 @@ class KnowledgeBaseViewsAPI(APIView):
 
         return Response(views)
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def post(self, request, project_uuid, project, workspace):
         #  Add a view
         view_name = request.data.get('name')
@@ -74,8 +74,8 @@ class KnowledgeBaseViewView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def get(self, request, project_uuid, view_id, project, workspace):
         record = KnowledgeBaseViews.objects.get_record(project_uuid)
         if not record:
@@ -91,8 +91,8 @@ class KnowledgeBaseViewView(APIView):
 
         return Response({'view': view})
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def put(self, request, project_uuid, view_id, project, workspace):
         # Update a view, including rename, change filters and so on
         # by a json data
@@ -119,8 +119,8 @@ class KnowledgeBaseViewView(APIView):
 
         return Response({'success': True})
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def delete(self, request, project_uuid, view_id, project, workspace):
         if not view_id:
             error_msg = 'view_id is invalid.'
@@ -151,8 +151,8 @@ class KnowledgeBaseViewsDuplicateView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def post(self, request, project_uuid, project, workspace):
         view_id = request.data.get('view_id')
         if not view_id:
@@ -185,8 +185,8 @@ class KnowledgeBaseViewsMoveView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_project
-    @require_project_permission
+    @require_project()
+    @require_project_permission()
     def post(self, request, project_uuid, project, workspace):
         # move view to another position
         source_view_id = request.data.get('source_view_id')

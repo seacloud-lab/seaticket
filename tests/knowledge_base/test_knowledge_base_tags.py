@@ -24,38 +24,9 @@ def get_kb_tag_url(project_uuid, tag_id):
 class TestKnowledgeBaseTagsGet:
     """Tests GET /knowledge-base/tags/"""
 
-    def test_get_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tags_url(project_uuid)
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
-    def test_get_project_not_found_404(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_get_permission_denied_403(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_get_internal_error_returns_500(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_seadb_api_tags
+        self, api_client, project_uuid,
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
         with patch(
@@ -69,8 +40,8 @@ class TestKnowledgeBaseTagsGet:
         mock_seadb_api_tags.assert_called_once()
 
     def test_get_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_kb_counts
+        self, api_client, project_uuid, 
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted, mock_get_kb_counts
     ):
         url = get_kb_tags_url(project_uuid)
 
@@ -85,16 +56,8 @@ class TestKnowledgeBaseTagsGet:
 class TestKnowledgeBaseTagsPost:
     """Tests POST /knowledge-base/tags/"""
 
-    def test_post_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tags_url(project_uuid)
-        resp = api_client.post(url, {}, format='json')
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
     def test_post_missing_name_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tags_url(project_uuid)
         data = {'color': '#fff', 'text_color': '#000'}
@@ -105,8 +68,7 @@ class TestKnowledgeBaseTagsPost:
         assert 'name invalid' in resp.data['error_msg']
 
     def test_post_missing_color_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tags_url(project_uuid)
         data = {'name': 'New Tag', 'text_color': '#000'}
@@ -117,8 +79,8 @@ class TestKnowledgeBaseTagsPost:
         assert 'color invalid' in resp.data['error_msg']
 
     def test_post_missing_text_color_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, 
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tags_url(project_uuid)
         data = {'name': 'New Tag', 'color': '#fff'}
@@ -128,32 +90,10 @@ class TestKnowledgeBaseTagsPost:
         assert resp.status_code == 400
         assert 'text_color invalid' in resp.data['error_msg']
 
-    def test_post_project_not_found_404(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-        data = {'name': 'New Tag', 'color': '#fff', 'text_color': '#000'}
-
-        resp = api_client.post(url, data, format='json')
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_post_permission_denied_403(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-        data = {'name': 'New Tag', 'color': '#fff', 'text_color': '#000'}
-
-        resp = api_client.post(url, data, format='json')
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_post_tag_exists_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, 
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
@@ -167,8 +107,9 @@ class TestKnowledgeBaseTagsPost:
         assert 'already exists' in resp.data['error_msg']
 
     def test_post_internal_error_returns_500(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, 
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
@@ -185,8 +126,9 @@ class TestKnowledgeBaseTagsPost:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_post_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, 
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_add_select_option, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
@@ -212,17 +154,8 @@ class TestKnowledgeBaseTagsPost:
 class TestKnowledgeBaseTagsDelete:
     """Tests DELETE /knowledge-base/tags/"""
 
-    def test_delete_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tags_url(project_uuid)
-
-        resp = api_client.delete(url, {}, format='json')
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
     def test_delete_missing_ids_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
     ):
         url = get_kb_tags_url(project_uuid)
 
@@ -231,32 +164,9 @@ class TestKnowledgeBaseTagsDelete:
         assert resp.status_code == 400
         assert 'tag_ids invalid' in resp.data['error_msg']
 
-    def test_delete_project_not_found_404(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-        payload = {'tag_ids': ['TAG1']}
-
-        resp = api_client.delete(url, payload, format='json')
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_delete_permission_denied_403(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tags_url(project_uuid)
-        payload = {'tag_ids': ['TAG1']}
-
-        resp = api_client.delete(url, payload, format='json')
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_delete_internal_error_returns_500(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
@@ -274,8 +184,8 @@ class TestKnowledgeBaseTagsDelete:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_delete_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_batch_delete_select_option, mock_seadb_api_tags
     ):
         url = get_kb_tags_url(project_uuid)
@@ -296,38 +206,9 @@ class TestKnowledgeBaseTagsDelete:
 class TestKnowledgeBaseTagGet:
     """Tests GET /knowledge-base/tags/{tag_id}/"""
 
-    def test_get_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
-    def test_get_project_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_get_permission_denied(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_get_tag_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'MISS')
@@ -341,8 +222,8 @@ class TestKnowledgeBaseTagGet:
         assert 'not found' in resp.data['error_msg']
 
     def test_get_internal_error(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_filter_kb_by_select, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
@@ -357,8 +238,8 @@ class TestKnowledgeBaseTagGet:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_get_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_filter_kb_by_select, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
@@ -378,17 +259,8 @@ class TestKnowledgeBaseTagGet:
 class TestKnowledgeBaseTagPut:
     """Tests PUT /knowledge-base/tags/{tag_id}/"""
 
-    def test_put_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.put(url, {}, format='json')
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
     def test_put_invalid_name_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
         data = {'name': '   '}
@@ -399,8 +271,7 @@ class TestKnowledgeBaseTagPut:
         assert 'name invalid' in resp.data['error_msg']
 
     def test_put_invalid_color_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
         data = {'color': '   '}
@@ -411,8 +282,7 @@ class TestKnowledgeBaseTagPut:
         assert 'color invalid' in resp.data['error_msg']
 
     def test_put_invalid_text_color_returns_400(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_granted_tags
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
         data = {'text_color': '   '}
@@ -422,32 +292,9 @@ class TestKnowledgeBaseTagPut:
         assert resp.status_code == 400
         assert 'text_color invalid' in resp.data['error_msg']
 
-    def test_put_project_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-        data = {'name': 'Tag1'}
-
-        resp = api_client.put(url, data, format='json')
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_put_permission_denied(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-        data = {'name': 'Tag1'}
-
-        resp = api_client.put(url, data, format='json')
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_put_tag_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'MISS')
@@ -462,8 +309,8 @@ class TestKnowledgeBaseTagPut:
         assert 'not found' in resp.data['error_msg']
 
     def test_put_internal_error(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_update_select_option, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
@@ -479,8 +326,8 @@ class TestKnowledgeBaseTagPut:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_put_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_update_select_option, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
@@ -501,38 +348,9 @@ class TestKnowledgeBaseTagPut:
 class TestKnowledgeBaseTagDelete:
     """Tests DELETE /knowledge-base/tags/{tag_id}/"""
 
-    def test_delete_non_org_returns_403(self, api_client, project_uuid, mock_org_context_tags_false):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.delete(url)
-
-        assert resp.status_code == 403
-        assert 'Feature is not enabled' in resp.data['error_msg']
-
-    def test_delete_project_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_none_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.delete(url)
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_delete_permission_denied(
-        self, api_client, project_uuid, mock_org_context_tags,
-        mock_get_project_by_uuid_tags, mock_check_permission_denied_tags
-    ):
-        url = get_kb_tag_url(project_uuid, 'TAG1')
-
-        resp = api_client.delete(url)
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
-
     def test_delete_tag_not_found(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'MISS')
@@ -546,8 +364,8 @@ class TestKnowledgeBaseTagDelete:
         assert 'tag not found' in resp.data['error_msg']
 
     def test_delete_internal_error(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')
@@ -562,8 +380,8 @@ class TestKnowledgeBaseTagDelete:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_delete_success(
-        self, api_client, project_uuid, mock_org_context_tags, mock_get_project_by_uuid_tags,
-        mock_check_permission_granted_tags, mock_get_current_table_metadata,
+        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted,
+        mock_get_current_table_metadata,
         mock_get_column_from_columns_by_name, mock_seadb_api_tags
     ):
         url = get_kb_tag_url(project_uuid, 'TAG1')

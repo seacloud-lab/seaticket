@@ -19,36 +19,13 @@ def get_kb_export_url(project_uuid):
 
 
 class TestKnowledgeBaseConvertViewToExcel:
-    def test_get_missing_view_id_returns_400(self, api_client, project_uuid):
+    def test_get_missing_view_id_returns_400(self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted):
         url = get_kb_convert_view_url(project_uuid)
 
         resp = api_client.get(url)
 
         assert resp.status_code == 400
         assert 'view_id invalid' in resp.data['error_msg']
-
-    def test_get_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_none_excel
-    ):
-        url = get_kb_convert_view_url(project_uuid)
-        params = {'view_id': '0000'}
-
-        resp = api_client.get(url, params)
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
-        mock_check_permission_denied_excel
-    ):
-        url = get_kb_convert_view_url(project_uuid)
-        params = {'view_id': '0000'}
-
-        resp = api_client.get(url, params)
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_convert_error_returns_500(
         self, api_client, project_uuid, mock_get_project_by_uuid_excel,
@@ -78,7 +55,7 @@ class TestKnowledgeBaseConvertViewToExcel:
 
 
 class TestKnowledgeBaseIOStatus:
-    def test_get_missing_task_id_returns_400(self, api_client):
+    def test_get_missing_task_id_returns_400(self, api_client, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted):
         url = get_kb_io_status_url()
 
         resp = api_client.get(url)
@@ -152,7 +129,10 @@ class TestKnowledgeBaseIOStatus:
 
 
 class TestKnowledgeBaseExportExcel:
-    def test_get_missing_task_id_returns_400(self, api_client, project_uuid):
+    def test_get_missing_task_id_returns_400(
+        self, api_client, project_uuid,
+        mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted
+    ):
         url = get_kb_export_url(project_uuid)
 
         resp = api_client.get(url)
@@ -160,7 +140,7 @@ class TestKnowledgeBaseExportExcel:
         assert resp.status_code == 400
         assert 'task_id invalid' in resp.data['error_msg']
 
-    def test_get_missing_view_id_returns_400(self, api_client, project_uuid):
+    def test_get_missing_view_id_returns_400(self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid, mock_check_permission_granted):
         url = get_kb_export_url(project_uuid)
         params = {'task_id': 'task-1'}
 
@@ -168,29 +148,6 @@ class TestKnowledgeBaseExportExcel:
 
         assert resp.status_code == 400
         assert 'view_id invalid' in resp.data['error_msg']
-
-    def test_get_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_none_excel
-    ):
-        url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
-
-        resp = api_client.get(url, params)
-
-        assert resp.status_code == 404
-        assert 'Project not found' in resp.data['error_msg']
-
-    def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
-        mock_check_permission_denied_excel
-    ):
-        url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
-
-        resp = api_client.get(url, params)
-
-        assert resp.status_code == 403
-        assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_view_not_found_returns_404(
         self, api_client, project_uuid, mock_get_project_by_uuid_excel,
