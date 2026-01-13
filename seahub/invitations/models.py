@@ -13,6 +13,7 @@ from seahub.base.fields import LowerCaseCharField
 from seahub.invitations.settings import INVITATIONS_TOKEN_AGE
 from seahub.utils import gen_token, get_site_name
 from seahub.utils.mail import send_html_email_with_dj_template
+from seahub.base.templatetags.seahub_tags import email2contact_email
 
 GUEST = _('Guest')
 
@@ -93,11 +94,12 @@ class Invitation(models.Model):
 
         context = self.to_dict()
         context['site_name'] = get_site_name()
+        inviter_contact_email = email2contact_email(self.inviter)
+        inviter_name = inviter_contact_email.split('@')[0] if inviter_contact_email else self.inviter.split('@')[0]
+        context['inviter_name'] = inviter_name
 
-        # subject = render_to_string('invitations/invitation_email_subject.txt',
-        #                            context).rstrip()
         subject = _('%(user)s invited you to join %(site_name)s.') % {
-            'user': self.inviter, 'site_name': get_site_name()}
+                'user': inviter_name, 'site_name': get_site_name()}
         return send_html_email_with_dj_template(
             email, dj_template='invitations/invitation_email.html',
             context=context,

@@ -25,12 +25,14 @@ from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.two_factor.models import default_device, user_has_device
 from seahub.options.models import UserOptions
 from seahub.settings import SEND_EMAIL_ON_ACTIVATING_ORG_USER
+from seahub.auth.utils import get_virtual_id_by_email
 
 from seahub.organizations.models import Organization, OrgUser
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.views import is_org_staff, unset_org_user, set_org_user, set_org_staff, unset_org_staff
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_DEACTIVATE, USER_ACTIVATE
+from seahub.invitations.models import Invitation
 
 
 logger = logging.getLogger(__name__)
@@ -543,6 +545,77 @@ class OrgAdminSearchUsers(APIView):
         })
         return Response(user_list_info)
 
+
+class OrgAdminInviteUsers(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+
+    def post(self, request, org_id):
+        org_id = int(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
+        if not org:
+            error_msg = f'Organization {org_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        email_list = request.data.getlist('email', None)
+        if not email_list:
+            error_msg = 'email invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not IS_EMAIL_CONFIGURED:
+            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        url_prefix = request.user.org.url_prefix
+        org_members = Organization.objects.get_org_users_by_url_prefix(url_prefix)
+        org_active_members = len([m for m in org_members if m.is_active])
+
+        if ORG_MEMBER_QUOTA_ENABLED:
+            from seahub.organizations.models import OrgMemberQuota
+            org_members_quota = OrgMemberQuota.objects.get_quota(request.user.org.org_id)
+            if org_members_quota is not None and org_active_members + len(email_list) > org_members_quota:
+                err_msg = 'Failed. You can only invite %d members.' % org_members_quota
+                return api_error(status.HTTP_409_CONFLICT, err_msg)
+
+
+        result = {'failed': [], 'success': []}
+        inviter = request.user.username
+
+        for email in email_list:
+            if not is_valid_email(email):
+                result['failed'].append({'email': email, 'error_msg': 'Email invalid.'})
+                continue
+
+            vid = get_virtual_id_by_email(email)
+            try:
+                User.objects.get(email=vid)
+                result['failed'].append({'email': email, 'error_msg': _('User %s already exists.') % email})
+                continue
+            except User.DoesNotExist:
+                new_user = User.objects.create_user(email, '!', is_staff=False, is_active=False)
+                set_org_user(org_id, new_user.username)
+
+            invitation = Invitation.objects.add(inviter=inviter, accepter=email)
+            send_success = invitation.send_to(email=email)
+            if not send_success:
+                result['failed'].append({
+                    'email': email,
+                    'error_msg': _('Failed to send email, email service is not properly configured, please contact administrator.'),
+                })
+                continue
+
+            user_info = {
+                'email': email,
+                'name': email2nickname(email),
+                'contact_email': email2contact_email(email),
+                'is_staff': False,
+                'is_active': False,
+            }
+            result['success'].append(user_info)
+
+        return Response(result)
 
 
 def get_user_info(email, org_id):

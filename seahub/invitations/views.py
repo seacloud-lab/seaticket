@@ -15,6 +15,8 @@ from seahub.settings import SITE_ROOT, NOTIFY_ADMIN_AFTER_REGISTRATION
 from seahub.registration.models import notify_admins_on_register_complete
 from seahub.utils import render_error
 from seahub.utils.licenseparse import user_number_over_limit
+from seahub.organizations.models import Organization, OrgUser
+from seahub.project.models import Workspaces
 
 
 def token_view(request, token):
@@ -22,16 +24,17 @@ def token_view(request, token):
     """
     i = get_object_or_404(Invitation, token=token)
     if i.is_expired():
-        raise Http404
+        return render_error(request, _('Invitation link is invalid or expired.'))
 
     if request.method == 'GET':
+        from seahub.auth.utils import get_virtual_id_by_email
+        vid = get_virtual_id_by_email(i.accepter)
         try:
-            user = User.objects.get(email=i.accepter)
+            user = User.objects.get(email=vid)
             if user.is_active is True:
-                # user is active return exist
                 messages.error(request, _('A user with this email already exists.'))
         except User.DoesNotExist:
-            pass
+            return render_error(request, _('Invitation link is invalid or expired.'))
 
         return render(request, 'invitations/token_view.html', {'iv': i, })
 
@@ -40,33 +43,37 @@ def token_view(request, token):
         if not passwd:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+        from seahub.auth.utils import get_virtual_id_by_email
+        vid = get_virtual_id_by_email(i.accepter)
         try:
-            user = User.objects.get(email=i.accepter)
+            user = User.objects.get(email=vid)
             if user.is_active is True:
-                # user is active return exist
                 messages.error(request, _('A user with this email already exists.'))
                 return render(request, 'invitations/token_view.html', {'iv': i, })
             else:
-                # user is inactive then set active and new password
                 user.set_password(passwd)
                 user.is_active = True
                 user.save()
                 user = authenticate(username=user.username, password=passwd)
 
         except User.DoesNotExist:
-            if user_number_over_limit():
-                error_msg = _("The number of users exceeds the limit.")
-                return render_error(request, error_msg)
-
-            # Create user, set that user as guest.
-            user = User.objects.create_user(
-                email=i.accepter, password=passwd, is_active=True)
-            User.objects.update_role(user.username, GUEST_USER)
-            for backend in get_backends():
-                user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+            return render_error(request, _('Invitation link is invalid or expired.'))
 
         # Update invitation accept time.
         i.accept()
+
+        inviter_org = Organization.objects.get_org_by_username(i.inviter)
+        if inviter_org:
+            try:
+                workspace = Workspaces.objects.get_workspace_by_owner(user.username)
+                if workspace:
+                    if workspace.org_id != inviter_org.org_id:
+                        workspace.org_id = inviter_org.org_id
+                        workspace.save(update_fields=['org_id'])
+                else:
+                    Workspaces.objects.create_workspace(user.username, inviter_org.org_id)
+            except Exception:
+                pass
 
         # login
         auth_login(request, user)
