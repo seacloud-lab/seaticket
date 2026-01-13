@@ -811,13 +811,13 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        sync_time = datetime.datetime.now(datetime.UTC).isoformat()
+        record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
             update_rows.append({
                 'pk': record_id,
                 'row': {
                     ThreadTable.deleted.name: True,
-                    ThreadTable.sync_time.name: sync_time,
+                    ThreadTable.record_modified_time.name: record_modified_time,
                 }
             })
 
@@ -898,16 +898,16 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             table_cls = ThreadTable
 
         outdated_field = getattr(table_cls, 'outdated', None)
-        sync_time_field = getattr(table_cls, 'sync_time', None)
+        record_modified_time_field = getattr(table_cls, 'record_modified_time', None)
         if not outdated_field:
             error_msg = 'Outdated field not supported for this connection.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        sync_time = datetime.datetime.now(datetime.UTC).isoformat()
+        record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
             row = {outdated_field.name: True}
-            row[sync_time_field.name] = sync_time
+            row[record_modified_time_field.name] = record_modified_time
             update_rows.append({'pk': record_id, 'row': row})
 
         table_name = table_cls.gen_table_name(connection_id)
