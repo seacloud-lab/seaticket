@@ -23,6 +23,10 @@ def require_org_context(view_func):
     """
     @wraps(view_func)
     def wrapped_view(self, request, *args, **kwargs):
+        # Ensure request has cloud_mode attribute (for test compatibility)
+        if not hasattr(request, 'cloud_mode'):
+            request.cloud_mode = False
+        
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
