@@ -8,6 +8,7 @@ import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { BAR_TYPE, EVENT_BUS_TYPE } from './constants';
 import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
+import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
 import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
@@ -49,6 +50,13 @@ const Project = () => {
       eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.SUBSTATES);
     } else if (activeBarKey === 'tickets/types') {
       eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.TYPES);
+    }
+
+    // Knowledge page
+    if (activeBarKey === BAR_TYPE.KNOWLEDGE) {
+      eventBus.dispatch(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, KNOWLEDGE_PAGE_SLUG_ID.ALL);
+    } else if (activeBarKey === BAR_TYPE.KNOWLEDGE_TRASH) {
+      eventBus.dispatch(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, KNOWLEDGE_PAGE_SLUG_ID.TRASH);
     }
 
     if (activeBar[0] === activeBarKey) {
@@ -125,8 +133,13 @@ const Project = () => {
     const projectNameIndex = decodePathname.indexOf(part);
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
-    const [barKey, ...children] = params;
-    const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.CHAT;
+    let [barKey, ...children] = params;
+    let bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.CHAT;
+    // Activate the bar when the knowledge trash page refreshes
+    if (bar === BAR_TYPE.KNOWLEDGE && children[0] === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
+      bar = BAR_TYPE.KNOWLEDGE_TRASH;
+      children[0] = '';
+    }
     resetURL(true, [bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);

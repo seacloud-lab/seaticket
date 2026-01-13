@@ -39,14 +39,7 @@ const KnowledgeTopBar = ({ title }) => {
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       return (
-        <>
-          <IconButton
-            icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
-            onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
-          />
-          <span className="text-truncate" title={gettext('Deleted records')}>{gettext('Deleted records')}</span>
-        </>
+        <span className="text-truncate" title={gettext('Deleted records')}>{gettext('Deleted records')}</span>
       );
     }
 
@@ -66,15 +59,7 @@ const KnowledgeTopBar = ({ title }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <>
-          <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
-          <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-inline-flex">
-            <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} />
-            <CustomizeDropdownMenu>
-              <CustomizeDropdownItem onClick={() => { togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TRASH); toggleMoreMenu(); }}>{gettext('Deleted records')}</CustomizeDropdownItem>
-            </CustomizeDropdownMenu>
-          </Dropdown>
-        </>
+        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
       );
     }
 

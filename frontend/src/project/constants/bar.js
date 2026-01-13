@@ -11,6 +11,7 @@ export const BAR_TYPE = {
   EXTERNAL_PORTAL: 'external-portal',
   INBOX: 'inbox',
   KNOWLEDGE: 'knowledge-base',
+  KNOWLEDGE_TRASH: 'knowledge/trash',
   ANALYZE: 'analyze',
   TAGS: 'tickets/tags',
   TYPES: 'tickets/types',
@@ -52,6 +53,11 @@ export const BAR_TYPE_CONFIG = {
     key: BAR_TYPE.KNOWLEDGE,
     name: gettext('Knowledge base'),
     icon: 'knowledge-base'
+  },
+  [BAR_TYPE.KNOWLEDGE_TRASH]: {
+    key: BAR_TYPE.KNOWLEDGE_TRASH,
+    name: gettext('Trash'),
+    icon: 'trash',
   },
   [BAR_TYPE.TICKET]: {
     key: BAR_TYPE.TICKET,

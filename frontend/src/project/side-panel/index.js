@@ -52,6 +52,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <TicketsMoreNav onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH]} {...commonProps} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
