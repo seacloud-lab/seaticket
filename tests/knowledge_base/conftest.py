@@ -180,48 +180,6 @@ def tag_table_metadata(tag_option):
 
 
 @pytest.fixture
-def mock_org_context_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=True) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_org_context_tags_false():
-    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=False) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_tags(mock_project):
-    with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
-        return_value=mock_project
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_none_tags():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
-        return_value=None
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_granted_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=True) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_denied_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=None) as mock:
-        yield mock
-
-
-@pytest.fixture
 def mock_seadb_api_tags():
     with patch('seahub.project.seadb_api.SeaDBAPI') as mock_class:
         instance = MagicMock()
