@@ -1,3 +1,5 @@
+import { CONNECTION_TYPE } from '../../connections/constants';
+
 class AttachmentObject {
   constructor(object) {
     this.record_id = object._id || object._pk || object.record_id || -1;
