@@ -27,6 +27,7 @@ from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
 from seahub.group.models import GroupUser, Group
 from seahub.project.utils import restore_trash_project_name, delete_project
+from seahub.utils.decorators import require_org_context
 
 from .utils import api_check_group
 
@@ -65,6 +66,7 @@ class GroupsView(APIView):
     def _can_add_group(self, request):
         return request.user.permissions.can_add_group()
 
+    @require_org_context
     def get(self, request):
         """ List all groups.
         """
@@ -76,10 +78,6 @@ class GroupsView(APIView):
             can_admin = to_python_boolean(can_admin)
         except:
             return api_error(status.HTTP_400_BAD_REQUEST, 'including_all_deps or can_admin invalid')
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         groups = []
 
@@ -96,15 +94,12 @@ class GroupsView(APIView):
 
         return Response(groups)
 
+    @require_org_context
     def post(self, request):
         """ Create a group
         """
         if not self._can_add_group(request):
             error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username

@@ -12,6 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects, ConnectionsViews, ProjectConnections
+from seahub.utils.decorators import require_project, require_project_permission, require_project_connection
 from .utils import check_project_permission
 
 
@@ -23,27 +24,12 @@ class ConnectionViewsAPI(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, connection_id):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def get(self, request, project_uuid, connection_id, project, workspace, project_connection):
         try:
-            views = ConnectionsViews.objects.list_views(project_uuid, connection)
+            views = ConnectionsViews.objects.list_views(project_uuid, project_connection)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -51,7 +37,10 @@ class ConnectionViewsAPI(APIView):
 
         return Response(views)
 
-    def post(self, request, project_uuid, connection_id):
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def post(self, request, project_uuid, connection_id, project, workspace, project_connection):
         #  Add a view
         view_name = request.data.get('name')
         view_type = request.data.get('type', 'table')
@@ -62,26 +51,8 @@ class ConnectionViewsAPI(APIView):
             error_msg = 'view name is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # permission check
-        workspace = project.workspace
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
-            new_view = ConnectionsViews.objects.add_view(project_uuid, connection, view_name, view_type, view_data)
+            new_view = ConnectionsViews.objects.add_view(project_uuid, project_connection, view_name, view_type, view_data)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'add view failed')
         except Exception as e:
@@ -97,27 +68,12 @@ class ConnectionViewAPI(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid, connection_id, view_id):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def get(self, request, project_uuid, view_id, project, workspace, project_connection):
         try:
-            view = ConnectionsViews.objects.get_view(project_uuid, connection, view_id)
+            view = ConnectionsViews.objects.get_view(project_uuid, project_connection, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -129,7 +85,11 @@ class ConnectionViewAPI(APIView):
 
         return Response({'view': view})
 
-    def put(self, request, project_uuid, connection_id, view_id):
+
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def put(self, request, project_uuid, view_id, project, workspace, project_connection):
         # Update a view, including rename, change filters and so on
         # by a json data
         view_data = request.data.get('view_data', None)
@@ -137,25 +97,7 @@ class ConnectionViewAPI(APIView):
             error_msg = 'view_data is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        record = ConnectionsViews.objects.get_record(project_uuid, connection)
+        record = ConnectionsViews.objects.get_record(project_uuid, project_connection)
         if view_id not in record.views_ids:
             error_msg = f'view_id {view_id} does not exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -169,30 +111,16 @@ class ConnectionViewAPI(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, connection_id, view_id):
+
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def delete(self, request, project_uuid, view_id, project, workspace, project_connection):
         if not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        record = ConnectionsViews.objects.get_record(project_uuid, connection)
+        record = ConnectionsViews.objects.get_record(project_uuid, project_connection)
         # check view exist
         if view_id not in record.views_ids:
             error_msg = f'view_id {view_id} does not exists.'
@@ -213,31 +141,16 @@ class ConnectionViewsDuplicateView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid, connection_id):
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def post(self, request, project_uuid, connection_id, project, workspace, project_connection):
         view_id = request.data.get('view_id')
         if not view_id:
             error_msg = 'view_id invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        record = ConnectionsViews.objects.get_record(project_uuid, connection)
+        record = ConnectionsViews.objects.get_record(project_uuid, project_connection)
         if view_id not in record.views_ids:
             error_msg = 'view_id %s does not exists.' % view_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -257,7 +170,10 @@ class ConnectionViewsMoveView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid, connection_id):
+    @require_project()
+    @require_project_permission()
+    @require_project_connection()
+    def post(self, request, project_uuid, connection_id, project, workspace, project_connection):
         # move view or folder to another position
         source_view_id = request.data.get('source_view_id')
         source_folder_id = request.data.get('source_folder_id')
@@ -281,25 +197,7 @@ class ConnectionViewsMoveView(APIView):
         if not source_view_id and source_folder_id and target_view_id and target_folder_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'not allowed to drag folder into folder')
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        record = ConnectionsViews.objects.get_record(project_uuid, connection)
+        record = ConnectionsViews.objects.get_record(project_uuid, project_connection)
         # check dragged view exist
         if source_view_id and source_view_id not in record.views_ids:
             return api_error(status.HTTP_400_BAD_REQUEST, f'source_view_id {source_view_id} does not exists.')

@@ -15,6 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission
 from seahub.seadb_models.utils import list_tickets_by_search, list_documents_by_search
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 
 logger = logging.getLogger(__name__)
 class SearchTickectsAndDocumentsView(APIView):
@@ -22,16 +23,15 @@ class SearchTickectsAndDocumentsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         query = request.GET.get('query', '')
         limit = 100
@@ -39,18 +39,7 @@ class SearchTickectsAndDocumentsView(APIView):
         if query:
             limit = 50
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check, same as AI
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # project_uuid, username, search_text, start, end
         try:

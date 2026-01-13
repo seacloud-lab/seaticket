@@ -24,7 +24,7 @@ from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
-
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
@@ -35,11 +35,8 @@ class ConvertRecordToTicket(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         connection_id = request.data.get('connection_id')
         if not connection_id:
             error_msg = 'connection_id invalid.'
@@ -194,11 +191,8 @@ class EmbeddingAnalysisView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
             error_msg = 'project_uuid is required.'
@@ -250,11 +244,8 @@ class EmbeddingAnalysisTaskStatusView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, task_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             result = get_embedding_analysis_task_status(task_id)
         except Exception as e:
@@ -270,11 +261,8 @@ class RelatedRecordsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
             error_msg = 'project_uuid is required.'

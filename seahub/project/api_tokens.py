@@ -15,6 +15,7 @@ from seahub.project.models import (
     Projects, ProjectAPIToken, API_TOKEN_PERMISSION_TUPLE
 )
 from seahub.project.utils import check_project_admin_permission
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +55,9 @@ class ProjectAPITokensView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request, project_uuid):
         username = request.user.username
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         error, project = _resource_check(project_uuid)
         if error:
@@ -84,12 +82,9 @@ class ProjectAPITokensView(APIView):
 
         return Response({'api_tokens': api_tokens})
 
+    @require_org_context
     def post(self, request, project_uuid):
         username = request.user.username
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         app_name = request.data.get('app_name')
         if not app_name:
@@ -130,12 +125,9 @@ class ProjectAPITokenView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def delete(self, request, project_uuid, token_id):
         username = request.user.username
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         error, project = _resource_check(project_uuid)
         if error:
@@ -159,12 +151,9 @@ class ProjectAPITokenView(APIView):
 
         return Response({'success': True})
 
+    @require_org_context
     def put(self, request, project_uuid, token_id):
         username = request.user.username
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         permission = request.data.get('permission')
         if not permission or permission not in API_TOKEN_PERMISSION_TUPLE:

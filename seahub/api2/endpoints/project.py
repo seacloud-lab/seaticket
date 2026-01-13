@@ -25,6 +25,7 @@ from seahub.project.utils import check_project_limit, check_project_admin_permis
     convert_project_trash_names, check_project_permission, search, delete_project, restore_trash_project_name
 from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ class WorkspacesView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request):
         """get all workspaces
         """
@@ -42,10 +44,6 @@ class WorkspacesView(APIView):
         if detail not in ('true', 'false'):
             error_msg = 'detail invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         org_id = request.user.org.org_id
@@ -157,6 +155,7 @@ class ProjectsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request):
         """
         Permission:
@@ -171,10 +170,6 @@ class ProjectsView(APIView):
         # argument check
         project_owner = request.POST.get('owner')
         workspace_id = request.POST.get('workspace_id')
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project_name = request.POST.get('name')
         if not project_name:
@@ -255,6 +250,7 @@ class ProjectView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def put(self, request, workspace_id):
         """rename a project
 
@@ -277,10 +273,6 @@ class ProjectView(APIView):
         icon = request.data.get('icon')
         settings = request.data.get('settings')
         password = request.data.get('password')
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
@@ -333,6 +325,7 @@ class ProjectView(APIView):
 
         return Response({"project": project.to_dict()}, status=status.HTTP_200_OK)
 
+    @require_org_context
     def delete(self, request, workspace_id):
         """delete a project
         """
@@ -341,10 +334,6 @@ class ProjectView(APIView):
         if not project_name:
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
@@ -380,11 +369,8 @@ class SearchView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
             error_msg = 'project_uuid invalid.'

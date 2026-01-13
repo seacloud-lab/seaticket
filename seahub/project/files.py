@@ -23,7 +23,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     upload_file_to_tmp_dir, get_file_from_s3, delete_file_from_s3, gen_tmp_upload_file_path
 from seahub.project.constants import IMAGE_EXTS
-
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -35,7 +35,10 @@ class ProjectUploadFileAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def post(self, request, project_uuid):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def post(self, request, project_uuid, project, workspace):
         """
         Upload a file to /tmp.
         TicketsAPIView and TicketCommentsAPIView upload files to S3.
@@ -43,10 +46,6 @@ class ProjectUploadFileAPIView(APIView):
         Permission:
         1. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         file = request.FILES.get('file', None)
         if not file:
@@ -59,19 +58,6 @@ class ProjectUploadFileAPIView(APIView):
         if file.size > 1024 * 1024 * settings.PROJECT_FILE_MAX_SIZE:
             error_msg = 'File size cannot exceed %s Mb.' % settings.PROJECT_FILE_MAX_SIZE
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
         try:
@@ -90,31 +76,16 @@ class GetProjectUploadFileView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, file_path):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, file_path, project, workspace):
         """
         Get a file from /tmp.
 
         Permission:
         1. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # main
         try:
             tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
         except Exception as e:
@@ -135,28 +106,14 @@ class ProjectFileAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
+    @require_project()
+    @require_project_permission()
     def delete(self, request, project_uuid, file_path):
         """
         Permission:
         1. group admin
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             delete_file_from_s3(project_uuid, file_path)
         except Exception as e:
@@ -173,29 +130,14 @@ class GetProjectFileView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, file_path):
+    @require_org_context
+    @require_project()
+    @require_project_permission()
+    def get(self, request, project_uuid, file_path, project, workspace):
         """
         Permission:
         1. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # main
         try:
             file = get_file_from_s3(project_uuid, file_path)
         except Exception as e:
