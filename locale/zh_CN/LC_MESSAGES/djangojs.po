@@ -1045,7 +1045,7 @@ msgstr "团队名称"
 
 #: frontend/src/org-admin/info/index.js:67
 msgid "Active users"
-msgstr "活跃用户"
+msgstr "激活用户"
 
 #: frontend/src/org-admin/info/index.js:68
 #: frontend/src/sys-admin/info/index.js:161
