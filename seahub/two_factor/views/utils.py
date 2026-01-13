@@ -1,7 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
-
-from constance import config
 from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _

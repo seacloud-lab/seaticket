@@ -14,7 +14,6 @@ import os
 from django.conf import settings as dj_settings
 from django.utils import translation
 from django.utils.functional import lazy
-from constance import config
 
 from seahub.settings import SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
     LOGO_PATH, BRANDING_CSS, LOGO_WIDTH, LOGO_HEIGHT,\

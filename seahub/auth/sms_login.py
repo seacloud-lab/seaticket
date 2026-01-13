@@ -13,8 +13,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import redirect
 from django.shortcuts import render
 
-from constance import config
-
 from seahub.base.accounts import User
 from seahub.profile.models import Profile
 from seahub.utils.auth import get_login_bg_image_path

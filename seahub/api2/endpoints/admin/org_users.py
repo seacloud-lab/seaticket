@@ -8,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from constance import config
-
 from seahub.project.models import Workspaces
 from seahub.organizations.views import is_org_staff
 from seahub.utils import is_valid_email

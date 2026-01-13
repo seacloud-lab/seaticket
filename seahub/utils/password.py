@@ -1,6 +1,4 @@
 import re
-
-from constance import config
 from seahub.settings import USER_STRONG_PASSWORD_REQUIRED
 
 MIDDLE_STRENGTH = 4

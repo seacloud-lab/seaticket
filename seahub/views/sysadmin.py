@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import logging
-from constance import config
 
 from django.conf import settings as dj_settings
 from django.urls import reverse

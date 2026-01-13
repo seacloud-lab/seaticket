@@ -3,7 +3,6 @@ import logging
 import re
 from django.db.models import Q
 from types import FunctionType
-from constance import config
 
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication

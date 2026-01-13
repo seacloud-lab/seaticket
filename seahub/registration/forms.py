@@ -7,7 +7,6 @@ import re
 from django.contrib.auth.models import User
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from constance import config
 
 from seahub.utils.licenseparse import user_number_over_limit
 from seahub.utils import is_user_password_strong

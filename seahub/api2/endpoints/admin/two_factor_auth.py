@@ -11,7 +11,6 @@ from seahub.api2.utils import api_error
 from seahub.api2.authentication import TokenAuthentication
 from seahub.options.models import UserOptions
 from seahub.two_factor.models import devices_for_user
-from constance import config
 import logging
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from constance import config
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -8,7 +7,7 @@ from .forms import RegistrationForm
 from .models import RegistrationProfile
 from seahub.auth import login
 from seahub.profile.models import Profile
-from seahub.settings import ACTIVATE_AFTER_REGISTRATION
+from seahub.settings import ACTIVATE_AFTER_REGISTRATION, REGISTRATION_SEND_MAIL
 
 class RegistrationBackend(object):
     """
@@ -93,7 +92,7 @@ class RegistrationBackend(object):
             # create inactive user, user can be activated by admin, or through activated email
             new_user = RegistrationProfile.objects.create_inactive_user(username, email, name,
                                                                         password, site,
-                                                                        send_email=config.REGISTRATION_SEND_MAIL)
+                                                                        send_email=REGISTRATION_SEND_MAIL)
 
         if settings.REQUIRE_DETAIL_ON_REGISTRATION:
             name = kwargs.get('name', '')

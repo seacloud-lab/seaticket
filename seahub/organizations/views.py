@@ -5,7 +5,6 @@ import time
 import logging
 import json
 from urllib.parse import urlparse
-from constance import config
 
 from rest_framework.decorators import api_view, throttle_classes
 from django.conf import settings
@@ -34,7 +33,8 @@ from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.throttling import OrgRegisterRateThrottle
-from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML, USER_STRONG_PASSWORD_REQUIRED
+from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML, USER_STRONG_PASSWORD_REQUIRED, \
+    ENABLE_TWO_FACTOR_AUTH
 
 from seahub.organizations.models import OrgUser
 
@@ -558,7 +558,7 @@ def react_fake_view(request, **kwargs):
         'enable_multi_saml': ENABLE_MULTI_SAML,
         'can_use_saml': can_use_saml,
         'group_id': group_id,
-        'display_two_factor_auth': getattr(config, 'ENABLE_TWO_FACTOR_AUTH', False),
+        'display_two_factor_auth': ENABLE_TWO_FACTOR_AUTH,
         'enable_org_logo': enable_org_logo,
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,

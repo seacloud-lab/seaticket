@@ -27,8 +27,6 @@ from seahub.settings import AVATAR_FILE_STORAGE, USE_PHONE_REGISTRATION_BY_DEFAU
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 CUSTOM_NAV_ITEMS = getattr(settings, 'CUSTOM_NAV_ITEMS', [])
 
-from constance import config
-
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
