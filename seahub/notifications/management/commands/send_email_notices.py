@@ -20,11 +20,9 @@ from seahub.avatar.util import get_default_avatar_url
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.profile.models import Profile
-from seahub.constants import HASH_URLS
 from seahub.utils import get_site_name
 from seahub.options.models import UserOptions, KEY_COLLABORATE_EMAIL_INTERVAL, \
     KEY_COLLABORATE_LAST_EMAILED_TIME, COLLABORATE_EMAIL_INTERVAL_DEFAULT
-from seahub.utils.auth import VIRTUAL_ID_EMAIL_DOMAIN
 
 # Get an instance of a logger
 logger = logging.getLogger('seahub_email_sender')
@@ -321,7 +319,7 @@ class Command(BaseCommand):
                 continue
 
             contact_email = contact_email_map.get(to_user)
-            if not contact_email or VIRTUAL_ID_EMAIL_DOMAIN in contact_email:
+            if not contact_email:
                 continue
 
             # get last_emailed_time if any, defaults to today 00:00:00.0
