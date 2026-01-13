@@ -564,6 +564,10 @@ class OrgAdminInviteUsers(APIView):
             error_msg = 'email invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        if not IS_EMAIL_CONFIGURED:
+            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         url_prefix = request.user.org.url_prefix
         org_members = Organization.objects.get_org_users_by_url_prefix(url_prefix)
         org_active_members = len([m for m in org_members if m.is_active])
@@ -575,9 +579,6 @@ class OrgAdminInviteUsers(APIView):
                 err_msg = 'Failed. You can only invite %d members.' % org_members_quota
                 return api_error(status.HTTP_409_CONFLICT, err_msg)
 
-        if not IS_EMAIL_CONFIGURED:
-            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         result = {'failed': [], 'success': []}
         inviter = request.user.username
