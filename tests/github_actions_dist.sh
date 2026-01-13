@@ -34,5 +34,6 @@ echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >~/.npmrc
 cd $GITHUB_WORKSPACE
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install django-constance[database]
 
 tests/dist_and_push.sh
