@@ -97,9 +97,8 @@ const filterRows = (filterConjunction, filters, rows, { username, userId, isRetu
   let filteredRows = [];
   const formattedFilters = getFormattedFilters(filters);
   rows.forEach((row) => {
-    const rowId = row._id;
     if (filterRow(row, filterConjunction, formattedFilters, { username, userId })) {
-      filteredRows.push(isReturnID ? rowId : row);
+      filteredRows.push(isReturnID ? row._id : row);
     }
   });
   return filteredRows;

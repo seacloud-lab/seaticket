@@ -4,7 +4,7 @@ import { Button, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, toaster } from '@/components';
+import { toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
@@ -32,7 +32,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { tagsData, typesData, substatesData, isLoading: isMetadataLoading, createTag } = useMetadata();
+  const { tagsData, typesData, substatesData, createTag } = useMetadata();
 
   const user = useMemo(() => {
     return {
@@ -108,7 +108,6 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   }, [title, content, type, assignees, tags, priority]);
 
   useEffect(() => {
-    if (isMetadataLoading) return;
     const ticketDom = ticketRef.current;
     const handleResize = () => {
       if (!ticketDom) return;
@@ -120,7 +119,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     return () => {
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
-  }, [isMetadataLoading]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -145,8 +144,6 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       </div>
     );
   }, [disabled, togglePageSlugId, onSubmit]);
-
-  if (isMetadataLoading) return (<CenteredLoading />);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 892;
@@ -202,7 +199,6 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               id="tags-editor-popover"
               isReadonly={isSubmitting}
               value={tags}
-              isLoading={isMetadataLoading}
               tagsData={tagsData}
               createTag={createTag}
               onChange={setTags}

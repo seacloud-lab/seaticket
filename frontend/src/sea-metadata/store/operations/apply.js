@@ -142,23 +142,14 @@ export default function apply(data, operation) {
     }
     case OPERATION_TYPE.MODIFY_LOCAL_ROW: {
       const { row_id, updates } = operation;
-      const { rows } = data;
-      const modifyTime = dayjs().utc().format(UTC_FORMAT_DEFAULT);
-      const modifier = context.getUsername();
-      let updatedRows = [...rows];
-      rows.forEach((row, index) => {
-        const rowId = getRowIdFromRow(row);
-        if ((rowId === row_id) && updates) {
-          const updatedRow = Object.assign({}, row, updates, {
-            '_mtime': modifyTime,
-            '_last_modifier': modifier,
-          });
-          updatedRows[index] = updatedRow;
-          data.id_row_map[rowId] = updatedRow;
-        }
+      updateDataByModifyRows({
+        id_row_updates: { [row_id]: updates },
       });
-
-      data.rows = updatedRows;
+      return data;
+    }
+    case OPERATION_TYPE.MODIFY_LOCAL_ROWS: {
+      const { updates } = operation;
+      updateDataByModifyRows({ updates });
       return data;
     }
     case OPERATION_TYPE.MOVE_ROW: {

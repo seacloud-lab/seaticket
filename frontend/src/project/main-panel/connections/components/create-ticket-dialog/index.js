@@ -19,7 +19,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { isLoading: isMetadataLoading, typesData, tagsData, substatesData, createTag } = useMetadata();
+  const { typesData, tagsData, substatesData, createTag } = useMetadata();
 
   useEffect(() => {
     if (initialData) {
@@ -123,7 +123,6 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
               <TagsSettings
                 isReadonly={isLoading}
                 value={tags}
-                isLoading={isMetadataLoading}
                 tagsData={tagsData}
                 createTag={createTag}
                 onChange={setTags}
