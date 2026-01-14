@@ -50,7 +50,3 @@ body {
   color: var(--ticket-invalid-color);
   flex-shrink: 0;
 }
-
-.sf-slate-viewer-scroll-container .article h2 {
-  border-bottom: none;
-}
