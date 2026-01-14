@@ -71,3 +71,5 @@ export const KNOWLEDGE_PAGE_SLUG_ID = {
 export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {
   ALL: 'all',
 };
+
+export const KNOWLEDGE_BASE_TYPE = 'knowledge_base';

@@ -4,14 +4,14 @@ import { useConnectionsPage } from '../../../hooks';
 import { CenteredError, CenteredLoading } from '@/components';
 import { connectionsAPI } from '../../../../../api';
 import { Utils } from '@/utils/utils';
-import { initConnectionRecordDetail, generatorConnectionAssetURLPrefix } from '../../../utils';
+import { initConnectionResourceDetails, generatorConnectionAssetURLPrefix } from '../../../utils';
 import { useDataCache } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { CONNECTION_TYPE } from '../../../constants';
 import { gettext } from '@/constants';
-import EmailDetails from '../../../components/row-details-dialog/details/email-details';
+import EmailDetails from '../../../components/connection-resource-details/email-details';
 
 import './index.css';
 
@@ -48,9 +48,9 @@ const Record = ({ projectUuid }) => {
   useEffect(() => {
     connectionsAPI.getConnectionRowDetail(projectUuid, pageSlugId, { _pk: childrenPageSlugId }).then((res) => {
       const { connection_name, connection_type } = res.data;
-      const data = initConnectionRecordDetail(res.data);
+      const data = initConnectionResourceDetails(connection_type, res.data);
       setData(data);
-      updateConnectionInfo && updateConnectionInfo({ name: connection_name, type: connection_type });
+      updateConnectionInfo && updateConnectionInfo({ name: connection_name, type: connection_type, id: pageSlugId });
       setErrorMessage('');
       setLoading(false);
     }).catch((error) => {

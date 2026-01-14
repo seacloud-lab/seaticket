@@ -6,7 +6,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
-from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS
+from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
 
 TABLE_TICKETS = 'tickets'
@@ -306,7 +306,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
         created_time = ticket.get('created_time')
         created_time = time_str_to_utc_time(created_time).isoformat()
         whole_ticket_data = {
-            'type': 'ticket',
+            'type': ExtraSourceType.TICKET.value,
             'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),

@@ -4,7 +4,7 @@ from datetime import datetime
 from django.utils import timezone
 from seahub.profile.models import Profile
 from seahub.seadb_models.models import KnowledgeBaseTable
-from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
+from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq
 from seahub.utils import uuid_str_to_32_chars
 
@@ -151,7 +151,7 @@ def get_whole_knowledge_bases_data(seadb_api, project_uuid, record_ids):
     }
 
     result = [{
-            'type': 'knowledge_base',
+            'type': ExtraSourceType.KNOWLEDGE_BASE.value,
             'record_id': kb['_pk'],
             'title': kb['title'],
             'content': kb['content'],

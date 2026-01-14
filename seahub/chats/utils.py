@@ -16,7 +16,7 @@ from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
-from seahub.project.constants import ConnectionType
+from seahub.project.constants import ConnectionType, ExtraSourceType
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +181,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
             continue
 
         # documents
-        if attachment.get('type') == 'knowledge_base':
+        if attachment.get('type') == ExtraSourceType.KNOWLEDGE_BASE.value:
             knowledge_base_ids.append(record_id)
         elif attachment.get('type') == ConnectionType.SITE.value:
             site_documents.append(attachment)
@@ -189,7 +189,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
             seafile_documents.append(attachment)
         
         # issues
-        elif attachment.get('type') == 'ticket':
+        elif attachment.get('type') == ExtraSourceType.TICKET.value:
             ticket_ids.append(record_id)
         elif attachment.get('type') == ConnectionType.GITHUB_ISSUE.value:
             github_issues.append(attachment)
@@ -238,6 +238,11 @@ def remove_content_details_in_attachments(attachments):
 
         try:
             del attachment['comments']
+        except:
+            pass
+
+        try:
+            del attachment['emails']
         except:
             pass
     

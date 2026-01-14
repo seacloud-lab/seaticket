@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { EmptyTip, IconButton } from '@/components';
-import { getInfoByEmailFrom } from '../../../../utils';
+import { getInfoByEmailFrom } from '../../../utils';
 import Item from './item';
 
 import './index.css';
@@ -13,16 +13,16 @@ const EmailDetails = ({ details, className, assetURLPrefix }) => {
 
   if (details.length === 0) {
     return (
-      <div className={classnames('sea-qa-connection-email-record empty', className)}>
+      <div className={classnames('sea-ticket-connection-email-record empty', className)}>
         <EmptyTip />
       </div>
     );
   }
 
   return (
-    <div className={classnames('sea-qa-connection-email-record', className)}>
+    <div className={classnames('sea-ticket-connection-email-record', className)}>
       {!isShowAll && (
-        <div className="sea-qa-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
+        <div className="sea-ticket-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
           <div className="email-avatar">
             <IconButton icon="more" className="no-hover-bg more-tip" />
           </div>

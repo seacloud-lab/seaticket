@@ -1,7 +1,7 @@
 import Thinking from './thinking';
-import Attachment from './attachment';
+import Attachments from './attachments';
 
 export {
   Thinking,
-  Attachment,
+  Attachments,
 };
