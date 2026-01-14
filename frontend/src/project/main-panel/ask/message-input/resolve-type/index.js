@@ -6,8 +6,8 @@ import { AI_RESOLVE_TYPE } from '../../constants';
 import './index.css';
 
 const AI_RESOLVE_TYPES = [
-  { value: AI_RESOLVE_TYPE.AGENT, label: gettext('Agent') },
-  { value: AI_RESOLVE_TYPE.ASK, label: gettext('Ask') },
+  { value: AI_RESOLVE_TYPE.AGENT, label: gettext('Reasoning') },
+  { value: AI_RESOLVE_TYPE.ASK, label: gettext('Normal') },
 ];
 
 const ResolveType = ({ resolveType, updateResolveType }) => {
