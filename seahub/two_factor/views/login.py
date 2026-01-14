@@ -5,8 +5,6 @@ import logging
 from datetime import datetime
 from importlib import import_module
 
-from constance import config
-
 from django.conf import settings
 from django.urls import reverse
 from django.http import HttpResponseRedirect, Http404

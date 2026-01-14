@@ -12,7 +12,6 @@ from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
-from constance import config
 
 from seahub import settings
 from seahub.auth import REDIRECT_FIELD_NAME

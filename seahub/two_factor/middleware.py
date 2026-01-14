@@ -1,8 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 
 import re
-
-from constance import config
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.utils.deprecation import MiddlewareMixin

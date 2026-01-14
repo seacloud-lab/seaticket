@@ -47,8 +47,6 @@ from seahub.settings import LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED, \
     LOGIN_REMEMBER_DAYS, USER_PASSWORD_MIN_LENGTH, USER_STRONG_PASSWORD_REQUIRED, \
     USER_PASSWORD_STRENGTH_LEVEL
 
-from constance import config
-
 from seahub.password_session import update_session_auth_hash
 try:
     from seahub.settings import LDAP_PROVIDER

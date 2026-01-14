@@ -7,8 +7,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from seahub.auth.signals import user_logged_in
-
-from constance import config
 from seahub.settings import LOGIN_REMEMBER_DAYS
 
 SESSION_KEY = '_auth_user_name'

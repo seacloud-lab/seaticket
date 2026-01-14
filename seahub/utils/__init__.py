@@ -16,7 +16,6 @@ from datetime import datetime
 from urllib.parse import urlparse
 import boto3
 
-from constance import config
 from django.utils import translation
 
 from django.urls import reverse
@@ -211,8 +210,9 @@ def get_conf_text_ext():
     """
     Get the conf of text ext in constance settings, and remove space.
     """
-    if hasattr(config, 'TEXT_PREVIEW_EXT'):
-        text_ext = getattr(config, 'TEXT_PREVIEW_EXT').split(',')
+    text_preview_ext = getattr(seahub.settings, 'TEXT_PREVIEW_EXT', '')
+    if text_preview_ext:
+        text_ext = text_preview_ext.split(',')
         return [x.strip() for x in text_ext]
     return []
 

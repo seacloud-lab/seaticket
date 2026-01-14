@@ -19,8 +19,6 @@ from seahub.utils.password import is_password_strength_valid, get_password_stren
 from seahub.auth.models import SocialAuthUser
 from captcha.fields import CaptchaField
 
-from constance import config
-
 class AuthenticationForm(forms.Form):
     """
     Base class for authenticating users. Extend this to get a form that accepts

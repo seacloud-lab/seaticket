@@ -9,7 +9,6 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.contrib import messages
 from django.utils.translation import gettext as _
-from constance import config
 
 from seahub.organizations.models import OrgAdminSettings
 from .models import Profile

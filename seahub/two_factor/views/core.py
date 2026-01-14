@@ -2,8 +2,6 @@
 import logging
 from binascii import unhexlify
 from base64 import b32encode
-
-from constance import config
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse

@@ -1,7 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 from django.views.generic import TemplateView
-
-from constance import config
 from seahub.settings import ENABLE_SIGNUP, REGISTRATION_SEND_MAIL
 
 class DirectTemplateView(TemplateView):

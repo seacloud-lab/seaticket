@@ -11,7 +11,6 @@ from django.utils import translation
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from constance import config
 from seahub.constants import DEFAULT_ADMIN
 from seahub.profile.models import Profile
 from seahub.role_permissions.models import AdminRole

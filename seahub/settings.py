@@ -193,8 +193,6 @@ INSTALLED_APPS = [
     'captcha',
     'compressor',
     'statici18n',
-    'constance',
-    'constance.backends.database',
     'post_office',
     'webpack_loader',
     'pwa',
@@ -219,11 +217,6 @@ INSTALLED_APPS = [
     'seahub.sysadmin_extra',
     'seahub.notifications'
 ]
-
-# Enable or disable constance(web settings).
-ENABLE_SETTINGS_VIA_WEB = True
-CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
-CONSTANCE_DATABASE_CACHE_BACKEND = 'default'
 
 AUTHENTICATION_BACKENDS = (
     'seahub.base.accounts.AuthBackend',
@@ -645,8 +638,6 @@ PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
 
 # If False, the configuration will always be read from settings.py instead of from the database
-CONSTANCE_ENABLED = True
-
 d = os.path.dirname
 
 # custom navigation settings
@@ -808,34 +799,6 @@ sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
 IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
-
-CONSTANCE_CONFIG = {
-    'SEAQA_WEB_SERVICE_URL': (SEAQA_WEB_SERVICE_URL, ''),
-    'SERVICE_URL': (SERVICE_URL, ''),
-
-    'ENABLE_SIGNUP': (ENABLE_SIGNUP, ''),
-    'ACTIVATE_AFTER_REGISTRATION': (ACTIVATE_AFTER_REGISTRATION, ''),
-    'REGISTRATION_SEND_MAIL': (REGISTRATION_SEND_MAIL, ''),
-    'LOGIN_REMEMBER_DAYS': (LOGIN_REMEMBER_DAYS, ''),
-    'LOGIN_ATTEMPT_LIMIT': (LOGIN_ATTEMPT_LIMIT, ''),
-    'FREEZE_USER_ON_LOGIN_FAILED': (FREEZE_USER_ON_LOGIN_FAILED, ''),
-
-    'FORCE_PASSWORD_CHANGE': (FORCE_PASSWORD_CHANGE, ''),
-
-    'USER_STRONG_PASSWORD_REQUIRED': (USER_STRONG_PASSWORD_REQUIRED, ''),
-    'USER_PASSWORD_MIN_LENGTH': (USER_PASSWORD_MIN_LENGTH, ''),
-    'USER_PASSWORD_STRENGTH_LEVEL': (USER_PASSWORD_STRENGTH_LEVEL, ''),
-
-    'ENABLE_TWO_FACTOR_AUTH': (ENABLE_TWO_FACTOR_AUTH, ''),
-
-    'TEXT_PREVIEW_EXT': (TEXT_PREVIEW_EXT, ''),
-
-    'SITE_NAME': (SITE_NAME, ''),
-    'SITE_TITLE': (SITE_TITLE, ''),
-
-    'ENABLE_BRANDING_CSS': (ENABLE_BRANDING_CSS, ''),
-    'CUSTOM_CSS': ('', ''),
-}
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
 # then add 'seahub.auth.middleware.SeafileRemoteUserMiddleware' and

@@ -1,6 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # encoding: utf-8
-from constance import config
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 from seahub.two_factor.views.login import (
