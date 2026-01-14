@@ -39,7 +39,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
 
-  const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
+  const { typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
   const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
@@ -298,7 +298,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [projectUuid, ticketID]);
 
   useEffect(() => {
-    if (isLoading || isMetadataLoading || !ticket) return;
+    if (isLoading || !ticket) return;
     const ticketDom = ticketRef.current;
     const handleResize = () => {
       if (!ticketDom) return;
@@ -310,7 +310,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     return () => {
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
-  }, [isLoading, isMetadataLoading, ticket]);
+  }, [isLoading, ticket]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -327,7 +327,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     };
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
   const { id, state, title, creator, comments = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
@@ -425,7 +425,6 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             id="tags-editor-popover"
             isReadonly={!editable}
             value={tags}
-            isLoading={isMetadataLoading}
             tagsData={tagsData}
             createTag={createTag}
             onChange={onTagsChange}

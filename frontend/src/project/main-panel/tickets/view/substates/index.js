@@ -11,7 +11,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllSubstates = ({ projectUuid, permission }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoading: isMetadataLoading, statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
+  const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -218,7 +218,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>

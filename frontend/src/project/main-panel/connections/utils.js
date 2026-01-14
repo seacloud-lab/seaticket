@@ -2,6 +2,7 @@ import { mediaUrl, projectName, server, workspaceID } from '@/constants';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { isString } from '@/utils/type-detection';
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;
@@ -66,7 +67,7 @@ export const isConnectionRecordsView = (page) => {
 };
 
 // Format data according to different connection types,site and seafile only have one detail content
-export const initConnectionRecordDetail = ({
+export const initConnectionResourceDetails = (type, {
   title,
   modified_time,
   content,
@@ -75,16 +76,15 @@ export const initConnectionRecordDetail = ({
   comments,
   replies,
   emails,
-  connection_type
 }) => {
-  if (connection_type === CONNECTION_TYPE.SITE || connection_type === CONNECTION_TYPE.SEAFILE) {
+  if (type === CONNECTION_TYPE.SITE || type === CONNECTION_TYPE.SEAFILE) {
     return {
       title: title,
       time: modified_time,
       details: content
     };
   }
-  if (connection_type === CONNECTION_TYPE.GITHUB_ISSUE) {
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     const mainPost = {
       author: author,
       time: created_time,
@@ -100,7 +100,7 @@ export const initConnectionRecordDetail = ({
       details: [mainPost, ...initComments]
     };
   }
-  if (connection_type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+  if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     return {
       title,
       details: Array.isArray(replies) && replies.length > 0 ? replies.map(detail => ({
@@ -110,7 +110,7 @@ export const initConnectionRecordDetail = ({
       })) : [],
     };
   }
-  if (connection_type === CONNECTION_TYPE.EMAIL) {
+  if (type === CONNECTION_TYPE.EMAIL) {
     return {
       title,
       details: Array.isArray(emails) && emails.length > 0 ? emails.map(detail => ({
@@ -135,4 +135,17 @@ export const getInfoByEmailFrom = (emailFrom) => {
 export const generatorConnectionAssetURLPrefix = (projectUuid, connectionId) => {
   const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connectionId}/path/`;
   return assetURLPrefix;
+};
+
+export const initConnectionStatus = (status = '') => {
+  if (!status) return {};
+  let validStatus = status;
+  if (status && isString(status)) {
+    try {
+      validStatus = JSON.parse(status);
+    } catch {
+      validStatus = {};
+    }
+  }
+  return validStatus;
 };

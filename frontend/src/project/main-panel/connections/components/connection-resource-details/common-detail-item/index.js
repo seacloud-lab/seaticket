@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { CustomizeMarkdownViewer } from '@/components';
 import { mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import { CONNECTION_TYPE } from '../../../../constants';
+import { CONNECTION_TYPE } from '../../../constants';
 
 import './index.css';
 
@@ -12,14 +12,14 @@ const CommonDetailItem = ({ type, detail }) => {
   const renderContentByType = useCallback((content) => {
     if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return (
-        <div className="sea-qa-row-detail-item-content" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="sea-ticket-resource-detail-item-content" dangerouslySetInnerHTML={{ __html: content }} />
       );
     }
     return (<CustomizeMarkdownViewer value={content} showTOC={false} />);
   }, [type]);
 
   return (
-    <div className="sea-qa-row-detail-item">
+    <div className="sea-ticket-resource-detail-item">
       <div className="author-info-wrapper">
         <div className="author-info-left">
           <div className="author-avatar">

@@ -17,6 +17,13 @@ export const isNumber = (number) => (number || number === 0) && getType(number) 
 export const isObject = (object) => object && getType(object) === 'Object';
 
 /**
+ * Check whether is string
+ * @param {string} string
+ * @returns boolean
+ */
+export const isString = (string) => string && getType(string) === 'String';
+
+/**
  * Check whether is function
  * @param {function} function
  * @returns boolean

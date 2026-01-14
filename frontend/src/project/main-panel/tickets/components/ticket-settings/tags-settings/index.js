@@ -16,7 +16,7 @@ const TagsSettings = ({
   isReadonly,
   value = [],
   className = 'mb-4',
-  isLoading,
+  isLoading = false,
   tagsData,
   createTag,
   onChange,

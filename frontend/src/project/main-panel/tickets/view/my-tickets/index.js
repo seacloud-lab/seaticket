@@ -28,8 +28,7 @@ const viewTools = [
 const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { togglePageSlugId, viewID, toggleView, isLoading } = useTicketsPage();
-  const { tagsData, createTag, typesData, createType, substatesData, createSubstate,
-    isLoading: isMetadataLoading } = useMetadata();
+  const { tagsData, createTag, typesData, createType, substatesData, createSubstate } = useMetadata();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
   const { updateAttachments } = useAIChatTools();
 
@@ -224,7 +223,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     }
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata

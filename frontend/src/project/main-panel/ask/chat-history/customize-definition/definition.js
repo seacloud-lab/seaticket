@@ -3,7 +3,6 @@ import classnames from 'classnames';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import dayjs from 'dayjs';
 import { gettext } from '@/constants';
-import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
 import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';
@@ -20,17 +19,12 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
   }, [element, sources]);
 
   const handleClick = useCallback((event) => {
-    const { type } = source;
-    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type)) {
-      openDefinitionRecord && openDefinitionRecord(event, source);
-      return;
-    }
-    onClick && onClick(event);
+    openDefinitionRecord && openDefinitionRecord(event, source);
   }, [source, onClick, openDefinitionRecord]);
 
   if (!element) return null;
 
-  const { identifier, icon, connection_name, content, mtime, score } = source;
+  const { identifier, icon, category_name, content, mtime, score } = source;
 
   const identifierIndex = identifier - 1;
 
@@ -44,13 +38,13 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
       <div className="sea-ai-chat-customize-definition-simple-info">
         <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-score">
-          <div className="sea-ai-chat-customize-definition-title text-truncate">{connection_name}</div>
+          <div className="sea-ai-chat-customize-definition-title text-truncate">{category_name}</div>
           {isShowScore && (
             <div className="sea-ai-chat-customize-definition-score">{score}</div>
           )}
         </div>
         <div className="sea-ai-chat-customize-definition-avatar">
-          <img src={icon} alt={connection_name} />
+          <img src={icon} alt={''} />
         </div>
       </div>
       {(mtime) && (

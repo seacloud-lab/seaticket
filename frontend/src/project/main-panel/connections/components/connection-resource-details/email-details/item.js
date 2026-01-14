@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gettext, mediaUrl } from '@/constants';
 import { CustomizeMarkdownViewer } from '@/components';
-import DateFormatter from '../../../cell-formatter/date-formatter';
-import { getInfoByEmailFrom } from '../../../../utils';
+import DateFormatter from '../../cell-formatter/date-formatter';
+import { getInfoByEmailFrom } from '../../../utils';
 import HTMLContentWrapper from './html-content';
 
 import './index.css';
@@ -83,7 +83,7 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
 
   if (!isExpanded) {
     return (
-      <div className="sea-qa-connection-email-record-details collapsed" onClick={openExpanded}>
+      <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>
         </div>
@@ -102,7 +102,7 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
   }
 
   return (
-    <div className="sea-qa-connection-email-record-details expanded">
+    <div className="sea-ticket-connection-email-record-details expanded">
       <div className="email-header" onClick={() => setIsExpanded(false)}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>

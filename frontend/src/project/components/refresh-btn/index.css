@@ -1,0 +1,11 @@
+.sea-ticket-project-refresh-btn {
+  display: inline-flex;
+  height: 24px;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.sea-ticket-project-refresh-btn .sea-qa-icon-svg-refresh {
+  margin-top: 0px;
+  color: #666 !important;
+}

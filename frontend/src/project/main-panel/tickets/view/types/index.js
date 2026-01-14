@@ -10,7 +10,7 @@ import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTypes = ({ projectUuid, permission }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoading: isMetadataLoading, typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
+  const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -199,8 +199,9 @@ const AllTypes = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
+    if (!isLoading) return;
     loadTypes(() => setIsLoading(false));
-  }, []);
+  }, [isLoading, loadTypes]);
 
   useEffect(() => {
     const unsubscribeNewType = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TYPE, () => {
@@ -211,7 +212,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>

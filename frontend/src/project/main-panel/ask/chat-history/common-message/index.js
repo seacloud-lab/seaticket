@@ -8,12 +8,14 @@ import ThoughtProcess from '../thought-process';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
 import CustomizeLink from '../customize-link';
-import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
-import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
 import { gettext } from '@/constants';
-import Attachments from '../attachments';
+import { Attachments } from '../../components';
+import { getResourceIconURL, getResourceURL } from '@/project/utils';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
 
 import './index.css';
 
@@ -21,21 +23,11 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
-  const [isShowConnectionRecord, setIsShowConnectionRecord] = useState(false);
-  const [currentConnectionRecord, setCurrentConnectionRecord] = useState(null);
-  const [currentConnection, setCurrentConnection] = useState(null);
+  const [isShowResourceDetails, setIsShowResourceDetails] = useState(false);
+  const [resource, setResource] = useState(null);
   const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
 
-  const columns = useMemo(() => {
-    return [
-      { key: 'filename', name: 'filename' },
-      { key: 'path', name: 'path' },
-      { key: 'title', name: 'title' },
-      { key: 'url', name: 'url' },
-      { key: 'slug', name: 'slug' },
-      { key: 'topic_id', name: 'topic_id' },
-    ];
-  }, []);
+  const { connections } = useConnections();
 
   const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
     if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
@@ -44,31 +36,35 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
-      const {
-        type, connection_name, url, ai_summary, bumped_at, mtime, updated_at, score, connection_id, _id, title,
-        filename, path, slug, topic_id,
-      } = source;
-      let validURL = url || '';
-      if (!validURL) {
-        validURL = location.origin + '/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connection_id + '/';
+      const { type, ai_summary, score, connection_id, _id, title } = source;
+      const url = getResourceURL(type, _id, { url: source?.url, workspaceID, projectName, connectionID: connection_id });
+      const urlObject = new URL(url);
+      let category_name = '';
+      if (type === TICKET_TYPE) {
+        category_name = gettext('Tickets');
+      } else if (type === KNOWLEDGE_BASE_TYPE) {
+        category_name = gettext('Knowledge base');
+      } else {
+        const connection = connections.find(c => c.id === connection_id);
+        category_name = connection?.name || gettext('Deleted connection');
       }
-      const urlObject = new URL(validURL);
 
       return {
+        key: `${type}_${connection_id || ''}_${_id}`,
+        _id,
         type,
-        connection_id,
-        connection_record_id: _id,
-        icon: getConnectionIcon(type),
-        connection_name: connection_name,
+        icon: getResourceIconURL(type),
         url: urlObject.href,
+        connection_id,
+        category_name,
         title: title.replaceAll('"', '\''),
         content: ai_summary,
-        mtime: bumped_at || mtime || updated_at || '',
+        mtime: source?.bumped_at || source?.mtime || source?.updated_at || source?.modified_time || '',
         score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
-        filename,
-        path,
-        slug,
-        topic_id,
+        filename: source.filename,
+        path: source.path,
+        slug: source.slug,
+        topic_id: source?.topic_id,
       };
     });
     let mdFiles = [];
@@ -125,14 +121,15 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
           const referenceIndex = sources.length;
           sources.push({
+            key: `unknown_${referenceIndex}`,
             title: url,
             url: url,
             connection_id: `unknown_${referenceIndex}`,
             _id: referenceIndex,
             type: 'unknown',
             content: validLinkReference + '',
-            icon: getConnectionIcon('unknown'),
-            connection_name: gettext('Unknown')
+            icon: getResourceIconURL('unknown'),
+            category_name: gettext('Unknown')
           });
           return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
         })
@@ -156,23 +153,8 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
   }, [message, projectName, workspaceID, chatId]);
 
   const handleConnectionRecord = useCallback((record) => {
-    setCurrentConnectionRecord({
-      _id: record.connection_record_id,
-      title: record.title,
-      connection_id: record.connection_id,
-      url: record.url,
-      filename: record.filename,
-      path: record.path,
-      slug: record.slug,
-      topic_id: record.topic_id,
-    });
-    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(record.type)) {
-      setCurrentConnection({ type: record.type, id: record.connection_id });
-      setIsShowConnectionRecord(true);
-      return;
-    }
-    setIsShowConnectionRecord(false);
-    setIsShowLinkVerifiedDialog(true);
+    setResource(record);
+    setIsShowResourceDetails(true);
   }, []);
 
   const openConnectionRecord = useCallback((event, record) => {
@@ -180,8 +162,8 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
   }, [handleConnectionRecord]);
 
   const closeConnectionRecord = useCallback(() => {
-    setCurrentConnectionRecord(null);
-    setIsShowConnectionRecord(false);
+    setResource(null);
+    setIsShowResourceDetails(false);
   }, []);
 
   const options = useMemo(() => {
@@ -207,8 +189,8 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     }
   }, []);
 
-  const switchRow = useCallback((step) => {
-    const index = sources.findIndex(r => r.connection_record_id === currentConnectionRecord._id && r.connection_id === currentConnectionRecord.connection_id);
+  const switchResource = useCallback((step) => {
+    const index = sources.findIndex(r => r.key === resource.key);
     if (index === -1) return;
 
     let newIndex = index + step;
@@ -220,7 +202,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     }
     const currentRow = sources[newIndex];
     handleConnectionRecord(currentRow);
-  }, [sources, currentConnectionRecord, handleConnectionRecord]);
+  }, [sources, resource, handleConnectionRecord]);
 
   useImperativeHandle(ref, () => ({
 
@@ -234,7 +216,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
 
   return (
     <>
-      <Attachments value={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} />
+      <Attachments attachments={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} projectUuid={projectUuid} />
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} settings={settings} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
@@ -250,18 +232,17 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           </div>
         )}
       </div>
-      {isShowConnectionRecord && (
-        <RowDetailsDialog
+      {isShowResourceDetails && (
+        <ResourceDetailsDialog
           projectUuid={projectUuid}
-          connection={currentConnection}
-          row={currentConnectionRecord}
-          columns={columns}
-          switchRow={switchRow}
+          resource={resource}
+          isShowIcon={true}
+          switchResource={sources.length > 1 ? switchResource : null}
           onToggle={closeConnectionRecord}
         />
       )}
       {isShowLinkVerifiedDialog && (
-        <LinkVerifiedDialog link={currentConnectionRecord.url} onToggle={() => setIsShowLinkVerifiedDialog(false)} />
+        <LinkVerifiedDialog link={resource.url} onToggle={() => setIsShowLinkVerifiedDialog(false)} />
       )}
     </>
   );

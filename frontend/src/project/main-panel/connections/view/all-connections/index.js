@@ -80,7 +80,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   }, []);
 
   const handleExpandRow = useCallback((row) => {
-    updateConnectionInfo && updateConnectionInfo({ name: row.name, type: row.type });
+    updateConnectionInfo && updateConnectionInfo({ name: row.name, type: row.type, id: row.id });
     togglePageSlugId && togglePageSlugId(row.id);
     modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, String(row?.id)]);
   }, [togglePageSlugId, modifyLocalBar]);

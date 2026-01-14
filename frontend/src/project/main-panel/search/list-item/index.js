@@ -3,11 +3,10 @@ import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { CONNECTION_TYPES, CONNECTION_TYPE } from '../../connections/constants';
-import { getConnectionIcon } from '../../connections/utils';
 import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
-import { mediaUrl } from '@/constants';
 import CustomModalHeader from '@/components/modal-header/index';
 import IconButton from '@/components/icon-button/index';
+import { getResourceIconURL } from '@/project/utils';
 
 import './index.css';
 
@@ -60,16 +59,8 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
     openOriginalURL();
   }, [openOriginalURL]);
 
-  let iconSrc = '';
+  const iconSrc = getResourceIconURL(type);
   let altText = '';
-
-  if (type === 'knowledge_base') {
-    iconSrc = `${mediaUrl}img/knowledge-base.png`;
-  } else if (type === 'ticket') {
-    iconSrc = `${mediaUrl}img/ticket.png`;
-  } else {
-    iconSrc = getConnectionIcon(type);
-  }
 
   if (type === 'knowledge_base') {
     altText = 'Knowledge Base';
