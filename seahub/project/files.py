@@ -20,8 +20,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    upload_file_to_tmp_dir, get_file_from_s3, delete_file_from_s3, gen_tmp_upload_file_path
+from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.utils.storage import upload_file_to_tmp_dir, get_file_from_s3, delete_file_from_s3, gen_tmp_upload_file_path
 from seahub.project.constants import IMAGE_EXTS
 
 

@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.project.models import ProjectConnections
-from seahub.project.utils import rank_related_issues
+from seahub.utils.ai_client import rank_related_issues
 from seahub.seadb_models.utils import fetch_tickets_batch, fetch_issue_type_connection_records_batch
 
 

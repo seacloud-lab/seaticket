@@ -24,10 +24,10 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
-from seahub.project.utils import check_project_admin_permission, add_connection_sync_task, \
-    manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
-    url_to_filename, update_discourse_topic_by_webhook, FileNotFound
+from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename
+from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
+from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
+from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \

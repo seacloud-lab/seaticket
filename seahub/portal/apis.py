@@ -14,7 +14,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import replace_file_url_in_content, upload_files_to_s3, check_same_org_permission
+from seahub.project.utils import replace_file_url_in_content, check_same_org_permission
+from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
 from seahub.seadb_models.utils import list_my_tickets

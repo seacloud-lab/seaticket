@@ -15,8 +15,8 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.utils import check_project_permission, get_current_table_metadata, upload_files_to_s3, \
-    replace_file_url_in_content
+from seahub.project.utils import check_project_permission, get_current_table_metadata, replace_file_url_in_content
+from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
