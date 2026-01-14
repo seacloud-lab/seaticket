@@ -112,10 +112,6 @@
   width: 65%;
 }
 
-.notification-user-detail img {
-  margin-top: 3px;
-}
-
 .notification-user-name {
   text-overflow: ellipsis;
   overflow: hidden;

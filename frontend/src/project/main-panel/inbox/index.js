@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import InboxNotificationItem from '@/project/main-panel/inbox/components/inbox-notification-item';
+import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
-import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 import { gettext, mediaUrl } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
@@ -39,6 +39,10 @@ const Inbox = ({ toggleBar }) => {
       document.removeEventListener('click', onHandleClick);
     };
   }, [onHandleClick]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   return (
     <div className="sea-qa-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>

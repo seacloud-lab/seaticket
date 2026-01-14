@@ -12,6 +12,7 @@ import { Icon, IconButton, toaster } from '@/components';
 import classNames from 'classnames';
 import ResizeBar from '@/components/resize-bar';
 import eventBus from '@/utils/event-bus';
+import AllInboxNav from './components/all-inbox-nav';
 
 import './side-panel.css';
 
@@ -254,6 +255,10 @@ class SidePanel extends React.Component {
                 >
                   {!this.state.isDataLoading && this.renderWorkspaceItems()}
                 </div>
+                <AllInboxNav
+                  isOpenGroupExpanded={this.props.isOpenGroupExpanded}
+                  onTabClick={(event) => this.onTabClick('project/inbox', event)}
+                />
                 <div
                   className={`nav-item sea-qa-nav-item projects-nav ${this.props.isOpenGroupExpanded ? 'mt-3' : ''} ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'sea-qa-bg-grey' : ''}`}
                   onClick={this.onTabClick.bind(this, 'project/trash')}

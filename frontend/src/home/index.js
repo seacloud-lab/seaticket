@@ -8,6 +8,7 @@ import Header from './header';
 import SidePanel from './side-panel';
 import { Utils } from '../utils/utils';
 import MainPanel from './main-panel';
+import { NotificationProvider } from '@/components/common/notification/hooks/notification';
 
 import '../css/layout.css';
 import '../css/side-panel.css';
@@ -85,31 +86,33 @@ class Home extends React.Component {
     let { isSidePanelClosed, currentTab, isOpenGroupExpanded, isUpdateSidePanelGroups } = this.state;
     return (
       <Fragment>
-        {this.isDesktop && (<Header currentTab={currentTab} />)}
-        <div id="main">
-          {currentTab && (
-            <SidePanel
-              currentTab={currentTab}
-              isSidePanelClosed={isSidePanelClosed}
-              isUpdateSidePanelGroups={isUpdateSidePanelGroups}
-              isOpenGroupExpanded={isOpenGroupExpanded}
-              onCloseSidePanel={this.toggleSidePanel}
-              onTabClick={this.onTabClick}
-              updateSidePanelGroups={this.updateSidePanelGroups}
-              toggleGroupExpanded={this.toggleGroupExpanded}
+        <NotificationProvider>
+          {this.isDesktop && (<Header currentTab={currentTab} />)}
+          <div id="main">
+            {currentTab && (
+              <SidePanel
+                currentTab={currentTab}
+                isSidePanelClosed={isSidePanelClosed}
+                isUpdateSidePanelGroups={isUpdateSidePanelGroups}
+                isOpenGroupExpanded={isOpenGroupExpanded}
+                onCloseSidePanel={this.toggleSidePanel}
+                onTabClick={this.onTabClick}
+                updateSidePanelGroups={this.updateSidePanelGroups}
+                toggleGroupExpanded={this.toggleGroupExpanded}
+                isDesktop={this.isDesktop}
+              />
+            )}
+            <MainPanel
               isDesktop={this.isDesktop}
+              currentTab={currentTab}
+              onShowSidePanel={this.toggleSidePanel}
+              updateSidePanelGroups={this.updateSidePanelGroups}
             />
-          )}
-          <MainPanel
-            isDesktop={this.isDesktop}
-            currentTab={currentTab}
-            onShowSidePanel={this.toggleSidePanel}
-            updateSidePanelGroups={this.updateSidePanelGroups}
-          />
-          <MediaQuery query="(max-width: 767.8px)">
-            <Modal isOpen={!isSidePanelClosed} toggle={this.toggleSidePanel} contentClassName="d-none"></Modal>
-          </MediaQuery>
-        </div>
+            <MediaQuery query="(max-width: 767.8px)">
+              <Modal isOpen={!isSidePanelClosed} toggle={this.toggleSidePanel} contentClassName="d-none"></Modal>
+            </MediaQuery>
+          </div>
+        </NotificationProvider>
       </Fragment>
     );
   }

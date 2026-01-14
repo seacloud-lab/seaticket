@@ -26,10 +26,11 @@
 .inbox-notification-item .notification-header-info {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   flex: 1;
   margin-left: 4px;
   margin-right: 20px;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .inbox-notification-item .notification-user-detail {
@@ -41,6 +42,10 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
+}
+
+.inbox-notification-item .notification-user-detail .project-icon {
+  font-size: 24px;
 }
 
 .inbox-notification-item .notification-user-detail .notification-user-name {
@@ -69,8 +74,20 @@
   height: 8px;
   right: 8px;
   border-radius: 50%;
-  background: #FC6440;
+  background-color: #FC6440;
   position: absolute;
+}
+
+.inbox-notification-item .project-inbox-count {
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background-color: #fc6440;
+  font-size: 10px;
+  color: #fff;
+  text-align: center;
 }
 
 .inbox-notification-item .notification-content-wrapper {

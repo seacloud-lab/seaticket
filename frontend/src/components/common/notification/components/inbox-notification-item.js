@@ -1,11 +1,13 @@
 import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import classnames from 'classnames';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
 import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
 import { removeTextMark } from '@/utils/remove-text-mark';
+import { DEFAULT_COLOR } from '@/constants';
 
 import './inbox-notification-item.css';
 
@@ -18,6 +20,8 @@ const propTypes = {
 
 const MSG_TYPE_TICKET_ASSIGNEE_ADDED = 'ticket_assignee_added';
 const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
+const MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group';
+const MSG_TYPE_PROJECT = 'project_notifications';
 
 dayjs.extend(relativeTime);
 
@@ -43,16 +47,26 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       const newCommentContent = removeTextMark(comment_content, false);
       const escapedContent = Utils.HTMLescape(newCommentContent);
 
-      let ticketUrl = null;
+      let url = null;
       if (workspace_id && project_name && ticket_id !== undefined && ticket_id !== null) {
-        ticketUrl = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
+        url = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
       }
-      return { username, title: ticketTitle, ticketUrl, commentContent: escapedContent };
+      return { username, title: ticketTitle, url, commentContent: escapedContent };
     }
-    return { username: null, title: null, ticketUrl: null, commentContent: '' };
+    if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
+      // group name does not support special characters
+      const url = siteRoot + 'profile/' + encodeURIComponent(detail.group_staff_email) + '/';
+      const username = detail.group_staff_name;
+      const groupName = detail.group_name;
+      const userLink = '<a class="inbox-text-orange" href=' + url + '>' + Utils.HTMLescape(username) + '</a>';
+      const title = gettext('User {user_link} has added you to %a').replace('{user_link}', userLink).replace('%a', groupName);
+      return { username, title };
+    }
+
+    return { username: null, title: null, url: null, commentContent: '' };
   }, [noticeItem]);
 
-  const { username, title, ticketUrl, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
+  const { username, title, url, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
 
   const handleMarkNotificationRead = useCallback((e) => {
     e.preventDefault();
@@ -98,16 +112,35 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         </>
       );
     }
+    if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
+      return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
+    }
     return null;
   }, [noticeItem, title, commentContent]);
 
-  return (
-    <div
-      className="inbox-notification-item"
-      onClick={() => handleNoticeItemClick()}
-      role="button"
-      style={{ cursor: ticketUrl ? 'pointer' : 'default' }}
-    >
+  const renderHead = useCallback(() => {
+    const noticeType = noticeItem.msg_type;
+    if (noticeType === MSG_TYPE_PROJECT) {
+      const iconClass = noticeItem.project_icon || 'icon-worksheet';
+      const iconColor = noticeItem.project_color || DEFAULT_COLOR;
+      return (
+        <div className="inbox-notification-item-header">
+          <div className="notification-header-info">
+            <div className="notification-user-detail">
+              <i className={classnames('notification-user-avatar project-icon', iconClass)} style={{ color: iconColor }} />
+              <span className="notification-user-name">{noticeItem.project_name}</span>
+            </div>
+          </div>
+          {!noticeItem.seen && (
+            <span className="notification-point project-inbox-count">
+              {noticeItem.unseen_count}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    return (
       <div className="inbox-notification-item-header">
         <div className="notification-header-info">
           <div className="notification-user-detail">
@@ -120,6 +153,17 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           <span className="notification-point" onClick={handleMarkNotificationRead} />
         )}
       </div>
+    );
+  }, [noticeItem]);
+
+  return (
+    <div
+      className="inbox-notification-item"
+      onClick={() => handleNoticeItemClick()}
+      role="button"
+      style={{ cursor: url ? 'pointer' : 'default' }}
+    >
+      {renderHead()}
       {renderContent()}
     </div>
   );

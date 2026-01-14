@@ -13,6 +13,7 @@
 }
 
 .main-panel {
+  position: relative;
   width: calc(100% - 240px);
   overflow-x: hidden;
   display: flex;

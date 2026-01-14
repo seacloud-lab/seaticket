@@ -39,10 +39,12 @@ class NotificationAPI {
     return this.req.get(url, { params });
   }
 
-  listAllNotifications(page = 1, perPage = 25) {
+  listAllNotifications(page = 1, perPage = 20, options = {}) {
     const url = this.server + '/api/v1/notifications/all/';
     const params = { page, per_page: perPage };
-    return this.req.get(url, { params });
+    const config = { params };
+    if (options.signal) config.signal = options.signal;
+    return this.req.get(url, config);
   }
 
   listProjectNotifications(projectUuid, page = 1, perPage = 20, options = {}) {

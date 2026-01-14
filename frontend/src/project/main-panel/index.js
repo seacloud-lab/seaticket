@@ -9,7 +9,7 @@ import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Inbox from './inbox';
-import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 import { useMetadata } from './tickets/hooks';
 import { useConnections } from './connections/hooks';
 import { CenteredLoading } from '@/components';
