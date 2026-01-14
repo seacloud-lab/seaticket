@@ -34,10 +34,6 @@ class MainPanel extends React.Component {
     eventBus.subscribe('home-side-panel-width', this.handleResize);
   }
 
-  componentWillUnmount() {
-    eventBus.unsubscribe('home-side-panel-width', this.handleResize);
-  }
-
   handleResize = (sideWidth) => {
     const resizeBarWidth = 6;
     this.mainPanelRef.current.style.width = `calc(100% - ${resizeBarWidth}px - ${sideWidth}px)`;
