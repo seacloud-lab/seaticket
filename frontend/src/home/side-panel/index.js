@@ -10,6 +10,10 @@ import homeAPI from '../api';
 import GroupItem from './group-item';
 import { Icon, IconButton, toaster } from '@/components';
 import classNames from 'classnames';
+import ResizeBar from '@/components/resize-bar';
+import eventBus from '@/utils/event-bus';
+
+import './side-panel.css';
 
 const propTypes = {
   isUpdateSidePanelGroups: PropTypes.bool,
@@ -24,6 +28,7 @@ const propTypes = {
 };
 
 const GROUP_ITEM_HEIGHT = 40;
+const INIT_SIDEBAR_WIDTH = 240;
 
 class SidePanel extends React.Component {
 
@@ -38,10 +43,20 @@ class SidePanel extends React.Component {
     this.groupsHeight = 0;
     this.moreHeight = 1 * GROUP_ITEM_HEIGHT; // 1 is data sync
     this.isDesktop = Utils.isDesktop();
+    this.sidePanelRef = React.createRef();
   }
+
+  onResize = (sidePanelWidth) => {
+    eventBus.dispatch('home-side-panel-width', sidePanelWidth);
+    localStorage.setItem('home-side-panel-width', sidePanelWidth);
+    this.sidePanelRef.current.style.width = `${sidePanelWidth}px`;
+  };
 
   componentDidMount() {
     this.initTableData();
+    const sidePanelWidth = parseFloat(localStorage.getItem('home-side-panel-width') || INIT_SIDEBAR_WIDTH);
+    eventBus.dispatch('home-side-panel-width', sidePanelWidth);
+    this.sidePanelRef.current.style.width = `${sidePanelWidth}px`;
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -188,6 +203,7 @@ class SidePanel extends React.Component {
           aria-label={gettext('Side panel')}
           role="navigation"
           tabIndex={0}
+          ref={this.sidePanelRef}
         >
           {!this.props.isDesktop &&
             <header className="side-panel-north sea-qa-home-header">
@@ -255,6 +271,7 @@ class SidePanel extends React.Component {
             </nav>
           </div>
         </div>
+        <ResizeBar min={200} max={360} onResize={this.onResize} className="home-page-resize-bar" />
       </DndProvider>
     );
   }

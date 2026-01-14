@@ -5,6 +5,17 @@
   min-height: 0;
 }
 
+.org-admin .side-panel,
+.sys-admin .side-panel {
+  flex: 0 0 22%;
+}
+
+.org-admin .main-panel,
+.sys-admin .main-panel {
+  width: 100%;
+  flex: 1 0 78%;
+}
+
 .org-admin .side-nav,
 .sys-admin .side-nav {
   background-color: #f7f7f5;

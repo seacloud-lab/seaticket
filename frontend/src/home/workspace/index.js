@@ -16,6 +16,7 @@ import Body from './body';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
 import ProjectAPITokenDialog from '../../components/dialog/project-api-token-dialog';
+import eventBus from '@/utils/event-bus';
 
 const gettext = window.gettext;
 const username = window.app.pageOptions.username;
@@ -32,6 +33,7 @@ const propTypes = {
 };
 
 const PROJECT_ITEM_DEFAULT_WIDTH = 148;
+const INIT_SIDEBAR_WIDTH = 240;
 
 class Workspace extends React.Component {
 
@@ -65,9 +67,11 @@ class Workspace extends React.Component {
     };
     this.isDropdownOpen = false;
     this.isDesktop = Utils.isDesktop();
+    this.sidePanelWidth = INIT_SIDEBAR_WIDTH;
   }
 
   componentDidMount() {
+    eventBus.subscribe('home-side-panel-width', this.handleResize);
     window.addEventListener('resize', this.onResize);
     const { workspace } = this.props;
     const { projectList } = this.getSortedWorkspaceContent(workspace);
@@ -78,8 +82,14 @@ class Workspace extends React.Component {
   }
 
   componentWillUnmount() {
+    eventBus.unsubscribe('home-side-panel-width', this.handleResize);
     window.removeEventListener('resize', this.onResize);
   }
+
+  handleResize = (sidePanelWidth) => {
+    this.sidePanelWidth = sidePanelWidth;
+    this.onResize();
+  };
 
   setWorkspaceAdminState = (workspace) => {
     let isPersonal = workspace.type === 'personal';
@@ -129,7 +139,8 @@ class Workspace extends React.Component {
     } else {
       const { clientWidth: pageClientWidth, offsetWidth: pageOffsetWidth } = this.curViewContent.parentNode;
       const scrollBarWidth = pageOffsetWidth - pageClientWidth;
-      const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 24 * 3 + 16 - scrollBarWidth);
+      const resizeBarWidth = 6;
+      const projectListWidth = parseInt(window.innerWidth - this.sidePanelWidth - resizeBarWidth - 24 * 3 + 16 - scrollBarWidth);
       const numberOfItemsPerRow = Math.floor(projectListWidth / 164);
       const remainingWidth = projectListWidth % 164;
       let projectItemWidth;
@@ -145,7 +156,7 @@ class Workspace extends React.Component {
   getProjectClassAndStyle = (index, totalCount) => {
     const { projectItemWidth, numberOfItemsPerRow } = this.state;
 
-    // 0.22: percentage of side panel; 24: cur-view-content's padding left/right;
+    // 24: cur-view-content's padding left/right;
     let allLineProjectCount = parseInt(totalCount / numberOfItemsPerRow) * numberOfItemsPerRow;
     if (allLineProjectCount === totalCount) {
       allLineProjectCount = allLineProjectCount - numberOfItemsPerRow;

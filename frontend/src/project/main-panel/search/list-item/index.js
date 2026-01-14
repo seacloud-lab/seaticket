@@ -65,8 +65,6 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
 
   if (type === 'knowledge_base') {
     iconSrc = `${mediaUrl}img/knowledge-base.png`;
-  } else if (type === 'ticket') {
-    iconSrc = `${mediaUrl}img/ticket.png`;
   } else {
     iconSrc = getConnectionIcon(type);
   }
