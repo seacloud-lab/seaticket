@@ -8,8 +8,8 @@ import { generatorTicketURL } from './main-panel/tickets/utils';
 
 export const getResourceIconURL = (type) => {
   if (type === 'unknown') return `${mediaUrl}img/unknown.png`;
-  if (type === TICKET_TYPE) return `${mediaUrl}img/ticket.png`;
-  if (type === KNOWLEDGE_BASE_TYPE) return `${mediaUrl}img/knowledge-base.png`;
+  if (type === TICKET_TYPE) return `${mediaUrl}img/ticket.png?t=20260104`;
+  if (type === KNOWLEDGE_BASE_TYPE) return `${mediaUrl}img/knowledge-base.png?t=20260104`;
   return getConnectionIcon(type);
 };
 
