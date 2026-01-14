@@ -82,7 +82,6 @@ class Workspace extends React.Component {
   }
 
   componentWillUnmount() {
-    eventBus.unsubscribe('home-side-panel-width', this.handleResize);
     window.removeEventListener('resize', this.onResize);
   }
 
