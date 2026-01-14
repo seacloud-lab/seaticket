@@ -88,7 +88,7 @@ const Documents = () => {
                   onClick={(event) => handleToggleCurrentDocument(event, document)}
                 >
                   <span className="sea-ticket-chat-document-name text-truncate">{document.name}</span>
-                  <IconButton className="sea-ticket-chat-document-name-btn" icon="x" onClick={(event) => handleCloseDocument(event, document)} title={gettext('Close')} />
+                  <IconButton className="sea-ticket-chat-document-name-btn" icon="close" onClick={(event) => handleCloseDocument(event, document)} title={gettext('Close')} />
                 </div>
               );
             })}
