@@ -23,8 +23,7 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { togglePageSlugId, viewID, toggleView, isLoading } = useTicketsPage();
-  const { tagsData, createTag, typesData, createType, substatesData, createSubstate,
-    isLoading: isMetadataLoading } = useMetadata();
+  const { tagsData, createTag, typesData, createType, substatesData, createSubstate } = useMetadata();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
   const { updateAttachments } = useAIChatTools();
 
@@ -177,7 +176,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, chatTicketsByAI });
   }, [projectName, workspaceID, chatTicketsByAI]);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata

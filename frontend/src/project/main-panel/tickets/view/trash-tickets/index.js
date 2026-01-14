@@ -11,7 +11,7 @@ import CleanTickets from './clean-tickets';
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { toggleView, isLoading } = useTicketsPage();
-  const { tagsData, typesData, substatesData, isLoading: isMetadataLoading } = useMetadata();
+  const { tagsData, typesData, substatesData } = useMetadata();
 
   const metadataRef = useRef(null);
 
@@ -200,7 +200,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
     return list;
   }, [projectName, workspaceID]);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>
