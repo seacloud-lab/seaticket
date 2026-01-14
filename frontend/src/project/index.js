@@ -18,6 +18,7 @@ import { AnalyzeTaskProvider } from './main-panel/analyze/hooks/analyze-task';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 import userAPI from '@/api/user-api';
+import { MetadataProvider } from './main-panel/tickets/hooks';
 
 import './index.css';
 
@@ -165,14 +166,16 @@ const Project = () => {
         ) : (
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <AIChatToolsProvider >
-              <ConnectionsProvider projectUuid={projectUuid} >
-                <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
-                  <AnalyzeTaskProvider>
-                    <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                    <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-                  </AnalyzeTaskProvider>
-                </NotificationProvider>
-              </ConnectionsProvider>
+              <MetadataProvider projectUuid={projectUuid}>
+                <ConnectionsProvider projectUuid={projectUuid} >
+                  <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
+                    <AnalyzeTaskProvider>
+                      <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+                      <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+                    </AnalyzeTaskProvider>
+                  </NotificationProvider>
+                </ConnectionsProvider>
+              </MetadataProvider>
             </AIChatToolsProvider>
           </CollaboratorsProvider>
         )}

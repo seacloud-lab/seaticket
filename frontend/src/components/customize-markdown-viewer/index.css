@@ -1,0 +1,29 @@
+.longtext-preview-container .sf-slate-viewer-container {
+  overflow: hidden;
+  height: 100%;
+}
+
+.longtext-preview-container .sf-slate-viewer-scroll-container {
+  padding: 0px;
+}
+
+.longtext-preview-container .sf-slate-article-content {
+  max-width: 100%;
+}
+
+.longtext-preview-container .sf-slate-viewer-article-container {
+  flex: 1;
+  max-width: 100%;
+}
+
+.longtext-preview-container .article>div[data-slate-editor=true]>:first-child {
+  margin-top: 0px;
+}
+
+.longtext-preview-container .article {
+  padding: 16px !important;
+}
+
+.longtext-preview-container .article h2 {
+  border-bottom: none;
+}
