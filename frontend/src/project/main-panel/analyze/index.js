@@ -316,9 +316,9 @@ const Analyze = ({ title }) => {
   const handlePointClick = useCallback((record) => {
     if (record) {
       setSelectedRecord({
-        _id: selectedRecord._pk,
-        type: selectedRecord?.connection_type,
-        connection_id: selectedRecord?.connection_id,
+        _id: record._pk,
+        type: record?.connection_type,
+        connection_id: record?.connection_id,
         title: record.title,
         path: record.path,
         filename: record.filename,
@@ -435,7 +435,7 @@ const Analyze = ({ title }) => {
           projectUuid={projectUuid}
           resource={selectedRecord}
           isShowIcon={true}
-          onClose={handleCloseDetailsDialog}
+          onToggle={handleCloseDetailsDialog}
         />
       )}
     </>
