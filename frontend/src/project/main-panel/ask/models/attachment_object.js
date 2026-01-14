@@ -1,4 +1,5 @@
-import { CONNECTION_TYPE, EXTRA_SOURCES_TYPE } from '../../connections/constants';
+import { CONNECTION_TYPE } from '../../connections/constants';
+import { TICKET_TYPE } from '../../tickets/constants';
 
 class AttachmentObject {
   constructor(object) {
@@ -9,7 +10,7 @@ class AttachmentObject {
     this.connection_id = object.connection_id || '';
     this.key = `${this.type}_${this.connection_id}_${this._id}`;
     this.icon = (
-      this.type === EXTRA_SOURCES_TYPE.TICKET ||
+      this.type === TICKET_TYPE ||
       this.type === CONNECTION_TYPE.EMAIL ||
       this.type === CONNECTION_TYPE.GITHUB_ISSUE ||
       this.type === CONNECTION_TYPE.DISCOURSE_FORUM

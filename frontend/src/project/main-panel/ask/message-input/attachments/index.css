@@ -2,7 +2,8 @@
   width: 100%;
   display: flex;
   align-items: center;
-  overflow-x: auto;
-  margin-bottom: 16px;
-  gap: 8px;
+  overflow-x: auto !important;
+  margin-bottom: 16px !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important
 }

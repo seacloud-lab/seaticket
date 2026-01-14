@@ -257,3 +257,5 @@ export const TICKET_COLUMNS_WIDTH_CONFIG = {
   'modified_time': 200,
   'closed_time': 200,
 };
+
+export const TICKET_TYPE = 'ticket';

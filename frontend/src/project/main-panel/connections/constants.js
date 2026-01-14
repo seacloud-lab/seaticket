@@ -10,11 +10,6 @@ export const CONNECTION_TYPE = {
   SEAFILE: 'seafile',
 };
 
-export const EXTRA_SOURCES_TYPE = {
-  KNOWLEDGE_BASE: 'knowledge_base',
-  TICKET: 'ticket'
-}
-
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.SITE]: true,
   [CONNECTION_TYPE.SEAFILE]: true,

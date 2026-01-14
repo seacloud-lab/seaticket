@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import SeaMetadata, { useDataCache } from '@/sea-metadata';
-import RowDetailsDialog from '../../components/row-details-dialog';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
@@ -459,11 +459,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       toggleChildrenPageSlugId(row._id);
       return;
     }
-    setCurrentRow(row);
+    setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
     setIsShowRowDetailsDialog(true);
-  }, [projectUuid, connectionID, connection, toggleChildrenPageSlugId, cacheData]);
+  }, [connection, toggleChildrenPageSlugId, cacheData]);
 
-  const switchRow = useCallback((step) => {
+  const switchResource = useCallback((step) => {
     const rowsData = seaMetaDataRef.current.getOrderRows();
     const index = rowsData.findIndex(r => r._id === currentRow._id);
     if (index === -1) return;
@@ -475,20 +475,21 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (newIndex < 0) {
       newIndex = rowsData.length - 1;
     }
-    setCurrentRow(rowsData[newIndex]);
-  }, [currentRow, seaMetaDataRef]);
+    const row = rowsData[newIndex];
+    setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
+  }, [currentRow, connection, seaMetaDataRef]);
 
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
     if (connection) {
       setConnection(connection);
-      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type });
+      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type, id: connectionID });
       setLoadingConnection(false);
       return;
     }
     connectionsAPI.getConnection(projectUuid, connectionID).then(res => {
       const connection = res.data.record;
-      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type });
+      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type, id: connectionID });
       setConnection(connection);
       setLoadingConnection(false);
     }).catch(error => {
@@ -497,6 +498,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, []);
 
   if (isLoading || isLoadingConnection) return null;
+
+  console.log(currentRow);
 
   return (
     <>
@@ -515,12 +518,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         t={t}
       />
       {isShowRowDetailsDialog && (
-        <RowDetailsDialog
+        <ResourceDetailsDialog
           projectUuid={projectUuid}
-          connection={connection}
-          row={currentRow}
+          resource={currentRow}
           columns={allColumns.current}
-          switchRow={switchRow}
+          switchResource={switchResource}
           onToggle={() => setIsShowRowDetailsDialog(false)}
         />
       )}

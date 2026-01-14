@@ -66,7 +66,7 @@ export const isConnectionRecordsView = (page) => {
 };
 
 // Format data according to different connection types,site and seafile only have one detail content
-export const initConnectionRecordDetail = ({
+export const initConnectionResourceDetails = (type, {
   title,
   modified_time,
   content,
@@ -75,16 +75,15 @@ export const initConnectionRecordDetail = ({
   comments,
   replies,
   emails,
-  connection_type
 }) => {
-  if (connection_type === CONNECTION_TYPE.SITE || connection_type === CONNECTION_TYPE.SEAFILE) {
+  if (type === CONNECTION_TYPE.SITE || type === CONNECTION_TYPE.SEAFILE) {
     return {
       title: title,
       time: modified_time,
       details: content
     };
   }
-  if (connection_type === CONNECTION_TYPE.GITHUB_ISSUE) {
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     const mainPost = {
       author: author,
       time: created_time,
@@ -100,7 +99,7 @@ export const initConnectionRecordDetail = ({
       details: [mainPost, ...initComments]
     };
   }
-  if (connection_type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+  if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     return {
       title,
       details: Array.isArray(replies) && replies.length > 0 ? replies.map(detail => ({
@@ -110,7 +109,7 @@ export const initConnectionRecordDetail = ({
       })) : [],
     };
   }
-  if (connection_type === CONNECTION_TYPE.EMAIL) {
+  if (type === CONNECTION_TYPE.EMAIL) {
     return {
       title,
       details: Array.isArray(emails) && emails.length > 0 ? emails.map(detail => ({

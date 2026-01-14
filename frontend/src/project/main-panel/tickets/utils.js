@@ -10,12 +10,12 @@ import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
 import { TicketForAI } from './models';
 import { username } from '@/constants';
 
-export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
+export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
-  return `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${row._id}/`;
+  return `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
 };
 
-export const generatorRowCopyLinkTool = ({ row, workspaceID, projectName }) => {
+export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }) => {
   return {
     key: 'copy',
     icon: 'copy',
@@ -23,7 +23,7 @@ export const generatorRowCopyLinkTool = ({ row, workspaceID, projectName }) => {
     callback: (event) => {
       event && event.stopPropagation();
       event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
-      const url = generatorTicketURL({ row, workspaceID, projectName });
+      const url = generatorTicketURL({ ticket, workspaceID, projectName });
       copy(url);
       toaster.success(gettext('The ticket link has been copied'));
     },
@@ -114,7 +114,7 @@ export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectN
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
-    const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
+    const tool = generatorTicketCopyLinkTool({ ticket: row, workspaceID, projectName });
     tools.push(tool);
   }
   const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI });
