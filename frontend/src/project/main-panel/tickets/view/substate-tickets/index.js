@@ -19,7 +19,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isMetadataLoading, substatesData, typesData, tagsData } = useMetadata();
+  const { substatesData, typesData, tagsData } = useMetadata();
 
   const { updateAttachments } = useAIChatTools();
 
@@ -125,7 +125,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
     Rows: gettext('Tickets'),
   }), []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   const substate = getRowById(substatesData, childrenPageSlugId);
   if (!substate) {

@@ -11,7 +11,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllTags = ({ projectUuid, permission }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoading: isMetadataLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
+  const { tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -230,7 +230,7 @@ const AllTags = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>
