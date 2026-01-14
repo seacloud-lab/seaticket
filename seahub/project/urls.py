@@ -49,7 +49,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/connection-details/$', ProjectConnectionDetailByTokenView.as_view(), name='api-v1-connection-details-by-token'),
     re_path(r'^api/v1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v1-connection-row-details-by-token'),
 
-    #sync data
+    #sync data # 
     re_path(r'webhook/github', GithubWebhookView.as_view(), name='github_webhook'),
     re_path(r'webhook/discourse', DiscourseWebhookView.as_view(), name='discourse_webhook'),
 
