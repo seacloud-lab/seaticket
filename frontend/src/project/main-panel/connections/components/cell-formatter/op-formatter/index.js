@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
+import { CONNECTION_TYPE } from '../../../constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row, handleStatusActive, column }) => {
+const WEBHOOK_SUPPORTED_TYPES = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM];
+
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onConfigureWebhook, row, handleStatusActive, column }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggle = () => {
@@ -24,7 +27,7 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row,
           )}
         </>
       )}
-      {(onMore || onManualSync || handleStatusActive || onViewLog) &&
+      {(onMore || onManualSync || handleStatusActive || onViewLog || onConfigureWebhook) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
@@ -62,6 +65,11 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row,
             {handleStatusActive && (
               <DropdownItem onClick={() => (handleStatusActive(!row.is_active, row))}>
                 <span>{row.is_active ? gettext('Deactivate') : gettext('Active')}</span>
+              </DropdownItem>
+            )}
+            {onConfigureWebhook && WEBHOOK_SUPPORTED_TYPES.includes(row.type) && (
+              <DropdownItem onClick={() => onConfigureWebhook(row)}>
+                {gettext('Webhook setting')}
               </DropdownItem>
             )}
           </DropdownMenu>

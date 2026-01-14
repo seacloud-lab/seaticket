@@ -427,7 +427,7 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection or not project_connection.is_active:
+        if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
