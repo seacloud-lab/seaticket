@@ -5,7 +5,7 @@ import homeAPI from '../../api';
 import Project from '../../models/project';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
-import { ProjectSettingPopover } from '../../popover';
+import ProjectSettingPopover from '../../popover/project-setting-popover';
 import { DEFAULT_COLOR } from '@/constants/project-icon';
 import userAPI from '@/api/user-api';
 

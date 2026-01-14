@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { IconButton, ProjectIcon, toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
-import { ProjectSettingPopover } from '../../popover';
+import ProjectSettingPopover from '../../popover/project-setting-popover';
 import { DEFAULT_COLOR } from '@/constants/project-icon';
 import ProjectItemPopover from './project-item-popover';
 
