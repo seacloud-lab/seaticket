@@ -100,3 +100,7 @@
   justify-content: flex-end;
   padding-bottom: 50px;
 }
+
+.sea-qa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {
+  padding:  10px 16px !important;
+}

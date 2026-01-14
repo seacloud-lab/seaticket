@@ -10,12 +10,28 @@ import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Inbox from './inbox';
 import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
+import { useMetadata } from './tickets/hooks';
+import { useConnections } from './connections/hooks';
+import { CenteredLoading } from '@/components';
 
 import './index.css';
 
 const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocalBar }) => {
+  const { isLoading: isMetadataLoading } = useMetadata();
+  const { isLoading: isConnectionsLoading } = useConnections();
   const barKey = activeBar[0];
   if (!barKey) return (<TopBar />);
+  if (isMetadataLoading || isConnectionsLoading) {
+    return (
+      <>
+        <TopBar />
+        <div className="flex-1 w-100">
+          <CenteredLoading />
+        </div>
+      </>
+    );
+  }
+
   const bar = BAR_TYPE_CONFIG[barKey];
   const title = bar.name;
   switch (barKey) {

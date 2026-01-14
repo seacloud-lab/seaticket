@@ -22,7 +22,7 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 const SEARCH_STORE_KEY = 'search-project';
 
 const Search = ({ title, settings }) => {
-  const { connections, isConnectionsLoaded, isLoading, reloadConnections } = useConnections();
+  const { connections, reloadConnections } = useConnections();
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -154,8 +154,6 @@ const Search = ({ title, settings }) => {
       setFilterDate(filterDate);
     }
   }, []);
-
-  if (!isConnectionsLoaded || (isLoading && connections.length === 0)) return null;
 
   return (
     <>

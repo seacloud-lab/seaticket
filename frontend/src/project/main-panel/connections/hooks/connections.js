@@ -13,7 +13,8 @@ import { connectionsAPI } from '../../../api';
 const ConnectionsContext = React.createContext(null);
 
 export const ConnectionsProvider = ({ projectUuid, children }) => {
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
+  const [isLoadingMore, setLoadingMore] = useState(false);
   const [connections, setConnections] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
@@ -23,7 +24,6 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const pageCountRef = useRef(1000);
   const hasMoreRef = useRef(true);
   const activeConnectionRef = useRef(null);
-  const isConnectionsLoaded = useRef(false);
 
   const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
     setConnections(prev => prev.map(record =>
@@ -122,7 +122,12 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
 
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
-    if (isLoading) return;
+    if (pageRef.current > 1 && isLoadingMore) return;
+    if (pageRef.current > 1) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setLoading(true);
     connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
@@ -144,32 +149,25 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
           newConnections.push(connection);
         }
       });
-      isConnectionsLoaded.current = true;
       setConnections(newConnections);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
+    }).finally(() => {
       setLoading(false);
+      setLoadingMore(false);
     });
-  }, [isLoading, projectUuid]);
-
-  const load = useCallback(() => {
-    if (!hasMoreRef.current) return;
-    if (isConnectionsLoaded.current) return;
-    if (isLoading) return;
-    loadMore();
-  }, [isLoading, loadMore]);
+  }, [isLoadingMore, projectUuid]);
 
   const reloadConnections = useCallback(() => {
     const currentTime = new Date();
-    if (isConnectionsLoaded.current && dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
+    if (!isLoading && dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
     loadTime.current = currentTime;
-    pageRef.current = 1;
+    pageRef.current = Math.ceil((connections?.length || 0) / pageCountRef.current) || 1;
     hasMoreRef.current = true;
-    isConnectionsLoaded.current = false;
-    load();
-  }, [load]);
+    loadMore();
+  }, [isLoading, loadMore]);
 
   useEffect(() => {
     const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.NEW_CONNECTION, () => {
@@ -181,17 +179,21 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) return;
+    loadMore();
+  }, [isLoading, loadMore]);
+
   return (
     <ConnectionsContext.Provider value={{
-      isConnectionsLoaded: isConnectionsLoaded.current,
       isLoading,
+      isLoadingMore,
       connections,
       modifyLocalConnectionRecord,
       modifyLocalConnectionSyncStatus,
       modifyConnectionStatus,
       handleDelete,
       handleModify,
-      load,
       reloadConnections,
       loadMore,
     }}>

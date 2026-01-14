@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { DataCacheProvider } from '@/sea-metadata';
-import { TicketsPageProvider, useTicketsPage, MetadataProvider } from './hooks';
+import { TicketsPageProvider, useTicketsPage } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
 import TagTickets from './view/tag-tickets';
@@ -61,12 +61,10 @@ const Page = ({ toggleBar, type }) => {
 const Tickets = ({ title, toggleBar, type }) => {
   return (
     <DataCacheProvider>
-      <MetadataProvider projectUuid={projectUuid}>
-        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
-          <TicketTopBar title={title} type={type} permission={permission} />
-          <Page toggleBar={toggleBar} type={type} />
-        </TicketsPageProvider>
-      </MetadataProvider>
+      <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
+        <TicketTopBar title={title} type={type} permission={permission} />
+        <Page toggleBar={toggleBar} type={type} />
+      </TicketsPageProvider>
     </DataCacheProvider>
   );
 };

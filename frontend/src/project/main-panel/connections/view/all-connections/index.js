@@ -20,7 +20,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 
-  const { isLoading, isConnectionsLoaded, connections, reloadConnections, loadMore, handleModify, handleDelete,
+  const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
   } = useConnections();
   const { togglePageSlugId, updateConnectionInfo } = useConnectionsPage();
@@ -133,9 +133,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     };
   }, []);
 
-  if (!isConnectionsLoaded) return null;
-
-  if (isLoading && connections.length === 0) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>
@@ -154,7 +152,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
             </Button>
           </EmptyTip>
         }
-        isLoading={isLoading}
+        isLoading={isLoadingMore}
         loadMore={loadMore}
         onDelete={handleDelete}
         onModify={handleModify}
