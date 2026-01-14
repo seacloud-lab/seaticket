@@ -19,7 +19,13 @@ body {
   border-right: 1px solid var(--bs-border-secondary-color);
 }
 
+.sea-qa-web-settings .side-panel {
+  flex: 0 0 22%;
+}
+
 .sea-qa-web-settings .main-panel {
+  background-color: #ffffff;
+  width: 100%;
   flex: 1 0 78%;
 }
 

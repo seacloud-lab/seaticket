@@ -24,7 +24,7 @@ import UserRemovePassword from './password-widgets/user-remove-password-dialog';
 import UserResetPassword from './password-widgets/user-reset-password-dialog';
 
 import '@/css/toolbar.css';
-import './index.css';
+import './profile-settings.css';
 
 const {
   canUpdatePassword,

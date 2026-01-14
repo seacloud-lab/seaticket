@@ -120,10 +120,11 @@ class ResizeBar extends Component {
 
   render() {
     const { isShowResizeHandler } = this.state;
+    const { className = '' } = this.props;
 
     return (
       <div
-        className="resize-bar"
+        className={`resize-bar ${className}`}
         ref={ref => this.sidebarResize = ref}
         onMouseDown={this.onMouseDown}
         onMouseOver={this.onMouseOver}
@@ -152,6 +153,7 @@ ResizeBar.propTypes = {
   min: PropTypes.number,
   max: PropTypes.number,
   onResize: PropTypes.func,
+  className: PropTypes.string,
 };
 
 export default ResizeBar;

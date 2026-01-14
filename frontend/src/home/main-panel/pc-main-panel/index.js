@@ -6,6 +6,7 @@ import Workspace from '../../models/workspace';
 import AllWorkspaces from './all-workspaces';
 import WorkspaceInMainPanel from './workspace-in-main-panel';
 import MyProjectsTrash from './my-projects-trash';
+import eventBus from '@/utils/event-bus';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;
@@ -26,7 +27,21 @@ class MainPanel extends React.Component {
       isWorkspaceListLoading: true,
     };
     this.searchTableRef = null;
+    this.mainPanelRef = React.createRef();
   }
+
+  componentDidMount() {
+    eventBus.subscribe('home-side-panel-width', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    eventBus.unsubscribe('home-side-panel-width', this.handleResize);
+  }
+
+  handleResize = (sideWidth) => {
+    const resizeBarWidth = 6;
+    this.mainPanelRef.current.style.width = `calc(100% - ${resizeBarWidth}px - ${sideWidth}px)`;
+  };
 
   loadWorkspaceList = () => {
     homeAPI.listWorkspaces().then(res => {
@@ -95,7 +110,7 @@ class MainPanel extends React.Component {
 
   render() {
     return (
-      <div className="main-panel" aria-label={gettext('Main panel')}>
+      <div className="main-panel" aria-label={gettext('Main panel')} ref={this.mainPanelRef}>
         <Router className="reach-router" role='group'>
           <AllWorkspaces
             path={siteRoot}
