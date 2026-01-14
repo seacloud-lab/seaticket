@@ -8,9 +8,11 @@ const EmbeddingView = ({
   useCategory,
   displayMode,
   width,
-  height
+  height,
+  onPointClick,
 }) => {
   const [tooltip, setTooltip] = useState(null);
+  const [selection, setSelection] = useState([]);
 
   const querySelection = useCallback(async (x, y, unitDistance) => {
     if (!embeddingData || !metadata || !metadata.records) {
@@ -44,6 +46,15 @@ const EmbeddingView = ({
     };
   }, [embeddingData, metadata]);
 
+  const handleSelection = useCallback((newSelection) => {
+    if (newSelection && newSelection.length > 0 && newSelection[0].fields && onPointClick) {
+      onPointClick(newSelection[0].fields);
+      setTimeout(() => setSelection([]), 0);
+    } else {
+      setSelection(newSelection);
+    }
+  }, [onPointClick]);
+
   return (
     <AtlasEmbeddingView
       data={{
@@ -55,6 +66,8 @@ const EmbeddingView = ({
       tooltip={tooltip}
       onTooltip={setTooltip}
       querySelection={querySelection}
+      selection={selection}
+      onSelection={handleSelection}
       labels={[]}
       width={width}
       height={height}
