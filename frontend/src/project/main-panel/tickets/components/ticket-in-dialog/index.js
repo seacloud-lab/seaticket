@@ -20,7 +20,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
   const [ticket, setTicket] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const { isLoading: isMetadataLoading, tagsData } = useMetadata();
+  const { tagsData } = useMetadata();
 
   const ticketRef = useRef(null);
 
@@ -40,7 +40,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
   }, [projectUuid, ticketID]);
 
   useEffect(() => {
-    if (isLoading || isMetadataLoading || !ticket) return;
+    if (isLoading || !ticket) return;
     const ticketDom = ticketRef.current;
     const handleResize = () => {
       if (!ticketDom) return;
@@ -52,7 +52,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
     return () => {
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
-  }, [isLoading, isMetadataLoading, ticket]);
+  }, [isLoading, ticket]);
 
   if (isLoading) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
@@ -90,7 +90,6 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
             id="tags-editor-popover"
             isReadonly={true}
             value={tags}
-            isLoading={isMetadataLoading}
             tagsData={tagsData}
           />
           <StateSettings isReadonly={true} state={state} substate={substate} />

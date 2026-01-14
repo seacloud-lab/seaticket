@@ -7,8 +7,8 @@ class ChatSession {
     this.created_at = object.created_at || '';
     this.updated_at = object.updated_at || '';
 
-    this.is_replying = false;
-    this.problem = null;
+    this.is_replying = object.is_replying || false;
+    this.problem = object.problem || null;
   }
 }
 

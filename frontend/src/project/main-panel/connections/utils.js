@@ -2,6 +2,7 @@ import { mediaUrl, projectName, server, workspaceID } from '@/constants';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { isString } from '@/utils/type-detection';
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;
@@ -134,4 +135,17 @@ export const getInfoByEmailFrom = (emailFrom) => {
 export const generatorConnectionAssetURLPrefix = (projectUuid, connectionId) => {
   const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connectionId}/path/`;
   return assetURLPrefix;
+};
+
+export const initConnectionStatus = (status = '') => {
+  if (!status) return {};
+  let validStatus = status;
+  if (status && isString(status)) {
+    try {
+      validStatus = JSON.parse(status);
+    } catch {
+      validStatus = {};
+    }
+  }
+  return validStatus;
 };

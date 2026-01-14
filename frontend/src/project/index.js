@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
-import { CollaboratorsProvider } from '@/sea-metadata';
-import { NotificationProvider } from '@/project/main-panel/inbox/hooks/notification';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -12,13 +10,9 @@ import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
 import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
-import { ConnectionsProvider } from './main-panel/connections/hooks';
-import { AIChatToolsProvider } from './main-panel/ask/hooks';
-import { AnalyzeTaskProvider } from './main-panel/analyze/hooks/analyze-task';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
-import userAPI from '@/api/user-api';
-import { MetadataProvider } from './main-panel/tickets/hooks';
+import { DataProvider } from './hooks';
 
 import './index.css';
 
@@ -119,14 +113,6 @@ const Project = () => {
     });
   }, [settings]);
 
-  const listUserInfo = useCallback((...params) => {
-    return userAPI.listUserInfo(...params);
-  }, []);
-
-  const getCollaborators = useCallback(() => {
-    return projectAPI.listProjectRelatedUsers(projectUuid);
-  }, []);
-
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -164,20 +150,10 @@ const Project = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
-            <AIChatToolsProvider >
-              <MetadataProvider projectUuid={projectUuid}>
-                <ConnectionsProvider projectUuid={projectUuid} >
-                  <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
-                    <AnalyzeTaskProvider>
-                      <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                      <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-                    </AnalyzeTaskProvider>
-                  </NotificationProvider>
-                </ConnectionsProvider>
-              </MetadataProvider>
-            </AIChatToolsProvider>
-          </CollaboratorsProvider>
+          <>
+            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+            <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+          </>
         )}
       </div>
     </I18nextProvider>
@@ -185,4 +161,8 @@ const Project = () => {
 };
 
 const root = createRoot(document.getElementById('wrapper'));
-root.render(<Project />);
+root.render(
+  <DataProvider projectUuid={projectUuid}>
+    <Project />
+  </DataProvider>
+);

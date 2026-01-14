@@ -128,7 +128,6 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     } else {
       setLoading(true);
     }
-    setLoading(true);
     connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
       let newConnections = pageRef.current === 1 ? [] : connections.slice(0);

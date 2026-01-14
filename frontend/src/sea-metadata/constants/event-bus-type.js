@@ -33,6 +33,7 @@ export const EVENT_BUS_TYPE = {
   COLLAPSE_ALL_GROUPS: 'collapse_all_groups',
   EXPAND_ALL_GROUPS: 'expand_all_groups',
   LOCAL_ROW_CHANGED: 'local_row_changed',
+  LOCAL_ROWS_CHANGED: 'local_rows_changed',
   LOCAL_ROW_DETAIL_CHANGED: 'local_row_detail_changed',
   LOCAL_COLUMN_DATA_CHANGED: 'local_column_data_changed',
   FOCUS_CANVAS: 'focus_canvas',

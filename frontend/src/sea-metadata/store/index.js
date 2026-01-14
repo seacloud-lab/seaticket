@@ -53,12 +53,12 @@ class Store {
     this.startIndex = 0;
   };
 
-  async loadMetadata(view, limit, isReload = false) {
+  async loadMetadata(view, limit, isForceReload = false) {
     if (!view) {
       throw Error('View_not_exist');
     }
     if (!this.mounted) return;
-    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isReload })?.then(res => {
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
       let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules });
@@ -84,9 +84,9 @@ class Store {
     });
   }
 
-  async reload(limit = PER_LOAD_NUMBER) {
+  async reload(limit = PER_LOAD_NUMBER, isForceReload = true) {
     this.startIndex = 0;
-    return this.loadMetadata(this.data.view, limit, true);
+    return this.loadMetadata(this.data.view, limit, isForceReload);
   }
 
   async loadMore(limit) {
@@ -100,9 +100,11 @@ class Store {
     }
     rows = rows.map(r => new Row(r));
 
-    this.data.rows.push(...rows);
     rows.forEach(row => {
-      this.data.row_ids.push(row._id);
+      if (!this.data.row_ids.includes(row._id)) {
+        this.data.row_ids.push(row._id);
+        this.data.rows.push(row);
+      }
       this.data.id_row_map[row._id] = row;
     });
     const loadedCount = rows.length;
@@ -439,13 +441,20 @@ class Store {
     this.applyOperation(operation);
   }
 
-  modifyLocalRow({ parent_dir, file_name, row_id }, updates) {
+  modifyLocalRow(row_id, updates) {
     const type = OPERATION_TYPE.MODIFY_LOCAL_ROW;
     const operation = this.createOperation({
       type,
-      row_id: row_id,
-      parent_dir,
-      file_name,
+      row_id,
+      updates
+    });
+    this.applyOperation(operation);
+  }
+
+  modifyLocalRows(updates) {
+    const type = OPERATION_TYPE.MODIFY_LOCAL_ROWS;
+    const operation = this.createOperation({
+      type,
       updates
     });
     this.applyOperation(operation);

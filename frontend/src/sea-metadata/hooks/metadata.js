@@ -49,15 +49,17 @@ export const MetadataProvider = forwardRef(({
     setMetadata(data);
   }, []);
 
-  const reloadMetadata = useCallback(() => {
+  const reloadMetadata = useCallback((isForce = true) => {
     if (!storeRef.current?.data) return;
-    setLoading(true);
-    storeRef.current.reload(PER_LOAD_NUMBER).then(() => {
+    if (!isForce) {
+      setLoading(true);
+    }
+    storeRef.current.reload(PER_LOAD_NUMBER, isForce).then(() => {
       setMetadata(storeRef.current.data);
-      setLoading(false);
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);
       setErrorMessage(errorMsg);
+    }).finally(() => {
       setLoading(false);
     });
   }, []);
@@ -112,8 +114,12 @@ export const MetadataProvider = forwardRef(({
     storeRef.current.insertRow(data, { success_callback, fail_callback });
   }, [storeRef]);
 
-  const updateLocalRow = useCallback(({ rowId }, update) => {
-    storeRef.current.modifyLocalRow({ row_id: rowId }, update);
+  const updateLocalRow = useCallback((rowId, update) => {
+    storeRef.current.modifyLocalRow(rowId, update);
+  }, [storeRef]);
+
+  const updateLocalRows = useCallback((updates) => {
+    storeRef.current.modifyLocalRows(updates);
   }, [storeRef]);
 
   const updateLocalColumnData = useCallback((columnKey, newData, oldData) => {
@@ -317,6 +323,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeReloadData = eventBus.subscribe(EVENT_BUS_TYPE.RELOAD_DATA, reloadMetadata);
     const unsubscribeRecalculateData = eventBus.subscribe(EVENT_BUS_TYPE.RECALCULATE_DATA, recalculateData);
     const unsubscribeLocalRowChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, updateLocalRow);
+    const unsubscribeLocalRowsChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, updateLocalRows);
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
     const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
@@ -330,12 +337,13 @@ export const MetadataProvider = forwardRef(({
       unsubscribeReloadData();
       unsubscribeRecalculateData();
       unsubscribeLocalRowChanged();
+      unsubscribeLocalRowsChanged();
       unsubscribeLocalColumnChanged();
       unsubscribeMoveRow();
       unsubscribeLoading();
       unsubscribeClearData();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalColumnData, moveRow, clearData]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalRows, updateLocalColumnData, moveRow, clearData]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,

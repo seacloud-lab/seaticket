@@ -19,7 +19,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isMetadataLoading, typesData, createType, tagsData } = useMetadata();
+  const { typesData, createType, tagsData } = useMetadata();
 
   const { updateAttachments } = useAIChatTools();
 
@@ -127,7 +127,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
     };
   }, []);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
   const type = getRowById(typesData, childrenPageSlugId);
   if (!type) {
     togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
