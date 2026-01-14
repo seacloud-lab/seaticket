@@ -6,7 +6,7 @@ import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import Legend from './components/legend';
 import EmbeddingView from './components/embedding-view';
-import PointDetailsDialog from './components/point-details-dialog';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useAnalyzeTask } from './hooks/analyze-task';
 import { SETTINGS_STORAGE_KEY, projectUuid } from './constants';
 
@@ -315,7 +315,17 @@ const Analyze = ({ title }) => {
 
   const handlePointClick = useCallback((record) => {
     if (record) {
-      setSelectedRecord(record);
+      setSelectedRecord({
+        _id: selectedRecord._pk,
+        type: selectedRecord?.connection_type,
+        connection_id: selectedRecord?.connection_id,
+        title: record.title,
+        path: record.path,
+        filename: record.filename,
+        url: record.url,
+        slug: record.slug,
+        topic_id: record?.topic_id,
+      });
       setIsDetailsDialogOpen(true);
     }
   }, []);
@@ -421,9 +431,10 @@ const Analyze = ({ title }) => {
         )}
       </div>
       {isDetailsDialogOpen && selectedRecord && (
-        <PointDetailsDialog
+        <ResourceDetailsDialog
           projectUuid={projectUuid}
-          record={selectedRecord}
+          resource={selectedRecord}
+          isShowIcon={true}
           onClose={handleCloseDetailsDialog}
         />
       )}
