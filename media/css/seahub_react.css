@@ -12,7 +12,6 @@
  * loading
  * popover
  * op-icon
- * account
  * quota
  * nav, nav-pills
  * side-panel
@@ -355,123 +354,6 @@ li {
   user-select: none;
 }
 
-/** Account info **/
-#account {
-  position: relative;
-}
-
-#my-info {
-  display: inline-block;
-  color: #d6d6d6;
-  cursor: pointer;
-}
-
-#account .avatar {
-  vertical-align: middle;
-}
-
-@media (max-width:767px) {
-  #account {
-    margin: 8px 0 0 10px;
-  }
-
-  .account-toggle {
-    font-size: 19px;
-    line-height: 1;
-    color: #999;
-    margin-top: 8px;
-  }
-}
-
-.account-popup .avatar {
-  float: left;
-}
-
-.account-popup .txt {
-  margin-left: 45px;
-  line-height: 32px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.account-popup {
-  right: -6px;
-  top: 42px;
-  font-size: 13px;
-}
-
-.account-popup .outer-caret {
-  top: -10px;
-  right: 12px;
-}
-
-.account-popup .sf-popover-con {
-  padding: 0;
-}
-
-.account-popup .item {
-  display: block;
-  padding: 8px 18px;
-  border-bottom: 1px solid #ddd;
-  cursor: default;
-}
-
-.account-popup a.item {
-  color: #212529;
-  font-weight: normal;
-  cursor: pointer;
-}
-
-.account-popup a.item:hover {
-  background: #fafafa;
-  text-decoration: none;
-}
-
-#account .manage {
-  position: absolute;
-  left: 60px;
-  top: -16px;
-}
-
-#account .manage .a:hover {
-  text-decoration: none;
-}
-
-/** quota in account popover **/
-.account-info {
-  padding: 7px 0;
-}
-
-.account-info.row-used {
-  padding-bottom: 9px;
-}
-
-.account-info p {
-  margin-bottom: 6px;
-  font-size: 12px;
-}
-
-#quota-bar {
-  display: block;
-  height: 6px;
-  border-radius: 5px;
-  overflow: hidden;
-  /* for usage > 100% */
-  background-color: #eee;
-}
-
-#quota-bar .usage {
-  display: inline-block;
-  height: 100%;
-  vertical-align: top;
-  background: #ED7109;
-}
-
-#quota-usage {
-  background: #ddd;
-}
-
 @media (max-width:767px) {
   .cur-view-toolbar .mobile-icon {
     color: #999;
@@ -759,11 +641,11 @@ li {
 .sf-popover {
   width: 240px;
   background: #fff;
-  border: 1px solid #c9c9c9;
-  border-radius: 3px;
-  box-shadow: 0 0 4px #ccc;
+  border: 1px solid var(--bs-border-secondary-color);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
   position: absolute;
   z-index: 20;
+  border-radius: 8px;
 }
 
 .sf-popover-hd {

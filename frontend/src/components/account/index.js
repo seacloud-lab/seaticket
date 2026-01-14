@@ -7,8 +7,9 @@ import { isWorkWeChat } from '@/utils/wechat-utils';
 import userAPI from '@/api/user-api';
 import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 import IconBtn from '../icon-button';
+import Icon from '../icon';
 
-import './index.css';
+import './account.css';
 
 const propTypes = {
   isAdminPanel: PropTypes.bool,
@@ -38,8 +39,12 @@ class Account extends Component {
     document.removeEventListener('keydown', this.onDocumentKeydown);
   }
 
-  componentDidUpdate(prevProps) {
-    this.handleProps();
+  componentDidUpdate() {
+    if (this.state.showInfo) {
+      this.addEvents();
+    } else {
+      this.removeEvents();
+    }
   }
 
   onDocumentKeydown = (e) => {
@@ -54,14 +59,6 @@ class Account extends Component {
 
   getContainer = () => {
     return this.containerRef;
-  };
-
-  handleProps = () => {
-    if (this.state.showInfo) {
-      this.addEvents();
-    } else {
-      this.removeEvents();
-    }
   };
 
   addEvents = () => {
@@ -171,43 +168,15 @@ class Account extends Component {
         };
       }
     }
-
-    return data && <a href={data.url} title={data.text} className="item">{data.text}</a>;
-  };
-
-  renderAvatar = () => {
-    return (<img src={avatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />);
-  };
-
-  renderDefaultAccount = () => {
+    if (!data) {
+      return null;
+    }
     return (
-      <div className="sf-popover-con">
-        <div className="item o-hidden">
-          {this.renderAvatar()}
-          <div className="txt">{this.state.userName}</div>
-        </div>
-        <div className="item">
-          <div className="account-info row-used">
-            <p>{gettext('API calls count')}{': '}{this.state.apiCallsCount} / {this.state.apiCallsLimit > 0 ? this.state.apiCallsLimit : '--'} </p>
-            <div id="quota-bar">
-              <span id="quota-usage" className="usage sea-qa-bg-grey" style={{ width: this.state.apiCallsUsageRate }}></span>
-            </div>
-          </div>
-        </div>
-        {this.state.aiCredit !== undefined && (
-          <div className="item">
-            <div className="account-info row-used">
-              <p>{gettext('AI credit used')}{': '}{this.state.aiCost} / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'} </p>
-              <div id="quota-bar">
-                <span id="ai-credit-usage" className="usage sea-qa-bg-grey" style={{ width: this.state.aiUsageRate }}></span>
-              </div>
-            </div>
-          </div>
-        )}
-        <a href={siteRoot + 'profile/'} className="item">{gettext('Personal settings')}</a>
-        {this.renderMenu()}
-        {!this.isWorkWX && <a href={siteRoot + 'accounts/logout/'} className="item">{gettext('Log out')}</a>}
-      </div>
+      <a href={data.url} title={data.text} className="item">
+        {/* TODO: change icon */}
+        <Icon symbol="set-up" />
+        {data.text}
+      </a>
     );
   };
 
@@ -222,7 +191,9 @@ class Account extends Component {
           title={gettext('View profile and more')}
           tabIndex={0}
         >
-          <span>{this.renderAvatar()}</span>
+          <span>
+            <img src={avatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />
+          </span>
         </span>
         <IconBtn
           icon="more-vertical"
@@ -232,10 +203,41 @@ class Account extends Component {
           onClick={this.onClickAccount}
         />
         <div id="user-info-popup" className={`account-popup sf-popover ${this.state.showInfo ? '' : 'hide'}`}>
-          <div className="outer-caret up-outer-caret">
-            <div className="inner-caret"></div>
+          <div className="sf-popover-con">
+            <div className="item o-hidden">
+              <img src={avatarURL} width="32" height="32" className="avatar" alt={gettext('Avatar')} />
+              <div className="txt text-truncate mb-4">{this.state.userName}</div>
+            </div>
+            <div className="item pt-3 pb-1">
+              <div className="account-info-card">
+                <p className='account-info-card-title'>{gettext('API calls count')}</p>
+                <p>
+                  <span className='account-info-card-used'>{this.state.apiCallsCount || 0}</span>
+                  <span className='account-info-card-total'> / {this.state.apiCallsLimit > 0 ? this.state.apiCallsLimit : '--'}</span>
+                </p>
+              </div>
+              {this.state.aiCredit !== undefined && (
+                <div className="account-info-card">
+                  <p className='account-info-card-title'>{gettext('AI credit used')}</p>
+                  <p>
+                    <span className='account-info-card-used'>{this.state.aiCost || 0}</span>
+                    <span className='account-info-card-total'> / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+            <a href={siteRoot + 'profile/'} className="item">
+              <Icon symbol="set-up" />
+              {gettext('Personal settings')}
+            </a>
+            {this.renderMenu()}
+            {!this.isWorkWX &&
+              <a href={siteRoot + 'accounts/logout/'} className="item">
+                <Icon symbol="logout" />
+                {gettext('Log out')}
+              </a>
+            }
           </div>
-          {this.renderDefaultAccount()}
         </div>
       </div>
     );

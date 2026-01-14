@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Icon from '../icon';
 
-import './index.css';
-
 const IconButton = React.forwardRef(({ disabled, className, icon, iconClassName, ...otherProperties }, ref) => {
   return (
     <div

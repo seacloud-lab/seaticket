@@ -1,6 +1,7 @@
 .project-item-popover .popover {
-  margin-left: 0;
+  margin-left: -18px;
   margin-right: 0;
+  margin-top: 6px;
 }
 
 .project-item-popover .project-item-popover-content {
@@ -24,7 +25,7 @@
   height: 14px;
   width: 14px;
   margin-right: 10px;
-  color: #999;
+  color: var(--bs-icon-color);
   margin-top: -2px;
 }
 

@@ -160,19 +160,6 @@
   background: rgb(255, 240, 204) !important;
 }
 
-.project-item .project-item-icon-more {
-  width: 100%;
-  justify-content: space-between;
-}
-
-.project-item .project-item-icon-more-toggle-btn .sea-qa-icon-svg {
-  color: #999;
-}
-
-.project-item .project-item-icon-more-toggle-btn:hover .sea-qa-icon-svg {
-  color: #666;
-}
-
 .project-folder-dropdown {
   margin-left: -16px;
   min-width: 10rem;
