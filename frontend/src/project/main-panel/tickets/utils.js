@@ -30,94 +30,108 @@ export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }
   };
 };
 
-export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsByAI }) => {
+export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues }) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
   const stateColumnOptions = getColumnOptions(stateColumn);
+
+  const children = [
+    {
+      label: gettext('Set state'),
+      key: 'state',
+      children: stateColumnOptions.map((o) => {
+        return {
+          key: o.id,
+          label: o.display_name || o.name,
+          callback: () => {
+            let rowIds = [];
+            let idRowUpdates = {};
+            let idOldRowOldData = {};
+            rows.forEach(row => {
+              const { _id } = row;
+              rowIds.push(_id);
+              idRowUpdates[_id] = { [stateColumn.key]: o.id };
+              idOldRowOldData[_id] = { [stateColumn.key]: row[stateColumn.key] };
+            });
+            modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
+          },
+        };
+      })
+    }, {
+      label: gettext('Set priority'),
+      key: 'priority',
+      children: PRIORITIES.map(o => {
+        return {
+          ...o,
+          key: o.value,
+          icon: o.icon,
+          label: o.name,
+          className: 'sea-qa-ticket-priority-dropdown-item',
+          callback: () => {
+            let rowIds = [];
+            let idRowUpdates = {};
+            let idOldRowOldData = {};
+            rows.forEach(row => {
+              const { _id } = row;
+              rowIds.push(_id);
+              idRowUpdates[_id] = { [priorityColumn.key]: o.value };
+              idOldRowOldData[_id] = { [priorityColumn.key]: row[priorityColumn.key] };
+            });
+            modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
+          },
+        };
+      })
+    },
+  ];
+
+  // Add "Find related issues" option only for single row selection
+  if (rows.length === 1 && findRelatedIssues) {
+    children.push({
+      label: gettext('Find related issues'),
+      key: 'find_related_issues',
+      callback: () => findRelatedIssues(rows[0]),
+    });
+  }
+
+  children.push({
+    label: gettext('AI'),
+    key: 'AI',
+    children: [
+      {
+        label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
+        key: 'chat_tickets',
+        callback: () => {
+          const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+          if (!titleColumn) return;
+          let newRows = [];
+          rows.forEach(row => {
+            const newRow = {
+              [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+              _pk: row._id,
+            };
+            newRows.push(new TicketForAI(newRow));
+          });
+          chatTicketsByAI(newRows);
+        },
+      }
+    ]
+  });
+
   return {
     key: 'more',
     icon: 'more',
-    children: [
-      {
-        label: gettext('Set state'),
-        key: 'state',
-        children: stateColumnOptions.map((o) => {
-          return {
-            key: o.id,
-            label: o.display_name || o.name,
-            callback: () => {
-              let rowIds = [];
-              let idRowUpdates = {};
-              let idOldRowOldData = {};
-              rows.forEach(row => {
-                const { _id } = row;
-                rowIds.push(_id);
-                idRowUpdates[_id] = { [stateColumn.key]: o.id };
-                idOldRowOldData[_id] = { [stateColumn.key]: row[stateColumn.key] };
-              });
-              modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
-            },
-          };
-        })
-      }, {
-        label: gettext('Set priority'),
-        key: 'priority',
-        children: PRIORITIES.map(o => {
-          return {
-            ...o,
-            key: o.value,
-            icon: o.icon,
-            label: o.name,
-            className: 'sea-qa-ticket-priority-dropdown-item',
-            callback: () => {
-              let rowIds = [];
-              let idRowUpdates = {};
-              let idOldRowOldData = {};
-              rows.forEach(row => {
-                const { _id } = row;
-                rowIds.push(_id);
-                idRowUpdates[_id] = { [priorityColumn.key]: o.value };
-                idOldRowOldData[_id] = { [priorityColumn.key]: row[priorityColumn.key] };
-              });
-              modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
-            },
-          };
-        })
-      }, {
-        label: gettext('AI'),
-        key: 'AI',
-        children: [
-          {
-            label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
-            key: 'chat_tickets',
-            callback: () => {
-              const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-              if (!titleColumn) return;
-              let newRows = [];
-              rows.forEach(row => {
-                const newRow = {
-                  [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
-                  _pk: row._id,
-                };
-                newRows.push(new TicketForAI(newRow));
-              });
-              chatTicketsByAI(newRows);
-            },
-          }
-        ]
-      }
-    ]
+    children
   };
 };
 
-export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI }) => {
+export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI, findRelatedIssues }) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
     const tool = generatorTicketCopyLinkTool({ ticket: row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI });
+  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues });
   tools.push(moreTool);
   return tools;
 };
@@ -190,6 +204,7 @@ export const generatorTicketsContextMenuOptions = ({
   togglePageSlugId,
   workspaceID,
   projectName,
+  findRelatedIssues,
 }) => {
   let list = [];
 
@@ -333,6 +348,14 @@ export const generatorTicketsContextMenuOptions = ({
       toaster.success(gettext('The ticket link has been copied'));
     }
   });
+
+  if (findRelatedIssues) {
+    list.push({
+      label: gettext('Find related issues'),
+      key: 'find_related_issues',
+      callback: () => findRelatedIssues(row),
+    });
+  }
 
   list.push('Divider');
   list.push({

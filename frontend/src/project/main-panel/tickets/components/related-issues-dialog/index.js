@@ -2,18 +2,18 @@ import React, { useEffect, useCallback, useState, Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { gettext, mediaUrl, projectName, workspaceID } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
-import { CONNECTION_TYPES } from '../../constants';
-import { getConnectionIcon } from '../../utils';
-import { connectionsAPI } from '@/project/api';
+import { CONNECTION_TYPES } from '@/project/main-panel/connections/constants';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { ticketsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
 import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
+const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, onClose }) => {
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
   const [relatedIssues, setRelatedIssues] = useState([]);
   const [errMessage, setErrMessage] = useState('');
@@ -33,6 +33,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
   };
 
   const handleItemClick = (issue) => {
+    // Handle ticket type: navigate to ticket detail page
     if (issue.type === 'ticket') {
       const { origin } = location;
       const ticketUrl = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${issue._id}/`;
@@ -40,6 +41,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
       return;
     }
 
+    // Handle other types with URL
     if (issue.url) {
       window.open(issue.url);
     }
@@ -47,7 +49,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
 
   const getDetails = useCallback(() => {
     setStatus('loading');
-    connectionsAPI.findRelatedRecords(projectUuid, connectionId, row._id)
+    ticketsAPI.findRelatedIssues(projectUuid, ticketId)
       .then(res => {
         const relatedRecords = res.data.related_records || [];
         setRelatedIssues(relatedRecords);
@@ -57,14 +59,31 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
         setErrMessage(errMessage);
         setStatus('error');
       });
-  }, [projectUuid, row, connectionId]);
+  }, [projectUuid, ticketId]);
 
   useEffect(() => {
     getDetails();
-  }, [projectUuid, row, connectionId]);
+  }, [projectUuid, ticketId]);
+
+  const getIcon = (issue) => {
+    const connectionType = issue.type;
+    if (connectionType === 'ticket') {
+      return `${mediaUrl}img/ticket.png`;
+    }
+    return getConnectionIcon(connectionType);
+  };
+
+  const getTypeName = (issue) => {
+    const connectionType = issue.type;
+    if (connectionType === 'ticket') {
+      return gettext('Ticket');
+    }
+    const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
+    return connectionOption?.name || connectionType;
+  };
 
   return (
-    <Modal className='sea-qa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
+    <Modal className='sea-qa-ticket-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
       <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
       <ModalBody>
         {status === 'loading' && (
@@ -76,16 +95,13 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
         {status === 'loaded' && (
           <Fragment>
             {!relatedIssues.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-            {relatedIssues.length && (
+            {relatedIssues.length > 0 && (
               <div className='issues-list-container'>
                 {relatedIssues.map((issue) => {
-                  const connectionType = issue.type;
-                  const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
-
                   return (
-                    <div className='issues-list-item' key={issue._id} onClick={() => handleItemClick(issue)}>
+                    <div className='issues-list-item' key={`${issue._id}-${issue.type}`} onClick={() => handleItemClick(issue)}>
                       <div className='issues-list-item-icon'>
-                        <img src={getConnectionIcon(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
+                        <img src={getIcon(issue)} alt={getTypeName(issue)} className='sea-qa-project-connection-type-icon' />
                       </div>
                       <div className='issues-list-item-content'>
                         <div className='issues-list-item-title'>
@@ -99,7 +115,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                             {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}
                           </div>
                         </div>
-                        <div className='issues-list-item-path'>{issue.url || ''}</div>
+                        {issue.url && <div className='issues-list-item-path'>{issue.url}</div>}
                         <div className='issues-list-item-detail' dangerouslySetInnerHTML={{ __html: renderDetail(issue.content || issue.ai_summary) }}></div>
                       </div>
                     </div>
@@ -115,3 +131,4 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
 };
 
 export default RelatedIssuesDialog;
+

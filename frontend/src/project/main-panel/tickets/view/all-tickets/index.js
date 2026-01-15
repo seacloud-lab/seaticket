@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { useDataCache } from '@/sea-metadata';
@@ -19,6 +19,7 @@ import {
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
+import RelatedIssuesDialog from '../../components/related-issues-dialog';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
@@ -29,6 +30,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
 
   const metadataRef = useRef(null);
   const currentTime = useRef(new Date());
+
+  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState(null);
 
   const expandRow = useCallback((row) => {
     const data = metadataRef.current.getData();
@@ -168,42 +172,59 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 
+  const findRelatedIssues = useCallback((ticket) => {
+    if (!ticket) return;
+    setCurrentTicket(ticket);
+    setIsShowRelatedIssuesDialog(true);
+  }, []);
+
   const createRowsTools = useCallback((props) => {
-    return generatorTicketsRowsTools({ ...props, projectName, workspaceID, chatTicketsByAI });
-  }, [workspaceID, projectName, chatTicketsByAI]);
+    return generatorTicketsRowsTools({ ...props, projectName, workspaceID, chatTicketsByAI, findRelatedIssues });
+  }, [workspaceID, projectName, chatTicketsByAI, findRelatedIssues]);
 
   const createContextMenuOptions = useCallback((props) => {
-    return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, chatTicketsByAI });
-  }, [projectName, workspaceID, chatTicketsByAI]);
+    return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, chatTicketsByAI, findRelatedIssues });
+  }, [projectName, workspaceID, chatTicketsByAI, findRelatedIssues]);
 
   if (isLoading) return (<CenteredLoading />);
 
   return (
-    <SeaMetadata
-      ref={metadataRef}
-      viewID={viewID}
-      api={api}
-      t={t}
-      fixedColumnCount={2}
-      localStorageNamePrefix={localStorageName}
-      permission={permission}
-      createContextMenuOptions={createContextMenuOptions}
-      createRowsTools={createRowsTools}
-      expandRow={expandRow}
-      toggleView={toggleView}
-      tagsData={tagsData}
-      createTag={createTag}
-      toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
-      typesData={typesData}
-      createType={createType}
-      toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}
-      substatesData={substatesData}
-      createSubstate={createSubstate}
-      toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
-      cascadeUpdateCells={cascadeUpdate}
-      columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
-      columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
-    />
+    <>
+      <SeaMetadata
+        ref={metadataRef}
+        viewID={viewID}
+        api={api}
+        t={t}
+        fixedColumnCount={2}
+        localStorageNamePrefix={localStorageName}
+        permission={permission}
+        createContextMenuOptions={createContextMenuOptions}
+        createRowsTools={createRowsTools}
+        expandRow={expandRow}
+        toggleView={toggleView}
+        tagsData={tagsData}
+        createTag={createTag}
+        toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
+        typesData={typesData}
+        createType={createType}
+        toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}
+        substatesData={substatesData}
+        createSubstate={createSubstate}
+        toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
+        cascadeUpdateCells={cascadeUpdate}
+        columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
+        columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
+      />
+      {isShowRelatedIssuesDialog && currentTicket && (
+        <RelatedIssuesDialog
+          projectUuid={projectUuid}
+          ticketId={currentTicket._id}
+          workspaceID={workspaceID}
+          projectName={projectName}
+          onClose={() => { setIsShowRelatedIssuesDialog(false); setCurrentTicket(null); }}
+        />
+      )}
+    </>
   );
 };
 
