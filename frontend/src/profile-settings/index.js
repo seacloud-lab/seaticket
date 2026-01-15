@@ -1,11 +1,11 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Account, toaster } from '@/components';
+import Icon from '../components/icon';
 import { Utils, isMobile } from '@/utils/utils';
 import { isWorkWeChat } from '@/utils/wechat-utils';
 import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from '@/constants';
 import profileSettingsAPI from './api';
-import SideNav from './side-nav';
 import UserAvatarForm from './user-avatar-form';
 import UserBasicInfoForm from './user-basic-info-form';
 import WebdavPassword from './webdav-password';
@@ -38,25 +38,79 @@ const {
   enableMultiSAML,
 } = window.app.pageOptions;
 
-class Settings extends React.Component {
+class ProfileSettings extends React.Component {
 
   isWorkWX = isWorkWeChat(window.navigator.userAgent.toLowerCase());
 
   constructor(props) {
     super(props);
     this.sideNavItems = [
-      { show: true, href: '#user-basic-info', text: gettext('Profile') },
-      { show: true, href: '#bind-contact-email', text: gettext('Contact email') },
-      { show: canUpdatePassword && !this.isWorkWX, href: '#update-user-passwd', text: gettext('Password') },
-      { show: enableBindPhone && !this.isWorkWX, href: '#bind-phone', text: gettext('Bind phone number') },
-      { show: enableWebdavSecret, href: '#update-webdav-passwd', text: gettext('WebDav password') },
-      { show: true, href: '#lang-setting', text: gettext('Language') },
-      { show: true, href: '#email-notice', text: gettext('Email notification') },
-      { show: twoFactorAuthEnabled, href: '#two-factor-auth', text: gettext('Two-Factor Authentication') },
-      { show: ((enableMultiSAML && isOrgContext)) && !this.isWorkWX, href: '#social-auth', text: gettext('Social login') },
-      // {show: (cloudMode && !isOrgContext) ? true : false, href: '#migrate-to-organization', text: gettext('Migrate to organization')},
-      { show: enableDeleteAccount && !this.isWorkWX, href: '#del-account', text: gettext('Delete account') },
-      { show: true, href: '#logged-in-sessions', text: gettext('Session logs') },
+      { 
+        show: true, 
+        href: '#user-basic-info', 
+        text: gettext('Profile'),
+        icon: 'profile'
+      },
+      { 
+        show: true, 
+        href: '#bind-contact-email', 
+        text: gettext('Contact email'),
+        icon: 'email'
+      },
+      { 
+        show: canUpdatePassword && !this.isWorkWX, 
+        href: '#update-user-passwd', 
+        text: gettext('Password'),
+        icon: 'password'
+      },
+      { 
+        show: enableBindPhone && !this.isWorkWX, 
+        href: '#bind-phone', 
+        text: gettext('Bind phone number'),
+        icon: 'email'
+      },
+      { 
+        show: enableWebdavSecret, 
+        href: '#update-webdav-passwd', 
+        text: gettext('WebDav password'),
+        icon: 'password'
+      },
+      { 
+        show: true, 
+        href: '#lang-setting', 
+        text: gettext('Language'),
+        icon: 'language'
+      },
+      { 
+        show: true, 
+        href: '#email-notice', 
+        text: gettext('Email notification'),
+        icon: 'email-notification'
+      },
+      { 
+        show: twoFactorAuthEnabled, 
+        href: '#two-factor-auth', 
+        text: gettext('Two-Factor Authentication'),
+        icon: 'password'
+      },
+      { 
+        show: ((enableMultiSAML && isOrgContext)) && !this.isWorkWX, 
+        href: '#social-auth', 
+        text: gettext('Social login'),
+        icon: 'social-login'
+      },
+      { 
+        show: enableDeleteAccount && !this.isWorkWX, 
+        href: '#del-account', 
+        text: gettext('Delete account'),
+        icon: 'profile'
+      },
+      { 
+        show: true, 
+        href: '#logged-in-sessions', 
+        text: gettext('Session logs'),
+        icon: 'session-logs'
+      },
     ];
 
     this.state = {
@@ -134,7 +188,7 @@ class Settings extends React.Component {
     const logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
       <React.Fragment>
-        <div className="sea-qa-web-settings h-100 d-flex flex-column">
+        <div className="profile-settings h-100 d-flex flex-column">
           <div className="top-header d-flex justify-content-between">
             <a href={siteRoot}>
               <img src={logoUrl} height={logoHeight} width={logoWidth} title={siteTitle} alt="logo" />
@@ -145,7 +199,17 @@ class Settings extends React.Component {
           </div>
           <div className="flex-auto d-flex o-hidden">
             <div className="side-panel o-auto">
-              <SideNav data={this.sideNavItems} curItemID={this.state.curItemID} />
+              <ul className="nav flex-column user-setting-nav">
+                {this.sideNavItems.map((item, index) => {
+                  return item.show ?
+                    (
+                      <li key={index} className={`nav-item ${this.state.curItemID === item.href.substr(1) ? 'sea-qa-bg-grey' : ''}`}>
+                        <Icon symbol={item.icon} />
+                        <a className="nav-link" href={item.href}>{item.text}</a>
+                      </li>
+                    ) : null;
+                })}
+              </ul>
             </div>
             <div className="main-panel d-flex flex-column">
               <h2 className="heading">{gettext('Personal settings')}</h2>
@@ -196,30 +260,15 @@ class Settings extends React.Component {
             </div>
           </div>
         </div>
-        {this.state.isSetPasswordDialogOpen && (
-          <UserSetPassword
-            toggle={this.toggleSetPassword}
-          />
-        )}
-        {this.state.isUpdatePasswordDialogOpen && (
-          <UserUpdatePassword
-            toggle={this.toggleUpdatePassword}
-          />
-        )}
-        {this.state.isRemovePasswordDialogOpen && (
-          <UserRemovePassword
-            toggle={this.toggleRemovePassword}
-          />
-        )}
-        {this.state.isResetPasswordDialogOpen && (
-          <UserResetPassword
-            toggle={this.toggleResetPassword}
-            bindPhone={bindPhone}
-          />
-        )}
+        {this.state.isSetPasswordDialogOpen && <UserSetPassword toggle={this.toggleSetPassword} />}
+        {this.state.isUpdatePasswordDialogOpen && <UserUpdatePassword toggle={this.toggleUpdatePassword} />}
+        {this.state.isRemovePasswordDialogOpen && <UserRemovePassword toggle={this.toggleRemovePassword} />}
+        {this.state.isResetPasswordDialogOpen && <UserResetPassword toggle={this.toggleResetPassword} bindPhone={bindPhone} />}
       </React.Fragment>
     );
   }
 }
+
 const root = createRoot(document.getElementById('wrapper'));
-root.render(<Settings />);
+
+root.render(<ProfileSettings />);
