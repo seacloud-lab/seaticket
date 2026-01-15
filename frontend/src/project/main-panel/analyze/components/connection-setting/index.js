@@ -1,60 +1,58 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { gettext } from '@/constants';
-import { Icon, IconTooltip, toaster, CustomizePopover } from '@/components';
-import { connectionsAPI } from '@/project/api';
+import { Icon, IconTooltip, OptionEditor } from '@/components';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { useConnections } from '@/project/main-panel/connections/hooks';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
-
 const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveConnection }) => {
-  const [connections, setConnections] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [tempSelectedConnections, setTempSelectedConnections] = useState([]);
-  const dropdownRef = useRef(null);
+  const { connections } = useConnections();
+  const [isShowPopover, setIsShowPopover] = useState(false);
+  const [selectedConnectionIds, setSelectedConnectionIds] = useState([]);
+  const popoverRef = useRef(null);
 
-  const closeDropdown = useCallback((e) => {
-    if (!isDropdownOpen || dropdownRef.current.contains(e.target)) return;
+  const option = useMemo(() => {
+    return connections.map((item) => {
+      return {
+        label: (
+          <>
+            <img src={getConnectionIcon(item.type)} alt="" className="analyze-connection-img" />
+            <span className="analyze-connection-name">{item.name}</span>
+          </>
+        ),
+        name: item.name,
+        value: item.id,
+      };
+    });
+  }, [connections]);
+
+  const value = useMemo(() => {
+    return selectedConnections.map((item) => item.id);
+  }, [selectedConnections]);
+
+  const onChange = useCallback((value) => {
+    setSelectedConnectionIds(value);
+  }, []);
+
+  const closeEditor = useCallback(() => {
+    if (!isShowPopover) return;
 
     const currentIds = [...selectedConnections.map(c => c.id)].sort();
-    const tempIds = [...tempSelectedConnections.map(c => c.id)].sort();
+    const tempIds = [...selectedConnectionIds.map(c => c)].sort();
     const hasChanged = currentIds.length !== tempIds.length || currentIds.some((id, index) => id !== tempIds[index]);
     if (hasChanged) {
-      onConnectionsChange(tempSelectedConnections);
+      const newSelectedConnections = connections.filter(item => selectedConnectionIds.includes(item.id));
+      onConnectionsChange(newSelectedConnections);
     }
-    setIsDropdownOpen(false);
-  }, [isDropdownOpen, selectedConnections, tempSelectedConnections, onConnectionsChange, dropdownRef]);
+    setIsShowPopover(false);
+  }, [isShowPopover, selectedConnectionIds, onConnectionsChange, connections]);
 
-  const loadConnections = useCallback(async () => {
-    try {
-      const res = await connectionsAPI.listConnections(projectUuid, 1, 1000);
-      const allConnections = res.data.records || [];
-      setConnections(allConnections);
-    } catch {
-      toaster.danger(gettext('Failed to load connections'));
+  const handleTogglePopover = useCallback(() => {
+    if (!isShowPopover) {
+      setIsShowPopover(true);
     }
-  }, []);
-
-  const handleToggleDropdown = useCallback(() => {
-    if (!isDropdownOpen) {
-      setTempSelectedConnections(selectedConnections);
-      setIsDropdownOpen(true);
-    }
-  }, [isDropdownOpen, selectedConnections,]);
-
-  const handleToggleConnection = useCallback((connection) => {
-    const isSelected = tempSelectedConnections.some(c => c.id === connection.id);
-    if (isSelected) {
-      setTempSelectedConnections(tempSelectedConnections.filter(c => c.id !== connection.id));
-    } else {
-      setTempSelectedConnections([...tempSelectedConnections, connection]);
-    }
-  }, [tempSelectedConnections]);
-
-  useEffect(() => {
-    loadConnections();
-  }, []);
+  }, [isShowPopover, selectedConnections]);
 
   return (
     <>
@@ -75,44 +73,25 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
           ))}
         </div>
       )}
-      <div className="analyze-add-connection" ref={dropdownRef}>
-        <div className="analyze-add-btn" onClick={handleToggleDropdown}>
+      <div className="analyze-add-connection" ref={popoverRef}>
+        <div className="analyze-add-btn" onClick={handleTogglePopover}>
           <Icon symbol="plus" className="analyze-add-icon" />
           <span>{gettext('Add connections')}</span>
         </div>
-        {isDropdownOpen && (
-          <CustomizePopover
-            target={dropdownRef}
-            className="analyze-connection-dropdown-popover"
-            hidePopover={closeDropdown}
-            hidePopoverWithEsc={closeDropdown}
-            modifiers={[
-              { name: 'preventOverflow', options: { boundary: document.body } },
-              { name: 'offset', options: { offset: [0, 0] } }
-            ]}
-          >
-            <div className="analyze-connection-dropdown">
-              {connections.length === 0 && (
-                <div className="tip-default analyze-dropdown-empty">{gettext('No available connections')}</div>
-              )}
-              {connections.length > 0 && (
-                <>
-                  {connections.map(connection => {
-                    const isSelected = tempSelectedConnections.some(c => c.id === connection.id);
-                    return (
-                      <div key={connection.id} className="analyze-dropdown-item" onClick={() => handleToggleConnection(connection)}>
-                        <div className="analyze-connection-icon">
-                          <Icon symbol={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
-                        </div>
-                        <img src={getConnectionIcon(connection.type)} alt="" className="analyze-connection-img" />
-                        <span className="analyze-connection-name">{connection.name}</span>
-                      </div>
-                    );
-                  })}
-                </>
-              )}
-            </div>
-          </CustomizePopover>
+        {isShowPopover && (
+          <OptionEditor
+            className="analyze-connection-popover"
+            optionClassName="analyze-popover-item"
+            options={option}
+            target={popoverRef}
+            checkPlacement="left"
+            isSearchEnabled={false}
+            isMultiple={true}
+            optionHeight={32}
+            value={value}
+            onChange={onChange}
+            onToggle={closeEditor}
+          />
         )}
       </div>
     </>
