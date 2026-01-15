@@ -38,8 +38,8 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
   const closeEditor = useCallback(() => {
     if (!isShowPopover) return;
 
-    const currentIds = [...value.map(c => c)].sort();
-    const tempIds = [...selectedConnectionIds.map(c => c)].sort();
+    const currentIds = value.sort();
+    const tempIds = selectedConnectionIds.sort();
     const hasChanged = currentIds.length !== tempIds.length || currentIds.some((id, index) => id !== tempIds[index]);
     if (hasChanged) {
       const newSelectedConnections = connections.filter(item => selectedConnectionIds.includes(item.id));
