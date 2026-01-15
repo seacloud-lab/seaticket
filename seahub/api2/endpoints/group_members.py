@@ -86,8 +86,9 @@ class GroupMembers(APIView):
             else:
                 nickname = ''
                 contact_email = email
+            display_name = nickname.strip() if nickname else email2nickname(email)
             member_info = {
-                "name": nickname.strip() if nickname else email.split('@')[0],
+                "name": display_name,
                 'email': email,
                 "contact_email": contact_email,
                 "avatar_url": avatar_url,

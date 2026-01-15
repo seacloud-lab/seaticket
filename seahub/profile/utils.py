@@ -12,7 +12,12 @@ def refresh_cache(username):
     Function to be called when change user nickname.
     """
     profile = get_first_object_or_none(Profile.objects.filter(user=username))
-    nickname = profile.nickname if profile else username.split('@')[0]
+    if profile and profile.nickname and profile.nickname.strip():
+        nickname = profile.nickname.strip()
+    elif profile and profile.contact_email:
+        nickname = profile.contact_email.split('@')[0]
+    else:
+        nickname = username.split('@')[0]
     contactemail = profile.contact_email if profile else ''
 
     key = normalize_cache_key(username, NICKNAME_CACHE_PREFIX)
