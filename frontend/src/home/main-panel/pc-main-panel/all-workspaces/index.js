@@ -76,17 +76,17 @@ class AllWorkspaces extends React.Component {
       <Fragment>
         <div className="main-panel-center project-center">
           <div className="cur-view-container d-flex flex-1 flex-column">
+            {isOrgContext &&
+              <OrgTitle
+                isDesktop={isDesktop}
+                onCreateGroupToggle={this.onCreateGroupToggle}
+              />
+            }
             <div
               className={`${isDesktop ? '' : 'p-0'} cur-view-content`}
               onScroll={Utils.debounce(this.onScroll)}
               ref={ref => this.viewContent = ref}
             >
-              {isOrgContext &&
-                <OrgTitle
-                  isDesktop={isDesktop}
-                  onCreateGroupToggle={this.onCreateGroupToggle}
-                />
-              }
               {errorMsg && <p className="error text-center">{errorMsg}</p>}
               {!errorMsg && (
                 <Fragment>
@@ -118,8 +118,7 @@ class AllWorkspaces extends React.Component {
             </div>
           </div>
         </div>
-        {this.state.isShowCreateGroupDialog && (<CreateGroupDialog onSubmit={this.onCreateGroup} onToggle={this.onCreateGroupToggle}/>
-        )}
+        {this.state.isShowCreateGroupDialog && <CreateGroupDialog onSubmit={this.onCreateGroup} onToggle={this.onCreateGroupToggle}/>}
       </Fragment>
     );
   }
