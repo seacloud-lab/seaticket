@@ -279,7 +279,7 @@ class Context {
     let modifyRows = [];
     rowsData.forEach(rowData => {
       const { row_id, row } = rowData;
-      modifyRows.push(this.modifyRow(row_id, row));
+      modifyRows.push(this.modifyRow(row_id, row, ...params));
     });
     return Promise.all(modifyRows);
   };
