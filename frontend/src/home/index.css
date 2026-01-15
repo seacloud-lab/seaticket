@@ -3,7 +3,7 @@
 }
 
 .main-panel-north {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem;
 }
 
 .sea-qa-home-header {
@@ -17,15 +17,8 @@
   min-height: 0;
 }
 
-.sea-qa-home-header .sea-qa-text {
-  display: flex;
-  align-items: center;
-  font-size: 1.25rem;
-  color: #666666;
-}
-
 .project-side-nav {
-  padding: 12px 8px;
+  padding: 0px 8px;
   flex: auto;
   display: flex;
   flex-direction: column;
@@ -78,7 +71,7 @@
 .sea-qa-nav-list .nav-toggle-icon {
   width: 20px;
   height: 20px;
-  color: #666;
+  color: var(--bs-icon-color);
   position: absolute;
   display: flex;
   align-items: center;
@@ -342,7 +335,7 @@
 }
 
 .project-item-more-operation i {
-  color: #666;
+  color: var(--bs-icon-color);
   cursor: pointer;
   padding: 4px;
 }
@@ -446,7 +439,7 @@
 .mobile-dropdown-item .sea-qa-icon-svg {
   font-size: 1.25rem;
   margin-right: 1rem;
-  color: #666666;
+  color: var(--bs-icon-color);
 }
 
 .mobile-dropdown-item .mobile-dropdown-span {
@@ -477,7 +470,7 @@
 .project-name .star,
 .table-mobile-name .star {
   padding-left: 8px;
-  color: #666666;
+  color: var(--bs-icon-color);
 }
 
 .workspace-header .group-admin {
