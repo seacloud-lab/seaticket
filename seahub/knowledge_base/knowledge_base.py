@@ -320,15 +320,16 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if file_urls:
-            try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Upload files failed.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        row[KnowledgeBaseTable.content.name] = content_text
+        if content_text is not None:
+            if file_urls:
+                try:
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                    content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
+                except Exception as e:
+                    logger.error(e)
+                    error_msg = 'Upload files failed.'
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            row[KnowledgeBaseTable.content.name] = content_text
 
         row[KnowledgeBaseTable.last_modifier.name] = username
         row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
