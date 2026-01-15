@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
-import { mediaUrl } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
@@ -48,7 +48,7 @@ const ConnectionResourceDetails = ({ resource, columns, projectUuid, updateDetai
 
   if (Array.isArray(details)) {
     if (details.length === 0) {
-      return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />);
+      return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     }
     if (type === CONNECTION_TYPE.EMAIL) {
       const assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, resource.connection_id);
@@ -70,7 +70,7 @@ const ConnectionResourceDetails = ({ resource, columns, projectUuid, updateDetai
   if (details) {
     return (<CustomizeMarkdownViewer value={details} showTOC={false} />);
   }
-  return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />);
+  return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };
 
 export default ConnectionResourceDetails;
