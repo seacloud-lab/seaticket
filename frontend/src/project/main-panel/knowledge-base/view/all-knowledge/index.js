@@ -8,10 +8,11 @@ import { knowledgeBaseAPI } from '@/project/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
+import { CenteredLoading } from '@/components';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
-  const { tagsData, createTag } = useMetadata();
+  const { isLoading: isMetadataLoading, tagsData, createTag } = useMetadata();
 
   const expandRow = useCallback((row) => {
     togglePageSlugId(row._id);
@@ -48,7 +49,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
       modifyRow: (row_id, row_update, isCopyPaste, { data, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, tagsData });
-        return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData);
+        return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData, isCopyPaste);
       },
       deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
       deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
@@ -59,7 +60,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       importExcel: (file, previewOnly) => knowledgeBaseAPI.importExcel(projectUuid, file, previewOnly),
       commitImportExcel: (fileName) => knowledgeBaseAPI.commitImportExcel(projectUuid, fileName),
     };
-  }, [projectUuid, tagsData]);
+  }, [projectUuid]);
 
   const createContextMenuOptions = useCallback((props) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
@@ -73,6 +74,8 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     Row: gettext('Record'),
     Rows: gettext('Records'),
   }), []);
+
+  if (isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata
