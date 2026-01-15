@@ -5,7 +5,8 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, EmailTable, ThreadTable, KnowledgeBaseTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, EmailTable, ThreadTable, \
+    KnowledgeBaseTable, ProjectTagsTable, PropertyTypes
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +354,6 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         TicketsTable.state.name,
         TicketsTable.substate.name,
         TicketsTable.type.name,
-        TicketsTable.tags.name,
         TicketsTable.assignees.name,
         TicketsTable.participants.name,
         TicketsTable.creator.name,
@@ -500,6 +500,43 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
     )
 
 
+def init_project_tags_seadb_table(seadb_api, project_uuid):
+    table_name = ProjectTagsTable.gen_table_name()
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in ProjectTagsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            ProjectTagsTable.ticket_id.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            ProjectTagsTable.knowledge_id.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            ProjectTagsTable.tags.name,
+        ]
+    )
+
 def get_connection_table_name(connection):
     connection_id = connection.id
     connection_type = connection.type
@@ -536,7 +573,7 @@ def get_tickets_columns(seadb_api, project_uuid):
     columns = table_metadata.get('columns') or []
     return columns
 
-def list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit):
+def list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit, join_config=None):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
@@ -549,14 +586,45 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
+
+    # If columns come from joined tables (e.g. project_tags.tags), they won't exist in
+    # tickets table metadata. But SQL generation relies on the provided columns list
+    # to decide which fields to SELECT.
+    if join_config:
+        join_column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+        extra_column_names = set()
+        for col_name, source in join_column_sources.items():
+            if source == 'join':
+                extra_column_names.add(col_name)
+        extra_column_names.update(join_column_map.keys())
+
+        existing_names = {c.get('name') for c in display_columns}
+        for col_name in extra_column_names:
+            if col_name in existing_names:
+                continue
+            if col_name not in TICKET_DISPLAY_ALL_COLUMNS:
+                continue
+            # Provide a minimal column schema so filters can be translated to SQL.
+            # `tags` is treated as a multiple-select like field.
+            col_type = PropertyTypes.MULTIPLE_SELECT if col_name == 'tags' else PropertyTypes.TEXT
+            display_columns.append({'name': col_name, 'key': col_name, 'type': col_type})
+
+    if join_config:
+        view_copy['join_config'] = join_config
     sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    print(sql, '----------sql')
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
+        columns_metadata = res.get('metadata', {})
     except Exception as e:
+        logger.error(f'SeaDB query error for knowledge base: {e}')
         logger.error(f'SeaDB query error for connection tickets: {e}')
+        columns_metadata = {}
         records = []
-    return records, display_columns
+
+    return records, columns_metadata
 
 
 def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
@@ -571,7 +639,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
     return ticket_data
 
 
-def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
+def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}, join_config=None):
     columns = get_tickets_columns(seadb_api, project_uuid)
     all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
@@ -582,6 +650,29 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         name = column['name']
         if name in all_columns_names:
             display_columns.append(column)
+
+    # If columns come from joined tables (e.g. project_tags.tags), they won't exist in
+    # tickets table metadata. But SQL generation relies on the provided columns list
+    # to decide which fields to SELECT.
+    if join_config:
+        join_column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+        extra_column_names = set()
+        for col_name, source in join_column_sources.items():
+            if source == 'join':
+                extra_column_names.add(col_name)
+        extra_column_names.update(join_column_map.keys())
+
+        existing_names = {c.get('name') for c in display_columns}
+        for col_name in extra_column_names:
+            if col_name in existing_names:
+                continue
+            if col_name not in all_columns_names:
+                continue
+            # Provide a minimal column schema so filters can be translated to SQL.
+            # `tags` is treated as a multiple-select like field.
+            col_type = PropertyTypes.MULTIPLE_SELECT if col_name == 'tags' else PropertyTypes.TEXT
+            display_columns.append({'name': col_name, 'key': col_name, 'type': col_type})
 
     view_copy = view_config.copy()
     sorts = view_copy.get('sorts', [])
@@ -603,24 +694,87 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
 
     view_copy['basic_filters'] = basic_filters
 
+    if join_config:
+        view_copy['join_config'] = join_config
+
     sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results')
-    return records, display_columns
+    columns_metadata = res.get('metadata', {})
+    return records, columns_metadata
 
 
-def list_trash_tickets(seadb_api, project_uuid, start, limit):
-    query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
-    sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
+def list_trash_tickets(seadb_api, project_uuid, start, limit, join_config=None):
+    base_alias = 't'
+    join_alias = 'pt'
+    join_table = None
+    join_on_condition = None
+    use_comma_join = False
+    column_sources = {}
+    join_column_map = {}
+
+    if join_config and join_config.get('enable', True):
+        join_table = join_config.get('join_table')
+        base_column = join_config.get('base_column')
+        join_column = join_config.get('join_column')
+        base_alias = join_config.get('base_alias') or base_alias
+        join_alias = join_config.get('join_alias') or join_alias
+        join_type = (join_config.get('join_type') or 'LEFT JOIN').strip().upper()
+        use_comma_join = join_type in ('INNER JOIN', 'JOIN')
+        if join_table and base_column and join_column:
+            join_on_condition = f"{base_alias}.`{base_column}` = {join_alias}.`{join_column}`"
+        column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+
+    select_exprs = []
+    for col_name in TICKET_DISPLAY_ALL_COLUMNS:
+        source = column_sources.get(col_name) or 'base'
+        if source == 'join' and join_table:
+            join_col = join_column_map.get(col_name) or col_name
+            select_exprs.append(f"{join_alias}.`{join_col}`")
+        else:
+            select_exprs.append(f"{base_alias}.`{col_name}`")
+    query_fields = ", ".join(select_exprs)
+
+    if join_table and join_on_condition:
+        if use_comma_join:
+            from_clause = f"`tickets` {base_alias}, `{join_table}` {join_alias}"
+            where_clause = f"WHERE {base_alias}.`deleted` = True AND ({join_on_condition})"
+        else:
+            from_clause = f"`tickets` AS {base_alias} {join_config.get('join_type') or 'LEFT JOIN'} `{join_table}` AS {join_alias} ON {join_on_condition}"
+            where_clause = f"WHERE {base_alias}.`deleted` = True"
+    else:
+        from_clause = f"`tickets` {base_alias}"
+        where_clause = f"WHERE {base_alias}.`deleted` = True"
+
+    sql = f"SELECT {query_fields} FROM {from_clause} {where_clause} LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results', [])
-    columns = get_tickets_columns(seadb_api, project_uuid)
-    display_columns = []
-    for column in columns:
-        name = column['name']
-        if name in TICKET_DISPLAY_ALL_COLUMNS:
-            display_columns.append(column)
-    return records, display_columns
+    columns_metadata = res.get('metadata', {})
+
+    # Normalize tags from option names to option ids for frontend TagsFormatter.
+    if records:
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            tables_metadata = base_metadata.get('tables') or []
+            project_tags_meta = get_current_table_metadata(tables_metadata, 'project_tags')
+            tags_col = None
+            if project_tags_meta:
+                for c in (project_tags_meta.get('columns') or []):
+                    if c.get('name') == 'tags':
+                        tags_col = c
+                        break
+            options = ((tags_col or {}).get('data') or {}).get('options', []) or []
+            name_to_id = {opt.get('name'): opt.get('id') for opt in options if opt.get('name') and opt.get('id')}
+            if name_to_id:
+                for r in records:
+                    tags = r.get('tags')
+                    if not isinstance(tags, list) or not tags:
+                        continue
+                    r['tags'] = [name_to_id.get(t, t) for t in tags if t is not None]
+        except Exception:
+            pass
+    return records, columns_metadata
 
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
@@ -752,7 +906,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     return thread_record
 
 
-def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
+def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username, join_config=None):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
@@ -768,14 +922,111 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
+
+    if join_config:
+        join_column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+        extra_column_names = set()
+        for col_name, source in join_column_sources.items():
+            if source == 'join':
+                extra_column_names.add(col_name)
+        extra_column_names.update(join_column_map.keys())
+
+        existing_names = {c.get('name') for c in display_columns}
+        for col_name in extra_column_names:
+            if col_name in existing_names:
+                continue
+            if col_name not in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
+                continue
+            # Provide a minimal column schema so filters can be translated to SQL.
+            # `tags` is treated as a multiple-select like field.
+            col_type = PropertyTypes.MULTIPLE_SELECT if col_name == 'tags' else PropertyTypes.TEXT
+            display_columns.append({'name': col_name, 'key': col_name, 'type': col_type})
+
+    if join_config:
+        view_copy['join_config'] = join_config
     sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
+        columns_metadata = res.get('metadata', {})
     except Exception as e:
         logger.error(f'SeaDB query error for knowledge base : {e}')
         records = []
-    return records, display_columns
+        columns_metadata = {}
+
+    # Normalize tags from option names to option ids for frontend TagsFormatter.
+    if records:
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            tables_metadata = base_metadata.get('tables') or []
+            project_tags_meta = get_current_table_metadata(tables_metadata, 'project_tags')
+            tags_col = None
+            if project_tags_meta:
+                for c in (project_tags_meta.get('columns') or []):
+                    if c.get('name') == 'tags':
+                        tags_col = c
+                        break
+            options = ((tags_col or {}).get('data') or {}).get('options', []) or []
+            name_to_id = {opt.get('name'): opt.get('id') for opt in options if opt.get('name') and opt.get('id')}
+            if name_to_id:
+                for r in records:
+                    tags = r.get('tags')
+                    if not isinstance(tags, list) or not tags:
+                        continue
+                    r['tags'] = [name_to_id.get(t, t) for t in tags if t is not None]
+        except Exception:
+            pass
+    return records, columns_metadata
+
+def list_trash_knowledge_base(seadb_api, project_uuid, start, limit, join_config=None):
+    base_alias = 't'
+    join_alias = 'pt'
+    join_table = None
+    join_on_condition = None
+    use_comma_join = False
+    column_sources = {}
+    join_column_map = {}
+
+    if join_config and join_config.get('enable', True):
+        join_table = join_config.get('join_table')
+        base_column = join_config.get('base_column')
+        join_column = join_config.get('join_column')
+        base_alias = join_config.get('base_alias') or base_alias
+        join_alias = join_config.get('join_alias') or join_alias
+        join_type = (join_config.get('join_type') or 'LEFT JOIN').strip().upper()
+        use_comma_join = join_type in ('INNER JOIN', 'JOIN')
+        if join_table and base_column and join_column:
+            join_on_condition = f"{base_alias}.`{base_column}` = {join_alias}.`{join_column}`"
+        column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+
+    select_exprs = []
+    for col_name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
+        source = column_sources.get(col_name) or 'base'
+        if source == 'join' and join_table:
+            join_col = join_column_map.get(col_name) or col_name
+            select_exprs.append(f"{join_alias}.`{join_col}` AS `{col_name}`")
+        else:
+            select_exprs.append(f"{base_alias}.`{col_name}`")
+    query_fields = ", ".join(select_exprs)
+
+    if join_table and join_on_condition:
+        if use_comma_join:
+            from_clause = f"`knowledge_base` {base_alias}, `{join_table}` {join_alias}"
+            where_clause = f"WHERE {base_alias}.`deleted` = True AND ({join_on_condition})"
+        else:
+            from_clause = f"`knowledge_base` AS {base_alias} {join_config.get('join_type') or 'LEFT JOIN'} `{join_table}` AS {join_alias} ON {join_on_condition}"
+            where_clause = f"WHERE {base_alias}.`deleted` = True"
+    else:
+        from_clause = f"`knowledge_base` {base_alias}"
+        where_clause = f"WHERE {base_alias}.`deleted` = True"
+
+    sql = f"SELECT {query_fields} FROM {from_clause} {where_clause} LIMIT {limit} OFFSET {start}"
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    records = res.get('results', [])
+    columns_metadata = res.get('metadata', {})
+    return records, columns_metadata
 
 def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_type_map, search_text, limit):
     search_tables = [
@@ -830,3 +1081,37 @@ def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_ty
             results.append(result)
 
     return results
+
+
+def get_tag_counts_by_link_type(seadb_api, project_uuid, link_type):
+    if link_type == 'tickets':
+        sql = (
+            "SELECT pt.`tags`, COUNT(*) AS count "
+            "FROM `project_tags` pt, `tickets` t "
+            "WHERE pt.`ticket_id` = t.`_pk` AND (t.`deleted` = False OR t.`deleted` is NULL) "
+            "GROUP BY pt.`tags`"
+        )
+    elif link_type == 'knowledge_base':
+        sql = (
+            "SELECT pt.`tags`, COUNT(*) AS count "
+            "FROM `project_tags` pt, `knowledge_base` kb "
+            "WHERE pt.`knowledge_id` = kb.`_pk` AND (kb.`deleted` = False OR kb.`deleted` is NULL) "
+            "GROUP BY pt.`tags`"
+        )
+    res = seadb_api.query_rows(project_uuid, sql)
+    rows = res.get('results') or []
+    metadata = res.get('metadata')
+    column = next((column for column in metadata if column['name'] == 'tags'), None)
+    if not column:
+        return [], {}
+    column_data = (column.get('data') or {})
+    options = column_data.get('options', []) or []
+    # tags is array; others are scalar strings
+    option_name_to_option_count = {row.get('project_tags.tags')[0]: row.get('count') for row in rows if row.get('project_tags.tags')}
+    if link_type == 'tickets':
+        for option in options:
+            option['tickets_count'] = option_name_to_option_count.get(option.get('name'), 0)
+    elif link_type == 'knowledge_base':
+        for option in options:
+            option['records_count'] = option_name_to_option_count.get(option.get('name'), 0)
+    return options, column

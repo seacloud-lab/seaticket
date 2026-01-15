@@ -127,7 +127,10 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     setLoading(true);
     knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
       handleUpdateRowsCacheData(pageSlugId, res?.data.record);
-      const { title = '', content = '', tags = [] } = res?.data.record || {};
+      const record = res?.data.record || {};
+      const title = record['knowledge_base.title'] || '';
+      const content = record['knowledge_base.content'] || [];
+      const tags = record['project_tags.tags'] || [];
       setTitle(title);
       setContent({ text: content || '' });
       setTags(tags);

@@ -1038,6 +1038,143 @@ class SQLGenerator(object):
         self.start = start
         self.limit = limit
         self.username = username
+        self.from_sql = self.view.get('from_sql', '')
+        self.select_expressions = self.view.get('select_expressions', [])
+        self.join_config = self.view.get('join_config') or {}
+        self._use_join_subquery = True
+        self._join_base_alias = ''
+        self._join_alias = ''
+        self._join_column_sources = {}
+        self._join_column_map = {}
+        self._join_on_condition = ''
+        self._use_comma_join = False
+
+        # If join_config is provided, generate a derived table (subquery) with JOIN so that
+        # existing filter/sort logic (which uses unqualified column names) stays compatible.
+        #
+        # join_config example:
+        # {
+        #   'enable': True,
+        #   'join_table': 'project_tags',
+        #   'base_column': '_pk',
+        #   'join_column': 'ticket_id',
+        #   'join_type': 'LEFT JOIN',
+        #   'base_alias': 't',
+        #   'join_alias': 'pt',
+        #   'column_sources': {'tags': 'join'},
+        #   'join_column_map': {'tags': 'tags'}
+        # }
+        if (not self.from_sql) and self.join_config and self.join_config.get('enable', True):
+            self._use_join_subquery = self.join_config.get('use_subquery', True)
+            if self._use_join_subquery:
+                self.from_sql = self._build_join_subquery_from_sql(self.join_config)
+            else:
+                self.from_sql = self._build_direct_join_from_sql(self.join_config)
+
+    def _build_join_subquery_from_sql(self, join_config):
+        join_table = join_config.get('join_table')
+        base_column = join_config.get('base_column')
+        join_column = join_config.get('join_column')
+        if not (join_table and base_column and join_column):
+            return ''
+
+        join_type = join_config.get('join_type') or 'LEFT JOIN'
+        base_alias = join_config.get('base_alias') or 't'
+        join_alias = join_config.get('join_alias') or 'j'
+        column_sources = join_config.get('column_sources') or {}
+        join_column_map = join_config.get('join_column_map') or {}
+
+        sub_select_exprs = []
+        for col_name in self.column_names:
+            source = column_sources.get(col_name) or 'base'
+            if source == 'join':
+                join_col = join_column_map.get(col_name) or col_name
+                sub_select_exprs.append(f"{join_alias}.`{join_col}` AS `{col_name}`")
+            else:
+                sub_select_exprs.append(f"{base_alias}.`{col_name}` AS `{col_name}`")
+
+        # Ensure `deleted` exists for SQLGenerator's implicit deleted filter.
+        if 'deleted' not in self.column_names:
+            sub_select_exprs.append(f"{base_alias}.`deleted` AS `deleted`")
+
+        select_sql = ", ".join(sub_select_exprs)
+        return (
+            f"(SELECT {select_sql} FROM `{self.table_name}` AS {base_alias} "
+            f"{join_type} `{join_table}` AS {join_alias} "
+            f"ON {base_alias}.`{base_column}` = {join_alias}.`{join_column}`) AS `{self.table_name}`"
+        )
+
+    def _build_direct_join_from_sql(self, join_config):
+        join_table = join_config.get('join_table')
+        base_column = join_config.get('base_column')
+        join_column = join_config.get('join_column')
+        if not (join_table and base_column and join_column):
+            return ''
+
+        join_type = join_config.get('join_type') or 'LEFT JOIN'
+        base_alias = join_config.get('base_alias') or 't'
+        join_alias = join_config.get('join_alias') or 'j'
+        self._join_base_alias = base_alias
+        self._join_alias = join_alias
+        self._join_column_sources = join_config.get('column_sources') or {}
+        self._join_column_map = join_config.get('join_column_map') or {}
+        self._join_on_condition = f"{base_alias}.`{base_column}` = {join_alias}.`{join_column}`"
+        self._use_comma_join = (join_type or '').strip().upper() in ('INNER JOIN', 'JOIN')
+
+        # Build select expressions if caller didn't provide explicit select_expressions.
+        if not self.select_expressions:
+            select_exprs = []
+            for col_name in self.column_names:
+                source = self._join_column_sources.get(col_name) or 'base'
+                if source == 'join':
+                    join_col = self._join_column_map.get(col_name) or col_name
+                    if join_col == col_name:
+                        select_exprs.append(f"{join_alias}.`{join_col}`")
+                    else:
+                        select_exprs.append(f"{join_alias}.`{join_col}` AS `{col_name}`")
+                else:
+                    select_exprs.append(f"{base_alias}.`{col_name}`")
+            self.select_expressions = select_exprs
+
+        if self._use_comma_join:
+            # Some SeaDB backends don't accept explicit INNER JOIN keywords.
+            # Use comma join and put join condition into WHERE instead.
+            return f"`{self.table_name}` {base_alias}, `{join_table}` {join_alias}"
+
+        return (
+            f"`{self.table_name}` AS {base_alias} "
+            f"{join_type} `{join_table}` AS {join_alias} "
+            f"ON {self._join_on_condition}"
+        )
+
+    def _qualify_column_ref(self, column_name):
+        if not (self.join_config and self.join_config.get('enable', True)):
+            return f"`{column_name}`"
+        if self._use_join_subquery:
+            return f"`{column_name}`"
+        if column_name == 'deleted':
+            return f"{self._join_base_alias}.`deleted`"
+        source = self._join_column_sources.get(column_name) or 'base'
+        if source == 'join':
+            join_col = self._join_column_map.get(column_name) or column_name
+            return f"{self._join_alias}.`{join_col}`"
+        return f"{self._join_base_alias}.`{column_name}`"
+
+    def _rewrite_sql_with_qualified_columns(self, sql):
+        if not (self.join_config and self.join_config.get('enable', True)):
+            return sql
+        if self._use_join_subquery:
+            return sql
+
+        # Replace unqualified backtick identifiers with qualified ones.
+        # Avoid rewriting already-qualified refs like t.`col` (backtick preceded by a dot).
+        def _repl(m):
+            col = m.group(1)
+            if col in set(self.column_names) | {'deleted'}:
+                return self._qualify_column_ref(col)
+            return m.group(0)
+
+        return re.sub(r'(?<!\.)`([^`]+)`', _repl, sql)
 
     def _get_column_by_key(self, col_key):
         for col in self.columns:
@@ -1066,7 +1203,9 @@ class SQLGenerator(object):
                     if not column:
                         continue
 
-                order_condition = '`%s` %s' % (column.get('name'), sort_type)
+                col_name = column.get('name')
+                order_col_ref = self._qualify_column_ref(col_name) if col_name else ''
+                order_condition = '%s %s' % (order_col_ref or ('`%s`' % col_name), sort_type)
                 clauses.append(order_condition)
         if not clauses:
             return ''
@@ -1168,13 +1307,24 @@ class SQLGenerator(object):
         )
 
     def to_sql(self):
-        column_join = ', '.join(['`%s`' % column_name for column_name in self.column_names])
-        sql = f"SELECT {column_join} FROM `{self.table_name}`"
-        filter_clause = self._filter_2_sql()
-        if filter_clause:
-            filter_clause = "%s AND (`deleted` = False OR `deleted` is NULL)" % filter_clause
+        if self.select_expressions:
+            column_join = ', '.join(self.select_expressions)
         else:
-            filter_clause = "WHERE (`deleted` = False OR `deleted` is NULL)"
+            column_join = ', '.join(['`%s`' % column_name for column_name in self.column_names])
+
+        from_clause = self.from_sql or f"`{self.table_name}`"
+        sql = f"SELECT {column_join} FROM {from_clause}"
+        filter_clause = self._filter_2_sql()
+        if (not self._use_join_subquery) and self._use_comma_join and self._join_on_condition:
+            if filter_clause:
+                filter_clause = "%s AND (%s)" % (filter_clause, self._join_on_condition)
+            else:
+                filter_clause = "WHERE (%s)" % self._join_on_condition
+        deleted_ref = self._qualify_column_ref('deleted')
+        if filter_clause:
+            filter_clause = "%s AND (%s = False OR %s is NULL)" % (filter_clause, deleted_ref, deleted_ref)
+        else:
+            filter_clause = "WHERE (%s = False OR %s is NULL)" % (deleted_ref, deleted_ref)
         sort_clause = self.sort_2_sql()
         limit_clause = self._limit_2_sql()
         if filter_clause:
@@ -1183,7 +1333,7 @@ class SQLGenerator(object):
             sql = "%s %s" % (sql, sort_clause)
         if limit_clause:
             sql = "%s %s" % (sql, limit_clause)
-        return sql
+        return self._rewrite_sql_with_qualified_columns(sql)
 
 
 def view_data_2_sql(table, columns, view, username, start, limit):

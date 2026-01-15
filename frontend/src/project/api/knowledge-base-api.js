@@ -234,12 +234,13 @@ class KnowledgeBaseAPI {
 
   // tags
   listKnowledgeBaseTags(projectUuid) {
-    let url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
-    return this.req.get(url);
+    const params = { link_type: 'knowledge_base' };
+    let url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
+    return this.req.get(url, { params });
   }
 
   createKnowledgeBaseTag(projectUuid, { name, description, color, text_color }) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
     let form = new FormData();
     if (name) {
       form.append('name', name);
@@ -257,7 +258,7 @@ class KnowledgeBaseAPI {
   }
 
   modifyKnowledgeBaseTag(projectUuid, tagId, update) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tags/' + tagId + '/';
     let form = new FormData();
     Object.keys(update).forEach(key => {
       form.append(key, update[key]);
@@ -266,17 +267,17 @@ class KnowledgeBaseAPI {
   }
 
   deleteKnowledgeBaseTag(projectUuid, tagId) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tags/' + tagId + '/';
     return this.req.delete(url);
   }
 
   deleteKnowledgeBaseTags(projectUuid, tagIds) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
     return this.req.delete(url, { data: { tag_ids: tagIds } });
   }
 
   listKnowledgeBaseByTag(projectUuid, tagId) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tags/' + tagId + '/';
     return this.req.get(url);
   }
 

@@ -9,12 +9,12 @@ from unittest.mock import patch
 
 def get_kb_tags_url(project_uuid):
     """Return the knowledge base tags endpoint URL."""
-    return f'/api/v1/project/{project_uuid}/knowledge-base/tags/'
+    return f'/api/v1/project/{project_uuid}/tags/'
 
 
 def get_kb_tag_url(project_uuid, tag_id):
     """Return the URL for a specific knowledge base tag."""
-    return f'/api/v1/project/{project_uuid}/knowledge-base/tags/{tag_id}/'
+    return f'/api/v1/project/{project_uuid}/tags/{tag_id}/'
 
 
 # Fixtures defined in conftest.py ------------------------------------------------

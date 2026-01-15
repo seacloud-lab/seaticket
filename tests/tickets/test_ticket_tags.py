@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from seahub.tickets.ticket_tags import TicketTagsAPIView, TicketTagAPIView
+from seahub.project_tags.project_tags import ProjectTagsAPIView, ProjectTagAPIView
 
 
 def test_get_tags_feature_not_enabled(factory, user):
@@ -8,7 +8,7 @@ def test_get_tags_feature_not_enabled(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
 
@@ -26,7 +26,7 @@ def test_get_tags_success(factory, user):
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI'), \
             patch('seahub.tickets.ticket_tags.get_ticket_counts_group_by_column_name', return_value=([{'id': 'tag1', 'name': 't'}], None)):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 200
     assert 'tags' in resp.data
@@ -38,7 +38,7 @@ def test_get_tags_project_not_found(factory, user):
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 404
 
@@ -54,7 +54,7 @@ def test_get_tags_permission_denied(factory, user):
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=False):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
 
@@ -71,7 +71,7 @@ def test_get_tags_internal_server_error(factory, user):
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', side_effect=Exception('err')):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 500
 
@@ -82,7 +82,7 @@ def test_post_tag_missing_name(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
 
@@ -94,7 +94,7 @@ def test_delete_tags_feature_not_enabled(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
 
@@ -105,7 +105,7 @@ def test_post_tag_feature_not_enabled(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
 
@@ -130,7 +130,7 @@ def test_post_tag_duplicate_name(factory, user):
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
 
@@ -157,7 +157,7 @@ def test_post_tag_success(factory, user):
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_tags.add_select_option', return_value={'id': 'tag1', 'name': 'tag1'}):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 201
     assert 'tag' in resp.data
@@ -168,7 +168,7 @@ def test_delete_tags_missing_ids(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
 
@@ -195,7 +195,7 @@ def test_delete_tags_success(factory, user):
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_tags.batch_delete_select_option'):
-        resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 200
     assert resp.data['success'] is True
@@ -221,7 +221,7 @@ def test_get_tag_not_found(factory, user):
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 404
 
@@ -247,7 +247,7 @@ def test_delete_tag_success(factory, user):
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 200
     assert resp.data['success'] is True
@@ -278,7 +278,7 @@ def test_put_tag_success(factory, user):
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_tags.update_select_option'):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 200
     assert resp.data['success'] is True
@@ -290,7 +290,7 @@ def test_get_tag_project_not_found(factory, user):
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 404
 
@@ -300,7 +300,7 @@ def test_put_tag_argument_invalid(factory, user):
     request.user = user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagsAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 400
 
@@ -326,7 +326,7 @@ def test_put_tag_not_found(factory, user):
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 404
 
@@ -350,7 +350,7 @@ def test_delete_tag_not_found(factory, user):
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 404
 
@@ -377,7 +377,7 @@ def test_get_tag_success(factory, user):
             patch('seahub.tickets.ticket_tags.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_tags.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_tags.filter_tickets_by_select', return_value=([{'_pk': 1}], ['c'])):
-        resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
+        resp = ProjectTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 200
     assert 'tickets' in resp.data

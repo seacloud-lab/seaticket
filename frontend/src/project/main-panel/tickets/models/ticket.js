@@ -31,29 +31,31 @@ class Comment {
 
 class Ticket {
   constructor(object) {
-    this.id = object._pk || '';
-    this._pk = object._pk || '';
+    const pk = object['tickets._pk'] ?? object._id ?? object.id ?? '';
+    this.id = pk;
+    this._pk = pk;
 
-    this.title = object.title || '';
-    this.content = object.content || '';
-    this.state = object.state || TICKET_STATE.OPEN;
-    this.substate = object.substate || '';
-    this.type = object.type || '';
-    this.tags = object.tags || [];
-    this.priority = object.priority || 0;
+    this.title = object['tickets.title'] || '';
+    this.content = object['tickets.content'] || '';
+    this.state = object['tickets.state'] || TICKET_STATE.OPEN;
+    this.substate = object['tickets.substate'] || '';
+    this.type = object['tickets.type'] || '';
+    this.tags = object['project_tags.tags'] || [];
+    this.priority = object['tickets.priority'] || 0;
 
-    this.assignees = object.assignees || [];
-    this.participants = object.participants || [];
+    this.assignees = object['tickets.assignees'] || [];
+    console.log('Ticket assignees:', this.assignees);
+    this.participants = object['tickets.participants'] || [];
 
-    this.creator = object.creator || '';
-    this.created_time = object.created_time || '';
-    this.closed_time = object.closed_time || '';
+    this.creator = object['tickets.creator'] || '';
+    this.created_time = object['tickets.created_time'] || '';
+    this.closed_time = object['tickets.closed_time'] || '';
 
 
-    this.comments = object.comments || [];
-    this.comment_count = object.comment_count || '';
+    this.comments = object['tickets.comments'] || [];
+    this.comment_count = object['tickets.comment_count'] || '';
 
-    this.modified_time = object.modified_time || '';
+    this.modified_time = object['tickets.modified_time'] || '';
 
     // format date
     if (this.created_time) {
@@ -103,8 +105,20 @@ class Ticket {
 
 class TicketForAI {
   constructor(object) {
-    this._id = String(object._pk) || '';
-    this.title = object.title || '';
+    const normalized = { ...object };
+    Object.keys(object || {}).forEach((k) => {
+      if (!k || typeof k !== 'string') return;
+      if (!k.startsWith('tickets.')) return;
+      const key = k.slice('tickets.'.length);
+      if (!key) return;
+      if (normalized[key] === undefined) {
+        normalized[key] = object[k];
+      }
+    });
+
+    const pk = normalized._pk ?? normalized._id ?? normalized.id;
+    this._id = pk !== undefined && pk !== null ? String(pk) : '';
+    this.title = normalized.title || '';
     this.type = 'ticket';
     this.icon = 'all-tickets';
     this.key = `${this.type}__${this._id}`;

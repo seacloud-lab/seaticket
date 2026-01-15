@@ -2,14 +2,13 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .ticket_tags import TicketTagsAPIView, TicketTagAPIView
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
 from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
     TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
-
+from ..project_tags.project_tags import ProjectTagsAPIView, ProjectTagAPIView
 
 urlpatterns = [
     # tickets page
@@ -34,8 +33,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/metadata/$', TicketMetadataAPIView.as_view(), name='api-v1-project-ticket-metadata'),
 
     # tags
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/$', TicketTagsAPIView.as_view(), name='api-v1-project-tags'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', TicketTagAPIView.as_view(), name='api-v1-project-tag'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(),
+            name='api-v1-project-tags'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', ProjectTagAPIView.as_view(), name='api-v1-project-tag'),
 
     # types
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/types/$', TicketTypesAPIView.as_view(), name='api-v1-project-types'),

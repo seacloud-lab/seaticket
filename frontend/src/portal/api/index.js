@@ -64,8 +64,9 @@ class PortalAPI {
   }
 
   listTicketTags(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/tags/';
-    return this.req.get(url);
+    const params = {link_type: 'tickets'};
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/tags/';
+    return this.req.get(url, { params });
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {

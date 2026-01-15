@@ -18,8 +18,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission, get_current_table_metadata, replace_file_url_in_content
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
-from seahub.seadb_models.models import KnowledgeBaseTable
-from seahub.seadb_models.utils import list_knowledge_base_records
+from seahub.seadb_models.models import KnowledgeBaseTable, ProjectTagsTable
+from seahub.seadb_models.utils import list_knowledge_base_records, list_trash_knowledge_base
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
 from seahub.utils.decorators import require_org_context
@@ -96,13 +96,12 @@ class KnowledgeBasesAPIView(APIView):
             row = {
                 KnowledgeBaseTable.title.name: title,
                 KnowledgeBaseTable.content.name: content_text,
-                KnowledgeBaseTable.tags.name: tag_names,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
                 KnowledgeBaseTable.modified_time.name: now_datetime,
                 KnowledgeBaseTable.deleted.name: False,
-             }
+            }
             res = seadb_api.insert_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
@@ -110,6 +109,11 @@ class KnowledgeBasesAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             insert_row_pk = pks[0]
             row.update({'_pk': insert_row_pk})
+            tag_row = {
+                ProjectTagsTable.knowledge_id.name: insert_row_pk,
+                ProjectTagsTable.tags.name: tag_names,
+            }
+            tag_res = seadb_api.insert_rows(project_uuid, 'project_tags', [tag_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -155,10 +159,27 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        join_config = {
+            'enable': True,
+            'use_subquery': False,
+            'join_table': 'project_tags',
+            'base_column': '_pk',
+            'join_column': 'knowledge_id',
+            'join_type': 'INNER JOIN',
+            'base_alias': 't',
+            'join_alias': 'pt',
+            'column_sources': {
+                'tags': 'join',
+            },
+            'join_column_map': {
+                'tags': 'tags',
+            },
+        }
+
         try:
             seadb_api = SeaDBAPI(username)
             view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
-            records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
+            records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username, join_config=join_config)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -256,13 +277,6 @@ class KnowledgeBaseAPIView(APIView):
         row = {}
         username = request.user.username
 
-        if 'tags' in request.data:
-            tags = request.data.get('tags')
-            if not isinstance(tags, list):
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.tags.name] = tags        
-
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
@@ -281,7 +295,7 @@ class KnowledgeBaseAPIView(APIView):
             except ValueError:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            
+
             if len(file_urls) > 0:
                 try:
                     new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
@@ -291,6 +305,12 @@ class KnowledgeBaseAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             row[KnowledgeBaseTable.content.name] = content_text
+
+        if 'tags' in request.data:
+            tags = request.data.get('tags')
+            if not isinstance(tags, list):
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -303,7 +323,7 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not row:
+        if not row and 'tags' not in request.data:
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -318,13 +338,31 @@ class KnowledgeBaseAPIView(APIView):
 
         update_rows = [
             {
-                'pk': record.get('_pk'),
+                'pk': record.get('knowledge_base._pk'),
                 'row': row
             }
         ]
         try:
             seadb_api.update_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), update_rows)
-            row.update({'_pk': record.get('_pk')})
+            row.update({'_pk': record.get('knowledge_base._pk')})
+
+            if 'tags' in request.data:
+                update_project_tags_row = {ProjectTagsTable.tags.name: tags}
+                sql = f"SELECT _pk FROM `project_tags` WHERE `knowledge_id` = {knowledge_id};"
+                res = seadb_api.query_rows(project_uuid, sql)
+                result = res.get('results', [])
+                if not result:
+                    update_project_tags_row['knowledge_id'] = knowledge_id
+                    seadb_api.insert_rows(project_uuid, 'project_tags', [update_project_tags_row])
+                else:
+                    tag_row_id = result[0].get('_pk')
+                    update_project_tags_rows = [
+                        {
+                            'pk': tag_row_id,
+                            'row': update_project_tags_row
+                        }
+                    ]
+                    seadb_api.update_rows(project_uuid, 'project_tags', update_project_tags_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -357,9 +395,9 @@ class KnowledgeBaseMetadataAPIView(APIView):
         seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
+            kb_meta = get_current_table_metadata(base_metadata.get('tables'), 'project_tags')
             kb_column_name_to_return_name = {
-                KnowledgeBaseTable.tags.name: 'tags',
+                ProjectTagsTable.tags.name: 'tags',
             }
             select_option_metadata = {}
             for column in kb_meta.get('columns'):
@@ -410,19 +448,26 @@ class KnowledgeBasesTrashAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        join_config = {
+            'enable': True,
+            'use_subquery': False,
+            'join_table': 'project_tags',
+            'base_column': '_pk',
+            'join_column': 'knowledge_id',
+            'join_type': 'INNER JOIN',
+            'base_alias': 't',
+            'join_alias': 'pt',
+            'column_sources': {
+                'tags': 'join',
+            },
+            'join_column_map': {
+                'tags': 'tags',
+            },
+        }
+
         try:
             seadb_api = SeaDBAPI(username)
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-            kb_columns = kb_meta.get('columns') or []
-            display_columns = []
-            for column in kb_columns:
-                if column.get('name') in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
-                    display_columns.append(column)
-            query_fields = ', '.join(KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS)
-            sql = f"SELECT {query_fields} FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `deleted` = True LIMIT {limit} OFFSET {start}"
-            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-            records = res.get('results', [])
+            records, display_columns = list_trash_knowledge_base(seadb_api, project_uuid, start, limit, join_config)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

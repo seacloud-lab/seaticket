@@ -20,7 +20,7 @@ def time_str_to_utc_time(time_str):
     return dt.astimezone(timezone.utc)
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
-    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
+    sql = f"SELECT kb.*,pt.tags FROM `{TABLE_KNOWLEDGE_BASE}` AS kb, project_tags AS pt WHERE kb.`_pk` = {record_id} AND kb._pk = pt.`knowledge_id`"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     columns = res.get('metadata') or []
@@ -36,7 +36,7 @@ def get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids):
 
 
 def convert_kb_record_tags_name_to_id(columns, record):
-    if not record or not record.get('tags'):
+    if not record or not record.get('project_tags.tags'):
         return record
 
     column = None
@@ -52,9 +52,9 @@ def convert_kb_record_tags_name_to_id(columns, record):
     options = column_data.get('options', []) or []
     tag_ids = []
     for tag_option in options:
-        if tag_option.get('name') in record.get('tags'):
+        if tag_option.get('name') in record.get('project_tags.tags'):
             tag_ids.append(tag_option.get('id'))
-    record['tags'] = tag_ids
+    record['project_tags.tags'] = tag_ids
     return record
 
 

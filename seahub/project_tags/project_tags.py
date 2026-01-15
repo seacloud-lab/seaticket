@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -11,6 +10,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
+from seahub.seadb_models.utils import get_tag_counts_by_link_type
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
@@ -23,7 +23,7 @@ from seahub.utils.decorators import require_org_context
 logger = logging.getLogger(__name__)
 
 
-class TicketTagsAPIView(APIView):
+class ProjectTagsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -42,6 +42,11 @@ class TicketTagsAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        link_type = request.GET.get('link_type')
+        if not link_type:
+            error_msg = 'Link is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
@@ -50,7 +55,7 @@ class TicketTagsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            tag_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
+            tag_options, _ = get_tag_counts_by_link_type(seadb_api, project_uuid, link_type) or {}
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -102,7 +107,7 @@ class TicketTagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), 'project_tags')
             table_id = table_meta.get('id')
             tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
             column_data = tag_column.get('data') or {}
@@ -151,7 +156,7 @@ class TicketTagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), 'project_tags')
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), tag_ids)
         except Exception as e:
@@ -162,68 +167,12 @@ class TicketTagsAPIView(APIView):
         return Response({'success': True})
 
 
-class TicketTagAPIView(APIView):
+class ProjectTagAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
-    def get(self, request, project_uuid, tag_id):
-        """
-        Permission:
-        1. owner
-        2. group member
-        """
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            tag_option = None
-            seadb_api = SeaDBAPI(username)
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            table_columns = table_meta.get('columns')
-            column = get_column_from_columns_by_name(table_columns, 'tags')
-            column_data = column.get('data') or {}
-            options = column_data.get('options', []) or []
-            for opt in options:
-                if opt.get('id') == tag_id:
-                    tag_option = opt
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not tag_option:
-            error_msg = 'tag option not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # main
-        try:
-            seadb_api = SeaDBAPI(username)
-            tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_option.get('name')])
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({
-            'tickets': tickets,
-            'columns': columns,
-        })
-
-    @require_org_context
     def put(self, request, project_uuid, tag_id):
         """
         Permission:
@@ -256,7 +205,7 @@ class TicketTagAPIView(APIView):
         tag_option = None
         seadb_api = SeaDBAPI(username)
         base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), 'project_tags')
         column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
@@ -311,9 +260,9 @@ class TicketTagAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_columns_by_name(tickets_table_metadata.get('columns'), 'tags')
-            table_id = tickets_table_metadata.get('id')
+            table_metadata = get_current_table_metadata(base_metadata.get('tables'), 'project_tags')
+            column = get_column_from_columns_by_name(table_metadata.get('columns'), 'tags')
+            table_id = table_metadata.get('id')
             column_key = column.get('key')
             column_data = column.get('data') or {}
             options = column_data.get('options', []) or []

@@ -135,16 +135,61 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
         view_id,
         config: { filters, filter_conjunction, basic_filters, sorts }
       }).then(res => {
-        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-        let columns = res?.data?.columns || [];
-        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
-          const { name } = c;
-          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-          return {
-            ...c,
-            ...predefinedConfig,
-          };
+        let rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
+        const rawColumns = res?.data?.columns || [];
+
+        const pkRawColumn = rawColumns.find(c => c.name === '_pk');
+        const pkColumnKey = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
+
+        let columns = rawColumns;
+        columns = columns
+          .filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name))
+          .map(c => {
+            const { name } = c;
+            const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
+            const columnId = c.id || c.key;
+            return {
+              ...c,
+              ...predefinedConfig,
+              original_key: c.key,
+              key: columnId,
+            };
+          });
+
+        rows = rows.map(row => {
+          const newRow = { ...row };
+          columns.forEach(c => {
+            const id = c.key;
+            const name = c.name;
+            if (id && (newRow[id] === undefined) && (newRow[name] !== undefined)) {
+              newRow[id] = newRow[name];
+            }
+            if (name && (newRow[name] === undefined) && (newRow[id] !== undefined)) {
+              newRow[name] = newRow[id];
+            }
+          });
+
+          if (pkColumnKey) {
+            const pkValue = newRow[pkColumnKey] ?? newRow._pk ?? newRow._id;
+            if (pkValue !== undefined) {
+              newRow[pkColumnKey] = pkValue;
+              newRow._pk = pkValue;
+              newRow._id = pkValue;
+            }
+          } else {
+            const pkValue = newRow._id ?? newRow._pk;
+            if (pkValue !== undefined) {
+              newRow._pk = pkValue;
+              newRow._id = pkValue;
+            }
+          }
+          return newRow;
         });
+
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
         clearCacheData();
         return { data: { rows, columns } };
       });

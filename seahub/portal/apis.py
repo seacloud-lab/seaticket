@@ -79,14 +79,6 @@ class PortalTicketsView(APIView):
         else:
             priority = 0
 
-        tag_names = request.POST.get('tags', "[]")
-        try:
-            tag_names = json.loads(tag_names)
-        except:
-            tag_names = []
-        if not isinstance(tag_names, list):
-            tag_names = []
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -98,6 +90,23 @@ class PortalTicketsView(APIView):
 
         username = request.user.username
         seadb_api = SeaDBAPI(username)
+
+        join_config = {
+            'enable': True,
+            'use_subquery': False,
+            'join_table': 'project_tags',
+            'base_column': '_pk',
+            'join_column': 'ticket_id',
+            'join_type': 'INNER JOIN',
+            'base_alias': 't',
+            'join_alias': 'pt',
+            'column_sources': {
+                'tags': 'join',
+            },
+            'join_column_map': {
+                'tags': 'tags',
+            },
+        }
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
@@ -125,7 +134,6 @@ class PortalTicketsView(APIView):
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: [],
                 TicketsTable.participants.name: [username],
-                TicketsTable.tags.name: tag_names,
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: now_datetime,
@@ -200,8 +208,26 @@ class PortalMyTicketsView(APIView):
         })
         view_config['basic_filters'] = basic_filters
 
+        join_config = {
+            'enable': True,
+            'use_subquery': False,
+            'join_table': 'project_tags',
+            'base_column': '_pk',
+            'join_column': 'ticket_id',
+            'join_type': 'INNER JOIN',
+            'base_alias': 't',
+            'join_alias': 'pt',
+            'column_sources': {
+                'tags': 'join',
+            },
+            'join_column_map': {
+                'tags': 'tags',
+            },
+        }
+
         try:
-            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
+            tickets, columns = list_my_tickets(
+                seadb_api, project_uuid, username, ticket_state, start, limit, view_config, join_config=join_config)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

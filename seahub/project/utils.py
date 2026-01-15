@@ -107,7 +107,7 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     if not username or not workspace_owner or not ticket:
         return None
 
-    if ticket.get('creator') == username:
+    if ticket.get('tickets.creator') == username:
         return PERMISSION_READ_WRITE
 
     return check_project_permission(username, workspace_owner)

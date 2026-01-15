@@ -70,7 +70,7 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+    sql = f"SELECT t.*, pt.tags FROM `{TABLE_TICKETS}` AS t, project_tags AS pt WHERE t.`_pk` = {ticket_id} AND t._pk = pt.`ticket_id`"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -175,36 +175,36 @@ def convert_ticket_select_column_name_to_option_id(columns, ticket):
 
     if not ticket:
         return ticket
-    if ticket.get('state'):
+    if ticket.get('tickets.state'):
         column = get_column_from_columns_by_name(columns, 'state')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
-            if opt.get('name') == ticket.get('state'):
-                ticket['state'] = opt.get('id')
-    if ticket.get('type'):
+            if opt.get('name') == ticket.get('tickets.state'):
+                ticket['tickets.state'] = opt.get('id')
+    if ticket.get('tickets.type'):
         column = get_column_from_columns_by_name(columns, 'type')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
-            if opt.get('name') == ticket.get('type'):
-                ticket['type'] = opt.get('id')
-    if ticket.get('tags'):
+            if opt.get('name') == ticket.get('tickets.type'):
+                ticket['tickets.type'] = opt.get('id')
+    if ticket.get('project_tags.tags'):
         column = get_column_from_columns_by_name(columns, 'tags')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         tag_ids = []
         for tag_option in options:
-            if tag_option.get('name') in ticket.get('tags'):
+            if tag_option.get('name') in ticket.get('project_tags.tags'):
                 tag_ids.append(tag_option.get('id'))
-        ticket['tags'] = tag_ids
-    if ticket.get('substate'):
+        ticket['project_tags.tags'] = tag_ids
+    if ticket.get('tickets.substate'):
         column = get_column_from_columns_by_name(columns, 'substate')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
-            if opt.get('name') == ticket.get('substate'):
-                ticket['substate'] = opt.get('id')
+            if opt.get('name') == ticket.get('tickets.substate'):
+                ticket['tickets.substate'] = opt.get('id')
     return ticket
 
 

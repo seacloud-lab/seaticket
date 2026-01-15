@@ -365,7 +365,6 @@ class TicketsTable(BaseModel):
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
-    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     assignees = MappedColumn('assignees', PropertyTypes.LIST)
     participants = MappedColumn('participants', PropertyTypes.LIST)
     priority = MappedColumn('priority', PropertyTypes.INT)
@@ -439,3 +438,13 @@ class KnowledgeBaseTable(BaseModel):
     @classmethod
     def gen_table_name(cls):
         return 'knowledge_base'
+
+
+class ProjectTagsTable(BaseModel):
+    ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
+    knowledge_id = MappedColumn('knowledge_id', PropertyTypes.INT)
+    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'project_tags'

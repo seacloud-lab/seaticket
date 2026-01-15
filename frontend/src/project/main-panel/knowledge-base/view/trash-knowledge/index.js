@@ -22,9 +22,48 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
       return getMetadata(KB_TABLE_NAME, { ...params[0], view_id: 'trash' }, () => knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params), true).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
+                const pkRawColumn = rawColumns.find(c => c.name === '_pk');
+        const pkColumnKey = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
         columns = columns
           .filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name))
-          .map(c => ({ ...c, ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[c.name] }));
+          .map(c => {
+            const columnId = c.id || c.key;
+            return {
+              ...c,
+              ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[c.name],
+              original_key: c.key,
+              key: columnId,
+            };
+          });
+
+        rows = rows.map(row => {
+          const newRow = { ...row };
+          columns.forEach(c => {
+            const id = c.key;
+            const name = c.name;
+            if (id && (newRow[id] === undefined) && (newRow[name] !== undefined)) {
+              newRow[id] = newRow[name];
+            }
+            if (name && (newRow[name] === undefined) && (newRow[id] !== undefined)) {
+              newRow[name] = newRow[id];
+            }
+          });
+          if (pkColumnKey) {
+            const pkValue = newRow[pkColumnKey] ?? newRow._pk ?? newRow._id;
+            if (pkValue !== undefined) {
+              newRow[pkColumnKey] = pkValue;
+              newRow._pk = pkValue;
+              newRow._id = pkValue;
+            }
+          } else {
+            const pkValue = newRow._id ?? newRow._pk;
+            if (pkValue !== undefined) {
+              newRow._pk = pkValue;
+              newRow._id = pkValue;
+            }
+          }
+          return newRow;
+        });
         const tagsColumn = columns.find(c => c.name === 'tags');
         if (tagsColumn) {
           context.setSetting('tagsColumnKey', tagsColumn.key);
