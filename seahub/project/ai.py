@@ -18,7 +18,7 @@ from seahub.project.utils import check_project_permission, \
     convert_record_to_ticket, check_ai_limit, \
     submit_embedding_analysis_task, get_embedding_analysis_task_status, \
     find_related_records, TaskConflictError
-from seahub.project.constants import ConnectionType, ConnectionCategory
+from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
@@ -270,7 +270,8 @@ class RelatedRecordsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def _validate_and_get_project_info(self, request):
+    def post(self, request):
+        # validate and get project info
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -291,15 +292,6 @@ class RelatedRecordsView(APIView):
             error_msg = 'Permission denied.'
             return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        return (project, username, project_uuid), None
-
-    def post(self, request):
-        # validate and get project info
-        project_info, error = self._validate_and_get_project_info(request)
-        if error:
-            return error
-        project, username, project_uuid = project_info
-
         # parse request params
         ticket_id = request.data.get('ticket_id')
         connection_id = request.data.get('connection_id')
@@ -307,7 +299,6 @@ class RelatedRecordsView(APIView):
 
         ticket_provided = bool(ticket_id)
         connection_provided = bool(connection_id)
-        is_ticket_source = ticket_provided
         if connection_provided and not record_id:
             error_msg = 'record_id is required when connection_id is provided.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -376,7 +367,7 @@ class RelatedRecordsView(APIView):
             'project_uuid': project_uuid,
             'count': 51,
             'connection_ids': search_connection_ids,
-            'extra_sources': ['ticket'] if is_ticket_source or current_category == ConnectionCategory.ISSUE else [],
+            'extra_sources': [ExtraSourceType.TICKET.value] if ticket_provided or current_category == ConnectionCategory.ISSUE else [],
         }
 
         try:
@@ -386,7 +377,7 @@ class RelatedRecordsView(APIView):
 
             # prepare candidates for reranking and build key to result map
             candidate_for_rerank, key_to_result = prepare_candidates_for_rerank(
-                search_results, is_ticket_source, ticket_id, source_connection_id, source_record_id
+                search_results, ticket_provided, ticket_id, source_connection_id, source_record_id
             )
 
             # rerank results
