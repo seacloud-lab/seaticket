@@ -7,7 +7,6 @@ import Account from '../../components/account';
 import ProjectSearcher from '../search/project-searcher';
 import { QUERY_TYPE } from '../search/project-searcher/constant';
 import { IconButton } from '../../components';
-import Notification from '../../components/common/notifications';
 import { Z_INDEX } from '../../constants/zIndexes';
 
 import './index.css';
@@ -127,7 +126,6 @@ class Header extends React.Component {
         <div className="main-panel-north" style={{ flex: '1 0 78%' }}>
           <div className="common-toolbar">
             {this.renderSearchBar()}
-            <Notification />
             <Account />
           </div>
         </div>
