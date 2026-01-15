@@ -10,6 +10,7 @@ from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.profile.models import Profile
 from seahub.utils import is_org_context, normalize_cache_key
 from seahub.group.models import Group, GroupUser
+from seahub.base.templatetags.seahub_tags import email2nickname
 
 logger = logging.getLogger(__name__)
 
@@ -107,13 +108,13 @@ def get_group_member_info(group_id, email):
         role = 'Admin'
 
     if p is not None and p.nickname and p.nickname.strip():
-        nickname = p.nickname.strip()
+        display_name = p.nickname.strip()
     else:
-        nickname = email.split('@')[0]
+        display_name = email2nickname(email)
 
     member_info = {
         'group_id': group_id,
-        "name": nickname,
+        "name": display_name,
         'email': email,
         "contact_email": p.contact_email,
         "login_id": login_id,
