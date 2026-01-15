@@ -89,27 +89,27 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        join_config = {
+            'enable': True,
+            'use_subquery': False,
+            'join_table': 'project_tags',
+            'base_column': '_pk',
+            'join_column': 'ticket_id',
+            'join_type': 'INNER JOIN',
+            'base_alias': 't',
+            'join_alias': 'pt',
+            'column_sources': {
+                'tags': 'join',
+            },
+            'join_column_map': {
+                'tags': 'tags',
+            },
+        }
+
         # main
         try:
             view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
-            join_config = {
-                'enable': True,
-                'use_subquery': False,
-                'join_table': 'project_tags',
-                'base_column': '_pk',
-                'join_column': 'ticket_id',
-                'join_type': 'INNER JOIN',
-                'base_alias': 't',
-                'join_alias': 'pt',
-                'column_sources': {
-                    'tags': 'join',
-                },
-                'join_column_map': {
-                    'tags': 'tags',
-                },
-            }
-
             tickets, columns = list_tickets_view_records(
                 seadb_api, project_uuid, view, username, start, limit, join_config=join_config)
         except Exception as e:
@@ -342,8 +342,6 @@ class TicketsAPIView(APIView):
                     updated_row[TicketsTable.closed_time.name] = ''
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
-            # if 'tags' in row_data:
-            #     updated_row[TicketsTable.tags.name] = row_data.get('tags')
             if 'type' in row_data:
                 updated_row[TicketsTable.type.name] = row_data.get('type')
             if 'content' in row_data:
@@ -656,23 +654,6 @@ class TicketAPIView(APIView):
                 update_row[TicketsTable.type.name] = type_name
             if is_update_substate:
                 update_row[TicketsTable.substate.name] = substate_option_name
-            if is_update_tags:
-                update_project_tags_row = {ProjectTagsTable.tags.name: tags}
-                sql = f"SELECT _pk FROM `project_tags` WHERE `ticket_id` = {ticket.get('tickets._pk')};"
-                res = seadb_api.query_rows(project_uuid, sql)
-                result = res.get('results', [])
-                if not result:
-                    update_project_tags_row['ticket_id'] = ticket.get('_pk')
-                    seadb_api.insert_rows(project_uuid, 'project_tags', [update_project_tags_row])
-                else:
-                    tag_row_id = result[0].get('_pk')
-                    update_project_tags_rows = [
-                        {
-                            'pk': tag_row_id,
-                            'row': update_project_tags_row
-                        }
-                    ]
-                    seadb_api.update_rows(project_uuid,'project_tags', update_project_tags_rows)
             if is_update_priority:
                 update_row[TicketsTable.priority.name] = priority
             if is_update_assignees:
@@ -699,6 +680,24 @@ class TicketAPIView(APIView):
                 }
             ]
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
+
+            if is_update_tags:
+                update_project_tags_row = {ProjectTagsTable.tags.name: tags}
+                sql = f"SELECT _pk FROM `project_tags` WHERE `ticket_id` = {ticket.get('tickets._pk')};"
+                res = seadb_api.query_rows(project_uuid, sql)
+                result = res.get('results', [])
+                if not result:
+                    update_project_tags_row['ticket_id'] = ticket.get('_pk')
+                    seadb_api.insert_rows(project_uuid, 'project_tags', [update_project_tags_row])
+                else:
+                    tag_row_id = result[0].get('_pk')
+                    update_project_tags_rows = [
+                        {
+                            'pk': tag_row_id,
+                            'row': update_project_tags_row
+                        }
+                    ]
+                    seadb_api.update_rows(project_uuid,'project_tags', update_project_tags_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

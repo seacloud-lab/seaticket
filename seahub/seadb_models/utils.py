@@ -613,7 +613,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
     if join_config:
         view_copy['join_config'] = join_config
     sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
-    print(sql, '----------sql')
+
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])

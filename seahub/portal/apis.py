@@ -18,7 +18,7 @@ from seahub.project.utils import replace_file_url_in_content, check_same_org_per
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
-from seahub.seadb_models.utils import list_my_tickets
+from seahub.seadb_models.utils import list_my_tickets, get_tag_counts_by_link_type
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
 from seahub.utils.decorators import require_org_context
 
@@ -288,7 +288,7 @@ class PortalTicketTagsView(APIView):
         seadb_api = SeaDBAPI(username)
 
         try:
-            tag_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select')
+            tag_options, _ = get_tag_counts_by_link_type(seadb_api, project_uuid, TABLE_TICKETS)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

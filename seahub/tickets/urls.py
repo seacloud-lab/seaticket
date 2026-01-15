@@ -8,7 +8,6 @@ from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, Ticke
     TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
-from ..project_tags.project_tags import ProjectTagsAPIView, ProjectTagAPIView
 
 urlpatterns = [
     # tickets page
@@ -31,11 +30,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/trash/$', TicketTrashAPIView.as_view(), name='api-v1-project-tickets-trash'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/my-tickets/$', MyTicketAPIView.as_view(), name='api-v1-project-my-tickets'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/metadata/$', TicketMetadataAPIView.as_view(), name='api-v1-project-ticket-metadata'),
-
-    # tags
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(),
-            name='api-v1-project-tags'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', ProjectTagAPIView.as_view(), name='api-v1-project-tag'),
 
     # types
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/types/$', TicketTypesAPIView.as_view(), name='api-v1-project-types'),

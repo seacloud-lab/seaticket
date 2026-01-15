@@ -194,7 +194,7 @@ def mock_org_context_tags_false():
 @pytest.fixture
 def mock_get_project_by_uuid_tags(mock_project):
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
+        'seahub.project_tags.project_tags.Projects.objects.get_project_by_uuid',
         return_value=mock_project
     ) as mock:
         yield mock
@@ -203,7 +203,7 @@ def mock_get_project_by_uuid_tags(mock_project):
 @pytest.fixture
 def mock_get_project_by_uuid_none_tags():
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
+        'seahub.project_tags.project_tags.Projects.objects.get_project_by_uuid',
         return_value=None
     ) as mock:
         yield mock
@@ -211,19 +211,19 @@ def mock_get_project_by_uuid_none_tags():
 
 @pytest.fixture
 def mock_check_permission_granted_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=True) as mock:
+    with patch('seahub.project_tags.project_tags.check_project_permission', return_value=True) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_check_permission_denied_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=None) as mock:
+    with patch('seahub.project_tags.project_tags.check_project_permission', return_value=None) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_seadb_api_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.SeaDBAPI') as mock_class:
+    with patch('seahub.project_tags.project_tags.SeaDBAPI') as mock_class:
         instance = MagicMock()
         mock_class.return_value = instance
         instance.assert_called_once = mock_class.assert_called_once
@@ -233,7 +233,7 @@ def mock_seadb_api_tags():
 @pytest.fixture
 def mock_get_current_table_metadata(tag_table_metadata):
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.get_current_table_metadata',
+        'seahub.project_tags.project_tags.get_current_table_metadata',
         return_value=deepcopy(tag_table_metadata)
     ) as mock:
         yield mock
@@ -248,7 +248,7 @@ def mock_get_column_from_columns_by_name(tag_table_metadata):
         return None
 
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.get_column_from_columns_by_name',
+        'seahub.project_tags.project_tags.get_column_from_columns_by_name',
         side_effect=_side_effect
     ) as mock:
         yield mock
@@ -257,7 +257,7 @@ def mock_get_column_from_columns_by_name(tag_table_metadata):
 @pytest.fixture
 def mock_add_select_option(tag_option):
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.add_select_option',
+        'seahub.project_tags.project_tags.add_select_option',
         return_value=deepcopy(tag_option)
     ) as mock:
         yield mock
@@ -265,7 +265,7 @@ def mock_add_select_option(tag_option):
 
 @pytest.fixture
 def mock_batch_delete_select_option():
-    with patch('seahub.knowledge_base.knowledge_base_tags.batch_delete_select_option') as mock:
+    with patch('seahub.project_tags.project_tags.batch_delete_select_option') as mock:
         yield mock
 
 
@@ -274,7 +274,7 @@ def mock_filter_kb_by_select():
     records = [{'_pk': 1, 'title': 'Q1', 'content': 'A1'}]
     columns = [{'name': 'title'}, {'name': 'content'}]
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.filter_kb_by_select',
+        'seahub.project_tags.project_tags.filter_kb_by_select',
         return_value=(records, columns)
     ) as mock:
         yield mock
@@ -282,15 +282,15 @@ def mock_filter_kb_by_select():
 
 @pytest.fixture
 def mock_update_select_option():
-    with patch('seahub.knowledge_base.knowledge_base_tags.update_select_option') as mock:
+    with patch('seahub.project_tags.project_tags.update_select_option') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_get_kb_counts():
     with patch(
-        'seahub.knowledge_base.knowledge_base_tags.get_kb_counts_group_by_column_name',
-        return_value=({'Tag1': 2}, None)
+        'seahub.project_tags.project_tags.get_tag_counts_by_link_type',
+        return_value=([{'id': 'TAG1', 'name': 'Tag1', 'records_count': 2}], None)
     ) as mock:
         yield mock
 

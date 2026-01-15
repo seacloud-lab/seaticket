@@ -3,6 +3,7 @@ from django.urls import re_path, include
 from django.views.generic import TemplateView
 
 from seahub.api2.endpoints.server_info import ServerInfoView
+from seahub.project_tags.project_tags import ProjectTagsAPIView, ProjectTagAPIView
 from seahub.views import *
 from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
@@ -118,6 +119,10 @@ urlpatterns = [
 
     # chat
     re_path(r'^', include('seahub.chats.urls')),
+
+    # tags
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v1-project-tags'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', ProjectTagAPIView.as_view(), name='api-v1-project-tag'),
 
     ## user::avatar
     re_path(r'^api/v1/user-avatar/$', UserAvatarView.as_view(), name='api-v1-user-avatar'),
