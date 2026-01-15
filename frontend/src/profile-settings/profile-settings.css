@@ -32,17 +32,14 @@ body {
   flex: 1 0 78%;
 }
 
-/* Title and content area */
-.heading {
-  padding: 8px 16px;
-  margin: 0;
+.profile-settings .heading {
   font-size: 1rem;
   font-weight: normal;
   line-height: 1.5;
   border-bottom: 1px solid var(--bs-border-color);
 }
 
-.content {
+.profile-settings .content {
   padding: 0rem 1rem 8rem;
   overflow: auto;
 }
@@ -89,14 +86,12 @@ body {
 /* Navigation menu styles */
 .user-setting-nav .nav-item {
   padding: 0 12px;
-  height: 40px;
-  line-height: 40px;
+  height: 32px;
+  line-height: 32px;
   border-radius: 4px;
 }
 
 .user-setting-nav .nav-item .sea-qa-icon-svg {
-  width: 20px;
-  height: 20px;
   color: var(--bs-icon-color);
 }
 
@@ -104,7 +99,6 @@ body {
   margin: 0;
   padding: 0;
   padding-left: 0.5rem;
-  font-size: 16px;
   flex: auto;
 }
 
