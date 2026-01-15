@@ -97,7 +97,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // action - agent only
+    // action
     if (Array.isArray(propsValue.actions) && propsValue.actions.length > 0) {
       value.push({
         name: gettext('Action steps'),
@@ -164,41 +164,6 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
           return {
             name: `${gettext('Step')} ${stepNumber + 1}`,
             children: stepChildren
-          };
-        })
-      });
-    }
-
-    // tool calls - ask only
-    if (Array.isArray(propsValue.tool_calls) && propsValue.tool_calls.length > 0) {
-      value.push({
-        name: gettext('Tool calls'),
-        children: propsValue.tool_calls.map((toolCall, toolCallNum) => {
-          let stepInfos = [
-            {
-              name: gettext('Arguments'),
-              children: Object.entries(toolCall.arguments || {}).map(([argumentKey, argumentValue]) => {
-                return `${argumentKey}: ${argumentValue}`;
-              })
-            }, {
-              name: gettext('Output'),
-              children: [
-                { value: toolCall.output, formatter: StepMarkdownViewer }
-              ]
-            }
-          ];
-          if (toolCall.error) {
-            stepInfos.push({
-              name: gettext('Error'),
-              children: [
-                { name: gettext('Error type'), value: toolCall.error.type },
-                { name: gettext('Error message'), value: toolCall.error.message },
-              ]
-            });
-          }
-          return {
-            name: `${gettext('Step')} ${toolCallNum + 1}: ${toolCall.name}`,
-            children: stepInfos
           };
         })
       });
