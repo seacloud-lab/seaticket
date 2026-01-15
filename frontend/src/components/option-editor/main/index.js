@@ -7,7 +7,7 @@ import IconButton from '../../icon-button';
 import CustomizeAddTool from '../../customize-add-tool';
 import { gettext, KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { isFunction } from '@/utils/type-detection';
+import { isFunction, isNumber } from '@/utils/type-detection';
 import toaster from '../../toaster';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 
@@ -40,7 +40,7 @@ const Main = forwardRef(({
 
   const displayOptionsRef = useRef(null);
 
-  const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
+  const maxItemNum = useMemo(() => isNumber(optionHeight) ? Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1 : 30, [maxHeight, optionHeight]);
   const validCheckPlacement = useMemo(() => checkPlacement === 'left' ? 'left' : 'right', [checkPlacement]);
 
   const onSearchValueChange = useCallback((newSearchValue) => {
@@ -102,7 +102,7 @@ const Main = forwardRef(({
     if (highlightIndex > 0) {
       setHighlightIndex(highlightIndex - 1);
       if (highlightIndex < displayOptions.length - maxItemNum) {
-        displayOptionsRef.current.scrollTop -= optionHeight;
+        displayOptionsRef.current.scrollTop -= (isNumber(optionHeight) ? optionHeight : 30);
       }
     } else {
       setHighlightIndex(displayOptions.length - 1);
@@ -116,7 +116,7 @@ const Main = forwardRef(({
     if (highlightIndex < displayOptions.length - 1) {
       setHighlightIndex(highlightIndex + 1);
       if (highlightIndex >= maxItemNum) {
-        displayOptionsRef.current.scrollTop += optionHeight;
+        displayOptionsRef.current.scrollTop += (isNumber(optionHeight) ? optionHeight : 30);
       }
     } else {
       setHighlightIndex(0);

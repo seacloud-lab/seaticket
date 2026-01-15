@@ -103,6 +103,7 @@ const TagsEditor = forwardRef(({
       <Main
         ref={mainRef}
         isMultiple={true}
+        optionHeight="fit-content"
         placeholder={gettext('Search tags')}
         emptyTip={gettext('No tags available')}
         value={value}
