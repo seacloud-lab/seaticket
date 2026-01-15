@@ -8,6 +8,7 @@ import ProjectSearcher from '../search/project-searcher';
 import { QUERY_TYPE } from '../search/project-searcher/constant';
 import { IconButton } from '../../components';
 import Notification from '../../components/common/notifications';
+import { Z_INDEX } from '../../constants/zIndexes';
 
 import './index.css';
 
@@ -71,7 +72,7 @@ class Header extends React.Component {
     const { isShowSearcher } = this.state;
     return (
       <div className={classnames('search', { active: isShowSearcher })}>
-        <div className={`search-mask ${isShowSearcher ? '' : 'hide'}`} onClick={this.onCloseSearcher} role="button"></div>
+        <div className={`search-mask ${isShowSearcher ? '' : 'hide'}`} onClick={this.onCloseSearcher} role="button" style={{ zIndex: Z_INDEX.SEARCH_MASK }}></div>
         <div
           tabIndex={0}
           className="search-container"
@@ -79,6 +80,7 @@ class Header extends React.Component {
           ref={ref => this.searchContainerRef = ref}
           id="search-container"
           role="button"
+          style={{ zIndex: Z_INDEX.SEARCH_CONTAINER }}
         >
           {!isShowSearcher &&
             <div className="input-icon">
@@ -109,7 +111,7 @@ class Header extends React.Component {
   render() {
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
-      <header id="header" className="sea-qa-home-header">
+      <header id="header" className="sea-qa-home-header" style={{ zIndex: Z_INDEX.HOME_HEADER }}>
         <div className="side-panel-north" style={{ flex: '0 0 22%' }}>
           <a className="sea-qa-logo" href={siteRoot}>
             <img
