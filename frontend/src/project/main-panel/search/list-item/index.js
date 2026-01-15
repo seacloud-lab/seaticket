@@ -99,7 +99,7 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
       <Modal isOpen={isDialogOpen} toggle={handleDialogClose} size="lg" className="list-item-detail-dialog">
         <CustomModalHeader toggle={handleDialogClose}>
           <span className="text-truncate list-item-title-content" title={title || ''}>{title || ''}</span>
-          <IconButton icon="url" onClick={handleContentClick} title={window.gettext('Open original URL')} />
+          <IconButton icon="open-in-new-tab" onClick={handleContentClick} title={window.gettext('Open original URL')} />
         </CustomModalHeader>
         <ModalBody>
           <div dangerouslySetInnerHTML={{ __html: detailContentRef.current }} />
