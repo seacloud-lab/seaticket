@@ -3,10 +3,13 @@ import { knowledgeBaseAPI } from '@/project/api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { CenteredLoading, toaster } from '@/components';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { useMetadata } from '../../hooks';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
+  const { isLoading: isMetadataLoading, tagsData } = useMetadata();
+
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
     views: [{ _id: 'all', name: gettext('All') }]
@@ -112,6 +115,8 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
     return list;
   }, [projectUuid]);
 
+  if (isMetadataLoading) return (<CenteredLoading />);
+
   return (
     <SeaMetadata
       viewID="all"
@@ -122,6 +127,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
       createRowsTools={createRowsTools}
       viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       isViewComputedOnServer={false}
+      tagsData={tagsData}
       t={t}
     />
   );
