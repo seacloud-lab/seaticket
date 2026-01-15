@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import { useMetadata, useTicketsPage } from '../../hooks';
-import { TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PAGE_SLUG_ID } from '../../constants';
 import { gettext } from '@/constants';
 import { CenteredLoading, toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -10,7 +10,7 @@ import CleanTickets from './clean-tickets';
 
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
-  const { toggleView, isLoading } = useTicketsPage();
+  const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
   const { tagsData, typesData, substatesData } = useMetadata();
 
   const metadataRef = useRef(null);
@@ -216,6 +216,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
         settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS]}
         tagsData={tagsData}
+        toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
         typesData={typesData}
         substatesData={substatesData}
         createContextMenuOptions={createContextMenuOptions}
