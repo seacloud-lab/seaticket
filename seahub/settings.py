@@ -492,6 +492,11 @@ LOGGING = {
             'filename': os.path.join(LOG_DIR, 'seaqa_web.log'),
             'formatter': 'file'
         },
+        'seaqa_io_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'seaqa_io.log'),
+            'formatter': 'file',
+        },
     },
     'loggers': {
         '': {
@@ -507,6 +512,11 @@ LOGGING = {
         'py.warnings': {
             'level': "INFO",
             'handlers': SEAQA_LOGS_HANDLERS,
+            'propagate': False
+        },
+        'seaqa_io': {
+            'level': "INFO",
+            'handlers': ['console'] if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true' else ['seaqa_io_file'],
             'propagate': False
         }
     }
@@ -646,6 +656,9 @@ CUSTOM_NAV_ITEMS = []
 SEAQA_INDEXER_INNER_SERVER_URL = 'http://127.0.0.1:8888'
 SEAQA_AI_INNER_SERVER_URL = 'http://127.0.0.1:8887'
 SEAQA_EVENTS_INNER_SERVER_URL = 'http://127.0.0.1:6001'
+SEAQA_IO_INNER_SERVER_URL = 'http://127.0.0.1:6002'
+SEAQA_IO_WORKERS = 3
+SEAQA_IO_TASK_TIMEOUT = 3600
 AI_CHAT_TICKET_MAX_COMMENTS_NUM = 20
 AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
@@ -838,6 +851,9 @@ SEADB_INNER_SERVER_URL = configs.get('SEADB_INNER_SERVER_URL', SEADB_INNER_SERVE
 SEAQA_INDEXER_INNER_SERVER_URL = configs.get('SEAQA_INDEXER_INNER_SERVER_URL', SEAQA_INDEXER_INNER_SERVER_URL)
 SEAQA_AI_INNER_SERVER_URL = configs.get('SEAQA_AI_INNER_SERVER_URL', SEAQA_AI_INNER_SERVER_URL)
 SEAQA_EVENTS_INNER_SERVER_URL = configs.get('SEAQA_EVENTS_INNER_SERVER_URL', SEAQA_EVENTS_INNER_SERVER_URL)
+SEAQA_IO_INNER_SERVER_URL = configs.get('SEAQA_IO_INNER_SERVER_URL', SEAQA_IO_INNER_SERVER_URL)
+SEAQA_IO_WORKERS = configs.get('SEAQA_IO_WORKERS', SEAQA_IO_WORKERS)
+SEAQA_IO_TASK_TIMEOUT = configs.get('SEAQA_IO_TASK_TIMEOUT', SEAQA_IO_TASK_TIMEOUT)
 
 TEMP_EXPORT_VIEW_DIR = configs.get('TEMP_EXPORT_VIEW_DIR', TEMP_EXPORT_VIEW_DIR)
 
