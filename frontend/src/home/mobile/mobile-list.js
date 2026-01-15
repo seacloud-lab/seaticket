@@ -1,16 +1,16 @@
 import React from 'react';
 
-import '../../../css/mobile/mobile-list.css'
+import '../../../css/mobile/mobile-list.css';
 
 class MobileList extends React.Component {
 
   render() {
     const { children, renderHeader, renderFooter } = this.props;
 
-    return(
+    return (
       <div className="mobile-list">
         {renderHeader ? (
-          <div className={`mobile-list-header`}>
+          <div className={'mobile-list-header'}>
             {typeof renderHeader === 'function' ? renderHeader() : renderHeader}
           </div>
         ) : null}
@@ -18,9 +18,9 @@ class MobileList extends React.Component {
           <div className="mobile-list-body">
             {children}
           </div>
-        ): null}
+        ) : null}
         {renderFooter ? (
-          <div className={`mobile-list-footer`}>
+          <div className={'mobile-list-footer'}>
             {typeof renderFooter === 'function' ? renderFooter() : renderFooter}
           </div>
         ) : null}

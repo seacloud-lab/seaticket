@@ -45,69 +45,69 @@ class ProfileSettings extends React.Component {
   constructor(props) {
     super(props);
     this.sideNavItems = [
-      { 
-        show: true, 
-        href: '#user-basic-info', 
+      {
+        show: true,
+        href: '#user-basic-info',
         text: gettext('Profile'),
         icon: 'profile'
       },
-      { 
-        show: true, 
-        href: '#bind-contact-email', 
+      {
+        show: true,
+        href: '#bind-contact-email',
         text: gettext('Contact email'),
         icon: 'email'
       },
-      { 
-        show: canUpdatePassword && !this.isWorkWX, 
-        href: '#update-user-passwd', 
+      {
+        show: canUpdatePassword && !this.isWorkWX,
+        href: '#update-user-passwd',
         text: gettext('Password'),
         icon: 'password'
       },
-      { 
-        show: enableBindPhone && !this.isWorkWX, 
-        href: '#bind-phone', 
+      {
+        show: enableBindPhone && !this.isWorkWX,
+        href: '#bind-phone',
         text: gettext('Bind phone number'),
         icon: 'email'
       },
-      { 
-        show: enableWebdavSecret, 
-        href: '#update-webdav-passwd', 
+      {
+        show: enableWebdavSecret,
+        href: '#update-webdav-passwd',
         text: gettext('WebDav password'),
         icon: 'password'
       },
-      { 
-        show: true, 
-        href: '#lang-setting', 
+      {
+        show: true,
+        href: '#lang-setting',
         text: gettext('Language'),
         icon: 'language'
       },
-      { 
-        show: true, 
-        href: '#email-notice', 
+      {
+        show: true,
+        href: '#email-notice',
         text: gettext('Email notification'),
         icon: 'email-notification'
       },
-      { 
-        show: twoFactorAuthEnabled, 
-        href: '#two-factor-auth', 
+      {
+        show: twoFactorAuthEnabled,
+        href: '#two-factor-auth',
         text: gettext('Two-Factor Authentication'),
         icon: 'password'
       },
-      { 
-        show: ((enableMultiSAML && isOrgContext)) && !this.isWorkWX, 
-        href: '#social-auth', 
+      {
+        show: ((enableMultiSAML && isOrgContext)) && !this.isWorkWX,
+        href: '#social-auth',
         text: gettext('Social login'),
         icon: 'social-login'
       },
-      { 
-        show: enableDeleteAccount && !this.isWorkWX, 
-        href: '#del-account', 
+      {
+        show: enableDeleteAccount && !this.isWorkWX,
+        href: '#del-account',
         text: gettext('Delete account'),
         icon: 'profile'
       },
-      { 
-        show: true, 
-        href: '#logged-in-sessions', 
+      {
+        show: true,
+        href: '#logged-in-sessions',
         text: gettext('Session logs'),
         icon: 'session-logs'
       },

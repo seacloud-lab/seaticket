@@ -17,7 +17,7 @@ export default (WrappedComponent) => {
       };
       // Assign getInstance to ref here
       // Pass to `WrappedComponent` so that getInstance can get the `WrappedComponent` instance
-      if(typeof this.props.getInstance === 'function') {
+      if (typeof this.props.getInstance === 'function') {
         props.ref = this.props.getInstance;
       }
       return (
