@@ -223,6 +223,7 @@ const Main = forwardRef(({
                     [`check-placement-${validCheckPlacement}`]: validCheckPlacement
                   })}
                   key={option.value}
+                  style={{ height: optionHeight }}
                   onClick={() => toggleOption(option.value)}
                   onMouseEnter={() => onMenuMouseEnter(i)}
                   onMouseLeave={() => onMenuMouseLeave(i)}
