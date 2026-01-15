@@ -95,53 +95,8 @@
   padding: 8px 0px;
 }
 
-.analyze-connection-popover .analyze-dropdown-empty {
-  height: 32px;
-  line-height: 32px;
-  font-size: 14px;
-  padding-left: 10px
-}
-
-.analyze-connection-popover .analyze-dropdown-loading {
-  display: flex;
-  align-items: center;
-  height: 32px;
-}
-
-.analyze-connection-popover .analyze-popover-item {
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  padding: 0px 16px 0px 0px;
-  height: 32px;
-  line-height: 32px;
-}
-
-.analyze-connection-popover .analyze-popover-item:hover {
-  background-color: #f5f5f5;
-}
-
-.analyze-popover-item .analyze-connection-icon {
-  width: 24px;
-  text-align: center;
-}
-
-.analyze-popover-item .analyze-connection-icon .sea-qa-icon-svg {
-  width: 14px;
-  height: 14px;
-  color: #666;
-}
-
 .analyze-popover-item .analyze-connection-img {
   width: 16px;
   height: 16px;
   margin-right: 8px;
-}
-
-.analyze-popover-item .analyze-connection-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  font-size: 14px;
 }

@@ -18,7 +18,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
         label: (
           <>
             <img src={getConnectionIcon(item.type)} alt="" className="analyze-connection-img" />
-            <span className="analyze-connection-name">{item.name}</span>
+            <span>{item.name}</span>
           </>
         ),
         name: item.name,
@@ -38,7 +38,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
   const closeEditor = useCallback(() => {
     if (!isShowPopover) return;
 
-    const currentIds = [...selectedConnections.map(c => c.id)].sort();
+    const currentIds = [...value.map(c => c)].sort();
     const tempIds = [...selectedConnectionIds.map(c => c)].sort();
     const hasChanged = currentIds.length !== tempIds.length || currentIds.some((id, index) => id !== tempIds[index]);
     if (hasChanged) {
@@ -46,13 +46,13 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
       onConnectionsChange(newSelectedConnections);
     }
     setIsShowPopover(false);
-  }, [isShowPopover, selectedConnectionIds, onConnectionsChange, connections]);
+  }, [isShowPopover, value, selectedConnectionIds, onConnectionsChange, connections]);
 
   const handleTogglePopover = useCallback(() => {
     if (!isShowPopover) {
       setIsShowPopover(true);
     }
-  }, [isShowPopover, selectedConnections]);
+  }, [isShowPopover]);
 
   return (
     <>

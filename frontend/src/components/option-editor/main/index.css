@@ -21,7 +21,7 @@
   min-height: 100px;
   max-height: 200px;
   overflow: auto;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .option-editor-popover .option-editor-content.empty {
@@ -39,7 +39,7 @@
   font-size: 14px;
   height: 30px;
   width: 100%;
-  padding: 0 10px;
+  padding: 0 16px;
 }
 
 .option-editor-popover .option-editor-content .option-editor-option:hover {
