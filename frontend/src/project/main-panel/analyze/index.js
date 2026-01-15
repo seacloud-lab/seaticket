@@ -113,8 +113,8 @@ const Analyze = ({ title }) => {
     const validRecords = records.filter(record =>
       record.x != null &&
       record.y != null &&
-      !isNaN(parseFloat(record.x)) &&
-      !isNaN(parseFloat(record.y))
+      isFinite(parseFloat(record.x)) &&
+      isFinite(parseFloat(record.y))
     );
 
     if (validRecords.length === 0) {
@@ -162,14 +162,14 @@ const Analyze = ({ title }) => {
   }, [selectedConnections, startYear, endYear, startAnalysis]);
 
   const createCategoryMapping = (records, colorByField) => {
-    if (!records || records.length === 0) return null;
-
-    if (!colorByField || !records[0].hasOwnProperty(colorByField)) {
-      return null;
-    }
+    if (!records || records.length === 0 || !colorByField) return null;
 
     const values = records.map(r => r[colorByField]);
     const uniqueValues = [...new Set(values.filter(v => v != null))];
+
+    if (uniqueValues.length === 0 && !values.some(v => v == null)) {
+      return null;
+    }
 
     return createDiscreteMapping(values, uniqueValues, colorByField);
   };
