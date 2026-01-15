@@ -1,5 +1,5 @@
 .sea-metadata-row-header-cell .sea-metadata-column-icon {
-  color: #aaa;
+  color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
   margin-top: -2px;
@@ -43,7 +43,7 @@
 }
 
 .sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg {
-  color: #aaa;
+  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg:hover {
