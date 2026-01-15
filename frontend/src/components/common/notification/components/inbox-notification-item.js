@@ -123,6 +123,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     if (noticeType === MSG_TYPE_PROJECT) {
       const iconClass = noticeItem.project_icon || 'icon-worksheet';
       const iconColor = noticeItem.project_color || DEFAULT_COLOR;
+      const displayCount = noticeItem.unseen_count > 99 ? '99+' : noticeItem.unseen_count;
       return (
         <div className="inbox-notification-item-header">
           <div className="notification-header-info">
@@ -131,9 +132,9 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
               <span className="notification-user-name">{noticeItem.project_name}</span>
             </div>
           </div>
-          {!noticeItem.seen && (
+          {displayCount !== 0 && (
             <span className="notification-point project-inbox-count">
-              {noticeItem.unseen_count}
+              {displayCount}
             </span>
           )}
         </div>

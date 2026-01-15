@@ -3,6 +3,7 @@ import { notificationAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
+import { siteRoot } from '@/constants';
 
 const NotificationContext = createContext();
 
@@ -87,14 +88,20 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
     return notificationAPI.listAllNotifications(page, perPage, { signal: controller.signal })
       .then((res) => {
-        console.log('res', res, type);
-        const list = getFormatList(res, type);
         const count = res.data.general.unseen_count + res.data.project.unseen_count;
+        // First load
+        if (!type) {
+          setUnseen(count);
+          return;
+        }
+
+        const list = getFormatList(res, type);
         if (isFetchMore) {
           setNotificationList([...notificationList, ...list]);
         } else {
           setNotificationList(list);
-          setAllNotificationCount(res.data.count || 0);
+          const allCount = (type === NOTIFICATION_TYPE.PROJECT ? res.data.project.count : res.data.general.count);
+          setAllNotificationCount(allCount || 0);
           setUnseen(count);
         }
       }).catch((err) => {
@@ -137,17 +144,63 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       });
   }, [projectUuid, notificationList]);
 
+  const markAsReadByTab = useCallback((noticeItem, curTab) => {
+    if (curTab === NOTIFICATION_TYPE.GENERAL) {
+      markAsRead(noticeItem.id);
+    } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
+      const projectName = noticeItem.project_name || noticeItem.name || '';
+      const projectHref = siteRoot + 'workspace/' + noticeItem.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open';
+      setShowInboxDrawer(false);
+      window.location.href = projectHref;
+    }
+  }, [notificationList]);
+
+  const markAllAsReadByTab = useCallback((curTab) => {
+    if (curTab === NOTIFICATION_TYPE.GENERAL) {
+      const unSeenList = notificationList.filter(item => !item.seen);
+      if (unSeenList.length === 0) return;
+
+      notificationAPI.markAllRead()
+        .then(() => {
+          setUnseen(unseen - unSeenList.length);
+          setNotificationList(prev => prev.map(item => ({ ...item, seen: true })));
+        })
+        .catch(err => {
+          const errorMsg = Utils.getErrorMsg(err);
+          toaster.danger(errorMsg);
+        });
+    } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
+      const unSeenList = notificationList.filter(item => item.unseen_count > 0);
+      if (unSeenList.length === 0) return;
+
+      const count = unSeenList.reduce((sum, item) => {
+        return sum + item.unseen_count;
+      }, 0);
+      Promise.all(unSeenList.map(item => notificationAPI.markAllProjectRead(item.project_uuid)))
+        .then(() => {
+          setUnseen(unseen - count);
+          setNotificationList(prev => prev.map(item => ({ ...item, seen: true, unseen_count: 0 })));
+        })
+        .catch(err => {
+          const errorMsg = Utils.getErrorMsg(err);
+          toaster.danger(errorMsg);
+        });
+    }
+  }, [notificationList, unseen]);
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [showInboxDrawer]);
+  }, []);
 
   const value = {
     notificationList,
+    setNotificationList,
     allNotificationCount,
+    setAllNotificationCount,
     unseen,
     loading,
     loadingMore,
@@ -155,6 +208,8 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     fetchAllNotifications, // Fetch all
     markAsRead,
     markAllAsRead,
+    markAsReadByTab,
+    markAllAsReadByTab,
     showInboxDrawer,
     setShowInboxDrawer
   };

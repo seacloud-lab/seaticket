@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
-import { gettext, mediaUrl, siteRoot } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
 import { Utils } from '@/utils/utils';
@@ -13,7 +13,11 @@ import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
 import './index.css';
 
 const AllInbox = ({ toggleBar }) => {
-  const { loading, loadingMore, notificationList, allNotificationCount, markAsRead, markAllAsRead, fetchNotifications, fetchAllNotifications, showInboxDrawer, setShowInboxDrawer } = useNotification();
+  const {
+    loading, loadingMore, notificationList, allNotificationCount,
+    markAsReadByTab, markAllAsReadByTab, fetchAllNotifications,
+    showInboxDrawer, setShowInboxDrawer, setNotificationList, setAllNotificationCount,
+  } = useNotification();
   const [curTab, setCurTab] = useState(NOTIFICATION_TYPE.GENERAL); // general or project
   const page = useRef(1);
   const inboxPanelRef = useRef(null);
@@ -27,25 +31,15 @@ const AllInbox = ({ toggleBar }) => {
     // Load more notifications when near bottom
     if (isNearBottom(e.target)) {
       page.current = page.current + 1;
-      fetchNotifications(page.current, 20);
+      fetchAllNotifications(page.current, 20, curTab);
     }
-  }, [loadingMore, notificationList]);
+  }, [loadingMore, notificationList, allNotificationCount, curTab]);
 
   const onHandleClick = useCallback((e) => {
+    if (!showInboxDrawer) return;
     if (inboxPanelRef.current.contains(e.target)) return;
     setShowInboxDrawer(false);
-  }, []);
-
-  const onNoticeItemClick = useCallback((item) => {
-    if (curTab === NOTIFICATION_TYPE.GENERAL) {
-      markAsRead(item.id);
-    } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
-      const projectName = item.project_name || item.name || '';
-      const projectHref = siteRoot + 'workspace/' + item.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open';
-      setShowInboxDrawer(false);
-      window.location.href = projectHref;
-    }
-  }, [curTab]);
+  }, [showInboxDrawer]);
 
   useEffect(() => {
     document.addEventListener('click', onHandleClick);
@@ -54,9 +48,11 @@ const AllInbox = ({ toggleBar }) => {
     };
   }, [onHandleClick]);
 
-  // Mount
   useEffect(() => {
     if (showInboxDrawer) {
+      setNotificationList([]);
+      setAllNotificationCount(0);
+      page.current = 1;
       fetchAllNotifications(1, 20, curTab);
     }
   }, [showInboxDrawer, curTab]);
@@ -77,7 +73,7 @@ const AllInbox = ({ toggleBar }) => {
             {gettext('Project')}
           </div>
         </div>
-        <div className="sea-qa-inbox-actions" onClick={markAllAsRead} title={gettext('mark all as read')}>
+        <div className="sea-qa-inbox-actions" onClick={() => markAllAsReadByTab(curTab)} title={gettext('mark all as read')}>
           <Icon symbol="mark-all-as-read" />
         </div>
       </div>
@@ -96,7 +92,7 @@ const AllInbox = ({ toggleBar }) => {
               <InboxNotificationItem
                 key={item.id}
                 noticeItem={item}
-                onNoticeItemClick={() => onNoticeItemClick(item)}
+                onNoticeItemClick={() => markAsReadByTab(item, curTab)}
                 toggleBar={toggleBar}
                 setShowInboxDrawer={setShowInboxDrawer}
               />

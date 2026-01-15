@@ -161,9 +161,12 @@ class NotificationsAllView(APIView):
         if per_page < 1:
             return api_error(status.HTTP_400_BAD_REQUEST, 'per_page invalid.')
 
+        start = (page - 1) * per_page
+        end = page * per_page
+
         username = request.user.username
-        user_notifications = UserNotification.objects.get_user_notifications(username)
-        project_notifications = ProjectNotification.objects.filter(to_user=username).order_by('-timestamp')
+        user_notifications = UserNotification.objects.get_user_notifications(username)[start:end]
+        project_notifications = ProjectNotification.objects.filter(to_user=username).order_by('-timestamp')[start:end]
         notification_list = []
         for user_notification in user_notifications:
             if user_notification.detail is not None:
