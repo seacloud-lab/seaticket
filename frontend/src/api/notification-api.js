@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { siteRoot } from '../../constants';
+import { siteRoot } from '../constants';
 
 class NotificationAPI {
 
@@ -31,12 +31,6 @@ class NotificationAPI {
       }
     });
     return this;
-  }
-
-  listNotifications(page = 1, perPage = 20) {
-    const url = this.server + '/api/v1/notifications/';
-    const params = { page, per_page: perPage };
-    return this.req.get(url, { params });
   }
 
   listAllNotifications(page = 1, perPage = 20, options = {}) {

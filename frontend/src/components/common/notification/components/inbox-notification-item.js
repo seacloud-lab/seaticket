@@ -35,9 +35,6 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       const {
         from_user_name,
         from_user_id,
-        ticket_id,
-        workspace_id,
-        project_name,
         ticket_title,
         comment_content,
       } = detail;
@@ -46,12 +43,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       const ticketTitle = ticket_title;
       const newCommentContent = removeTextMark(comment_content, false);
       const escapedContent = Utils.HTMLescape(newCommentContent);
-
-      let url = null;
-      if (workspace_id && project_name && ticket_id !== undefined && ticket_id !== null) {
-        url = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
-      }
-      return { username, title: ticketTitle, url, commentContent: escapedContent };
+      return { username, title: ticketTitle, commentContent: escapedContent };
     }
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
       // group name does not support special characters
@@ -63,10 +55,10 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       return { username, title };
     }
 
-    return { username: null, title: null, url: null, commentContent: '' };
+    return { username: null, title: null, commentContent: '' };
   }, [noticeItem]);
 
-  const { username, title, url, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
+  const { username, title, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
 
   const handleMarkNotificationRead = useCallback((e) => {
     e.preventDefault();
@@ -158,12 +150,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
   }, [noticeItem]);
 
   return (
-    <div
-      className="inbox-notification-item"
-      onClick={() => handleNoticeItemClick()}
-      role="button"
-      style={{ cursor: url ? 'pointer' : 'default' }}
-    >
+    <div className="inbox-notification-item" onClick={() => handleNoticeItemClick()}>
       {renderHead()}
       {renderContent()}
     </div>
