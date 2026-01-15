@@ -35,8 +35,7 @@ class MainPanel extends React.Component {
   }
 
   handleResize = (sideWidth) => {
-    const resizeBarWidth = 6;
-    this.mainPanelRef.current.style.width = `calc(100% - ${resizeBarWidth}px - ${sideWidth}px)`;
+    this.mainPanelRef.current.style.width = `calc(100% - ${sideWidth}px)`;
   };
 
   loadWorkspaceList = () => {
