@@ -300,6 +300,12 @@
   margin-top: -6px;
 }
 
+.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn.active,
+.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn:active,
+.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
 .workspace .project-item span {
   overflow: hidden;
   text-overflow: ellipsis;
