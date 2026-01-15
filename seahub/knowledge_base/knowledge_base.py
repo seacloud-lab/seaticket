@@ -285,8 +285,6 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.title.name] = title
 
-        file_urls = None
-        content_text = None
         if 'content' in request.data:
             raw_content = request.data.get('content')
             if not raw_content:
@@ -299,7 +297,7 @@ class KnowledgeBaseAPIView(APIView):
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             
-            if file_urls:
+            if len(file_urls) > 0:
                 try:
                     new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
                     content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
