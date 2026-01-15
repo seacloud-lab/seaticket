@@ -15,7 +15,7 @@
 .sea-metadata-filters-list .empty-filters-list {
   padding: 0.25rem;
   font-size: 14px;
-  color: #666666;
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-filters-list .filter-item {
@@ -44,7 +44,7 @@
 }
 
 .sea-metadata-filters-list .filter-item .filter-term .option-group-content .option.active .sea-qa-icon-svg {
-  color: #666;
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-filters-list .filter-conjunction {
@@ -82,7 +82,7 @@
 
 .sea-metadata-filters-list .selected-conjunction-show {
   padding: 0 10px;
-  color: #666666;
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-filters-list .filter-column {
@@ -206,11 +206,11 @@
 .delete-filter .sea-qa-icon-svg-close {
   height: 12px;
   width: 12px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .delete-filter .sea-qa-icon-svg-close:hover {
-  color: #666;
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-filters-list .multiple-option-name {
@@ -229,7 +229,7 @@
 
 .sea-metadata-filters-list .multiple-check-icon .sea-qa-icon-svg-check-mark,
 .sea-metadata-filters-list .collaborator-check-icon .sea-qa-icon-svg-check-mark {
-  color: #666 !important;
+  color: var(--bs-icon-color) !important;
   font-size: 12px;
 }
 
@@ -280,7 +280,7 @@
 
 .sea-metadata-filters-list .popover-add-tool {
   border-top: none;
-  color: #666666;
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-filters-list .option-group {
@@ -313,7 +313,7 @@
 .sea-metadata-select-icon .sea-qa-icon-svg {
   height: 14px;
   width: 14px;
-  color: #aaa;
+  color: var(--bs-icon-secondary-color);
   cursor: default;
   margin-top: -2px;
 }
@@ -329,5 +329,5 @@
 }
 
 .sea-qa-select-option:not(.active):hover .sea-metadata-filter-header-icon .sea-qa-icon-svg {
-  color: #aaa;
+  color: var(--bs-icon-secondary-color);
 }

@@ -111,7 +111,7 @@
   height: 12px;
   width: 12px;
   margin-right: 10px;
-  color: #aaa;
+  color: var(--bs-icon-secondary-color);
   margin-top: -2px;
 }
 
