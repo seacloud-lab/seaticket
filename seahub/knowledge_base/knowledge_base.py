@@ -271,6 +271,13 @@ class KnowledgeBaseAPIView(APIView):
         row = {}
         username = request.user.username
 
+        if 'tags' in request.data:
+            tags = request.data.get('tags')
+            if not isinstance(tags, list):
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.tags.name] = tags        
+
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
@@ -301,13 +308,6 @@ class KnowledgeBaseAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             row[KnowledgeBaseTable.content.name] = content_text
-
-        if 'tags' in request.data:
-            tags = request.data.get('tags')
-            if not isinstance(tags, list):
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.tags.name] = tags
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
