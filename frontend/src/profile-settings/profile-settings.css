@@ -1,3 +1,4 @@
+/* Basic styles */
 body {
   overflow: hidden;
 }
@@ -6,38 +7,39 @@ body {
   height: 100%;
 }
 
-.top-header {
-  background: #f4f4f7;
-  border-bottom: 1px solid #e8e8e8;
-  padding: 0.5rem 1rem;
+/* Main container styles */
+.profile-settings {
+  background-color: #f7f7f5;
+  padding: 0 1.5rem;
+  padding-left: 12px;
+}
+
+.profile-settings .top-header {
+  padding: 0.5rem 0rem;
+  padding-left: 12px;
   flex-shrink: 0;
 }
 
-.sea-qa-web-settings .side-panel {
+.profile-settings .side-panel {
   flex: 0 0 22%;
-  padding: 20px;
-  border-right: 1px solid var(--bs-border-secondary-color);
+  padding-right: 20px;
 }
 
-.sea-qa-web-settings .side-panel {
-  flex: 0 0 22%;
-}
-
-.sea-qa-web-settings .main-panel {
+.profile-settings .main-panel {
   background-color: #ffffff;
+  border-radius: 10px 10px 0 0;
   width: 100%;
   flex: 1 0 78%;
 }
 
+/* Title and content area */
 .heading {
   padding: 8px 16px;
-  background: #f9f9f9;
+  margin: 0;
   font-size: 1rem;
-  color: #322;
   font-weight: normal;
   line-height: 1.5;
-  margin: 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-color);
 }
 
 .content {
@@ -45,18 +47,20 @@ body {
   overflow: auto;
 }
 
-.sea-qa-web-settings .setting-item {
+/* Setting item styles */
+.profile-settings .setting-item {
   margin: 1em 0 2em;
 }
 
 .setting-item-heading {
+  padding-bottom: 0.2em;
+  margin-bottom: 0.7em;
   font-size: 1rem;
   font-weight: normal;
-  padding-bottom: 0.2em;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 0.7em;
+  border-bottom: 1px solid var(--bs-border-color);
 }
 
+/* User avatar related */
 .user-avatar {
   border-radius: 50%;
 }
@@ -67,9 +71,9 @@ body {
   top: 0;
   width: 80px;
   height: 80px;
+  line-height: 80px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.3);
-  line-height: 80px;
 }
 
 .avatar-edit.sea-qa-icon-btn:hover {
@@ -77,47 +81,48 @@ body {
 }
 
 .avatar-edit.sea-qa-icon-btn .sea-qa-icon-svg {
-  color: #fff;
-  height: 24px;
   width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+/* Navigation menu styles */
+.user-setting-nav .nav-item {
+  padding: 0 12px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 4px;
+}
+
+.user-setting-nav .nav-item .sea-qa-icon-svg {
+  width: 20px;
+  height: 20px;
+  color: var(--bs-icon-color);
 }
 
 .user-setting-nav .nav-item .nav-link {
-  flex: auto;
   margin: 0;
-  padding-left: 1em;
-  border-left: 2px solid transparent;
-  color: #212529;
+  padding: 0;
+  padding-left: 0.5rem;
+  font-size: 16px;
+  flex: auto;
 }
 
-.user-setting-nav .nav-item.active .nav-link {
-  color: #ED7109;
-  border-left-color: #ED7109;
-}
-
-.user-setting-nav .nav-item .nav-link:hover {
-  color: #ED7109;
-}
-
+/* Form and input styles */
 .input-tip {
   padding-top: calc(0.375rem + 1px);
   color: #666;
-}
-
-@media (min-width: 768px) {
-  .input-tip {
-    padding-left: 0;
-  }
 }
 
 .language-selector {
   width: 260px;
 }
 
-.sea-qa-web-settings .btn {
+.profile-settings .btn {
   min-width: 60px;
 }
 
+/* Bind phone module styles */
 .bind-phone-module .bind-phone-container .row {
   margin-left: 0;
   padding-left: 0;
@@ -131,15 +136,15 @@ body {
 .bind-phone-container .btn-outline-disabled {
   color: #ababab;
   border: 1px solid rgba(0, 40, 100, 0.12);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   opacity: 1;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .bind-phone-container .btn-outline-custom {
   color: #212529;
   border: 1px solid rgba(0, 40, 100, 0.12);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   opacity: 1;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .bind-phone-container .error {
@@ -164,6 +169,7 @@ body {
   flex: 1;
 }
 
+/* Session logs table styles */
 .logged-in-session-table .logged-state {
   width: 10px;
   height: 10px;
@@ -197,10 +203,18 @@ body {
   transform: rotate(90deg);
 }
 
+/* Responsive design */
+@media (min-width: 768px) {
+  .input-tip {
+    padding-left: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .bind-phone-container .verify-code-container .verify-code {
     min-width: 50%;
   }
+  
   .logged-in-session-table thead tr {
     display: flex;
   }
