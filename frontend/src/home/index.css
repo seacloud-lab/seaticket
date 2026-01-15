@@ -291,6 +291,7 @@
 
 .project-item .project-item-icon-more-toggle-btn {
   margin-top: -6px;
+  margin-right: -6px;
 }
 
 .project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn.active,

@@ -67,7 +67,7 @@ class Workspace extends React.Component {
     };
     this.isDropdownOpen = false;
     this.isDesktop = Utils.isDesktop();
-    this.sidePanelWidth = INIT_SIDEBAR_WIDTH;
+    this.sidePanelWidth = parseFloat(localStorage.getItem('home-side-panel-width') || INIT_SIDEBAR_WIDTH);
   }
 
   componentDidMount() {

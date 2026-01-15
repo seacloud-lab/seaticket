@@ -8,7 +8,7 @@ import './org-title.css';
 function OrgTitle(props) {
   const { isDesktop, onCreateGroupToggle } = props;
   return (
-    <div className={`justify-content-between project-org-title${isDesktop ? '' : ' project-mobile-org-title'}`}>
+    <div className={`project-org-title d-flex justify-content-between align-items-center flex-direction-row ${isDesktop ? '' : ' project-mobile-org-title'}`}>
       <div className="project-org-title-left">
         <h1 title={orgName} aria-label={orgName} className="project-org-name">{orgName}</h1>
       </div>

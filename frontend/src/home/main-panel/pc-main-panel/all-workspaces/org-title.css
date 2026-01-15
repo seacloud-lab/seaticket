@@ -1,10 +1,8 @@
 .project-center .project-org-title {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  flex-direction: row;
+  width: calc(100% - 48px);
   border-bottom: 1px solid var(--bs-border-secondary-color);
   min-height: 56px;
+  margin: 0 24px; 
 }
 
 .project-center .project-org-title.project-mobile-org-title {
