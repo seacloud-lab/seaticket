@@ -1,17 +1,17 @@
 import json
 import logging
 import os
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import jwt
+from waitress import serve
 
 
 logger = logging.getLogger('seaqa_io')
 
 
-def check_auth_token(req):
-    auth = req.headers.get('Authorization', '').split()
+def check_auth_token(headers, private_key):
+    auth = (headers.get('Authorization') or '').split()
     if not auth or auth[0].lower() != 'token' or len(auth) != 2:
         return False, 'Token invalid.'
 
@@ -19,7 +19,6 @@ def check_auth_token(req):
     if not token:
         return False, 'Token invalid.'
 
-    private_key = req.server.private_key
     try:
         jwt.decode(token, private_key, algorithms=['HS256'])
     except (jwt.ExpiredSignatureError, jwt.InvalidSignatureError) as e:
@@ -28,120 +27,258 @@ def check_auth_token(req):
     return True, None
 
 
-class IoRequestHandler(BaseHTTPRequestHandler):
+def _get_headers(environ):
+    headers = {}
+    for key, value in environ.items():
+        if key.startswith('HTTP_'):
+            header_name = key[5:].replace('_', '-').title()
+            headers[header_name] = value
+    if 'CONTENT_TYPE' in environ:
+        headers['Content-Type'] = environ['CONTENT_TYPE']
+    return headers
 
-    def _send_json(self, status_code, data):
+
+def _read_json(environ):
+    try:
+        length = int(environ.get('CONTENT_LENGTH') or 0)
+    except (TypeError, ValueError):
+        length = 0
+    if length <= 0:
+        return None
+    raw = environ['wsgi.input'].read(length)
+    return json.loads(raw.decode('utf-8'))
+
+
+class Application:
+
+    def __init__(self, io_task_manager, analysis_task_manager, private_key):
+        self.io_task_manager = io_task_manager
+        self.analysis_task_manager = analysis_task_manager
+        self.private_key = private_key
+
+    def _json_response(self, status_code, data):
         body = json.dumps(data).encode('utf-8') if not isinstance(data, (bytes, bytearray)) else data
-        self.send_response(status_code)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        headers = [
+            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Content-Length', str(len(body))),
+        ]
+        return status_code, headers, body
 
-    def _read_json(self):
-        length = int(self.headers.get('Content-Length') or 0)
-        if length <= 0:
-            return None
-        raw = self.rfile.read(length)
-        return json.loads(raw.decode('utf-8'))
+    def __call__(self, environ, start_response):
+        method = environ.get('REQUEST_METHOD', 'GET').upper()
+        path = environ.get('PATH_INFO', '')
+        query = environ.get('QUERY_STRING', '')
+        headers = _get_headers(environ)
 
-    def _auth(self):
-        private_key = self.server.private_key
-        return check_auth_token(self)
+        status_code = 404
+        response = {'error_msg': 'Not found'}
 
-    def do_GET(self):
-        parsed = urlparse(self.path)
+        if path == '/ping':
+            status_code, headers_out, body = self._json_response(200, {'success': True})
+            start_response('200 OK', headers_out)
+            return [body]
 
-        if parsed.path == '/ping':
-            return self._send_json(200, {'success': True})
-
-        is_valid, error = self._auth()
+        is_valid, error = check_auth_token(headers, self.private_key)
         if not is_valid:
-            return self._send_json(403, {'error_msg': error})
+            status_code, headers_out, body = self._json_response(403, {'error_msg': error})
+            start_response('403 Forbidden', headers_out)
+            return [body]
 
-        if parsed.path == '/kb-task-status':
-            qs = parse_qs(parsed.query)
-            task_id = (qs.get('task_id') or [''])[0]
-            io_task_manager = self.server.io_task_manager
-            if not io_task_manager.is_valid_task_id(task_id):
-                return self._send_json(404, {'error_msg': 'task_id not found.'})
+        if method == 'GET':
+            qs = parse_qs(query)
+            if path == '/embedding-analysis-task-status':
+                task_id = (qs.get('task_id') or [''])[0]
+                if not self.analysis_task_manager.is_valid_task_id(task_id):
+                    status_code, headers_out, body = self._json_response(404, {'error_msg': 'task_id not found.'})
+                    start_response('404 Not Found', headers_out)
+                    return [body]
 
-            is_finished, task_result = io_task_manager.query_status(task_id)
-            if is_finished is None:
-                return self._send_json(404, {'error_msg': 'task_id not found.'})
+                is_finished, task_result = self.analysis_task_manager.query_status(task_id)
+                if is_finished is None:
+                    status_code, headers_out, body = self._json_response(404, {'error_msg': 'task_id not found.'})
+                    start_response('404 Not Found', headers_out)
+                    return [body]
 
-            if task_result and not task_result.get('success'):
-                return self._send_json(500, task_result)
+                if task_result and not task_result.get('success'):
+                    status_code, headers_out, body = self._json_response(500, task_result)
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
 
-            return_result = {'is_finished': is_finished}
-            if isinstance(task_result, dict):
-                return_result.update(task_result)
+                return_result = {'is_finished': is_finished}
+                if isinstance(task_result, dict):
+                    return_result.update(task_result)
 
-            return self._send_json(200, return_result)
+                status_code, headers_out, body = self._json_response(200, return_result)
+                start_response('200 OK', headers_out)
+                return [body]
 
-        return self._send_json(404, {'error_msg': 'Not found'})
+            if path == '/kb-task-status':
+                task_id = (qs.get('task_id') or [''])[0]
+                if not self.io_task_manager.is_valid_task_id(task_id):
+                    status_code, headers_out, body = self._json_response(404, {'error_msg': 'task_id not found.'})
+                    start_response('404 Not Found', headers_out)
+                    return [body]
 
-    def do_POST(self):
-        parsed = urlparse(self.path)
+                is_finished, task_result = self.io_task_manager.query_status(task_id)
+                if is_finished is None:
+                    status_code, headers_out, body = self._json_response(404, {'error_msg': 'task_id not found.'})
+                    start_response('404 Not Found', headers_out)
+                    return [body]
 
-        is_valid, error = self._auth()
-        if not is_valid:
-            return self._send_json(403, {'error_msg': error})
+                if task_result and not task_result.get('success'):
+                    status_code, headers_out, body = self._json_response(500, task_result)
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
 
-        io_task_manager = self.server.io_task_manager
-        if io_task_manager.tasks_queue.full():
-            return self._send_json(400, {'error_msg': 'tasks server busy.'})
+                return_result = {'is_finished': is_finished}
+                if isinstance(task_result, dict):
+                    return_result.update(task_result)
 
-        try:
-            context = self._read_json() or {}
-        except Exception:
-            return self._send_json(400, {'error_msg': 'context invalid.'})
+                status_code, headers_out, body = self._json_response(200, return_result)
+                start_response('200 OK', headers_out)
+                return [body]
 
-        if parsed.path == '/convert-kb-view-to-excel':
-            project_uuid = context.get('project_uuid')
-            view_id = context.get('view_id')
-            username = context.get('username')
-
-            if not project_uuid:
-                return self._send_json(400, {'error_msg': 'project_uuid is required.'})
-            if not view_id:
-                return self._send_json(400, {'error_msg': 'view_id is required.'})
-            if not username:
-                return self._send_json(400, {'error_msg': 'username is required.'})
-
+        if method == 'POST':
             try:
-                task_id = io_task_manager.add_convert_kb_view_to_excel_task(project_uuid, view_id, username)
-            except Exception as e:
-                logger.exception(e)
-                return self._send_json(500, {'error_msg': str(e)})
+                context = _read_json(environ) or {}
+            except Exception:
+                status_code, headers_out, body = self._json_response(400, {'error_msg': 'context invalid.'})
+                start_response('400 Bad Request', headers_out)
+                return [body]
 
-            return self._send_json(200, {'task_id': task_id})
+            if path == '/add-embedding-analysis-task':
+                if self.analysis_task_manager.tasks_queue.full():
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'tasks server busy.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
 
-        if parsed.path == '/import-kb-from-excel':
-            project_uuid = context.get('project_uuid')
-            username = context.get('username')
-            file_name = context.get('file_name')
-            preview_only = context.get('preview_only', False)
+                project_uuid = context.get('project_uuid')
+                connection_ids = context.get('connection_ids')
+                username = context.get('username')
+                start_year = context.get('start_year')
+                end_year = context.get('end_year')
 
-            if not project_uuid:
-                return self._send_json(400, {'error_msg': 'project_uuid is required.'})
-            if not username:
-                return self._send_json(400, {'error_msg': 'username is required.'})
-            if not file_name:
-                return self._send_json(400, {'error_msg': 'file name is required.'})
+                if not project_uuid:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'project_uuid is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not connection_ids:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'connection_ids is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not username:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'username is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
 
-            try:
-                if preview_only:
-                    task_id = io_task_manager.add_preview_import_kb_excel_task(project_uuid, file_name)
-                else:
-                    task_id = io_task_manager.add_import_kb_from_excel_task(project_uuid, username, file_name)
-            except Exception as e:
-                logger.exception(e)
-                return self._send_json(500, {'error_msg': str(e)})
+                if self.analysis_task_manager.has_running_task(project_uuid):
+                    status_code, headers_out, body = self._json_response(
+                        409,
+                        {'error_msg': 'This project already has a running analysis task.'},
+                    )
+                    start_response('409 Conflict', headers_out)
+                    return [body]
 
-            return self._send_json(200, {'task_id': task_id})
+                try:
+                    task_id = self.analysis_task_manager.add_embedding_analysis_task(
+                        project_uuid, connection_ids, username, start_year, end_year)
+                except Exception as e:
+                    logger.exception(e)
+                    status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
 
-        return self._send_json(404, {'error_msg': 'Not found'})
+                status_code, headers_out, body = self._json_response(200, {'task_id': task_id})
+                start_response('200 OK', headers_out)
+                return [body]
+
+            if path == '/convert-kb-view-to-excel':
+                if self.io_task_manager.tasks_queue.full():
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'tasks server busy.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                project_uuid = context.get('project_uuid')
+                view_id = context.get('view_id')
+                username = context.get('username')
+
+                if not project_uuid:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'project_uuid is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not view_id:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'view_id is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not username:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'username is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                try:
+                    task_id = self.io_task_manager.add_convert_kb_view_to_excel_task(project_uuid, view_id, username)
+                except Exception as e:
+                    logger.exception(e)
+                    status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
+
+                status_code, headers_out, body = self._json_response(200, {'task_id': task_id})
+                start_response('200 OK', headers_out)
+                return [body]
+
+            if path == '/import-kb-from-excel':
+                if self.io_task_manager.tasks_queue.full():
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'tasks server busy.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                project_uuid = context.get('project_uuid')
+                username = context.get('username')
+                file_name = context.get('file_name')
+                preview_only = context.get('preview_only', False)
+
+                if not project_uuid:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'project_uuid is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not username:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'username is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not file_name:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'file name is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                try:
+                    if preview_only:
+                        task_id = self.io_task_manager.add_preview_import_kb_excel_task(project_uuid, file_name)
+                    else:
+                        task_id = self.io_task_manager.add_import_kb_from_excel_task(
+                            project_uuid, username, file_name)
+                except Exception as e:
+                    logger.exception(e)
+                    status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
+
+                status_code, headers_out, body = self._json_response(200, {'task_id': task_id})
+                start_response('200 OK', headers_out)
+                return [body]
+
+        status_text = {
+            200: 'OK',
+            400: 'Bad Request',
+            403: 'Forbidden',
+            404: 'Not Found',
+            409: 'Conflict',
+            500: 'Internal Server Error',
+        }.get(status_code, 'OK')
+        status_code, headers_out, body = self._json_response(status_code, response)
+        start_response(f'{status_code} {status_text}', headers_out)
+        return [body]
+
 
 
 def main():
@@ -151,6 +288,7 @@ def main():
     django.setup()
 
     from django.conf import settings
+    from seaqa_io.analysis_task_manager import AnalysisTaskManager
     from seaqa_io.task_manager import IoTaskManager
 
     io_task_manager = IoTaskManager()
@@ -159,16 +297,20 @@ def main():
         settings.SEAQA_IO_TASK_TIMEOUT,
     )
     io_task_manager.run()
+
+    analysis_task_manager = AnalysisTaskManager()
+    analysis_task_manager.init(
+        settings.SEAQA_IO_WORKERS,
+        settings.SEAQA_IO_TASK_TIMEOUT,
+    )
+    analysis_task_manager.run()
     u = urlparse(settings.SEAQA_IO_INNER_SERVER_URL)
     host = u.hostname
     port = u.port
 
-    httpd = ThreadingHTTPServer((host, int(port)), IoRequestHandler)
-    httpd.io_task_manager = io_task_manager
-    httpd.private_key = settings.JWT_PRIVATE_KEY
-
+    app = Application(io_task_manager, analysis_task_manager, settings.JWT_PRIVATE_KEY)
     logger.info('SeaQA-IO listening on %s', settings.SEAQA_IO_INNER_SERVER_URL)
-    httpd.serve_forever()
+    serve(app, host=host, port=int(port), threads=settings.SEAQA_IO_WORKERS)
 
 
 if __name__ == '__main__':

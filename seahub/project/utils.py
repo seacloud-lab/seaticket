@@ -298,7 +298,6 @@ def check_ai_limit(username, org_id):
     is_exceed = cost >= credit
     return is_exceed
 
-
 def get_all_available_projects(request):
     username = request.user.username
     cache_key = normalize_cache_key(username, USER_PROJECT_CACHE_PREFIX)
