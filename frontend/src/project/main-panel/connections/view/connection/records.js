@@ -238,7 +238,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const rowList = Array.isArray(rows) ? rows : [rows];
     const recordIds = rowList.filter(row => row && row._id).map(row => row._id);
     if (recordIds.length === 0) return;
-    connectionsAPI.markConnectionRecordsOutdated(projectUuid, connectionID, recordIds)
+    const rowsData = recordIds.map(id => ({ row_id: id, row: { outdated: true } }));
+    connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData)
       .then(() => {
         toaster.success(gettext('Marked as outdated'));
         context.eventBus.emit(EVENT_BUS_TYPE.RELOAD_DATA);
