@@ -117,7 +117,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           <div className="notification-header-info">
             <div className="notification-user-detail">
               <i className={classnames('notification-user-avatar project-icon', iconClass)} style={{ color: iconColor }} />
-              <span className="notification-user-name">{noticeItem.project_name}</span>
+              <span className="text-truncate notification-user-name">{noticeItem.project_name}</span>
             </div>
           </div>
           <InboxCount unseen={noticeItem.unseen_count} />
@@ -130,7 +130,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         <div className="notification-header-info">
           <div className="notification-user-detail">
             <img className="notification-user-avatar" src={`${mediaUrl}/avatars/default.png`} alt="" />
-            <span className="notification-user-name">{username}</span>
+            <span className="text-truncate notification-user-name">{username}</span>
           </div>
           <span className="notification-time">{dayjs(noticeItem.time).fromNow()}</span>
         </div>
