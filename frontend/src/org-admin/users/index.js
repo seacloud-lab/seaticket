@@ -5,7 +5,7 @@ import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
 import { toaster, ModalPortal } from '@/components';
 import Users from './users';
-import Admins from './admins';
+import OrgAdminList from './org-admin-list';
 import { TopBar, Main } from '../main-panel';
 import { gettext, orgID, siteRoot } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -212,40 +212,7 @@ class OrgUsers extends Component {
   render() {
     return (
       <>
-        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}>
-          {this.props.currentTab === 'admins' && (
-            <>
-              <Button color="secondary" className="operation-item" title={gettext('Add admin')} aria-label={gettext('Add admin')} onClick={this.toggleAddOrgAdmin}>
-                {gettext('Add admin')}
-              </Button>
-              {this.state.isShowAddOrgAdminDialog &&
-                <ModalPortal>
-                  <AddAdminDialog toggle={this.toggleAddOrgAdmin} onAddedOrgAdmin={this.onAddedOrgAdmin}/>
-                </ModalPortal>
-              }
-            </>
-          )}
-          {this.props.currentTab === 'users' && (
-            <>
-              <Button color="secondary" className="operation-item" title={gettext('Add user')} aria-label={gettext('Add user')} onClick={this.toggleAddOrgUser}>
-                {gettext('Add user')}
-              </Button>
-              <Button color="secondary" className="operation-item" title={gettext('Invite user')} aria-label={gettext('Invite user')} onClick={this.toggleInviteUsers}>
-                {gettext('Invite user')}
-              </Button>
-              {this.state.isShowAddOrgUserDialog &&
-                <ModalPortal>
-                  <AddUserDialog handleSubmit={this.addOrgUser} toggle={this.toggleAddOrgUser}/>
-                </ModalPortal>
-              }
-              {this.state.isShowInviteUsersDialog &&
-                <ModalPortal>
-                  <InviteUserDialog handleSubmit={this.inviteOrgUsers} toggle={this.toggleInviteUsers}/>
-                </ModalPortal>
-              }
-            </>
-          )}
-        </TopBar>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}></TopBar>
         <Main
           title={(
             <ul className="nav">
@@ -270,26 +237,56 @@ class OrgUsers extends Component {
           titleClassName="cur-view-path org-user-nav tab-nav-container mb-4"
         >
           {this.props.currentTab === 'users' &&
-            <Users
-              currentTab={this.props.currentTab}
-              initOrgUsersData={this.initOrgUsersData}
-              toggleDelete={this.toggleOrgUsersDelete}
-              users={this.state.orgUsers}
-              page={this.state.page}
-              pageNext={this.state.pageNext}
-              perPage={this.state.perPage}
-              onChangePageNum={this.onChangePageNum}
-              onChangePerPage={this.onChangePerPage}
-            />
+            <>
+              <div>
+                <Button color="secondary" className="operation-item" title={gettext('Add user')} aria-label={gettext('Add user')} onClick={this.toggleAddOrgUser}>
+                  {gettext('Add user')}
+                </Button>
+                <Button color="secondary" className="operation-item" title={gettext('Invite user')} aria-label={gettext('Invite user')} onClick={this.toggleInviteUsers}>
+                  {gettext('Invite user')}
+                </Button>
+              </div>
+              {this.state.isShowAddOrgUserDialog &&
+                <ModalPortal>
+                  <AddUserDialog handleSubmit={this.addOrgUser} toggle={this.toggleAddOrgUser}/>
+                </ModalPortal>
+              }
+              {this.state.isShowInviteUsersDialog &&
+                <ModalPortal>
+                  <InviteUserDialog handleSubmit={this.inviteOrgUsers} toggle={this.toggleInviteUsers}/>
+                </ModalPortal>
+              }
+              <Users
+                currentTab={this.props.currentTab}
+                initOrgUsersData={this.initOrgUsersData}
+                toggleDelete={this.toggleOrgUsersDelete}
+                users={this.state.orgUsers}
+                page={this.state.page}
+                pageNext={this.state.pageNext}
+                perPage={this.state.perPage}
+                onChangePageNum={this.onChangePageNum}
+                onChangePerPage={this.onChangePerPage}
+              />
+            </>
           }
           {this.props.currentTab === 'admins' &&
-            <Admins
-              currentTab={this.props.currentTab}
-              toggleDelete={this.toggleOrgAdminDelete}
-              toggleRevokeAdmin={this.toggleRevokeAdmin}
-              orgAdminUsers={this.state.orgAdminUsers}
-              initOrgAdmin={this.initOrgAdmin}
-            />
+            <>
+              <Button color="secondary" className="operation-item" title={gettext('Add admin')} aria-label={gettext('Add admin')} onClick={this.toggleAddOrgAdmin}>
+                {gettext('Add admin')}
+              </Button>
+              {this.state.isShowAddOrgAdminDialog &&
+                <ModalPortal>
+                  <AddAdminDialog toggle={this.toggleAddOrgAdmin} onAddedOrgAdmin={this.onAddedOrgAdmin}/>
+                </ModalPortal>
+              }
+              <OrgAdminList
+                currentTab={this.props.currentTab}
+                toggleDelete={this.toggleOrgAdminDelete}
+                toggleRevokeAdmin={this.toggleRevokeAdmin}
+                orgAdminUsers={this.state.orgAdminUsers}
+                initOrgAdmin={this.initOrgAdmin}
+              />
+            </>
           }
         </Main>
       </>

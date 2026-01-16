@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { navigate } from '@gatsbyjs/reach-router';
@@ -44,13 +44,7 @@ class Projects extends React.Component {
   render() {
     return (
       <>
-        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}>
-          {this.props.currentTab === 'trash' && (
-            <Button color="secondary" className="operation-item" title={gettext('Clean')} aria-label={gettext('Clean')} onClick={this.onTrashEmptyConfirmDialogToggle}>
-              {gettext('Clean')}
-            </Button>
-          )}
-        </TopBar>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}></TopBar>
         <Main
           title={(
             <ul className="nav">
@@ -80,10 +74,21 @@ class Projects extends React.Component {
             />
           )}
           {this.props.currentTab === 'trash' && (
-            <TrashProjects
-              isShowTrashEmptyConfirmDialog={this.state.isShowTrashEmptyConfirmDialog}
-              onTrashEmptyConfirmDialogToggle={this.onTrashEmptyConfirmDialogToggle}
-            />
+            <>
+              <Button
+                color="secondary"
+                className="operation-item"
+                title={gettext('Clean')}
+                aria-label={gettext('Clean')}
+                onClick={this.onTrashEmptyConfirmDialogToggle}
+              >
+                {gettext('Clean')}
+              </Button>
+              <TrashProjects
+                isShowTrashEmptyConfirmDialog={this.state.isShowTrashEmptyConfirmDialog}
+                onTrashEmptyConfirmDialogToggle={this.onTrashEmptyConfirmDialogToggle}
+              />
+            </>
           )}
         </Main>
       </>
