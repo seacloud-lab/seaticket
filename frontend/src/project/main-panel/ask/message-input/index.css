@@ -52,6 +52,14 @@
   resize: none;
 }
 
+.sea-qa-ai-ask-chat-input-content .message-input:focus-visible {
+  outline: none;
+}
+
+.sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-content .message-input {
+  cursor: default;
+}
+
 .sea-qa-ai-ask-chat-input-content .message-input.message-input-value {
   overscroll-behavior: contain;
   position: absolute;
@@ -67,14 +75,6 @@
   visibility: hidden;
   pointer-events: none;
   height: fit-content;
-}
-
-.sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-content .message-input {
-  cursor: default;
-}
-
-.sea-qa-ai-ask-chat-input-content .message-input:focus-visible {
-  outline: none;
 }
 
 .sea-qa-ai-ask-chat-operations-container {
@@ -101,7 +101,7 @@
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-icon-svg {
-  color: inherit;
+  color: var(--bs-icon-color);
   height: 1rem;
   width: 1rem;
 }
@@ -126,28 +126,38 @@
   max-width: 100%;
   background-image: none;
   border: none;
-  padding: 0 6px;
-  height: 24px;
+  padding: 0 0.5rem;
+  height: 32px;
   border-radius: 3px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
+
+.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.sea-qa-ai-model-selector {
+  border: none;
+}
+
+.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.sea-qa-ai-model-selector.selected-option-show {
+  margin-right: -4px;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select:hover {
-  background-color: #efefef;
+  background-color: var(--bs-bg-color);
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select .selected-option {
   background-color: transparent;
-  gap: 4px;
+  gap: 8px;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select .selected-option-show {
   width: 100%;
-  color: #212529;
+  font-size: 14px;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .selected-option-show,
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .sea-qa-icon-svg-arrow-down {
+.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted {
   color: #ed7109;
+  border-color: rgba(237, 113, 7, 0.2);
+  background-color: rgba(237, 113, 7, 0.08);
 }
 
 .sea-qa-ai-chat-tool-type-select-editor .popover.bs-popover-auto[data-popper-placement^=top],

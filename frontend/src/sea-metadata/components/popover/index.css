@@ -21,10 +21,7 @@
   background: var(--bs-body-bg);
 }
 
-.popover-add-tool.disabled .customize-add-tool-icon {
-  color: #c2c2c2;
-}
-
+.sea-metadata-filter-popover .popover-add-tool.disabled .customize-add-tool-icon,
 .sea-metadata-filter-popover .popover-add-tool.disabled {
   color: #c2c2c2;
 }
