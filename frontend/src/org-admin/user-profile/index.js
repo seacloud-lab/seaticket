@@ -99,7 +99,7 @@ class UserProfile extends Component {
         <Main
           title={(
             <ul className="nav">
-              <li className="nav-item">
+              <li className="nav-item active">
                 <span className="nav-link pt-0 pb-0 active">{gettext('Profile')}</span>
               </li>
             </ul>

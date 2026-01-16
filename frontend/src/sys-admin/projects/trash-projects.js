@@ -12,7 +12,8 @@ class TrashProjects extends Component {
       <>
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
         <Main
-          title={<ProjectNav currentItem="trash-projects" />}
+          title={<ProjectNav currentItem="trash-projects"/>}
+          titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
         >
           <AdminProjects
             placeholder={gettext('No deleted projects')}

@@ -15,7 +15,7 @@ const UsersNav = ({ currentItem }) => {
     <ul className="nav">
       {navList.map((item, index) => {
         return (
-          <li className="nav-item" key={index}>
+          <li className={classnames('nav-item', { 'active': currentItem === item.name })} key={index}>
             <Link
               to={`${siteRoot}sys/${item.urlPart}/`}
               className={classnames('nav-link pt-0 pb-0', { 'active': currentItem === item.name })}

@@ -1,7 +1,8 @@
 .project-center .project-org-title {
   width: calc(100% - 48px);
   border-bottom: 1px solid var(--bs-border-secondary-color);
-  min-height: 56px;
+  height: 56px;
+  line-height: 56px;
   margin: 0 24px; 
 }
 

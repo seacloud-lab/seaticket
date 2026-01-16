@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
 import { gettext, orgID } from '@/constants';
@@ -53,15 +54,15 @@ class Projects extends React.Component {
         <Main
           title={(
             <ul className="nav">
-              <li className="nav-item" onClick={() => this.tabItemClick('projects')}>
+              <li className={classnames('nav-item', { 'active': this.props.currentTab === 'projects' })} onClick={() => this.tabItemClick('projects')}>
                 <span className={`nav-link pt-0 pb-0 ${this.props.currentTab === 'projects' ? 'active' : ''}`}>{gettext('Projects')}</span>
               </li>
-              <li className="nav-item" onClick={() => this.tabItemClick('trash')}>
+              <li className={classnames('nav-item', { 'active': this.props.currentTab === 'trash' })} onClick={() => this.tabItemClick('trash')}>
                 <span className={`nav-link pt-0 pb-0 ${this.props.currentTab === 'trash' ? 'active' : ''}`} >{gettext('Trash')}</span>
               </li>
             </ul>
           )}
-          titleClassName="cur-view-path org-user-nav tab-nav-container"
+          titleClassName="cur-view-path org-user-nav tab-nav-container mb-4"
         >
           {this.props.currentTab === 'projects' && (
             <AdminProjects

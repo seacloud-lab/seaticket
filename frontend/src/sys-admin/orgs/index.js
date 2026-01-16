@@ -383,11 +383,12 @@ class Orgs extends Component {
       <Fragment>
         {MainPanelTopbarContainer}
         <Main
-          title={(<OrgNav
+          title={<OrgNav
             currentItem={this.getCurrentNavItem()}
             updateSysFilter={this.updateSysFilter}
             filters={filters}
-          />)}
+          />}
+          titleClassName="ml-0"
         >
           {this.renderContent()}
         </Main>

@@ -269,7 +269,7 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
       />
       <Main
         title={<UsersNav currentItem={isAdmin ? 'admin' : 'database'} />}
-        titleClassName="cur-view-path sys-user-nav tab-nav-container"
+        titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
       >
         <UsersTable
           type="database"
