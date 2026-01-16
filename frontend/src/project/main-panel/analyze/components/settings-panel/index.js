@@ -3,9 +3,9 @@ import { gettext } from '@/constants';
 import { IconButton, Loading, CustomizeSelect } from '@/components';
 import YearRangePicker from '../year-range-picker';
 import ConnectionSetting from '../connection-setting';
+import { FormGroup, Label } from 'reactstrap';
 
 import './index.css';
-import { FormGroup, Label } from 'reactstrap';
 
 const SettingsPanel = ({
   selectedConnections,
