@@ -53,6 +53,7 @@ class SelfQuery {
             endIds.push(id);
           }
         });
+        this.callback(results);
         this.ids = queriedIds.filter(id => !endIds.includes(id));
         this._executeConcurrentQuery();
       }).catch(error => {

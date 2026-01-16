@@ -28,6 +28,14 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     return data[tableName] || defaultTable;
   }, [data]);
 
+  const deleteTableByName = useCallback((tableName) => {
+    if (!tableName) return;
+    if (!data[tableName]) return;
+    let newData = dcopy(data);
+    delete newData[tableName];
+    updateData(newData);
+  }, [data, updateData]);
+
   const updateTable = useCallback((tableName, update = {}, defaultTable = dcopy(EMPTY_TABLE)) => {
     if (!tableName) return;
     const newData = dcopy(data);
@@ -36,21 +44,27 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     updateData(newData);
   }, [data, getTableByName, updateData]);
 
-  const markTablesViewExpired = useCallback((tableNames) => {
-    const newData = dcopy(data);
-    tableNames.forEach(tableName => {
-      const table = newData[tableName];
-      if (table) {
-        const id_view_map = { ...table.id_view_map };
-        Object.keys(id_view_map).forEach(viewID => {
-          const view = id_view_map[viewID];
-          id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
-        });
-        newData[tableName].id_view_map = id_view_map;
-      }
+  const markTablesViewExpired = useCallback((tableNames, callback) => {
+    if (!Array.isArray(tableNames) || tableNames.length === 0) return;
+    setData(data => {
+      const newData = dcopy(data);
+      tableNames.forEach(tableName => {
+        const table = newData[tableName];
+        if (table) {
+          const id_view_map = { ...table.id_view_map };
+          Object.keys(id_view_map).forEach(viewID => {
+            const view = id_view_map[viewID];
+            id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+          });
+          newData[tableName].id_view_map = id_view_map;
+        }
+      });
+      newData.version = newData.version + 1;
+      return newData;
+    }, () => {
+      callback && callback();
     });
-    updateData(data);
-  }, [data, updateData]);
+  }, []);
 
   const getTableViews = useCallback((tableName, api, isBuiltIn = false) => {
     if (isBuiltIn) return api();
@@ -362,6 +376,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       updateData,
       markTablesViewExpired,
       getTableByName,
+      deleteTableByName,
       updateTable,
       getTableViews,
       getTableView,

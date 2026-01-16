@@ -12,7 +12,7 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '../../../../constants';
-import { isConnectionRecordsView } from '../../utils';
+import { initConnectionStatus, isConnectionRecordsView } from '../../utils';
 import context from '@/sea-metadata/context';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
@@ -21,8 +21,8 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
-  const { pageSlugId, childrenPageSlugId, viewID, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
-  const { modifyLocalConnectionRecord } = useConnections();
+  const { pageSlugId, childrenPageSlugId, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
+  const { modifyLocalConnectionsSyncStatus } = useConnections();
   const { name: connectionName } = connectionInfo || {};
   const timer = useRef(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -75,10 +75,16 @@ const TopBar = ({ title, modifyLocalBar }) => {
       const onQueryConnectionStatus = (connectionID) => {
         timer.current = setTimeout(() => {
           connectionsAPI.queryConnectionsStatus(projectUuid, [connectionID]).then((res) => {
-            const { status, last_sync_time } = res.data[connectionID];
-            modifyLocalConnectionRecord(connectionID, { status, last_sync_time });
-
-            const { last_sync_status, last_sync_count } = JSON.parse(status);
+            const { status } = res.data[connectionID];
+            const { last_sync_status, last_sync_count } = initConnectionStatus(status);
+            let callback = null;
+            if (last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED && last_sync_count > 0) {
+              callback = () => {
+                const eventBus = context.eventBus;
+                eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA, false);
+              };
+            }
+            modifyLocalConnectionsSyncStatus(res.data, callback);
             if (last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
               clearTimeout(timer.current);
               timer.current = null;
@@ -103,11 +109,15 @@ const TopBar = ({ title, modifyLocalBar }) => {
             setIsSyncing(false);
             const errorMessage = Utils.getErrorMsg(error);
             toaster.danger(errorMessage);
-            modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: CONNECTION_SYNC_STATUS.FAILED } });
+            modifyLocalConnectionsSyncStatus({
+              [connectionID]: { status: { last_sync_status: CONNECTION_SYNC_STATUS.FAILED }, last_sync_time: null }
+            });
           });
         }, 3000);
       };
-      modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING, last_sync_time: null } });
+      modifyLocalConnectionsSyncStatus({
+        [connectionID]: { status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING }, last_sync_time: null }
+      });
       onQueryConnectionStatus(connectionID);
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -121,7 +131,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       setIsSyncing(false);
       toaster.danger(error_msg);
     });
-  }, [projectUuid, viewID, modifyLocalConnectionRecord, onRefresh]);
+  }, [projectUuid, modifyLocalConnectionsSyncStatus, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {

@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
-import dcopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 import { CommonOperationConfirmationDialog, toaster } from '@/components';
@@ -13,6 +12,7 @@ import { connectionsAPI } from '../../../api';
 import { useData } from '@/project/hooks';
 import { getTableName, initConnectionStatus } from '../utils';
 import { CONNECTION_SYNC_STATUS } from '../constants';
+import ObjectUtils from '@/utils/object-utils';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -23,7 +23,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
-  const { data, updateData, markTablesViewExpired } = useData();
+  const { deleteTableByName, markTablesViewExpired } = useData();
 
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
@@ -41,11 +41,9 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     }
     setConnections(newConnections);
 
-    let newData = dcopy(data);
     const connectionTableName = getTableName(connection);
-    delete newData[connectionTableName];
-    updateData(newData);
-  }, [data, updateData]);
+    deleteTableByName(connectionTableName);
+  }, [connections, deleteTableByName]);
 
   const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
     setConnections(prev => prev.map(record =>
@@ -53,25 +51,22 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     ));
   }, []);
 
-  const modifyLocalConnectionsSyncStatus = useCallback((update = {}) => {
-    let newConnections = connections.slice(0);
+  const modifyLocalConnectionsSyncStatus = useCallback((update = {}, callback) => {
     let successConnections = [];
-    Object.keys(update).forEach(connectionID => {
-      let connectionIndex = newConnections.findIndex(c => c.id === Number(connectionID));
-      if (connectionIndex > -1) {
-        const connection = newConnections[connectionIndex];
-        const connectionUpdate = update[connectionID];
-        const status = initConnectionStatus(connectionUpdate?.status);
-        newConnections[connectionIndex] = { ...connection, ...connectionUpdate, status };
-        if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
-          successConnections.push(connection);
-        }
+    setConnections(connections => connections.map(connection => {
+      const connectionUpdate = update[connection.id];
+      if (!connectionUpdate) return connection;
+      const status = initConnectionStatus(connectionUpdate?.status);
+      const newConnection = { ...connection, status, last_sync_time: connectionUpdate?.last_sync_time || '' };
+      if (ObjectUtils.isSameObject(newConnection, connection)) return connection;
+      if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
+        successConnections.push(newConnection);
       }
-    });
-    setConnections(newConnections);
+      return newConnection;
+    }));
     const successConnectionCacheDataNames = successConnections.map(c => getTableName(c));
-    markTablesViewExpired(successConnectionCacheDataNames);
-  }, [connections, markTablesViewExpired]);
+    markTablesViewExpired(successConnectionCacheDataNames, callback);
+  }, [markTablesViewExpired]);
 
   const modifyConnectionIsActiveStatus = useCallback((connectionId, activeStatus) => {
     const update = { 'is_active': activeStatus };

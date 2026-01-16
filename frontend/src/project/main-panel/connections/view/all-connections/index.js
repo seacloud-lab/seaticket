@@ -27,16 +27,11 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const { togglePageSlugId, updateConnectionInfo } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
-  const lastRowIds = useRef([]);
+  const lastQueryRecordIds = useRef([]);
 
   const selfQuery = useMemo(() => new SelfQuery({
-    api: (ids) => connectionsAPI
-      .queryConnectionsStatus(projectUuid, ids)
-      .then(res => {
-        const results = res.data || {};
-        modifyLocalConnectionsSyncStatus(results);
-        return results;
-      }),
+    api: (ids) => connectionsAPI.queryConnectionsStatus(projectUuid, ids).then(res => res.data || {}),
+    callback: modifyLocalConnectionsSyncStatus,
     endCondition: isConnectionSyncCompleted,
     maxRetries: 50,
   }), [projectUuid, modifyLocalConnectionsSyncStatus]);
@@ -114,10 +109,9 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
 
   const rowsDidMount = useCallback((rows) => {
     const synchronizingRows = rows.filter(r => !isConnectionSyncCompleted(r)).map(r => r.id);
-    if (!areArraysEqual(lastRowIds.current, synchronizingRows)) {
-      lastRowIds.current = synchronizingRows;
-      selfQuery.start(synchronizingRows);
-    }
+    if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
+    lastQueryRecordIds.current = synchronizingRows;
+    selfQuery.start(synchronizingRows);
   }, [selfQuery]);
 
   const rowsWillUnmount = useCallback(() => {
