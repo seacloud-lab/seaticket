@@ -19,12 +19,46 @@ import { downloadFile } from '@/utils/download';
 
 const { availableRoles } = window.sysadmin.pageOptions;
 
-const CustomizeTopBar = ({ isAdmin, onCloseSidePanel, addUsers, deleteUsers }) => {
+const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
   const { selectedUsers } = useSelectedUsers();
   const [isBatchDeleteUserDialogOpen, setIsBatchDeleteUserDialogOpen] = useState(false);
   const [isImportUserDialogOpen, setIsImportUserDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isBatchAddAdminDialogOpen, setIsBatchAddAdminDialogOpen] = useState(false);
+  const usersTableRef = useRef(null);
+
+  const api = useMemo(() => {
+    if (isAdmin) return (...params) => sysAdminAPI.sysAdminListAdmins(...params);
+    return (...params) => sysAdminAPI.sysAdminListUsers(...params);
+  }, [isAdmin]);
+
+  const updateAdminRole = useCallback((...params) => {
+    return sysAdminAPI.sysAdminUpdateAdminRole(...params);
+  }, []);
+
+  const onModify = useCallback((...params) => {
+    return sysAdminAPI.sysAdminUpdateUser(...params);
+  }, []);
+
+  const onDelete = useCallback((...params) => {
+    return sysAdminAPI.sysAdminDeleteUser(...params);
+  }, []);
+
+  const onResetPassword = useCallback((...params) => {
+    return sysAdminAPI.sysAdminResetUserPassword(...params);
+  }, []);
+
+  const revokeAdmin = useCallback((...params) => {
+    return sysAdminAPI.sysAdminUpdateUser(...params);
+  }, []);
+
+  const addUsers = useCallback((users) => {
+    usersTableRef.current.addUsers(users);
+  }, []);
+
+  const deleteUsers = useCallback((users) => {
+    usersTableRef.current.deleteUsers(users);
+  }, []);
 
   const toggleBatchDeleteUserDialog = useCallback(() => {
     setIsBatchDeleteUserDialogOpen(!isBatchDeleteUserDialogOpen);
@@ -126,68 +160,12 @@ const CustomizeTopBar = ({ isAdmin, onCloseSidePanel, addUsers, deleteUsers }) =
     });
   }, []);
 
-  const renderOperations = useCallback(() => {
-    if (isAdmin) {
-      return (
-        <Button className="btn btn-secondary operation-item" onClick={toggleBatchAddAdminDialog}>
-          {gettext('Add admin')}
-        </Button>
-      );
-    }
-    return (
-      <Fragment>
-        <Button className="btn btn-secondary operation-item" onClick={toggleImportUserDialog}>{gettext('Import users')}</Button>
-        <Button className="btn btn-secondary operation-item" onClick={toggleAddUserDialog}>{gettext('Add user')}</Button>
-        <Button className="btn btn-secondary operation-item" onClick={exportExcel}>{gettext('Export Excel')}</Button>
-      </Fragment>
-    );
-  }, [isAdmin, toggleBatchAddAdminDialog, toggleImportUserDialog, toggleAddUserDialog, exportExcel]);
-
-  const renderMobileOperations = useCallback(() => {
-    if (isAdmin) {
-      return <span className="mobile-dropdown-item dropdown-item" onClick={toggleBatchAddAdminDialog}>{gettext('Add admin')}</span>;
-    }
-    return (
-      <Fragment>
-        <span className="mobile-dropdown-item dropdown-item" onClick={toggleImportUserDialog}>{gettext('Import users')}</span>
-        <span className="mobile-dropdown-item dropdown-item" onClick={toggleAddUserDialog}>{gettext('Add user')}</span>
-        <span className="mobile-dropdown-item dropdown-item" onClick={exportExcel}>{gettext('Export Excel')}</span>
-      </Fragment>
-    );
-  }, [isAdmin, toggleBatchAddAdminDialog, toggleImportUserDialog, toggleAddUserDialog, exportExcel]);
-
-  const isDesktop = Utils.isDesktop();
   return (
     <>
       <TopBar
         search={isAdmin ? null : (<EnterSearchInput placeholder={gettext('Search users')} onSubmit={jumpToSearch} />)}
         onCloseSidePanel={onCloseSidePanel}
       >
-        {isDesktop ? (
-          <>
-            {selectedUsers.length > 0 ? (
-              <Button className="btn btn-secondary operation-item" onClick={toggleBatchDeleteUserDialog}>
-                {gettext('Delete users')}
-              </Button>
-            ) : (
-              <>
-                {renderOperations()}
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            {selectedUsers.length > 0 ? (
-              <span className="mobile-dropdown-item dropdown-item" onClick={toggleBatchDeleteUserDialog}>
-                {gettext('Delete users')}
-              </span>
-            ) : (
-              <>
-                {renderMobileOperations()}
-              </>
-            )}
-          </>
-        )}
       </TopBar>
       {isImportUserDialogOpen && (
         <SysAdminImportUserDialog
@@ -219,58 +197,29 @@ const CustomizeTopBar = ({ isAdmin, onCloseSidePanel, addUsers, deleteUsers }) =
           toggle={toggleBatchAddAdminDialog}
         />
       )}
-    </>
-  );
-};
-
-const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
-  const usersTableRef = useRef(null);
-
-  const api = useMemo(() => {
-    if (isAdmin) return (...params) => sysAdminAPI.sysAdminListAdmins(...params);
-    return (...params) => sysAdminAPI.sysAdminListUsers(...params);
-  }, [isAdmin]);
-
-  const updateAdminRole = useCallback((...params) => {
-    return sysAdminAPI.sysAdminUpdateAdminRole(...params);
-  }, []);
-
-  const onModify = useCallback((...params) => {
-    return sysAdminAPI.sysAdminUpdateUser(...params);
-  }, []);
-
-  const onDelete = useCallback((...params) => {
-    return sysAdminAPI.sysAdminDeleteUser(...params);
-  }, []);
-
-  const onResetPassword = useCallback((...params) => {
-    return sysAdminAPI.sysAdminResetUserPassword(...params);
-  }, []);
-
-  const revokeAdmin = useCallback((...params) => {
-    return sysAdminAPI.sysAdminUpdateUser(...params);
-  }, []);
-
-  const addUsers = useCallback((users) => {
-    usersTableRef.current.addUsers(users);
-  }, []);
-
-  const deleteUsers = useCallback((users) => {
-    usersTableRef.current.deleteUsers(users);
-  }, []);
-
-  return (
-    <SelectedUsersProvider>
-      <CustomizeTopBar
-        isAdmin={isAdmin}
-        onCloseSidePanel={onCloseSidePanel}
-        addUsers={addUsers}
-        deleteUsers={deleteUsers}
-      />
       <Main
         title={<UsersNav currentItem={isAdmin ? 'admin' : 'database'} />}
         titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
       >
+        {selectedUsers.length > 0 ? (
+          <Button className="btn btn-secondary operation-item" onClick={toggleBatchDeleteUserDialog}>
+            {gettext('Delete users')}
+          </Button>
+        ) : (
+          <>
+            {isAdmin ?
+              <Button className="btn btn-secondary operation-item" onClick={toggleBatchAddAdminDialog}>
+                {gettext('Add admin')}
+              </Button>
+              :
+              <div>
+                <Button className="btn btn-secondary operation-item" onClick={toggleImportUserDialog}>{gettext('Import users')}</Button>
+                <Button className="btn btn-secondary operation-item" onClick={toggleAddUserDialog}>{gettext('Add user')}</Button>
+                <Button className="btn btn-secondary operation-item" onClick={exportExcel}>{gettext('Export Excel')}</Button>
+              </div>
+            }
+          </>
+        )}
         <UsersTable
           type="database"
           ref={usersTableRef}
@@ -283,7 +232,16 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
           revokeAdmin={revokeAdmin}
         />
       </Main>
+    </>
+  );
+};
+
+const AllUsersContainer = ({ isAdmin, onCloseSidePanel }) => {
+  return (
+    <SelectedUsersProvider>
+      <AllUsers isAdmin={isAdmin} onCloseSidePanel={onCloseSidePanel} />
     </SelectedUsersProvider>
   );
 };
-export default AllUsers;
+
+export default AllUsersContainer;
