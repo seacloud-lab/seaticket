@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { gettext } from '@/constants';
-import { IconButton, Loading } from '@/components';
+import { IconButton, Loading, CustomizeSelect } from '@/components';
 import YearRangePicker from '../year-range-picker';
 import ConnectionSetting from '../connection-setting';
+import { FormGroup, Label } from 'reactstrap';
 
 import './index.css';
 
@@ -21,6 +22,29 @@ const SettingsPanel = ({
   onAnalyze,
   isLoading
 }) => {
+  const colorOptions = useMemo(() => {
+    return [
+      { value: '', label: '--' },
+      { value: 'connection_id', label: gettext('Connection') },
+      { value: 'state', label: gettext('State') },
+    ];
+  }, []);
+
+  const displayColorOption = useMemo(() => {
+    return colorOptions.find(o => o.value === colorBy) || colorOptions[0];
+  }, [colorBy, colorOptions]);
+
+  const modeOptions = useMemo(() => {
+    return [
+      { value: 'density', label: gettext('Density') },
+      { value: 'points', label: gettext('Points') },
+    ];
+  }, []);
+
+  const displayModeOption = useMemo(() => {
+    return modeOptions.find(o => o.value === displayMode) || modeOptions[0];
+  }, [displayMode, modeOptions]);
+
   return (
     <div className="analyze-settings-panel">
       <div className="analyze-settings-header">
@@ -29,54 +53,47 @@ const SettingsPanel = ({
       </div>
       <div className="analyze-settings-body">
         {/* Add connections Setting */}
-        <div className="analyze-settings-section">
-          <div className="analyze-settings-label">{gettext('Connections')}</div>
+        <FormGroup className="analyze-settings-section">
+          <Label>{gettext('Connections')}</Label>
           <ConnectionSetting
             selectedConnections={selectedConnections}
             onConnectionsChange={onConnectionsChange}
             onRemoveConnection={onRemoveConnection}
           />
-        </div>
+        </FormGroup>
         {/* Date Range Setting */}
-        <div className="analyze-settings-section">
-          <div className="analyze-settings-label">{gettext('Date range')}</div>
+        <FormGroup className="analyze-settings-section">
+          <Label>{gettext('Date range')}</Label>
           <YearRangePicker
             startYear={startYear}
             endYear={endYear}
             onChange={onDateRangeChange}
           />
-        </div>
+        </FormGroup>
         {/* Color Setting */}
-        <div className="analyze-settings-section">
-          <div className="analyze-settings-row">
-            <span className="analyze-settings-label">{gettext('Color')}</span>
-            <select
-              className="analyze-settings-select"
-              value={colorBy || ''}
-              onChange={(e) => onColorByChange(e.target.value || null)}
-            >
-              <option value="">{gettext('--')}</option>
-              <option value="connection_id">{gettext('Connection')}</option>
-              <option value="state">{gettext('State')}</option>
-            </select>
-          </div>
-        </div>
+        <FormGroup className="analyze-settings-section">
+          <Label>{gettext('Color')}</Label>
+          <CustomizeSelect
+            className="analyze-settings-select"
+            isInModal={true}
+            value={displayColorOption}
+            options={colorOptions}
+            onChange={onColorByChange}
+          />
+        </FormGroup>
         {/* Mode Setting */}
-        <div className="analyze-settings-section">
-          <div className="analyze-settings-row">
-            <span className="analyze-settings-label">{gettext('Display Mode')}</span>
-            <select
-              className="analyze-settings-select"
-              value={displayMode}
-              onChange={(e) => onDisplayModeChange(e.target.value)}
-            >
-              <option value="density">{gettext('Density')}</option>
-              <option value="points">{gettext('Points')}</option>
-            </select>
-          </div>
-        </div>
+        <FormGroup className="analyze-settings-section">
+          <Label>{gettext('Display Mode')}</Label>
+          <CustomizeSelect
+            className="analyze-settings-select"
+            isInModal={true}
+            value={displayModeOption}
+            options={modeOptions}
+            onChange={onDisplayModeChange}
+          />
+        </FormGroup>
       </div>
-      <div className="analyze-settings-footer">
+      <div className="p-4">
         <button
           className="analyze-btn"
           onClick={onAnalyze}

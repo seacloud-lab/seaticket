@@ -1,6 +1,7 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
+import { CustomizePopover } from '@/components';
 
 import './index.css';
 
@@ -18,26 +19,6 @@ const YearRangePicker = ({
   const [endDecade, setEndDecade] = useState(() => Math.floor((endYear || new Date().getFullYear()) / 10) * 10);
   const containerRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        handleClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, tempStartYear, tempEndYear]);
-
-  const handleClose = useCallback(() => {
-    if (tempStartYear && tempEndYear && (tempStartYear !== startYear || tempEndYear !== endYear)) {
-      onChange(tempStartYear, tempEndYear);
-    }
-    setIsOpen(false);
-  }, [tempStartYear, tempEndYear, startYear, endYear, onChange]);
-
   const handleToggle = useCallback(() => {
     if (!isOpen) {
       setTempStartYear(startYear);
@@ -48,9 +29,13 @@ const YearRangePicker = ({
       if (endYear) {
         setEndDecade(Math.floor(endYear / 10) * 10);
       }
+    } else {
+      if (startYear !== tempStartYear || endYear !== tempEndYear) {
+        onChange(tempStartYear, tempEndYear);
+      }
     }
     setIsOpen(!isOpen);
-  }, [isOpen, startYear, endYear]);
+  }, [isOpen, tempStartYear, tempEndYear, startYear, endYear, onChange]);
 
   const handleStartYearSelect = useCallback((year) => {
     setTempStartYear(year);
@@ -131,17 +116,25 @@ const YearRangePicker = ({
         />
       </div>
       {isOpen && (
-        <div className="year-range-dropdown">
-          <div className="year-range-header">
-            <span className="year-display">{tempStartYear || '----'}</span>
-            <span className="year-separator">~</span>
-            <span className="year-display">{tempEndYear || '----'}</span>
+        <CustomizePopover
+          target={containerRef}
+          placement="bottom-end"
+          className="sea-qa-year-range-selector-popover"
+          hidePopover={handleToggle}
+          hidePopoverWithEsc={handleToggle}
+        >
+          <div className="sea-qa-year-range-container">
+            <div className="year-range-header">
+              <span className="year-display">{tempStartYear || '----'}</span>
+              <span className="year-separator">~</span>
+              <span className="year-display">{tempEndYear || '----'}</span>
+            </div>
+            <div className="year-panels">
+              {renderYearPanel(startDecade, setStartDecade, tempStartYear, handleStartYearSelect)}
+              {renderYearPanel(endDecade, setEndDecade, tempEndYear, handleEndYearSelect)}
+            </div>
           </div>
-          <div className="year-panels">
-            {renderYearPanel(startDecade, setStartDecade, tempStartYear, handleStartYearSelect)}
-            {renderYearPanel(endDecade, setEndDecade, tempEndYear, handleEndYearSelect)}
-          </div>
-        </div>
+        </CustomizePopover>
       )}
     </div>
   );

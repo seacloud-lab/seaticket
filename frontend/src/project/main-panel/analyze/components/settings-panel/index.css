@@ -19,69 +19,16 @@
 .analyze-settings-title {
   font-size: 16px;
   font-weight: 500;
-  color: #333;
-}
-
-.analyze-settings-close {
-  cursor: pointer;
-  color: #666;
-}
-
-.analyze-settings-close:hover {
-  color: #333;
 }
 
 .analyze-settings-body {
   flex: 1;
-  padding: 16px;
-  overflow: visible;
-}
-
-.analyze-settings-body .analyze-settings-section {
-  margin-bottom: 14px;
-}
-
-.analyze-settings-body .analyze-settings-label {
-  margin-bottom: 8px;
-}
-
-.analyze-settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.analyze-settings-row .analyze-settings-label {
-  margin-bottom: 0;
+  padding: 16px 16px 0 16px;
+  overflow-y: auto;
 }
 
 .analyze-settings-select {
-  min-width: 120px;
-  padding: 6px 28px 6px 12px;
-  font-size: 14px;
-  color: #333;
-  background-color: #fff;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M2.5 4.5L6 8l3.5-3.5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-}
-
-.analyze-settings-select:hover {
-  border-color: #1677ff;
-}
-
-.analyze-settings-select:focus {
-  outline: none;
-  border-color: #1677ff;
-  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
-}
-
-.analyze-settings-footer {
-  padding: 16px;
+  max-width: 100% !important;
 }
 
 .analyze-btn {
