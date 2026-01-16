@@ -144,13 +144,21 @@ def multi_saml_sso(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
     template_name = 'registration/multi_saml_sso.html'
+    next_page = request.GET.get(REDIRECT_FIELD_NAME, '')
+    if not url_has_allowed_host_and_scheme(url=next_page, allowed_hosts=request.get_host()):
+        next_page = ''
     render_data = {
         'login_bg_image_path': get_login_bg_image_path(),
         'remember_days': LOGIN_REMEMBER_DAYS,
+        'next': next_page,
         }
     if request.method == "POST":
         login_email = request.POST.get('login', '')
         remember_me = True if request.POST.get('remember_me', '') == 'on' else False 
+        next_page = request.POST.get(REDIRECT_FIELD_NAME, '')
+        if not url_has_allowed_host_and_scheme(url=next_page, allowed_hosts=request.get_host()):
+            next_page = ''
+        render_data['next'] = next_page
         
         if not is_valid_email(login_email):
             render_data['error_msg'] = 'Email invalid.'
@@ -183,8 +191,11 @@ def multi_saml_sso(request):
             return render(request, template_name, render_data)
 
         request.session['remember_me'] = remember_me
-        
-        return HttpResponseRedirect('/org/custom/%s/saml/login/' % str(org_id))
+
+        next_param = ''
+        if next_page:
+            next_param = '?%s=%s' % (REDIRECT_FIELD_NAME, quote(next_page))
+        return HttpResponseRedirect('/org/custom/%s/saml/login/%s' % (str(org_id), next_param))
 
     if request.method == "GET":
         return render(request, template_name, render_data)
