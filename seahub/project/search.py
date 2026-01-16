@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
+from seahub.utils.decorators import require_org_context
 from seahub.project.constants import ConnectionType
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission
@@ -22,16 +22,13 @@ class SearchTickectsAndDocumentsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         query = request.GET.get('query', '')
         limit = 100
