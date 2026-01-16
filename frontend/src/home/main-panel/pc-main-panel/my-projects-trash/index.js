@@ -83,7 +83,7 @@ const MyProjectsTrash = () => {
               </NavItem>
               <NavItem>
                 <NavLink className={activeTab === 'groups' ? 'active' : ''} onClick={() => setActiveTab('groups')}>
-                  {gettext('Managed Groups')}
+                  {gettext('Managed groups')}
                 </NavLink>
               </NavItem>
             </Nav>
