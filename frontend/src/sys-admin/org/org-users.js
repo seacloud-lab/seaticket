@@ -47,18 +47,12 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
     });
   }, []);
 
-  const isDesktop = Utils.isDesktop();
   return (
     <SelectedUsersProvider>
-      <TopBar onCloseSidePanel={onCloseSidePanel}>
-        {isDesktop ? (
-          <Button className="btn btn-secondary operation-item" onClick={openAddUserDialog}>{gettext('Add member')}</Button>
-        ) : (
-          <span className="mobile-dropdown-item dropdown-item" onClick={openAddUserDialog}>{gettext('Add member')}</span>
-        )}
-      </TopBar>
+      <TopBar onCloseSidePanel={onCloseSidePanel}></TopBar>
       <Main title={(<OrgTitle orgName={orgName} />)}>
         <OrgNav currentItem="users" orgID={orgID} searchValue={searchValue} onChangeSearchValue={onChangeSearchValue}/>
+        <Button className="btn btn-secondary operation-item mt-4" onClick={openAddUserDialog}>{gettext('Add member')}</Button>
         <UsersTable
           ref={usersTableRef}
           searchValue={searchValue}
