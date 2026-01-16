@@ -61,7 +61,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
           {selectedConnections.map(connection => (
             <div key={connection.id} className="analyze-connection-tag">
               <img src={getConnectionIcon(connection.type)} alt="" className="analyze-tag-icon" />
-              <span className="analyze-tag-name">{connection.name}</span>
+              <span className="analyze-tag-name text-truncate">{connection.name}</span>
               <IconTooltip
                 icon="close"
                 className="analyze-tag-remove"
