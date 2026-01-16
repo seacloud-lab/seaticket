@@ -63,7 +63,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/query-status/$', ProjectConnectionsStatusView.as_view(), name='api-v1-connection-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/logs/$', ProjectConnectionLogView.as_view(), name='api-v1-connection-logs'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/$', ProjectConnectionRecordsView.as_view(), name='api-v1-connection-records'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/mark-outdated/$', ProjectConnectionRecordsOutdatedView.as_view(), name='api-v1-connection-records-outdated'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/outdated/$', ProjectConnectionRecordsOutdatedView.as_view(), name='api-v1-connection-records-outdated'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/(?P<record_id>\d+)/$', ProjectConnectionRecordView.as_view(), name='api-v1-connection-record'),
 
     # connection views

@@ -195,14 +195,41 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
       modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
     };
-    if (connection.type === CONNECTION_TYPE.EMAIL) {
+    // Add modifyRow/modifyRows for all connection types that support outdated editing
+    if (SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection.type)) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
+
+        // Check if updating outdated field
+        if (CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED in rowData) {
+          const outdated = rowData[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED];
+          return connectionsAPI.markConnectionRecordsOutdated(projectUuid, connectionID, [row_id], outdated);
+        }
+
+        // For EMAIL type, also support unread field via modifyConnectionRecord
+        if (connection.type === CONNECTION_TYPE.EMAIL) {
+          return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
+        }
+
+        return Promise.resolve();
       };
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
+
+        // Check if any row is updating outdated field
+        const outdatedUpdates = rowsData.filter(r => CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED in r.row);
+        if (outdatedUpdates.length > 0) {
+          const outdated = outdatedUpdates[0].row[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED];
+          const recordIds = outdatedUpdates.map(r => r.row_id);
+          return connectionsAPI.markConnectionRecordsOutdated(projectUuid, connectionID, recordIds, outdated);
+        }
+
+        // For EMAIL type, also support unread field via modifyConnectionRecords
+        if (connection.type === CONNECTION_TYPE.EMAIL) {
+          return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
+        }
+
+        return Promise.resolve();
       };
     }
 

@@ -855,6 +855,8 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             error_msg = 'record_ids must be a list of integers.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        outdated = request.data.get('outdated', True)
+
         if not record_ids:
             return Response({'success': True})
 
@@ -906,7 +908,7 @@ class ProjectConnectionRecordsOutdatedView(APIView):
         update_rows = []
         record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
-            row = {outdated_field.name: True}
+            row = {outdated_field.name: outdated}
             row[record_modified_time_field.name] = record_modified_time
             update_rows.append({'pk': record_id, 'row': row})
 
@@ -916,7 +918,7 @@ class ProjectConnectionRecordsOutdatedView(APIView):
         try:
             seadb_api.update_rows(project_uuid, table_name, update_rows)
         except Exception as e:
-            logger.error(f'mark connection records outdated error: {e}')
+            logger.error(f'update connection records outdated error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
