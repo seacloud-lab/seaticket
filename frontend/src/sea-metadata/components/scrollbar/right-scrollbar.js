@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { SCROLL_BAR as Z_INDEX_SCROLL_BAR } from '../../constants/z-index';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 const propTypes = {
   getScrollHeight: PropTypes.func.isRequired,
@@ -47,7 +47,7 @@ class RightScrollbar extends React.Component {
     const style = {};
     if (this.props.getClientHeight) {
       style.height = this.props.getClientHeight();
-      style.zIndex = Z_INDEX_SCROLL_BAR;
+      style.zIndex = Z_INDEX.SCROLL_BAR;
     }
 
     /* sea-metadata-table-header have 33px height */

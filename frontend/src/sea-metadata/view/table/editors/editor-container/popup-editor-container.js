@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import ClickOutside from '@/components/click-outside';
 import Editor from './editor';
 import { isFunction } from '@/utils/type-detection';
-import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
+import { Z_INDEX } from '@/constants/zIndexes';
 import eventBus from '@/utils/event-bus';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
@@ -20,7 +20,7 @@ class PopupEditorContainer extends React.Component {
       isInvalid: false,
       style: {
         position: 'absolute',
-        zIndex: Z_INDEX_EDITOR_CONTAINER,
+        zIndex: Z_INDEX.EDITOR_CONTAINER,
         left,
         top,
         width,

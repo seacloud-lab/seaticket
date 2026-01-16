@@ -2,7 +2,8 @@ import { isFunction } from '@/utils/type-detection';
 import { getCellValueByColumn, canEditCell } from '../../../utils/cell';
 import { getGroupByPath } from '../../../utils/view';
 import { getColumnByIndex, checkIsColumnEditable } from '../../../utils/column';
-import { SUPPORT_PREVIEW_COLUMN_TYPES, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP, seaTableZIndexes } from '../../../constants';
+import { SUPPORT_PREVIEW_COLUMN_TYPES, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP } from '../../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 import { getGroupRowByIndex } from './group-metrics';
 import context from '../../../context';
 
@@ -129,7 +130,7 @@ export const getSelectedDimensions = ({
     } else {
       top = getRowTopFromRowsBody(rowIdx);
     }
-    const zIndex = frozen ? seaTableZIndexes.FROZEN_CELL_MASK : seaTableZIndexes.CELL_MASK;
+    const zIndex = frozen ? Z_INDEX.FROZEN_CELL_MASK : Z_INDEX.CELL_MASK;
     return { width, left, top, height: rowHeight, zIndex };
   }
   return defaultDimensions;
@@ -165,7 +166,7 @@ export const getSelectedRangeDimensions = ({
 }) => {
   const { topLeft, bottomRight, startCell, cursorCell } = selectedRange;
   if (topLeft.idx < 0) {
-    return { width: 0, left: 0, top: 0, height: rowHeight, zIndex: seaTableZIndexes.CELL_MASK };
+    return { width: 0, left: 0, top: 0, height: rowHeight, zIndex: Z_INDEX.CELL_MASK };
   }
 
   let { totalWidth, anyColFrozen, left } = getColumnRangeProperties(topLeft.idx, bottomRight.idx, columns, scrollLeft);
@@ -211,6 +212,6 @@ export const getSelectedRangeDimensions = ({
     top = getRowTopFromRowsBody(topLeft.rowIdx);
   }
 
-  const zIndex = anyColFrozen ? seaTableZIndexes.FROZEN_CELL_MASK : seaTableZIndexes.CELL_MASK;
+  const zIndex = anyColFrozen ? Z_INDEX.FROZEN_CELL_MASK : Z_INDEX.CELL_MASK;
   return { width: totalWidth, left, top, height, zIndex };
 };

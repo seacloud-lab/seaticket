@@ -4,7 +4,8 @@ import classnames from 'classnames';
 import IconBtn from '@/components/icon-button';
 import GroupTitle from './group-title';
 import { gettext } from '@/constants';
-import { GROUP_HEADER_HEIGHT, seaTableZIndexes } from '../../../../../../constants';
+import { GROUP_HEADER_HEIGHT } from '../../../../../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 class GroupHeaderLeft extends Component {
 
@@ -15,7 +16,7 @@ class GroupHeaderLeft extends Component {
     } = this.props;
     const { column, count, level, cell_value, original_cell_value } = group;
     const groupHeaderLeftStyle = {
-      zIndex: firstColumnFrozen && seaTableZIndexes.GROUP_FROZEN_HEADER,
+      zIndex: firstColumnFrozen && Z_INDEX.GROUP_FROZEN_HEADER,
       height: GROUP_HEADER_HEIGHT,
       width,
     };
