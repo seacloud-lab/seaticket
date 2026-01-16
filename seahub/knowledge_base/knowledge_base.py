@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
@@ -52,8 +52,7 @@ class KnowledgeBasesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def post(self, request, project_uuid, project, workspace, seadb_api):
+    def post(self, request, project_uuid, project, workspace):
         title = request.data.get('title')
         if not title:
             error_msg = 'title invalid.'
@@ -83,6 +82,8 @@ class KnowledgeBasesAPIView(APIView):
                 logger.error(e)
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        seadb_api = SeaDBAPI(username)
         try:
             row = {
                 KnowledgeBaseTable.title.name: title,
@@ -114,8 +115,7 @@ class KnowledgeBasesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 100)
         view_id = request.GET.get('view_id')
@@ -140,7 +140,7 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
-
+        seadb_api = SeaDBAPI(username)
         try:
             view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
@@ -157,8 +157,7 @@ class KnowledgeBasesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, project, workspace):
         username = request.user.username
         record_ids = request.data.get('record_ids')
         if not record_ids:
@@ -183,6 +182,7 @@ class KnowledgeBasesAPIView(APIView):
                     KnowledgeBaseTable.modified_time.name: now_datetime,
                 }
             })
+        seadb_api = SeaDBAPI(username)
         try:
             seadb_api.update_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), update_rows)
         except Exception as e:
@@ -203,10 +203,10 @@ class KnowledgeBaseAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, knowledge_id, project, workspace, seadb_api):
+    def get(self, request, project_uuid, knowledge_id, project, workspace):
         username = request.user.username
 
+        seadb_api = SeaDBAPI(username)
         try:
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
             record = convert_kb_record_tags_name_to_id(columns, record)
@@ -223,11 +223,9 @@ class KnowledgeBaseAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def put(self, request, project_uuid, knowledge_id, project, workspace, seadb_api):
+    def put(self, request, project_uuid, knowledge_id, project, workspace):
         row = {}
         username = request.user.username
-
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
@@ -260,6 +258,7 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        seadb_api = SeaDBAPI(username)
         record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
@@ -304,8 +303,9 @@ class KnowledgeBaseMetadataAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
@@ -377,8 +377,7 @@ class KnowledgeBasesTrashAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def put(self, request, project_uuid, project, workspace, seadb_api):
+    def put(self, request, project_uuid, project, workspace):
         record_ids = request.data.get('record_ids')
         if not record_ids:
             error_msg = 'record_ids is required.'
@@ -388,7 +387,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
-
+        seadb_api = SeaDBAPI(username)
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = []

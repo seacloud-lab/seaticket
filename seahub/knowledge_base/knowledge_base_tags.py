@@ -17,7 +17,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, get_column_from_columns_by_name, batch_delete_select_option
 from seahub.knowledge_base.knowledge_base_utils import TABLE_KNOWLEDGE_BASE, get_kb_counts_group_by_column_name, filter_kb_by_select
-from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +30,14 @@ class KnowledgeBaseTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
         username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             tag_options, _ = get_kb_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
         except Exception as e:
@@ -51,8 +51,7 @@ class KnowledgeBaseTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def post(self, request, project_uuid, project, workspace, seadb_api):
+    def post(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -79,6 +78,7 @@ class KnowledgeBaseTagsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
@@ -103,8 +103,7 @@ class KnowledgeBaseTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -116,6 +115,7 @@ class KnowledgeBaseTagsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
@@ -138,14 +138,14 @@ class KnowledgeBaseTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def get(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
         username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             tag_option = None
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -182,8 +182,7 @@ class KnowledgeBaseTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def put(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def put(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
@@ -214,6 +213,8 @@ class KnowledgeBaseTagAPIView(APIView):
                 error_msg = 'text_color invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         tag_option = None
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
@@ -251,13 +252,14 @@ class KnowledgeBaseTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             kb_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)

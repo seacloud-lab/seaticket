@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
@@ -31,13 +31,14 @@ class TicketTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             tag_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
         except Exception as e:
@@ -50,8 +51,7 @@ class TicketTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def post(self, request, project_uuid, project, workspace, seadb_api):
+    def post(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -77,6 +77,8 @@ class TicketTagsAPIView(APIView):
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         # main
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -102,8 +104,7 @@ class TicketTagsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -115,6 +116,8 @@ class TicketTagsAPIView(APIView):
             error_msg = 'tag_ids invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         # main
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -138,13 +141,14 @@ class TicketTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def get(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             tag_option = None
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -181,8 +185,7 @@ class TicketTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def put(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def put(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
@@ -198,6 +201,8 @@ class TicketTagAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # main
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         tag_option = None
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
@@ -235,13 +240,14 @@ class TicketTagAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, tag_id, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, tag_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)

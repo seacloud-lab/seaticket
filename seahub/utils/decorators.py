@@ -133,30 +133,9 @@ def require_project_connection(param_name='connection_id'):
     return decorator
 
 
-def require_seadb_api(view_func):
-    """
-    Decorator to create and inject SeaDBAPI instance into the view.
-    
-    Injects:
-        - seadb_api: SeaDBAPI instance for the current user
-    """
-    @wraps(view_func)
-    def wrapped_view(self, request, *args, **kwargs):
-        from seahub.project.seadb_api import SeaDBAPI
-        
-        username = request.user.username
-        seadb_api = SeaDBAPI(username)
-        kwargs['seadb_api'] = seadb_api
-        
-        return view_func(self, request, *args, **kwargs)
-    return wrapped_view
-
-
 def require_ticket(param_name='ticket_id'):
     """
     Decorator to check if ticket exists and inject it into the view.
-    Must be used after @require_seadb_api decorator.
-    
     Args:
         param_name: The name of the URL parameter containing ticket ID
         
@@ -180,12 +159,10 @@ def require_ticket(param_name='ticket_id'):
                 logger.error(error_msg)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
             
-            seadb_api = kwargs.get('seadb_api')
-            if not seadb_api:
-                error_msg = 'SeaDBAPI not found in context. Use @require_seadb_api before this decorator.'
-                logger.error(error_msg)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-            
+            from seahub.project.seadb_api import SeaDBAPI
+            username = request.user.username
+            seadb_api = SeaDBAPI(username)
+
             try:
                 ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
                 if not ticket:
@@ -255,14 +232,17 @@ def require_comment_permission(param_name='comment_id'):
             
             ticket = kwargs.get('ticket')
             workspace = kwargs.get('workspace')
-            seadb_api = kwargs.get('seadb_api')
             project_uuid = kwargs.get('project_uuid')
             
-            if not ticket or not workspace or not seadb_api or not project_uuid:
+            if not ticket or not workspace or not project_uuid:
                 error_msg = 'Required context not found.'
                 logger.error(error_msg)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
             
+            from seahub.project.seadb_api import SeaDBAPI
+            username = request.user.username
+            seadb_api = SeaDBAPI(username)
+
             try:
                 ticket_comment_data = get_ticket_comment_by_pk(
                     seadb_api, project_uuid, ticket.get('_pk'), comment_id
@@ -275,7 +255,6 @@ def require_comment_permission(param_name='comment_id'):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             
-            username = request.user.username
             if not check_comment_permission(username, workspace.owner, ticket_comment_data):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)

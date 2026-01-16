@@ -24,7 +24,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.utils.decorators import (
     require_org_context, require_project, require_project_permission,
-    require_can_add_project, require_project_connection, require_seadb_api
+    require_can_add_project, require_project_connection
 )
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
@@ -76,8 +76,7 @@ class ProjectConnectionsView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission(check_admin=True)
-    @require_seadb_api
-    def post(self, request, project_uuid, project, workspace, seadb_api):
+    def post(self, request, project_uuid, project, workspace):
         """modify project connection
         """
         # argument check
@@ -111,6 +110,8 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         connection_id = record.id
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             if connection_type == ConnectionType.SITE.value:
                 init_site_seadb_table(seadb_api, project.uuid, connection_id)

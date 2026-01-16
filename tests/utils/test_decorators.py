@@ -18,7 +18,6 @@ from seahub.utils.decorators import (
     require_project,
     require_project_permission,
     require_project_connection,
-    require_seadb_api,
     require_ticket,
     require_ticket_permission,
     require_comment_permission,
@@ -308,44 +307,6 @@ def test_require_project_connection_custom_param_name(factory, user):
     assert resp.status_code == 200
 
 
-# ========== Tests for require_seadb_api decorator ==========
-
-def test_require_seadb_api_success(factory, user):
-    """Test require_seadb_api decorator injects seadb_api"""
-    
-    class TestView(APIView):
-        @require_seadb_api
-        def get(self, request, seadb_api):
-            assert seadb_api is not None
-            return Response({'success': True})
-    
-    request = factory.get('/test/')
-    request.user = user
-    
-    with patch('seahub.project.seadb_api.SeaDBAPI'):
-        resp = TestView.as_view()(request)
-    
-    assert resp.status_code == 200
-
-
-def test_require_seadb_api_creates_instance(factory, user):
-    """Test require_seadb_api decorator creates SeaDBAPI instance with username"""
-    
-    class TestView(APIView):
-        @require_seadb_api
-        def get(self, request, seadb_api):
-            return Response({'success': True})
-    
-    request = factory.get('/test/')
-    request.user = user
-    
-    with patch('seahub.project.seadb_api.SeaDBAPI') as MockSeaDBAPI:
-        resp = TestView.as_view()(request)
-        MockSeaDBAPI.assert_called_once_with(user.username)
-    
-    assert resp.status_code == 200
-
-
 # ========== Tests for require_ticket decorator ==========
 
 def test_require_ticket_success(factory, user):
@@ -353,9 +314,8 @@ def test_require_ticket_success(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
-        def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+        def get(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
             assert ticket is not None
             assert ticket_metadata is not None
             return Response({'ticket_id': ticket_id})
@@ -364,7 +324,6 @@ def test_require_ticket_success(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
     
@@ -376,7 +335,6 @@ def test_require_ticket_not_found(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         def get(self, request, project_uuid, ticket_id, **kwargs):
             return Response({'success': True})
@@ -385,7 +343,6 @@ def test_require_ticket_not_found(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=False):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='not-exists')
     
@@ -398,7 +355,6 @@ def test_require_ticket_missing_id(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         def get(self, request, project_uuid, **kwargs):
             return Response({'success': True})
@@ -406,30 +362,11 @@ def test_require_ticket_missing_id(factory, user):
     request = factory.get('/test/')
     request.user = user
     
-    with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'):
+    with mock_project_and_permission(user):
         resp = TestView.as_view()(request, project_uuid='test-uuid')
     
     assert resp.status_code == 400
     assert 'required' in str(resp.data)
-
-
-def test_require_ticket_missing_seadb_api(factory, user):
-    """Test require_ticket decorator returns error when seadb_api missing"""
-    
-    class TestView(APIView):
-        @require_project()
-        @require_ticket()
-        def get(self, request, project_uuid, ticket_id, project, workspace, **kwargs):
-            return Response({'success': True})
-    
-    request = factory.get('/test/')
-    request.user = user
-    
-    with mock_project_and_permission(user):
-        resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
-    
-    assert resp.status_code == 500
 
 
 def test_require_ticket_exception_handling(factory, user):
@@ -437,7 +374,6 @@ def test_require_ticket_exception_handling(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         def get(self, request, project_uuid, ticket_id, **kwargs):
             return Response({'success': True})
@@ -446,7 +382,6 @@ def test_require_ticket_exception_handling(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             patch('seahub.tickets.ticket_utils.get_ticket', side_effect=Exception('Database error')):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
     
@@ -460,17 +395,15 @@ def test_require_ticket_permission_success(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_ticket_permission
-        def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+        def get(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
             return Response({'success': True})
     
     request = factory.get('/test/')
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True, has_permission=True):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
     
@@ -482,17 +415,15 @@ def test_require_ticket_permission_denied(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_ticket_permission
-        def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+        def get(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
             return Response({'success': True})
     
     request = factory.get('/test/')
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True, has_permission=False):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
     
@@ -523,11 +454,10 @@ def test_require_comment_permission_success(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_comment_permission()
         def get(self, request, project_uuid, ticket_id, comment_id, project, workspace, 
-                seadb_api, ticket, ticket_metadata, ticket_comment_data):
+                ticket, ticket_metadata, ticket_comment_data):
             assert ticket_comment_data is not None
             return Response({'success': True})
     
@@ -535,7 +465,6 @@ def test_require_comment_permission_success(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True), \
             mock_comment(comment_exists=True, has_permission=True):
         resp = TestView.as_view()(request, project_uuid='test-uuid', 
@@ -549,7 +478,6 @@ def test_require_comment_permission_denied(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_comment_permission()
         def get(self, request, project_uuid, ticket_id, comment_id, **kwargs):
@@ -559,7 +487,6 @@ def test_require_comment_permission_denied(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True), \
             mock_comment(comment_exists=True, has_permission=False):
         resp = TestView.as_view()(request, project_uuid='test-uuid', 
@@ -574,7 +501,6 @@ def test_require_comment_permission_comment_not_found(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_comment_permission()
         def get(self, request, project_uuid, ticket_id, comment_id, **kwargs):
@@ -584,7 +510,6 @@ def test_require_comment_permission_comment_not_found(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True), \
             mock_comment(comment_exists=False):
         resp = TestView.as_view()(request, project_uuid='test-uuid', 
@@ -599,7 +524,6 @@ def test_require_comment_permission_missing_id(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_comment_permission()
         def get(self, request, project_uuid, ticket_id, **kwargs):
@@ -609,7 +533,6 @@ def test_require_comment_permission_missing_id(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True):
         resp = TestView.as_view()(request, project_uuid='test-uuid', ticket_id='ticket-123')
     
@@ -622,7 +545,6 @@ def test_require_comment_permission_exception_handling(factory, user):
     
     class TestView(APIView):
         @require_project()
-        @require_seadb_api
         @require_ticket()
         @require_comment_permission()
         def get(self, request, project_uuid, ticket_id, comment_id, **kwargs):
@@ -632,7 +554,6 @@ def test_require_comment_permission_exception_handling(factory, user):
     request.user = user
     
     with mock_project_and_permission(user), \
-            patch('seahub.project.seadb_api.SeaDBAPI'), \
             mock_ticket(ticket_exists=True), \
             patch('seahub.tickets.ticket_utils.get_ticket_comment_by_pk', 
                   side_effect=Exception('Database error')):
@@ -688,19 +609,16 @@ def test_multiple_decorators_stacked(factory, user):
         @require_org_context
         @require_project()
         @require_project_permission()
-        @require_seadb_api
-        def get(self, request, project_uuid, project, workspace, seadb_api):
+        def get(self, request, project_uuid, project, workspace):
             return Response({
                 'project_uuid': project_uuid,
-                'has_seadb_api': seadb_api is not None
             })
     
     request = factory.get('/test/')
     request.user = user
     
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-            mock_project_and_permission(user, has_permission=True), \
-            patch('seahub.project.seadb_api.SeaDBAPI'):
+            mock_project_and_permission(user, has_permission=True):
         resp = TestView.as_view()(request, project_uuid='test-uuid')
     
     assert resp.status_code == 200

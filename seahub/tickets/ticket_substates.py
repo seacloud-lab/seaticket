@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.utils.decorators import require_org_context, require_project, require_project_permission, require_seadb_api
+from seahub.utils.decorators import require_org_context, require_project, require_project_permission
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
@@ -33,8 +33,7 @@ class TicketSubstatesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -42,7 +41,8 @@ class TicketSubstatesAPIView(APIView):
         """
         # argument check
         state_id = request.GET.get('state_id')  # optional: filter substates by state id
-
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             substate_options, substate_column = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
         except Exception as e:
@@ -66,8 +66,7 @@ class TicketSubstatesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def post(self, request, project_uuid, project, workspace, seadb_api):
+    def post(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -95,8 +94,11 @@ class TicketSubstatesAPIView(APIView):
             error_msg = 'parent_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         # main
         try:
+            seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
@@ -141,8 +143,7 @@ class TicketSubstatesAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, project, workspace):
         """
         Permission:
         1. owner
@@ -154,6 +155,8 @@ class TicketSubstatesAPIView(APIView):
             error_msg = 'substate_ids invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         # main
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -177,13 +180,14 @@ class TicketSubstateAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, substate_id, project, workspace, seadb_api):
+    def get(self, request, project_uuid, substate_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             substate_option = None
             base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -220,8 +224,7 @@ class TicketSubstateAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def put(self, request, project_uuid, substate_id, project, workspace, seadb_api):
+    def put(self, request, project_uuid, substate_id, project, workspace):
         """
         Permission:
         1. owner
@@ -237,7 +240,8 @@ class TicketSubstateAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
         parent_id = request.POST.get('parent_id')
-
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         substate_option = None
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
@@ -297,13 +301,14 @@ class TicketSubstateAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, substate_id, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, substate_id, project, workspace):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)

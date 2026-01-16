@@ -19,7 +19,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.utils.decorators import (
     require_org_context, require_project, require_project_permission,
-    require_seadb_api, require_ticket, require_ticket_permission, require_comment_permission
+    require_ticket, require_ticket_permission, require_comment_permission
 )
 from seahub.project.models import Projects
 from seahub.tickets.models import TicketViews
@@ -424,14 +424,15 @@ class TicketAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
     @require_ticket()
-    def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+    def get(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
         """
         Permission:
         1. owner
         2. group member
         """
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             convert_ticket_select_column_name_to_option_id(ticket_metadata, ticket)
             start = 0
@@ -458,10 +459,9 @@ class TicketAPIView(APIView):
 
     @require_org_context
     @require_project()
-    @require_seadb_api
     @require_ticket()
     @require_ticket_permission
-    def put(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+    def put(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
         """
         Permission:
         1. creator
@@ -591,6 +591,8 @@ class TicketAPIView(APIView):
                 elif ticket_state_name == 'open':
                     update_row[TicketsTable.closed_time.name] = ''
 
+            username = request.user.username
+            seadb_api = SeaDBAPI(username)
             update_row[TicketsTable.participants.name] = participants
             update_row[TicketsTable.modified_time.name] = now_datetime
             update_rows = [
@@ -629,14 +631,14 @@ class TicketAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
     @require_ticket()
-    def delete(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+    def delete(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
         """
         Permission:
         1. group member
         """
-
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         update_row = {
             'pk': ticket.get('_pk'),
             'row': {
@@ -700,9 +702,8 @@ class TicketCommentsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
     @require_ticket()
-    def get(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+    def get(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
         """
         Permission:
         1. owner
@@ -719,6 +720,8 @@ class TicketCommentsAPIView(APIView):
         start = (current_page - 1) * per_page
         end = start + per_page
 
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             comments_data = get_ticket_comments(seadb_api, project_uuid, ticket.get('_pk'), start, end)
         except Exception as e:
@@ -733,9 +736,8 @@ class TicketCommentsAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
     @require_ticket()
-    def post(self, request, project_uuid, ticket_id, project, workspace, seadb_api, ticket, ticket_metadata):
+    def post(self, request, project_uuid, ticket_id, project, workspace, ticket, ticket_metadata):
         """
         Permission:
         1. owner
@@ -767,7 +769,7 @@ class TicketCommentsAPIView(APIView):
             file_urls = (file_urls or []) + link_urls
 
         username = request.user.username
-
+        seadb_api = SeaDBAPI(username)
         if not check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket.get('_pk')):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
@@ -846,10 +848,9 @@ class TicketCommentAPIView(APIView):
 
     @require_org_context
     @require_project()
-    @require_seadb_api
     @require_ticket()
     @require_comment_permission()
-    def put(self, request, project_uuid, ticket_id, comment_id, project, workspace, seadb_api, ticket, ticket_metadata, ticket_comment_data):
+    def put(self, request, project_uuid, ticket_id, comment_id, project, workspace, ticket, ticket_metadata, ticket_comment_data):
         """
         Permission:
         1. creator
@@ -881,7 +882,6 @@ class TicketCommentAPIView(APIView):
             file_urls = (file_urls or []) + link_urls
 
         username = request.user.username
-
         modified_time = ticket_comment_data.get('modified_time')
         if modified_time:
             modified_time = datetime.datetime.fromisoformat(modified_time)
@@ -899,6 +899,7 @@ class TicketCommentAPIView(APIView):
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        seadb_api = SeaDBAPI(username)
         # main
         try:
             ticket_comment_update = {
@@ -934,17 +935,16 @@ class TicketCommentAPIView(APIView):
 
     @require_org_context
     @require_project()
-    @require_seadb_api
     @require_ticket()
     @require_comment_permission()
-    def delete(self, request, project_uuid, ticket_id, comment_id, project, workspace, seadb_api, ticket, ticket_metadata, ticket_comment_data):
+    def delete(self, request, project_uuid, ticket_id, comment_id, project, workspace, ticket, ticket_metadata, ticket_comment_data):
         """
         Permission:
         1. creator
         2. group admin
         """
         username = request.user.username
-
+        seadb_api = SeaDBAPI(username)
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_ticket_comment = {
@@ -1039,9 +1039,9 @@ class TicketMetadataAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def get(self, request, project_uuid, project, workspace, seadb_api):
+    def get(self, request, project_uuid, project, workspace):
         username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
@@ -1143,8 +1143,9 @@ class TicketTrashAPIView(APIView):
     @require_org_context
     @require_project()
     @require_project_permission()
-    @require_seadb_api
-    def delete(self, request, project_uuid, project, workspace, seadb_api):
+    def delete(self, request, project_uuid, project, workspace):
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
         try:
             need_delete_ticket_ids = get_deleted_tickets_ids(seadb_api, project_uuid)
             if not need_delete_ticket_ids:
