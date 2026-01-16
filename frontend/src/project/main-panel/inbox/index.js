@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
-import { CenteredLoading, Icon, EmptyTip } from '@/components';
+import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
+import { Icon } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
-import { Utils } from '@/utils/utils';
 import { Z_INDEX } from '@/constants';
 
 import './index.css';
@@ -53,29 +52,14 @@ const Inbox = ({ toggleBar }) => {
           <div className="mark-all-as-read">{gettext('Mark all as read')}</div>
         </div>
       </div>
-      <div className="sea-qa-inbox-list" onScroll={Utils.debounce(onScroll)}>
-        {loading && <CenteredLoading />}
-        {!loading && notificationList.length === 0 && (
-          <EmptyTip
-            src={`${mediaUrl}img/no-nitification.png`}
-            title={gettext('No notifications')}
-            text={gettext('You will receive collaboration notifications for tickets here')}
-          />
-        )}
-        {!loading && notificationList.length > 0 && (
-          <>
-            {notificationList.map(item => (
-              <InboxNotificationItem
-                key={item.id}
-                noticeItem={item}
-                onNoticeItemClick={() => markAsRead(item.id)}
-                toggleBar={toggleBar}
-                setShowInboxDrawer={setShowInboxDrawer}
-              />
-            ))}
-          </>
-        )}
-      </div>
+      <InboxNotificationList
+        loading={loading}
+        onScroll={onScroll}
+        notificationList={notificationList}
+        markAsRead={(noticeItem) => { markAsRead(noticeItem.id);}}
+        setShowInboxDrawer={setShowInboxDrawer}
+        toggleBar={toggleBar}
+      />
     </div>
   );
 };

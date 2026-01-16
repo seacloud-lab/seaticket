@@ -148,7 +148,7 @@ class MainPanel extends React.Component {
             path={siteRoot + 'project/trash/'}
           />
         </Router>
-        <AllInbox />
+        <AllInbox/>
       </div>
     );
   }

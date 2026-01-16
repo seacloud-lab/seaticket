@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
-import { CenteredLoading, Icon, EmptyTip } from '@/components';
+import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
+import { Icon } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
-import { Utils } from '@/utils/utils';
 import { Z_INDEX } from '@/constants';
 import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
 
 import './index.css';
 
-const AllInbox = ({ toggleBar }) => {
+const AllInbox = () => {
   const {
     loading, loadingMore, notificationList, allNotificationCount,
     markAsReadByTab, markAllAsReadByTab, fetchAllNotifications,
@@ -77,29 +76,13 @@ const AllInbox = ({ toggleBar }) => {
           <Icon symbol="mark-all-as-read" />
         </div>
       </div>
-      <div className="sea-qa-inbox-list" onScroll={Utils.debounce(onScroll)}>
-        {loading && <CenteredLoading />}
-        {!loading && notificationList.length === 0 && (
-          <EmptyTip
-            src={`${mediaUrl}img/no-nitification.png`}
-            title={gettext('No notifications')}
-            text={gettext('You will receive collaboration notifications for here')}
-          />
-        )}
-        {!loading && notificationList.length > 0 && (
-          <>
-            {notificationList.map(item => (
-              <InboxNotificationItem
-                key={item.id}
-                noticeItem={item}
-                onNoticeItemClick={() => markAsReadByTab(item, curTab)}
-                toggleBar={toggleBar}
-                setShowInboxDrawer={setShowInboxDrawer}
-              />
-            ))}
-          </>
-        )}
-      </div>
+      <InboxNotificationList
+        loading={loading}
+        onScroll={onScroll}
+        notificationList={notificationList}
+        markAsRead={(noticeItem) => { markAsReadByTab(noticeItem, curTab);}}
+        setShowInboxDrawer={setShowInboxDrawer}
+      />
     </div>
   );
 };
