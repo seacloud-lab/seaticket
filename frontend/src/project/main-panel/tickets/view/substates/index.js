@@ -206,8 +206,9 @@ const AllSubstates = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
+    if (!isLoading) return;
     loadSubStates(() => setIsLoading(false));
-  }, []);
+  }, [isLoading, loadSubStates]);
 
   useEffect(() => {
     const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {

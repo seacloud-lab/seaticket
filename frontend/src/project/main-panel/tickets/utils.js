@@ -204,6 +204,7 @@ export const generatorTicketsContextMenuOptions = ({
   togglePageSlugId,
   workspaceID,
   projectName,
+  permission,
   findRelatedIssues,
 }) => {
   let list = [];
