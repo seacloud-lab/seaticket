@@ -1,0 +1,94 @@
+/* Selected connections */
+.analyze-selected-connections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.analyze-selected-connections .analyze-connection-tag {
+  align-items: center;
+  background-color: var(--bs-body-bg);
+  border: 1px solid #d1d9e0b3;
+  border-radius: 6px;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 32px;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 8px;
+}
+
+.analyze-selected-connections .analyze-connection-tag:hover {
+  background-color: var(--bs-body-secondary-bg);
+}
+
+.analyze-selected-connections .analyze-connection-tag .analyze-tag-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.analyze-selected-connections .analyze-connection-tag .analyze-tag-name {
+  font-size: 14px;
+  max-width: 100%;
+}
+
+.analyze-selected-connections .analyze-connection-tag .analyze-tag-remove .sea-qa-icon-svg {
+  color: var(--bs-icon-color);
+  margin-top: 0;
+}
+
+.analyze-selected-connections .analyze-connection-tag .analyze-tag-remove {
+  width: 20px;
+  height: 20px;
+  margin-right: 0;
+  display: inline-flex;
+}
+
+.analyze-selected-connections .analyze-connection-tag .analyze-tag-remove:hover {
+  background-color: var(--bs-hover-secondary-bg) !important;
+}
+
+/* Add connection */
+.analyze-add-connection {
+  position: relative;
+}
+
+.analyze-add-connection .analyze-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0px 6px;
+  width: fit-content;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 3px;
+  background-image: none;
+  border: none;
+  cursor: pointer;
+}
+
+.analyze-add-connection .analyze-add-btn:hover {
+  background-color: var(--bs-hover-bg);
+}
+
+.analyze-add-connection .analyze-add-btn .analyze-add-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--bs-icon-color);
+}
+
+/* Connection popover */
+.analyze-connection-popover {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 8px 0px;
+}
+
+.analyze-popover-item .analyze-connection-img {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
