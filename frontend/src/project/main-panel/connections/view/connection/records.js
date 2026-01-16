@@ -18,7 +18,6 @@ import {
 } from '../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants/event-bus-type';
 import { useConnections } from '../../hooks';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
@@ -233,7 +232,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateAttachments]);
 
-  const handleMarkAsOutdated = useCallback((rows) => {
+  const handleMarkAsOutdated = useCallback((rows, updateLocalRow) => {
     if (!rows) return;
     const rowList = Array.isArray(rows) ? rows : [rows];
     const recordIds = rowList.filter(row => row && row._id).map(row => row._id);
@@ -242,7 +241,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData)
       .then(() => {
         toaster.success(gettext('Marked as outdated'));
-        context.eventBus.emit(EVENT_BUS_TYPE.RELOAD_DATA);
+        // Update local rows to reflect the change
+        const outdatedColumn = allColumns.current.find(c => c.name === 'outdated');
+        if (outdatedColumn && updateLocalRow) {
+          recordIds.forEach(rowId => {
+            updateLocalRow({ rowId }, { [outdatedColumn.key]: true });
+          });
+        }
       }, () => {
         toaster.danger(gettext('Failed to mark as outdated'));
       });
@@ -300,7 +305,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generateMarkAsOutdatedOption = useCallback(({ rows }) => {
+  const generateMarkAsOutdatedOption = useCallback(({ rows, updateLocalRow }) => {
     const enableMarkAsOutdated = SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection?.type);
     if (!enableMarkAsOutdated) return null;
     const rowList = Array.isArray(rows) ? rows : [rows];
@@ -308,7 +313,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return {
       key: 'mark_as_outdated',
       label: gettext('Mark as outdated'),
-      callback: () => handleMarkAsOutdated(rowList),
+      callback: () => handleMarkAsOutdated(rowList, updateLocalRow),
     };
   }, [connection, handleMarkAsOutdated]);
 
@@ -362,14 +367,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection]);
 
-  const createRowsTools = useCallback(({ rows, columns, deleteLocalRows }) => {
+  const createRowsTools = useCallback(({ rows, columns, deleteLocalRows, updateLocalRow }) => {
     let children = [];
     if (rows.length === 1) {
       const row = rows[0];
       const openOriginalPageOption = generateOpenOriginalPageOption({ row });
       const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
       const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
-      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row] });
+      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row], updateLocalRow });
       children = [
         openOriginalPageOption,
         createRelatedTicketOption,
@@ -378,7 +383,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       ].filter(Boolean);
     } else if (rows.length > 1) {
       // handle multiple rows selection
-      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
+      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
       if (markAsOutdatedOption) {
         children.push(markAsOutdatedOption);
       }
@@ -420,6 +425,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     table,
     rowMetrics,
     rowGetterByIndex,
+    updateLocalRow,
   }) => {
     let list = [];
 
@@ -436,7 +442,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       }
       if (rows.length > 0) {
-        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
+        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
         if (markAsOutdatedOption) {
           list.push(markAsOutdatedOption);
@@ -462,7 +468,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       });
       if (rows.length > 0) {
-        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
+        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
         if (markAsOutdatedOption) {
           list.push(markAsOutdatedOption);
@@ -492,7 +498,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
     list.push(findRelatedIssuesOption);
 
-    const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row] });
+    const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row], updateLocalRow });
     list.push(markAsOutdatedOption);
 
     list = list.filter(Boolean);
