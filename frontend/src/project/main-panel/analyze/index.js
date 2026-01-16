@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { defaultCategoryColors } from 'embedding-atlas/react';
+import { Coordinator, wasmConnector, Selection } from '@uwdata/mosaic-core';
+import * as SQL from '@uwdata/mosaic-sql';
 import { gettext } from '@/constants';
 import { Loading, IconButton } from '@/components';
 import TopBar from '../top-bar';
@@ -8,9 +10,33 @@ import Legend from './components/legend';
 import EmbeddingView from './components/embedding-view';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useAnalyzeTask } from './hooks/analyze-task';
-import { SETTINGS_STORAGE_KEY, projectUuid } from './constants';
+import { TABLE_SCHEMA, SETTINGS_STORAGE_KEY, projectUuid, COLOR_BY_FIELDS } from './constants';
 
 import './index.css';
+
+// Global singleton for Mosaic coordinator and DuckDB WASM connector
+let globalCoordinator = null;
+let globalConnector = null;
+
+// Module-level cache to persist data across component unmounts
+let cachedTableName = null;
+let cachedTableSchema = null;
+let cachedCategoryMappings = {};
+
+const getCoordinator = async () => {
+  if (!globalCoordinator) {
+    globalConnector = wasmConnector();
+    globalCoordinator = new Coordinator(globalConnector);
+  }
+  return globalCoordinator;
+};
+
+const getConnector = async () => {
+  if (!globalConnector) {
+    await getCoordinator();
+  }
+  return globalConnector;
+};
 
 const getStoredSettings = () => {
   try {
@@ -23,11 +49,15 @@ const getStoredSettings = () => {
 
 const Analyze = ({ title }) => {
   const { isLoading, records, error, startAnalysis, resetAnalysis } = useAnalyzeTask();
-  const [embeddingData, setEmbeddingData] = useState(null);
-  const [metadata, setMetadata] = useState(null);
+  const [mosaicCoordinator, setMosaicCoordinator] = useState(null);
+  const [tableName, setTableName] = useState(cachedTableName);
+  const [tableSchema, setTableSchema] = useState(cachedTableSchema);
+  const [categoryMappings, setCategoryMappings] = useState(cachedCategoryMappings);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isProcessingData, setIsProcessingData] = useState(false);
+  const [filterSelection, setFilterSelection] = useState(null);
 
   const storedSettings = getStoredSettings();
   const [selectedConnections, setSelectedConnections] = useState(storedSettings.connections || []);
@@ -36,8 +66,21 @@ const Analyze = ({ title }) => {
   const [displayMode, setDisplayMode] = useState(storedSettings.displayMode || 'points');
   const [startYear, setStartYear] = useState(storedSettings.startYear || null);
   const [endYear, setEndYear] = useState(storedSettings.endYear || null);
+  const [filters, setFilters] = useState(storedSettings.filters || []);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // Initialize Mosaic coordinator and crossfilter Selection
+  useEffect(() => {
+    const initCoordinator = async () => {
+      const coord = await getCoordinator();
+      setMosaicCoordinator(coord);
+      const selection = Selection.crossfilter();
+      setFilterSelection(selection);
+
+    };
+    initCoordinator();
+  }, []);
 
   const handleColorByChange = useCallback((newColorBy) => {
     setColorBy(newColorBy);
@@ -65,6 +108,7 @@ const Analyze = ({ title }) => {
     return () => clearTimeout(timer);
   }, [isSettingsOpen, updateDimensions]);
 
+  // Save settings to localStorage
   useEffect(() => {
     try {
       const settings = {
@@ -76,37 +120,185 @@ const Analyze = ({ title }) => {
         colorBy,
         displayMode,
         startYear,
-        endYear
+        endYear,
+        filters
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
       console.error('Failed to save settings to localStorage:', e);
     }
-  }, [selectedConnections, colorBy, displayMode, startYear, endYear]);
+  }, [selectedConnections, colorBy, displayMode, startYear, endYear, filters]);
+
 
   useEffect(() => {
-    if (records) {
+    const restoreFromCache = async () => {
+      if (!tableName) {
+        if (cachedTableName && cachedTableSchema) {
+          setTableName(cachedTableName);
+          setTableSchema(cachedTableSchema);
+          setCategoryMappings(cachedCategoryMappings);
+          return;
+        }
+
+        try {
+          const connector = await getConnector();
+          const connection = await connector.getConnection();
+          const tableNameToCheck = 'embedding_data';
+
+          await connection.query(`SELECT COUNT(*) FROM "${tableNameToCheck}"`);
+
+          const columnOrder = Object.keys(TABLE_SCHEMA);
+          const columnTypes = TABLE_SCHEMA;
+          setTableName(tableNameToCheck);
+          setTableSchema(Object.fromEntries(columnOrder.map(k => [k, columnTypes[k]])));
+          cachedTableName = tableNameToCheck;
+          cachedTableSchema = Object.fromEntries(columnOrder.map(k => [k, columnTypes[k]]));
+        } catch (error) {
+        // ignore error
+        }
+      }
+    };
+
+    restoreFromCache();
+  }, []);
+
+  useEffect(() => {
+    if (records && !cachedTableName) {
       processBackendData(records);
     }
   }, [records]);
 
+  // Update Mosaic filter Selection when filters or selectedCategories change
+  useEffect(() => {
+    if (!filterSelection || !tableName || !mosaicCoordinator) {
+      return;
+    }
+
+    const predicates = [];
+    const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
+    const categoryColumn = colorBy && colorBy !== '--' ? `category_${colorBy}` : null;
+
+    // Legend filter (selectedCategories)
+    if (currentMapping && categoryColumn && selectedCategories.length > 0) {
+      const categoryPredicates = selectedCategories.map(idx =>
+        SQL.eq(SQL.column(categoryColumn), idx)
+      );
+      const legendPredicate = categoryPredicates.length === 1
+        ? categoryPredicates[0]
+        : SQL.or(categoryPredicates);
+      predicates.push(legendPredicate);
+    }
+
+    if (filters.length > 0) {
+      const filterPredicates = filters.map(f =>
+        SQL.eq(SQL.column(f.field), SQL.literal(f.value))
+      );
+      predicates.push(...filterPredicates);
+    }
+
+    if (predicates.length === 0) {
+      filterSelection.update({
+        source: 'filter-panel',
+        predicate: null
+      });
+      return;
+    }
+
+    const combinedPredicate = predicates.length === 1
+      ? predicates[0]
+      : SQL.and(predicates);
+
+    filterSelection.update({
+      source: 'filter-panel',
+      predicate: combinedPredicate
+    });
+  }, [filters, selectedCategories, tableName, categoryMappings, colorBy, mosaicCoordinator, filterSelection]);
+
   useEffect(() => {
     if (error) {
-      setEmbeddingData(null);
-      setMetadata({
-        error: true,
-        errorMessage: error.message || 'Failed to load data'
-      });
+      setTableName(null);
+      setTableSchema(null);
+      setCategoryMappings({});
+      cachedTableName = null;
+      cachedTableSchema = null;
+      cachedCategoryMappings = {};
     }
   }, [error]);
 
-  const processBackendData = (records) => {
-    if (!records || records.length === 0) {
-      setEmbeddingData(null);
-      setMetadata({
-        error: true,
-        errorMessage: gettext('No data for analysis')
+  const createCategoryMappingForField = useCallback((records, colorByField) => {
+    if (!records || records.length === 0 || !colorByField || colorByField === '--') return null;
+
+    const values = records.map(r => r[colorByField]);
+    const uniqueValues = [...new Set(values.filter(v => v != null).map(v => String(v)))];
+
+    if (uniqueValues.length === 0 && !values.some(v => v == null)) {
+      return null;
+    }
+
+    const counts = {};
+    values.forEach(v => {
+      const key = v == null ? '__NULL__' : String(v);
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    const sortedValues = uniqueValues.sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
+
+    const valueToIndex = {};
+    sortedValues.forEach((v, i) => {
+      valueToIndex[v] = i;
+    });
+
+    const NULL_INDEX = sortedValues.length;
+    const hasNull = values.some(v => v == null);
+
+    const categoryCount = sortedValues.length + (hasNull ? 1 : 0);
+    const colors = defaultCategoryColors(categoryCount);
+
+    const legend = sortedValues.map((v, i) => {
+      let label;
+      if (colorByField === 'connection_id') {
+        const connection = selectedConnections.find(c => String(c.id) === v);
+        label = connection ? connection.name : v;
+      } else {
+        label = v;
+      }
+      return {
+        label,
+        color: colors[i],
+        count: counts[v] || 0,
+        categoryIndex: i
+      };
+    });
+
+    if (hasNull) {
+      legend.push({
+        label: '(null)',
+        color: colors[NULL_INDEX],
+        count: counts['__NULL__'] || 0,
+        categoryIndex: NULL_INDEX
       });
+    }
+
+    return {
+      field: colorByField,
+      valueToIndex,
+      nullIndex: hasNull ? NULL_INDEX : null,
+      colors,
+      legend
+    };
+  }, [selectedConnections]);
+
+  const processBackendData = async (records) => {
+    setIsProcessingData(true);
+
+    if (!records || records.length === 0) {
+      setTableName(null);
+      setTableSchema(null);
+      setCategoryMappings({});
+      cachedTableName = null;
+      cachedTableSchema = null;
+      cachedCategoryMappings = {};
+      setIsProcessingData(false);
       return;
     }
 
@@ -118,39 +310,124 @@ const Analyze = ({ title }) => {
     );
 
     if (validRecords.length === 0) {
-      setEmbeddingData(null);
-      setMetadata({
-        error: true,
-        errorMessage: gettext('No valid coordinates found in data')
-      });
+      setTableName(null);
+      setTableSchema(null);
+      setCategoryMappings({});
+      cachedTableName = null;
+      cachedTableSchema = null;
+      cachedCategoryMappings = {};
+      setIsProcessingData(false);
       return;
     }
 
-    const dataPoints = [];
-    const xArray = new Float32Array(validRecords.length);
-    const yArray = new Float32Array(validRecords.length);
+    const allMappings = {};
+    COLOR_BY_FIELDS.forEach(field => {
+      const mapping = createCategoryMappingForField(validRecords, field);
+      if (mapping) {
+        allMappings[field] = mapping;
+      }
+    });
+    setCategoryMappings(allMappings);
+    cachedCategoryMappings = allMappings;
 
-    validRecords.forEach((record, index) => {
-      xArray[index] = parseFloat(record.x);
-      yArray[index] = parseFloat(record.y);
-
-      dataPoints.push({
+    const transformedRecords = validRecords.map((record, index) => {
+      const baseRecord = {
         id: `record_${index}`,
-        x: xArray[index],
-        y: yArray[index],
+        x: parseFloat(record.x),
+        y: parseFloat(record.y),
         ...record
+      };
+
+      COLOR_BY_FIELDS.forEach(field => {
+        const mapping = allMappings[field];
+        const categoryKey = `category_${field}`;
+        if (mapping) {
+          const value = record[field];
+          if (value == null) {
+            baseRecord[categoryKey] = mapping.nullIndex ?? 0;
+          } else {
+            baseRecord[categoryKey] = mapping.valueToIndex[String(value)] ?? 0;
+          }
+        } else {
+          baseRecord[categoryKey] = 0;
+        }
       });
+
+      return baseRecord;
     });
 
-    setEmbeddingData({ x: xArray, y: yArray });
-    setMetadata({ records: dataPoints });
     setSelectedCategories([]);
+    setFilters([]);
+
+    await loadDataToDuckDB(transformedRecords);
+  };
+
+  const loadDataToDuckDB = async (allRecords) => {
+    if (!allRecords || allRecords.length === 0) {
+      setTableName(null);
+      setTableSchema(null);
+      setIsProcessingData(false);
+      return;
+    }
+
+    setIsProcessingData(true);
+
+    try {
+      const connector = await getConnector();
+      const connection = await connector.getConnection();
+
+      const columnOrder = Object.keys(TABLE_SCHEMA);
+      const columnTypes = TABLE_SCHEMA;
+
+      const columnDefs = columnOrder.map(key => `"${key}" ${columnTypes[key]}`).join(', ');
+
+      const newTableName = 'embedding_data';
+      await connection.query(`DROP TABLE IF EXISTS "${newTableName}"`);
+      await connection.query(`CREATE TABLE "${newTableName}" (${columnDefs})`);
+
+      const batchSize = 1000;
+      for (let i = 0; i < allRecords.length; i += batchSize) {
+        const batch = allRecords.slice(i, i + batchSize);
+        const values = batch.map(record => {
+          const vals = columnOrder.map(key => {
+            const v = record[key];
+            const type = columnTypes[key];
+            if (v === null || v === undefined) return 'NULL';
+            if (type === 'DOUBLE' || type === 'INTEGER') {
+              return Number(v);
+            }
+            if (type === 'BOOLEAN') {
+              return v ? 'TRUE' : 'FALSE';
+            }
+            return `'${String(v).replace(/'/g, '\'\'')}'`;
+          });
+          return `(${vals.join(', ')})`;
+        }).join(', ');
+
+        await connection.query(`INSERT INTO ${newTableName} VALUES ${values}`);
+      }
+
+      setTableName(newTableName);
+      setTableSchema(Object.fromEntries(columnOrder.map(k => [k, columnTypes[k]])));
+      cachedTableName = newTableName;
+      cachedTableSchema = Object.fromEntries(columnOrder.map(k => [k, columnTypes[k]]));
+      setIsProcessingData(false);
+    } catch (dbError) {
+      console.error('Error loading data to DuckDB:', dbError);
+      setTableName(null);
+      setTableSchema(null);
+      setIsProcessingData(false);
+    }
   };
 
   useEffect(() => {
     if (selectedConnections.length === 0) {
-      setEmbeddingData(null);
-      setMetadata(null);
+      setTableName(null);
+      setTableSchema(null);
+      setCategoryMappings({});
+      cachedTableName = null;
+      cachedTableSchema = null;
+      cachedCategoryMappings = {};
       resetAnalysis();
     }
   }, [selectedConnections, resetAnalysis]);
@@ -161,120 +438,24 @@ const Analyze = ({ title }) => {
     }
   }, [selectedConnections, startYear, endYear, startAnalysis]);
 
-  const createCategoryMapping = (records, colorByField) => {
-    if (!records || records.length === 0 || !colorByField) return null;
+  const FILTERABLE_FIELDS = useMemo(() => [
+    { field: 'state', label: gettext('State') }
+  ], []);
 
-    const values = records.map(r => r[colorByField]);
-    const uniqueValues = [...new Set(values.filter(v => v != null))];
-
-    if (uniqueValues.length === 0 && !values.some(v => v == null)) {
-      return null;
+  const filterableFieldOptions = useMemo(() => {
+    if (!records || records.length === 0) {
+      return {};
     }
-
-    return createDiscreteMapping(values, uniqueValues, colorByField);
-  };
-
-  const createDiscreteMapping = (values, uniqueValues, colorByField) => {
-    const counts = {};
-    values.forEach(v => {
-      const key = v == null ? '__NULL__' : String(v);
-      counts[key] = (counts[key] || 0) + 1;
-    });
-
-    const sortedValues = uniqueValues
-      .sort((a, b) => counts[String(b)] - counts[String(a)]);
-
-    const valueToIndex = new Map();
-    sortedValues.forEach((v, i) => valueToIndex.set(v, i));
-
-    const NULL_INDEX = sortedValues.length;
-
-    const categories = new Uint8Array(values.length);
-    values.forEach((v, i) => {
-      if (v == null) {
-        categories[i] = NULL_INDEX;
-      } else {
-        categories[i] = valueToIndex.get(v);
+    const options = {};
+    FILTERABLE_FIELDS.forEach(({ field }) => {
+      const values = records.map(r => r[field]);
+      const uniqueValues = [...new Set(values.filter(v => v != null))].sort();
+      if (uniqueValues.length > 0) {
+        options[field] = uniqueValues;
       }
     });
-
-    const categoryCount = sortedValues.length + (values.some(v => v == null) ? 1 : 0);
-    const colors = defaultCategoryColors(categoryCount);
-
-    const legend = sortedValues.map((v, i) => {
-      let label;
-      if (colorByField === 'connection_id') {
-        const connection = selectedConnections.find(c => String(c.id) === String(v));
-        label = connection ? connection.name : String(v);
-      } else {
-        label = String(v);
-      }
-      return {
-        label,
-        color: colors[i],
-        count: counts[String(v)],
-        categoryIndex: i
-      };
-    });
-
-    const nullCount = values.filter(v => v == null).length;
-    if (nullCount > 0) {
-      legend.push({
-        label: '(null)',
-        color: colors[NULL_INDEX],
-        count: nullCount,
-        categoryIndex: NULL_INDEX
-      });
-    }
-
-    return { categories, colors, legend, originalCategories: categories.slice() };
-  };
-
-  const baseCategoryData = useMemo(() => {
-    if (!metadata?.records) {
-      return null;
-    }
-    return createCategoryMapping(metadata.records, colorBy);
-  }, [metadata, selectedConnections, colorBy]);
-
-  const filteredData = useMemo(() => {
-    if (!embeddingData || !baseCategoryData) {
-      return { embeddingData, categoryData: baseCategoryData, metadata };
-    }
-
-    if (selectedCategories.length === 0) {
-      return { embeddingData, categoryData: baseCategoryData, metadata };
-    }
-
-    const selectedIndices = [];
-    for (let i = 0; i < baseCategoryData.originalCategories.length; i++) {
-      if (selectedCategories.includes(baseCategoryData.originalCategories[i])) {
-        selectedIndices.push(i);
-      }
-    }
-
-    const filteredX = new Float32Array(selectedIndices.length);
-    const filteredY = new Float32Array(selectedIndices.length);
-    const filteredCategories = new Uint8Array(selectedIndices.length);
-    const filteredRecords = [];
-
-    for (let i = 0; i < selectedIndices.length; i++) {
-      const originalIndex = selectedIndices[i];
-      filteredX[i] = embeddingData.x[originalIndex];
-      filteredY[i] = embeddingData.y[originalIndex];
-      filteredCategories[i] = baseCategoryData.originalCategories[originalIndex];
-      filteredRecords.push(metadata.records[originalIndex]);
-    }
-
-    return {
-      embeddingData: { x: filteredX, y: filteredY },
-      categoryData: {
-        ...baseCategoryData,
-        categories: filteredCategories
-      },
-      metadata: { records: filteredRecords }
-    };
-  }, [embeddingData, baseCategoryData, selectedCategories, metadata]);
+    return options;
+  }, [records, FILTERABLE_FIELDS]);
 
   const handleLegendItemClick = (categoryIndex, event) => {
     if (event.shiftKey || event.metaKey) {
@@ -311,6 +492,22 @@ const Analyze = ({ title }) => {
   const handleDateRangeChange = useCallback((newStartYear, newEndYear) => {
     setStartYear(newStartYear);
     setEndYear(newEndYear);
+  }, []);
+
+  const handleAddFilter = useCallback((field, value) => {
+    setFilters(prev => {
+      const existingIndex = prev.findIndex(f => f.field === field);
+      if (existingIndex >= 0) {
+        const newFilters = [...prev];
+        newFilters[existingIndex] = { field, value };
+        return newFilters;
+      }
+      return [...prev, { field, value }];
+    });
+  }, []);
+
+  const handleRemoveFilter = useCallback((field) => {
+    setFilters(prev => prev.filter(f => f.field !== field));
   }, []);
 
   const handlePointClick = useCallback((record) => {
@@ -352,18 +549,26 @@ const Analyze = ({ title }) => {
       );
     }
 
-    if (metadata?.error) {
+    if (error) {
       return (
         <div className="d-flex justify-content-center align-items-center h-100">
           <div className="text-center">
             <i className="fas fa-exclamation-triangle text-warning" style={{ fontSize: '3rem' }}></i>
-            <p className="text-muted mt-3">{metadata.errorMessage || gettext('No valid data available')}</p>
+            <p className="text-muted mt-3">{error.message || gettext('No valid data available')}</p>
           </div>
         </div>
       );
     }
 
-    if (!embeddingData) {
+    if (isProcessingData) {
+      return (
+        <div className="d-flex justify-content-center align-items-center h-100">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (!tableName) {
       return (
         <div className="analyze-empty-state">
           <p className="analyze-empty-text">{gettext('Click Analyze to start')}</p>
@@ -371,26 +576,38 @@ const Analyze = ({ title }) => {
       );
     }
 
-    const { embeddingData: displayData, categoryData, metadata: displayMetadata } = filteredData;
+    if (!mosaicCoordinator) {
+      return (
+        <div className="d-flex justify-content-center align-items-center h-100">
+          <Loading />
+        </div>
+      );
+    }
 
-    const useCategory = !!colorBy;
+    const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
+    const useCategory = colorBy && colorBy !== '--' && currentMapping;
 
     return (
       <div className="embedding-visualization-container">
         <EmbeddingView
-          embeddingData={displayData}
-          categoryData={categoryData}
-          metadata={displayMetadata}
-          useCategory={useCategory}
+          coordinator={mosaicCoordinator}
+          table={tableName}
+          xColumn="x"
+          yColumn="y"
+          categoryColumn={useCategory ? `category_${colorBy}` : undefined}
+          categoryColors={useCategory ? currentMapping.colors : undefined}
+          identifierColumn="id"
+          availableColumns={tableSchema ? Object.keys(tableSchema) : []}
+          filter={filterSelection}
           displayMode={displayMode}
           width={dimensions.width}
           height={dimensions.height}
           onPointClick={handlePointClick}
         />
 
-        {useCategory && baseCategoryData?.legend && (
+        {useCategory && currentMapping?.legend && (
           <Legend
-            items={baseCategoryData.legend}
+            items={currentMapping.legend}
             selectedCategories={selectedCategories}
             onItemClick={handleLegendItemClick}
           />
@@ -418,6 +635,11 @@ const Analyze = ({ title }) => {
             onConnectionsChange={handleConnectionsChange}
             onRemoveConnection={handleRemoveConnection}
             onClose={handleToggleSettings}
+            filters={filters}
+            filterableFields={FILTERABLE_FIELDS}
+            filterableFieldOptions={filterableFieldOptions}
+            onAddFilter={handleAddFilter}
+            onRemoveFilter={handleRemoveFilter}
             colorBy={colorBy}
             onColorByChange={handleColorByChange}
             displayMode={displayMode}

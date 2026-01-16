@@ -27,6 +27,24 @@
   overflow-y: auto;
 }
 
+.analyze-settings-body .analyze-settings-section {
+  margin-bottom: 14px;
+}
+
+.analyze-settings-body .analyze-settings-label {
+  margin-bottom: 8px;
+}
+
+.analyze-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.analyze-settings-row .analyze-settings-label {
+  margin-bottom: 0;
+}
+
 .analyze-settings-select {
   max-width: 100% !important;
 }

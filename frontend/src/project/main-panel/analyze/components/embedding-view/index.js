@@ -1,11 +1,16 @@
-import React, { useState, useCallback } from 'react';
-import { EmbeddingView as AtlasEmbeddingView } from 'embedding-atlas/react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { EmbeddingViewMosaic } from 'embedding-atlas/react';
 
 const EmbeddingView = ({
-  embeddingData,
-  categoryData,
-  metadata,
-  useCategory,
+  coordinator, // Mosaic coordinator
+  table,
+  xColumn,
+  yColumn,
+  categoryColumn,
+  categoryColors,
+  identifierColumn,
+  availableColumns,
+  filter, // Mosaic Selection for filtering
   displayMode,
   width,
   height,
@@ -14,69 +19,63 @@ const EmbeddingView = ({
   const [tooltip, setTooltip] = useState(null);
   const [selection, setSelection] = useState([]);
 
-  const querySelection = useCallback(async (x, y, unitDistance) => {
-    if (!embeddingData || !metadata || !metadata.records) {
-      return null;
-    }
-
-    let minDistance2 = null;
-    let minIndex = null;
-
-    for (let i = 0; i < embeddingData.x.length; i++) {
-      const dx = embeddingData.x[i] - x;
-      const dy = embeddingData.y[i] - y;
-      const d2 = dx * dx + dy * dy;
-
-      if (minDistance2 == null || d2 < minDistance2) {
-        minDistance2 = d2;
-        minIndex = i;
-      }
-    }
-
-    if (minIndex == null || minDistance2 == null || Math.sqrt(minDistance2) > unitDistance * 10) {
-      return null;
-    }
-
-    const record = metadata.records[minIndex];
-    return {
-      x: embeddingData.x[minIndex],
-      y: embeddingData.y[minIndex],
-      text: record.ai_summary,
-      fields: record
-    };
-  }, [embeddingData, metadata]);
-
   const handleSelection = useCallback((newSelection) => {
-    if (newSelection && newSelection.length > 0 && newSelection[0].fields && onPointClick) {
-      onPointClick(newSelection[0].fields);
+    if (newSelection && newSelection.length > 0 && onPointClick) {
+      const point = newSelection[0];
+      if (point?.fields) {
+        onPointClick(point.fields);
+      }
       setTimeout(() => setSelection([]), 0);
     } else {
       setSelection(newSelection);
     }
   }, [onPointClick]);
 
+  // config
+  const config = useMemo(() => ({
+    colorScheme: 'light',
+    mode: displayMode,
+    minimumDensity: displayMode === 'density' ? 0.001 : null,
+    pointSize: 4,
+  }), [displayMode]);
+
+  const additionalFields = useMemo(() => {
+    if (!availableColumns || availableColumns.length === 0) return null;
+
+    const neededFields = ['ai_summary', '_pk', 'title', 'connection_id', 'connection_type', 'path', 'filename', 'url', 'slug', 'topic_id', 'state'];
+    const fields = {};
+
+    neededFields.forEach(col => {
+      if (availableColumns.includes(col)) {
+        fields[col] = col;
+      }
+    });
+
+    return Object.keys(fields).length > 0 ? fields : null;
+  }, [availableColumns]);
+
+  const textColumn = availableColumns?.includes('ai_summary') ? 'ai_summary' : null;
+
   return (
-    <AtlasEmbeddingView
-      data={{
-        x: embeddingData.x,
-        y: embeddingData.y,
-        category: useCategory ? (categoryData?.categories || null) : null
-      }}
-      categoryColors={useCategory ? (categoryData?.colors || null) : null}
+    <EmbeddingViewMosaic
+      coordinator={coordinator}
+      table={table}
+      x={xColumn}
+      y={yColumn}
+      category={categoryColumn}
+      categoryColors={categoryColors}
+      identifier={identifierColumn}
+      text={textColumn}
+      additionalFields={additionalFields}
+      filter={filter}
       tooltip={tooltip}
       onTooltip={setTooltip}
-      querySelection={querySelection}
       selection={selection}
       onSelection={handleSelection}
       labels={[]}
       width={width}
       height={height}
-      config={{
-        colorScheme: 'light',
-        mode: displayMode,
-        minimumDensity: displayMode === 'density' ? 0.001 : null,
-        pointSize: 4,
-      }}
+      config={config}
     />
   );
 };
