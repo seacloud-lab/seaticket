@@ -8,6 +8,8 @@ import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
 import { removeTextMark } from '@/utils/remove-text-mark';
 import { DEFAULT_COLOR } from '@/constants';
+import { MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_PROJECT } from '../constants';
+import InboxCount from './inbox-count';
 
 import './inbox-notification-item.css';
 
@@ -17,11 +19,6 @@ const propTypes = {
   toggleBar: PropTypes.func,
   setShowInboxDrawer: PropTypes.func,
 };
-
-const MSG_TYPE_TICKET_ASSIGNEE_ADDED = 'ticket_assignee_added';
-const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
-const MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group';
-const MSG_TYPE_PROJECT = 'project_notifications';
 
 dayjs.extend(relativeTime);
 
@@ -115,7 +112,6 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     if (noticeType === MSG_TYPE_PROJECT) {
       const iconClass = noticeItem.project_icon || 'icon-worksheet';
       const iconColor = noticeItem.project_color || DEFAULT_COLOR;
-      const displayCount = noticeItem.unseen_count > 99 ? '99+' : noticeItem.unseen_count;
       return (
         <div className="inbox-notification-item-header">
           <div className="notification-header-info">
@@ -124,11 +120,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
               <span className="notification-user-name">{noticeItem.project_name}</span>
             </div>
           </div>
-          {displayCount !== 0 && (
-            <span className="notification-point project-inbox-count">
-              {displayCount}
-            </span>
-          )}
+          <InboxCount unseen={noticeItem.unseen_count} />
         </div>
       );
     }

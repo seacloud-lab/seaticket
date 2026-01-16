@@ -2,13 +2,13 @@ import React, { useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import { Icon } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
+import InboxCount from '@/components/common/notification/components/inbox-count';
 import { gettext } from '@/constants';
 
 import './all-inbox-nav.css';
 
 const AllInboxNav = ({ onTabClick, isOpenGroupExpanded }) => {
   const { unseen, fetchAllNotifications, showInboxDrawer, setShowInboxDrawer } = useNotification();
-  const displayCount = unseen > 99 ? '99+' : unseen;
 
   const handleClick = useCallback((event) => {
     onTabClick(event);
@@ -27,11 +27,7 @@ const AllInboxNav = ({ onTabClick, isOpenGroupExpanded }) => {
       <div aria-label={gettext('Inbox')} className="nav-link sea-qa-nav-link">
         <Icon symbol="inbox-navbar" className="nav-icon" />
         <span className="nav-text">{gettext('Inbox')}</span>
-        {displayCount !== 0 && (
-          <div className="all-inbox-count">
-            {displayCount}
-          </div>
-        )}
+        <InboxCount unseen={unseen} />
       </div>
     </div>
   );

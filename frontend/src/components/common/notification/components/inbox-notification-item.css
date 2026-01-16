@@ -78,18 +78,6 @@
   position: absolute;
 }
 
-.inbox-notification-item .project-inbox-count {
-  min-width: 16px;
-  height: 16px;
-  line-height: 16px;
-  padding: 0 4px;
-  border-radius: 4px;
-  background-color: #fc6440;
-  font-size: 10px;
-  color: #fff;
-  text-align: center;
-}
-
 .inbox-notification-item .notification-content-wrapper {
   margin-left: 40px;
   margin-top: 6px;

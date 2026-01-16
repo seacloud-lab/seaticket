@@ -1,15 +1,4 @@
-.all-inbox-nav-wrapper {
-  padding-right: 0px !important;
-}
-
-.all-inbox-nav-wrapper .all-inbox-count {
-  min-width: 16px;
-  height: 16px;
-  line-height: 16px;
-  padding: 0 4px;
-  border-radius: 4px;
-  background-color: #fc6440;
-  font-size: 10px;
-  color: #fff;
-  text-align: center;
+.all-inbox-nav-wrapper .inbox-count {
+  position: absolute;
+  right: 24px;
 }
