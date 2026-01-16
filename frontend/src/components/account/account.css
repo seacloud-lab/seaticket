@@ -52,7 +52,7 @@
   right: 0px;
   top: 36px;
   font-size: 13px;
-  padding: 1rem 1rem 0.5rem 1rem;
+  padding: 1rem 1rem 0.75rem 1rem;
 }
 
 .account-popup .outer-caret {
@@ -67,8 +67,11 @@
 .account-popup .item {
   font-size: 14px;
   display: block;
-  border-bottom: 1px solid var(--bs-border-secondary-color);
   cursor: default;
+}
+
+.account-popup .item:first-child {
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .account-popup .item:last-child {
@@ -83,11 +86,13 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  padding-left: 12px;
 }
 
 .account-popup a.item:hover {
-  background: #fafafa;
+  background: rgba(0, 0, 0, 0.04);
   text-decoration: none;
+  border-radius: 8px;
 }
 
 .account-popup .item .sea-qa-icon-svg {
