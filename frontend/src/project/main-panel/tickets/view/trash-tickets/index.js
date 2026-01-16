@@ -1,19 +1,15 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ticketsAPI } from '../../../../api';
-import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
-import { useMetadata, useTicketsPage } from '../../hooks';
-import { TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PAGE_SLUG_ID } from '../../constants';
+import { VIEW_TOOL } from '@/sea-metadata';
 import { gettext } from '@/constants';
-import { CenteredLoading, toaster } from '@/components';
+import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import CleanTickets from './clean-tickets';
+import Tickets from '../../components/tickets';
 
-const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
+const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
-  const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
-  const { tagsData, typesData, substatesData } = useMetadata();
-
-  const metadataRef = useRef(null);
+const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -26,47 +22,9 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
   }), []);
 
   const api = useMemo(() => ({
-    getMetadata: (...params) => {
-      return ticketsAPI.listTicketsTrash(projectUuid, ...params).then(res => {
-        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-        let columns = res?.data?.columns || [];
-        const othersConfig = {};
-        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
-          const { name } = c;
-          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-          const otherConfig = othersConfig[name];
-          return {
-            ...c,
-            ...predefinedConfig,
-            ...otherConfig,
-          };
-        });
-        const typeColum = columns.find(c => c.name === 'type');
-        if (typeColum) {
-          context.setSetting('typeColumnKey', typeColum.key);
-        }
-        const stateColumn = columns.find(c => c.name === 'state');
-        if (stateColumn) {
-          context.setSetting('stateColumnKey', stateColumn.key);
-        }
-        const tagsColumn = columns.find(c => c.name === 'tags');
-        if (tagsColumn) {
-          context.setSetting('tagsColumnKey', tagsColumn.key);
-        }
-        return {
-          data: {
-            rows,
-            columns,
-          }
-        };
-      });
-    },
+    getMetadata: (...params) => ticketsAPI.listTicketsTrash(projectUuid, ...params),
 
-    getViews: () => {
-      return new Promise((resolve, reject) => {
-        resolve({ data: viewsData });
-      });
-    },
+    getViews: () => new Promise((resolve, reject) => resolve({ data: viewsData })),
 
     // view
     getView: (viewID) => {
@@ -89,16 +47,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
     },
   }), [projectUuid, viewsData]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-deleted-tickets`, [projectUuid]);
-
-  const t = useMemo(() => {
-    return {
-      row: gettext('ticket'),
-      rows: gettext('tickets'),
-      Row: gettext('Ticket'),
-      Rows: gettext('Tickets'),
-    };
-  }, []);
+  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-deleted-tickets`, [projectUuid]);
 
   const createRowsTools = useCallback(({ rows, deleteLocalRows, selectNone }) => {
     let tools = [];
@@ -200,27 +149,21 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
     return list;
   }, [projectName, workspaceID]);
 
-  if (isLoading) return (<CenteredLoading />);
-
   return (
     <>
-      <SeaMetadata
-        ref={metadataRef}
-        viewID={''}
-        api={api}
-        t={t}
-        fixedColumnCount={2}
-        localStorageNamePrefix={localStorageName}
-        toggleView={toggleView}
+      <Tickets
+        localStorageNamePrefix={localStorageNamePrefix}
+        projectUuid={projectUuid}
+        workspaceID={workspaceID}
+        projectName={projectName}
         permission={permission}
+        viewID='trash'
+        toggleBar={toggleBar}
+        api={api}
         settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
-        viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS]}
-        tagsData={tagsData}
-        toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
-        typesData={typesData}
-        substatesData={substatesData}
-        createContextMenuOptions={createContextMenuOptions}
+        viewTools={viewTools}
         createRowsTools={createRowsTools}
+        createContextMenuOptions={createContextMenuOptions}
       />
       <CleanTickets projectUuid={projectUuid} />
     </>

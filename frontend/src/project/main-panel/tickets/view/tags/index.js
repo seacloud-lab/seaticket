@@ -218,8 +218,9 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
+    if (!isLoading) return;
     loadTags(() => setIsLoading(false));
-  }, []);
+  }, [isLoading, loadTags]);
 
   useEffect(() => {
     const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
