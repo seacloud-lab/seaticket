@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
-import { Icon, toaster } from '@/components';
+import { Icon, toaster, Switch } from '@/components';
 import { gettext } from '@/constants';
+import { portalAPI } from '@/portal/api';
 
 import './settings.css';
 
@@ -9,6 +10,7 @@ const { projectUuid } = window.app.pageOptions;
 
 const SETTING_TABS = {
   PORTAL_URL: 'portal_url',
+  DISPLAY: 'display',
 };
 
 const Settings = () => {
@@ -19,9 +21,31 @@ const Settings = () => {
     return `${origin}/portal/${projectUuid}/`;
   }, []);
 
+  const { workspaceId, projectName, showKBInPortal } = window.app.pageOptions;
+  const [showKB, setShowKB] = useState(showKBInPortal === true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const onToggleKB = useCallback(() => {
+    if (isSaving) return;
+    const next = !showKB;
+    setIsSaving(true);
+    setShowKB(next);
+    portalAPI.updateProjectSettings(workspaceId, projectName, { portal_show_knowledge_base: next })
+      .then(() => {
+        window.app.pageOptions.showKBInPortal = next;
+        window.dispatchEvent(new CustomEvent('portal:kb-visibility', { detail: { enabled: next } }));
+        toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
+      })
+      .catch(() => {
+        setShowKB(!next);
+        toaster.danger(gettext('Save failed'));
+      })
+      .finally(() => setIsSaving(false));
+  }, [showKB, workspaceId, projectName, isSaving]);
+
   const onCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(portalUrl).then(() => {
-      toaster.success(gettext('Copied'));
+      toaster.success(gettext('Copied'), { duration: 2, hasCloseButton: false });
     });
   }, [portalUrl]);
 
@@ -41,6 +65,14 @@ const Settings = () => {
               onClick={() => toggle(SETTING_TABS.PORTAL_URL)}
             >
               {gettext('Portal URL')}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={activeTab === SETTING_TABS.DISPLAY ? 'active' : ''}
+              onClick={() => toggle(SETTING_TABS.DISPLAY)}
+            >
+              {gettext('Portal Settings')}
             </NavLink>
           </NavItem>
         </Nav>
@@ -64,6 +96,20 @@ const Settings = () => {
                 >
                   <Icon symbol="copy" />
                 </button>
+              </div>
+            </div>
+          </TabPane>
+          <TabPane tabId={SETTING_TABS.DISPLAY}>
+            <div className="portal-settings-content">
+              <label className="portal-settings-label">{gettext('Display Knowledge Base')}</label>
+              <div className="d-flex align-items-center">
+                <Switch
+                  checked={showKB}
+                  disabled={isSaving}
+                  onChange={onToggleKB}
+                  placeholder={showKB ? gettext('On') : gettext('Off')}
+                  textPosition="right"
+                />
               </div>
             </div>
           </TabPane>

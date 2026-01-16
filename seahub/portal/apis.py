@@ -18,8 +18,9 @@ from seahub.project.utils import replace_file_url_in_content, check_same_org_per
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
-from seahub.seadb_models.utils import list_my_tickets
+from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
+from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
@@ -269,3 +270,97 @@ class PortalTicketTagsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'tags': tag_options})
+
+
+class PortalKnowledgeBaseViewsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        show_kb = False
+        try:
+            settings_obj = json.loads(project.settings) if project.settings else {}
+            show_kb = bool(settings_obj.get('portal_show_knowledge_base', False))
+        except Exception:
+            show_kb = False
+        if not show_kb:
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            views = KnowledgeBaseViews.objects.list_views(project_uuid)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response(views)
+
+
+class PortalKnowledgeBaseRecordsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        view_id = request.GET.get('view_id')
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 100)
+        try:
+            start = int(start)
+            limit = int(limit)
+        except Exception:
+            start = 0
+            limit = 100
+        if not view_id:
+            error_msg = 'view_id is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        show_kb = False
+        try:
+            settings_obj = json.loads(project.settings) if project.settings else {}
+            show_kb = bool(settings_obj.get('portal_show_knowledge_base', False))
+        except Exception:
+            show_kb = False
+        if not show_kb:
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        username = request.user.username
+        try:
+            seadb_api = SeaDBAPI(username)
+            view = KnowledgeBaseViews.objects.get_view(project_uuid, view_id)
+            records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'records': records, 'columns': columns})

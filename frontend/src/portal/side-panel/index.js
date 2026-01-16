@@ -4,12 +4,15 @@ import { Icon } from '../../components';
 import { gettext } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { key: PORTAL_PAGE.SUBMIT_TICKET, name: gettext('Submit ticket'), icon: 'submit-ticket' },
   { key: PORTAL_PAGE.MY_TICKETS, name: gettext('My tickets'), icon: 'my-tickets' },
 ];
 
-const SidePanel = ({ activePage, onPageChange }) => {
+const SidePanel = ({ activePage, onPageChange, enableKB }) => {
+  const navItems = enableKB
+    ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
+    : BASE_NAV_ITEMS;
   return (
     <div className="sea-qa-portal-side-panel">
       <div className="sea-qa-portal-side-panel-header">
@@ -19,7 +22,7 @@ const SidePanel = ({ activePage, onPageChange }) => {
         <h3>support portal</h3>
       </div>
       <div className="sea-qa-portal-navigation">
-        {NAV_ITEMS.map(item => (
+        {navItems.map(item => (
           <div
             key={item.key}
             className={classnames('sea-qa-portal-nav-item', { 'active': activePage === item.key })}

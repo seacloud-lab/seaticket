@@ -4,6 +4,7 @@ import { gettext } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 import SubmitTicket from './submit-ticket';
 import MyTickets from './my-tickets';
+import KnowledgeBase from './knowledge-base';
 
 const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
   const getTitle = () => {
@@ -12,6 +13,8 @@ const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
         return gettext('Submit ticket');
       case PORTAL_PAGE.MY_TICKETS:
         return gettext('My tickets');
+      case PORTAL_PAGE.KNOWLEDGE_BASE:
+        return gettext('Knowledge base');
       default:
         return '';
     }
@@ -23,6 +26,8 @@ const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
         return <SubmitTicket projectUuid={projectUuid} onPageChange={onPageChange} />;
       case PORTAL_PAGE.MY_TICKETS:
         return <MyTickets projectUuid={projectUuid} />;
+      case PORTAL_PAGE.KNOWLEDGE_BASE:
+        return <KnowledgeBase projectUuid={projectUuid} />;
       default:
         return null;
     }
