@@ -14,7 +14,7 @@
   display: inline-flex;
   flex-shrink: 0;
   height: 32px;
-  max-width: 240px;
+  max-width: 100%;
   overflow: hidden;
   padding: 0 8px;
 }
@@ -85,7 +85,7 @@
 .analyze-add-connection .analyze-add-btn .analyze-add-icon {
   width: 16px;
   height: 16px;
-  color: #666;
+  color: var(--bs-icon-color);
 }
 
 /* Connection popover */
