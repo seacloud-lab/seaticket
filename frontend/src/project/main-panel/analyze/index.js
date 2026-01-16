@@ -318,7 +318,7 @@ const Analyze = ({ title }) => {
       setSelectedRecord({
         _id: record._pk,
         type: record?.connection_type,
-        connection_id: record?.connection_id,
+        connection_id: record?.connection_id ? Number(record?.connection_id) : record?.connection_id,
         title: record.title,
         path: record.path,
         filename: record.filename,

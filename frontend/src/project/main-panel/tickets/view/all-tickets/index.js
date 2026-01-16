@@ -20,7 +20,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     modifyRows: (...params) => ticketsAPI.modifyProjectTickets(projectUuid, ...params),
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),
     deleteRows: (...params) => ticketsAPI.deleteProjectTickets(projectUuid, ...params),
-  }), []);
+  }), [projectUuid]);
 
   return (
     <Tickets
