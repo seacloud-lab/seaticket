@@ -38,11 +38,11 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
     const quotedEmails = ref.current.getElementsByTagName('blockquote');
     if (quotedEmails.length) {
       let qt = quotedEmails[0];
-      let qtPrev = qt.previousElementSibling;
+      let qtPrev = qt?.previousElementSibling;
       // handle special case
       if (!qtPrev) {
         qt = quotedEmails[1];
-        qtPrev = qt.previousElementSibling;
+        qtPrev = qt?.previousElementSibling;
         if (!qtPrev) return;
       }
 
