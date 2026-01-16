@@ -14,7 +14,7 @@ from rest_framework import status
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.group.utils import refresh_group_name_cache
+from seahub.group.utils import refresh_group_name_cache, group_id_to_name
 from seahub.signals import group_deleted
 from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
@@ -508,7 +508,9 @@ class ManagedGroupsTrashProjectsView(APIView):
         results = []
         for p in projects[start:end]:
             info = p.to_dict(include_deleted=True)
-            info['owner_group_id'] = p.get_owner_group_id()
+            gid = p.get_owner_group_id()
+            info['owner_group_id'] = gid
+            info['owner'] = group_id_to_name(gid)
             results.append(info)
 
         return Response({'count': count, 'trash_project_list': results})

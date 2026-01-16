@@ -34,8 +34,11 @@ const MyProjectsTrash = () => {
             let items = [];
             resArr.forEach((resp, idx) => {
               const groupID = groups[idx]?.id;
+              const groupName = groups[idx]?.name;
               const list = resp?.data?.trash_project_list || [];
-              list.forEach(item => { items.push({ ...item, group_id: groupID }); });
+              list.forEach(item => {
+                items.push({ ...item, group_id: groupID, owner: groupName });
+              });
             });
             return { data: { projects: items, count: items.length } };
           });
@@ -114,9 +117,9 @@ const MyProjectsTrash = () => {
                   placeholder={gettext('No deleted projects')}
                   columns={[
                     { name: '', key: 'icon', width: 44, isFixed: true },
-                    { name: gettext('Name'), key: 'name', width: 0.5 },
-                    { name: gettext('Deleted at'), key: 'delete_time', type: 'date', width: 0.4 },
-                    { name: '', key: 'placeholder', width: 0.1 },
+                    { name: gettext('Name'), key: 'name', width: 0.4 },
+                    { name: gettext('Group'), key: 'owner', width: 0.3, link_to: false },
+                    { name: gettext('Deleted at'), key: 'delete_time', type: 'date', width: 0.3 },
                     { name: '', key: 'op', width: 44, isFixed: true }
                   ]}
                   api={listManagedGroupTrashProjects}
