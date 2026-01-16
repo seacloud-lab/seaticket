@@ -75,7 +75,7 @@ const KnowledgeBaseDetails = ({ row, onToggle }) => {
 
   return (
     <div className="kb-details-overlay" style={{ position: 'fixed', inset: 0, zIndex: 999998, backgroundColor: '#fff', overflow: 'hidden' }}>
-      <div className="sea-qa-project-edit-knowledge" style={{ maxWidth: 1000, margin: '24px auto', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div className="sea-qa-project-edit-knowledge" style={{ maxWidth: 1000, margin: '24px auto', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', overflowX: 'hidden' }}>
         <div className="sea-qa-project-knowledge-settings">
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div className="sea-qa-project-knowledge-name">{gettext('Record')}</div>
