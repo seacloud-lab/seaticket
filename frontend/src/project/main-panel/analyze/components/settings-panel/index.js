@@ -30,7 +30,7 @@ const SettingsPanel = ({
       <div className="analyze-settings-body">
         {/* Add connections Setting */}
         <div className="analyze-settings-section">
-          <div className="analyze-settings-label">{gettext('Connection')}</div>
+          <div className="analyze-settings-label">{gettext('Connections')}</div>
           <ConnectionSetting
             selectedConnections={selectedConnections}
             onConnectionsChange={onConnectionsChange}

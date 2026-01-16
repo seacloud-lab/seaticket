@@ -9,7 +9,7 @@ import './index.css';
 const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveConnection }) => {
   const { connections } = useConnections();
   const [isShowPopover, setIsShowPopover] = useState(false);
-  const [selectedConnectionIds, setSelectedConnectionIds] = useState([]);
+  const [selectedConnectionIds, setSelectedConnectionIds] = useState(selectedConnections.map((item) => item.id));
   const popoverRef = useRef(null);
 
   const option = useMemo(() => {
