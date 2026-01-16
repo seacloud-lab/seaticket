@@ -222,6 +222,14 @@ class HomeAPI {
     return this.req.get(url);
   }
 
+  listManagedGroupsTrashProjects(page, perPage) {
+    const url = this.server + '/api/v1/groups/trash-projects/';
+    let params = {};
+    if (page !== undefined) { params.page = page; }
+    if (perPage !== undefined) { params.per_page = perPage; }
+    return this.req.get(url, { params });
+  }
+
   restoreGroupTrashProject(projectUuid, groupID) {
     let url = this.server + '/api/v1/groups/' + groupID + '/trash-projects/' + projectUuid + '/';
     return this.req.put(url);

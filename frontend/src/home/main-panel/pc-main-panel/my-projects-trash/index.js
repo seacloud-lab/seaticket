@@ -20,22 +20,28 @@ const MyProjectsTrash = () => {
     });
   });
 
-  const listManagedGroupTrashProjects = useCallback(() => {
-    return homeAPI.listGroups(false, true).then(groupsRes => {
-      const groups = groupsRes?.data || [];
-      const requests = groups.map(g => homeAPI.listGroupTrashProjects(g.id));
-      return Promise.all(requests).then(resArr => {
-        let items = [];
-        resArr.forEach((resp, idx) => {
-          const groupID = groups[idx]?.id;
-          const groupName = groups[idx]?.name;
-          const list = resp?.data?.trash_project_list || [];
-          list.forEach(item => {
-            items.push({ ...item, group_id: groupID, owner: groupName });
+  const listManagedGroupTrashProjects = useCallback((page, perPage) => {
+    return homeAPI.listManagedGroupsTrashProjects(page, perPage).then(res => {
+      const { trash_project_list, count } = res?.data || {};
+      const projects = (trash_project_list || []).map(item => ({ ...item, group_id: item.owner_group_id }));
+      return { data: { projects, count } };
+    }).catch(error => {
+      if (error?.response?.status === 404) {
+        return homeAPI.listGroups(false, true).then(groupsRes => {
+          const groups = groupsRes?.data || [];
+          const requests = groups.map(g => homeAPI.listGroupTrashProjects(g.id));
+          return Promise.all(requests).then(resArr => {
+            let items = [];
+            resArr.forEach((resp, idx) => {
+              const groupID = groups[idx]?.id;
+              const list = resp?.data?.trash_project_list || [];
+              list.forEach(item => { items.push({ ...item, group_id: groupID }); });
+            });
+            return { data: { projects: items, count: items.length } };
           });
         });
-        return { data: { projects: items, count: items.length } };
-      });
+      }
+      throw error;
     });
   });
 
@@ -77,7 +83,7 @@ const MyProjectsTrash = () => {
               </NavItem>
               <NavItem>
                 <NavLink className={activeTab === 'groups' ? 'active' : ''} onClick={() => setActiveTab('groups')}>
-                  {gettext('Groups I manage')}
+                  {gettext('Managed Groups')}
                 </NavLink>
               </NavItem>
             </Nav>
