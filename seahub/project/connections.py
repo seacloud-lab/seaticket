@@ -662,7 +662,8 @@ class ProjectConnectionRecordView(APIView):
     @require_org_context
     def put(self, request, project_uuid, connection_id, record_id):
         """Update a single connection record
-        Currently only supports EMAIL type connections for updating the unread field.
+        Supports updating outdated field for all connection types,
+        and unread field for EMAIL type.
         """
         row_data = request.data
         if not row_data or not isinstance(row_data, dict):
@@ -685,21 +686,44 @@ class ProjectConnectionRecordView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # currently only EMAIL type is supported
-        if project_connection.type != ConnectionType.EMAIL.value:
+        # Get table class based on connection type
+        supported_types = [
+            ConnectionType.DISCOURSE_FORUM.value,
+            ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.SITE.value,
+            ConnectionType.SEAFILE.value,
+            ConnectionType.EMAIL.value,
+        ]
+        if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        table_cls = None
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            table_cls = DiscourseTopicsTable
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            table_cls = GithubIssuesTable
+        elif project_connection.type == ConnectionType.SITE.value:
+            table_cls = WebCrawlTable
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_cls = SeafileTable
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            table_cls = ThreadTable
+
         update_row = {'pk': int(record_id), 'row': {}}
 
-        # currently only unread field is supported
-        if 'unread' in row_data:
+        # Support outdated field for all connection types
+        if 'outdated' in row_data:
+            update_row['row']['outdated'] = row_data.get('outdated')
+
+        # Support unread field for EMAIL type only
+        if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
             update_row['row']['unread'] = row_data.get('unread')
 
         if not update_row['row']:
             return Response({'success': True})
 
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = table_cls.gen_table_name(connection_id)
         seadb_api = SeaDBAPI(username)
 
         try:
@@ -720,7 +744,8 @@ class ProjectConnectionRecordsView(APIView):
     @require_org_context
     def put(self, request, project_uuid, connection_id):
         """Batch update connection records
-        Currently only supports EMAIL type connections for updating the unread field.
+        Supports updating outdated field for all connection types,
+        and unread field for EMAIL type.
         """
         records_data = request.data.get('records_data')
         if not records_data or not isinstance(records_data, list):
@@ -743,9 +768,29 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if project_connection.type != ConnectionType.EMAIL.value:
+        # Get table class based on connection type
+        supported_types = [
+            ConnectionType.DISCOURSE_FORUM.value,
+            ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.SITE.value,
+            ConnectionType.SEAFILE.value,
+            ConnectionType.EMAIL.value,
+        ]
+        if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        table_cls = None
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            table_cls = DiscourseTopicsTable
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            table_cls = GithubIssuesTable
+        elif project_connection.type == ConnectionType.SITE.value:
+            table_cls = WebCrawlTable
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_cls = SeafileTable
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            table_cls = ThreadTable
 
         update_rows = []
         for record in records_data:
@@ -754,15 +799,22 @@ class ProjectConnectionRecordsView(APIView):
             if not row_id or not isinstance(row_data, dict):
                 continue
             update_row = {'pk': int(row_id), 'row': {}}
-            if 'unread' in row_data:
+
+            # Support outdated field for all connection types
+            if 'outdated' in row_data:
+                update_row['row']['outdated'] = row_data.get('outdated') if row_data.get('outdated') is not None else False
+
+            # Support unread field for EMAIL type only
+            if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
+
             if update_row['row']:
                 update_rows.append(update_row)
 
         if not update_rows:
             return Response({'success': True})
 
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = table_cls.gen_table_name(connection_id)
         seadb_api = SeaDBAPI(username)
 
         try:
