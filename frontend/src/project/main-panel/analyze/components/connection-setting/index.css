@@ -32,7 +32,7 @@
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-name {
   font-size: 14px;
-  max-width: 150px;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
