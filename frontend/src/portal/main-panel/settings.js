@@ -34,7 +34,6 @@ const Settings = () => {
       .then(() => {
         window.app.pageOptions.showKBInPortal = next;
         window.dispatchEvent(new CustomEvent('portal:kb-visibility', { detail: { enabled: next } }));
-        toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
       })
       .catch(() => {
         setShowKB(!next);
@@ -101,7 +100,7 @@ const Settings = () => {
           </TabPane>
           <TabPane tabId={SETTING_TABS.DISPLAY}>
             <div className="portal-settings-content">
-              <label className="portal-settings-label">{gettext('Display Knowledge Base')}</label>
+              <label className="portal-settings-label">{gettext('Display knowledge base')}</label>
               <div className="d-flex align-items-center">
                 <Switch
                   checked={showKB}

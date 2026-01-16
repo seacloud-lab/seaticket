@@ -4,6 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import userAPI from '@/api/user-api';
+import projectAPI from '@/project/api/project-api';
 import LeftBar from './left-bar';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -32,8 +33,8 @@ const Portal = () => {
   }, []);
 
   const getCollaborators = useCallback(() => {
-    return Promise.resolve({ data: { user_list: [] } });
-  }, []);
+    return projectAPI.listProjectRelatedUsers(projectUuid);
+  }, [projectUuid]);
 
   useEffect(() => {
     const { pathname } = location;

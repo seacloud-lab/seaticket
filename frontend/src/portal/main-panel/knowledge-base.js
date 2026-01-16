@@ -1,8 +1,10 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
+import KnowledgeBaseDetails from './knowledge-base-details';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
 
 const viewTools = [
@@ -91,7 +93,10 @@ const KnowledgeBase = ({ projectUuid }) => {
         canModifyRow: false,
       }}
       viewTools={viewTools}
-    />
+      expandRow={(row) => context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row)}
+    >
+      <KnowledgeBaseDetails />
+    </SeaMetadata>
   );
 };
 
