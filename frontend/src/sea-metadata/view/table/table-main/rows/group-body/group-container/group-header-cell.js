@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { checkIsColumnFrozen } from '../../../../../../utils/column';
-import { GROUP_HEADER_HEIGHT, SEQUENCE_COLUMN_WIDTH, seaTableZIndexes } from '../../../../../../constants';
+import { GROUP_HEADER_HEIGHT, SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 class GroupHeaderCell extends React.PureComponent {
 
@@ -32,7 +33,7 @@ class GroupHeaderCell extends React.PureComponent {
       left: offsetLeft
     };
     if (checkIsColumnFrozen(column)) {
-      style.zIndex = seaTableZIndexes.GROUP_FROZEN_HEADER;
+      style.zIndex = Z_INDEX.GROUP_FROZEN_HEADER;
     }
     return style;
   };

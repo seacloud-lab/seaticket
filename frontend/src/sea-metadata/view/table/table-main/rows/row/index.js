@@ -4,7 +4,8 @@ import classnames from 'classnames';
 import Cell from './cell';
 import ActionsCell from './actions-cell';
 import { getFrozenColumns } from '../../../../../utils/column';
-import { seaTableZIndexes, ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
+import { ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 import './index.css';
 
@@ -193,12 +194,12 @@ class Row extends React.Component {
   getFrozenColumnsStyle = () => {
     const { isGroupView, lastFrozenColumnKey, height } = this.props;
     let style = {
-      zIndex: seaTableZIndexes.SEQUENCE_COLUMN,
+      zIndex: Z_INDEX.SEQUENCE_COLUMN,
       height: height - 1,
     };
     if (isGroupView) {
       style.height = height;
-      style.zIndex = seaTableZIndexes.FROZEN_GROUP_CELL;
+      style.zIndex = Z_INDEX.FROZEN_GROUP_CELL;
       if (!lastFrozenColumnKey) {
         style.marginLeft = '0px';
       }

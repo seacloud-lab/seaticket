@@ -7,8 +7,8 @@ import { isMobile } from '@/utils/utils';
 import { checkIsColumnFrozen, recalculateColumnMetricsByResizeColumn, getFrozenColumns } from '../../../../utils/column';
 import { isEmptyObject } from '../../../../utils/common';
 import { EVENT_BUS_TYPE, GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
-  seaTableZIndexes,
 } from '../../../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 import context from '@/sea-metadata/context';
 
 const RowsHeader = ({
@@ -44,7 +44,7 @@ const RowsHeader = ({
     return {
       width: containerWidth,
       minWidth: '100%',
-      zIndex: seaTableZIndexes.GRID_HEADER,
+      zIndex: Z_INDEX.GRID_HEADER,
       height
     };
   }, [containerWidth, height]);
@@ -60,7 +60,7 @@ const RowsHeader = ({
       position: (isMobile ? 'absolute' : 'fixed'),
       marginLeft: '0px',
       height,
-      zIndex: seaTableZIndexes.SEQUENCE_COLUMN,
+      zIndex: Z_INDEX.SEQUENCE_COLUMN,
     };
     if ((isGroupView && !checkIsColumnFrozen(columns[0])) || isMobile) {
       value.position = 'absolute';

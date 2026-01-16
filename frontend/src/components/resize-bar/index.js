@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { RESIZE_HANDLER_HEIGHT } from './constants';
-import { Z_INDEX } from '../../constants';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 import './index.css';
 

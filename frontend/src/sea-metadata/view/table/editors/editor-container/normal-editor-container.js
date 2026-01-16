@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ClickOutside from '@/components/click-outside';
 import Editor from './editor';
-import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
+import { Z_INDEX } from '@/constants/zIndexes';
 import { isFunction } from '@/utils/type-detection';
 import { getEventClassName } from '@/utils/dom';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
@@ -326,7 +326,7 @@ class NormalEditorContainer extends React.Component {
 
   render() {
     const { width, height, left, top } = this.props;
-    const style = { position: 'absolute', height, width, left, top, zIndex: Z_INDEX_EDITOR_CONTAINER };
+    const style = { position: 'absolute', height, width, left, top, zIndex: Z_INDEX.EDITOR_CONTAINER };
     return (
       <ClickOutside onClickOutside={this.onClickOutside}>
         <div

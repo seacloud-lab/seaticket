@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import Loading from '@/components/loading';
 import RowMetrics from '../../utils/row-metrics';
 import { gettext } from '@/constants';
-import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, seaTableZIndexes } from '../../../../constants';
+import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL } from '../../../../constants';
 import { addClassName, removeClassName } from '@/utils/dom';
 import { getRowsFromSelectedRange } from '../../utils/selected-cell-utils';
+import { Z_INDEX } from '@/constants/zIndexes';
 
 import './index.css';
 
@@ -126,7 +127,7 @@ class RowsFooter extends React.Component {
     const rowWidth = (isLoadingMore || hasMore ? SEQUENCE_COLUMN_WIDTH + columns[0].width : SEQUENCE_COLUMN_WIDTH) + groupOffsetLeft;
 
     return (
-      <div className="sea-metadata-table-footer" style={{ zIndex: seaTableZIndexes.GRID_FOOTER }} ref={ref => this.ref = ref}>
+      <div className="sea-metadata-table-footer" style={{ zIndex: Z_INDEX.GRID_FOOTER }} ref={ref => this.ref = ref}>
         <div className="rows-row d-flex text-nowrap" style={{ width: rowWidth }}>
           <span>{this.getRow()}</span>
           {!isLoadingMore && hasMore && !isSearchView &&
