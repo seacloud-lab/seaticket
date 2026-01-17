@@ -43,20 +43,12 @@ class Item extends Component {
     return `${siteRoot}sys/organizations/${orgID}/info/`;
   };
 
-  getUserURL = (owner) => {
-    return `${siteRoot}sys/users/${encodeURIComponent(owner)}/`;
-  };
-
-  getGroupURL = (owner) => {
-    const groupID = owner.split('@')[0];
-    return `${siteRoot}sys/groups/${groupID}/members/`;
-  };
-
   getOwnerURL = (owner) => {
+    if (!owner) return '';
     if (owner.indexOf('@seafile_group') !== -1) {
-      return this.getGroupURL(owner);
+      return `${siteRoot}sys/groups/${owner.split('@')[0]}/members/`;
     } else {
-      return this.getUserURL(owner);
+      return `${siteRoot}sys/users/${encodeURIComponent(owner)}/`;
     }
   };
 
