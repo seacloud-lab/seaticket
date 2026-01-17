@@ -15,7 +15,8 @@ from seahub.project.models import (
     ProjectConnections, ConnectionsViews, ProjectAPIToken
 )
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.utils import get_file_from_s3_web_crawl, url_to_filename
+from seahub.project.utils import url_to_filename
+from seahub.utils.storage import get_file_from_s3_web_crawl
 from seahub.seadb_models.utils import (
     list_connection_view_records, list_discourse_forum_replies_records,
     list_github_issue_record_details

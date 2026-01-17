@@ -14,10 +14,13 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_project_permission, \
-    convert_record_to_ticket, check_ai_limit, \
-    submit_embedding_analysis_task, get_embedding_analysis_task_status, \
-    find_related_records, TaskConflictError
+from seahub.project.utils import check_project_permission, check_ai_limit
+from seahub.utils.ai_client import (
+    convert_record_to_ticket,
+    rank_related_issues,
+)
+from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
+from seahub.utils.indexer import find_related_records
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI

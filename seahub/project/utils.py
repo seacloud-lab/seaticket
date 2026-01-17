@@ -1,14 +1,7 @@
-import os
 import re
 import logging
-import jwt
-import time
-import requests
 import hashlib
-import json
-from urllib.parse import urljoin, quote_plus
-from datetime import datetime, timezone
-from botocore.exceptions import ClientError
+from urllib.parse import quote_plus
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     StatsAIByTeam, StatsAIByOwner, Workspaces
@@ -31,21 +24,14 @@ from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.notifications.models import ProjectNotification
-
-from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
-    SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
+from seahub.utils import normalize_cache_key
+from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
-from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT
 
 
 logger = logging.getLogger(__name__)
-
-
-class TaskConflictError(Exception):
-    pass
 
 
 def check_project_limit(workspace, request):
@@ -183,220 +169,6 @@ def restore_trash_project_name(project):
     return new_project_name
 
 
-def add_connection_sync_task(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/add-connection-sync-task')
-    resp = requests.get(url, params=params, headers=headers)
-
-    return json.loads(resp.content)
-
-
-def manual_sync_connection(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/manual-sync-connection')
-    resp = requests.post(url, json=params, headers=headers)
-    status_code = resp.status_code
-    return json.loads(resp.content), status_code
-
-
-def update_github_issue_by_webhook(params):
-    payload = {'exp': int(time.time()) + 300, }
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/webhook/github/')
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    resp = requests.post(
-        url,
-        json=params,
-        headers=headers,
-    )
-    resp.raise_for_status()
-    return resp
-
-
-def update_discourse_topic_by_webhook(params):
-    connection_id = params.get('connection_id')
-    data = params.get('data')
-    event_type = params.get('event_type')
-
-    payload = {'exp': int(time.time()) + 300, }
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/webhook/discourse/')
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {
-        "Authorization": "Token %s" % token,
-        "X-Discourse-Event": event_type,
-    }
-    query_params = {'connection_id': connection_id}
-    resp = requests.post(
-        url,
-        params=query_params,
-        json=data,
-        headers=headers,
-    )
-    resp.raise_for_status()
-    return resp
-
-
-def find_related_records(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/vector_search')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 500:
-        raise Exception(f'find related records error status: {resp.status_code} body: {resp.text}')
-    resp_json = resp.json()
-    results = resp_json.get('results')
-    return results
-
-
-def search(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/search')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 500:
-        raise Exception(f'search error status: {resp.status_code} body: {resp.text}')
-    resp_json = resp.json()
-    results = resp_json.get('results')
-    return results
-
-
-
-
-def convert_record_to_ticket(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/convert-record-to-ticket')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 500:
-        raise Exception('convert record to ticket error status: %s body: %s', resp.status_code, resp.text)
-    resp_json = resp.json()
-    title = resp_json.get('title', '')
-    content = resp_json.get('description', '')
-    return title, content
-
-
-def rank_related_issues(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/rank-related-issues')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 500:
-        raise Exception(f'rank related records error status: {resp.status_code} body: {resp.text}')
-    resp_json = resp.json()
-    ranked_ids = resp_json.get('ranked_ids', [])
-    return ranked_ids
-
-
-def gen_s3_file_path(project_uuid, file_path):
-    return f'/projects/{project_uuid}/{file_path}'
-
-
-def gen_s3_web_crawl_file_path(project_uuid, site_id, filename):
-    return f"{project_uuid}/{site_id}/" + filename
-
-
-def gen_tmp_upload_file_path(project_uuid, file_path):
-    s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    file_name = os.path.basename(file_path)
-    tmp_dir = f'/tmp{s3_file_path.replace(file_name, '')}'
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir, exist_ok=True)
-    return os.path.join(tmp_dir, file_name)
-
-
-def upload_file_to_tmp_dir(project_uuid, file):
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
-    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-    with open(tmp_upload_file_path, 'wb') as fd:
-        fd.write(file.read())
-    return tmp_upload_file_path
-
-
-def upload_files_to_s3(project_uuid, file_urls, username):
-    new_file_urls_dict = {}
-    for file_url in file_urls:
-        if '/upload-file/project/' not in file_url:
-            continue
-        file_name = os.path.basename(file_url)
-        file_path = file_url.split('/')[-2] + '/' + file_name
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-        if not os.path.exists(tmp_upload_file_path):
-            logger.warning(tmp_upload_file_path + ' not exists.')
-            continue
-        s3_file_path = gen_s3_file_path(project_uuid, file_path)
-        if check_file_exists_from_s3(s3_file_path):
-            logger.warning(s3_file_path + ' already exists.')
-            continue
-        s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata':{'username':username}})
-        new_file_url = file_url.replace('/upload-file/', '/file/')
-        new_file_urls_dict[new_file_url] = file_url
-        try:
-            os.remove(tmp_upload_file_path)
-        except Exception as e:
-            logger.error(e)
-    return new_file_urls_dict
-
-
-def check_file_exists_from_s3(s3_file_path):
-    try:
-        s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-        return True
-    except Exception as e:
-        return False
-
-
-def get_file_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    response = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-    file = response['Body']
-    return file
-
-
-class FileNotFound(Exception):
-    pass
-
-
-def get_file_from_s3_web_crawl(project_uuid, site_id, filename):
-    s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
-    try:
-        response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code == 'NoSuchKey':
-            raise FileNotFound()
-        else:
-            raise e
-
-    file = response['Body']
-    return file
-
-def delete_file_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    s3_client.delete_object(S3_FILE_BUCKET, s3_file_path)
-    return s3_file_path
-
-
-def delete_project_dir_from_s3(project_uuid):
-    s3_dir_path = gen_s3_file_path(project_uuid, '')
-    response = s3_client.list_objects_v2(Bucket=S3_FILE_BUCKET, Prefix=s3_dir_path)
-    objects_to_delete = []
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            objects_to_delete.append({'Key': obj['Key']})
-        s3_client.delete_objects(
-            Bucket=S3_FILE_BUCKET, Delete={'Objects': objects_to_delete})
-        logger.info(f'Deleted {project_uuid} s3 files.')
-    return s3_dir_path
-
-
 def replace_file_url_in_content(content, new_file_urls_dict):
     for new_file_url in new_file_urls_dict:
         old_file_url = new_file_urls_dict[new_file_url]
@@ -525,47 +297,6 @@ def check_ai_limit(username, org_id):
 
     is_exceed = cost >= credit
     return is_exceed
-
-
-def submit_embedding_analysis_task(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/add-embedding-analysis-task')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 409:
-        raise TaskConflictError(resp.text)
-    if resp.status_code == 500:
-        raise Exception(f'submit embedding analysis task error status: {resp.status_code} body: {resp.text}')
-
-    response_data = resp.json()
-    task_id = response_data.get('task_id')
-    if not task_id:
-        logger.error('No task_id returned from seaqa-events')
-        raise Exception('Failed to submit analysis task.')
-
-    return task_id
-
-
-def get_embedding_analysis_task_status(task_id):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": f'Token {token}'}
-
-    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, f'/embedding-analysis-task-status')
-    params = {'task_id': task_id}
-    resp = requests.get(url, headers=headers, params=params)
-    if resp.status_code == 500:
-        raise Exception(f'get embedding analysis task status error status: {resp.status_code} body: {resp.text}')
-
-    response_data = resp.json()
-    is_finished = response_data.get('is_finished')
-    records = response_data.get('records', [])
-
-    return {
-        'is_finished': is_finished,
-        'records': records
-    }
 
 
 def get_all_available_projects(request):

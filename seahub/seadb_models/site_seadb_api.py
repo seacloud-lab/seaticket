@@ -1,7 +1,8 @@
 import logging
 
 import json
-from seahub.project.utils import url_to_filename, get_file_from_s3_web_crawl
+from seahub.project.utils import url_to_filename
+from seahub.utils.storage import get_file_from_s3_web_crawl
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.constants import ConnectionType
