@@ -18,7 +18,7 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils.decorators import require_org_context
+from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     upload_file_to_tmp_dir, get_file_from_s3, delete_file_from_s3, gen_tmp_upload_file_path
@@ -35,7 +35,6 @@ class ProjectUploadFileAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def post(self, request, project_uuid):
         """
         Upload a file to /tmp.
@@ -44,6 +43,10 @@ class ProjectUploadFileAPIView(APIView):
         Permission:
         1. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         file = request.FILES.get('file', None)
         if not file:
@@ -87,7 +90,6 @@ class GetProjectUploadFileView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, file_path):
         """
         Get a file from /tmp.
@@ -95,6 +97,10 @@ class GetProjectUploadFileView(APIView):
         Permission:
         1. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -129,12 +135,15 @@ class ProjectFileAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def delete(self, request, project_uuid, file_path):
         """
         Permission:
         1. group admin
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -164,12 +173,15 @@ class GetProjectFileView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, file_path):
         """
         Permission:
         1. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
