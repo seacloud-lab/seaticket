@@ -10,6 +10,7 @@ import ClickOutside from '../click-outside';
 import SearchInput from '../search-input';
 import { Utils } from '@/utils/utils';
 import IconButton from '../icon-button';
+import CenteredLoading from '../centered-loading';
 
 const propTypes = {
   placeholder: PropTypes.string.isRequired,
@@ -32,6 +33,7 @@ class UserSelect extends React.Component {
       searchedUsers: [],
       searchValue: '',
       highlightIndex: -1,
+      isLoading: false,
     };
   }
 
@@ -46,6 +48,7 @@ class UserSelect extends React.Component {
         highlightIndex: -1,
       });
     } else {
+      this.setState({ isLoading: true });
       const api = this.props.api || ((searchValue) => userAPI.searchUsers(searchValue));
       api(searchValue).then((res) => {
         let users = res.data.users;
@@ -53,12 +56,14 @@ class UserSelect extends React.Component {
           users = users.filter(user => user.email !== username);
         }
         this.setState({
+          isLoading: false,
           searchedUsers: users,
           highlightIndex: users.length > 0 ? 0 : -1,
         });
       }).catch(error => {
         let errMessage = Utils.getErrorMsg(error);
         toaster.danger(this.props.gettext(errMessage));
+        this.setState({ isLoading: false });
       });
     }
   };
@@ -214,7 +219,7 @@ class UserSelect extends React.Component {
   };
 
   render() {
-    const { searchValue, highlightIndex, searchedUsers, placeholder } = this.state;
+    const { searchValue, highlightIndex, searchedUsers, placeholder, isLoading } = this.state;
     const { className = '', selectedUsers = [] } = this.props;
     return (
       <ClickOutside onClickOutside={this.onClickOutside}>
@@ -257,7 +262,8 @@ class UserSelect extends React.Component {
                 />
               </div>
               <div className="user-list-container" ref={ref => this.container = ref}>
-                {searchedUsers.length > 0 && (
+                {isLoading && <CenteredLoading style={{ minHeight: '160px' }} />}
+                {!isLoading && searchedUsers.length > 0 && (
                   searchedUsers.map((user, index) => {
                     return (
                       <div
@@ -274,7 +280,7 @@ class UserSelect extends React.Component {
                     );
                   })
                 )}
-                {searchedUsers.length === 0 &&
+                {!isLoading && searchedUsers.length === 0 &&
                   <div className="no-user-search-result">
                     {searchValue ? gettext('User not found') : gettext('Enter characters to start searching')}
                   </div>

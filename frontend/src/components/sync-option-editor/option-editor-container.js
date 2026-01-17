@@ -1,17 +1,16 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo, useRef } from 'react';
 import axios from 'axios';
 import classnames from 'classnames';
-import SearchInput from '../../search-input';
-import Option from '../../option';
-import IconButton from '../../icon-button';
+import SearchInput from '../search-input';
+import Option from '../option';
+import IconButton from '../icon-button';
 import { gettext, KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { isFunction } from '@utils/type-detection';
-import toaster from '../../toaster';
+import toaster from '../toaster';
+import CenteredLoading from '../centered-loading';
 
-import './index.css';
-
-const Main = forwardRef(({
+const OptionEditorContainer = forwardRef(({
   isMultiple = false,
   placeholder,
   emptyTip,
@@ -30,6 +29,7 @@ const Main = forwardRef(({
   const [searchValue, setSearchValue] = useState('');
   const [options, setOptions] = useState([]);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const displayOptionsRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -169,17 +169,21 @@ const Main = forwardRef(({
 
     if (!searchValue) {
       setOptions([]);
+      setIsLoading(false);
       return;
     }
+    setIsLoading(true);
     timer.current = setTimeout(() => {
       timer.current = null;
       onSearch(searchValue, abortControllerRef.current.signal).then(options => {
         setOptions(options);
+        setIsLoading(false);
       }).catch(error => {
         if (!axios.isCancel(error)) {
           const errorMessage = Utils.getErrorMsg(error);
           toaster.danger(this.props.gettext(errorMessage));
         }
+        setIsLoading(false);
       }).finally(() => {
         abortControllerRef.current = null;
       });
@@ -222,11 +226,15 @@ const Main = forwardRef(({
         style={{ maxHeight }}
         ref={displayOptionsRef}
       >
-        {options.length === 0 ? (
+        {isLoading && (
+          <CenteredLoading style={{ minHeight: '100px' }} />
+        )}
+        {!isLoading && options.length === 0 && (
           <div className="tip-default">
             {searchValue ? emptyTip : gettext('Enter characters to start searching')}
           </div>
-        ) : (
+        )}
+        {!isLoading && options.length > 0 && (
           <>
             {options.map((option, i) => {
               const isSelected = value.includes(option.value);
@@ -262,4 +270,4 @@ const Main = forwardRef(({
   );
 });
 
-export default Main;
+export default OptionEditorContainer;

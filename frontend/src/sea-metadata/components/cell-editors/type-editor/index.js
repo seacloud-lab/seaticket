@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getTypesOptions } from '../../../utils/column';
-import Main from '@/components/option-editor/main';
+import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { useTypesData } from '../../../hooks';
 import { gettext } from '@/constants';
 
@@ -16,7 +16,7 @@ const TypeEditor = forwardRef(({
   onPressTab,
 }, ref) => {
   const editorRef = useRef(null);
-  const mainRef = useRef(null);
+  const optionEditorContainerRef = useRef(null);
 
   const { typesData } = useTypesData();
 
@@ -44,20 +44,19 @@ const TypeEditor = forwardRef(({
   useImperativeHandle(ref, () => ({
     getValue: () => {
       const { key } = column;
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       return { [key]: value };
     },
     onBlur: () => {
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       onCommit && onCommit(value);
     },
-
   }), [column, onCommit]);
 
   return (
     <div className="sea-metadata-single-select-editor option-editor-popover" style={style} ref={editorRef}>
-      <Main
-        ref={mainRef}
+      <OptionEditorContainer
+        ref={optionEditorContainerRef}
         isMultiple={false}
         isSearchEnabled={true}
         value={value}

@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import context from '@/sea-metadata/context';
-import Main from '@/components/option-editor/main';
+import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { gettext } from '@/constants';
 import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
@@ -17,7 +17,7 @@ const TagsEditor = forwardRef(({
   onPressTab,
 }, ref) => {
   const editorRef = useRef(null);
-  const mainRef = useRef(null);
+  const optionEditorContainerRef = useRef(null);
 
   const { tagsData, createTag } = useTagsData();
 
@@ -89,19 +89,18 @@ const TagsEditor = forwardRef(({
   useImperativeHandle(ref, () => ({
     getValue: () => {
       const { key } = column;
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       return { [key]: value };
     },
     onBlur: () => {
       onCommit && onCommit(true);
     },
-
   }), [column, onCommit]);
 
   return (
     <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover" style={style} ref={editorRef}>
-      <Main
-        ref={mainRef}
+      <OptionEditorContainer
+        ref={optionEditorContainerRef}
         isMultiple={true}
         optionHeight="fit-content"
         placeholder={gettext('Search tags')}

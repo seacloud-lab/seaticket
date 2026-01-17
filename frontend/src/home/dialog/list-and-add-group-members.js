@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { SearchInput, toaster } from '@/components';
+import { SearchInput, toaster, CenteredLoading } from '@/components';
 import { Utils } from '@/utils/utils';
 import { cloudMode, gettext, isOrgContext } from '@/constants/config';
 import homeAPI from '../api';
@@ -28,12 +28,26 @@ class ListAndAddGroupMembers extends React.Component {
       selectedOption: [],
       errMessage: [],
       isItemFreezed: false,
+      isLoading: true,
       searchValue: ''
     };
   }
 
   componentDidMount() {
-    this.listGroupMembers();
+    homeAPI.listGroupMembers(this.props.groupID).then((res) => {
+      this.setState({
+        groupMembers: res.data,
+        isLoading: false,
+      });
+    }).catch(error => {
+      let errMsg = Utils.getErrorMsg(error, true);
+      if (!error.response || error.response.status !== 403) {
+        toaster.danger(errMsg);
+      }
+      this.setState({
+        isLoading: false,
+      });
+    });
   }
 
   onSelectChange = (option) => {
@@ -65,19 +79,6 @@ class ListAndAddGroupMembers extends React.Component {
           errMessage: res.data.failed
         });
       }
-    }).catch(error => {
-      let errMsg = Utils.getErrorMsg(error, true);
-      if (!error.response || error.response.status !== 403) {
-        toaster.danger(errMsg);
-      }
-    });
-  };
-
-  listGroupMembers = () => {
-    homeAPI.listGroupMembers(this.props.groupID).then((res) => {
-      this.setState({
-        groupMembers: res.data
-      });
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
       if (!error.response || error.response.status !== 403) {
@@ -168,16 +169,20 @@ class ListAndAddGroupMembers extends React.Component {
           />
         )}
         <div className="manage-members">
-          <GroupMembers
-            groupMembers={searchValue ? searchMembers : groupMembers}
-            groupID={groupID}
-            isOwner={isOwner}
-            isAdmin={isAdmin}
-            isItemFreezed={isItemFreezed}
-            toggleItemFreezed={this.toggleItemFreezed}
-            changeMember={this.changeMember}
-            deleteMember={this.deleteMember}
-          />
+          {this.state.isLoading ?
+            <CenteredLoading style={{ minHeight: '200px' }} />
+            :
+            <GroupMembers
+              groupMembers={searchValue ? searchMembers : groupMembers}
+              groupID={groupID}
+              isOwner={isOwner}
+              isAdmin={isAdmin}
+              isItemFreezed={isItemFreezed}
+              toggleItemFreezed={this.toggleItemFreezed}
+              changeMember={this.changeMember}
+              deleteMember={this.deleteMember}
+            />
+          }
         </div>
       </Fragment>
     );
