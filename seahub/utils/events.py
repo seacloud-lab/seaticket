@@ -5,7 +5,7 @@ import jwt
 import requests
 from urllib.parse import urljoin
 
-from seahub.settings import SEAQA_IO_INNER_SERVER_URL, JWT_PRIVATE_KEY
+from seahub.settings import SEAQA_IO_LOCAL_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def _build_headers():
 
 def submit_embedding_analysis_task(params):
     headers = _build_headers()
-    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/add-embedding-analysis-task')
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/add-embedding-analysis-task')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 409:
         raise TaskConflictError(resp.text)
@@ -35,7 +35,7 @@ def submit_embedding_analysis_task(params):
 
 def get_embedding_analysis_task_status(task_id):
     headers = _build_headers()
-    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/embedding-analysis-task-status')
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/embedding-analysis-task-status')
     params = {'task_id': task_id}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 500:

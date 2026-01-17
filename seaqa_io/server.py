@@ -299,12 +299,12 @@ def main():
         config.SEAQA_IO_TASK_TIMEOUT,
     )
     analysis_task_manager.run()
-    u = urlparse(config.SEAQA_IO_INNER_SERVER_URL)
+    u = urlparse(config.SEAQA_IO_LOCAL_SERVER_URL)
     host = u.hostname
     port = u.port
 
     app = Application(io_task_manager, analysis_task_manager, config.JWT_PRIVATE_KEY)
-    logger.info('SeaQA-IO listening on %s', config.SEAQA_IO_INNER_SERVER_URL)
+    logger.info('SeaQA-IO listening on %s', config.SEAQA_IO_LOCAL_SERVER_URL)
     serve(app, host=host, port=int(port), threads=config.SEAQA_IO_WORKERS)
 
 

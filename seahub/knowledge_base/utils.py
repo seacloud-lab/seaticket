@@ -6,7 +6,7 @@ import requests
 from urllib.parse import urljoin
 from django.conf import settings
 
-from seahub.settings import SEAQA_IO_INNER_SERVER_URL
+from seahub.settings import SEAQA_IO_LOCAL_SERVER_URL
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ def _sign_auth_token():
 
 
 def convert_kb_view_to_excel(params):
-    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/convert-kb-view-to-excel')
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/convert-kb-view-to-excel')
     headers = {"Authorization": "Token %s" % _sign_auth_token()}
     resp = requests.post(url, json=params, headers=headers)
     if not resp.ok:
@@ -29,14 +29,14 @@ def convert_kb_view_to_excel(params):
 
 
 def query_kb_task_status(task_id):
-    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/kb-task-status')
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/kb-task-status')
     headers = {"Authorization": "Token %s" % _sign_auth_token()}
     resp = requests.get(url, params={'task_id': task_id}, headers=headers)
     return resp
 
 
 def import_kb_from_excel(params):
-    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/import-kb-from-excel')
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/import-kb-from-excel')
     headers = {"Authorization": "Token %s" % _sign_auth_token()}
     resp = requests.post(url, json=params, headers=headers)
     if not resp.ok:

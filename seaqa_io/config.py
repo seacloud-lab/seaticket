@@ -74,7 +74,7 @@ configs = ConfigParser(yaml_file_path, 'seaqa-io')
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 SEADB_INNER_SERVER_URL = configs.get('SEADB_INNER_SERVER_URL', '')
 
-SEAQA_IO_INNER_SERVER_URL = configs.get('SEAQA_IO_INNER_SERVER_URL', 'http://127.0.0.1:6002')
+SEAQA_IO_LOCAL_SERVER_URL = 'http://127.0.0.1:6002'
 SEAQA_IO_WORKERS = configs.get('SEAQA_IO_WORKERS', 3)
 SEAQA_IO_TASK_TIMEOUT = configs.get('SEAQA_IO_TASK_TIMEOUT', 3600)
 
