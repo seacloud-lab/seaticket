@@ -826,64 +826,68 @@ class ProjectConnectionRecordsView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
-    def delete(self, request, project_uuid, connection_id):
-        record_ids = request.data.get('record_ids')
-        if not record_ids or not isinstance(record_ids, list):
-            error_msg = 'record_ids must be a non-empty list.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            record_ids = [int(record_id) for record_id in record_ids]
-        except (ValueError, TypeError):
-            error_msg = 'record_ids must be a list of integers.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+    # def delete(self, request, project_uuid, connection_id):
+    #     if not is_org_context(request):
+    #         error_msg = 'Feature is not enabled.'
+    #         return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not record_ids:
-            return Response({'success': True})
+    #     record_ids = request.data.get('record_ids')
+    #     if not record_ids or not isinstance(record_ids, list):
+    #         error_msg = 'record_ids must be a non-empty list.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
+    #     try:
+    #         record_ids = [int(record_id) for record_id in record_ids]
+    #     except (ValueError, TypeError):
+    #         error_msg = 'record_ids must be a list of integers.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+    #     if not record_ids:
+    #         return Response({'success': True})
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+    #     project = Projects.objects.get_project_by_uuid(project_uuid)
+    #     if not project:
+    #         error_msg = f'Project {project_uuid} not found.'
+    #         return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+    #     workspace = project.workspace
 
-        if project_connection.type != ConnectionType.EMAIL.value:
-            error_msg = f'Connection type {project_connection.type} does not support deleting records.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+    #     username = request.user.username
+    #     if not check_project_permission(username, workspace.owner):
+    #         error_msg = 'Permission denied.'
+    #         return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        update_rows = []
-        record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
-        for record_id in record_ids:
-            update_rows.append({
-                'pk': record_id,
-                'row': {
-                    ThreadTable.deleted.name: True,
-                    ThreadTable.record_modified_time.name: record_modified_time,
-                }
-            })
+    #     project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+    #     if not project_connection:
+    #         error_msg = f'project_connection {connection_id} not found.'
+    #         return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        table_name = ThreadTable.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI(username)
+    #     if project_connection.type != ConnectionType.EMAIL.value:
+    #         error_msg = f'Connection type {project_connection.type} does not support deleting records.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            seadb_api.update_rows(project_uuid, table_name, update_rows)
-        except Exception as e:
-            logger.error(f'batch delete connection records error: {e}')
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+    #     update_rows = []
+    #     record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
+    #     for record_id in record_ids:
+    #         update_rows.append({
+    #             'pk': record_id,
+    #             'row': {
+    #                 ThreadTable.deleted.name: True,
+    #                 ThreadTable.record_modified_time.name: record_modified_time,
+    #             }
+    #         })
 
-        return Response({'success': True})
+    #     table_name = ThreadTable.gen_table_name(connection_id)
+    #     seadb_api = SeaDBAPI(username)
+
+    #     try:
+    #         seadb_api.update_rows(project_uuid, table_name, update_rows)
+    #     except Exception as e:
+    #         logger.error(f'batch delete connection records error: {e}')
+    #         error_msg = 'Internal Server Error'
+    #         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+    #     return Response({'success': True})
 
 
 class ConnectionFileView(APIView):

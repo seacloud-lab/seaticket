@@ -399,14 +399,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
     const tools = [];
 
-    if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
-      tools.push({
-        key: 'delete',
-        icon: 'delete',
-        callback: () => handleDeleteRecords(rows, deleteLocalRows),
-        disabled: isDeletingRecords,
-      });
-    }
+    // if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
+    //   tools.push({
+    //     key: 'delete',
+    //     icon: 'delete',
+    //     callback: () => handleDeleteRecords(rows, deleteLocalRows),
+    //     disabled: isDeletingRecords,
+    //   });
+    // }
 
     if (children.length > 0) {
       tools.push({
