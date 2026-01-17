@@ -3,6 +3,7 @@ import { gettext } from '@/constants';
 import { IconButton, Loading, CustomizeSelect } from '@/components';
 import YearRangePicker from '../year-range-picker';
 import ConnectionSetting from '../connection-setting';
+import FilterPanel from '../filter-panel';
 import { FormGroup, Label } from 'reactstrap';
 
 import './index.css';
@@ -12,6 +13,11 @@ const SettingsPanel = ({
   onConnectionsChange,
   onRemoveConnection,
   onClose,
+  filters,
+  filterableFields,
+  filterableFieldOptions,
+  onAddFilter,
+  onRemoveFilter,
   colorBy,
   onColorByChange,
   displayMode,
@@ -61,6 +67,17 @@ const SettingsPanel = ({
             onRemoveConnection={onRemoveConnection}
           />
         </FormGroup>
+        <div className="analyze-settings-section">
+          <div className="analyze-settings-label">{gettext('Filters')}</div>
+          <FilterPanel
+            filters={filters}
+            filterableFields={filterableFields}
+            filterableFieldOptions={filterableFieldOptions}
+            onAddFilter={onAddFilter}
+            onRemoveFilter={onRemoveFilter}
+          />
+        </div>
+
         {/* Date Range Setting */}
         <FormGroup className="analyze-settings-section">
           <Label>{gettext('Date range')}</Label>
