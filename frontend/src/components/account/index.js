@@ -136,16 +136,19 @@ class Account extends Component {
     if (isAdminPanel) {
       if (isStaff) {
         data = {
+          icon: 'exit-admin',
           url: siteRoot,
           text: gettext('Exit system admin')
         };
       } else if (isOrgStaff) {
         data = {
+          icon: 'exit-admin',
           url: siteRoot,
           text: gettext('Exit team admin')
         };
       } else if (isInstAdmin) {
         data = {
+          icon: 'exit-admin',
           url: siteRoot,
           text: gettext('Exit institution admin')
         };
@@ -153,16 +156,19 @@ class Account extends Component {
     } else {
       if (isStaff) {
         data = {
+          icon: 'system-admin',
           url: `${siteRoot}sys/info/`,
           text: gettext('System admin')
         };
       } else if (isOrgStaff) {
         data = {
+          icon: 'team-admin',
           url: useExternalTeamAdmin ? `${siteRoot}external-team-admin/` : `${siteRoot}org/manage/`,
           text: gettext('Team admin')
         };
       } else if (isInstAdmin) {
         data = {
+          icon: 'institution-admin',
           url: `${siteRoot}inst/users/`,
           text: gettext('Institution admin')
         };
@@ -173,8 +179,7 @@ class Account extends Component {
     }
     return (
       <a href={data.url} title={data.text} className="item">
-        {/* TODO: change icon */}
-        <Icon symbol="set-up" />
+        <Icon symbol={data.icon} />
         {data.text}
       </a>
     );
@@ -227,7 +232,7 @@ class Account extends Component {
               )}
             </div>
             <a href={siteRoot + 'profile/'} className="item">
-              <Icon symbol="set-up" />
+              <Icon symbol="personal-settings" />
               {gettext('Personal settings')}
             </a>
             {this.renderMenu()}
