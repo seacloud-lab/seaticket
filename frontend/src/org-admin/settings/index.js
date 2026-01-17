@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading, SectionSettings, AdminCheckboxSettings } from '@/components';
+import { toaster, CenteredLoading, SectionSettings, AdminCheckboxSettings } from '@/components';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
 import { gettext, displayTwoFactorAuth } from '@/constants';
@@ -86,7 +86,7 @@ class OrgSettings extends React.Component {
       <>
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
         <Main title={gettext('Settings')}>
-          {loading && <Loading />}
+          {loading && <CenteredLoading />}
           {(!loading && settings && orgName) && (
             <>
               <SectionSettings title={gettext('Info')}>

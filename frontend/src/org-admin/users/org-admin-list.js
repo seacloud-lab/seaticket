@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import User from './user';
+import CenteredLoading from '@/components/centered-loading';
 
 import './org-admin-list.css';
 
@@ -35,6 +36,10 @@ class OrgAdminList extends React.Component {
 
   render() {
     let orgAdminUsers = this.props.orgAdminUsers;
+    let { isLoading } = this.props;
+    if (isLoading) {
+      return <CenteredLoading />;
+    }
 
     return (
       <>
@@ -73,6 +78,7 @@ OrgAdminList.propTypes = {
   toggleRevokeAdmin: PropTypes.func.isRequired,
   orgAdminUsers: PropTypes.array.isRequired,
   initOrgAdmin: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
 };
 
 export default OrgAdminList;

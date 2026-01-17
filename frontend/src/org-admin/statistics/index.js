@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
-import { Loading } from '@/components';
+import { CenteredLoading } from '@/components';
 import { gettext, siteRoot, orgID } from '@/constants';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
@@ -130,7 +130,7 @@ class Content extends Component {
     const { loading, errorMsg, items, pageInfo, groupBy, curPerPage, resetPerPage } = this.props;
 
     if (loading) {
-      return <Loading />;
+      return <CenteredLoading />;
     }
 
     if (errorMsg) {

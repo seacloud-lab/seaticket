@@ -7,6 +7,7 @@ import { Utils } from '@/utils/utils';
 import OrgGroupInfo from '@/models/org-group';
 import Group from './group';
 import { TopBar, Main } from '../main-panel';
+import { CenteredLoading } from '@/components';
 
 class Groups extends Component {
 
@@ -18,6 +19,7 @@ class Groups extends Component {
       perPage: 25,
       orgGroups: [],
       isItemFreezed: false,
+      loading: false,
     };
   }
 
@@ -27,11 +29,13 @@ class Groups extends Component {
   }
 
   initData = (page, perPage) => {
+    this.setState({ loading: true });
     orgAdminAPI.orgAdminListOrgGroups(orgID, page, perPage).then(res => {
       let orgGroups = res.data.groups.map(item => {
         return new OrgGroupInfo(item);
       });
       this.setState({
+        loading: false,
         orgGroups: orgGroups,
         pageNext: res.data.page_next,
         page: res.data.page,
@@ -40,6 +44,7 @@ class Groups extends Component {
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
+      this.setState({ loading: false });
     });
   };
 
@@ -112,6 +117,16 @@ class Groups extends Component {
 
   render() {
     let groups = this.state.orgGroups;
+    if (this.state.loading) {
+      return (
+        <>
+          <TopBar onCloseSidePanel={this.props.onCloseSidePanel}/>
+          <Main title={gettext('All groups')}>
+            <CenteredLoading />
+          </Main>
+        </>
+      );
+    }
     return (
       <>
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel}/>
