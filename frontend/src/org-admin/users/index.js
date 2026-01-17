@@ -29,6 +29,7 @@ class OrgUsers extends Component {
       isShowAddOrgAdminDialog: false,
       isShowAddOrgUserDialog: false,
       isShowInviteUsersDialog: false,
+      isLoading: true,
     };
   }
 
@@ -49,6 +50,7 @@ class OrgUsers extends Component {
   };
 
   initOrgUsersData = (page, perPage) => {
+    this.setState({ isLoading: true });
     orgAdminAPI.orgAdminListOrgUsers(orgID, false, page, perPage).then(res => {
       let userList = res.data.user_list.map(item => {
         return new OrgUserInfo(item);
@@ -58,10 +60,12 @@ class OrgUsers extends Component {
         pageNext: res.data.page_next,
         page: res.data.page,
         perPage: res.data.per_page,
+        isLoading: false,
       });
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
+      this.setState({ isLoading: false });
     });
   };
 
@@ -126,14 +130,16 @@ class OrgUsers extends Component {
   };
 
   initOrgAdmin = () => {
+    this.setState({ isLoading: true });
     orgAdminAPI.orgAdminListOrgUsers(orgID, true).then(res => {
       let userList = res.data.user_list.map(item => {
         return new OrgUserInfo(item);
       });
-      this.setState({ orgAdminUsers: userList });
+      this.setState({ orgAdminUsers: userList, isLoading: false });
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
+      this.setState({ isLoading: false });
     });
   };
 
@@ -266,6 +272,7 @@ class OrgUsers extends Component {
                 perPage={this.state.perPage}
                 onChangePageNum={this.onChangePageNum}
                 onChangePerPage={this.onChangePerPage}
+                isLoading={this.state.isLoading}
               />
             </>
           }
@@ -285,6 +292,7 @@ class OrgUsers extends Component {
                 toggleRevokeAdmin={this.toggleRevokeAdmin}
                 orgAdminUsers={this.state.orgAdminUsers}
                 initOrgAdmin={this.initOrgAdmin}
+                isLoading={this.state.isLoading}
               />
             </>
           }

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import User from './user';
 import { FixedWidthTable, Paginator } from '@/components';
+import CenteredLoading from '@/components/centered-loading';
 
 class Users extends React.Component {
 
@@ -34,7 +35,10 @@ class Users extends React.Component {
   };
 
   render() {
-    let { users, page, pageNext, perPage } = this.props;
+    let { users, page, pageNext, perPage, isLoading } = this.props;
+    if (isLoading) {
+      return <CenteredLoading />;
+    }
     return (
       <>
         <FixedWidthTable
@@ -78,6 +82,7 @@ Users.propTypes = {
   perPage: PropTypes.number.isRequired,
   onChangePageNum: PropTypes.func,
   onChangePerPage: PropTypes.func,
+  isLoading: PropTypes.bool.isRequired,
 };
 
 export default Users;

@@ -4,7 +4,7 @@ import { Row, Col, Label, Button, Input, InputGroup } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
 import { Main, TopBar } from '../main-panel';
-import { Loading } from '@/components';
+import CenteredLoading from '@/components/centered-loading';
 import { gettext, orgID, serviceURL } from '@/constants';
 import { Utils } from '@/utils/utils';
 import Section from './section';
@@ -96,7 +96,7 @@ class SAMLConfig extends Component {
       <Fragment>
         <TopBar />
         <Main title={gettext('SAML configuration')}>
-          {loading && <Loading />}
+          {loading && <CenteredLoading />}
           {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
           {(!loading && !errorMsg) &&
             <Fragment>
