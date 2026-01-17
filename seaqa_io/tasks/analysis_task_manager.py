@@ -56,7 +56,7 @@ class AnalysisTaskManager(object):
 
     @log_function_call
     def add_embedding_analysis_task(self, project_uuid, connection_ids, username, start_year=None, end_year=None):
-        from seaqa_io.tasks.io_tasks import perform_embedding_analysis
+        from seaqa_io.tasks import perform_embedding_analysis
 
         task_id = str(uuid.uuid4())
         task = (perform_embedding_analysis, (project_uuid, connection_ids, username, start_year, end_year))

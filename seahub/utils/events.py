@@ -5,7 +5,7 @@ import jwt
 import requests
 from urllib.parse import urljoin
 
-from seahub.settings import SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL, JWT_PRIVATE_KEY
+from seahub.settings import SEAQA_IO_INNER_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def _build_headers():
 
 def submit_embedding_analysis_task(params):
     headers = _build_headers()
-    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/add-embedding-analysis-task')
+    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/add-embedding-analysis-task')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 409:
         raise TaskConflictError(resp.text)
@@ -28,14 +28,14 @@ def submit_embedding_analysis_task(params):
     response_data = resp.json()
     task_id = response_data.get('task_id')
     if not task_id:
-        logger.error('No task_id returned from seaqa-events')
+        logger.error('No task_id returned from seaqa-io')
         raise Exception('Failed to submit analysis task.')
     return task_id
 
 
 def get_embedding_analysis_task_status(task_id):
     headers = _build_headers()
-    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/embedding-analysis-task-status')
+    url = urljoin(SEAQA_IO_INNER_SERVER_URL, '/embedding-analysis-task-status')
     params = {'task_id': task_id}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 500:
