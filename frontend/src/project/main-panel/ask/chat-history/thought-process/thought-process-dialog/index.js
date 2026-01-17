@@ -28,9 +28,9 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
               { value: taskValue.system_prompt, formatter: StepMarkdownViewer }
             ]
           }, {
-            name: gettext('User message'),
+            name: gettext('User input'),
             children: [
-              { value: taskValue.user_raw_message, formatter: StepMarkdownViewer }
+              { value: taskValue.user_input, formatter: StepMarkdownViewer }
             ]
           }
         ]
@@ -119,13 +119,11 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
           ];
           if (action.token_usage || action.time_usage) {
             let staticValue = [];
-            if (action.token_usage) {
-              staticValue.push({ name: gettext('Input tokens'), value: action.token_usage.input_tokens || 0 });
-              staticValue.push({ name: gettext('Total tokens'), value: action.token_usage.total_tokens || 0 });
-              staticValue.push({ name: gettext('Total tokens'), value: action.token_usage.total_tokens || 0 });
-            }
             if (action.time_usage) {
-              staticValue.push({ name: gettext('Time usage'), value: `${action.time_usage || 0} s` });
+              staticValue.push(`${gettext('Time usage')}: ${action.time_usage?.toFixed(2) || 0} s`);
+            }
+            if (action.token_usage) {
+              staticValue.push(`${gettext('Token usage')}: ${action.token_usage.total_tokens} (↑${action.token_usage.total_tokens}, ↓${action.token_usage.output_tokens})`);
             }
             otherInfos.push({
               name: gettext('Statistics'),
@@ -169,7 +167,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // final answer - agent only
+    // final answer
     const final_answer = propsValue?.final_answer;
     if (final_answer && final_answer.result){
       let result = final_answer.result;
@@ -184,13 +182,11 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       }];
       if (final_answer.token_usage || final_answer.time_usage) {
         let staticValue = [];
-        if (final_answer.token_usage) {
-          staticValue.push({ name: gettext('Input tokens'), value: final_answer.token_usage.input_tokens || 0 });
-          staticValue.push({ name: gettext('Output tokens'), value: final_answer.token_usage.output_tokens || 0 });
-          staticValue.push({ name: gettext('Total tokens'), value: final_answer.token_usage.total_tokens || 0 });
-        }
         if (final_answer.time_usage) {
-          staticValue.push({ name: gettext('Time usage'), value: `${final_answer.time_usage || 0 } s` });
+          staticValue.push(`${gettext('Time usage')}: ${final_answer.time_usage?.toFixed(2) || 0 } s`);
+        }
+        if (final_answer.token_usage) {
+          staticValue.push(`${gettext('Token usage')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0})`);
         }
         finalAnswerValue.push({
           name: gettext('Statistics'),
@@ -203,61 +199,20 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // result - ask only
-    if (propsValue.result) {
-      let result = propsValue.result;
-      if (result && isObject(result)) {
-        result = JSON.stringify(result);
-      }
-      value.push({
-        name: gettext('Result'),
-        children: [
-          { value: result, formatter: result ? StepMarkdownViewer : null }
-        ]
-      });
-    }
-
-    // statistics - agent only
+    // statistics
     const statistics = propsValue?.static;
     if (statistics && (statistics.token_usage || statistics.time_usage)) {
       const { token_usage, time_usage } = statistics;
       let staticValue = [];
+      if (time_usage) {
+        staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0 } s (${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0 } s, ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0 } s)`);
+      }
       if (token_usage) {
         staticValue.push({
-          name: gettext('Token usages'),
+          name: `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0})`,
           children: [
-            {
-              name: gettext('Input tokens'),
-              children: [
-                { name: gettext('Action steps'), value: token_usage.input_tokens?.action_steps || 0 },
-                { name: gettext('Answer generation'), value: token_usage.input_tokens?.answer_generation || 0 },
-                { name: gettext('Total'), value: token_usage.input_tokens?.total || 0 }
-              ]
-            }, {
-              name: gettext('Output tokens'),
-              children: [
-                { name: gettext('Action steps'), value: token_usage.output_tokens?.action_steps || 0 },
-                { name: gettext('Answer generation'), value: token_usage.output_tokens?.answer_generation || 0 },
-                { name: gettext('Total'), value: token_usage.output_tokens?.total || 0 }
-              ]
-            }, {
-              name: gettext('Total tokens'),
-              children: [
-                { name: gettext('Action steps'), value: token_usage.total_tokens?.action_steps || 0 },
-                { name: gettext('Answer generation'), value: token_usage.total_tokens?.answer_generation || 0 },
-                { name: gettext('Total'), value: token_usage.total_tokens?.total || 0 }
-              ]
-            }
-          ]
-        });
-      }
-      if (time_usage) {
-        staticValue.push({
-          name: gettext('Time usage'),
-          children: [
-            { name: gettext('Action steps'), value: `${time_usage.action_steps || 0 } s` },
-            { name: gettext('Answer generation'), value: `${time_usage.answer_generation || 0 } s` },
-            { name: gettext('Total'), value: `${time_usage.total || 0 } s` },
+            `${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0})`,
+            `${gettext('Answer generation')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0})`
           ]
         });
       }

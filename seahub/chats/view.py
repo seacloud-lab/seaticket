@@ -15,7 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
+from seahub.chats.utils import format_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 
@@ -222,11 +222,8 @@ class ChatMessagesView(APIView):
                 if message.role == 'user':
                     data['attachments'] = remove_content_details_in_attachments(data['attachments'])
                 elif message.role == 'assistant':
-                    if message.is_agent_mode:
-                        if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
-                            data['thought_process'] = agent_thought_process
-                    elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
-                        data['thought_process'] = ask_thought_process
+                    if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
+                        data['thought_process'] = thought_process
                 messages_data.append(data)
 
             return Response({'messages': messages_data})

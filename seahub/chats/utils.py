@@ -20,27 +20,7 @@ from seahub.project.constants import ConnectionType, ExtraSourceType
 
 logger = logging.getLogger(__name__)
 
-
-def format_ask_thought_process(tool_calls):
-    results = {
-        'tool_calls': [],
-        'result': ''
-    }
-    for tool_call_id, tool_call in tool_calls.items():
-        if tool_call_id == 'result':
-            if not isinstance(tool_call, str):
-                tool_call = '```json\n' + json.dumps(tool_call, indent=4, ensure_ascii=False) + '\n```'
-            results['result'] = tool_call
-        else:
-            for substep in tool_call.get('substeps', []):
-                if not isinstance(substep['output'], str):
-                    output = '```json\n' + json.dumps(substep['output'], indent=4, ensure_ascii=False) + '\n```'
-                    substep['output'] = output
-                results['tool_calls'].append(substep)
-    return results
-
-
-def format_agent_thought_process(tool_calls):
+def format_thought_process(tool_calls):
     results = {
         'actions': [],
         'final_answer': {},
