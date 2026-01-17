@@ -85,7 +85,7 @@ class GroupInfo extends Component {
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
         <Main
           title={<GroupNav groupID={this.props.groupID} currentItem='info' />}
-          titleClassName="pl-0"
+          titleClassName="pl-0 ml-0"
         >
           {this.renderInfo()}
         </Main>

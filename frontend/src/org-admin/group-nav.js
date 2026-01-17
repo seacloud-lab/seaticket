@@ -8,18 +8,25 @@ class GroupNav extends React.Component {
   render() {
     const { groupID, currentItem } = this.props;
     const urlBase = `${siteRoot}org/groups/${groupID}/`;
+    const navItems = [
+      { key: 'info', path: urlBase, text: gettext('Group Info') },
+      { key: 'projects', path: `${urlBase}projects/`, text: gettext('Projects') },
+      { key: 'members', path: `${urlBase}members/`, text: gettext('Members') }
+    ];
+
     return (
       <div className="cur-view-path org-admin-user-nav tab-nav-container">
         <ul className="nav">
-          <li className="nav-item">
-            <Link to={urlBase} className={`nav-link pt-0 pb-0 ${currentItem === 'info' ? 'active' : ''}`}>{gettext('Group Info')}</Link>
-          </li>
-          <li className="nav-item">
-            <Link to={`${urlBase}projects/`} className={`nav-link pt-0 pb-0 ${currentItem === 'projects' ? 'active' : ''}`}>{gettext('Projects')}</Link>
-          </li>
-          <li className="nav-item">
-            <Link to={`${urlBase}members/`} className={`nav-link pt-0 pb-0 ${currentItem === 'members' ? 'active' : ''}`}>{gettext('Members')}</Link>
-          </li>
+          {navItems.map(item => {
+            const isActive = currentItem === item.key;
+            return (
+              <li key={item.key} className={`nav-item ${isActive ? 'active' : ''}`}>
+                <Link to={item.path} className={`nav-link pt-0 pb-0 ${isActive ? 'active' : ''}`}>
+                  {item.text}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     );

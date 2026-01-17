@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import classNames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
 import { Loading } from '@/components';
 import { gettext, siteRoot, orgID } from '@/constants';
@@ -10,6 +11,8 @@ import orgAdminAPI from '../api';
 import MainPanelTopbar from '../main-panel/top-bar';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
+import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
+
 import '@/css/statistics.css';
 
 import Picker from '../../project/main-panel/search/date-and-time-picker';
@@ -215,6 +218,16 @@ class StatisticsAI extends Component {
       queryDate: 'date'
     };
     this.initPage = 1;
+    this.dateTabList = [
+      {
+        label: gettext('By date'),
+        value: 'date'
+      },
+      {
+        label: gettext('By month'),
+        value: 'month'
+      },
+    ];
   }
 
   componentDidMount() {
@@ -311,7 +324,8 @@ class StatisticsAI extends Component {
     });
   };
 
-  changeQueryDateTab = (queryDate) => {
+  changeQueryDateTab = (index) => {
+    const queryDate = this.dateTabList[index].value;
     if (queryDate === this.state.queryDate) {
       return;
     }
@@ -324,55 +338,6 @@ class StatisticsAI extends Component {
     });
   };
 
-  renderTabs = () => {
-    const { groupBy } = this.state;
-    return (
-      <div className="statistic-tabs">
-        <div
-          className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('owner')}
-        >
-          {gettext('Users')}
-        </div>
-        <div
-          className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('project')}
-        >
-          {gettext('Project')}
-        </div>
-        <div
-          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('workspace')}
-        >
-          {gettext('Workspace')}
-        </div>
-      </div>
-    );
-  };
-
-  renderQueryDateTabs = () => {
-    const { groupBy, queryDate } = this.state;
-    if (groupBy === 'owner') {
-      return null;
-    }
-    return (
-      <div className="statistic-tabs">
-        <div
-          className={`statistic-tab-item ${queryDate === 'date' ? 'active' : ''}`}
-          onClick={() => this.changeQueryDateTab('date')}
-        >
-          {gettext('By date')}
-        </div>
-        <div
-          className={`statistic-tab-item ${queryDate === 'month' ? 'active' : ''}`}
-          onClick={() => this.changeQueryDateTab('month')}
-        >
-          {gettext('By month')}
-        </div>
-      </div>
-    );
-  };
-
   render() {
     const { isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month } = this.state;
 
@@ -383,33 +348,60 @@ class StatisticsAI extends Component {
           <div className="cur-view-container">
             <StatisticNav currentItem="ai" />
             <div className="cur-view-content">
-              {this.renderTabs()}
-              {this.renderQueryDateTabs()}
-              <div className="d-flex align-items-center mt-4 mb-4">
-                {queryDate === 'date' && (
-                  <>
-                    <span className="mr-2">{`${gettext('Date')}:`}</span>
-                    <Picker
-                      showHourAndMinute={false}
-                      disabledDate={() => false}
-                      value={date}
-                      onChange={this.onDateChange}
-                      inputWidth={118}
-                    />
-                  </>
-                )}
-                {queryDate === 'month' && (
-                  <>
-                    <span className="mr-2">{`${gettext('Month')}:`}</span>
-                    <input
-                      type="month"
-                      className="form-control"
-                      style={{ width: '200px' }}
-                      value={month.slice(0, 4) + '-' + month.slice(4)}
-                      onChange={this.onMonthChange}
-                    />
-                  </>
-                )}
+              <div className="statistic-tabs">
+                <div
+                  className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('owner')}
+                >
+                  {gettext('Users')}
+                </div>
+                <div
+                  className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('project')}
+                >
+                  {gettext('Project')}
+                </div>
+                <div
+                  className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('workspace')}
+                >
+                  {gettext('Workspace')}
+                </div>
+              </div>
+              <div className="d-flex mb-4">
+                {groupBy !== 'owner' &&
+                  <CapsuleTabs
+                    tabs={this.dateTabList}
+                    defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
+                    onTabChange={this.changeQueryDateTab}
+                  />
+                }
+                <div className={classNames('d-flex align-items-center', { 'ml-6': groupBy !== 'owner' })}>
+                  {queryDate === 'date' && (
+                    <>
+                      <span className="mr-2">{`${gettext('Date')}:`}</span>
+                      <Picker
+                        showHourAndMinute={false}
+                        disabledDate={() => false}
+                        value={date}
+                        onChange={this.onDateChange}
+                        inputWidth={118}
+                      />
+                    </>
+                  )}
+                  {queryDate === 'month' && (
+                    <>
+                      <span className="mr-2">{`${gettext('Month')}:`}</span>
+                      <input
+                        type="month"
+                        className="form-control"
+                        style={{ width: '200px' }}
+                        value={month.slice(0, 4) + '-' + month.slice(4)}
+                        onChange={this.onMonthChange}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
               <Content
                 loading={isLoading}

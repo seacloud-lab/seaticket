@@ -30,7 +30,7 @@ const SidePanel = ({
               {BARS.filter(bar => bar).map(bar => {
                 const { icon, name, value, link, isActive } = bar;
                 return (
-                  <li className="nav-item" key={value}>
+                  <li className={classnames('nav-item', { 'active': isActive ? isActive(currentTab) : '' })} key={value}>
                     <Link
                       className={classnames('nav-link ellipsis', { 'active': isActive ? isActive(currentTab) : '' })}
                       to={link}

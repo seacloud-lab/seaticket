@@ -335,32 +335,9 @@ class Orgs extends Component {
     this.setState({ isFiltersPopoverShow: !this.state.isFiltersPopoverShow });
   };
 
-  getCurrentNavItem = () => {
-    let item = 'organizations';
-    return item;
-  };
-
-  renderContent = () => {
-    const { curPerPage, count, currentPage, orgRole } = this.state;
-    return (
-      <Content
-        loading={this.state.loading}
-        errorMsg={this.state.errorMsg}
-        items={this.state.orgList}
-        updateRole={this.updateRole}
-        deleteOrg={this.deleteOrg}
-        curPerPage={curPerPage}
-        count={count}
-        currentPage={currentPage}
-        resetPerPage={this.resetPerPage}
-        listOrgsByPage={this.listOrgsByPage}
-        role={orgRole}
-      />
-    );
-  };
-
   render() {
     const { isAddOrgDialogOpen, filters } = this.state;
+    const { curPerPage, count, currentPage, orgRole } = this.state;
     const isDesktop = Utils.isDesktop();
     let MainPanelTopbarContainer;
     let isShowOrgOpItem = true;
@@ -369,13 +346,11 @@ class Orgs extends Component {
       MainPanelTopbarContainer = isShowOrgOpItem ?
         (
           <TopBar search={this.getSearch()}>
-            <Button className="btn btn-secondary operation-item" onClick={this.toggleAddOrgDialog}>{gettext('Add organization')}</Button>
           </TopBar>
         ) : <TopBar />;
     } else {
       MainPanelTopbarContainer = isShowOrgOpItem ? (
         <TopBar search={this.getSearch()} onCloseSidePanel={this.props.onCloseSidePanel}>
-          <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddOrgDialog}>{gettext('Add organization')}</span>
         </TopBar>
       ) : <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />;
     }
@@ -383,13 +358,31 @@ class Orgs extends Component {
       <Fragment>
         {MainPanelTopbarContainer}
         <Main
-          title={(<OrgNav
-            currentItem={this.getCurrentNavItem()}
+          title={<OrgNav
+            currentItem={'organizations'}
             updateSysFilter={this.updateSysFilter}
             filters={filters}
-          />)}
+          />}
+          titleClassName="ml-0"
         >
-          {this.renderContent()}
+          {isShowOrgOpItem &&
+            <Button className="btn btn-secondary operation-item my-4" onClick={this.toggleAddOrgDialog}>
+              {gettext('Add organization')}
+            </Button>
+          }
+          <Content
+            loading={this.state.loading}
+            errorMsg={this.state.errorMsg}
+            items={this.state.orgList}
+            updateRole={this.updateRole}
+            deleteOrg={this.deleteOrg}
+            curPerPage={curPerPage}
+            count={count}
+            currentPage={currentPage}
+            resetPerPage={this.resetPerPage}
+            listOrgsByPage={this.listOrgsByPage}
+            role={orgRole}
+          />
         </Main>
         {isAddOrgDialogOpen &&
           <SysAdminAddOrgDialog

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import User from '../user';
+import User from './user';
 
-import './index.css';
+import './org-admin-list.css';
 
 class OrgAdminList extends React.Component {
 

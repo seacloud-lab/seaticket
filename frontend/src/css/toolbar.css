@@ -21,14 +21,16 @@
 /* file-operation toolbar eg: edit, upload, new, share*/
 .btn.operation-item {
   padding: 0 0.5rem;
-  margin-right: 0.25rem;
+  margin-right: 0.75rem;
   height: 30px;
   min-width: 55px;
   background-color: #fff;
   line-height: 29px;
   font-weight: normal;
   border: 1px solid #ccc;
-  border-radius: 2px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-bottom: 16px;
 }
 
 .btn.btn-secondary:hover {

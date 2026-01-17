@@ -41,26 +41,18 @@ const Groups = ({ onCloseSidePanel }) => {
     navigate(`${siteRoot}sys/search-groups/?query=${encodeURIComponent(keyword)}`);
   }, []);
 
-  const isDesktop = Utils.isDesktop();
   return (
     <>
       <TopBar
         onCloseSidePanel={onCloseSidePanel}
         search={(<EnterSearchInput placeholder={gettext('Search groups by name')} onSubmit={searchItems} />)}
       >
-        {isDesktop ? (
-          <>
-            <Button color="secondary" className="operation-item" onClick={openCreateGroupDialog}>{gettext('New group')}</Button>
-            <Button color="secondary" className="operation-item" onClick={downloadGroupExcel}>{gettext('Export Excel')}</Button>
-          </>
-        ) : (
-          <>
-            <span className="mobile-dropdown-item dropdown-item" onClick={openCreateGroupDialog}>{gettext('New group')}</span>
-            <span className="mobile-dropdown-item dropdown-item" onClick={downloadGroupExcel}>{gettext('Export Excel')}</span>
-          </>
-        )}
       </TopBar>
       <Main title={gettext('Groups')}>
+        <div className="mt-4">
+          <Button color="secondary" className="operation-item" onClick={openCreateGroupDialog}>{gettext('New group')}</Button>
+          <Button color="secondary" className="operation-item" onClick={downloadGroupExcel}>{gettext('Export Excel')}</Button>
+        </div>
         <GroupsTable
           ref={groupsTableRef}
           columns={[

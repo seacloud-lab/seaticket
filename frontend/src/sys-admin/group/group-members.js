@@ -308,16 +308,9 @@ class GroupMembers extends Component {
   render() {
     let { isAddMemberDialogOpen, orgID, memberList, groupName, searchValue } = this.state;
     const items = memberList.filter(member => member.name.indexOf(searchValue.trim()) !== -1);
-    const isDesktop = Utils.isDesktop();
     return (
       <Fragment>
-        <TopBar onCloseSidePanel={this.props.onCloseSidePanel}>
-          {isDesktop ? (
-            <Button className="btn btn-secondary operation-item" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</Button>
-          ) : (
-            <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</span>
-          )}
-        </TopBar>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel}></TopBar>
         <Main title={<GroupTitle groupName={groupName} />}>
           <GroupNav
             currentItem="members"
@@ -325,6 +318,7 @@ class GroupMembers extends Component {
             searchValue={searchValue}
             onChangeSearchValue={this.onChangeSearchValue}
           />
+          <Button className="btn btn-secondary operation-item mt-4" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</Button>
           <Content
             loading={this.state.loading}
             errorMsg={this.state.errorMsg}

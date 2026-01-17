@@ -43,31 +43,31 @@ const UserGroups = ({ email, onCloseSidePanel }) => {
   }, []);
 
   const validEmail = decodeURIComponent(email);
-  const btnName = gettext('Add to groups');
   return (
     <>
-      <TopBar onCloseSidePanel={onCloseSidePanel}>
-        <Button color="secondary" className="operation-item" title={btnName} aria-label={btnName} onClick={openAddGroupsDialog}>
-          {btnName}
-        </Button>
-      </TopBar>
+      <TopBar onCloseSidePanel={onCloseSidePanel}></TopBar>
       <Main title={<UserTitle username={user.name} />} >
         <Nav currentItem="groups" email={email} />
         {isLoading && (<CenteredLoading />)}
         {errMessage && (<CenteredError>{errMessage}</CenteredError>)}
         {!isLoading && !errMessage && (
-          <GroupsTable
-            ref={groupsTableRef}
-            columns={[
-              { name: gettext('Name'), key: 'name', width: 0.2 },
-              { name: gettext('Role'), key: 'owner', width: 0.2 },
-              { name: '', key: 'placeholder', width: 0.4 },
-              { name: gettext('Created at'), key: 'created_at', width: 0.2 },
-              { name: '', key: 'op', width: 44, isFixed: true }
-            ]}
-            api={() => sysAdminAPI.sysAdminListGroupsJoinedByUser(validEmail)}
-            onUserRemove={(group) => sysAdminAPI.sysAdminDeleteGroupMember(group.id, validEmail)}
-          />
+          <>
+            <Button color="secondary" className="operation-item mt-4" title={gettext('Add to groups')} aria-label={gettext('Add to groups')} onClick={openAddGroupsDialog}>
+              {gettext('Add to groups')}
+            </Button>
+            <GroupsTable
+              ref={groupsTableRef}
+              columns={[
+                { name: gettext('Name'), key: 'name', width: 0.2 },
+                { name: gettext('Role'), key: 'owner', width: 0.2 },
+                { name: '', key: 'placeholder', width: 0.4 },
+                { name: gettext('Created at'), key: 'created_at', width: 0.2 },
+                { name: '', key: 'op', width: 44, isFixed: true }
+              ]}
+              api={() => sysAdminAPI.sysAdminListGroupsJoinedByUser(validEmail)}
+              onUserRemove={(group) => sysAdminAPI.sysAdminDeleteGroupMember(group.id, validEmail)}
+            />
+          </>
         )}
       </Main>
       {isShowAddGroupsDialog && (

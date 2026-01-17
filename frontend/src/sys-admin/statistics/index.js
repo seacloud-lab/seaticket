@@ -10,8 +10,9 @@ import sysAdminAPI from '../api';
 import { TopBar } from '../main-panel';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
-import '@/css/statistics.css';
 import Picker from '../../project/main-panel/search/date-and-time-picker';
+
+import '@/css/statistics.css';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -295,32 +296,6 @@ class Statistics extends Component {
     });
   };
 
-  renderTabs = () => {
-    const { groupBy } = this.state;
-    return (
-      <div className="statistic-tabs">
-        <div
-          className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('owner')}
-        >
-          {gettext('Users')}
-        </div>
-        <div
-          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('workspace')}
-        >
-          {gettext('Workspaces')}
-        </div>
-        <div
-          className={`statistic-tab-item ${groupBy === 'org_id' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('org_id')}
-        >
-          {gettext('Organizations')}
-        </div>
-      </div>
-    );
-  };
-
   render() {
     const { isLoading, results, groupBy, perPage, pageInfo, errorMsg, date } = this.state;
 
@@ -331,7 +306,26 @@ class Statistics extends Component {
           <div className="cur-view-container">
             <StatisticNav currentItem="ai" />
             <div className="cur-view-content">
-              {this.renderTabs()}
+              <div className="statistic-tabs">
+                <div
+                  className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('owner')}
+                >
+                  {gettext('Users')}
+                </div>
+                <div
+                  className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('workspace')}
+                >
+                  {gettext('Workspaces')}
+                </div>
+                <div
+                  className={`statistic-tab-item ${groupBy === 'org_id' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('org_id')}
+                >
+                  {gettext('Organizations')}
+                </div>
+              </div>
               <div className="d-flex align-items-center mt-4 mb-4">
                 <span className="mr-2">{`${gettext('Date')}:`}</span>
                 <Picker

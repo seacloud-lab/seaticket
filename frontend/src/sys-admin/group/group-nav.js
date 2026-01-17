@@ -25,11 +25,11 @@ class GroupNav extends React.Component {
   render() {
     const { currentItem, searchValue, onChangeSearchValue } = this.props;
     return (
-      <div className="d-flex justify-content-between align-items-center border-bottom">
+      <div className="cur-view-path tab-nav-container pl-0 pr-0 d-flex justify-content-between align-items-center">
         <ul className="nav">
           {this.navItems.map((item, index) => {
             return (
-              <li className="nav-item mr-2" key={index}>
+              <li className={classnames('nav-item', { 'active': currentItem === item.name })} key={index}>
                 <Link
                   to={`${siteRoot}sys/${item.urlPart}/`}
                   className={classnames('nav-link pt-0 pb-0', { 'active': currentItem === item.name, 'ml-0': index === 0 })}

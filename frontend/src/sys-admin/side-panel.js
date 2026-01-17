@@ -34,7 +34,7 @@ class SidePanel extends React.Component {
                 {BARS.filter(item => item).map(bar => {
                   const { icon, name, value, link, isActive } = bar;
                   return (
-                    <li className="nav-item" key={value}>
+                    <li className={classnames('nav-item', { 'active': isActive(this.props.currentTab) })} key={value}>
                       <Link
                         className={classnames('nav-link ellipsis', { 'active': isActive(this.props.currentTab) })}
                         to={link}

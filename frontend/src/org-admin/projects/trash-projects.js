@@ -1,13 +1,10 @@
-import React, { Fragment, useCallback, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { toaster, AdminProjects, ClearTrashDialog } from '@/components';
 import { orgID, gettext, trashCleanExpireDays } from '@/constants';
 import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
 
-const TrashProjects = ({
-  isShowTrashEmptyConfirmDialog,
-  onTrashEmptyConfirmDialogToggle,
-}) => {
+const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialogToggle }) => {
   const ref = useRef(null);
 
   const onClear = useCallback(() => {

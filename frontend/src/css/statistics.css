@@ -11,10 +11,28 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  height: 48px;
+  margin-bottom: -1px;
 }
 
 .tab-nav-container .nav-item {
-  margin-right: 20px;
+  padding: 0 32px;
+  height: 48px;
+  border-right: 1px solid #EAEAEA;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.tab-nav-container .nav-item.active {
+  background: #fff;
+  border-bottom: none;
+}
+
+.tab-nav-container .nav-item.active:hover {
+  border-bottom: none;
+}
+
+.tab-nav-container .nav-item:not(.active):hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .tab-nav-container .nav-link {
@@ -29,26 +47,28 @@
   border-bottom-color: #ED7109;
 }
 
-.tab-nav-container .nav-link:hover {
-  color: #ED7109;
-}
-
 /* Statistic Tabs */
 .statistic-tabs {
   display: flex;
-  margin-bottom: 20px;
+  height: 40px;
+  margin-bottom: 24px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--bs-border-color);
 }
 
 .statistic-tab-item {
-  padding: 8px 15px;
+  margin: 4px 7px;
+  padding: 4px 8px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: all 0.3s ease;
   font-size: 14px;
+  margin-bottom: -1px;
 }
 
-.statistic-tab-item:hover {
-  color: #ED7109;
+.statistic-tab-item:not(.active):hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  margin-bottom: 5px;
+  border-radius: 4px;
 }
 
 .statistic-tab-item.active {

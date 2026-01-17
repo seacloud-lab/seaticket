@@ -23,6 +23,7 @@ class AllProjects extends Component {
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}/>
         <Main
           title={<ProjectNav currentItem="all-projects" />}
+          titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
         >
           <AdminProjects
             columns={[

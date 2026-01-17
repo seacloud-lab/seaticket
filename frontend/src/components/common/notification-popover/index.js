@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { Popover } from 'reactstrap';
 import { gettext } from '@constants';
 import IconButton from '../../icon-button';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
-import { Utils } from '@/utils/utils';
 
 class NotificationPopover extends React.Component {
 
