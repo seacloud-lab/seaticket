@@ -17,6 +17,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, get_column_from_columns_by_name, batch_delete_select_option
 from seahub.knowledge_base.knowledge_base_utils import TABLE_KNOWLEDGE_BASE, get_kb_counts_group_by_column_name, filter_kb_by_select
+from seahub.utils.decorators import require_org_context
 
 
 logger = logging.getLogger(__name__)
@@ -27,16 +28,13 @@ class KnowledgeBaseTagsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -58,16 +56,13 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         return Response({'tags': tag_options})
 
+    @require_org_context
     def post(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         data = request.data or {}
         name = data.get('name')
         if not name:
@@ -121,16 +116,13 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         return Response({'tag': tag_option}, status=status.HTTP_201_CREATED)
 
+    @require_org_context
     def delete(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         tag_ids = request.data.get('tag_ids', [])
         if not tag_ids:
             error_msg = 'tag_ids invalid.'
@@ -167,16 +159,13 @@ class KnowledgeBaseTagAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -222,16 +211,13 @@ class KnowledgeBaseTagAPIView(APIView):
             'columns': columns,
         })
 
+    @require_org_context
     def put(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         name = request.data.get('name')
         description = request.data.get('description')
         color = request.data.get('color')
@@ -303,16 +289,13 @@ class KnowledgeBaseTagAPIView(APIView):
 
         return Response({'success': True})
 
+    @require_org_context
     def delete(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'

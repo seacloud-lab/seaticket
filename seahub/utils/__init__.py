@@ -251,7 +251,8 @@ def is_org_context(request):
     Arguments:
     - `request`:
     """
-    return request.cloud_mode and request.user.org is not None
+    cloud_mode = getattr(request, 'cloud_mode', False)
+    return cloud_mode and request.user.org is not None
 
 
 def calc_file_path_hash(path, bits=12):

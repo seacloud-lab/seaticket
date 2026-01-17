@@ -7,7 +7,7 @@ def test_get_types_feature_not_enabled(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-types/')
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=False):
+    with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -21,7 +21,7 @@ def test_get_types_success(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI'), \
@@ -36,7 +36,7 @@ def test_get_types_project_not_found(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-types/')
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=None):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
@@ -51,7 +51,7 @@ def test_get_types_permission_denied(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -64,7 +64,7 @@ def test_post_type_missing_name(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -75,7 +75,7 @@ def test_post_type_feature_not_enabled(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=False):
+    with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -95,7 +95,7 @@ def test_post_type_duplicate_name(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -121,7 +121,7 @@ def test_post_type_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -138,7 +138,7 @@ def test_delete_types_missing_type_ids(factory, user):
     request = factory.delete('/api/v1/projects/p1/ticket-types/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -150,7 +150,7 @@ def test_delete_types_feature_not_enabled(factory, user):
     )
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=False):
+    with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -170,7 +170,7 @@ def test_delete_types_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -196,7 +196,7 @@ def test_get_type_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -211,7 +211,7 @@ def test_put_type_argument_invalid(factory, user):
     request = factory.put('/api/v1/projects/p1/ticket-types/t1/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
 
     assert resp.status_code == 400
@@ -230,7 +230,7 @@ def test_delete_type_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -257,7 +257,7 @@ def test_put_type_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
@@ -284,7 +284,7 @@ def test_delete_type_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_types.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
