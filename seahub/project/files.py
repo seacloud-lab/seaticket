@@ -73,7 +73,7 @@ class ProjectUploadFileAPIView(APIView):
         # main
         try:
             tmp_upload_file_path = upload_file_to_tmp_dir(project_uuid, file)
-            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/{tmp_upload_file_path.replace("/tmp/projects/", "upload-file/project/")}'
+            file_url = tmp_upload_file_path.replace("/tmp/projects/", "/upload-file/project/")
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
