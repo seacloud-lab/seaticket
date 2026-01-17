@@ -2,9 +2,10 @@ import queue
 import threading
 import time
 import uuid
-import logging
 
-logger = logging.getLogger('seaqa_io')
+from seaqa_io.log import setup_logger
+
+logger = setup_logger('seaqa_io', propagate=False)
 
 
 class IoTaskManager(object):
@@ -50,17 +51,17 @@ class IoTaskManager(object):
         return task_id
 
     def add_convert_kb_view_to_excel_task(self, project_uuid, view_id, username):
-        from seaqa_io.kb_excel_tasks import convert_kb_view_to_excel
+        from seaqa_io.tasks.io_tasks import convert_kb_view_to_excel
 
         return self._submit_task(convert_kb_view_to_excel, (project_uuid, view_id, username))
 
     def add_import_kb_from_excel_task(self, project_uuid, username, file_name):
-        from seaqa_io.kb_excel_tasks import import_kb_from_excel
+        from seaqa_io.tasks.io_tasks import import_kb_from_excel
 
         return self._submit_task(import_kb_from_excel, (project_uuid, username, file_name))
 
     def add_preview_import_kb_excel_task(self, project_uuid, file_name):
-        from seaqa_io.kb_excel_tasks import preview_import_kb_from_excel
+        from seaqa_io.tasks.io_tasks import preview_import_kb_from_excel
 
         return self._submit_task(preview_import_kb_from_excel, (project_uuid, file_name))
 

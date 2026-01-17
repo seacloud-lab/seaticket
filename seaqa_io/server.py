@@ -1,13 +1,14 @@
 import json
-import logging
-import os
-from urllib.parse import parse_qs, urlparse
-
 import jwt
+
+from urllib.parse import parse_qs, urlparse
 from waitress import serve
 
+from seaqa_io import config
+from seaqa_io.log import setup_logger
 
-logger = logging.getLogger('seaqa_io')
+
+logger = setup_logger('seaqa_io', propagate=False)
 
 
 def check_auth_token(headers, private_key):
@@ -282,35 +283,29 @@ class Application:
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
-    import django
-
-    django.setup()
-
-    from django.conf import settings
-    from seaqa_io.analysis_task_manager import AnalysisTaskManager
-    from seaqa_io.task_manager import IoTaskManager
+    from seaqa_io.tasks.analysis_task_manager import AnalysisTaskManager
+    from seaqa_io.tasks.task_manager import IoTaskManager
 
     io_task_manager = IoTaskManager()
     io_task_manager.init(
-        settings.SEAQA_IO_WORKERS,
-        settings.SEAQA_IO_TASK_TIMEOUT,
+        config.SEAQA_IO_WORKERS,
+        config.SEAQA_IO_TASK_TIMEOUT,
     )
     io_task_manager.run()
 
     analysis_task_manager = AnalysisTaskManager()
     analysis_task_manager.init(
-        settings.SEAQA_IO_WORKERS,
-        settings.SEAQA_IO_TASK_TIMEOUT,
+        config.SEAQA_IO_WORKERS,
+        config.SEAQA_IO_TASK_TIMEOUT,
     )
     analysis_task_manager.run()
-    u = urlparse(settings.SEAQA_IO_INNER_SERVER_URL)
+    u = urlparse(config.SEAQA_IO_INNER_SERVER_URL)
     host = u.hostname
     port = u.port
 
-    app = Application(io_task_manager, analysis_task_manager, settings.JWT_PRIVATE_KEY)
-    logger.info('SeaQA-IO listening on %s', settings.SEAQA_IO_INNER_SERVER_URL)
-    serve(app, host=host, port=int(port), threads=settings.SEAQA_IO_WORKERS)
+    app = Application(io_task_manager, analysis_task_manager, config.JWT_PRIVATE_KEY)
+    logger.info('SeaQA-IO listening on %s', config.SEAQA_IO_INNER_SERVER_URL)
+    serve(app, host=host, port=int(port), threads=config.SEAQA_IO_WORKERS)
 
 
 if __name__ == '__main__':

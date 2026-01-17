@@ -312,7 +312,7 @@ LLM_INPUT_CHARACTERS_LIMIT = 4000
 
 
 KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'tags', 'ai_summary', 'ai_processed_time', 'creator', 'created_time', 'last_modifier', 'modified_time']
-KNOWLEDGE_BASE_EXPORT_DISPLAY_ALL_COLUMNS = ['title', 'content', 'creator', 'created_time', 'last_modifier', 'modified_time']
+
 
 # Connection categories
 class ConnectionCategory:
