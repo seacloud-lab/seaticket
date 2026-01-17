@@ -22,7 +22,8 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     ProjectAPIToken, ProjectConnections
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name
+    convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
+    rank_search_results
 from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
@@ -434,6 +435,11 @@ class SearchView(APIView):
         }
         results = search(params)
         
+        # Rerank results using LLM for semantic search
+        if search_type == 'semantic_search' and results:
+            org_id = request.user.org.org_id if is_org_context(request) else -1
+            results = rank_search_results(query, results, username, org_id, project_uuid)
+
         return Response({'results': results})
 
 

@@ -25,6 +25,7 @@ from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.notifications.models import ProjectNotification
 from seahub.utils import normalize_cache_key
+from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.project.seadb_api import SeaDBAPI
@@ -337,3 +338,66 @@ def query_items(request, query_str, query_type):
     if query_type == 'project':
         return query_projects(request, query_str)
     return []
+
+
+def rank_search_results(query, results, username, org_id, project_uuid):
+    if not results:
+        return results
+
+    candidate_records = []
+    result_map = {}
+
+    for result in results:
+        _id = result.get('_id')
+        connection_id = result.get('connection_id', '')
+        source_type = result.get('source_type', '')
+        title = result.get('title', '')
+        content = result.get('content', '')
+
+        candidate = {
+            '_id': _id,
+            'connection_id': connection_id,
+            'title': title,
+        }
+
+        if source_type == 'chunk':
+            candidate['snippets'] = content
+        else:
+            candidate['ai_summary'] = content
+
+        candidate_records.append(candidate)
+
+        map_key = f"{_id}:{connection_id}"
+        result_map[map_key] = result
+
+    query_record = {'ai_summary': query}
+    params = {
+        'query_record': query_record,
+        'candidate_records': candidate_records,
+        'username': username,
+        'org_id': org_id,
+        'project_uuid': project_uuid,
+    }
+
+    try:
+        ranked_ids = rank_related_issues(params)
+    except Exception as e:
+        logger.warning(f'rank search results failed: {e}')
+        return results
+
+    ranked_results = []
+    seen_keys = set()
+
+    for ranked_id in ranked_ids:
+        if ranked_id in result_map and ranked_id not in seen_keys:
+            ranked_results.append(result_map[ranked_id])
+            seen_keys.add(ranked_id)
+
+    for result in results:
+        _id = result.get('_id')
+        connection_id = result.get('connection_id', '')
+        map_key = f"{_id}:{connection_id}"
+        if map_key not in seen_keys:
+            ranked_results.append(result)
+
+    return ranked_results
