@@ -1,7 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import classnames from 'classnames';
 import CustomizePopover from '../customize-popover';
-import Main from './main';
+import OptionEditorContainer from './option-editor-container';
 
 import './index.css';
 
@@ -19,11 +19,11 @@ const SyncOptionsEditor = ({
   onToggle,
   onSearch,
 }) => {
-  const mainRef = useRef(null);
+  const optionEditorContainerRef = useRef(null);
 
   const handleClose = useCallback(() => {
     if (isMultiple) {
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       onChange(value);
     }
     onToggle();
@@ -36,8 +36,8 @@ const SyncOptionsEditor = ({
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
     >
-      <Main
-        ref={mainRef}
+      <OptionEditorContainer
+        ref={optionEditorContainerRef}
         isMultiple={isMultiple}
         placeholder={placeholder}
         emptyTip={emptyTip}

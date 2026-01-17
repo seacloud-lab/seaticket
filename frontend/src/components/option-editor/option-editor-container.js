@@ -1,19 +1,19 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo, useRef } from 'react';
 import classnames from 'classnames';
-import SearchInput from '../../search-input';
-import Option from '../../option';
+import SearchInput from '../search-input';
+import Option from '../option';
 import { searchOptions } from '@/utils/search';
-import IconButton from '../../icon-button';
-import CustomizeAddTool from '../../customize-add-tool';
+import IconButton from '../icon-button';
+import CustomizeAddTool from '../customize-add-tool';
 import { gettext, KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { isFunction, isNumber } from '@/utils/type-detection';
-import toaster from '../../toaster';
+import toaster from '../toaster';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 
-import './index.css';
+import './option-editor-container.css';
 
-const Main = forwardRef(({
+const OptionEditorContainer = forwardRef(({
   id,
   isMultiple = false,
   isSearchEnabled = true,
@@ -167,13 +167,11 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    // Reset highlight index
     setHighlightIndex(-1);
   }, [displayOptions]);
 
   useEffect(() => {
-    const displayOptions = searchOptions(options, searchValue);
-    setDisplayOptions(displayOptions);
+    setDisplayOptions(searchOptions(options, searchValue));
   }, [searchValue, options]);
 
   useImperativeHandle(ref, () => ({
@@ -256,4 +254,4 @@ const Main = forwardRef(({
   );
 });
 
-export default Main;
+export default OptionEditorContainer;

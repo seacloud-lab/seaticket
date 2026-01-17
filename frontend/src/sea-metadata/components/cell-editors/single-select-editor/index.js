@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getCellValueByColumn } from '../../../utils/cell';
 import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
 import context from '@/sea-metadata/context';
-import Main from '@/components/option-editor/main';
+import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -20,7 +20,7 @@ const SingleSelectEditor = forwardRef(({
   modifyColumnData,
 }, ref) => {
   const editorRef = useRef(null);
-  const mainRef = useRef(null);
+  const optionEditorContainerRef = useRef(null);
   const canEditData = context.canModifyColumnData(column);
 
   const options = useMemo(() => {
@@ -78,20 +78,19 @@ const SingleSelectEditor = forwardRef(({
   useImperativeHandle(ref, () => ({
     getValue: () => {
       const { key } = column;
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       return { [key]: value };
     },
     onBlur: () => {
-      const value = mainRef.current.getValue();
+      const value = optionEditorContainerRef.current.getValue();
       onCommit && onCommit(value);
     },
-
   }), [column, onCommit]);
 
   return (
     <div className="sea-metadata-single-select-editor option-editor-popover" style={style} ref={editorRef}>
-      <Main
-        ref={mainRef}
+      <OptionEditorContainer
+        ref={optionEditorContainerRef}
         isMultiple={false}
         placeholder={gettext('Search options')}
         emptyTip={gettext('No options available')}
