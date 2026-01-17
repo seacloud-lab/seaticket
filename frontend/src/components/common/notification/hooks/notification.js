@@ -146,7 +146,19 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
   const markAsReadByTab = useCallback((noticeItem, curTab) => {
     if (curTab === NOTIFICATION_TYPE.GENERAL) {
-      markAsRead(noticeItem.id);
+      const notice = notificationList.find(item => item.id === noticeItem.id);
+      if (!notice || notice.seen) return;
+      return notificationAPI.markNoticeAsRead(notice.id)
+        .then(() => {
+          setNotificationList(prev =>
+            prev.map(item => item.id === notice.id ? { ...item, seen: true } : item)
+          );
+          setUnseen(u => Math.max(0, u - 1));
+        })
+        .catch(err => {
+          const errorMsg = Utils.getErrorMsg(err);
+          toaster.danger(errorMsg);
+        });
     } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
       const projectName = noticeItem.project_name || noticeItem.name || '';
       const projectHref = siteRoot + 'workspace/' + noticeItem.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open';
