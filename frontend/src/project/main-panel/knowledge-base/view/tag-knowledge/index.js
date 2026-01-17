@@ -32,7 +32,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
         const rawColumns = res?.data?.columns || [];
 
         const pkRawColumn = rawColumns.find(c => c.name === '_pk');
-        const pkColumnKey = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
+        const pkColumnKey = pkRawColumn ? (pkRawColumn.id) : undefined;
 
         let columns = rawColumns;
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {

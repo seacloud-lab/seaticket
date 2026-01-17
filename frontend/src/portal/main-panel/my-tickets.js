@@ -139,7 +139,7 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
         const rawColumns = res?.data?.columns || [];
 
         const pkRawColumn = rawColumns.find(c => c.name === '_pk');
-        const pkColumnKey = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
+        const pkColumnKey = pkRawColumn ? pkRawColumn.id : undefined;
 
         let columns = rawColumns;
         columns = columns
@@ -147,11 +147,10 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
           .map(c => {
             const { name } = c;
             const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-            const columnId = c.id || c.key;
+            const columnId = c.id;
             return {
               ...c,
               ...predefinedConfig,
-              original_key: c.key,
               key: columnId,
             };
           });

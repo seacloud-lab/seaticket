@@ -19,7 +19,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import KnowledgeBaseTable, ProjectTagsTable
-from seahub.seadb_models.utils import list_knowledge_base_records, list_trash_knowledge_base
+from seahub.seadb_models.utils import list_knowledge_base_records, list_trash_knowledge_base, build_join_query_config
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
 from seahub.utils.decorators import require_org_context
@@ -159,22 +159,7 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'knowledge_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('knowledge_id', base_alias='kb')
 
         try:
             seadb_api = SeaDBAPI(username)
@@ -448,22 +433,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'knowledge_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('knowledge_id', base_alias='kb')
 
         try:
             seadb_api = SeaDBAPI(username)

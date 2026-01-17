@@ -11,6 +11,30 @@ from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, Disc
 logger = logging.getLogger(__name__)
 
 
+def build_join_query_config(join_column, *, base_alias='t', join_alias='pt',
+                            join_type='INNER JOIN', base_column='_pk',
+                            join_table='project_tags',
+                            join_column_sources=None, join_column_map=None):
+    if join_column_sources is None:
+        join_column_sources = {
+            'tags': 'join',
+        }
+    if join_column_map is None:
+        join_column_map = {
+            'tags': 'tags',
+        }
+    return {
+        'join_table': join_table,
+        'base_column': base_column,
+        'join_column': join_column,
+        'join_type': join_type,
+        'base_alias': base_alias,
+        'join_alias': join_alias,
+        'column_sources': join_column_sources,
+        'join_column_map': join_column_map,
+    }
+
+
 def fetch_records_by_table_batch(seadb_api, project_uuid, table_name, pks):
     """Batch fetch records by table name and primary keys.
 
@@ -610,9 +634,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
             col_type = PropertyTypes.MULTIPLE_SELECT if col_name == 'tags' else PropertyTypes.TEXT
             display_columns.append({'name': col_name, 'key': col_name, 'type': col_type})
 
-    if join_config:
-        view_copy['join_config'] = join_config
-    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit, join_config)
 
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -694,10 +716,7 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
 
     view_copy['basic_filters'] = basic_filters
 
-    if join_config:
-        view_copy['join_config'] = join_config
-
-    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit, join_config)
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results')
     columns_metadata = res.get('metadata', {})
@@ -713,7 +732,7 @@ def list_trash_tickets(seadb_api, project_uuid, start, limit, join_config=None):
     column_sources = {}
     join_column_map = {}
 
-    if join_config and join_config.get('enable', True):
+    if join_config:
         join_table = join_config.get('join_table')
         base_column = join_config.get('base_column')
         join_column = join_config.get('join_column')
@@ -943,9 +962,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
             col_type = PropertyTypes.MULTIPLE_SELECT if col_name == 'tags' else PropertyTypes.TEXT
             display_columns.append({'name': col_name, 'key': col_name, 'type': col_type})
 
-    if join_config:
-        view_copy['join_config'] = join_config
-    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
+    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit, join_config)
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])

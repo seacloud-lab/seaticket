@@ -1030,7 +1030,7 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, view, username='', start=0, limit=0):
+    def __init__(self, table_name, columns, view, username='', start=0, limit=0, join_config=None):
         self.table_name = table_name
         self.view = view
         self.columns = columns
@@ -1040,8 +1040,7 @@ class SQLGenerator(object):
         self.username = username
         self.from_sql = self.view.get('from_sql', '')
         self.select_expressions = self.view.get('select_expressions', [])
-        self.join_config = self.view.get('join_config') or {}
-        self._use_join_subquery = True
+        self.join_config = join_config
         self._join_base_alias = ''
         self._join_alias = ''
         self._join_column_sources = {}
@@ -1054,7 +1053,6 @@ class SQLGenerator(object):
         #
         # join_config example:
         # {
-        #   'enable': True,
         #   'join_table': 'project_tags',
         #   'base_column': '_pk',
         #   'join_column': 'ticket_id',
@@ -1064,12 +1062,8 @@ class SQLGenerator(object):
         #   'column_sources': {'tags': 'join'},
         #   'join_column_map': {'tags': 'tags'}
         # }
-        if (not self.from_sql) and self.join_config and self.join_config.get('enable', True):
-            self._use_join_subquery = self.join_config.get('use_subquery', True)
-            if self._use_join_subquery:
-                self.from_sql = self._build_join_subquery_from_sql(self.join_config)
-            else:
-                self.from_sql = self._build_direct_join_from_sql(self.join_config)
+        if (not self.from_sql) and self.join_config:
+            self.from_sql = self._build_direct_join_from_sql(self.join_config)
 
     def _build_join_subquery_from_sql(self, join_config):
         join_table = join_config.get('join_table')
@@ -1148,9 +1142,7 @@ class SQLGenerator(object):
         )
 
     def _qualify_column_ref(self, column_name):
-        if not (self.join_config and self.join_config.get('enable', True)):
-            return f"`{column_name}`"
-        if self._use_join_subquery:
+        if not self.join_config:
             return f"`{column_name}`"
         if column_name == 'deleted':
             return f"{self._join_base_alias}.`deleted`"
@@ -1161,9 +1153,7 @@ class SQLGenerator(object):
         return f"{self._join_base_alias}.`{column_name}`"
 
     def _rewrite_sql_with_qualified_columns(self, sql):
-        if not (self.join_config and self.join_config.get('enable', True)):
-            return sql
-        if self._use_join_subquery:
+        if not self.join_config:
             return sql
 
         # Replace unqualified backtick identifiers with qualified ones.
@@ -1315,7 +1305,7 @@ class SQLGenerator(object):
         from_clause = self.from_sql or f"`{self.table_name}`"
         sql = f"SELECT {column_join} FROM {from_clause}"
         filter_clause = self._filter_2_sql()
-        if (not self._use_join_subquery) and self._use_comma_join and self._join_on_condition:
+        if self._use_comma_join and self._join_on_condition:
             if filter_clause:
                 filter_clause = "%s AND (%s)" % (filter_clause, self._join_on_condition)
             else:
@@ -1336,9 +1326,9 @@ class SQLGenerator(object):
         return self._rewrite_sql_with_qualified_columns(sql)
 
 
-def view_data_2_sql(table, columns, view, username, start, limit):
+def view_data_2_sql(table, columns, view, username, start, limit , join_config=None):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, username, start, limit)
+    sql_generator = SQLGenerator(table, columns, view, username, start, limit, join_config)
     sql = sql_generator.to_sql()
     return sql
 

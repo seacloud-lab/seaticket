@@ -24,7 +24,7 @@ from seahub.project.utils import check_project_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.utils.storage import upload_files_to_s3
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
-    list_trash_tickets, list_my_tickets
+    list_trash_tickets, list_my_tickets, build_join_query_config
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, ProjectTagsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
@@ -89,22 +89,7 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'ticket_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('ticket_id')
 
         # main
         try:
@@ -1232,22 +1217,7 @@ class MyTicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'ticket_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('ticket_id')
 
         seadb_api = SeaDBAPI(username)
         try:
@@ -1350,22 +1320,7 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'ticket_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('ticket_id')
         try:
             tickets, columns = list_trash_tickets(seadb_api, project_uuid, start, limit, join_config=join_config)
         except Exception as e:

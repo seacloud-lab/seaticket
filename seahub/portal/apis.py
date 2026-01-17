@@ -18,7 +18,7 @@ from seahub.project.utils import replace_file_url_in_content, check_same_org_per
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
-from seahub.seadb_models.utils import list_my_tickets, get_tag_counts_by_link_type
+from seahub.seadb_models.utils import list_my_tickets, get_tag_counts_by_link_type, build_join_query_config
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
 from seahub.utils.decorators import require_org_context
 
@@ -91,22 +91,7 @@ class PortalTicketsView(APIView):
         username = request.user.username
         seadb_api = SeaDBAPI(username)
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'ticket_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('ticket_id')
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
@@ -208,22 +193,7 @@ class PortalMyTicketsView(APIView):
         })
         view_config['basic_filters'] = basic_filters
 
-        join_config = {
-            'enable': True,
-            'use_subquery': False,
-            'join_table': 'project_tags',
-            'base_column': '_pk',
-            'join_column': 'ticket_id',
-            'join_type': 'INNER JOIN',
-            'base_alias': 't',
-            'join_alias': 'pt',
-            'column_sources': {
-                'tags': 'join',
-            },
-            'join_column_map': {
-                'tags': 'tags',
-            },
-        }
+        join_config = build_join_query_config('ticket_id')
 
         try:
             tickets, columns = list_my_tickets(
