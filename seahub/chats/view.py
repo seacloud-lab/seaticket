@@ -17,6 +17,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
 from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,9 @@ class ChatSessionsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request):
         """Retrieve the user's chat session list"""
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.GET.get('project_uuid')
         if not project_uuid:
@@ -61,12 +59,9 @@ class ChatSessionsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+    @require_org_context
     def post(self, request):
         """Create a new chat session"""
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
@@ -110,12 +105,9 @@ class ChatSessionView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def put(self, request, session_uuid):
         """Modify chat session"""
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
@@ -155,12 +147,9 @@ class ChatSessionView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+    @require_org_context
     def delete(self, request, session_uuid):
         """Delete chat session"""
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
@@ -194,12 +183,9 @@ class ChatMessagesView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request, session_uuid):
         """Retrieve the message list of the chat session"""
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.GET.get('project_uuid')
         if not project_uuid:
@@ -256,11 +242,8 @@ class ChatView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:

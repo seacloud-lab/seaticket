@@ -25,7 +25,7 @@ def test_get_substates_success(factory, user):
 
     seadb = Mock()
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -40,7 +40,7 @@ def test_get_substates_project_not_found(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-substates/')
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=None):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
@@ -55,7 +55,7 @@ def test_get_substates_permission_denied(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=False):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
@@ -80,7 +80,7 @@ def test_get_substates_filter_by_state_id(factory, user):
 
     seadb = Mock()
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -101,7 +101,7 @@ def test_post_substate_missing_name(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-substates/', data=payload)
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -134,7 +134,7 @@ def test_delete_substates_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -152,7 +152,7 @@ def test_post_substate_missing_parent_id(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-substates/', data=payload)
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -172,7 +172,7 @@ def test_post_substate_duplicate_name(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -198,7 +198,7 @@ def test_post_substate_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -215,7 +215,7 @@ def test_delete_substates_missing_ids(factory, user):
     request = factory.delete('/api/v1/projects/p1/ticket-substates/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -235,7 +235,7 @@ def test_get_substate_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -250,7 +250,7 @@ def test_put_substate_argument_invalid(factory, user):
     request = factory.put('/api/v1/projects/p1/ticket-substates/s1/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True):
+    with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketSubstateAPIView.as_view()(request, project_uuid='p1', substate_id='s1')
 
     assert resp.status_code == 400
@@ -269,7 +269,7 @@ def test_delete_substate_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \
@@ -295,7 +295,7 @@ def test_get_substate_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=True), \
+    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_substates.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_substates.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_substates.SeaDBAPI', return_value=seadb), \

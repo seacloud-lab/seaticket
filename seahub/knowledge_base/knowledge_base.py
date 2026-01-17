@@ -22,6 +22,7 @@ from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +49,8 @@ class KnowledgeBasesAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         title = request.data.get('title')
         if not title:
             error_msg = 'title invalid.'
@@ -121,12 +119,8 @@ class KnowledgeBasesAPIView(APIView):
 
         return Response({'row': row}, status=status.HTTP_201_CREATED)
 
-
+    @require_org_context
     def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 100)
         view_id = request.GET.get('view_id')
@@ -175,11 +169,8 @@ class KnowledgeBasesAPIView(APIView):
             'columns': columns,
         })
 
+    @require_org_context
     def delete(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         username = request.user.username
         record_ids = request.data.get('record_ids')
         if not record_ids:
@@ -233,11 +224,8 @@ class KnowledgeBaseAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, knowledge_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -263,11 +251,8 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         return Response({'record': record})
 
+    @require_org_context
     def put(self, request, project_uuid, knowledge_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         row = {}
         username = request.user.username
 
@@ -354,11 +339,8 @@ class KnowledgeBaseMetadataAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -398,11 +380,8 @@ class KnowledgeBasesTrashAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
         try:
@@ -451,11 +430,8 @@ class KnowledgeBasesTrashAPIView(APIView):
 
         return Response({'records': records, 'columns': display_columns})
 
+    @require_org_context
     def put(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         record_ids = request.data.get('record_ids')
         if not record_ids:
             error_msg = 'record_ids is required.'

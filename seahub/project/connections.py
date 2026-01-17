@@ -35,6 +35,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.utils.decorators import require_org_context, require_can_add_project
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -47,15 +48,12 @@ class ProjectConnectionsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid):
         """get project connection records
         """
 
          # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             current_page = int(request.GET.get('page', '1'))
             per_page = int(request.GET.get('per_page', '100'))
@@ -83,19 +81,12 @@ class ProjectConnectionsView(APIView):
 
         return Response({'records': records}, status=status.HTTP_200_OK)
 
+
+    @require_org_context
+    @require_can_add_project
     def post(self, request, project_uuid):
         """modify project connection
         """
-
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.POST.get('name', '')
         if not name:
@@ -170,13 +161,10 @@ class ProjectConnectionView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, connection_id):
         """get project connection records
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resources check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -196,18 +184,11 @@ class ProjectConnectionView(APIView):
 
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
 
+    @require_org_context
+    @require_can_add_project
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.data.get('name')
         new_config = request.data.get('config')
@@ -255,18 +236,11 @@ class ProjectConnectionView(APIView):
 
         return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
 
+    @require_org_context
+    @require_can_add_project
     def delete(self, request, project_uuid, connection_id):
         """delete connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -295,13 +269,10 @@ class ProjectConnectionSyncView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def post(self, request, project_uuid, connection_id):
         """trigger manual sync for a connection
         """
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -363,14 +334,10 @@ class ProjectConnectionDetailsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, connection_id):
         """get records
         """
-        # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         view_id = request.GET.get('view_id', '')
         if not view_id:
@@ -554,12 +521,8 @@ class ProjectConnectionRowDetailView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, connection_id):
-        # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -613,12 +576,8 @@ class ProjectConnectionLogView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, connection_id):
-        # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -649,12 +608,8 @@ class ProjectConnectionsStatusView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid):
-        # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -692,14 +647,11 @@ class ProjectConnectionRecordView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def put(self, request, project_uuid, connection_id, record_id):
         """Update a single connection record
         Currently only supports EMAIL type connections for updating the unread field.
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         row_data = request.data
         if not row_data or not isinstance(row_data, dict):
             error_msg = 'Request body must be a valid JSON object.'
@@ -753,14 +705,11 @@ class ProjectConnectionRecordsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def put(self, request, project_uuid, connection_id):
         """Batch update connection records
         Currently only supports EMAIL type connections for updating the unread field.
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         records_data = request.data.get('records_data')
         if not records_data or not isinstance(records_data, list):
             error_msg = 'records_data must be a non-empty list.'
@@ -813,11 +762,8 @@ class ProjectConnectionRecordsView(APIView):
 
         return Response({'success': True})
 
+    @require_org_context
     def delete(self, request, project_uuid, connection_id):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         record_ids = request.data.get('record_ids')
         if not record_ids or not isinstance(record_ids, list):
             error_msg = 'record_ids must be a non-empty list.'
@@ -881,15 +827,12 @@ class ConnectionFileView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    @require_org_context
     def get(self, request, project_uuid, connection_id, file_path):
         """
         Permission:
         1. group member
         """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
