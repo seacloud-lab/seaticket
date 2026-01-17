@@ -184,11 +184,14 @@ class NotificationsAllView(APIView):
             'project': {}
         }
         unseen_count = UserNotification.objects.get_user_notifications(username, seen=False).count()
+        project_unseen_count = ProjectNotification.objects.filter(to_user=username, seen=False).count()
         result['general']['unseen_count'] = unseen_count
+        result['project']['unseen_count'] = project_unseen_count
 
         total_count = UserNotification.objects.get_user_notifications(username).count()
+        project_total_count = len(project_stats_qs)
+        
         project_group_list = list(project_stats_qs[start:end])
-        project_total_count = len(project_group_list)
         project_uuids = [i.get('project_uuid') for i in project_group_list if i.get('project_uuid')]
         projects_by_uuid = {}
         try:
@@ -204,8 +207,6 @@ class NotificationsAllView(APIView):
                 item['workspace_id'] = project.workspace_id
                 item['project_icon'] = project.icon
                 item['project_color'] = project.color
-        project_unseen_count = sum(item['unseen_count'] for item in project_group_list)
-        result['project']['unseen_count'] = project_unseen_count
 
         result['general']['notification_list'] = notification_list
         result['general']['count'] = total_count
