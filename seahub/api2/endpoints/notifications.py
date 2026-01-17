@@ -167,7 +167,14 @@ class NotificationsAllView(APIView):
 
         username = request.user.username
         user_notifications = UserNotification.objects.get_user_notifications(username)[start:end]
-        project_notifications = ProjectNotification.objects.filter(to_user=username)
+        active_projects = Projects.objects.filter(deleted=False)
+        active_project_uuids = [
+            str(project_uuid)
+            for project_uuid in active_projects.values_list('uuid', flat=True)
+        ]
+        project_notifications = ProjectNotification.objects.filter(
+            to_user=username, project_uuid__in=active_project_uuids
+        )
         notification_list = []
         for user_notification in user_notifications:
             if user_notification.detail is not None:
@@ -184,7 +191,9 @@ class NotificationsAllView(APIView):
             'project': {}
         }
         unseen_count = UserNotification.objects.get_user_notifications(username, seen=False).count()
-        project_unseen_count = ProjectNotification.objects.filter(to_user=username, seen=False).count()
+        project_unseen_count = ProjectNotification.objects.filter(
+            to_user=username, seen=False, project_uuid__in=active_project_uuids
+        ).count()
         result['general']['unseen_count'] = unseen_count
         result['project']['unseen_count'] = project_unseen_count
 
@@ -195,7 +204,7 @@ class NotificationsAllView(APIView):
         project_uuids = [i.get('project_uuid') for i in project_group_list if i.get('project_uuid')]
         projects_by_uuid = {}
         try:
-            projects = Projects.objects.filter(uuid__in=project_uuids, deleted=False)
+            projects = active_projects.filter(uuid__in=project_uuids)
             projects_by_uuid = {str(p.uuid): p for p in projects}
         except Exception as e:
             logger.error(e)
