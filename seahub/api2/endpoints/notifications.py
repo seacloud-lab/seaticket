@@ -13,6 +13,7 @@ from seahub.api2.utils import api_error
 from seahub.notifications.models import ProjectNotification, UserNotification
 from seahub.project.models import Projects
 from seahub.notifications.utils import get_user_notifications
+from django.db.models import Count, Max, Q
 
 logger = logging.getLogger(__name__)
 
@@ -166,25 +167,17 @@ class NotificationsAllView(APIView):
 
         username = request.user.username
         user_notifications = UserNotification.objects.get_user_notifications(username)[start:end]
-        project_notifications = ProjectNotification.objects.filter(to_user=username).order_by('-timestamp')[start:end]
+        project_notifications = ProjectNotification.objects.filter(to_user=username)
         notification_list = []
         for user_notification in user_notifications:
             if user_notification.detail is not None:
                 notice = user_notification.to_dict()
                 notification_list.append(notice)
-        project_stats_by_uuid = {}
-        for project_notification in project_notifications:
-            project_uuid = project_notification.project_uuid
-            if project_uuid not in project_stats_by_uuid:
-                project_stats_by_uuid[project_uuid] = {
-                    'project_uuid': project_uuid,
-                    'unseen_count': 0,
-                    'count': 0,
-                }
-
-            project_stats_by_uuid[project_uuid]['count'] += 1
-            if not project_notification.seen:
-                project_stats_by_uuid[project_uuid]['unseen_count'] += 1
+        project_stats_qs = project_notifications.values('project_uuid').annotate(
+            count=Count('id'),
+            unseen_count=Count('id', filter=Q(seen=False)),
+            last_timestamp=Max('timestamp'),
+        ).order_by('-last_timestamp')
 
         result = {
             'general': {},
@@ -194,9 +187,8 @@ class NotificationsAllView(APIView):
         result['general']['unseen_count'] = unseen_count
 
         total_count = UserNotification.objects.get_user_notifications(username).count()
-        project_total_count = ProjectNotification.objects.filter(to_user=username).count()
-
-        project_group_list = list(project_stats_by_uuid.values())
+        project_group_list = list(project_stats_qs[start:end])
+        project_total_count = len(project_group_list)
         project_uuids = [i.get('project_uuid') for i in project_group_list if i.get('project_uuid')]
         projects_by_uuid = {}
         try:
@@ -212,7 +204,7 @@ class NotificationsAllView(APIView):
                 item['workspace_id'] = project.workspace_id
                 item['project_icon'] = project.icon
                 item['project_color'] = project.color
-        project_unseen_count = sum(i['unseen_count'] for i in project_group_list)
+        project_unseen_count = sum(item['unseen_count'] for item in project_group_list)
         result['project']['unseen_count'] = project_unseen_count
 
         result['general']['notification_list'] = notification_list
