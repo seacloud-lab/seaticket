@@ -499,8 +499,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   if (isLoading || isLoadingConnection) return null;
 
-  console.log(currentRow);
-
   return (
     <>
       <SeaMetadata
