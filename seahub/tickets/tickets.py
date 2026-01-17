@@ -32,7 +32,6 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
-from seahub.utils.decorators import require_org_context
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -44,13 +43,16 @@ class TicketsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         view_id = request.GET.get('view_id', '')
         start = request.GET.get('start', 0)
@@ -104,13 +106,16 @@ class TicketsAPIView(APIView):
             'columns': columns,
         })
 
-    @require_org_context
     def post(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         title = request.POST.get('title')
         if not title:
@@ -256,8 +261,11 @@ class TicketsAPIView(APIView):
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
-    @require_org_context
     def put(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         tickets_data = request.data.get('tickets_data')
         if not tickets_data:
             error_msg = 'tickets_data is required.'
@@ -389,8 +397,11 @@ class TicketsAPIView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
     def delete(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'ticket_ids is required.'
@@ -454,13 +465,16 @@ class TicketAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, ticket_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -504,13 +518,16 @@ class TicketAPIView(APIView):
 
         return Response({'ticket': ticket})
 
-    @require_org_context
     def put(self, request, project_uuid, ticket_id):
         """
         Permission:
         1. creator
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         title = request.data.get('title')
         username = request.user.username
@@ -688,12 +705,15 @@ class TicketAPIView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
     def delete(self, request, project_uuid, ticket_id):
         """
         Permission:
         1. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -743,13 +763,16 @@ class TicketsSearchAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         query = request.GET.get('query', '')
         limit = 100
@@ -788,13 +811,16 @@ class TicketCommentsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, ticket_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         try:
             current_page = int(request.GET.get('page', '2'))
@@ -835,13 +861,16 @@ class TicketCommentsAPIView(APIView):
             'ticket_comments': comments_data,
         })
 
-    @require_org_context
     def post(self, request, project_uuid, ticket_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         content_dict = request.POST.get('content')
         if not content_dict:
@@ -967,13 +996,16 @@ class TicketCommentAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def put(self, request, project_uuid, ticket_id, comment_id):
         """
         Permission:
         1. creator
         2. group admin
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         content_dict = request.data.get('content')
         if not content_dict:
@@ -1078,13 +1110,16 @@ class TicketCommentAPIView(APIView):
 
         return Response({'ticket_comment': ticket_comment_data})
 
-    @require_org_context
     def delete(self, request, project_uuid, ticket_id, comment_id):
         """
         Permission:
         1. creator
         2. group admin
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -1149,13 +1184,16 @@ class MyTicketAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         view_id = request.POST.get('view_id', 'open')
         start = request.POST.get('start', 0)
@@ -1214,8 +1252,11 @@ class TicketMetadataAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -1258,8 +1299,11 @@ class TicketTrashAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
         try:
@@ -1299,8 +1343,11 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({'tickets': tickets, 'columns': columns})
 
-    @require_org_context
     def put(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'tickets_data is required.'
@@ -1346,8 +1393,11 @@ class TicketTrashAPIView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
     def delete(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

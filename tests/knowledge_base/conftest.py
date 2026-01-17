@@ -58,14 +58,14 @@ def mock_project(mock_workspace):
 @pytest.fixture
 def mock_org_context():
     """Mock is_org_context to return True."""
-    with patch('seahub.utils.decorators.is_org_context', return_value=True) as mock:
+    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=True) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_org_context_false():
     """Mock is_org_context to return False."""
-    with patch('seahub.utils.decorators.is_org_context', return_value=False) as mock:
+    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=False) as mock:
         yield mock
 
 
@@ -181,13 +181,13 @@ def tag_table_metadata(tag_option):
 
 @pytest.fixture
 def mock_org_context_tags():
-    with patch('seahub.utils.decorators.is_org_context', return_value=True) as mock:
+    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=True) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_org_context_tags_false():
-    with patch('seahub.utils.decorators.is_org_context', return_value=False) as mock:
+    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=False) as mock:
         yield mock
 
 

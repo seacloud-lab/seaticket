@@ -18,7 +18,6 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_group_by_column_name, \
     TABLE_TICKETS, get_column_from_columns_by_name, \
     filter_tickets_by_select, add_select_option, batch_delete_select_option
-from seahub.utils.decorators import require_org_context
 
 
 
@@ -30,13 +29,16 @@ class TicketSubstatesAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         state_id = request.GET.get('state_id')  # optional: filter substates by state id
 
@@ -75,13 +77,16 @@ class TicketSubstatesAPIView(APIView):
             'cascade_settings': cascade_settings,
         })
 
-    @require_org_context
     def post(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.POST.get('name')
         if not name:
@@ -161,13 +166,16 @@ class TicketSubstatesAPIView(APIView):
 
         return Response({'substate': substate_option}, status=status.HTTP_201_CREATED)
 
-    @require_org_context
     def delete(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         substate_ids = request.data.get('substate_ids', [])
         if not substate_ids:
@@ -208,13 +216,16 @@ class TicketSubstateAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -262,13 +273,16 @@ class TicketSubstateAPIView(APIView):
             'columns': columns,
         })
 
-    @require_org_context
     def put(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.data.get('name')
         description = request.POST.get('description')
@@ -350,13 +364,16 @@ class TicketSubstateAPIView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
     def delete(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

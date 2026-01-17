@@ -19,7 +19,6 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
 from seahub.seadb_models.utils import list_my_tickets
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
-from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +28,11 @@ class PortalTicketsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         title = request.POST.get('title')
         if not title:
             error_msg = 'title invalid.'
@@ -151,8 +153,11 @@ class PortalMyTicketsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         view_id = request.POST.get('view_id', 'open')
         start = request.POST.get('start', 0)
         limit = request.POST.get('limit', 1000)
@@ -217,8 +222,11 @@ class PortalTicketTypesView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -246,8 +254,11 @@ class PortalTicketTagsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'

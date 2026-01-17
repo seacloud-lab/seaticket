@@ -17,7 +17,6 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, get_ticket_counts_group_by_column_name,\
     TABLE_TICKETS, get_column_from_columns_by_name, filter_tickets_by_select, batch_delete_select_option
-from seahub.utils.decorators import require_org_context
 
 
 logger = logging.getLogger(__name__)
@@ -28,13 +27,16 @@ class TicketTagsAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -58,13 +60,16 @@ class TicketTagsAPIView(APIView):
 
         return Response({'tags': tag_options})
 
-    @require_org_context
     def post(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.POST.get('name')
         if not name:
@@ -121,13 +126,16 @@ class TicketTagsAPIView(APIView):
 
         return Response({'tag': tag_option}, status=status.HTTP_201_CREATED)
 
-    @require_org_context
     def delete(self, request, project_uuid):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         tag_ids = request.data.get('tag_ids', [])
         if not tag_ids:
@@ -168,13 +176,16 @@ class TicketTagAPIView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    @require_org_context
     def get(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -223,13 +234,16 @@ class TicketTagAPIView(APIView):
             'columns': columns,
         })
 
-    @require_org_context
     def put(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.data.get('name')
         description = request.POST.get('description')
@@ -288,13 +302,16 @@ class TicketTagAPIView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
     def delete(self, request, project_uuid, tag_id):
         """
         Permission:
         1. owner
         2. group member
         """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

@@ -7,7 +7,7 @@ def test_get_tags_feature_not_enabled(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-tags/')
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=False):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=False):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -21,7 +21,7 @@ def test_get_tags_success(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI'), \
@@ -36,7 +36,7 @@ def test_get_tags_project_not_found(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-tags/')
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=None):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
@@ -51,7 +51,7 @@ def test_get_tags_permission_denied(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=False):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
@@ -67,7 +67,7 @@ def test_get_tags_internal_server_error(factory, user):
     project.workspace = Mock()
     project.workspace.owner = 'owner@auth.local'
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', side_effect=Exception('err')):
@@ -81,7 +81,7 @@ def test_post_tag_missing_name(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-tags/', data=payload)
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -93,7 +93,7 @@ def test_delete_tags_feature_not_enabled(factory, user):
     )
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=False):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=False):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -104,7 +104,7 @@ def test_post_tag_feature_not_enabled(factory, user):
     request = factory.post('/api/v1/projects/p1/ticket-tags/', data=payload)
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=False):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=False):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -124,7 +124,7 @@ def test_post_tag_duplicate_name(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -150,7 +150,7 @@ def test_post_tag_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -167,7 +167,7 @@ def test_delete_tags_missing_ids(factory, user):
     request = factory.delete('/api/v1/projects/p1/ticket-tags/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True):
         resp = TicketTagsAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 400
@@ -188,7 +188,7 @@ def test_delete_tags_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -215,7 +215,7 @@ def test_get_tag_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -241,7 +241,7 @@ def test_delete_tag_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -271,7 +271,7 @@ def test_put_tag_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -288,7 +288,7 @@ def test_get_tag_project_not_found(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-tags/t1/')
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=None):
         resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
@@ -299,7 +299,7 @@ def test_put_tag_argument_invalid(factory, user):
     request = factory.put('/api/v1/projects/p1/ticket-tags/t1/', data={}, format='json')
     request.user = user
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True):
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True):
         resp = TicketTagAPIView.as_view()(request, project_uuid='p1', tag_id='t1')
 
     assert resp.status_code == 400
@@ -320,7 +320,7 @@ def test_put_tag_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -344,7 +344,7 @@ def test_delete_tag_not_found(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
@@ -370,7 +370,7 @@ def test_get_tag_success(factory, user):
     seadb = Mock()
     seadb.get_base_metadata.return_value = {'tables': [table_meta]}
 
-    with patch('seahub.utils.decorators.is_org_context', return_value=True), \
+    with patch('seahub.tickets.ticket_tags.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_tags.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_tags.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_tags.SeaDBAPI', return_value=seadb), \
