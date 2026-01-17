@@ -35,7 +35,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.utils.decorators import require_org_context, require_can_add_project
+from seahub.utils.decorators import require_org_context
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -83,10 +83,14 @@ class ProjectConnectionsView(APIView):
 
 
     @require_org_context
-    @require_can_add_project
     def post(self, request, project_uuid):
         """modify project connection
         """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.POST.get('name', '')
         if not name:
@@ -185,10 +189,14 @@ class ProjectConnectionView(APIView):
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
 
     @require_org_context
-    @require_can_add_project
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         name = request.data.get('name')
         new_config = request.data.get('config')
@@ -237,10 +245,14 @@ class ProjectConnectionView(APIView):
         return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
 
     @require_org_context
-    @require_can_add_project
     def delete(self, request, project_uuid, connection_id):
         """delete connection
         """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

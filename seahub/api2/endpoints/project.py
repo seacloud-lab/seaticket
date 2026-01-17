@@ -25,7 +25,7 @@ from seahub.project.utils import check_project_limit, check_project_admin_permis
     convert_project_trash_names, check_project_permission, search, delete_project, restore_trash_project_name
 from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.utils.decorators import require_org_context, require_can_add_project
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -156,13 +156,17 @@ class ProjectsView(APIView):
     throttle_classes = (UserRateThrottle, )
 
     @require_org_context
-    @require_can_add_project
     def post(self, request):
         """
         Permission:
         1. owner
         2. group admin
         """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         # argument check
         project_owner = request.POST.get('owner')
         workspace_id = request.POST.get('workspace_id')

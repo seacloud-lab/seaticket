@@ -29,7 +29,7 @@ from seahub.group.models import GroupUser, Group
 from seahub.project.utils import restore_trash_project_name, delete_project
 
 from .utils import api_check_group
-from seahub.utils.decorators import require_org_context, require_can_add_group
+from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,9 @@ class GroupsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    def _can_add_group(self, request):
+        return request.user.permissions.can_add_group()
+
     @require_org_context
     def get(self, request):
         """ List all groups.
@@ -92,10 +95,12 @@ class GroupsView(APIView):
         return Response(groups)
 
     @require_org_context
-    @require_can_add_group
     def post(self, request):
         """ Create a group
         """
+        if not self._can_add_group(request):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         group_name = request.data.get('name', '')

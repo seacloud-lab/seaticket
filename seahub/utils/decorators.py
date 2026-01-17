@@ -26,29 +26,3 @@ def require_org_context(view_func):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         return view_func(self, request, *args, **kwargs)
     return wrapped_view
-
-
-def require_can_add_project(view_func):
-    """
-    Decorator to check if user has permission to add project.
-    """
-    @wraps(view_func)
-    def wrapped_view(self, request, *args, **kwargs):
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        return view_func(self, request, *args, **kwargs)
-    return wrapped_view
-
-
-def require_can_add_group(view_func):
-    """
-    Decorator to check if user has permission to add group.
-    """
-    @wraps(view_func)
-    def wrapped_view(self, request, *args, **kwargs):
-        if not request.user.permissions.can_add_group():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        return view_func(self, request, *args, **kwargs)
-    return wrapped_view
