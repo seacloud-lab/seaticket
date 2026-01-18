@@ -8,11 +8,12 @@ import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/comp
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import ConnectionLogsDialog from '../../components/connection-logs-dialog';
 import createFormatter from '../../components/cell-formatter';
-import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_COMPLETED_STATUS } from '../../constants';
+import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
-import { Connection } from '../../models';
 import SelfQuery from '@/utils/self-query';
 import { BAR_TYPE } from '@/project/constants';
+import { isConnectionSyncCompleted } from '../../utils';
+import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
 
@@ -21,28 +22,19 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
-    modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
+    modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
   } = useConnections();
   const { togglePageSlugId, updateConnectionInfo } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
+  const lastQueryRecordIds = useRef([]);
+
   const selfQuery = useMemo(() => new SelfQuery({
     api: (ids) => connectionsAPI.queryConnectionsStatus(projectUuid, ids).then(res => res.data || {}),
-    callback: modifyLocalConnectionSyncStatus,
-    endCondition: (v) => CONNECTION_SYNC_COMPLETED_STATUS.includes(v),
+    callback: modifyLocalConnectionsSyncStatus,
+    endCondition: isConnectionSyncCompleted,
     maxRetries: 50,
-    onEnd: async (endIds) => {
-      for (const id of endIds) {
-        try {
-          const res = await connectionsAPI.getConnection(projectUuid, id);
-          const fresh = new Connection(res.data.record);
-          modifyLocalConnectionRecord(id, { last_sync_time: fresh.last_sync_time });
-        } catch (e) {
-          toaster.danger(e);
-        }
-      }
-    }
-  }), [projectUuid, modifyLocalConnectionSyncStatus, modifyLocalConnectionRecord]);
+  }), [projectUuid, modifyLocalConnectionsSyncStatus]);
 
   const columns = useMemo(() => {
     return [
@@ -90,7 +82,12 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     if (!id) return;
     connectionsAPI.triggerSync(projectUuid, id).then(() => {
       toaster.success(gettext('Sync task queued'));
-      modifyLocalConnectionRecord(id, { status: { ...record.status, last_sync_status: 'pending' } });
+      modifyLocalConnectionsSyncStatus({
+        [id]: {
+          status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING },
+          last_sync_time: null,
+        }
+      });
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       let error_msg = '';
@@ -102,23 +99,18 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
       }
       toaster.danger(error_msg);
     });
-  }, [projectUuid, modifyLocalConnectionRecord]);
+  }, [projectUuid, modifyLocalConnectionsSyncStatus]);
 
-  const getConnectionStatus = useCallback((connectionId) => {
-    return connectionsAPI.getConnection(projectUuid, connectionId).then(res => {
-      const newRecord = new Connection(res.data.record);
-      return newRecord.status;
-    });
-  });
-
-  const handleStatusActive = (status, row) => {
+  const handleStatusActive = (activeStatus, row) => {
     const { is_active: oldStatus, id } = row;
-    if (status === oldStatus) return;
-    modifyConnectionStatus(id, { 'is_active': status });
+    if (activeStatus === oldStatus) return;
+    modifyConnectionIsActiveStatus(id, activeStatus);
   };
 
   const rowsDidMount = useCallback((rows) => {
-    const synchronizingRows = rows.filter(r => !CONNECTION_SYNC_COMPLETED_STATUS.includes(r?.status?.last_sync_status)).map(r => r.id);
+    const synchronizingRows = rows.filter(r => !isConnectionSyncCompleted(r)).map(r => r.id);
+    if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
+    lastQueryRecordIds.current = synchronizingRows;
     selfQuery.start(synchronizingRows);
   }, [selfQuery]);
 
@@ -160,11 +152,10 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onViewLog={onViewLog}
-        onUpdate={modifyConnectionStatus}
+        onUpdate={modifyConnectionIsActiveStatus}
         handleStatusActive={handleStatusActive}
         rowsDidMount={rowsDidMount}
         rowsWillUnmount={rowsWillUnmount}
-        getRowStatus={getConnectionStatus}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
       {isShowStatusDialog && (

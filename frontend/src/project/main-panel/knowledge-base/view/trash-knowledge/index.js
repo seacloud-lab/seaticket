@@ -4,10 +4,12 @@ import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
 import { CenteredLoading, toaster } from '@/components';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '../../constants';
 import { useMetadata } from '../../hooks';
+import { useData } from '@/project/hooks';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
+  const { modifyView, getMetadata, restoreRows } = useData();
   const { isLoading: isMetadataLoading, tagsData } = useMetadata();
 
   const viewsData = useMemo(() => ({
@@ -17,7 +19,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params).then(res => {
+      return getMetadata(KB_TABLE_NAME, { ...params[0], view_id: 'trash' }, () => knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params), true).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         columns = columns
@@ -34,11 +36,13 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
     getView: () => Promise.resolve({
       data: { view: { ...viewsData.views[0], sorts: context.localStorage.getItem('sorts') || [] } }
     }),
-    modifyView: (viewID, viewData) => {
-      Object.keys(viewData).forEach(key => context.localStorage.setItem(key, viewData[key]));
-      return Promise.resolve({ data: { success: true } });
-    }
-  }), [projectUuid, viewsData]);
+    modifyView: (viewID, viewData) => modifyView(KB_TABLE_NAME, viewID, viewData, () => new Promise((resolve, reject) => {
+      Object.keys(viewData).forEach(key => {
+        context.localStorage.setItem(key, viewData[key]);
+      });
+      resolve({ data: { success: true } });
+    }), true),
+  }), [projectUuid, viewsData, modifyView, getMetadata]);
 
   const t = useMemo(() => ({
     row: gettext('record'),
@@ -60,12 +64,13 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
           deleteLocalRows(rowIds);
           selectNone && selectNone();
           toaster.success(gettext('Records restored'));
+          restoreRows(KB_TABLE_NAME, rowIds);
         }).catch(() => {
           toaster.danger(gettext('Failed to restore records'));
         });
       }
     }];
-  }, [projectUuid]);
+  }, [projectUuid, restoreRows]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

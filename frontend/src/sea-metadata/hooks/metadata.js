@@ -49,12 +49,12 @@ export const MetadataProvider = forwardRef(({
     setMetadata(data);
   }, []);
 
-  const reloadMetadata = useCallback((isForce = true) => {
+  const reloadMetadata = useCallback((isShowLoading = true) => {
     if (!storeRef.current?.data) return;
-    if (!isForce) {
+    if (isShowLoading) {
       setLoading(true);
     }
-    storeRef.current.reload(PER_LOAD_NUMBER, isForce).then(() => {
+    storeRef.current.reload(Math.max(storeRef.current.data.rows.length, PER_LOAD_NUMBER)).then(() => {
       setMetadata(storeRef.current.data);
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);

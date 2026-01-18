@@ -1,26 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { gettext } from '@/constants';
-import { ticketsAPI } from '../../../../api';
-import { CommonOperationConfirmationDialog, toaster } from '@/components';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { CommonOperationConfirmationDialog } from '@/components';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 
-const CleanTickets = ({ projectUuid }) => {
+const CleanTickets = ({ cleanTickets }) => {
   const [isShowConfirm, setIsShowConfirm] = useState(false);
 
   const closeConfirm = useCallback(() => {
     setIsShowConfirm(false);
-  }, []);
-
-  const cleanTickets = useCallback(() => {
-    ticketsAPI.cleanTicketsTrash(projectUuid).then(() => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
-      toaster.success(gettext('The ticket trash cleaned'));
-    }).catch(() => {
-      toaster.danger(gettext('Failed to clean the ticket trash'));
-    });
   }, []);
 
   useEffect(() => {

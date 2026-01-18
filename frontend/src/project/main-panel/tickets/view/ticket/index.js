@@ -6,8 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { useDataCache } from '@/sea-metadata';
-import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
+import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -27,6 +26,8 @@ import { useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Header from './header';
+import { useData } from '@/project/hooks';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -40,7 +41,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
 
   const { typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
-  const { updateCacheData } = useDataCache();
+  const { modifyLocalRow, getTableByName } = useData();
+
+  const lastTicketID = useRef('');
 
   const user = useMemo(() => {
     return {
@@ -63,8 +66,11 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [headerRef]);
 
   const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
-    updateCacheData('rows', String(ticketID), update, true);
-  }, [updateCacheData]);
+    const table = getTableByName(TICKET_TABLE_NAME);
+    const columns = Object.values(table.key_column_map);
+    if (columns.length === 0) return;
+    modifyLocalRow(TICKET_TABLE_NAME, ticketID, convertRowToKeyValue(update, { data: { columns }, typesData, tagsData }));
+  }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
   const modifyTicket = useCallback((ticketID, data) => {
@@ -93,7 +99,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         update['participants'] = [...participants, user.email];
       }
       const newTicket = ticket._update(update);
-      handleUpdateRowsCacheData(String(ticketID), update);
+      handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));
       return data;
     });
@@ -104,7 +110,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     if (!participants.includes(user.email)) {
       const update = { 'participants': [...participants, user.email] };
       ticket = ticket._update(update);
-      handleUpdateRowsCacheData(String(ticket._id), update);
+      handleUpdateRowsCacheData(ticket._id, update);
     }
   }, [user, handleUpdateRowsCacheData]);
 
@@ -284,9 +290,12 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [ticket, modifyComment]);
 
   useEffect(() => {
+    if (lastTicketID.current === ticketID) return;
+    lastTicketID.current = ticketID;
     setLoading(true);
     setTicket(null);
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
+      handleUpdateRowsCacheData(ticketID, res.data.ticket);
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
       setLoading(false);
@@ -295,7 +304,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [projectUuid, ticketID]);
+  }, [projectUuid, ticketID, handleUpdateRowsCacheData]);
 
   useEffect(() => {
     if (isLoading || !ticket) return;

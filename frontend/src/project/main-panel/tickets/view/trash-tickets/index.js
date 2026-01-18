@@ -1,15 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
 import { ticketsAPI } from '../../../../api';
 import { VIEW_TOOL } from '@/sea-metadata';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import CleanTickets from './clean-tickets';
 import Tickets from '../../components/tickets';
+import { useData } from '@/project/hooks';
+import { TICKET_TABLE_NAME } from '../../constants';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
+
+  const { clearViewRows, restoreRows } = useData();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -37,17 +42,26 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         } } });
       });
     },
-    modifyView: (viewID, viewData) => {
-      return new Promise((resolve, reject) => {
-        Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
-        });
-        resolve({ data: { success: true } });
+    modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
+      Object.keys(viewData).forEach(key => {
+        context.localStorage.setItem(key, viewData[key]);
       });
-    },
+      resolve({ data: { success: true } });
+    }),
   }), [projectUuid, viewsData]);
 
   const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-deleted-tickets`, [projectUuid]);
+
+  const handleRestoreTickets = useCallback((ticketIds, { deleteLocalRows, selectNone }) => {
+    ticketsAPI.restoreTickets(projectUuid, ticketIds).then(res => {
+      deleteLocalRows(ticketIds);
+      selectNone && selectNone();
+      toaster.success(gettext('Tickets restored'));
+      restoreRows(TICKET_TABLE_NAME, ticketIds);
+    }).catch(error => {
+      toaster.danger(gettext('Failed to restore tickets'));
+    });
+  }, [projectUuid, restoreRows]);
 
   const createRowsTools = useCallback(({ rows, deleteLocalRows, selectNone }) => {
     let tools = [];
@@ -59,17 +73,11 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         event && event.stopPropagation();
         event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
         const rowIds = rows.map(r => r._id);
-        ticketsAPI.restoreTickets(projectUuid, rowIds).then(res => {
-          deleteLocalRows(rowIds);
-          selectNone && selectNone();
-          toaster.success(gettext('Tickets restored'));
-        }).catch(error => {
-          toaster.danger(gettext('Failed to restore tickets'));
-        });
+        handleRestoreTickets(rowIds, { deleteLocalRows, selectNone });
       },
     });
     return tools;
-  }, [workspaceID, projectName]);
+  }, [workspaceID, projectName, handleRestoreTickets]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -87,15 +95,6 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
     selectNone,
     context,
   }) => {
-    const handleRestoreTickets = (ticketIds) => {
-      ticketsAPI.restoreTickets(projectUuid, ticketIds).then(res => {
-        deleteLocalRows(ticketIds);
-        selectNone && selectNone();
-        toaster.success(gettext('Tickets restored'));
-      }).catch(error => {
-        toaster.danger(gettext('Failed to restore tickets'));
-      });
-    };
 
     let list = [];
 
@@ -126,7 +125,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
           key: 'restore',
           callback: (event) => {
             const rowIds = rows.map(row => row._id);
-            handleRestoreTickets(rowIds);
+            handleRestoreTickets(rowIds, { deleteLocalRows, selectNone });
           }
         });
       }
@@ -143,11 +142,20 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
       list.push({
         label: gettext('Restore'),
         key: 'restore',
-        callback: () => handleRestoreTickets([row._id]),
+        callback: () => handleRestoreTickets([row._id], { deleteLocalRows, selectNone }),
       });
     }
     return list;
-  }, [projectName, workspaceID]);
+  }, [projectName, workspaceID, handleRestoreTickets]);
+
+  const cleanTickets = useCallback(() => {
+    clearViewRows(TICKET_TABLE_NAME, 'trash', () => ticketsAPI.cleanTicketsTrash(projectUuid), true).then(() => {
+      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
+      toaster.success(gettext('The ticket trash cleaned'));
+    }).catch(() => {
+      toaster.danger(gettext('Failed to clean the ticket trash'));
+    });
+  }, [projectUuid, clearViewRows]);
 
   return (
     <>
@@ -164,8 +172,9 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         viewTools={viewTools}
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
+        isBuiltInView={true}
       />
-      <CleanTickets projectUuid={projectUuid} />
+      <CleanTickets cleanTickets={cleanTickets} />
     </>
   );
 };

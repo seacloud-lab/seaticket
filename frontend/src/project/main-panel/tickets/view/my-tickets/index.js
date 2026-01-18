@@ -62,14 +62,12 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
         });
       });
     },
-    modifyView: (viewID, viewData) => {
-      return new Promise((resolve, reject) => {
-        Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
-        });
-        resolve({ data: { success: true } });
+    modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
+      Object.keys(viewData).forEach(key => {
+        context.localStorage.setItem(key, viewData[key]);
       });
-    },
+      resolve({ data: { success: true } });
+    }),
 
     // row
     modifyRow: (...params) => ticketsAPI.modifyProjectTicket(projectUuid, ...params),
@@ -105,6 +103,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}
       viewTools={viewTools}
+      isBuiltInView={true}
     />
   );
 };

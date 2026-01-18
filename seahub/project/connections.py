@@ -643,14 +643,10 @@ class ProjectConnectionsStatusView(APIView):
         records = ProjectConnections.objects.filter(project=project, deleted=False, id__in=connection_ids)
         connections_status = {}
         for record in records:
-            connection_status = record.status or '{}'
-            try:
-                connection_status = json.loads(connection_status)
-            except Exception as e:
-                logger.error(e)
-                connection_status = {}
-            last_sync_status = connection_status.get('last_sync_status', '')
-            connections_status[record.id] = last_sync_status
+            connections_status[record.id] = {
+                'status': record.status or '{}',
+                'last_sync_time': record.last_sync_time,
+            }
         return Response(connections_status)
 
 

@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { isNumber } from '@//utils/type-detection';
+import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../constants';
 import { Utils } from '@/utils/utils';
+import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@//utils/event-bus';
 
 const KnowledgePageContext = React.createContext(null);
@@ -37,6 +39,11 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       setChildrenPageSlugId(newChildrenPageSlugId);
     }
   }, [pageSlugId, childrenPageSlugId]);
+
+  const onRefresh = Utils.debounce(useCallback(() => {
+    const eventBus = context.eventBus;
+    eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
+  }, []), 300);
 
   // init page
   useEffect(() => {
@@ -91,6 +98,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       isLoading,
       togglePageSlugId,
       toggleView,
+      onRefresh,
     }}>
       {children}
     </KnowledgePageContext.Provider>

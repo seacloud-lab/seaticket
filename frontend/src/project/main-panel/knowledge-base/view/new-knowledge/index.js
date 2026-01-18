@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster, CenteredLoading } from '@/components';
-import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
 import { useMetadata } from '../../hooks/metadata';
@@ -13,11 +13,13 @@ import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { TagsSettings } from '../../../tickets/components/ticket-settings';
+import { useData } from '@/project/hooks';
 
 import './index.css';
 
 const NewKnowledge = ({ editorAPI, projectUuid }) => {
   const { tagsData, createTag, isLoading: isMetadataLoading, } = useMetadata();
+  const { insertRow } = useData();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,12 +101,13 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     });
     knowledgeBaseAPI.createRecord(projectUuid, serverData).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
+      insertRow(KB_TABLE_NAME, res.data.row._pk, res.data.row);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, tags]);
+  }, [title, content, tags, insertRow]);
 
   useEffect(() => {
     if (isMetadataLoading) return;

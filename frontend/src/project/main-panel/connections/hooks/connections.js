@@ -9,6 +9,10 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 import NewConnectionDialog from '../components/new-connection-dialog';
 import ModifyConnectionDialog from '../components/modify-connection-dialog';
 import { connectionsAPI } from '../../../api';
+import { useData } from '@/project/hooks';
+import { getTableName, initConnectionStatus } from '../utils';
+import { CONNECTION_SYNC_STATUS } from '../constants';
+import ObjectUtils from '@/utils/object-utils';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -19,11 +23,27 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
-  const loadTime = useRef(new Date());
+  const { deleteTableByName, markTablesViewExpired } = useData();
+
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
   const hasMoreRef = useRef(true);
   const activeConnectionRef = useRef(null);
+  const loadTime = useRef(new Date());
+
+  const deleteConnection = useCallback((connectionID) => {
+    const activeConnectionIndex = connections.findIndex(c => c.id === Number(connectionID));
+    let newConnections = connections.slice(0);
+    let connection;
+    if (activeConnectionIndex > -1) {
+      connection = newConnections[activeConnectionIndex];
+      newConnections.splice(activeConnectionIndex, 1);
+    }
+    setConnections(newConnections);
+
+    const connectionTableName = getTableName(connection);
+    deleteTableByName(connectionTableName);
+  }, [connections, deleteTableByName]);
 
   const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
     setConnections(prev => prev.map(record =>
@@ -31,18 +51,28 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     ));
   }, []);
 
-  const modifyLocalConnectionSyncStatus = useCallback((update) => {
-    setConnections(prev => prev.map(record => update[record.id] ?
-      ({ ...record, status: { ...record.status, last_sync_status: update[record.id] } }) : record
-    ));
-  }, []);
+  const modifyLocalConnectionsSyncStatus = useCallback((update = {}, callback) => {
+    let successConnections = [];
+    setConnections(connections => connections.map(connection => {
+      const connectionUpdate = update[connection.id];
+      if (!connectionUpdate) return connection;
+      const status = initConnectionStatus(connectionUpdate?.status);
+      const newConnection = { ...connection, status, last_sync_time: connectionUpdate?.last_sync_time || '' };
+      if (ObjectUtils.isSameObject(newConnection, connection)) return connection;
+      if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
+        successConnections.push(newConnection);
+      }
+      return newConnection;
+    }));
+    const successConnectionCacheDataNames = successConnections.map(c => getTableName(c));
+    markTablesViewExpired(successConnectionCacheDataNames, callback);
+  }, [markTablesViewExpired]);
 
-  const modifyConnectionStatus = useCallback((connectionId, update) => {
+  const modifyConnectionIsActiveStatus = useCallback((connectionId, activeStatus) => {
+    const update = { 'is_active': activeStatus };
     connectionsAPI.updateConnectionStatus(projectUuid, connectionId, update).then(() => {
       modifyLocalConnectionRecord(connectionId, update);
-      if (Object.keys(update).includes('is_active')) {
-        toaster.success(update.is_active ? gettext('Activated') : gettext('Deactivated'));
-      }
+      toaster.success(activeStatus ? gettext('Activated') : gettext('Deactivated'));
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
     });
@@ -68,13 +98,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
 
   const deleteConnectionRecord = useCallback(() => {
     connectionsAPI.deleteConnection(projectUuid, activeConnectionRef.current.id).then(res => {
-      const activeConnectionIndex = connections.findIndex(c => c.id === activeConnectionRef.current.id);
-      let newConnections = connections.slice(0);
-      if (activeConnectionIndex > -1) {
-        newConnections.splice(activeConnectionIndex, 1);
-      }
+      deleteConnection(activeConnectionRef.current.id);
       activeConnectionRef.current = null;
-      setConnections(newConnections);
       setIsShowConfirmDialog(false);
       activeConnectionRef.current = null;
     }).catch((error) => {
@@ -83,7 +108,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       setIsShowConfirmDialog(false);
       activeConnectionRef.current = null;
     });
-  }, [connections]);
+  }, [deleteConnection]);
 
   const closeDeleteConfirmDialog = useCallback(() => {
     setIsShowConfirmDialog(false);
@@ -95,7 +120,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState, recordId) => {
-    const activeRecordId = recordId || activeConnectionRef.current.id;
+    let activeRecordId = recordId || activeConnectionRef.current.id;
+    activeRecordId = Number(activeRecordId);
     connectionsAPI.modifyConnection(projectUuid, activeRecordId, { name, config }).then(res => {
       const activeConnectionIndex = connections.findIndex(c => c.id === activeRecordId);
       const newConnection = new Connection(res.data.record);
@@ -136,7 +162,6 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
         pre[cur.id] = true;
         return pre;
       }, {});
-
       if (moreConnections.length < pageCountRef.current) {
         hasMoreRef.current = false;
       } else {
@@ -189,8 +214,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       isLoadingMore,
       connections,
       modifyLocalConnectionRecord,
-      modifyLocalConnectionSyncStatus,
-      modifyConnectionStatus,
+      modifyLocalConnectionsSyncStatus,
+      modifyConnectionIsActiveStatus,
       handleDelete,
       handleModify,
       reloadConnections,

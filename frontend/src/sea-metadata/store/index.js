@@ -84,9 +84,9 @@ class Store {
     });
   }
 
-  async reload(limit = PER_LOAD_NUMBER, isForceReload = true) {
+  async reload(limit = PER_LOAD_NUMBER) {
     this.startIndex = 0;
-    return this.loadMetadata(this.data.view, limit, isForceReload);
+    return this.loadMetadata(this.data.view, limit, true);
   }
 
   async loadMore(limit) {

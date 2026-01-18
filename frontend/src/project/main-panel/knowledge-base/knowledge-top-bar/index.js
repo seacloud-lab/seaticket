@@ -5,14 +5,14 @@ import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../cons
 import { IconButton, CustomizeDropdownMenu, CustomizeDropdownMoreToggle, CustomizeDropdownItem } from '@/components';
 import { Dropdown } from 'reactstrap';
 import { gettext } from '@/constants';
-import AddButton from '@/project/components/add-button';
+import { AddButton, RefreshBtn } from '@/project/components';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import eventBus from '@/utils/event-bus';
 
 import './index.css';
 
 const KnowledgeTopBar = ({ title }) => {
-  const { pageSlugId, childrenPageSlugId, togglePageSlugId } = useKnowledgePage();
+  const { pageSlugId, childrenPageSlugId, togglePageSlugId, onRefresh } = useKnowledgePage();
 
   const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
   const toggleMoreMenu = useCallback(() => setIsMoreMenuShow(prev => !prev), []);
@@ -20,7 +20,10 @@ const KnowledgeTopBar = ({ title }) => {
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <div className="text-truncate">{title}</div>
+        <>
+          <div className="text-truncate">{title}</div>
+          <RefreshBtn onClick={onRefresh} />
+        </>
       );
     }
 
@@ -39,7 +42,15 @@ const KnowledgeTopBar = ({ title }) => {
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       return (
-        <span className="text-truncate" title={gettext('Deleted records')}>{gettext('Deleted records')}</span>
+        <>
+          <IconButton
+            icon="arrow-down"
+            className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+            onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
+          />
+          <span className="text-truncate" title={gettext('Deleted records')}>{gettext('Deleted records')}</span>
+          <RefreshBtn onClick={onRefresh} />
+        </>
       );
     }
 
