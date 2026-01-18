@@ -7,6 +7,7 @@ import AllWorkspaces from './all-workspaces';
 import WorkspaceInMainPanel from './workspace-in-main-panel';
 import MyProjectsTrash from './my-projects-trash';
 import eventBus from '@/utils/event-bus';
+import AllInbox from './all-inbox';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;
@@ -147,6 +148,7 @@ class MainPanel extends React.Component {
             path={siteRoot + 'project/trash/'}
           />
         </Router>
+        <AllInbox/>
       </div>
     );
   }
