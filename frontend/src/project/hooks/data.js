@@ -4,7 +4,7 @@ import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
 import { MetadataProvider } from '../main-panel/tickets/hooks';
-import { NotificationProvider } from '../main-panel/inbox/hooks/notification';
+import { NotificationProvider } from '@/components/common/notification/hooks/notification';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 

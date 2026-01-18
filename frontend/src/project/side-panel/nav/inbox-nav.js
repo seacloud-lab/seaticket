@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Icon } from '../../../components';
-import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
+import { useNotification } from '@/components/common/notification/hooks/notification';
+import InboxCount from '@/components/common/notification/components/inbox-count';
 
 import './inbox-nav.css';
 
 const InboxNav = ({ nav, level }) => {
-  const { unseen, showInboxDrawer, setShowInboxDrawer } = useNotification();
+  const { unseen, showInboxDrawer, setShowInboxDrawer, fetchNotifications } = useNotification();
   const { name, icon } = nav;
-  const displayCount = unseen > 99 ? '99+' : unseen;
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   return (
     <div
@@ -21,11 +25,7 @@ const InboxNav = ({ nav, level }) => {
     >
       {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
       <span className="sea-qa-project-navigation-item-name">{name}</span>
-      {displayCount !== 0 && (
-        <div className="sea-qa-project-navigation-item-inbox-count">
-          {displayCount}
-        </div>
-      )}
+      <InboxCount unseen={unseen} />
     </div>
   );
 };
