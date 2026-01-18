@@ -38,11 +38,14 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
 
   const updateTable = useCallback((tableName, update = {}, defaultTable = dcopy(EMPTY_TABLE)) => {
     if (!tableName) return;
-    const newData = dcopy(data);
-    let table = getTableByName(tableName, defaultTable);
-    newData[tableName] = { ...table, ...update };
-    updateData(newData);
-  }, [data, getTableByName, updateData]);
+    setData(data => {
+      const newData = dcopy(data);
+      let table = newData[tableName] || defaultTable;
+      newData[tableName] = { ...table, ...update };
+      newData.version = newData.version + 1;
+      return newData;
+    });
+  }, []);
 
   const markTablesViewExpired = useCallback((tableNames, callback) => {
     if (!Array.isArray(tableNames) || tableNames.length === 0) return;
@@ -89,7 +92,6 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
         }
         id_view_map[v._id] = newView;
       });
-
       updateTable(tableName, { navigation, id_view_map, timestamp: Date.now() });
       return res;
     });
@@ -162,6 +164,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       const viewDataKeys = Object.keys(viewData);
       let view_map = { ...table[viewMapName] };
       let newView = view_map[viewID] || {};
+      newView = { ...newView, ...viewData };
       if (viewDataKeys.includes('sorts') || viewDataKeys.join('').toLowerCase().includes('filter')) {
         newView.timestamp = 0;
         newView.rows = [];
@@ -275,28 +278,9 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     return id_row_map[rowIdString];
   }, [getTableByName]);
 
-  const modifyLocalRow = useCallback((tableName, rowId, rowUpdate) => {
-    let table = getTableByName(tableName);
-    const rowIdString = rowId + '';
-    let id_row_map = { ...table.id_row_map };
-    let oldValue = {};
-    let row = id_row_map[rowIdString] || {};
-    Object.keys(rowUpdate).forEach(key => {
-      oldValue[key] = row[key];
-    });
-    if (ObjectUtils.isSameObject(oldValue, rowUpdate)) return;
-    id_row_map[rowIdString] = { ...row, ...rowUpdate };
-    updateTable(tableName, { id_row_map });
-  }, [getTableByName, updateTable]);
-
-  const modifyRow = useCallback((tableName, rowId, rowUpdate, api) => {
-    return api().then(res => {
-      modifyLocalRow(tableName, rowId, rowUpdate);
-      return res;
-    });
-  }, [modifyLocalRow]);
-
   const modifyLocalRows = useCallback((tableName, rowsUpdate = []) => {
+    if (!tableName) return;
+    if (!Array.isArray(rowsUpdate) || rowsUpdate.length === 0) return;
     let table = getTableByName(tableName);
     let id_row_map_update = {};
     rowsUpdate.forEach(rowUpdate => {
@@ -315,6 +299,17 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     updateTable(tableName, { id_row_map: { ...table.id_row_map, ...id_row_map_update } });
   }, [getTableByName, updateTable]);
 
+  const modifyLocalRow = useCallback((tableName, rowId, rowUpdate) => {
+    modifyLocalRows(tableName, [{ row_id: rowId, row: rowUpdate }]);
+  }, [modifyLocalRows]);
+
+  const modifyRow = useCallback((tableName, rowId, rowUpdate, api) => {
+    return api().then(res => {
+      modifyLocalRow(tableName, rowId, rowUpdate);
+      return res;
+    });
+  }, [modifyLocalRow]);
+
   const modifyRows = useCallback((tableName, rowsUpdate = [], api) => {
     return api().then(res => {
       modifyLocalRows(tableName, rowsUpdate);
@@ -322,44 +317,144 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     });
   }, [modifyLocalRows]);
 
-  const deleteRow = useCallback((tableName, rowId, api) => {
-    return api().then(res => {
-      let table = getTableByName(tableName);
-      let id_row_map = { ...table.id_row_map };
-      const rowIdString = rowId + '';
-      delete id_row_map[rowIdString];
-      let tableUpdate = { id_row_map };
-      if (hasOwnProperty(table, 'rows')) {
-        let rows = Array.isArray(table.rows) ? table.rows : [];
-        rows = rows.filter(rId => rId !== rowIdString);
-        tableUpdate.rows = rows;
-      }
-      updateTable(tableName, tableUpdate);
-      return res;
-    });
-  }, [getTableByName, updateTable]);
-
-  const deleteRows = useCallback((tableName, rowIds = [], api) => {
-    return api().then(res => {
-      const rowIdsString = rowIds.map(r => r + '');
-      let table = getTableByName(tableName);
+  const updateDataByDeleteRows = useCallback((tableName, rowIds = []) => {
+    if (!tableName) return;
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    const rowIdsString = rowIds.map(r => r + '');
+    setData(data => {
+      const newData = dcopy(data);
+      const table = newData[tableName];
+      if (!table) return data;
       let id_row_map = { ...table.id_row_map };
       rowIdsString.forEach(rowId => {
         delete id_row_map[rowId];
       });
-      let tableUpdate = { id_row_map };
-      if (hasOwnProperty(table, 'rows')) {
-        let rows = Array.isArray(table.rows) ? table.rows : [];
-        rows = rows.filter(rId => !rowIdsString.includes(rId));
-        tableUpdate.rows = rows;
+      table.id_row_map = id_row_map;
+
+      if (hasOwnProperty(table, 'id_view_map')) {
+        let id_view_map = { ...table.id_view_map };
+        Object.keys(id_view_map).forEach(viewID => {
+          let view = id_view_map[viewID];
+          if (view.timestamp && !shouldReload(view.timestamp) && hasOwnProperty(view, 'rows')) {
+            let rows = Array.isArray(view.rows) ? view.rows : [];
+            rows = rows.slice(0).filter(rId => !rowIdsString.includes(rId));
+            view.rows = rows;
+            id_view_map[viewID] = view;
+          }
+        });
+        table.id_view_map = id_view_map;
       }
-      updateTable(tableName, tableUpdate);
+      if (hasOwnProperty(table, 'built_in_view_map')) {
+        let built_in_view_map = { ...table.built_in_view_map };
+        Object.keys(built_in_view_map).forEach(viewID => {
+          let view = built_in_view_map[viewID];
+          if (view.timestamp && !shouldReload(view.timestamp) && hasOwnProperty(view, 'rows')) {
+            if (viewID !== 'trash') {
+              let rows = Array.isArray(view.rows) ? view.rows : [];
+              rows = rows.slice(0).filter(rId => !rowIdsString.includes(rId));
+              view.rows = rows;
+              built_in_view_map[viewID] = view;
+            } else {
+              built_in_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+            }
+          }
+        });
+        table.built_in_view_map = built_in_view_map;
+      }
+      newData[tableName] = table;
+      newData.version = newData.version + 1;
+      return newData;
+    });
+  }, []);
+
+  const deleteRow = useCallback((tableName, rowId, api) => {
+    return api().then(res => {
+      updateDataByDeleteRows(tableName, [rowId]);
       return res;
     });
-  }, [getTableByName, updateTable]);
+  }, [updateDataByDeleteRows]);
 
-  const insertRow = useCallback((tableName, rowData, api) => {
-    //
+  const deleteRows = useCallback((tableName, rowIds = [], api) => {
+    return api().then(res => {
+      updateDataByDeleteRows(tableName, rowIds);
+      return res;
+    });
+  }, [updateDataByDeleteRows]);
+
+  const insertRow = useCallback((tableName, rowId, rowData) => {
+    if (!tableName) return;
+    setData(data => {
+      let isChanged = false;
+      const newData = dcopy(data);
+      const table = newData[tableName];
+      if (!table) return data;
+      table.id_row_map[rowId + ''] = rowData;
+      if (hasOwnProperty(table, 'id_view_map')) {
+        let id_view_map = { ...table.id_view_map };
+        Object.keys(id_view_map).forEach(viewID => {
+          let view = id_view_map[viewID];
+          if (view && view.timestamp) {
+            isChanged = true;
+            id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+          }
+        });
+        table.id_view_map = id_view_map;
+      }
+      if (hasOwnProperty(table, 'built_in_view_map')) {
+        let built_in_view_map = { ...table.built_in_view_map };
+        Object.keys(built_in_view_map).forEach(viewID => {
+          let view = built_in_view_map[viewID];
+          if (viewID !== 'trash') {
+            if (view && view.timestamp) {
+              isChanged = true;
+              built_in_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+            }
+          }
+        });
+        table.built_in_view_map = built_in_view_map;
+      }
+      if (!isChanged) return data;
+      newData[tableName] = table;
+      newData.version = newData.version + 1;
+      return newData;
+    });
+  }, []);
+
+  const restoreRows = useCallback((tableName, rowIds = []) => {
+    if (!tableName) return;
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    const rowIdsString = rowIds.map(r => r + '');
+    setData(data => {
+      const newData = dcopy(data);
+      const table = newData[tableName];
+      if (!table) return data;
+      if (hasOwnProperty(table, 'id_view_map')) {
+        let id_view_map = { ...table.id_view_map };
+        Object.keys(id_view_map).forEach(viewID => {
+          let view = id_view_map[viewID];
+          id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+        });
+        table.id_view_map = id_view_map;
+      }
+      if (hasOwnProperty(table, 'built_in_view_map')) {
+        let built_in_view_map = { ...table.built_in_view_map };
+        Object.keys(built_in_view_map).forEach(viewID => {
+          const view = built_in_view_map[viewID];
+          if (viewID !== 'trash') {
+            built_in_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+          } else {
+            let rows = Array.isArray(view.rows) ? view.rows : [];
+            rows = rows.slice(0).filter(rId => !rowIdsString.includes(rId));
+            view.rows = rows;
+            built_in_view_map[viewID] = view;
+          }
+        });
+        table.built_in_view_map = built_in_view_map;
+      }
+      newData[tableName] = table;
+      newData.version = newData.version + 1;
+      return newData;
+    });
   }, []);
 
   const listUserInfo = useCallback((...params) => {
@@ -396,6 +491,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       modifyLocalRows,
       deleteRow,
       deleteRows,
+      restoreRows,
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>

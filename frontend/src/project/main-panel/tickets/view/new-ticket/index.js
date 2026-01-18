@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE } from '../../constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
@@ -15,6 +15,7 @@ import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { useMetadata } from '../../hooks';
+import { useData } from '@/project/hooks';
 
 import './index.css';
 
@@ -33,6 +34,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const ticketRef = useRef(null);
 
   const { tagsData, typesData, substatesData, createTag } = useMetadata();
+  const { insertRow } = useData();
 
   const user = useMemo(() => {
     return {
@@ -100,12 +102,13 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
       togglePageSlugId(res.data.ticket._pk);
+      insertRow(TICKET_TABLE_NAME, res.data.ticket._pk, res.data.ticket);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags, priority]);
+  }, [title, content, type, assignees, tags, priority, insertRow]);
 
   useEffect(() => {
     const ticketDom = ticketRef.current;

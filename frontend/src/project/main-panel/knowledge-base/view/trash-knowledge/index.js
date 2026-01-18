@@ -9,7 +9,7 @@ import { useMetadata } from '../../hooks';
 import { useData } from '@/project/hooks';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
-  const { modifyView, getMetadata } = useData();
+  const { modifyView, getMetadata, restoreRows } = useData();
   const { isLoading: isMetadataLoading, tagsData } = useMetadata();
 
   const viewsData = useMemo(() => ({
@@ -64,12 +64,13 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
           deleteLocalRows(rowIds);
           selectNone && selectNone();
           toaster.success(gettext('Records restored'));
+          restoreRows(KB_TABLE_NAME, rowIds);
         }).catch(() => {
           toaster.danger(gettext('Failed to restore records'));
         });
       }
     }];
-  }, [projectUuid]);
+  }, [projectUuid, restoreRows]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

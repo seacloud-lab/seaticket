@@ -69,7 +69,8 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       importExcel: (file, previewOnly) => knowledgeBaseAPI.importExcel(projectUuid, file, previewOnly),
       commitImportExcel: (fileName) => knowledgeBaseAPI.commitImportExcel(projectUuid, fileName),
     };
-  }, [projectUuid]);
+  }, [projectUuid, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getMetadata, modifyRow, deleteRow, deleteRows]);
 
   const createContextMenuOptions = useCallback((props) => {
     return generatorKnowledgeContextMenuOptions({ ...props });

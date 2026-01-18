@@ -14,7 +14,7 @@ const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW
 
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
-  const { clearViewRows } = useData();
+  const { clearViewRows, restoreRows } = useData();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -57,10 +57,11 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
       deleteLocalRows(ticketIds);
       selectNone && selectNone();
       toaster.success(gettext('Tickets restored'));
+      restoreRows(TICKET_TABLE_NAME, ticketIds);
     }).catch(error => {
       toaster.danger(gettext('Failed to restore tickets'));
     });
-  }, [projectUuid]);
+  }, [projectUuid, restoreRows]);
 
   const createRowsTools = useCallback(({ rows, deleteLocalRows, selectNone }) => {
     let tools = [];
@@ -124,7 +125,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
           key: 'restore',
           callback: (event) => {
             const rowIds = rows.map(row => row._id);
-            handleRestoreTickets(rowIds);
+            handleRestoreTickets(rowIds, { deleteLocalRows, selectNone });
           }
         });
       }
@@ -141,7 +142,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
       list.push({
         label: gettext('Restore'),
         key: 'restore',
-        callback: () => handleRestoreTickets([row._id]),
+        callback: () => handleRestoreTickets([row._id], { deleteLocalRows, selectNone }),
       });
     }
     return list;
