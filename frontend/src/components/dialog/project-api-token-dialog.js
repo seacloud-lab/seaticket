@@ -8,7 +8,9 @@ import homeAPI from '../../home/api';
 import toaster from '../toaster';
 import ModalHeader from '../modal-header';
 import IconButton from '../icon-button';
-import { CommonOperationConfirmationDialog } from '../index';
+import CommonOperationConfirmationDialog from './common-operation-confirmation-dialog';
+
+import './project-api-token-dialog.css';
 
 const PERMISSIONS = {
   READ_WRITE: 'rw',
@@ -89,16 +91,16 @@ class APITokenItem extends React.Component {
     return (
       <>
         <tr onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
-          <td style={{ width: '20%' }}>{item.app_name}</td>
-          <td style={{ width: '20%' }}>
+          <td>{item.app_name}</td>
+          <td>
             <div className="d-inline-flex align-items-center">
               <span>{item.permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
               {isOperationShow && (
                 <Dropdown isOpen={isPermissionDropdownOpen} toggle={this.togglePermissionDropdown} className="d-inline-block ml-1">
-                  <DropdownToggle tag="span" style={{ cursor: 'pointer' }}>
+                  <DropdownToggle tag="span" className="cursor-pointer">
                     <IconButton
                       icon="rename"
-                      style={{ padding: '0 4px' }}
+                      className="px-1"
                     />
                   </DropdownToggle>
                   <DropdownMenu>
@@ -113,17 +115,18 @@ class APITokenItem extends React.Component {
               )}
             </div>
           </td>
-          <td style={{ width: '45%' }}>
-            <span style={tokenCellStyle}>
+          <td>
+            <span className="project-api-token-dialog token-cell">
               {item.api_token}
             </span>
           </td>
-          <td style={{ width: '15%' }}>
+          <td>
             <div className="d-flex align-items-center">
               <IconButton
                 icon="copy"
                 onClick={this.onCopyAPIToken}
-                style={{ marginRight: '8px', opacity: isOperationShow ? 1 : 0.3 }}
+                className="project-api-token-dialog operation-icon"
+                style={{ opacity: isOperationShow ? 1 : 0.3 }}
               />
               <IconButton
                 icon="delete"
@@ -263,16 +266,16 @@ class ProjectAPITokenDialog extends React.Component {
     const { projectUuid, projectName, toggle } = this.props;
 
     return (
-      <Modal isOpen toggle={toggle} size="lg" style={{ maxWidth: '800px' }}>
+      <Modal isOpen toggle={toggle} size="lg" className="project-api-token-dialog">
         <ModalHeader toggle={toggle}>{gettext('API token')} <span className="text-primary">{projectName}</span></ModalHeader>
-        <ModalBody style={{ minHeight: '400px', maxHeight: '600px', display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
-          <div style={{ flexShrink: 0, position: 'relative', zIndex: 1000 }}>
-            <Table>
+        <ModalBody>
+          <div className="project-api-token-dialog modal-header-container">
+            <Table className="create-form-table">
               <thead>
                 <tr>
-                  <th style={{ width: '45%' }}>{gettext('App name')}</th>
-                  <th style={{ width: '40%' }}>{gettext('Permission')}</th>
-                  <th style={{ width: '15%' }}></th>
+                  <th>{gettext('App name')}</th>
+                  <th>{gettext('Permission')}</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -289,14 +292,7 @@ class ProjectAPITokenDialog extends React.Component {
                     <Dropdown isOpen={isPermissionDropdownOpen} toggle={this.togglePermissionDropdown} className="w-100">
                       <DropdownToggle
                         caret
-                        className="form-control w-100 text-left d-flex justify-content-between align-items-center"
-                        style={{
-                          backgroundColor: '#fff',
-                          color: '#495057',
-                          border: '1px solid #ced4da',
-                          cursor: 'pointer',
-                          height: '38px'
-                        }}
+                        className="form-control w-100 text-left d-flex justify-content-between align-items-center project-api-token-dialog permission-dropdown-toggle"
                       >
                         <span>{permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
                       </DropdownToggle>
@@ -324,19 +320,19 @@ class ProjectAPITokenDialog extends React.Component {
             </Table>
           </div>
 
-          <div style={{ flex: 1, overflow: 'auto', minHeight: 0, position: 'relative', zIndex: 1 }}>
+          <div className="project-api-token-dialog modal-content-container">
             {isLoading ? (
               <div className="text-center">
                 <div className="spinner-border" role="status" />
               </div>
             ) : tokens.length > 0 && (
-              <Table>
+              <Table className="token-list-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '20%' }}>{gettext('App name')}</th>
-                    <th style={{ width: '20%' }}>{gettext('Permission')}</th>
-                    <th style={{ width: '45%' }}>{gettext('Token')}</th>
-                    <th style={{ width: '15%' }} />
+                    <th>{gettext('App name')}</th>
+                    <th>{gettext('Permission')}</th>
+                    <th>{gettext('Token')}</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>

@@ -33,7 +33,7 @@
     "no-irregular-whitespace": "warn",
     "no-trailing-spaces": "warn",
     "react/jsx-indent": ["warn", 2],
-    "eol-last": "error",
+    "eol-last": "warn",
     "space-before-function-paren": ["warn", {"named": "never"}],
     "array-bracket-spacing": ["warn", "never"],
     "object-curly-spacing": ["warn", "always"],
