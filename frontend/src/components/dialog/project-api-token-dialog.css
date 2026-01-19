@@ -1,0 +1,70 @@
+.project-api-token-dialog .table th {
+  padding: 0.3125rem 0.1875rem;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  color: var(--bs-body-secondary-color);
+}
+
+.project-api-token-dialog .modal-dialog {
+  max-width: 800px;
+}
+
+.project-api-token-dialog .modal-body {
+  min-height: 400px;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.project-api-token-dialog .modal-header-container {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1000;
+}
+
+.project-api-token-dialog .modal-content-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.project-api-token-dialog .create-form-table th:nth-child(1) {
+  width: 45%;
+}
+
+.project-api-token-dialog .create-form-table th:nth-child(2) {
+  width: 40%;
+}
+
+.project-api-token-dialog .create-form-table th:nth-child(3) {
+  width: 15%;
+}
+
+.project-api-token-dialog .token-list-table th:nth-child(1) {
+  width: 20%;
+}
+
+.project-api-token-dialog .token-list-table th:nth-child(2) {
+  width: 20%;
+}
+
+.project-api-token-dialog .token-list-table th:nth-child(3) {
+  width: 45%;
+}
+
+.project-api-token-dialog .token-list-table th:nth-child(4) {
+  width: 15%;
+}
+
+.project-api-token-dialog .token-cell {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-api-token-dialog .operation-icon {
+  margin-right: 8px;
+}

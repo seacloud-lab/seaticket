@@ -166,7 +166,9 @@
 }
 
 .form-control {
-  color: #212529;
+  color: var(--bs-body-color);
+  background-color: transparent;
+  border: 1px solid var(--bs-border-color);
   height: 38px;
 }
 
