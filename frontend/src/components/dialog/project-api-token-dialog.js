@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, ModalBody, Input, Table, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Button, Modal, ModalBody, Input, Table } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
@@ -9,6 +9,7 @@ import toaster from '../toaster';
 import ModalHeader from '../modal-header';
 import IconButton from '../icon-button';
 import CommonOperationConfirmationDialog from './common-operation-confirmation-dialog';
+import CustomizeSelect from '../customize-select';
 
 import './project-api-token-dialog.css';
 
@@ -17,20 +18,13 @@ const PERMISSIONS = {
   READ_ONLY: 'r'
 };
 
-const tokenCellStyle = {
-  display: 'block',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-};
-
 class APITokenItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       isOperationShow: false,
       isDeleteDialogOpen: false,
-      isPermissionDropdownOpen: false,
+      isPermissionSelectOpen: false,
     };
   }
 
@@ -65,9 +59,9 @@ class APITokenItem extends React.Component {
     this.props.deleteAPIToken(this.props.item.id);
   };
 
-  togglePermissionDropdown = () => {
-    this.setState({ isPermissionDropdownOpen: !this.state.isPermissionDropdownOpen }, () => {
-      if (this.state.isPermissionDropdownOpen) {
+  togglePermissionSelect = () => {
+    this.setState({ isPermissionSelectOpen: !this.state.isPermissionSelectOpen }, () => {
+      if (this.state.isPermissionSelectOpen) {
         this.props.onFreezedItem();
       } else {
         this.props.onUnfreezedItem();
@@ -79,14 +73,14 @@ class APITokenItem extends React.Component {
     if (permission !== this.props.item.permission) {
       this.props.updateAPIToken(this.props.item.id, permission);
     }
-    this.setState({ isPermissionDropdownOpen: false }, () => {
+    this.setState({ isPermissionSelectOpen: false }, () => {
       this.props.onUnfreezedItem();
     });
   };
 
   render() {
-    const { item } = this.props;
-    const { isOperationShow, isDeleteDialogOpen, isPermissionDropdownOpen } = this.state;
+    const { item, permissionList } = this.props;
+    const { isOperationShow, isDeleteDialogOpen, isPermissionSelectOpen } = this.state;
 
     return (
       <>
@@ -94,29 +88,29 @@ class APITokenItem extends React.Component {
           <td>{item.app_name}</td>
           <td>
             <div className="d-inline-flex align-items-center">
-              <span>{item.permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
-              {isOperationShow && (
-                <Dropdown isOpen={isPermissionDropdownOpen} toggle={this.togglePermissionDropdown} className="d-inline-block ml-1">
-                  <DropdownToggle tag="span" className="cursor-pointer">
-                    <IconButton
-                      icon="rename"
-                      className="px-1"
-                    />
-                  </DropdownToggle>
-                  <DropdownMenu>
-                    <DropdownItem onClick={() => this.onUpdatePermission(PERMISSIONS.READ_WRITE)}>
-                      {gettext('Read-Write')}
-                    </DropdownItem>
-                    <DropdownItem onClick={() => this.onUpdatePermission(PERMISSIONS.READ_ONLY)}>
-                      {gettext('Read-Only')}
-                    </DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              )}
+              {isPermissionSelectOpen &&
+                <CustomizeSelect
+                  value={permissionList.find(option => option.value === item.permission)}
+                  options={permissionList}
+                  onChange={this.onUpdatePermission}
+                  maxWidth={200}
+                />
+              }
+              {!isPermissionSelectOpen &&
+                <>
+                  <span>{item.permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
+                  <IconButton
+                    icon="rename"
+                    onClick={this.togglePermissionSelect}
+                    className="operation-icon ml-1"
+                    style={{ opacity: isOperationShow ? 1 : 0 }}
+                  />
+                </>
+              }
             </div>
           </td>
           <td>
-            <span className="project-api-token-dialog token-cell">
+            <span className="token-cell">
               {item.api_token}
             </span>
           </td>
@@ -125,14 +119,14 @@ class APITokenItem extends React.Component {
               <IconButton
                 icon="copy"
                 onClick={this.onCopyAPIToken}
-                className="project-api-token-dialog operation-icon"
-                style={{ opacity: isOperationShow ? 1 : 0.3 }}
+                className="operation-icon"
+                style={{ opacity: isOperationShow ? 1 : 0 }}
               />
               <IconButton
                 icon="delete"
                 className="text-danger"
                 onClick={this.toggleDeleteDialog}
-                style={{ opacity: isOperationShow ? 1 : 0.3 }}
+                style={{ opacity: isOperationShow ? 1 : 0 }}
               />
             </div>
           </td>
@@ -171,8 +165,17 @@ class ProjectAPITokenDialog extends React.Component {
       isLoading: true,
       isCreating: false,
       isItemFreezed: false,
-      isPermissionDropdownOpen: false,
     };
+    this.permissionList = [
+      {
+        value: PERMISSIONS.READ_WRITE,
+        label: gettext('Read-Write')
+      },
+      {
+        value: PERMISSIONS.READ_ONLY,
+        label: gettext('Read-Only')
+      }
+    ];
   }
 
   componentDidMount() {
@@ -246,11 +249,7 @@ class ProjectAPITokenDialog extends React.Component {
   };
 
   setPermission = (permission) => {
-    this.setState({ permission, isPermissionDropdownOpen: false });
-  };
-
-  togglePermissionDropdown = () => {
-    this.setState({ isPermissionDropdownOpen: !this.state.isPermissionDropdownOpen });
+    this.setState({ permission });
   };
 
   onFreezedItem = () => {
@@ -262,14 +261,14 @@ class ProjectAPITokenDialog extends React.Component {
   };
 
   render() {
-    const { tokens, isLoading, isCreating, appName, permission, isItemFreezed, isPermissionDropdownOpen } = this.state;
+    const { tokens, isLoading, isCreating, appName, permission, isItemFreezed } = this.state;
     const { projectUuid, projectName, toggle } = this.props;
 
     return (
-      <Modal isOpen toggle={toggle} size="lg" className="project-api-token-dialog">
+      <Modal isOpen toggle={toggle} size="lg" className="project-api-token-dialog" autoFocus={false}>
         <ModalHeader toggle={toggle}>{gettext('API token')} <span className="text-primary">{projectName}</span></ModalHeader>
         <ModalBody>
-          <div className="project-api-token-dialog modal-header-container">
+          <div className="modal-header-container">
             <Table className="create-form-table">
               <thead>
                 <tr>
@@ -284,27 +283,18 @@ class ProjectAPITokenDialog extends React.Component {
                     <Input
                       type="text"
                       value={appName}
+                      autoFocus={true}
                       onChange={this.handleAppNameChange}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), this.createToken())}
                     />
                   </td>
                   <td>
-                    <Dropdown isOpen={isPermissionDropdownOpen} toggle={this.togglePermissionDropdown} className="w-100">
-                      <DropdownToggle
-                        caret
-                        className="form-control w-100 text-left d-flex justify-content-between align-items-center project-api-token-dialog permission-dropdown-toggle"
-                      >
-                        <span>{permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
-                      </DropdownToggle>
-                      <DropdownMenu className="w-100">
-                        <DropdownItem onClick={() => this.setPermission(PERMISSIONS.READ_WRITE)}>
-                          {gettext('Read-Write')}
-                        </DropdownItem>
-                        <DropdownItem onClick={() => this.setPermission(PERMISSIONS.READ_ONLY)}>
-                          {gettext('Read-Only')}
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
+                    <CustomizeSelect
+                      value={this.permissionList.find(option => option.value === permission)}
+                      options={this.permissionList}
+                      onChange={this.setPermission}
+                      maxWidth={200}
+                    />
                   </td>
                   <td>
                     <Button
@@ -320,7 +310,7 @@ class ProjectAPITokenDialog extends React.Component {
             </Table>
           </div>
 
-          <div className="project-api-token-dialog modal-content-container">
+          <div className="modal-content-container">
             {isLoading ? (
               <div className="text-center">
                 <div className="spinner-border" role="status" />
@@ -346,6 +336,7 @@ class ProjectAPITokenDialog extends React.Component {
                       isItemFreezed={isItemFreezed}
                       onFreezedItem={this.onFreezedItem}
                       onUnfreezedItem={this.onUnfreezedItem}
+                      permissionList={this.permissionList}
                     />
                   ))}
                 </tbody>
