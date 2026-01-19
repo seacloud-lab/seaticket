@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.db.models import Subquery
+from django.db.models import Exists, OuterRef, Subquery
 
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 
@@ -31,13 +31,11 @@ class Command(BaseCommand):
         ChatMessageThoughtProcess.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
         old_sessions.delete()
 
-        # Clean up orphan records (session_uuid is null or not in ChatSessions)
-        all_session_uuids = ChatSessions.objects.values('session_uuid')
-        orphan_messages, _ = ChatMessages.objects.exclude(
-            session_uuid__in=Subquery(all_session_uuids)
+        orphan_messages, _ = ChatMessages.objects.filter(
+            ~Exists(ChatSessions.objects.filter(session_uuid=OuterRef('session_uuid')))
         ).delete()
-        orphan_tool_calls, _ = ChatToolCalls.objects.exclude(
-            session_uuid__in=Subquery(all_session_uuids)
+        orphan_tool_calls, _ = ChatToolCalls.objects.filter(
+            ~Exists(ChatSessions.objects.filter(session_uuid=OuterRef('session_uuid')))
         ).delete()
 
         self.stdout.write(f"Deleted {count} sessions, {orphan_messages} orphan messages, {orphan_tool_calls} orphan tool calls.")
