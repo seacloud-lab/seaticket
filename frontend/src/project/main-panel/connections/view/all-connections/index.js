@@ -73,7 +73,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
 
   const handleExpandRow = useCallback((row) => {
     togglePageSlugId && togglePageSlugId(row.id);
-    modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, row?.id]);
+    modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, Number(row?.id)]);
   }, [togglePageSlugId, modifyLocalBar]);
 
   const onManualSync = useCallback((record) => {

@@ -77,12 +77,22 @@ export const initConnectionResourceDetails = (type, {
   comments,
   replies,
   emails,
+  ...prams
 }) => {
-  if (type === CONNECTION_TYPE.SITE || type === CONNECTION_TYPE.SEAFILE) {
+  if (type === CONNECTION_TYPE.SITE) {
     return {
       title: title,
       time: modified_time,
-      details: content
+      details: content,
+      ...prams
+    };
+  }
+  if (type === CONNECTION_TYPE.SEAFILE) {
+    return {
+      title: title,
+      time: modified_time,
+      details: content,
+      ...prams
     };
   }
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
@@ -98,7 +108,8 @@ export const initConnectionResourceDetails = (type, {
     })) : [];
     return {
       title,
-      details: [mainPost, ...initComments]
+      details: [mainPost, ...initComments],
+      ...prams
     };
   }
   if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
@@ -109,6 +120,7 @@ export const initConnectionResourceDetails = (type, {
         time: detail.modified_time,
         body: detail.content || '',
       })) : [],
+      ...prams
     };
   }
   if (type === CONNECTION_TYPE.EMAIL) {
@@ -119,6 +131,7 @@ export const initConnectionResourceDetails = (type, {
         time: detail.modified_time,
         body: detail.content || '',
       })) : [],
+      ...prams
     };
   }
 };

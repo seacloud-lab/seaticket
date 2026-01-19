@@ -682,7 +682,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
         topic_record = topics_res.get('results')[0]
         topic_id = topic_record.pop('topic_id')
-        replies_sql = f"SELECT author,content,modified_time,accepted_answer FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+        replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')
         topic_record['replies'] = replies_records
@@ -696,7 +696,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
     """Query GitHub issue comments from SeaDB"""
     issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
     comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-    issue_sql = f"SELECT title, author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT title, author, content, created_time, issue_id, `url` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
@@ -725,7 +725,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
     site_table_name = WebCrawlTable.gen_table_name(connection_id)
-    sql = f"SELECT `title`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `{WebCrawlTable.title.name}`, `{WebCrawlTable.url.name}`, `{WebCrawlTable.modified_time.name}` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]
