@@ -20,7 +20,7 @@ function OrgTitle(props) {
             title={gettext('New group')}
             aria-label={gettext('New group')}
           >
-            <Icon symbol="plus" className="mr-2" />
+            <Icon symbol="new-group" className="mr-2" />
             <span>{gettext('New group')}</span>
           </div>
         }

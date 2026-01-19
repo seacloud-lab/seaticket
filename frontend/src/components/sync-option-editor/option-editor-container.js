@@ -163,7 +163,6 @@ const OptionEditorContainer = forwardRef(({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    abortControllerRef.current = new AbortController();
 
     timer.current && clearTimeout(timer.current);
 
@@ -174,6 +173,7 @@ const OptionEditorContainer = forwardRef(({
     }
     setIsLoading(true);
     timer.current = setTimeout(() => {
+      abortControllerRef.current = new AbortController();
       timer.current = null;
       onSearch(searchValue, abortControllerRef.current.signal).then(options => {
         setOptions(options);
