@@ -9,7 +9,7 @@ import { QUERY_TYPE } from '../search/project-searcher/constant';
 import { IconButton } from '../../components';
 import { Z_INDEX } from '../../constants/zIndexes';
 
-import './index.css';
+import './header-search.css';
 
 const gettext = window.gettext;
 const controlKey = isMac() ? '⌘' : 'Ctrl';
