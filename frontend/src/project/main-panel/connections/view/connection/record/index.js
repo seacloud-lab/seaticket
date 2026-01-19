@@ -11,12 +11,14 @@ import { CONNECTION_TYPE } from '../../../constants';
 import { gettext } from '@/constants';
 import EmailDetails from '../../../components/connection-resource-details/email-details';
 import { useData } from '@/project/hooks';
+import { useConnections } from '../../../hooks';
 
 import './index.css';
 
 const Record = ({ projectUuid }) => {
-  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, connectionInfo, updateConnectionInfo } = useConnectionsPage();
+  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId } = useConnectionsPage();
   const { data: cachedData, getRow } = useData();
+  const { connections } = useConnections();
 
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -25,8 +27,10 @@ const Record = ({ projectUuid }) => {
 
   const recordRef = useRef(null);
 
+  const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
+
   const cachedTitle = useMemo(() => {
-    const tableName = getTableName({ ...connectionInfo, id: pageSlugId });
+    const tableName = getTableName(connection);
     const table = cachedData[tableName];
     if (!table) return '';
     const record = getRow(tableName, childrenPageSlugId);
@@ -39,7 +43,7 @@ const Record = ({ projectUuid }) => {
       title = getCellValueByColumn(record, filenameColumn);
     }
     return title;
-  }, [cachedData, connectionInfo, pageSlugId, childrenPageSlugId, getRow]);
+  }, [cachedData, connection, pageSlugId, childrenPageSlugId, getRow]);
 
   const title = useMemo(() => {
     return data.title || cachedTitle;
@@ -51,10 +55,9 @@ const Record = ({ projectUuid }) => {
 
   useEffect(() => {
     connectionsAPI.getConnectionRowDetail(projectUuid, pageSlugId, { _pk: childrenPageSlugId }).then((res) => {
-      const { connection_name, connection_type } = res.data;
+      const { connection_type } = res.data;
       const data = initConnectionResourceDetails(connection_type, res.data);
       setData(data);
-      updateConnectionInfo && updateConnectionInfo({ name: connection_name, type: connection_type, id: pageSlugId });
       setErrorMessage('');
       setLoading(false);
     }).catch((error) => {
@@ -65,7 +68,7 @@ const Record = ({ projectUuid }) => {
   }, [childrenPageSlugId]);
 
   useEffect(() => {
-    if (isLoading || isConnectionsPageLoading || errorMessage || connectionInfo.type !== CONNECTION_TYPE.EMAIL) return;
+    if (isLoading || isConnectionsPageLoading || errorMessage || connection.type !== CONNECTION_TYPE.EMAIL) return;
     const recordDom = recordRef.current;
     const handleResize = () => {
       if (!recordDom) return;
@@ -77,13 +80,13 @@ const Record = ({ projectUuid }) => {
     return () => {
       recordDom && resizeObserver.unobserve(recordDom);
     };
-  }, [isLoading, isConnectionsPageLoading, errorMessage, connectionInfo]);
+  }, [isLoading, isConnectionsPageLoading, errorMessage, connection]);
 
   if (isConnectionsPageLoading) return null;
   if (isLoading) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
 
-  if (connectionInfo.type !== CONNECTION_TYPE.EMAIL) {
+  if (connection.type !== CONNECTION_TYPE.EMAIL) {
     return (<CenteredError>{gettext('Not support type')}</CenteredError>);
   }
 

@@ -127,6 +127,9 @@ const Project = () => {
       bar = BAR_TYPE.KNOWLEDGE_TRASH;
       children[0] = '';
     }
+    if (bar === BAR_TYPE.CONNECTION && children[0] && CONNECTION_PAGE_SLUG_ID.ALL !== children[0]) {
+      children[0] = Number(children[0]);
+    }
     resetURL(true, [bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);

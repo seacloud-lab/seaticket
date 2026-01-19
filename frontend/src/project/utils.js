@@ -23,8 +23,9 @@ export const getResourceURL = (type, resourceID, { url, workspaceID, projectName
 };
 
 export const getResourceOriginalURL = (type, resource, { workspaceID, projectName, connections, columns }) => {
-  if (type === TICKET_TYPE) return generatorTicketURL({ ticket: resource, workspaceID, projectName });
-  if (type === KNOWLEDGE_BASE_TYPE) return generatorKnowledgeBaseURL({ kb: resource, workspaceID, projectName });
+  // if (type === TICKET_TYPE) return generatorTicketURL({ ticket: resource, workspaceID, projectName });
+  // if (type === KNOWLEDGE_BASE_TYPE) return generatorKnowledgeBaseURL({ kb: resource, workspaceID, projectName });
+  if (type === TICKET_TYPE || type === KNOWLEDGE_BASE_TYPE) return '';
   const connection = connections.find(c => c.id === resource.connection_id);
   if (!connection) return '';
   return getOriginalPageUrl(connection, resource, columns);

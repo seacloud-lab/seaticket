@@ -15,7 +15,6 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, toggleChildrenPageSlugId] = useState('');
   const [viewID, toggleView] = useState('');
-  const [connectionInfo, updateConnectionInfo] = useState({ name: '', type: '' });
 
   const resetURL = useCallback((pageSlugId, viewID, childrenPageSlugId) => {
     const { origin } = location;
@@ -31,16 +30,13 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       }
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, connectionInfo]);
+  }, [workspaceID]);
 
   const togglePageSlugId = useCallback((pageSlugId, viewID = '', childrenPageSlugId = '') => {
     setLoading(true);
     toggleView(viewID);
     setPageSlugId(pageSlugId);
     toggleChildrenPageSlugId(childrenPageSlugId);
-    if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      updateConnectionInfo({ name: '', type: '' });
-    }
     setTimeout(() => setLoading(false), 1);
   }, []);
 
@@ -99,10 +95,8 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       pageSlugId,
       childrenPageSlugId,
       isLoading,
-      connectionInfo,
       togglePageSlugId,
       toggleView,
-      updateConnectionInfo,
       onRefresh,
       toggleChildrenPageSlugId,
     }}>

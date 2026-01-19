@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from '@/utils/dayjs';
 import { Button } from 'reactstrap';
 import { Utils } from '@/utils/utils';
@@ -21,11 +21,15 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
-  const { pageSlugId, childrenPageSlugId, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
-  const { modifyLocalConnectionsSyncStatus } = useConnections();
-  const { name: connectionName } = connectionInfo || {};
+  const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
+  const { modifyLocalConnectionsSyncStatus, connections } = useConnections();
   const timer = useRef(null);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const connectionName = useMemo(() => {
+    const connection = connections.find(c => c.id === pageSlugId);
+    return connection?.name || '';
+  }, [connections, pageSlugId]);
 
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);

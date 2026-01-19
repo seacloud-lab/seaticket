@@ -53,11 +53,15 @@ const ConnectionResourceDetails = ({ resource, columns, projectUuid, updateDetai
     if (type === CONNECTION_TYPE.EMAIL) {
       const assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, resource.connection_id);
       return (
-        <EmailDetails className="sea-ticket-connection-resource-details pt-4 pb-4" details={details} assetURLPrefix={assetURLPrefix}/>
+        <EmailDetails
+          className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+          details={details}
+          assetURLPrefix={assetURLPrefix}
+        />
       );
     }
     return (
-      <div className="sea-ticket-connection-resource-details">
+      <div className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details`}>
         {details.map((detail, index) => {
           return (
             <CommonDetailItem detail={detail} type={type} key={index} />
@@ -68,7 +72,7 @@ const ConnectionResourceDetails = ({ resource, columns, projectUuid, updateDetai
   }
 
   if (details) {
-    return (<CustomizeMarkdownViewer value={details} showTOC={false} />);
+    return (<CustomizeMarkdownViewer className={`sea-ticket-connection-${type}-resource-details`} value={details} showTOC={false} />);
   }
   return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };

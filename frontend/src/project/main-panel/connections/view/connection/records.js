@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useRef } from 'react';
 import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
@@ -29,9 +29,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
 
-  const [connection, setConnection] = useState({});
   const [currentRow, setCurrentRow] = useState({});
-  const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
@@ -41,13 +39,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
-  const { viewID, isLoading: isLoadingConnections, updateConnectionInfo, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
+  const { viewID, isLoading: isLoadingConnections, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRows
   } = useData();
+
+  console.log(connectionID, connections);
+  const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
     const connection = connections.find(c => c.id === connectionID);
@@ -85,13 +86,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [connection]);
 
   const api = useMemo(() => {
-    allColumns.current = [];
     let _api = {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params)).then(res => {
           const { records } = res.data;
-          const connection = connections.find(c => c.id === connectionID);
           const type = connection?.type;
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
@@ -476,25 +475,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
   }, [currentRow, connection, seaMetaDataRef]);
 
-  useEffect(() => {
-    const connection = connections.find(c => c.id === connectionID);
-    if (connection) {
-      setConnection(connection);
-      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type, id: connectionID });
-      setLoadingConnection(false);
-      return;
-    }
-    connectionsAPI.getConnection(projectUuid, connectionID).then(res => {
-      const connection = res.data.record;
-      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type, id: connectionID });
-      setConnection(connection);
-      setLoadingConnection(false);
-    }).catch(error => {
-      toaster.danger(gettext('Connection not found'));
-    });
-  }, []);
-
-  if (isLoadingConnections || isLoadingConnection) return (<CenteredLoading />);
+  if (isLoadingConnections) return (<CenteredLoading />);
 
   return (
     <>

@@ -12,10 +12,10 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
 
   const isActive = useMemo(() => {
     const { id } = nav;
-    return activeBar[1] === String(id);
+    return activeBar[1] === id;
   }, [activeBar, nav]);
 
-  const handleClick = useCallback((type) => {
+  const handleClick = useCallback(() => {
     if (isActive) return;
     const { id } = nav;
     onClick && onClick(id);
@@ -29,7 +29,7 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
         'sea-qa-project-navigation-item-active': isActive,
       })}
       style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
-      onClick={() => handleClick(connectionOption.type)}
+      onClick={handleClick}
       title={name}
     >
       <img src={getConnectionIcon(nav.type)} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon" />

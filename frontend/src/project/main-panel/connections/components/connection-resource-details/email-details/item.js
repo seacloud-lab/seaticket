@@ -94,7 +94,7 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
           <div className="email-record-info-to">
-            {gettext('To')}: {detail['email_to'].split(',').join(', ')}
+            {gettext('To')}: {detail['email_to']?.split(',')?.join(', ')}
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
           <div className="email-record-info-to">
-            {gettext('To')}: {detail['email_to'].split(',').join(', ')}
+            {gettext('To')}: {detail['email_to']?.split(',')?.join(', ')}
           </div>
         </div>
       </div>
