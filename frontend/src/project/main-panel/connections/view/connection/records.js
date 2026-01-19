@@ -47,7 +47,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     getMetadata, modifyRow, modifyRows, deleteRows
   } = useData();
 
-  console.log(connectionID, connections);
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
