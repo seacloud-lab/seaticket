@@ -1,6 +1,9 @@
 import { CellType } from '../../constants';
 import { getTableById, getTableColumnByKey, getTableColumnByName } from '../table';
-import { getOptionNameById, getColumnOptionNamesByIds, getOption, getColumnOptionIdsByNames } from '../column';
+import {
+  getOptionNameById, getColumnOptionNamesByIds, getOption,
+  getColumnOptionIdsByNames, getColumnOptions
+} from '../column';
 import ObjectUtils from '@/utils/object-utils';
 
 /**
@@ -104,7 +107,8 @@ const convertRowToKeyValue = (rowUpdate, { data, typesData, tagsData }) => {
     let cellValue = rowUpdate[name];
     if (type === CellType.SINGLE_SELECT ) {
       if (cellValue) {
-        let option = getOption(column, cellValue);
+        const options = getColumnOptions(column);
+        let option = getOption(options, cellValue);
         cellValue = option?.id;
       }
     } else if (type === CellType.TYPE) {
