@@ -14,7 +14,7 @@ from rest_framework import status
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.group.utils import refresh_group_name_cache, group_id_to_name
+from seahub.group.utils import refresh_group_name_cache
 from seahub.signals import group_deleted
 from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
@@ -486,8 +486,8 @@ class ManagedGroupsTrashProjectsView(APIView):
             page = int(request.GET.get('page', 1))
             per_page = int(request.GET.get('per_page', 25))
         except Exception:
-            error_msg = 'per_page or page invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            page = 1
+            per_page = 25
 
         org_id = request.user.org.org_id
         groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
@@ -496,7 +496,8 @@ class ManagedGroupsTrashProjectsView(APIView):
             return Response({'count': 0, 'trash_project_list': []})
 
         owner_list = ['%s@seafile_group' % gid for gid in admin_group_ids]
-        start, end = (page - 1) * per_page, page * per_page
+        start = (page - 1) * per_page
+        end = page * per_page
         try:
             projects = Projects.objects.filter(deleted=True, workspace__owner__in=owner_list).select_related('workspace').order_by('-delete_time')
         except Exception as e:
@@ -505,12 +506,15 @@ class ManagedGroupsTrashProjectsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         count = projects.count()
+        slice_projects = list(projects[start:end])
+        gids = set(p.get_owner_group_id() for p in slice_projects)
+        group_name_map = dict(Group.objects.filter(group_id__in=gids).values_list('group_id', 'group_name'))
         results = []
-        for p in projects[start:end]:
+        for p in slice_projects:
             info = p.to_dict(include_deleted=True)
             gid = p.get_owner_group_id()
             info['owner_group_id'] = gid
-            info['owner'] = group_id_to_name(gid)
+            info['owner'] = group_name_map.get(gid, '')
             results.append(info)
 
         return Response({'count': count, 'trash_project_list': results})
