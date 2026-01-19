@@ -327,6 +327,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   URL: 'url',
   PATH: 'path',
   UNREAD: 'unread',
+  OUTDATED: 'outdated',
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
   RESOLVED: 'resolved',
@@ -349,6 +350,11 @@ const CONNECTION_PREDEFINED_COLUMN = {
     display_name: gettext('AI processed time'),
     type: CellType.DATE,
     data: { format: 'YYYY-MM-DD HH:mm:ss' },
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]: {
+    display_name: gettext('Outdated'),
+    type: CellType.CHECKBOX,
+    editable: true,
   },
 };
 
@@ -497,4 +503,12 @@ export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+];
+
+export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SEAFILE,
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.EMAIL,
 ];

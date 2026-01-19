@@ -33,7 +33,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 
@@ -658,7 +658,8 @@ class ProjectConnectionRecordView(APIView):
     @require_org_context
     def put(self, request, project_uuid, connection_id, record_id):
         """Update a single connection record
-        Currently only supports EMAIL type connections for updating the unread field.
+        Supports updating outdated field for all connection types,
+        and unread field for EMAIL type.
         """
         row_data = request.data
         if not row_data or not isinstance(row_data, dict):
@@ -681,21 +682,46 @@ class ProjectConnectionRecordView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # currently only EMAIL type is supported
-        if project_connection.type != ConnectionType.EMAIL.value:
+        # Get table class based on connection type
+        supported_types = [
+            ConnectionType.DISCOURSE_FORUM.value,
+            ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.SITE.value,
+            ConnectionType.SEAFILE.value,
+            ConnectionType.EMAIL.value,
+        ]
+        if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        table_cls = None
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            table_cls = DiscourseTopicsTable
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            table_cls = GithubIssuesTable
+        elif project_connection.type == ConnectionType.SITE.value:
+            table_cls = WebCrawlTable
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_cls = SeafileTable
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            table_cls = ThreadTable
+
         update_row = {'pk': int(record_id), 'row': {}}
 
-        # currently only unread field is supported
-        if 'unread' in row_data:
+        # Support outdated field for all connection types
+        if 'outdated' in row_data:
+            update_row['row']['outdated'] = row_data.get('outdated')
+            update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
+        # Support unread field for EMAIL type only
+        if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
             update_row['row']['unread'] = row_data.get('unread')
+            update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
         if not update_row['row']:
             return Response({'success': True})
 
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = table_cls.gen_table_name(connection_id)
         seadb_api = SeaDBAPI(username)
 
         try:
@@ -716,7 +742,8 @@ class ProjectConnectionRecordsView(APIView):
     @require_org_context
     def put(self, request, project_uuid, connection_id):
         """Batch update connection records
-        Currently only supports EMAIL type connections for updating the unread field.
+        Supports updating outdated field for all connection types,
+        and unread field for EMAIL type.
         """
         records_data = request.data.get('records_data')
         if not records_data or not isinstance(records_data, list):
@@ -739,9 +766,29 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if project_connection.type != ConnectionType.EMAIL.value:
+        # Get table class based on connection type
+        supported_types = [
+            ConnectionType.DISCOURSE_FORUM.value,
+            ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.SITE.value,
+            ConnectionType.SEAFILE.value,
+            ConnectionType.EMAIL.value,
+        ]
+        if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        table_cls = None
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            table_cls = DiscourseTopicsTable
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            table_cls = GithubIssuesTable
+        elif project_connection.type == ConnectionType.SITE.value:
+            table_cls = WebCrawlTable
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_cls = SeafileTable
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            table_cls = ThreadTable
 
         update_rows = []
         for record in records_data:
@@ -750,15 +797,24 @@ class ProjectConnectionRecordsView(APIView):
             if not row_id or not isinstance(row_data, dict):
                 continue
             update_row = {'pk': int(row_id), 'row': {}}
-            if 'unread' in row_data:
+
+            # Support outdated field for all connection types
+            if 'outdated' in row_data:
+                update_row['row']['outdated'] = row_data.get('outdated') if row_data.get('outdated') is not None else False
+                update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
+            # Support unread field for EMAIL type only
+            if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
+                update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
             if update_row['row']:
                 update_rows.append(update_row)
 
         if not update_rows:
             return Response({'success': True})
 
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = table_cls.gen_table_name(connection_id)
         seadb_api = SeaDBAPI(username)
 
         try:
@@ -770,64 +826,68 @@ class ProjectConnectionRecordsView(APIView):
 
         return Response({'success': True})
 
-    @require_org_context
-    def delete(self, request, project_uuid, connection_id):
-        record_ids = request.data.get('record_ids')
-        if not record_ids or not isinstance(record_ids, list):
-            error_msg = 'record_ids must be a non-empty list.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            record_ids = [int(record_id) for record_id in record_ids]
-        except (ValueError, TypeError):
-            error_msg = 'record_ids must be a list of integers.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+    # def delete(self, request, project_uuid, connection_id):
+    #     if not is_org_context(request):
+    #         error_msg = 'Feature is not enabled.'
+    #         return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not record_ids:
-            return Response({'success': True})
+    #     record_ids = request.data.get('record_ids')
+    #     if not record_ids or not isinstance(record_ids, list):
+    #         error_msg = 'record_ids must be a non-empty list.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
+    #     try:
+    #         record_ids = [int(record_id) for record_id in record_ids]
+    #     except (ValueError, TypeError):
+    #         error_msg = 'record_ids must be a list of integers.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+    #     if not record_ids:
+    #         return Response({'success': True})
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+    #     project = Projects.objects.get_project_by_uuid(project_uuid)
+    #     if not project:
+    #         error_msg = f'Project {project_uuid} not found.'
+    #         return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+    #     workspace = project.workspace
 
-        if project_connection.type != ConnectionType.EMAIL.value:
-            error_msg = f'Connection type {project_connection.type} does not support deleting records.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+    #     username = request.user.username
+    #     if not check_project_permission(username, workspace.owner):
+    #         error_msg = 'Permission denied.'
+    #         return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        update_rows = []
-        modified_time = datetime.datetime.now(datetime.UTC).isoformat()
-        for record_id in record_ids:
-            update_rows.append({
-                'pk': record_id,
-                'row': {
-                    ThreadTable.deleted.name: True,
-                    ThreadTable.modified_time.name: modified_time,
-                }
-            })
+    #     project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+    #     if not project_connection:
+    #         error_msg = f'project_connection {connection_id} not found.'
+    #         return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        table_name = ThreadTable.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI(username)
+    #     if project_connection.type != ConnectionType.EMAIL.value:
+    #         error_msg = f'Connection type {project_connection.type} does not support deleting records.'
+    #         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            seadb_api.update_rows(project_uuid, table_name, update_rows)
-        except Exception as e:
-            logger.error(f'batch delete connection records error: {e}')
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+    #     update_rows = []
+    #     record_modified_time = datetime.datetime.now(datetime.UTC).isoformat()
+    #     for record_id in record_ids:
+    #         update_rows.append({
+    #             'pk': record_id,
+    #             'row': {
+    #                 ThreadTable.deleted.name: True,
+    #                 ThreadTable.record_modified_time.name: record_modified_time,
+    #             }
+    #         })
 
-        return Response({'success': True})
+    #     table_name = ThreadTable.gen_table_name(connection_id)
+    #     seadb_api = SeaDBAPI(username)
+
+    #     try:
+    #         seadb_api.update_rows(project_uuid, table_name, update_rows)
+    #     except Exception as e:
+    #         logger.error(f'batch delete connection records error: {e}')
+    #         error_msg = 'Internal Server Error'
+    #         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+    #     return Response({'success': True})
 
 
 class ConnectionFileView(APIView):
