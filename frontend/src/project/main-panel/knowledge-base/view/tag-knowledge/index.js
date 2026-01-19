@@ -32,7 +32,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
         const rawColumns = res?.data?.columns || [];
 
         const pkRawColumn = rawColumns.find(c => c.name === '_pk');
-        const pkColumnKey = pkRawColumn ? (pkRawColumn.id) : undefined;
+        const pkColumnId = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
 
         let columns = rawColumns;
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
@@ -42,7 +42,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
           return {
             ...c,
             ...predefinedConfig,
-            original_key: c.key,
+            id: columnId,
             key: columnId,
           };
         });
@@ -50,7 +50,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
         rows = rows.map(row => {
           const newRow = { ...row };
           columns.forEach(c => {
-            const id = c.key;
+            const id = c.id;
             const name = c.name;
             if (id && (newRow[id] === undefined) && (newRow[name] !== undefined)) {
               newRow[id] = newRow[name];
@@ -59,10 +59,10 @@ const TagKnowledge = ({ projectUuid, permission }) => {
               newRow[name] = newRow[id];
             }
           });
-          if (pkColumnKey) {
-            const pkValue = newRow[pkColumnKey] ?? newRow._pk ?? newRow._id;
+          if (pkColumnId) {
+            const pkValue = newRow[pkColumnId] ?? newRow['_pk'] ?? newRow._pk ?? newRow._id;
             if (pkValue !== undefined) {
-              newRow[pkColumnKey] = pkValue;
+              newRow[pkColumnId] = pkValue;
               newRow._pk = pkValue;
               newRow._id = pkValue;
             }

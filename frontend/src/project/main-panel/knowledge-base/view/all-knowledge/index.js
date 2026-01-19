@@ -45,14 +45,51 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
             ...predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE],
             click: (row) => togglePageSlugId(row._id),
           };
+          const pkRawColumn = columns.find(c => c.name === '_pk');
+          const pkColumnId = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
 
           columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
+            const predefinedConfig = KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[name];
+            const columnId = c.id || c.key;
             return {
               ...c,
               ...predefinedConfig[name],
+              id: columnId,
+              key: columnId,
             };
           });
+
+          rows = rows.map(row => {
+            const newRow = { ...row };
+            columns.forEach(c => {
+              const id = c.id;
+              const name = c.name;
+              if (id && (newRow[id] === undefined) && (newRow[name] !== undefined)) {
+                newRow[id] = newRow[name];
+              }
+              if (name && (newRow[name] === undefined) && (newRow[id] !== undefined)) {
+                newRow[name] = newRow[id];
+              }
+            });
+
+            if (pkColumnId) {
+              const pkValue = newRow[pkColumnId] ?? newRow['_pk'] ?? newRow._pk ?? newRow._id;
+              if (pkValue !== undefined) {
+                newRow[pkColumnId] = pkValue;
+                newRow._pk = pkValue;
+                newRow._id = pkValue;
+              }
+            } else {
+              const pkValue = newRow._id ?? newRow._pk;
+              if (pkValue !== undefined) {
+                newRow._pk = pkValue;
+                newRow._id = pkValue;
+              }
+            }
+            return newRow;
+          });
+
           const tagsColumn = columns.find(c => c.name === 'tags');
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);

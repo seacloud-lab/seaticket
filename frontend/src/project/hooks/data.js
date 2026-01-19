@@ -238,26 +238,34 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const columns = res?.data?.columns || [];
+      const pkColumn = columns.find(c => c && c.name === '_pk');
+      const pkFieldKey = pkColumn ? (pkColumn.id || pkColumn.key) : undefined;
+
       let rowIds = is_reload ? [] : [...(view?.rows || [])];
       let id_row_map = { ...table.id_row_map };
       let key_column_map = { ...table.key_column_map };
       let view_map = { ...table[viewMapName] };
+
       rows.forEach(r => {
-        const rowId = String(r._pk);
+        const pkValue = r._pk ?? r._id ?? r['_pk'] ?? (pkFieldKey ? r[pkFieldKey] : undefined);
+        const rowId = String(pkValue);
         if (!rowIds.includes(rowId)) {
           rowIds.push(rowId);
         }
-        id_row_map[rowId] = { ...id_row_map[rowId], ...r };
+        id_row_map[rowId] = { ...id_row_map[rowId], ...r, _pk: pkValue, _id: pkValue };
       });
+
       columns.forEach(c => {
         key_column_map[c.key] = c;
       });
+
       view_map[view_id] = { ...view, rows: rowIds, columns: columns.map(c => c.key), timestamp: Date.now() };
       updateTable(tableName, { id_row_map, key_column_map, [viewMapName]: view_map });
       return res;
     });
+
     if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
-      func = () => new Promise((resolve, reject) => {
+      func = () => new Promise((resolve) => {
         resolve({
           data: {
             [recordsName]: view.rows.map(rId => table.id_row_map[rId]).filter(Boolean),
@@ -266,6 +274,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
         });
       });
     }
+
     return func();
   }, [getTableByName, updateTable]);
 

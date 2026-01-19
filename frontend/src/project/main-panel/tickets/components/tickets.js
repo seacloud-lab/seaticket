@@ -56,28 +56,92 @@ const Tickets = ({
     setIsShowTicketDetailsDialog(true);
   }, [projectUuid]);
 
+  const resolvedViewID = useMemo(() => {
+    if (viewID) return viewID;
+    if (isBuiltInView) return 'open';
+    return undefined;
+  }, [viewID, isBuiltInView]);
+
   const metadataAPI = useMemo(() => {
     let _api = {};
 
     // metadata
     if (isFunction(api.getMetadata)) {
       _api.getMetadata = (...params) => {
-        return getMetadata(TICKET_TABLE_NAME, params[0], () => api.getMetadata(...params), isBuiltInView).then(res => {
-          const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-          let columns = res?.data?.columns || [];
+        const metadataParams = {
+          ...params[0],
+          view_id: (params[0] && params[0].view_id) ? params[0].view_id : resolvedViewID,
+        };
+        return getMetadata(TICKET_TABLE_NAME, metadataParams, () => api.getMetadata(...params), isBuiltInView).then(res => {
+          let rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
+          const rawColumns = res?.data?.columns || [];
           const othersConfig = {
             [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: { click: (row) => togglePageSlugId(row._id) },
           };
-          columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+
+          const pkRawColumn = rawColumns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.PK);
+          const pkColumnId = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
+
+          let columns = rawColumns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
             const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
             const otherConfig = othersConfig[name];
+            const columnId = c.id || c.key;
             return {
               ...c,
               ...predefinedConfig,
               ...otherConfig,
+              id: columnId,
+              key: c.key || columnId,
             };
           });
+
+          rows = rows.map(row => {
+            const newRow = { ...row };
+            columns.forEach(c => {
+              const id = c.id;
+              const key = c.key;
+              const name = c.name;
+
+              // Ensure values are accessible by both `key` (for SeaMetadata) and `id` (for our mapping).
+              if (id && (newRow[id] === undefined) && (name && newRow[name] !== undefined)) {
+                newRow[id] = newRow[name];
+              }
+              if (key && (newRow[key] === undefined) && (name && newRow[name] !== undefined)) {
+                newRow[key] = newRow[name];
+              }
+              if (key && (newRow[key] === undefined) && (id && newRow[id] !== undefined)) {
+                newRow[key] = newRow[id];
+              }
+              if (id && (newRow[id] === undefined) && (key && newRow[key] !== undefined)) {
+                newRow[id] = newRow[key];
+              }
+              if (name && (newRow[name] === undefined)) {
+                if (id && newRow[id] !== undefined) {
+                  newRow[name] = newRow[id];
+                } else if (key && newRow[key] !== undefined) {
+                  newRow[name] = newRow[key];
+                }
+              }
+            });
+
+            if (pkColumnId) {
+              const pkValue = newRow[pkColumnId] ?? newRow[PREDEFINED_TICKET_COLUMN_NAME.PK] ?? newRow._pk ?? newRow._id;
+              if (pkValue !== undefined) {
+                newRow[pkColumnId] = pkValue;
+                newRow._pk = pkValue;
+                newRow._id = pkValue;
+              }
+            } else {
+              const pkValue = newRow._id ?? newRow._pk;
+              if (pkValue !== undefined) {
+                newRow._pk = pkValue;
+                newRow._id = pkValue;
+              }
+            }
+            return newRow;
+          });
+
           const typeColum = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE);
           if (typeColum) {
             context.setSetting('typeColumnKey', typeColum.key);
@@ -218,7 +282,7 @@ const Tickets = ({
     <>
       <SeaMetadata
         ref={metadataRef}
-        viewID={viewID}
+        viewID={resolvedViewID}
         api={metadataAPI}
         t={t}
         fixedColumnCount={2}

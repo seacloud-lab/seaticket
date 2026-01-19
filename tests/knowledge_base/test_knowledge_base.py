@@ -165,7 +165,7 @@ class TestKnowledgeBasesPost:
         assert response.data['row']['_pk'] == 123
         assert response.data['row']['title'] == 'Test Title'
         assert response.data['row']['content'] == 'Test Content'
-        assert mock_seadb_api.insert_rows.call_count == 2
+        mock_seadb_api.insert_rows.assert_called_once()
 
 
 # ============================================================================
