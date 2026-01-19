@@ -20,7 +20,7 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
   }, [isShowChildren, reloadConnections]);
 
   const toggleConnectionView = useCallback((connectionId) => {
-    onClick([nav.key, String(connectionId)]);
+    onClick([nav.key, connectionId]);
   }, [nav, onClick]);
 
   const { key, name, icon } = nav;

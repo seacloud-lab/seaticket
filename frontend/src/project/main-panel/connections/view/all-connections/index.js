@@ -24,7 +24,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
   } = useConnections();
-  const { togglePageSlugId, updateConnectionInfo } = useConnectionsPage();
+  const { togglePageSlugId } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
   const lastQueryRecordIds = useRef([]);
@@ -72,9 +72,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   }, []);
 
   const handleExpandRow = useCallback((row) => {
-    updateConnectionInfo && updateConnectionInfo({ name: row.name, type: row.type, id: row.id });
     togglePageSlugId && togglePageSlugId(row.id);
-    modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, String(row?.id)]);
+    modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, row?.id]);
   }, [togglePageSlugId, modifyLocalBar]);
 
   const onManualSync = useCallback((record) => {

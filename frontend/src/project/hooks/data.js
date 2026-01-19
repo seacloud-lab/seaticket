@@ -273,10 +273,11 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
   const getRow = useCallback((tableName, rowId, api) => {
     if (!tableName || !rowId) return null;
     const rowIdString = rowId + '';
-    const table = getTableByName(tableName);
-    const id_row_map = table.id_row_map;
+    const table = data[tableName];
+    if (!table) return null;
+    const id_row_map = table.id_row_map || {};
     return id_row_map[rowIdString];
-  }, [getTableByName]);
+  }, [data]);
 
   const modifyLocalRows = useCallback((tableName, rowsUpdate = []) => {
     if (!tableName) return;
@@ -286,7 +287,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     rowsUpdate.forEach(rowUpdate => {
       const { row_id, row } = rowUpdate;
       const rowIdString = row_id + '';
-      const oldRow = table.id_row_map[rowIdString];
+      const oldRow = table.id_row_map[rowIdString] || {};
       let oldValue = {};
       Object.keys(row).forEach((key) => {
         oldValue[key] = oldRow[key];
