@@ -47,6 +47,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     getMetadata, modifyRow, modifyRows, deleteRows
   } = useData();
 
+  console.log(connectionID, connections);
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
@@ -85,13 +86,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [connection]);
 
   const api = useMemo(() => {
-    allColumns.current = [];
     let _api = {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params)).then(res => {
           const { records } = res.data;
-          const connection = connections.find(c => c.id === connectionID);
           const type = connection?.type;
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
