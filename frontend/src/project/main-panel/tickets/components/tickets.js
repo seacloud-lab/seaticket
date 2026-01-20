@@ -142,7 +142,7 @@ const Tickets = ({
       _api.deleteRow = (ticketNumber) => deleteRow(TICKET_TABLE_NAME, ticketNumber, () => api.deleteRow(ticketNumber));
     }
     if (isFunction(api.deleteRows)) {
-      _api.deleteRows = (ticketIds) => deleteRows(TICKET_TABLE_NAME, ticketIds, () => api.deleteRows(projectUuid, ticketIds));
+      _api.deleteRows = (ticketIds) => deleteRows(TICKET_TABLE_NAME, ticketIds, () => api.deleteRows(ticketIds));
     }
 
     // file

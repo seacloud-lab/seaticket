@@ -102,7 +102,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
       togglePageSlugId(res.data.ticket._pk);
-      insertRow(TICKET_TABLE_NAME, res.data.ticket._pk, res.data.ticket);
+      insertRow(TICKET_TABLE_NAME);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
