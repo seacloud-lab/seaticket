@@ -382,14 +382,16 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     });
   }, [updateDataByDeleteRows]);
 
-  const insertRow = useCallback((tableName, rowId, rowData) => {
+  const insertRow = useCallback((tableName, rowId = '', rowData = null) => {
     if (!tableName) return;
     setData(data => {
       let isChanged = false;
       const newData = dcopy(data);
       const table = newData[tableName];
       if (!table) return data;
-      table.id_row_map[rowId + ''] = rowData;
+      if (rowId) {
+        table.id_row_map[rowId + ''] = rowData;
+      }
       if (hasOwnProperty(table, 'id_view_map')) {
         let id_view_map = { ...table.id_view_map };
         Object.keys(id_view_map).forEach(viewID => {

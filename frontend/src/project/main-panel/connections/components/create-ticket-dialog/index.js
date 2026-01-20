@@ -7,7 +7,8 @@ import { toaster, ModalHeader, CenteredLoading } from '@/components';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 import { useMetadata } from '../../../tickets/hooks';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
-import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { useData } from '@/project/hooks';
 
 import './index.css';
 
@@ -20,6 +21,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [priority, setPriority] = useState(0);
 
   const { typesData, tagsData, substatesData, createTag } = useMetadata();
+  const { insertRow } = useData();
 
   useEffect(() => {
     if (initialData) {
@@ -73,9 +75,10 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       priority,
       substate: substateOption?.name,
     };
-    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
       toaster.success(gettext('Ticket created'));
-      setTimeout(toggle, 500);
+      toggle();
+      insertRow(TICKET_TABLE_NAME);
     });
   };
 
