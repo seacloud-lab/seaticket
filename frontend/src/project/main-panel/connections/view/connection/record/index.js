@@ -1,74 +1,65 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { useConnectionsPage } from '../../../hooks';
-import { CenteredError, CenteredLoading } from '@/components';
-import { connectionsAPI } from '../../../../../api';
-import { Utils } from '@/utils/utils';
-import { initConnectionResourceDetails, generatorConnectionAssetURLPrefix, getTableName } from '../../../utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { CONNECTION_TYPE } from '../../../constants';
-import { gettext } from '@/constants';
-import EmailDetails from '../../../components/connection-resource-details/email-details';
+import { CenteredLoading, IconButton } from '@/components';
+import { getTableName } from '../../../utils';
 import { useData } from '@/project/hooks';
 import { useConnections } from '../../../hooks';
+import ConnectionResourceDetails from '../../../components/connection-resource-details';
+import { getResourceOriginalURL } from '@/project/utils';
+import { gettext } from '@/constants';
 
 import './index.css';
 
+const { projectName, workspaceID } = window.app.pageOptions;
+
+const initColumns = [
+  { key: 'filename', name: 'filename' },
+  { key: 'path', name: 'path' },
+  { key: 'title', name: 'title' },
+  { key: 'url', name: 'url' },
+  { key: 'slug', name: 'slug' },
+  { key: 'topic_id', name: 'topic_id' },
+];
+
 const Record = ({ projectUuid }) => {
-  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId } = useConnectionsPage();
-  const { data: cachedData, getRow } = useData();
+  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
+  const { getRow } = useData();
   const { connections } = useConnections();
 
-  const [isLoading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [data, setData] = useState('');
   const [containerWidth, setContainerWidth] = useState(0);
+  const [details, setDetails] = useState(null);
 
   const recordRef = useRef(null);
 
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
+  const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
 
-  const cachedTitle = useMemo(() => {
-    const tableName = getTableName(connection);
-    const table = cachedData[tableName];
-    if (!table) return '';
-    const record = getRow(tableName, childrenPageSlugId);
-    if (!record) return '';
-    const columns = Object.values(table?.key_column_map || {}) || [];
-    const titleColumn = getColumnByName(columns || [], 'title');
-    let title = getCellValueByColumn(record, titleColumn);
-    if (!title) {
-      const filenameColumn = getColumnByName(columns, 'filename');
-      title = getCellValueByColumn(record, filenameColumn);
-    }
-    return title;
-  }, [cachedData, connection, pageSlugId, childrenPageSlugId, getRow]);
+  const cacheRecord = useMemo(() => {
+    if (!connection) return '';
+    const connectionTableName = getTableName(connection);
+    const row = getRow(connectionTableName, childrenPageSlugId);
+    return row;
+  }, [connection, childrenPageSlugId, getRow]);
 
   const title = useMemo(() => {
-    return data.title || cachedTitle;
-  }, [data, cachedTitle]);
+    if (details && details.title) return details.title;
+    if (!cacheRecord) return '';
+    return cacheRecord.title;
+  }, [details, cacheRecord]);
 
-  const assetURLPrefix = useMemo(() => {
-    return generatorConnectionAssetURLPrefix(projectUuid, pageSlugId);
-  }, [projectUuid, pageSlugId]);
+  const url = useMemo(() => {
+    if (!connection) return '';
+    if (!details) return '';
+    return getResourceOriginalURL(connection.type, { ...details, ...resource }, { workspaceID, projectName, connections, columns: initColumns });
+  }, [connection, connections, resource, details]);
 
-  useEffect(() => {
-    connectionsAPI.getConnectionRowDetail(projectUuid, pageSlugId, { _pk: childrenPageSlugId }).then((res) => {
-      const { connection_type } = res.data;
-      const data = initConnectionResourceDetails(connection_type, res.data);
-      setData(data);
-      setErrorMessage('');
-      setLoading(false);
-    }).catch((error) => {
-      const errMessage = Utils.getErrorMsg(error);
-      setErrorMessage(errMessage);
-      setLoading(false);
-    });
-  }, [childrenPageSlugId]);
+  const updateDetails = useCallback((details) => {
+    setDetails(details?.title ? details : '');
+  }, [updateConnectionInfo]);
 
   useEffect(() => {
-    if (isLoading || isConnectionsPageLoading || errorMessage || connection.type !== CONNECTION_TYPE.EMAIL) return;
+    if (isConnectionsPageLoading || !details) return;
     const recordDom = recordRef.current;
     const handleResize = () => {
       if (!recordDom) return;
@@ -80,27 +71,32 @@ const Record = ({ projectUuid }) => {
     return () => {
       recordDom && resizeObserver.unobserve(recordDom);
     };
-  }, [isLoading, isConnectionsPageLoading, errorMessage, connection]);
+  }, [isConnectionsPageLoading, details]);
 
-  if (isConnectionsPageLoading) return null;
-  if (isLoading) return (<CenteredLoading />);
-  if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
-
-  if (connection.type !== CONNECTION_TYPE.EMAIL) {
-    return (<CenteredError>{gettext('Not support type')}</CenteredError>);
-  }
+  if (isConnectionsPageLoading) return (<CenteredLoading />);
 
   // 904: details min-width(596) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = containerWidth < 904;
-  const details = data?.details || [];
+  const isSmallScreen = details && containerWidth < 904;
   return (
     <div className={classnames('sea-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
-      <div className="sea-connection-record-details-header text-truncate" title={title}>
-        {title}
-      </div>
-      <div className="sea-connection-record-details-body">
-        <EmailDetails details={details} className="sea-connection-record-details-container" assetURLPrefix={assetURLPrefix} />
-        <div className="sea-connection-record-details-others"></div>
+      {title && (
+        <div className="sea-connection-record-details-header">
+          <div className="text-truncate" title={title}>{title}</div>
+          {url && (
+            <IconButton
+              className="open-in-new-tab-btn"
+              icon="open-in-new-tab"
+              title={gettext('Open in new tab')}
+              onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+            />
+          )}
+        </div>
+      )}
+      <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
+        <div className="sea-connection-record-details-container">
+          <ConnectionResourceDetails resource={resource} projectUuid={projectUuid} updateDetails={updateDetails} />
+        </div>
+        {details && (<div className="sea-connection-record-details-others"></div>)}
       </div>
     </div>
   );

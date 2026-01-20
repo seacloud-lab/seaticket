@@ -561,13 +561,14 @@ class ProjectConnectionRowDetailView(APIView):
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             record = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SITE.value:
-            url = request.GET.get('url')
-            filename = url_to_filename(url)
             record = list_site_record_details(seadb_api, project_uuid, connection_id, _pk)
-            uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-            file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
-            if file:
-                record['content'] = json.loads(file.read()).get('content')
+            url = record.get('url', '')
+            if url:
+                filename = url_to_filename(url)
+                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
+                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                if file:
+                    record['content'] = json.loads(file.read()).get('content')
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             record = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SEAFILE.value:

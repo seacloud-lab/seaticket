@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { toaster, EmptyTip, CenteredLoading } from '@/components';
+import { toaster, EmptyTip, CenteredLoading, Switch } from '@/components';
 import GlobalSearchInput from '@/components/search-input/global-search-input';
 import { searchAPI } from '../../api';
 import { useConnections } from '../connections/hooks/connections';
@@ -12,7 +12,7 @@ import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
 import FilterByDate from './filter-by-date';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY } from './constants';
-import Switch from '@/components/switch';
+import { ResourceDetailsDialog } from '@/project/components';
 
 import './index.css';
 import './search-filters.css';
@@ -35,6 +35,7 @@ const Search = ({ title, settings }) => {
       to: null,
     },
   );
+  const [activeResultIndex, setActiveResultIndex] = useState(-1);
 
   const sourceRef = useRef(null);
   const timer = useRef(null);
@@ -155,6 +156,26 @@ const Search = ({ title, settings }) => {
     }
   }, []);
 
+  const expandItem = useCallback((index) => {
+    setActiveResultIndex(index);
+  }, []);
+
+  const switchResult = useCallback((step) => {
+    let nextActiveResultIndex = activeResultIndex + step;
+    if (nextActiveResultIndex > results.length - 1) {
+      nextActiveResultIndex = 0;
+    }
+    if (nextActiveResultIndex < 0) {
+      nextActiveResultIndex = results.length - 1;
+    }
+    setActiveResultIndex(nextActiveResultIndex);
+  }, [activeResultIndex, results]);
+
+  let activeResult = null;
+  if (activeResultIndex > -1) {
+    activeResult = results[activeResultIndex];
+  }
+
   return (
     <>
       <TopBar>
@@ -200,14 +221,29 @@ const Search = ({ title, settings }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result =>
-                  <ListItem key={result._id || result.uuid} {...result} searchValue={value} settings={settings} />
+                {results.map((result, index) =>
+                  <ListItem
+                    key={result._id || result.uuid}
+                    {...result}
+                    searchValue={value}
+                    settings={settings}
+                    expandItem={() => expandItem(index)}
+                  />
                 )}
               </div>
             }
           </>
         }
       </div>
+      {activeResultIndex > -1 && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={activeResult}
+          isShowIcon={true}
+          switchResource={results.length > 1 ? switchResult : null}
+          onToggle={() => setActiveResultIndex(-1)}
+        />
+      )}
     </>
   );
 };

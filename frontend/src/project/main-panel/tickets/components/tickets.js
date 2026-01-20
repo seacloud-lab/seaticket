@@ -6,7 +6,7 @@ import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
-  TICKET_TABLE_NAME,
+  TICKET_TABLE_NAME, TICKET_TYPE,
 } from '../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
@@ -22,6 +22,7 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import RelatedIssuesDialog from './related-issues-dialog';
 import { isFunction } from '@/utils/type-detection';
 import { useData } from '@/project/hooks';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const Tickets = ({
   viewID, canFindRelatedIssues = true, isBuiltInView = false,
@@ -44,13 +45,16 @@ const Tickets = ({
   } = useData();
 
   const metadataRef = useRef(null);
+  const allColumns = useRef([]);
 
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
+  const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
 
-  const expandRow = useCallback((row) => {
-    togglePageSlugId(row._id);
-  }, [togglePageSlugId]);
+  const handleExpandRow = useCallback((ticket) => {
+    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setIsShowTicketDetailsDialog(true);
+  }, [projectUuid]);
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -86,6 +90,7 @@ const Tickets = ({
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
+          allColumns.current = columns;
           return {
             data: {
               rows,
@@ -191,6 +196,22 @@ const Tickets = ({
     return generatorTicketsContextMenuOptions(params);
   }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions]);
 
+  const handleSwitchTicket = useCallback((step) => {
+    const ticketsData = metadataRef.current.getOrderRows();
+    const index = ticketsData.findIndex(r => r._id === currentTicket._id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > ticketsData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = ticketsData.length - 1;
+    }
+    const ticket = ticketsData[newIndex];
+    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+  }, [currentTicket, metadataRef]);
+
   if (isLoading) return (<CenteredLoading />);
 
   return (
@@ -205,7 +226,7 @@ const Tickets = ({
         permission={permission}
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}
-        expandRow={expandRow}
+        expandRow={handleExpandRow}
         toggleView={toggleView}
         cascadeUpdateCells={cascadeUpdate}
         columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
@@ -229,6 +250,15 @@ const Tickets = ({
           workspaceID={workspaceID}
           projectName={projectName}
           onClose={() => { setIsShowRelatedIssuesDialog(false); setCurrentTicket(null); }}
+        />
+      )}
+      {isShowTicketDetailsDialog && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={currentTicket}
+          columns={allColumns.current}
+          switchResource={handleSwitchTicket}
+          onToggle={() => setIsShowTicketDetailsDialog(false)}
         />
       )}
     </>

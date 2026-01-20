@@ -1,15 +1,19 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useState } from 'react';
 import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { useMetadata } from '../../hooks/metadata';
 import { knowledgeBaseAPI } from '@/project/api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID, KB_TABLE_NAME } from '../../constants';
+import {
+  KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID, KB_TABLE_NAME,
+  KNOWLEDGE_PREDEFINED_COLUMN_NAME, KNOWLEDGE_BASE_TYPE,
+} from '../../constants';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 import { CenteredLoading } from '@/components';
 import { useData } from '@/project/hooks';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
@@ -19,9 +23,16 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     getMetadata, modifyRow, deleteRow, deleteRows,
   } = useData();
 
-  const expandRow = useCallback((row) => {
-    togglePageSlugId(row._id);
-  }, [togglePageSlugId]);
+  const metadataRef = useRef(null);
+  const allColumns = useRef([]);
+
+  const [currentKB, setCurrentKB] = useState(null);
+  const [isShowKBDetailsDialog, setIsShowKBDetailsDialog] = useState(false);
+
+  const handleExpandRow = useCallback((kb) => {
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+    setIsShowKBDetailsDialog(true);
+  }, [projectUuid]);
 
   const api = useMemo(() => {
     return {
@@ -29,12 +40,17 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
         return getMetadata(KB_TABLE_NAME, params[0], () => knowledgeBaseAPI.getKnowledgeBases(projectUuid, ...params)).then(res => {
           const rows = res?.data?.records || [];
           let columns = res?.data?.columns || [];
+          let predefinedConfig = { ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG };
+          predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE] = {
+            ...predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE],
+            click: (row) => togglePageSlugId(row._id),
+          };
+
           columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
-            const predefinedConfig = KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[name];
             return {
               ...c,
-              ...predefinedConfig,
+              ...predefinedConfig[name],
             };
           });
           const tagsColumn = columns.find(c => c.name === 'tags');
@@ -69,8 +85,10 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       importExcel: (file, previewOnly) => knowledgeBaseAPI.importExcel(projectUuid, file, previewOnly),
       commitImportExcel: (fileName) => knowledgeBaseAPI.commitImportExcel(projectUuid, fileName),
     };
-  }, [projectUuid, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, deleteRow, deleteRows]);
+  }, [
+    projectUuid, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getMetadata, modifyRow, deleteRow, deleteRows, togglePageSlugId,
+  ]);
 
   const createContextMenuOptions = useCallback((props) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
@@ -85,23 +103,51 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     Rows: gettext('Records'),
   }), []);
 
+  const handleSwitchKB = useCallback((step) => {
+    const KBData = metadataRef.current.getOrderRows();
+    const index = KBData.findIndex(r => r._id === currentKB._id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > KBData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = KBData.length - 1;
+    }
+    const kb = KBData[newIndex];
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+  }, [currentKB, metadataRef]);
+
   if (isMetadataLoading) return (<CenteredLoading />);
 
   return (
-    <SeaMetadata
-      viewID={viewID}
-      api={api}
-      permission={permission}
-      settings={{ enableExportAndImportXlsx: true }}
-      localStorageNamePrefix={localStorageName}
-      toggleView={toggleView}
-      expandRow={expandRow}
-      t={t}
-      createContextMenuOptions={createContextMenuOptions}
-      tagsData={tagsData}
-      createTag={createTag}
-      toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
-    />
+    <>
+      <SeaMetadata
+        viewID={viewID}
+        api={api}
+        ref={metadataRef}
+        permission={permission}
+        settings={{ enableExportAndImportXlsx: true }}
+        localStorageNamePrefix={localStorageName}
+        toggleView={toggleView}
+        expandRow={handleExpandRow}
+        t={t}
+        createContextMenuOptions={createContextMenuOptions}
+        tagsData={tagsData}
+        createTag={createTag}
+        toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
+      />
+      {isShowKBDetailsDialog && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={currentKB}
+          columns={allColumns.current}
+          switchResource={handleSwitchKB}
+          onToggle={() => setIsShowKBDetailsDialog(false)}
+        />
+      )}
+    </>
   );
 };
 

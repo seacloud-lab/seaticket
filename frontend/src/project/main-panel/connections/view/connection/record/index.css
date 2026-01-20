@@ -18,6 +18,9 @@
   padding: 10px 0;
   border-bottom: 1px solid #eee;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sea-connection-record-details .sea-connection-record-details-body {
@@ -26,15 +29,25 @@
   padding: 16px 0 50px 0;
   flex-shrink: 0;
   height: fit-content;
+  min-height: 100%;
+  gap: 16px;
+}
+
+.sea-connection-record-details .sea-connection-record-details-body.empty {
+  height: 100%;
+  padding: 0;
+}
+
+.sea-connection-record-details .sea-connection-record-details-body.empty .sea-connection-record-details-container {
+  width: 100%;
 }
 
 .sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-container {
-  width: 70%;
+  width: calc((100% - 16px) * 0.8);
 }
 
 .sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-others {
-  width: 30%;
-  padding-left: 16px;
+  width: calc((100% - 16px) * 0.2);
   display: flex;
   flex-direction: column;
 }
@@ -42,6 +55,8 @@
 /* small */
 .sea-connection-record-details.small .sea-connection-record-details-body {
   flex-direction: column;
+  min-height: fit-content;
+  gap: 0;
 }
 
 .sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-container {
@@ -50,4 +65,23 @@
 
 .sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-others {
   width: 100%;
+}
+
+/* customize css */
+/* github | email | discourse_forum */
+.sea-connection-record-details .sea-ticket-connection-github_issue-resource-details,
+.sea-connection-record-details .sea-ticket-connection-email-resource-details,
+.sea-connection-record-details .sea-ticket-connection-discourse_forum-resource-details {
+  padding: 0 !important;
+}
+
+.sea-connection-record-details .sea-ticket-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
+  max-width: 100%;
+}
+
+/* seafile */
+.sea-connection-record-details .sea-ticket-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
+.sea-connection-record-details .sea-ticket-connection-site-resource-details .sf-slate-viewer-article-container .article {
+  max-width: 100%;
+  padding: 0 !important;
 }

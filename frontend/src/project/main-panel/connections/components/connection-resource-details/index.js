@@ -1,37 +1,26 @@
-import React, { useEffect, useCallback, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
-import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../constants';
+import { CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
 import { generatorConnectionAssetURLPrefix } from '../../utils';
 import { initConnectionResourceDetails } from '../../utils';
 import { Utils } from '@/utils/utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, columns, projectUuid, updateDetails }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
 
   const type = useMemo(() => resource.type, [resource]);
 
-  const getFormatParamsByType = useCallback((resource) => {
-    if (resource.type === CONNECTION_TYPE.SITE) {
-      const urlColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.URL);
-      return { url: getCellValueByColumn(resource, urlColumn), _pk: resource._id };
-    }
-    return { _pk: resource._id };
-  }, [columns]);
-
   useEffect(() => {
     setStatus('loading');
-    const params = getFormatParamsByType(resource);
-    connectionsAPI.getConnectionRowDetail(projectUuid, resource.connection_id, params).then((res) => {
+    connectionsAPI.getConnectionRowDetail(projectUuid, resource.connection_id, { _pk: resource._id }).then((res) => {
       const details = initConnectionResourceDetails(resource.type, res.data);
       setDetails(details?.details);
       updateDetails(details);

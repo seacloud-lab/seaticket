@@ -10,12 +10,11 @@ import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
-  SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
+  SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME,
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
   SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
-  CONNECTION_PREDEFINED_COLUMN_NAME,
 } from '../../constants';
-import { CenteredLoading, toaster } from '@/components';
+import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { getOriginalPageUrl, getTableName } from '../../utils';
@@ -40,7 +39,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
-  const { viewID, isLoading: isLoadingConnections, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
+  const { viewID, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
   const {
     data,
@@ -134,19 +133,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
               columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
             }
           }
-          if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
-            columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
-              ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
-              click: (row) => {
-                const url = getOriginalPageUrl(connection, row, allColumns.current);
-                if (!url) {
-                  toaster.danger(gettext('Missing required information'));
-                  return;
-                }
-                window.open(url, '_blank', 'noopener,noreferrer');
-              }
-            };
-          }
+          columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
+            ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
+            click: (row) => toggleChildrenPageSlugId(row._id),
+          };
           columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
           return {
             data: {
@@ -203,7 +193,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [
     projectUuid, connectionID, connection, connections, getTableNameByConnectionID,
     data, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, getMetadata,
-    modifyRows, modifyRow
+    modifyRows, modifyRow, toggleChildrenPageSlugId,
   ]);
 
   const handleCreateRelatedTicket = useCallback((row) => {
@@ -511,13 +501,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
-    if (connection.type === CONNECTION_TYPE.EMAIL) {
-      toggleChildrenPageSlugId(row._id);
-      return;
-    }
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
     setIsShowRowDetailsDialog(true);
-  }, [projectUuid, connectionID, connection, toggleChildrenPageSlugId]);
+  }, [connection]);
 
   const switchResource = useCallback((step) => {
     const rowsData = seaMetaDataRef.current.getOrderRows();
@@ -534,8 +520,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rowsData[newIndex];
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
   }, [currentRow, connection, seaMetaDataRef]);
-
-  if (isLoadingConnections) return (<CenteredLoading />);
 
   return (
     <>
