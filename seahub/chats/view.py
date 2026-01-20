@@ -49,7 +49,14 @@ class ChatSessionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
+            session_type = request.GET.get('type', 'mine')
+            
+            if session_type == 'team':
+                org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
+                sessions = ChatSessions.objects.get_shared_sessions_by_org(org_id)
+            else:
+                sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, username)
+            
             sessions_data = [session.to_dict() for session in sessions]
 
             return Response({'sessions': sessions_data})
@@ -86,10 +93,12 @@ class ChatSessionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
             session = ChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
-                username=request.user.username
+                username=request.user.username,
+                org_id=org_id
             )
 
             return Response({ 'session': session.to_dict() }, status=status.HTTP_201_CREATED)
@@ -114,9 +123,11 @@ class ChatSessionView(APIView):
             error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        session_name = request.data.get('session_name', '')
-        if not session_name:
-            error_msg = 'session_name parameter is required.'
+        session_name = request.data.get('session_name')
+        is_shared = request.data.get('is_shared')
+
+        if session_name is None and is_shared is None:
+            error_msg = 'At least one of session_name or is_shared parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -137,10 +148,23 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            session.session_name = session_name
+            if session.username != username:
+                error_msg = 'Permission denied. Only the session owner can modify this session.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if session_name is not None:
+                session.session_name = session_name
+
+            if is_shared is not None:
+                session.is_shared = is_shared
+                # When sharing, ensure org_id is set correctly for backward compatibility
+                if is_shared and session.org_id == -1:
+                    org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
+                    session.org_id = org_id
+
             session.save()
 
-            return Response({'success': True})
+            return Response({'success': True, 'session': session.to_dict()})
 
         except Exception as e:
             logger.error(e)
@@ -286,7 +310,7 @@ class ChatView(APIView):
 
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
-            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
+            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username, org_id)
             session_uuid = session.session_uuid
         else:
             session = ChatSessions.objects.get_session_by_uuid(session_uuid)

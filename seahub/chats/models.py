@@ -5,14 +5,15 @@ from django.db import models
 
 
 class ChatSessionsManager(models.Manager):
-    def create_session(self, project_uuid, session_name, username):
+    def create_session(self, project_uuid, session_name, username, org_id=-1):
         """Create a new chat session"""
         session_uuid = str(uuid.uuid4())
         session = self.model(
             project_uuid=project_uuid,
             session_uuid=session_uuid,
             username=username,
-            session_name=session_name
+            session_name=session_name,
+            org_id=org_id
         )
         session.save()
         return session
@@ -28,12 +29,19 @@ class ChatSessionsManager(models.Manager):
         except self.model.DoesNotExist:
             return None
 
+    def get_shared_sessions_by_org(self, org_id):
+        """Retrieve all shared chat sessions of the organization (team)"""
+        queryset = self.filter(org_id=org_id, is_shared=True)
+        return queryset.order_by('-updated_at')
+
 class ChatSessions(models.Model):
     id = models.BigAutoField(primary_key=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
     session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=255, db_index=True)
     session_name = models.CharField(max_length=255)
+    org_id = models.BigIntegerField(default=-1, db_index=True)
+    is_shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,6 +57,8 @@ class ChatSessions(models.Model):
             'session_uuid': self.session_uuid,
             'username': self.username,
             'session_name': self.session_name,
+            'org_id': self.org_id,
+            'is_shared': self.is_shared,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
