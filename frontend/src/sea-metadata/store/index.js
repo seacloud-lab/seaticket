@@ -11,7 +11,7 @@ import ServerOperator from './server-operator';
 import LocalOperator from './local-operator';
 import { Metadata, Row } from '../models';
 import context from '../context';
-import { isFunction } from '@/utils/type-detection';
+import { getType, isFunction } from '@/utils/type-detection';
 
 class Store {
 
@@ -145,11 +145,26 @@ class Store {
     this.data.id_row_map = {};
     this.data.hasMore = false;
     this.data.rowsCount = this.data.row_ids.length;
+    this.data.linked_records = {};
     this.startIndex = 0;
     this.recalculate();
     this.data = deepCopy(this.data);
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
     context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+  }
+
+  async updateDataAttribute(attribute, isReplace = false) {
+    if (!this.data || !this.mounted) return;
+    Object.keys(attribute).forEach(key => {
+      if (isReplace) {
+        this.data[key] = attribute[key];
+      } else {
+        const attributeType = getType(this.data[key]);
+        if (attributeType === 'Object') {
+          this.data[key] = { ...this.data[key], ...attribute[key] };
+        }
+      }
+    });
   }
 
   createOperation(op) {

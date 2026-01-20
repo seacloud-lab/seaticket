@@ -26,6 +26,7 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   CREATOR: 'creator',
   DELETED: 'deleted',
   COMMENT_COUNT: 'comment_count',
+  LINKED_CONNECTION_RECORDS: 'linked_connection_records',
 };
 
 export const TICKET_STATE_CONFIG = {
@@ -214,7 +215,12 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Due date'),
     editable: true,
     modify_data_able: true,
-  }
+  },
+  [PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS]: {
+    type: CellType.LINK,
+    display_name: gettext('Linked connection records'),
+    editable: false,
+  },
 };
 
 export const TICKET_NOT_DISPLAY_COLUMNS = [

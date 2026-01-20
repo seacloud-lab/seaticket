@@ -14,9 +14,9 @@
 .link-item .link-item-name {
   height: 20px;
   line-height: 20px;
-  margin-left: 4px;
   max-width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0 4px;
 }

@@ -62,8 +62,16 @@ const Tickets = ({
     // metadata
     if (isFunction(api.getMetadata)) {
       _api.getMetadata = (...params) => {
-        return getMetadata(TICKET_TABLE_NAME, params[0], () => api.getMetadata(...params), isBuiltInView).then(res => {
+        return getMetadata(TICKET_TABLE_NAME, params[0], () => api.getMetadata(...params).then(res => {
+          return {
+            data: {
+              ...res.data,
+              linked_records: res.data?.linked_record_titles || {},
+            }
+          };
+        }), isBuiltInView).then(res => {
           const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
+          const linked_records = res?.data?.linked_records || {};
           let columns = res?.data?.columns || [];
           const othersConfig = {
             [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: { click: (row) => togglePageSlugId(row._id) },
@@ -95,6 +103,7 @@ const Tickets = ({
             data: {
               rows,
               columns,
+              linked_records,
             }
           };
         });
