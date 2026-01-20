@@ -19,10 +19,6 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Title'),
     type: CellType.TEXT,
   },
-  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CONTENT]: {
-    display_name: gettext('Content'),
-    type: CellType.LONG_TEXT,
-  },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS]: {
     type: CellType.TAGS,
     display_name: gettext('Tags'),

@@ -426,15 +426,15 @@ class ThreadTable(BaseModel):
 class KnowledgeBaseTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
-    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
-    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
-    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
+    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
-    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
 
     @classmethod
     def gen_table_name(cls):
