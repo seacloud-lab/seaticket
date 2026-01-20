@@ -18,24 +18,13 @@
 }
 
 .sea-qa-message-ai-reply .article {
-  padding: 0;
-  border: unset;
-  height: auto;
+  padding: 0 !important;
   width: 100%;
   max-width: 100%;
 }
 
-.sea-qa-message-ai-reply.rich-text .article>div[role=textbox]>:first-child,
-.sea-qa-message-ai-reply.rich-text .article :first-child {
-  margin-top: 0;
-}
-
 .sea-qa-message-ai-reply.rich-text .article :last-child {
   margin-bottom: 0;
-}
-
-.sea-qa-message-ai-reply .article h2 {
-  border-bottom: none;
 }
 
 .sea-qa-ai-ask-message-sources,
