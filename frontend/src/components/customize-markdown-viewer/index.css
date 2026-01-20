@@ -16,7 +16,9 @@
   max-width: 100%;
 }
 
-.longtext-preview-container .article>div[data-slate-editor=true]>:first-child {
+.longtext-preview-container .article>div[data-slate-editor=true]>:first-child,
+.longtext-preview-container .article>div[role=textbox]>:first-child,
+.longtext-preview-container .article :first-child {
   margin-top: 0px;
 }
 
