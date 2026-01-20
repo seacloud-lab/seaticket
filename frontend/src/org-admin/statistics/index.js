@@ -371,7 +371,7 @@ class StatisticsAI extends Component {
                 <div className={classNames('d-flex align-items-center', { 'ml-6': groupBy !== 'owner' })}>
                   {queryDate === 'date' && (
                     <>
-                      <span className="mr-2">{`${gettext('Date')}:`}</span>
+                      <span className="mr-2 111">{`${gettext('Date')}:`}</span>
                       <Picker
                         showHourAndMinute={false}
                         disabledDate={() => false}

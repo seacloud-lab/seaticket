@@ -489,9 +489,15 @@ const Analyze = ({ title }) => {
     setSelectedConnections(prev => prev.filter(c => c.id !== connectionId));
   }, []);
 
-  const handleDateRangeChange = useCallback((newStartYear, newEndYear) => {
-    setStartYear(newStartYear);
-    setEndYear(newEndYear);
+  const handleDateRangeChange = useCallback(({ from, to }) => {
+    if (from) {
+      const newStartYear = from.year();
+      setStartYear(newStartYear);
+    }
+    if (to) {
+      const newEndYear = to.year();
+      setEndYear(newEndYear);
+    }
   }, []);
 
   const handleAddFilter = useCallback((field, value) => {

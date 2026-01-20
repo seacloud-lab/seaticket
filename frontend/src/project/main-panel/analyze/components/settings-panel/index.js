@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { gettext } from '@/constants';
 import { IconButton, Loading, CustomizeSelect } from '@/components';
-import YearRangePicker from '../year-range-picker';
+import DateRangeSetting from '../date-range-setting';
 import ConnectionSetting from '../connection-setting';
 import FilterPanel from '../filter-panel';
 import { FormGroup, Label } from 'reactstrap';
@@ -81,7 +81,7 @@ const SettingsPanel = ({
         {/* Date Range Setting */}
         <FormGroup className="analyze-settings-section">
           <Label>{gettext('Date range')}</Label>
-          <YearRangePicker
+          <DateRangeSetting
             startYear={startYear}
             endYear={endYear}
             onChange={onDateRangeChange}
