@@ -1,11 +1,10 @@
 import logging
 from datetime import timedelta
+import time
 
 from django.core.management.base import BaseCommand
+from django.db import connection
 from django.utils import timezone
-from django.db.models import Exists, OuterRef, Subquery
-
-from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 
 logger = logging.getLogger(__name__)
 
@@ -24,18 +23,76 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         days = options['days']
         cutoff_date = timezone.now() - timedelta(days=days)
-        old_sessions = ChatSessions.objects.filter(updated_at__lt=cutoff_date)
-        count = old_sessions.count()
+        batch_size = 1000        
+        total_messages = 0
+        total_tool_calls = 0
+        total_sessions = 0
 
-        ChatMessages.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
-        ChatMessageThoughtProcess.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
-        old_sessions.delete()
+        with connection.cursor() as cursor:
+            # delete chat sessions, messages, and tool calls
+            while True:
+                cursor.execute("""
+                    DELETE FROM chat_messages 
+                    WHERE session_uuid IN (
+                        SELECT session_uuid 
+                        FROM chat_sessions 
+                        WHERE updated_at < %s
+                    )
+                    LIMIT %s
+                """, [cutoff_date, batch_size])
+                deleted = cursor.rowcount
+                if deleted == 0:
+                    break
+                total_messages += deleted
+                time.sleep(0.1)
+            
+            while True:
+                cursor.execute("""
+                    DELETE FROM chat_message_thought_process 
+                    WHERE session_uuid IN (
+                        SELECT session_uuid 
+                        FROM chat_sessions 
+                        WHERE updated_at < %s
+                    )
+                    LIMIT %s
+                """, [cutoff_date, batch_size])
+                deleted = cursor.rowcount
+                if deleted == 0:
+                    break
+                total_tool_calls += deleted
+                time.sleep(0.1)
+            
+            while True:
+                cursor.execute("""
+                    DELETE FROM chat_sessions 
+                    WHERE updated_at < %s
+                    LIMIT %s
+                """, [cutoff_date, batch_size])
+                deleted = cursor.rowcount
+                if deleted == 0:
+                    break
+                total_sessions += deleted
+                time.sleep(0.1)
+            
+            # clean up orphaned messages and tool calls
+            cursor.execute("""
+                DELETE FROM chat_messages 
+                WHERE session_uuid NOT IN (
+                    SELECT session_uuid FROM chat_sessions
+                )
+            """)
+            orphan_messages = cursor.rowcount
+            
+            cursor.execute("""
+                DELETE FROM chat_message_thought_process 
+                WHERE session_uuid NOT IN (
+                    SELECT session_uuid FROM chat_sessions
+                )
+            """)
+            orphan_tool_calls = cursor.rowcount
 
-        orphan_messages, _ = ChatMessages.objects.filter(
-            ~Exists(ChatSessions.objects.filter(session_uuid=OuterRef('session_uuid')))
-        ).delete()
-        orphan_tool_calls, _ = ChatToolCalls.objects.filter(
-            ~Exists(ChatSessions.objects.filter(session_uuid=OuterRef('session_uuid')))
-        ).delete()
-
-        self.stdout.write(f"Deleted {count} sessions, {orphan_messages} orphan messages, {orphan_tool_calls} orphan tool calls.")
+        self.stdout.write(
+            f"Deleted {total_sessions} sessions, "
+            f"{total_messages + orphan_messages} messages, "
+            f"{total_tool_calls + orphan_tool_calls} tool calls."
+        )
