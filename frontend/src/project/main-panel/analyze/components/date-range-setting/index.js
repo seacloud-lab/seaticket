@@ -4,10 +4,12 @@ import dayjs from 'dayjs';
 import Picker from '@/project/main-panel/search/date-and-time-picker';
 
 const DATE_INPUT_WIDTH = 120;
-const DateRangeSetting = ({ startYear, endYear, onChange, }) => {
+const DateRangeSetting = ({ startDate, endDate, onChange, }) => {
+  const isValidStart = dayjs(startDate, 'YYYY-MM-DD', true).isValid();
+  const isValidEnd = dayjs(endDate, 'YYYY-MM-DD', true).isValid();
   const [time, setTime] = useState({
-    from: startYear ? dayjs(`${startYear}-01-01`) : null,
-    to: endYear ? dayjs(`${endYear}-01-01`) : null,
+    from: isValidStart ? dayjs(startDate) : null,
+    to: isValidEnd ? dayjs(endDate) : null,
   });
 
   const disabledStartDate = useCallback((startDate) => {
@@ -54,8 +56,8 @@ const DateRangeSetting = ({ startYear, endYear, onChange, }) => {
 };
 
 DateRangeSetting.propTypes = {
-  startYear: PropTypes.number,
-  endYear: PropTypes.number,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   onChange: PropTypes.func.isRequired,
 };
 

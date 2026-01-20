@@ -64,8 +64,8 @@ const Analyze = ({ title }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [colorBy, setColorBy] = useState(storedSettings.colorBy || '--');
   const [displayMode, setDisplayMode] = useState(storedSettings.displayMode || 'points');
-  const [startYear, setStartYear] = useState(storedSettings.startYear || null);
-  const [endYear, setEndYear] = useState(storedSettings.endYear || null);
+  const [startDate, setStartDate] = useState(storedSettings.startDate || null);
+  const [endDate, setEndDate] = useState(storedSettings.endDate || null);
   const [filters, setFilters] = useState(storedSettings.filters || []);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -119,15 +119,15 @@ const Analyze = ({ title }) => {
         })),
         colorBy,
         displayMode,
-        startYear,
-        endYear,
+        startDate,
+        endDate,
         filters
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
       console.error('Failed to save settings to localStorage:', e);
     }
-  }, [selectedConnections, colorBy, displayMode, startYear, endYear, filters]);
+  }, [selectedConnections, colorBy, displayMode, startDate, endDate, filters]);
 
 
   useEffect(() => {
@@ -434,9 +434,9 @@ const Analyze = ({ title }) => {
 
   const handleAnalyze = useCallback(() => {
     if (selectedConnections.length > 0) {
-      startAnalysis(selectedConnections.map(c => c.id), startYear, endYear);
+      startAnalysis(selectedConnections.map(c => c.id), startDate, endDate);
     }
-  }, [selectedConnections, startYear, endYear, startAnalysis]);
+  }, [selectedConnections, startDate, endDate, startAnalysis]);
 
   const FILTERABLE_FIELDS = useMemo(() => [
     { field: 'state', label: gettext('State') }
@@ -491,12 +491,12 @@ const Analyze = ({ title }) => {
 
   const handleDateRangeChange = useCallback(({ from, to }) => {
     if (from) {
-      const newStartYear = from.year();
-      setStartYear(newStartYear);
+      const newStart = from.format('YYYY-MM-DD');
+      setStartDate(newStart);
     }
     if (to) {
-      const newEndYear = to.year();
-      setEndYear(newEndYear);
+      const newEnd = to.format('YYYY-MM-DD');
+      setEndDate(newEnd);
     }
   }, []);
 
@@ -650,8 +650,8 @@ const Analyze = ({ title }) => {
             onColorByChange={handleColorByChange}
             displayMode={displayMode}
             onDisplayModeChange={setDisplayMode}
-            startYear={startYear}
-            endYear={endYear}
+            startDate={startDate}
+            endDate={endDate}
             onDateRangeChange={handleDateRangeChange}
             onAnalyze={handleAnalyze}
             isLoading={isLoading}

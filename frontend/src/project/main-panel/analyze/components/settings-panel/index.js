@@ -22,8 +22,8 @@ const SettingsPanel = ({
   onColorByChange,
   displayMode,
   onDisplayModeChange,
-  startYear,
-  endYear,
+  startDate,
+  endDate,
   onDateRangeChange,
   onAnalyze,
   isLoading
@@ -82,8 +82,8 @@ const SettingsPanel = ({
         <FormGroup className="analyze-settings-section">
           <Label>{gettext('Date range')}</Label>
           <DateRangeSetting
-            startYear={startYear}
-            endYear={endYear}
+            startDate={startDate}
+            endDate={endDate}
             onChange={onDateRangeChange}
           />
         </FormGroup>
