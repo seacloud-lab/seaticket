@@ -109,16 +109,16 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           const orders = ordersPart.split(',').map(orderPart => {
             return orderPart.replace(referenceMark, '').trim();
           }).filter(num => num !== '');
-          return orders.map(order => `[Reference ${order}]`).join('');
+          return orders.map(order => ` [Reference ${order}]`).join('');
         })
         .replace(formatReference, (match, order, linkReference) => {
-          if (!linkReference) return `[Reference ${order}]`;
+          if (!linkReference) return ` [Reference ${order}]`;
           const linkReferenceIncludesParentheses = linkReference.endsWith(')');
           const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
           const urlObject = new URL(validLinkReference);
           const url = urlObject.href;
           const sourceIndex = sources.findIndex(source => source.url === url);
-          if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+          if (sourceIndex > -1) return ` [Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
           const referenceIndex = sources.length;
           sources.push({
             key: `unknown_${referenceIndex}`,
@@ -131,7 +131,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
             icon: getResourceIconURL('unknown'),
             category_name: gettext('Unknown')
           });
-          return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+          return ` [Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
         })
         .replaceAll(removeParentheses, (match, p1) => p1)
         .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
@@ -139,7 +139,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           const order = Number(orderString);
           const source = sources[order - 1];
           if (!source) return '';
-          return `[${source.title}][${order}]`;
+          return ` [${source.title}][${order}]`;
         });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;
