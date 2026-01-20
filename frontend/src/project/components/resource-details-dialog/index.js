@@ -51,8 +51,8 @@ const ResourceDetailsDialog = ({
   }, [resource, details, columns]);
 
   const url = useMemo(() => {
-    return getResourceOriginalURL(type, resource, { workspaceID, projectName, connections, columns });
-  }, [type, connections, resource, columns]);
+    return getResourceOriginalURL(type, { ...details, ...resource }, { workspaceID, projectName, connections, columns });
+  }, [type, connections, resource, details, columns]);
 
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
     switchResource(step);

@@ -6,6 +6,7 @@ class Metadata {
   constructor(object) {
     const columns = object.columns || [];
     this.columns = columns.map(column => column instanceof Column ? column : new Column(column, object.columnWidthRules));
+    this.linked_records = object.linked_records || {};
     this.key_column_map = {};
     this.columns.forEach(column => {
       this.key_column_map[column.key] = column;

@@ -61,7 +61,8 @@ class Store {
     return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
-      let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules });
+      const linked_records = res?.data?.linked_records || {};
+      let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules, linked_records });
       data.view.rows = data.row_ids;
       const loadedCount = rows.length;
       data.hasMore = loadedCount >= limit;
@@ -93,6 +94,7 @@ class Store {
     if (!this.data || !this.mounted) return;
     const res = await context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit });
     if (!this.data || !this.mounted) return;
+    const linked_records = res?.data?.linked_records || {};
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
       this.hasMore = false;
@@ -110,6 +112,7 @@ class Store {
     const loadedCount = rows.length;
     this.data.hasMore = loadedCount === limit;
     this.data.rowsCount = this.data.row_ids.length;
+    this.data.linked_records = { ...this.data.linked_records, ...linked_records };
     this.startIndex = this.startIndex + loadedCount;
     DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);

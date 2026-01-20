@@ -17,7 +17,8 @@ const CellType = {
   TAG: 'tag',
   TAGS: 'tags',
   TYPE: 'type',
-  PRIORITY: 'priority'
+  PRIORITY: 'priority',
+  LINK: 'link',
 };
 
 export default CellType;

@@ -1,5 +1,5 @@
 import { gettext } from '@/constants';
-import { CellType } from '@/sea-metadata';
+import CellType from '@/sea-metadata/constants/column/type';
 
 export const TICKET_STATE = {
   OPEN: '0001',
