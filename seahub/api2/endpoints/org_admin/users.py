@@ -33,6 +33,7 @@ from seahub.organizations.views import is_org_staff, unset_org_user, set_org_use
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_DEACTIVATE, USER_ACTIVATE
 from seahub.invitations.models import Invitation
+from seahub.constants import DEFAULT_USER
 
 
 logger = logging.getLogger(__name__)
@@ -597,7 +598,7 @@ class OrgAdminInviteUsers(APIView):
                 new_user = User.objects.create_user(email, '!', is_staff=False, is_active=False)
                 set_org_user(org_id, new_user.username)
 
-            invitation = Invitation.objects.add(inviter=inviter, accepter=email)
+            invitation = Invitation.objects.add(inviter=inviter, accepter=email, invite_type=DEFAULT_USER)
             send_success = invitation.send_to(email=email)
             if not send_success:
                 result['failed'].append({
