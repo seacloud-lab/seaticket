@@ -56,12 +56,6 @@ h1 {
   font-size: 1.9em;
 }
 
-h2 {
-  font-size: 1.5em;
-  color: #212529;
-  font-weight: bold;
-}
-
 h3 {
   font-size: 16px;
   color: #212529;
@@ -130,20 +124,10 @@ input {
   border: 1px solid #ccc;
 }
 
-input {
-  margin: 3px 0;
-}
-
 input,
 button {
   display: inline-block;
   /*for ie*/
-}
-
-input[type="text"],
-input[type="password"] {
-  box-sizing: content-box;
-  height: 22px;
 }
 
 select,
@@ -157,9 +141,6 @@ input[type="button"],
 input.submit,
 select {
   padding: 5px 6px;
-  background: -webkit-linear-gradient(top, #fafafb, #eeeeee);
-  background: -moz-linear-gradient(top, #fafafb, #eeeeee);
-  background: linear-gradient(top, #fafafb, #eeeeee);
   border: 1px solid #c5c5c5;
   border-radius: 2px;
 }
@@ -369,9 +350,6 @@ input.short-input {
   text-decoration: none;
   font-weight: normal;
   padding: 5px 6px;
-  background: -webkit-linear-gradient(top, #fafafb, #eeeeee);
-  background: -moz-linear-gradient(top, #fafafb, #eeeeee);
-  background: linear-gradient(top, #fafafb, #eeeeee);
   border: 1px solid #c5c5c5;
   border-radius: 2px;
 }
@@ -680,40 +658,6 @@ input.short-input {
 
 .login-panel .login-panel-register-type:hover {
   border-color: #ED7109;
-}
-
-/**** new-narrow-panel  ****/
-.new-narrow-panel {
-  width: 388px;
-  border: 1px solid #d5d5d5;
-  border-radius: 4px;
-  box-shadow: 0 3px 2px #f5f5f5;
-  margin: 5em auto;
-}
-
-@media (max-width: 387px) {
-  .new-narrow-panel {
-    width: 100%;
-  }
-}
-
-.new-narrow-panel .hd {
-  color: #fff;
-  font-size: 16px;
-  padding: 5px 20px;
-  background: #feab79;
-  border-bottom: 1px solid #d5d5d5;
-}
-
-.new-narrow-panel .con {
-  padding: 30px 0 60px;
-  width: 268px;
-  margin: 0 auto;
-}
-
-.new-narrow-panel .input {
-  font-size: 14px;
-  margin: 5px 0 20px;
 }
 
 #pwd_strength {
@@ -1124,3 +1068,114 @@ a.sf-popover-item {
   display: inline-block;
   width: 1.4em;
 }
+
+/* two-factor-auth */
+.tfa-panel {
+  margin: 1rem auto;
+}
+@media (min-width: 504px) {
+  .tfa-panel {
+    width: 480px;
+  }
+}
+
+.tfa-panel .hd {
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin-bottom: .5rem;
+}
+
+.tfa-panel .con {
+  font-size: .875rem;
+}
+
+.two-factor-auth-wizard-btns {
+  margin-top: 2.5rem;
+}
+
+.two-factor-auth-wizard-btns .btn {
+  min-width: 71px;
+}
+
+.two-factor-auth-backup-token-list-container {
+  background-color: #f8f8f8;
+  border-radius: 8px;
+}
+
+.two-factor-auth-backup-token-list-container .token-list-hd {
+  font-size: .75rem;
+  height: 2.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.two-factor-auth-backup-token-list-container .token-list-hd .token-icon {
+  color: #444;
+  width: 16px;
+  height: 16px;
+  margin-right: .5rem;
+}
+
+.two-factor-auth-backup-token-form {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.form-label {
+  display: inline-block;
+  margin: 0 0 .5rem 0;
+  font-weight: 400;
+  font-size: 15px;
+}
+
+.seafile-multicolor-icon {
+  fill: currentColor;
+  height: 1em;
+  overflow: hidden;
+  width: 1em;
+}
+
+/* client-login-confirm-panel */
+.client-login-confirm-panel {
+  margin: 1.5rem auto 2rem;
+}
+
+.client-login-confirm-panel .hd {
+  font-size: 1.5rem;
+  margin: 2.5rem 0 .5rem;
+}
+
+.client-login-confirm-panel .btn {
+  margin-top: 2.5rem;
+}
+
+/* 'password change form' page and etc. */
+.page-form-panel {
+  margin: 3rem auto;
+}
+
+.page-form-panel .hd {
+  font-size: 1.5rem;
+}
+
+.page-form-panel .tip {
+  color: var(--bs-body-secondary-color);
+  font-size: .875rem;
+}
+
+.page-form-panel .form {
+  max-width: 466px;
+  margin: 2.5rem auto auto;
+}
+
+.page-form-panel .password-icon {
+  color: #999;
+}
+
+.page-form-panel .password-icon:hover {
+  color: #666;
+}
+
+.page-form-panel .form-foot {
+  margin-top: 2.5rem;
+}
+
