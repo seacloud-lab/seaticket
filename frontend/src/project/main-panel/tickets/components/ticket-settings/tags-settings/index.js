@@ -8,6 +8,7 @@ import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
+import TagOption from '@/components/tag-option';
 
 import './index.css';
 
@@ -28,19 +29,10 @@ const TagsSettings = ({
   const tagOptions = useMemo(() => {
     if (isLoading) return [];
     return tagsData && tagsData.rows ? tagsData.rows.map(tag => {
-      const { _id, color, name, description } = tag;
       return {
         ...tag,
-        value: _id,
-        label: (
-          <>
-            <div className="sea-qa-tags-selector-tag-bg" style={{ backgroundColor: color }}></div>
-            <div className="sea-qa-tags-selector-tag-name-description">
-              <div className="sea-qa-tags-selector-tag-name">{name}</div>
-              {description && (<div className="sea-qa-tags-selector-tag-description">{description}</div>)}
-            </div>
-          </>
-        ),
+        value: tag._id,
+        label: <TagOption tag={tag} />,
       };
     }) : [];
   }, [tagsData, isLoading]);

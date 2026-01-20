@@ -8,6 +8,7 @@ import OptionEditorContainer from '@/components/option-editor/option-editor-cont
 import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import TagOption from '@/components/tag-option';
 
 const TagsFilter = ({ readOnly, value, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
@@ -20,22 +21,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
     return tagsData.rows.map(tag => ({
       ...tag,
       value: tag._id,
-      label: (
-        <>
-          <div
-            className="sea-qa-tags-selector-tag-bg"
-            style={{ backgroundColor: tag.color }}
-          />
-          <div className="sea-qa-tags-selector-tag-name-description">
-            <div className="sea-qa-tags-selector-tag-name">{tag.name}</div>
-            {tag.description && (
-              <div className="sea-qa-tags-selector-tag-description">
-                {tag.description}
-              </div>
-            )}
-          </div>
-        </>
-      ),
+      label: <TagOption tag={tag} />,
     }));
   }, [tagsData]);
 

@@ -5,6 +5,7 @@ import OptionEditorContainer from '@/components/option-editor/option-editor-cont
 import { gettext } from '@/constants';
 import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
+import TagOption from '@/components/tag-option';
 
 import './index.css';
 
@@ -24,19 +25,10 @@ const TagsEditor = forwardRef(({
   const options = useMemo(() => {
     if (!tagsData?.rows) return [];
     return tagsData.rows.map(tag => {
-      const { _id, color, name, description } = tag;
       return {
         ...tag,
-        value: _id,
-        label: (
-          <>
-            <div className="sea-qa-tags-selector-tag-bg" style={{ backgroundColor: color }}></div>
-            <div className="sea-qa-tags-selector-tag-name-description">
-              <div className="sea-qa-tags-selector-tag-name">{name}</div>
-              {description && (<div className="sea-qa-tags-selector-tag-description">{description}</div>)}
-            </div>
-          </>
-        ),
+        value: tag._id,
+        label: <TagOption tag={tag} />,
       };
     });
   }, [tagsData]);
