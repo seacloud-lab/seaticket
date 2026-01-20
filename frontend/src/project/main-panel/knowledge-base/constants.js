@@ -1,4 +1,4 @@
-import { CellType } from '@/sea-metadata';
+import CellType from '@/sea-metadata/constants/column/type';
 import { gettext } from '@/constants';
 
 export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {

@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { ticketsAPI } from '@/project/api';
+import { ticketsAPI, connectionsAPI } from '@/project/api';
 import { gettext } from '@/constants';
-import { toaster, ModalHeader, CenteredLoading } from '@/components';
+import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 import { useMetadata } from '../../../tickets/hooks';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { useData } from '@/project/hooks';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
+const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose }) => {
+  const [isLoading, setLoading] = useState(true);
+  const [errorMessage, setErrMessage] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
@@ -22,24 +25,6 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
 
   const { typesData, tagsData, substatesData, createTag } = useMetadata();
   const { insertRow } = useData();
-
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setContent(initialData.content || '');
-      setAssignees(initialData.assignees || []);
-      setType(initialData.type || '');
-      setTags(initialData.tags || []);
-      setPriority(initialData.priority || 0);
-    } else {
-      setTitle('');
-      setContent('');
-      setAssignees([]);
-      setType('');
-      setTags([]);
-      setPriority(0);
-    }
-  }, [initialData]);
 
   const handleSubmit = () => {
     const { previewText, images, links, checklist } = getPreviewContent(content);
@@ -77,17 +62,38 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
       toaster.success(gettext('Ticket created'));
-      toggle();
+      onClose();
       insertRow(TICKET_TABLE_NAME);
     });
   };
 
+  useEffect(() => {
+    setLoading(true);
+    connectionsAPI.convertRecordToTicket(projectUuid, connection.id, row._id).then(res => {
+      let { title, content, assignees, type, tags, priority } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, ...res?.data };
+      const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+      const initContent = content ? `${content}\n\n${suffix}` : suffix;
+      setTitle(title || '');
+      setContent(initContent || '');
+      setAssignees(assignees || []);
+      setType(type || '');
+      setTags(tags || []);
+      setPriority(priority || 0);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      setErrMessage(errorMessage);
+    }).finally(() => {
+      setLoading(false);
+    });
+  }, []);
+
   return (
-    <Modal className="sea-qa-create-ticket-dialog" isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
+    <Modal className="sea-qa-create-ticket-dialog" isOpen={true} toggle={onClose}>
+      <ModalHeader toggle={onClose}>{gettext('Create related ticket')}</ModalHeader>
       <ModalBody>
         {isLoading && <CenteredLoading/>}
-        {!isLoading && (
+        {!isLoading && errorMessage && (<CenteredError>{errorMessage}</CenteredError>)}
+        {!isLoading && !errorMessage && (
           <div className="d-flex">
             <div className="sea-qa-create-ticket-dialog-left-settings">
               <Form>
@@ -136,7 +142,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
         )}
       </ModalBody>
       <ModalFooter>
-        <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
+        <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
         <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>

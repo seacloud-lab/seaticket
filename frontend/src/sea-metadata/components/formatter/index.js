@@ -16,6 +16,7 @@ import URLFormatter from '../cell-formatter/URL';
 import TagFormatter from '../cell-formatter/tag';
 import TypeFormatter from '../cell-formatter/type';
 import PriorityFormatter from '../cell-formatter/priority';
+import LinkFormat from '../cell-formatter/link';
 import Empty from './empty';
 import { CellType } from '../../constants';
 
@@ -141,6 +142,13 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
         <TagFormatter value={value} row={row} className={className} { ...props }>
           <Empty columnType={columnType} placeholder={emptyTip} />
         </TagFormatter>
+      );
+    }
+    case CellType.LINK: {
+      return (
+        <LinkFormat value={value} row={row} className={className} { ...props }>
+          <Empty columnType={columnType} placeholder={emptyTip} />
+        </LinkFormat>
       );
     }
     default: {

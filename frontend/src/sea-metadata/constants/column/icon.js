@@ -21,6 +21,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.TAG]: 'tag-filled',
   [CellType.URL]: 'url',
   [CellType.PRIORITY]: 'flag',
+  [CellType.LINK]: 'link',
 };
 
 const COLUMNS_ICON_NAME = {
@@ -43,6 +44,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.TAG]: gettext('Tag'),
   [CellType.URL]: gettext('URL'),
   [CellType.PRIORITY]: gettext('Priority'),
+  [CellType.LINK]: gettext('Link'),
 };
 
 export {

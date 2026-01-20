@@ -32,8 +32,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [currentRow, setCurrentRow] = useState({});
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
-  const [ticketData, setTicketData] = useState(null);
-  const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
@@ -198,20 +196,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleCreateRelatedTicket = useCallback((row) => {
     if (!row) return;
-    setTicketData(null);
+    setCurrentRow(row);
     setTicketDialogOpen(true);
-    setTicketLoading(true);
-    connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
-      const data = res.data || {};
-      const relatedUrl = getOriginalPageUrl(connection, row, allColumns.current);
-      const prefix = data.content || '';
-      const suffix = `${gettext('Related record')}: ${relatedUrl}`;
-      data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
-      setTicketData(data);
-    }).finally(() => {
-      setTicketLoading(false);
-    });
-  }, [projectUuid, connectionID, connection]);
+  }, []);
 
   const handleResolveIssueByAI = useCallback((issues = []) => {
     if (!Array.isArray(issues) || issues.length === 0 || !connectionID) return;
@@ -521,6 +508,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
   }, [currentRow, connection, seaMetaDataRef]);
 
+  const closeAll = useCallback(() => {
+    setIsShowRowDetailsDialog(false);
+    setTicketDialogOpen(false);
+    setIsShowRelatedIssuesDialog(false);
+    setCurrentRow({});
+  }, []);
+
   return (
     <>
       <SeaMetadata
@@ -543,16 +537,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           resource={currentRow}
           columns={allColumns.current}
           switchResource={switchResource}
-          onToggle={() => setIsShowRowDetailsDialog(false)}
+          onToggle={closeAll}
         />
       )}
       {isTicketDialogOpen && (
         <CreateTicketDialog
           projectUuid={projectUuid}
-          initialData={ticketData}
-          isLoading={isTicketLoading}
-          isOpen={isTicketDialogOpen}
-          toggle={() => setTicketDialogOpen(false)}
+          row={currentRow}
+          connection={connection}
+          relatedUrl={getOriginalPageUrl(connection, currentRow, allColumns.current)}
+          onClose={closeAll}
         />
       )}
       {isShowRelatedIssuesDialog && (
@@ -560,8 +554,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           projectUuid={projectUuid}
           row={currentRow}
           connectionId={connectionID}
-          onClose={() => {setIsShowRelatedIssuesDialog(false); setCurrentRow({});}}
-          onRowClick={handleCreateRelatedTicket}
+          onClose={closeAll}
         />
       )}
     </>
