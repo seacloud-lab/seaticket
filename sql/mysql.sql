@@ -520,13 +520,12 @@ CREATE TABLE `chat_sessions` (
   `session_uuid` VARCHAR(36) NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `session_name` VARCHAR(255) NOT NULL,
-  `org_id` BIGINT(20) NOT NULL DEFAULT -1,
   `is_shared` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_session_uuid` (`session_uuid`),
-  KEY `idx_org_id_is_shared` (`org_id`, `is_shared`)
+  KEY `idx_project_uuid_is_shared` (`project_uuid`, `is_shared`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `chat_messages` (

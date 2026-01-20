@@ -52,8 +52,7 @@ class ChatSessionsView(APIView):
             session_type = request.GET.get('type', 'mine')
             
             if session_type == 'team':
-                org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
-                sessions = ChatSessions.objects.get_shared_sessions_by_org(org_id)
+                sessions = ChatSessions.objects.get_shared_sessions_by_project(project_uuid)
             else:
                 sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, username)
             
@@ -93,12 +92,10 @@ class ChatSessionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
             session = ChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
-                username=request.user.username,
-                org_id=org_id
+                username=request.user.username
             )
 
             return Response({ 'session': session.to_dict() }, status=status.HTTP_201_CREATED)
@@ -157,10 +154,6 @@ class ChatSessionView(APIView):
 
             if is_shared is not None:
                 session.is_shared = is_shared
-                # When sharing, ensure org_id is set correctly for backward compatibility
-                if is_shared and session.org_id == -1:
-                    org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
-                    session.org_id = org_id
 
             session.save()
 
@@ -310,7 +303,7 @@ class ChatView(APIView):
 
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
-            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username, org_id)
+            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
             session_uuid = session.session_uuid
         else:
             session = ChatSessions.objects.get_session_by_uuid(session_uuid)
