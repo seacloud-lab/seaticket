@@ -10,12 +10,12 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import format_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
+from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
+from seahub.chats.utils import get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 
@@ -214,7 +214,7 @@ class ChatMessagesView(APIView):
 
             message_ids = set([message.message_id for message in messages])
 
-            tool_calls_history = ChatToolCalls.objects.get_tool_calls_from_session_uuid_and_message_ids(session_uuid, message_ids)
+            message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
 
             messages_data = []
             for message in messages:
@@ -222,7 +222,7 @@ class ChatMessagesView(APIView):
                 if message.role == 'user':
                     data['attachments'] = remove_content_details_in_attachments(data['attachments'])
                 elif message.role == 'assistant':
-                    if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
+                    if thought_process := message_id_thought_process_map.get(message.message_id, {}):
                         data['thought_process'] = thought_process
                 messages_data.append(data)
 
@@ -336,6 +336,11 @@ class ChatView(APIView):
                 'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
                 'sources': []
             }
+
+        try:
+            ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_response.get('thought_process', {}))
+        except Exception as e:
+            logger.warning(f'Failure to record thought process to db: {e}')
 
         try:
             connection_ids = set([

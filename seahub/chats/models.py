@@ -53,28 +53,37 @@ class ChatSessions(models.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
-class ChatToolCallsManager(models.Manager):
-    def get_tool_calls_from_session_uuid_and_message_ids(self, session_uuid, message_ids):
+class ChatMessageThoughtProcessManager(models.Manager):
+    def create_thought_process(self, session_uuid, message_id, thought_process):
+        """Create a new chat message"""
+        record = self.model(
+            session_uuid=session_uuid,
+            message_id=message_id,
+            thought_process=json.dumps(thought_process),
+        )
+        record.save()
+        return record
+    def get_thought_process_from_session_uuid_and_message_ids(self, session_uuid, message_ids):
         """
         returns a map {message_id: <tool_calls>}
         """
         results = {}
         for record in self.filter(session_uuid=session_uuid, message_id__in=message_ids):
             record_to_dict = record.to_dict()
-            results[record.message_id] = record_to_dict['tool_calls']
+            results[record.message_id] = record_to_dict['thought_process']
         
         return results
 
-class ChatToolCalls(models.Model):
+class ChatMessageThoughtProcess(models.Model):
     id = models.BigAutoField(primary_key=True)
     session_uuid = models.CharField(max_length=36, null=False)
     message_id = models.CharField(max_length=4, null=False)
-    tool_calls = models.TextField()
+    thought_process = models.TextField()
 
-    objects = ChatToolCallsManager()
+    objects = ChatMessageThoughtProcessManager()
 
     class Meta:
-        db_table = 'chat_tool_calls'
+        db_table = 'chat_message_thought_process'
         constraints = [
             models.UniqueConstraint(
                 fields=['session_uuid', 'message_id'],
@@ -84,15 +93,15 @@ class ChatToolCalls(models.Model):
 
     def to_dict(self):
         try:
-            tool_calls = json.loads(self.tool_calls)
+            thought_process = json.loads(self.thought_process)
         except:
-            tool_calls = {}
+            thought_process = {}
 
         return {
             'id': self.id,
             'session_uuid': self.session_uuid,
             'message_id': self.message_id,
-            'tool_calls': tool_calls,
+            'thought_process': thought_process,
         }
 
 class ChatMessagesManager(models.Manager):

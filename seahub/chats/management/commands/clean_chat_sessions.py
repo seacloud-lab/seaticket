@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.db.models import Subquery
 
-from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
+from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         count = old_sessions.count()
 
         ChatMessages.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
-        ChatToolCalls.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
+        ChatMessageThoughtProcess.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
         old_sessions.delete()
 
         self.stdout.write(f"Deleted {count} sessions.")
