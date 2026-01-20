@@ -221,7 +221,7 @@ const OptionEditorContainer = forwardRef(({
                     [`check-placement-${validCheckPlacement}`]: validCheckPlacement
                   })}
                   key={option.value}
-                  style={{ height: optionHeight }}
+                  style={{ minHeight: optionHeight }}
                   onClick={() => toggleOption(option.value)}
                   onMouseEnter={() => onMenuMouseEnter(i)}
                   onMouseLeave={() => onMenuMouseLeave(i)}
