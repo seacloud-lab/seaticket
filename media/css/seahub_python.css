@@ -157,9 +157,6 @@ input[type="button"],
 input.submit,
 select {
   padding: 5px 6px;
-  background: -webkit-linear-gradient(top, #fafafb, #eeeeee);
-  background: -moz-linear-gradient(top, #fafafb, #eeeeee);
-  background: linear-gradient(top, #fafafb, #eeeeee);
   border: 1px solid #c5c5c5;
   border-radius: 2px;
 }
@@ -369,9 +366,6 @@ input.short-input {
   text-decoration: none;
   font-weight: normal;
   padding: 5px 6px;
-  background: -webkit-linear-gradient(top, #fafafb, #eeeeee);
-  background: -moz-linear-gradient(top, #fafafb, #eeeeee);
-  background: linear-gradient(top, #fafafb, #eeeeee);
   border: 1px solid #c5c5c5;
   border-radius: 2px;
 }
@@ -1123,4 +1117,55 @@ a.sf-popover-item {
 .user-profile-info-icon {
   display: inline-block;
   width: 1.4em;
+}
+
+/* two-factor-auth */
+.tfa-panel {
+  margin: 1rem auto;
+}
+@media (min-width: 504px) {
+  .tfa-panel {
+    width: 480px;
+  }
+}
+
+.tfa-panel .hd {
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin-bottom: .5rem;
+}
+
+.tfa-panel .con {
+  font-size: .875rem;
+}
+
+.two-factor-auth-wizard-btns {
+  margin-top: 2.5rem;
+}
+
+.two-factor-auth-wizard-btns .btn {
+  min-width: 71px;
+}
+
+.two-factor-auth-backup-token-list-container {
+  background-color: #f8f8f8;
+  border-radius: 8px;
+}
+
+.two-factor-auth-backup-token-list-container .token-list-hd {
+  font-size: .75rem;
+  height: 2.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.two-factor-auth-backup-token-list-container .token-list-hd .token-icon {
+  color: #444;
+  width: 16px;
+  height: 16px;
+  margin-right: .5rem;
+}
+
+.two-factor-auth-backup-token-form {
+  text-align: center;
+  margin-top: 2.5rem;
 }

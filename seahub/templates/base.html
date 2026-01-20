@@ -93,7 +93,7 @@
             {% endblock %}
         </div>
 
-        <div id="main" class="container-fluid w100 h100">{# since #wrapper is `d-flex`, 'w100' is necessary here. #}
+        <div id="main" class="container-fluid w100 h100 {% block main_class %}{% endblock %}">{# since #wrapper is `d-flex`, 'w100' is necessary here. #}
             {% block main_content %}
             <div class="row">
                 <div id="main-panel" class="w100 ovhd">
