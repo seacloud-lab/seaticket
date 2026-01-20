@@ -16,7 +16,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.tickets.ticket_utils import update_select_option, add_select_option, get_ticket_counts_group_by_column_name, \
     filter_tickets_by_select, TABLE_TICKETS, \
-    get_column_from_columns_by_name, batch_delete_select_option
+    get_column_from_columns_by_name, batch_delete_select_option, build_linked_record_titles_map
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 
@@ -211,9 +211,11 @@ class TicketTypeAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
         return Response({
             'tickets': tickets,
             'columns': columns,
+            'linked_record_titles': linked_record_titles,
         })
 
     @require_org_context

@@ -31,11 +31,12 @@ from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_site_record_details, list_email_record_details
+    list_seafile_record_details, list_site_record_details, list_email_record_details, list_connection_record_titles
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
+from seahub.tickets.ticket_utils import TABLE_TICKETS
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -398,11 +399,45 @@ class ProjectConnectionDetailsView(APIView):
             seadb_api, project_uuid, project_connection, view, start, limit
         )
 
+        linked_ticket_titles = {}
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            linked_ticket_column = None
+            for c in (columns or []):
+                if c.get('name') == 'linked_ticket':
+                    linked_ticket_column = c
+                    break
+            linked_ticket_key = (linked_ticket_column or {}).get('key') or 'linked_ticket'
+
+            ticket_ids = set()
+            for record in (records or []):
+                v = record.get(linked_ticket_key)
+                if v is None or v == '':
+                    continue
+                try:
+                    ticket_ids.add(int(v))
+                except Exception:
+                    continue
+
+            if ticket_ids:
+                ticket_ids_str = ','.join([str(i) for i in ticket_ids])
+                sql = f"SELECT _pk, title FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+                try:
+                    res = seadb_api.query_rows(project_uuid, sql)
+                    for row in (res.get('results') or []):
+                        _pk = row.get('_pk')
+                        if _pk is None:
+                            continue
+                        linked_ticket_titles[str(_pk)] = row.get('title') or ''
+                except Exception as e:
+                    logger.error(e)
+                    linked_ticket_titles = {}
+
         return Response({
             'records': records,
             'columns': columns,
             'name': project_connection.name,
             'type': project_connection.type,
+            'linked_ticket_titles': linked_ticket_titles,
         })
 
 class GithubWebhookView(APIView):

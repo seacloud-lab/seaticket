@@ -262,6 +262,7 @@ class DiscourseTopicsTable(BaseModel):
     ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
     ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
     ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
+    linked_ticket = MappedColumn('linked_ticket', PropertyTypes.INT)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -371,6 +372,7 @@ class TicketsTable(BaseModel):
     tags = MappedColumn('tags', PropertyTypes.LIST, ListTypes.int)
     assignees = MappedColumn('assignees', PropertyTypes.LIST)
     participants = MappedColumn('participants', PropertyTypes.LIST)
+    linked_connection_records = MappedColumn('linked_connection_records', PropertyTypes.LIST)
     priority = MappedColumn('priority', PropertyTypes.INT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     comment_count = MappedColumn('comment_count', PropertyTypes.INT)

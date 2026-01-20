@@ -545,7 +545,7 @@ class TestTicketTrashAPIView:
                 patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.tickets.tickets.get_deleted_tickets_ids', return_value=[]):
+                patch('seahub.tickets.tickets.get_deleted_tickets', return_value=[]):
             resp = TicketTrashAPIView.as_view()(request, project_uuid='p1')
         assert resp.status_code == 200
         assert resp.data['success'] is True
