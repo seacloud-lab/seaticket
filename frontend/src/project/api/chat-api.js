@@ -68,6 +68,20 @@ class ChatAPI {
     return this.req.get(url);
   }
 
+  listTeamSharedSessions(projectUuid) {
+    const url = this.server + '/api/v1/chat/sessions/?project_uuid=' + projectUuid + '&type=team';
+    return this.req.get(url);
+  }
+
+  shareChatSession(projectUuid, sessionUuid, isShared) {
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
+    const data = {
+      project_uuid: projectUuid,
+      is_shared: isShared
+    };
+    return this.req.put(url, data);
+  }
+
   createChatSession(projectUuid, sessionName) {
     const url = this.server + '/api/v1/chat/sessions/';
     const data = {

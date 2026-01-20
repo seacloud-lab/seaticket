@@ -10,9 +10,17 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
+export const SESSION_TAB_TYPE = {
+  MINE: 'mine',
+  TEAM: 'team'
+};
+
 export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
+  const [teamSessions, setTeamSessions] = useState([]);
+  const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(true);
   const localStorageKeyRef = useRef(`sea-qa-${projectUuid}-ask-sessions-display`);
 
@@ -97,6 +105,55 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     setSessions(newSessions);
   }, [sessions]);
 
+  const loadTeamSessions = useCallback(() => {
+    setIsTeamSessionsLoading(true);
+    chatAPI.listTeamSharedSessions(projectUuid).then(res => {
+      let teamSessionsList = res.data.sessions;
+      if (Array.isArray(teamSessionsList) && teamSessionsList.length > 0) {
+        teamSessionsList = teamSessionsList.map(session => new ChatSession(session));
+      } else {
+        teamSessionsList = [];
+      }
+      setTeamSessions(teamSessionsList);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      setTeamSessions([]);
+    }).finally(() => {
+      setIsTeamSessionsLoading(false);
+    });
+  }, [projectUuid]);
+
+  const shareSession = useCallback((sessionId) => {
+    return chatAPI.shareChatSession(projectUuid, sessionId, true).then(res => {
+      let newSessions = sessions.slice(0);
+      const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
+      if (sessionIdx !== -1) {
+        newSessions[sessionIdx].is_shared = true;
+        setSessions(newSessions);
+      }
+      toaster.success('Chat shared within team');
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [projectUuid, sessions]);
+
+  const unshareSession = useCallback((sessionId) => {
+    return chatAPI.shareChatSession(projectUuid, sessionId, false).then(res => {
+      let newSessions = sessions.slice(0);
+      const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
+      if (sessionIdx !== -1) {
+        newSessions[sessionIdx].is_shared = false;
+        setSessions(newSessions);
+      }
+      toaster.success('Chat unshared from team');
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [projectUuid, sessions]);
+
   useEffect(() => {
     setLoading(true);
     const isShowSessions = localStorage.getItem(localStorageKeyRef.current) || 'true';
@@ -132,7 +189,11 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   return (
     <SessionsContext.Provider value={{
       sessions,
+      teamSessions,
       isLoading,
+      isTeamSessionsLoading,
+      activeTab,
+      setActiveTab,
       isShowSessions,
       createSession,
       modifySession,
@@ -142,6 +203,9 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
       toggleIsShowSessions,
       solveProblem,
       modifyLocalSession,
+      loadTeamSessions,
+      shareSession,
+      unshareSession,
     }}>
       {children}
     </SessionsContext.Provider>
