@@ -6,10 +6,10 @@ import { isString } from '@/utils/type-detection';
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;
+  const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
   const connection = CONNECTION_TYPES.find(c => c.type === type);
-  if (type === 'ticket') return `${siteRoot}${mediaUrl}img/ticket.png`;
-  if (!connection) return `${siteRoot}${mediaUrl}img/connection/sites.png`;
-  return `${siteRoot}${mediaUrl}img/connection/${connection.icon}.png`;
+  if (!connection) return `${root}img/connection/sites.png`;
+  return `${root}img/connection/${connection.icon}.png`;
 };
 
 const getDiscourseOriginalPageUrl = (connection, row, columns) => {

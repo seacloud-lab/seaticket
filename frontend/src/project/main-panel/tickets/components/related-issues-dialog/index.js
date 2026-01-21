@@ -5,7 +5,7 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { gettext, mediaUrl } from '@/constants';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { CONNECTION_TYPES } from '@/project/main-panel/connections/constants';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { getResourceIconURL } from '@/project/utils';
 import { ticketsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
@@ -66,14 +66,6 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
     getDetails();
   }, [projectUuid, ticketId]);
 
-  const getIcon = (issue) => {
-    const connectionType = issue.type;
-    if (connectionType === 'ticket') {
-      return `${mediaUrl}img/ticket.png`;
-    }
-    return getConnectionIcon(connectionType);
-  };
-
   const getTypeName = (issue) => {
     const connectionType = issue.type;
     if (connectionType === 'ticket') {
@@ -103,7 +95,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
                     return (
                       <div className='issues-list-item' key={`${issue._id}-${issue.type}`} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
-                          <img src={getIcon(issue)} alt={getTypeName(issue)} className='sea-qa-project-connection-type-icon' />
+                          <img src={getResourceIconURL(issue.type)} alt={getTypeName(issue)} className='sea-qa-project-connection-type-icon' />
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>

@@ -6,9 +6,10 @@ import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/
 import { generatorTicketURL } from './main-panel/tickets/utils';
 
 export const getResourceIconURL = (type) => {
-  if (type === 'unknown') return `${siteRoot}${mediaUrl}img/unknown.png`;
-  if (type === TICKET_TYPE) return `${siteRoot}${mediaUrl}img/ticket.png?t=20260104`;
-  if (type === KNOWLEDGE_BASE_TYPE) return `${siteRoot}${mediaUrl}img/knowledge-base.png?t=20260104`;
+  const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
+  if (type === 'unknown') return `${root}img/unknown.png`;
+  if (type === TICKET_TYPE) return `${root}img/ticket.png?t=20260104`;
+  if (type === KNOWLEDGE_BASE_TYPE) return `${root}img/knowledge-base.png?t=20260104`;
   return getConnectionIcon(type);
 };
 

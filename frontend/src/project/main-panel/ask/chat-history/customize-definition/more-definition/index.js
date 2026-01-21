@@ -1,7 +1,7 @@
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { getResourceIconURL } from '@/project/utils';
 import { gettext } from '@/constants';
 import { CustomizePopover, IconButton } from '@/components';
 import Definition from '../definition';
@@ -17,7 +17,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
   const moreRef = useRef();
 
   const icons = useMemo(() => {
-    return sources.slice(2).map(s => getConnectionIcon(s.type));
+    return sources.slice(2).map(s => getResourceIconURL(s.type));
   }, [sources]);
   const sourcesCount = useMemo(() => sources.length, [sources]);
 
