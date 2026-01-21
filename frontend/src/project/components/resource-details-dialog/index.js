@@ -8,7 +8,7 @@ import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { useConnections } from '../../main-panel/connections/hooks';
 import ConnectionResourceDetails from '../../main-panel/connections/components/connection-resource-details';
-import { getResourceIconURL, getResourceOriginalURL } from '@/project/utils';
+import { getInternalNetworkAddress, getResourceIconURL, getResourceOriginalURL } from '@/project/utils';
 import { KBInDialog } from '../../main-panel/knowledge-base/components';
 import TicketInDialog from '../../main-panel/tickets/components/ticket-in-dialog';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
@@ -54,6 +54,10 @@ const ResourceDetailsDialog = ({
     return getResourceOriginalURL(type, { ...details, ...resource }, { workspaceID, projectName, connections, columns });
   }, [type, connections, resource, details, columns]);
 
+  const internalNetworkAddress = useMemo(() => {
+    return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
+  }, [type, resource]);
+
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
     switchResource(step);
   }, [switchResource]), 300);
@@ -90,6 +94,14 @@ const ResourceDetailsDialog = ({
             </div>
           )}
           <div className="text-truncate" title={title}>{title}</div>
+          {internalNetworkAddress && (
+            <IconButton
+              className="open-in-new-tab-btn"
+              icon="view-issue"
+              title={gettext('Open in new tab')}
+              onClick={() => window.open(internalNetworkAddress, '_blank', 'noopener,noreferrer')}
+            />
+          )}
           {url && (
             <IconButton
               className="open-in-new-tab-btn"

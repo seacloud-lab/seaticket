@@ -12,7 +12,7 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
 import { Attachments } from '../../components';
-import { getResourceIconURL, getResourceURL } from '@/project/utils';
+import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
@@ -37,7 +37,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
       const { type, ai_summary, score, connection_id, _id, title } = source;
-      const url = getResourceURL(type, _id, { url: source?.url, workspaceID, projectName, connectionID: connection_id });
+      const url = getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
       const urlObject = new URL(url);
       let category_name = '';
       if (type === TICKET_TYPE) {
