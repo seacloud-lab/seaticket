@@ -272,7 +272,7 @@ class TicketsAPI {
 
   // tags
   listTicketTags(projectUuid) {
-    const params = {link_type: 'tickets'};
+    const params = { link_type: 'tickets' };
     let url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
     return this.req.get(url, { params });
   }

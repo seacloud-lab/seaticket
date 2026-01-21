@@ -38,7 +38,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     return {
       getMetadata: (...params) => {
         return getMetadata(KB_TABLE_NAME, params[0], () => knowledgeBaseAPI.getKnowledgeBases(projectUuid, ...params)).then(res => {
-          const rows = res?.data?.records || [];
+          let rows = res?.data?.records || [];
           let columns = res?.data?.columns || [];
           let predefinedConfig = { ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG };
           predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE] = {
@@ -50,11 +50,11 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
 
           columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
-            const predefinedConfig = KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[name];
+            const columnConfig = predefinedConfig[name];
             const columnId = c.id || c.key;
             return {
               ...c,
-              ...predefinedConfig[name],
+              ...columnConfig,
               id: columnId,
               key: columnId,
             };

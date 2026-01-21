@@ -64,7 +64,7 @@ class PortalAPI {
   }
 
   listTicketTags(projectUuid) {
-    const params = {link_type: 'tickets'};
+    const params = { link_type: 'tickets' };
     const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/tags/';
     return this.req.get(url, { params });
   }

@@ -21,7 +21,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
     getMetadata: (...params) => {
       return getMetadata(KB_TABLE_NAME, { ...params[0], view_id: 'trash' }, () => knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params), true).then(res => {
         let rows = res?.data?.records || [];
-        const rawColumns = res?.data?.columns || [];
+        let rawColumns = res?.data?.columns || [];
 
         const pkRawColumn = rawColumns.find(c => c.name === '_pk');
         const pkColumnId = pkRawColumn ? (pkRawColumn.id || pkRawColumn.key) : undefined;
