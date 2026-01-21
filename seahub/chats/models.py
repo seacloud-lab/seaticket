@@ -47,6 +47,9 @@ class ChatSessions(models.Model):
 
     class Meta:
         db_table = 'chat_sessions'
+        indexes = [
+            models.Index(fields=['project_uuid', 'is_shared'], name='idx_project_uuid_is_shared')
+        ]
 
     def to_dict(self):
         return {

@@ -7,13 +7,9 @@ import { useAskPage } from './page-type';
 import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../constants';
+import { SESSION_TAB_TYPE } from '../constants';
 
 const SessionsContext = React.createContext(null);
-
-export const SESSION_TAB_TYPE = {
-  MINE: 'mine',
-  TEAM: 'team'
-};
 
 export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const [isLoading, setLoading] = useState(true);

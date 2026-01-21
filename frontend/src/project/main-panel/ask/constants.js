@@ -28,3 +28,8 @@ export const AI_RESOLVE_TYPE = {
   AGENT: 'agent',
   ASK: 'ask',
 };
+
+export const SESSION_TAB_TYPE = {
+  MINE: 'mine',
+  TEAM: 'team'
+};

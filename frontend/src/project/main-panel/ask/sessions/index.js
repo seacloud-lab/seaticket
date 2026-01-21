@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { useSessions, SESSION_TAB_TYPE } from '../hooks';
+import { useSessions } from '../hooks';
+import { SESSION_TAB_TYPE } from '../constants';
 import { EmptyTip, IconButton } from '@/components';
 import Session from './session';
 
 import './index.css';
 
 const Sessions = ({ sessionId, permission }) => {
-  const { 
-    sessions, 
-    teamSessions, 
+  const {
+    sessions,
+    teamSessions,
     isTeamSessionsLoading,
-    activeTab, 
-    setActiveTab, 
+    activeTab,
+    setActiveTab,
     closeShowSessions,
-    loadTeamSessions 
+    loadTeamSessions
   } = useSessions();
 
   const isTeamTab = activeTab === SESSION_TAB_TYPE.TEAM;
@@ -34,13 +35,13 @@ const Sessions = ({ sessionId, permission }) => {
         <IconButton icon="close" onClick={closeShowSessions} title={gettext('Close')} aria-label={gettext('Close')} />
       </div>
       <div className="sea-qa-ai-ask-sessions-tabs">
-        <span 
+        <span
           className={classnames('sea-qa-ai-ask-sessions-tab', { 'active': activeTab === SESSION_TAB_TYPE.MINE })}
           onClick={() => setActiveTab(SESSION_TAB_TYPE.MINE)}
         >
           {gettext('Mine')}
         </span>
-        <span 
+        <span
           className={classnames('sea-qa-ai-ask-sessions-tab', { 'active': activeTab === SESSION_TAB_TYPE.TEAM })}
           onClick={() => setActiveTab(SESSION_TAB_TYPE.TEAM)}
         >
@@ -57,11 +58,11 @@ const Sessions = ({ sessionId, permission }) => {
         {!isTeamSessionsLoading && displaySessions.map(session => {
           const isSelected = sessionId === session._id;
           return (
-            <Session 
-              key={session._id} 
-              session={session} 
-              permission={permission} 
-              isSelected={isSelected} 
+            <Session
+              key={session._id}
+              session={session}
+              permission={permission}
+              isSelected={isSelected}
               isTeamTab={isTeamTab}
             />
           );
