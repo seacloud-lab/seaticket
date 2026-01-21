@@ -886,9 +886,9 @@ a.sf-popover-item {
 
 .messages .error {
   padding: 5px;
-  background: #fdf;
+  background: #fff;
   margin: 0;
-  color: #000;
+  color: #fc6440;
 }
 
 /* guide for new */

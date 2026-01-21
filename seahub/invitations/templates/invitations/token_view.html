@@ -44,6 +44,11 @@
     setupPasswordField("password", passwd_tip, template);
   });
 
+  if ($('.messages').length > 0) {
+    $('.messages').removeClass('hide');
+    $('.messages').css('left', 'calc(50% - 120px)');
+  }
+
   $('form').on('submit', function() {
     var pwd1 = $('input[name="password"]').val().trim(),
         pwd2 = $('input[name="password2"]').val().trim();
@@ -52,7 +57,6 @@
       $('.error').html("{% trans "Password cannot be blank" %}").removeClass('hide');
       return false;
     }
-
     if (!pwd2) {
       $('.error').html("{% trans "Please enter the password again" %}").removeClass('hide');
       return false;

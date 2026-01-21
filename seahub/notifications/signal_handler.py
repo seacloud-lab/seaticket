@@ -6,6 +6,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.group.models import Group
 from seahub.group.signals import add_user_to_group
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
+from seahub.invitations.signals import org_member_invite_accepted
 from seahub.notifications.utils import ticket_assignee_added_msg_to_json, ticket_comment_msg_to_json
 from seahub.notifications.models import ProjectNotification, UserNotification
 
@@ -14,6 +15,28 @@ logger = logging.getLogger(__name__)
 MSG_TYPE_TICKET_ASSIGNEE_ADDED = 'ticket_assignee_added'
 MSG_TYPE_TICKET_COMMENTED = 'ticket_commented'
 MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group'
+MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted'
+
+
+@receiver(org_member_invite_accepted)
+def org_member_invite_accepted_msg_cb(sender, **kwargs):
+    inv_obj = kwargs['invitation_obj']
+
+    detail = {
+        'inviter_email': inv_obj.inviter,
+        'inviter_name': email2nickname(inv_obj.inviter),
+        'accepter_email': inv_obj.accepter,
+        'accepter_name': email2nickname(inv_obj.accepter),
+    }
+
+    try:
+        UserNotification.objects.create(
+                to_user=inv_obj.inviter,
+                msg_type=MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
+                detail=json.dumps(detail),
+            )
+    except Exception as e:
+        logger.error(e)
 
 @receiver(add_user_to_group)
 def add_user_to_group_msg_cb(sender, **kwargs):
