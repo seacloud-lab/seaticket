@@ -17,10 +17,13 @@ import TagFormatter from '../cell-formatter/tag';
 import TypeFormatter from '../cell-formatter/type';
 import PriorityFormatter from '../cell-formatter/priority';
 import LinkFormat from '../cell-formatter/link';
-import Empty from './empty';
 import { CellType } from '../../constants';
 
 import './index.css';
+
+const Empty = ({ type, placeholder }) => {
+  return <span className={`sea-metadata-row-cell-empty sea-metadata-row-${type}-cell-empty`} placeholder={placeholder}></span>;
+};
 
 const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, row, ...params }) => {
   const { type: columnType } = column || {};

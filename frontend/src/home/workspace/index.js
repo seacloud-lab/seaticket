@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading, CommonOperationConfirmationDialog } from '@/components';
+import { Button } from 'reactstrap';
+import { EmptyTip, toaster, Loading, CommonOperationConfirmationDialog } from '@/components';
 import homeAPI from '../api';
 import ManageMembersDialog from '../dialog/manage-members-dialog';
 import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
@@ -11,12 +12,14 @@ import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import TransferGroupDialog from '../dialog/transfer-group-dialog';
 import ModalPortal from '@/components/modal-portal';
 import RenameProjectView from '../mobile/rename-project-view';
-import Header from './header';
-import Body from './body';
+import WorkspaceHeader from './workspace-header';
+import WorkspaceContainer from './body/workspace-container';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
 import ProjectAPITokenDialog from '../../components/dialog/project-api-token-dialog';
 import eventBus from '@/utils/event-bus';
+
+import './workspace-add.css';
 
 const gettext = window.gettext;
 const username = window.app.pageOptions.username;
@@ -400,8 +403,28 @@ class Workspace extends React.Component {
   };
 
   renderEmpty = () => {
-    if (this.state.projectList.length === 0) {
-      return this.props.emptyTip || '';
+    const { page } = this.props;
+    const { projectItemWidth, projectList, isShowVirtualProject } = this.state;
+    if (projectList.length === 0 && !isShowVirtualProject) {
+      if (page === 'workspace-in-main-panel') {
+        return (
+          <EmptyTip
+            title={gettext('No projects')}
+            text={gettext('Add a project to track issues')}
+          >
+            <Button color="primary" onClick={this.showVirtualProject} className='mt-5'>
+              {gettext('Add project')}
+            </Button>
+          </EmptyTip>
+        );
+      } else if (page === 'all-workspaces') {
+        return (
+          <div className="empty-project-card" onClick={this.showVirtualProject} style={{ width: projectItemWidth }}>
+            <div className="empty-project-card-icon">+</div>
+            <p className="empty-project-card-text">{gettext('Add a project to track issues')}</p>
+          </div>
+        );
+      }
     }
   };
 
@@ -418,7 +441,7 @@ class Workspace extends React.Component {
     return (
       <Fragment>
         <div className="workspace project-group-container" ref={ref => this.curViewContent = ref}>
-          <Header
+          <WorkspaceHeader
             workspace={workspace}
             isDesktop={this.isDesktop}
             isOwnerOrAdmin={isOwnerOrAdmin}
@@ -436,7 +459,7 @@ class Workspace extends React.Component {
             toggleGroupTrashDialog={this.toggleGroupTrashDialog}
             showVirtualProject={this.showVirtualProject}
           />
-          <Body
+          <WorkspaceContainer
             isDesktop={this.isDesktop}
             isOwnerOrAdmin={isOwnerOrAdmin}
             isPersonal={isPersonal}
