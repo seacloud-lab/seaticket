@@ -196,15 +196,38 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
 
   const clearViewRows = useCallback((tableName = '', viewID = '', api, isBuiltIn = false) => {
     return api().then(res => {
-      const table = data[tableName] || null;
-      if (table) {
+      setData(data => {
+        const newData = dcopy(data);
+        let table = newData[tableName];
+        if (!table) return data;
         const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
         let viewMap = { ...table[viewMapName] };
         let newView = viewMap[viewID] || {};
         newView.rows = [];
         viewMap[viewID] = newView;
-        updateTable(tableName, { [viewMapName]: viewMap });
-      }
+        newData[tableName] = { ...table, [viewMapName]: viewMap };
+
+        // update other table's view
+        Object.keys(newData).forEach(tName => {
+          if (![TICKET_TABLE_NAME, KB_TABLE_NAME, 'version'].includes(tName)) {
+            let table = newData[tName];
+            if (hasOwnProperty(table, 'linked_records') && Object.keys(table.linked_records).length > 0) {
+              let id_view_map = { ...table.id_view_map };
+              Object.keys(id_view_map).forEach(viewID => {
+                let view = id_view_map[viewID];
+                view.rows = [];
+                view.timestamp = 0;
+                id_view_map[viewID] = view;
+              });
+              table.linked_records = {};
+              table.id_view_map = id_view_map;
+              newData[tName] = table;
+            }
+          }
+        });
+        newData.version = newData.version + 1;
+        return newData;
+      });
       return res;
     });
   }, [data, updateTable]);

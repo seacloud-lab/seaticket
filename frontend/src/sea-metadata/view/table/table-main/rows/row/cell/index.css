@@ -320,3 +320,8 @@
 .sea-metadata-table-cell.table-cell-clickable:hover {
   cursor: pointer;
 }
+
+/* link */
+.sea-metadata-table-cell .sea-metadata-link-formatter {
+  flex-direction: column;
+}
