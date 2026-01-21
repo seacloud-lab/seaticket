@@ -198,7 +198,7 @@ class SeaDBAPI:
         return parse_response(response)
 
     def list_connection_records_with_columns(self, project_uuid, connection_id, connection_type, column_names,
-                                            limit, extra_columns=None, start_year=None, end_year=None):
+                                            limit, extra_columns=None, start_date=None, end_date=None):
         table_name = get_connection_table_name(connection_type, connection_id)
         column_join = ', '.join(['`%s`' % column_name for column_name in column_names])
         if extra_columns:
@@ -207,10 +207,10 @@ class SeaDBAPI:
         sql = f"SELECT {column_join} FROM `{table_name}`"
 
         conditions = []
-        if start_year:
-            conditions.append(f"`modified_time` >= '{start_year}-01-01'")
-        if end_year:
-            conditions.append(f"`modified_time` <= '{end_year}-12-31'")
+        if start_date:
+            conditions.append(f"`modified_time` >= '{start_date}'")
+        if end_date:
+            conditions.append(f"`modified_time` <= '{end_date}'")
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
 

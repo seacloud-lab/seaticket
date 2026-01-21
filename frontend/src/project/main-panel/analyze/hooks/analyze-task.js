@@ -60,7 +60,7 @@ export const AnalyzeTaskProvider = ({ children }) => {
     poll();
   }, [clearPolling]);
 
-  const startAnalysis = useCallback(async (connectionIds, yearStart, yearEnd) => {
+  const startAnalysis = useCallback(async (connectionIds, startDate, endDate) => {
     if (!connectionIds || connectionIds.length === 0) {
       setRecords(null);
       setError(null);
@@ -76,8 +76,8 @@ export const AnalyzeTaskProvider = ({ children }) => {
       const response = await connectionsAPI.getConnectionsEmbeddingAnalysis(
         projectUuid,
         connectionIds,
-        yearStart,
-        yearEnd
+        startDate,
+        endDate
       );
 
       const { task_id } = response.data;
