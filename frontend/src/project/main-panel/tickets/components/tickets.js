@@ -175,7 +175,7 @@ const Tickets = ({
   }, []);
 
   const createRowsTools = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI };
+    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -183,10 +183,10 @@ const Tickets = ({
       return customizeCreateRowsTools(params);
     }
     return generatorTicketsRowsTools(params);
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools]);
+  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId]);
 
   const createContextMenuOptions = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI };
+    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -194,7 +194,7 @@ const Tickets = ({
       return customizeCreateContextMenuOptions(params);
     }
     return generatorTicketsContextMenuOptions(params);
-  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions]);
+  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId]);
 
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
