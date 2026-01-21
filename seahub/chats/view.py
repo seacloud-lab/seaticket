@@ -317,7 +317,6 @@ class ChatView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
-            'message_id': message_id,
             'query': query,
             'attachments': attachments,
             'resolve_type': resolve_type,
