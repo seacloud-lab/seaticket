@@ -26,7 +26,8 @@ const MyProjectsTrash = () => {
       const projects = (trash_project_list || []).map(item => ({ ...item, group_id: item.owner_group_id }));
       return { data: { projects, count } };
     }).catch(error => {
-      throw error;
+      const errorMsg = Utils.getErrorMsg(error);
+      toaster.danger(errorMsg);
     });
   });
 
