@@ -8,7 +8,7 @@ import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
 import { removeTextMark } from '@/utils/remove-text-mark';
 import { DEFAULT_COLOR } from '@/constants';
-import { MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_PROJECT } from '../constants';
+import { MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED, MSG_TYPE_PROJECT } from '../constants';
 import InboxCount from './inbox-count';
 
 import './inbox-notification-item.css';
@@ -49,6 +49,12 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       const groupName = detail.group_name;
       const userLink = '<a class="inbox-text-orange" href=' + url + '>' + Utils.HTMLescape(username) + '</a>';
       const title = gettext('User {user_link} has added you to %a').replace('{user_link}', userLink).replace('%a', groupName);
+      return { username, title };
+    }
+    if (noticeType === MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED) {
+      const accepter = detail.accepter_name;
+      const username = 'System';
+      const title = gettext('{accepter} has accepted your team invitation').replace('{accepter}', accepter);
       return { username, title };
     }
 
@@ -102,6 +108,9 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       );
     }
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
+      return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
+    }
+    if (noticeType === MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED) {
       return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
     }
     return null;

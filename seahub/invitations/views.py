@@ -10,7 +10,7 @@ from seahub.auth import get_backends
 from seahub.base.accounts import User
 from seahub.constants import GUEST_USER
 from seahub.invitations.models import Invitation, InvitationLinks
-from seahub.invitations.signals import accept_guest_invitation_successful
+from seahub.invitations.signals import org_member_invite_accepted
 from seahub.settings import SITE_ROOT, NOTIFY_ADMIN_AFTER_REGISTRATION
 from seahub.registration.models import notify_admins_on_register_complete
 from seahub.utils import render_error
@@ -79,7 +79,7 @@ def token_view(request, token):
         auth_login(request, user)
 
         # send signal to notify inviter
-        accept_guest_invitation_successful.send(
+        org_member_invite_accepted.send(
             sender=None, invitation_obj=i)
 
         # send email to notify admin
