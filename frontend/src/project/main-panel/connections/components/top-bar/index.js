@@ -95,8 +95,6 @@ const TopBar = ({ title, modifyLocalBar }) => {
               if (last_sync_count > 0) {
                 const msg = gettext('%s records synced').replace('%s', last_sync_count);
                 toaster.success(msg);
-                const eventBus = context.eventBus;
-                eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA, false);
               } else {
                 toaster.success(gettext('No new records'));
               }
