@@ -120,7 +120,7 @@
 }
 
 .cur-view-content {
-  padding: 0rem 1.5rem;
+  padding: 0rem 1.5rem 2rem;
   flex: 1;
   min-height: 0;
   overflow: auto;

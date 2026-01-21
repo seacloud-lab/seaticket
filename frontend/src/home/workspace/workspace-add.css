@@ -1,0 +1,35 @@
+.empty-project-card {
+  padding: 48px 20px 20px;
+  border: 1.5px dashed rgba(0, 40, 100, 0.12);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  cursor: pointer;
+  min-height: 160px;
+}
+
+.empty-project-card:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.empty-project-card .empty-project-card-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-icon-secondary-color);
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.empty-project-card .empty-project-card-text {
+  color: var(--bs-icon-color);
+  font-size: 12px;
+  line-height: 18px;
+  margin: 0;
+  text-align: center;
+}

@@ -97,6 +97,7 @@ class AllWorkspaces extends React.Component {
                       onDeleteProject={onDeleteProject}
                       onAddProject={onAddProject}
                       loadWorkspaceList={this.props.loadWorkspaceList}
+                      page="all-workspaces"
                     />
                   }
                   {groupWorkspaceList.length > 0 && groupWorkspaceList.map((workspace, index) => {
@@ -110,6 +111,7 @@ class AllWorkspaces extends React.Component {
                         onCopyProject={onCopyProject}
                         onAddProject={onAddProject}
                         loadWorkspaceList={this.props.loadWorkspaceList}
+                        page="all-workspaces"
                       />
                     );
                   })}

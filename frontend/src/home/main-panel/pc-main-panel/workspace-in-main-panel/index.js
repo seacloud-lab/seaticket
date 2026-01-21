@@ -1,11 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { EmptyTip, Loading } from '@/components';
-import { isOrgContext, orgName, mediaUrl } from '@/constants';
+import { Loading } from '@/components';
+import { isOrgContext, orgName } from '@/constants';
 import Workspace from '../../../workspace';
 import { Utils } from '@/utils/utils';
-
-const gettext = window.gettext;
 
 class WorkspaceInMainPanel extends React.Component {
 
@@ -39,9 +37,7 @@ class WorkspaceInMainPanel extends React.Component {
         onCopyProject={onCopyProject}
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
-        emptyTip={
-          <EmptyTip text={gettext('No projects')} src={`${mediaUrl}img/no-items-tip.png`} />
-        }
+        page="workspace-in-main-panel"
       />
     );
   };
