@@ -128,12 +128,6 @@ class HeaderDropdownMenu extends React.Component {
               <CustomizeDropdownItem.Text>{gettext('Leave group')}</CustomizeDropdownItem.Text>
             </CustomizeDropdownItem>
           )}
-          {isOwnerOrAdmin && showGroupOptions && (
-            <CustomizeDropdownItem onClick={this.openTrashDialog}>
-              <CustomizeDropdownItem.Icon symbol="trash" />
-              <CustomizeDropdownItem.Text>{gettext('Trash')}</CustomizeDropdownItem.Text>
-            </CustomizeDropdownItem>
-          )}
         </CustomizeDropdownMenu>
       </Dropdown>
     );

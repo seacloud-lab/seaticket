@@ -158,10 +158,10 @@ class HomeAPI {
   }
 
   // group
-  listGroups(includingAllDeps = false) {
+  listGroups(includingAllDeps = false, canAdmin = false) {
     const url = this.server + '/api/v1/groups/';
-    let params = { including_all_deps: includingAllDeps };
-    return this.req.get(url, { params: params });
+    let params = { including_all_deps: includingAllDeps, can_admin: canAdmin };
+    return this.req.get(url, { params });
   }
 
   getGroup(groupID) {
@@ -219,6 +219,11 @@ class HomeAPI {
 
   listGroupTrashProjects(groupID) {
     let url = this.server + '/api/v1/groups/' + groupID + '/trash-projects/';
+    return this.req.get(url);
+  }
+
+  listManagedGroupsTrashProjects() {
+    const url = this.server + '/api/v1/groups/trash-projects/';
     return this.req.get(url);
   }
 

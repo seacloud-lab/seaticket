@@ -400,7 +400,7 @@ class GroupTrashProjectsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        results = [project.to_dict(include_deleted=True) for project in projects]
+        results = [project.to_dict(include_deleted=True) for project in projects[:500]]
 
         return Response({'trash_project_list': results})
 
@@ -464,3 +464,44 @@ class GroupTrashProjectView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
+
+
+class ManagedGroupsTrashProjectsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        username = request.user.username
+
+        org_id = request.user.org.org_id
+        groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
+        admin_group_ids = [g.group_id for g in groups if g.is_staff]
+        if not admin_group_ids:
+            return Response({'count': 0, 'trash_project_list': []})
+
+        owner_list = ['%s@seafile_group' % gid for gid in admin_group_ids]
+        try:
+            projects = Projects.objects.filter(deleted=True, workspace__owner__in=owner_list).select_related('workspace').order_by('-delete_time')
+        except Exception as e:
+            logger.error('get deleted projects error: %s', e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        count = projects.count()
+        slice_projects = list(projects[:500])
+        gids = set(p.get_owner_group_id() for p in slice_projects)
+        group_name_map = dict(Group.objects.filter(group_id__in=gids).values_list('group_id', 'group_name'))
+        results = []
+        for p in slice_projects:
+            info = p.to_dict(include_deleted=True)
+            gid = p.get_owner_group_id()
+            info['owner_group_id'] = gid
+            info['owner'] = group_name_map.get(gid, '')
+            results.append(info)
+
+        return Response({'count': count, 'trash_project_list': results})
