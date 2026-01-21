@@ -1,9 +1,9 @@
-import { gettext } from '@/constants';
+import { gettext, siteRoot } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 
 export const generatorKnowledgeBaseURL = ({ kb, workspaceID, projectName }) => {
   const { origin } = location;
-  return `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${kb._id}/`;
+  return `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${kb._id}/`;
 };
 
 export const generatorKnowledgeContextMenuOptions = ({

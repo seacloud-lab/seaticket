@@ -5,7 +5,8 @@ import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../cons
 import { Utils } from '@/utils/utils';
 import context from '@/sea-metadata/context';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import eventBus from '@//utils/event-bus';
+import eventBus from '@/utils/event-bus';
+import { siteRoot } from '@/constants';
 
 const KnowledgePageContext = React.createContext(null);
 
@@ -17,7 +18,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
     const { origin } = location;
-    const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}`;
+    const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}`;
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;

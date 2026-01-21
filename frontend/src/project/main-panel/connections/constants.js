@@ -1,5 +1,5 @@
 import { gettext } from '@/constants';
-import { CellType } from '@/sea-metadata';
+import CellType from '@/sea-metadata/constants/column/type';
 import { DATE_FORMAT_MAP } from '@/sea-metadata/constants/column';
 
 export const CONNECTION_TYPE = {

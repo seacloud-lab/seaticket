@@ -6,6 +6,7 @@ import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
 import context from '@/sea-metadata/context';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { siteRoot } from '@/constants';
 
 const TicketsPageContext = React.createContext(null);
 
@@ -17,11 +18,11 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
     const { origin } = location;
-    const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
+    const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
-      let myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
+      let myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
       if (viewID) {
         myTicketsViewURL = myTicketsViewURL + '?view=' + viewID;
       }
@@ -30,7 +31,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     }
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.TRASH) {
-      const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TRASH}/`;
+      const myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TRASH}/`;
       history.replaceState(null, null, myTicketsViewURL);
       return;
     }

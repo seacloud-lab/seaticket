@@ -1,4 +1,4 @@
-import { mediaUrl } from '@/constants';
+import { mediaUrl, siteRoot } from '@/constants';
 import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
 import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
 import { TICKET_TYPE } from './main-panel/tickets/constants';
@@ -6,16 +6,16 @@ import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/
 import { generatorTicketURL } from './main-panel/tickets/utils';
 
 export const getResourceIconURL = (type) => {
-  if (type === 'unknown') return `${mediaUrl}img/unknown.png`;
-  if (type === TICKET_TYPE) return `${mediaUrl}img/ticket.png?t=20260104`;
-  if (type === KNOWLEDGE_BASE_TYPE) return `${mediaUrl}img/knowledge-base.png?t=20260104`;
+  if (type === 'unknown') return `${siteRoot}${mediaUrl}img/unknown.png`;
+  if (type === TICKET_TYPE) return `${siteRoot}${mediaUrl}img/ticket.png?t=20260104`;
+  if (type === KNOWLEDGE_BASE_TYPE) return `${siteRoot}${mediaUrl}img/knowledge-base.png?t=20260104`;
   return getConnectionIcon(type);
 };
 
 export const getInternalNetworkAddress = (type, resourceID, { workspaceID, projectName, connectionID }) => {
   if (type === TICKET_TYPE) return generatorTicketURL({ ticket: { _id: resourceID, }, workspaceID, projectName });
   if (type === KNOWLEDGE_BASE_TYPE) return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
-  const baseURL = location.origin + '/workspace/' + workspaceID + '/project/' + projectName + '/';
+  const baseURL = location.origin + siteRoot + 'workspace/' + workspaceID + '/project/' + projectName + '/';
   return `${baseURL}connections/${connectionID}/records/${resourceID}/`;
 };
 

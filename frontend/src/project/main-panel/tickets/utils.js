@@ -1,4 +1,4 @@
-import { gettext } from '@/constants';
+import { gettext, siteRoot } from '@/constants';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
@@ -12,7 +12,7 @@ import { username } from '@/constants';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
-  return `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
+  return `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
 };
 
 export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }) => {
