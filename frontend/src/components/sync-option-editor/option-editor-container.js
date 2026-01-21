@@ -34,6 +34,7 @@ const OptionEditorContainer = forwardRef(({
   const displayOptionsRef = useRef(null);
   const abortControllerRef = useRef(null);
   const timer = useRef(null);
+  const lastSearchValue = useRef('');
 
   const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
   const validCheckPlacement = useMemo(() => checkPlacement === 'left' ? 'left' : 'right', [checkPlacement]);
@@ -160,6 +161,9 @@ const OptionEditorContainer = forwardRef(({
   }, [options]);
 
   useEffect(() => {
+    if (lastSearchValue.current === searchValue) return;
+    lastSearchValue.current = searchValue;
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
