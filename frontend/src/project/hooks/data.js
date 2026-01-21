@@ -63,9 +63,8 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
         }
       });
       newData.version = newData.version + 1;
+      setTimeout(() => callback && callback(), 0);
       return newData;
-    }, () => {
-      callback && callback();
     });
   }, []);
 
@@ -239,7 +238,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const columns = res?.data?.columns || [];
-      let rowIds = [...(view?.rows || [])];
+      let rowIds = is_reload ? [] : [...(view?.rows || [])];
       let id_row_map = { ...table.id_row_map };
       let key_column_map = { ...table.key_column_map };
       let view_map = { ...table[viewMapName] };
