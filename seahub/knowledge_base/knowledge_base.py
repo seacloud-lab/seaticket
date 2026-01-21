@@ -109,11 +109,12 @@ class KnowledgeBasesAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             insert_row_pk = pks[0]
             row.update({'_pk': insert_row_pk})
-            tag_row = {
-                ProjectTagsTable.knowledge_id.name: insert_row_pk,
-                ProjectTagsTable.tags.name: tag_names,
-            }
-            tag_res = seadb_api.insert_rows(project_uuid, 'project_tags', [tag_row])
+            if tag_names:
+                tag_row = {
+                    ProjectTagsTable.knowledge_id.name: insert_row_pk,
+                    ProjectTagsTable.tags.name: tag_names,
+                }
+                seadb_api.insert_rows(project_uuid, 'project_tags', [tag_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -159,7 +160,7 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = build_join_query_config('knowledge_id', base_alias='kb')
+        join_config = build_join_query_config('knowledge_id', base_alias='kb', join_type='INNER JOIN')
 
         try:
             seadb_api = SeaDBAPI(username)
@@ -433,7 +434,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        join_config = build_join_query_config('knowledge_id', base_alias='kb')
+        join_config = build_join_query_config('knowledge_id', base_alias='kb', join_type='INNER JOIN')
 
         try:
             seadb_api = SeaDBAPI(username)

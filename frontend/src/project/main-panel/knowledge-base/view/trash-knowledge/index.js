@@ -12,6 +12,8 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
   const { modifyView, getMetadata, restoreRows } = useData();
   const { isLoading: isMetadataLoading, tagsData } = useMetadata();
 
+  const TRASH_KB_TABLE_NAME = useMemo(() => `${KB_TABLE_NAME}-trash`, []);
+
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
     views: [{ _id: 'all', name: gettext('All') }]
@@ -19,7 +21,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return getMetadata(KB_TABLE_NAME, { ...params[0], view_id: 'trash' }, () => knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params), true).then(res => {
+      return getMetadata(TRASH_KB_TABLE_NAME, { ...params[0], view_id: 'trash' }, () => knowledgeBaseAPI.listTrashKnowledgeBases(projectUuid, ...params), true).then(res => {
         let rows = res?.data?.records || [];
         let rawColumns = res?.data?.columns || [];
 
@@ -79,13 +81,13 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
     getView: () => Promise.resolve({
       data: { view: { ...viewsData.views[0], sorts: context.localStorage.getItem('sorts') || [] } }
     }),
-    modifyView: (viewID, viewData) => modifyView(KB_TABLE_NAME, viewID, viewData, () => new Promise((resolve, reject) => {
+    modifyView: (viewID, viewData) => modifyView(TRASH_KB_TABLE_NAME, viewID, viewData, () => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
         context.localStorage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }), true),
-  }), [projectUuid, viewsData, modifyView, getMetadata]);
+  }), [projectUuid, viewsData, modifyView, getMetadata, TRASH_KB_TABLE_NAME]);
 
   const t = useMemo(() => ({
     row: gettext('record'),

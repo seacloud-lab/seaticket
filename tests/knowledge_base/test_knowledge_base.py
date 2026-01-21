@@ -4,7 +4,7 @@ Unit tests for Knowledge Base API endpoints.
 """
 import json
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY, call
 from django.urls import reverse
 
 
@@ -165,7 +165,27 @@ class TestKnowledgeBasesPost:
         assert response.data['row']['_pk'] == 123
         assert response.data['row']['title'] == 'Test Title'
         assert response.data['row']['content'] == 'Test Content'
-        mock_seadb_api.insert_rows.assert_called_once()
+        mock_seadb_api.insert_rows.assert_called_once_with(project_uuid, 'knowledge_base', [ANY])
+
+    def test_post_success_with_tags(
+        self, api_client, project_uuid, mock_org_context,
+        mock_get_project_by_uuid, mock_check_permission_granted, mock_seadb_api
+    ):
+        """Test successful knowledge base record creation with tags."""
+        mock_seadb_api.insert_rows.return_value = {'pks': [123]}
+
+        url = get_knowledge_bases_url(project_uuid)
+        data = {'title': 'Test Title', 'content': {'text': 'Test Content'}, 'tags': json.dumps(['tag1'])}
+
+        response = api_client.post(url, data, format='json')
+
+        assert response.status_code == 201
+        assert response.data['row']['_pk'] == 123
+        assert mock_seadb_api.insert_rows.call_count == 2
+        mock_seadb_api.insert_rows.assert_has_calls([
+            call(project_uuid, 'knowledge_base', [ANY]),
+            call(project_uuid, 'project_tags', [{'knowledge_id': 123, 'tags': ['tag1']}]),
+        ])
 
 
 # ============================================================================
