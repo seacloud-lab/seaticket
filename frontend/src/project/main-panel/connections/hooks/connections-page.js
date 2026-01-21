@@ -7,6 +7,7 @@ import context from '@/sea-metadata/context';
 import { CONNECTION_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { isConnectionRecordsView } from '../utils';
+import { siteRoot } from '@/constants';
 
 const ConnectionsPageContext = React.createContext(null);
 
@@ -18,7 +19,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
 
   const resetURL = useCallback((pageSlugId, viewID, childrenPageSlugId) => {
     const { origin } = location;
-    const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
+    const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     if (isConnectionRecordsView(pageSlugId)) {
       if (childrenPageSlugId) {

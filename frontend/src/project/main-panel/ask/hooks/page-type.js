@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
+import { siteRoot } from '@/constants';
 
 const AskPageContext = React.createContext(null);
 
@@ -11,7 +12,7 @@ export const AskPageProvider = ({ workspaceID, projectName, children }) => {
 
   const resetURL = useCallback((pageSlugId) => {
     const { origin } = location;
-    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
+    let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
     let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);

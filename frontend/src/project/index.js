@@ -13,6 +13,7 @@ import eventBus from '../utils/event-bus';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 import { DataProvider } from './hooks';
+import { siteRoot } from '@/constants';
 
 import './index.css';
 
@@ -25,7 +26,7 @@ const Project = () => {
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
-    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
+    let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';

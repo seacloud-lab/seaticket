@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import { Icon } from '../../../components';
 import { BAR_TYPE } from '../../constants';
+import { siteRoot } from '@/constants';
 
 import './index.css';
 
@@ -14,7 +15,7 @@ const Nav = ({ nav, level, activeBar, onClick }) => {
   const handleClick = useCallback(() => {
     if (key === BAR_TYPE.EXTERNAL_PORTAL) {
       const { origin } = window.location;
-      const url = `${origin}/portal-edit/${projectUuid}/`;
+      const url = `${origin}${siteRoot}portal-edit/${projectUuid}/`;
       window.open(url);
       return;
     }

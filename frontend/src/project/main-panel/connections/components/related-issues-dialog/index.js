@@ -5,7 +5,7 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { gettext, mediaUrl } from '@/constants';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { CONNECTION_TYPES } from '../../constants';
-import { getConnectionIcon } from '../../utils';
+import { getResourceIconURL } from '@/project/utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
@@ -89,7 +89,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                     return (
                       <div className='issues-list-item' key={issue._id} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
-                          <img src={getConnectionIcon(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
+                          <img src={getResourceIconURL(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>
