@@ -456,16 +456,7 @@ class TrashProjectsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
-        # argument check
         username = request.user.username
-        try:
-            page = int(request.GET.get('page', 1))
-            per_page = int(request.GET.get('per_page', 25))
-        except Exception as e:
-            error_msg = 'per_page or page invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        start, end = (page - 1) * per_page, page * per_page
         try:
             projects = Projects.objects.filter(deleted=True,workspace__owner=username).select_related('workspace').order_by('-delete_time')
         except Exception as e:
@@ -473,7 +464,7 @@ class TrashProjectsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         count = projects.count()
-        results = [project.to_dict(include_deleted=True) for project in projects[start: end]]
+        results = [project.to_dict(include_deleted=True) for project in projects[:500]]
 
         return Response({'count': count, 'trash_project_list': results})
 

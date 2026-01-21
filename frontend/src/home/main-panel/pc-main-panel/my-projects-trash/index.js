@@ -20,8 +20,8 @@ const MyProjectsTrash = () => {
     });
   });
 
-  const listManagedGroupTrashProjects = useCallback((page, perPage) => {
-    return homeAPI.listManagedGroupsTrashProjects(page, perPage).then(res => {
+  const listManagedGroupTrashProjects = useCallback(() => {
+    return homeAPI.listManagedGroupsTrashProjects().then(res => {
       const { trash_project_list, count } = res?.data || {};
       const projects = (trash_project_list || []).map(item => ({ ...item, group_id: item.owner_group_id }));
       return { data: { projects, count } };
