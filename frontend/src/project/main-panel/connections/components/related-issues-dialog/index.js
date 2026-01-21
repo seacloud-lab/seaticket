@@ -2,14 +2,14 @@ import React, { useEffect, useCallback, useState, Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { gettext, mediaUrl, projectName, workspaceID } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { CONNECTION_TYPES } from '../../constants';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
-import { BAR_TYPE } from '@/project/constants';
+import { ResourceDetailsDialog } from '@/project/components';
 
 import './index.css';
 
@@ -17,6 +17,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
   const [relatedIssues, setRelatedIssues] = useState([]);
   const [errMessage, setErrMessage] = useState('');
+  const [activeResultIndex, setActiveResultIndex] = useState(-1);
 
   const renderDetail = (content) => {
     try {
@@ -32,18 +33,20 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
     }
   };
 
-  const handleItemClick = (issue) => {
-    if (issue.type === 'ticket') {
-      const { origin } = location;
-      const ticketUrl = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${issue._id}/`;
-      window.location.href = ticketUrl;
-      return;
-    }
+  const expandItem = useCallback((index) => {
+    setActiveResultIndex(index);
+  }, []);
 
-    if (issue.url) {
-      window.open(issue.url);
+  const switchResult = useCallback((step) => {
+    let nextActiveResultIndex = activeResultIndex + step;
+    if (nextActiveResultIndex > relatedIssues.length - 1) {
+      nextActiveResultIndex = 0;
     }
-  };
+    if (nextActiveResultIndex < 0) {
+      nextActiveResultIndex = relatedIssues.length - 1;
+    }
+    setActiveResultIndex(nextActiveResultIndex);
+  }, [activeResultIndex, relatedIssues]);
 
   const getDetails = useCallback(() => {
     setStatus('loading');
@@ -64,53 +67,65 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
   }, [projectUuid, row, connectionId]);
 
   return (
-    <Modal className='sea-qa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
-      <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
-      <ModalBody>
-        {status === 'loading' && (
-          <CenteredLoading />
-        )}
-        {status === 'error' && (
-          <CenteredError>{errMessage}</CenteredError>
-        )}
-        {status === 'loaded' && (
-          <Fragment>
-            {!relatedIssues.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-            {relatedIssues.length && (
-              <div className='issues-list-container'>
-                {relatedIssues.map((issue) => {
-                  const connectionType = issue.type;
-                  const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
+    <>
+      <Modal className='sea-qa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
+        <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
+        <ModalBody>
+          {status === 'loading' && (
+            <CenteredLoading />
+          )}
+          {status === 'error' && (
+            <CenteredError>{errMessage}</CenteredError>
+          )}
+          {status === 'loaded' && (
+            <Fragment>
+              {!relatedIssues.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
+              {relatedIssues.length && (
+                <div className='issues-list-container'>
+                  {relatedIssues.map((issue, index) => {
+                    const connectionType = issue.type;
+                    const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
 
-                  return (
-                    <div className='issues-list-item' key={issue._id} onClick={() => handleItemClick(issue)}>
-                      <div className='issues-list-item-icon'>
-                        <img src={getConnectionIcon(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
-                      </div>
-                      <div className='issues-list-item-content'>
-                        <div className='issues-list-item-title'>
-                          <div>
-                            <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
-                            <span className='issues-list-item-score'>
-                              {getNumberDisplayString(issue.score || '', { format: 'number', enable_precision: true, precision: 2 })}
-                            </span>
-                          </div>
-                          <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
-                            {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}
-                          </div>
+                    return (
+                      <div className='issues-list-item' key={issue._id} onClick={() => expandItem(index)}>
+                        <div className='issues-list-item-icon'>
+                          <img src={getConnectionIcon(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
                         </div>
-                        <div className='issues-list-item-path'>{issue.url || ''}</div>
-                        <div className='issues-list-item-detail' dangerouslySetInnerHTML={{ __html: renderDetail(issue.content || issue.ai_summary) }}></div>
+                        <div className='issues-list-item-content'>
+                          <div className='issues-list-item-title'>
+                            <div>
+                              <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
+                              <span className='issues-list-item-score'>
+                                {getNumberDisplayString(issue.score || '', { format: 'number', enable_precision: true, precision: 2 })}
+                              </span>
+                            </div>
+                            <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
+                              {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}
+                            </div>
+                          </div>
+                          <div className='issues-list-item-path'>{issue.url || ''}</div>
+                          <div className='issues-list-item-detail' dangerouslySetInnerHTML={{ __html: renderDetail(issue.content || issue.ai_summary) }}></div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Fragment>
-        )}
-      </ModalBody>
-    </Modal>
+                    );
+                  })}
+                </div>
+              )}
+            </Fragment>
+          )}
+        </ModalBody>
+      </Modal>
+      {activeResultIndex > -1 && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={relatedIssues[activeResultIndex]}
+          isShowIcon={true}
+          switchResource={relatedIssues.length > 1 ? switchResult : null}
+          onToggle={() => setActiveResultIndex(-1)}
+        />
+      )}
+    </>
+
   );
 };
 
