@@ -12,19 +12,9 @@ import MainPanelTopbar from '../main-panel/top-bar';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
-
-import '@/css/statistics.css';
-
 import Picker from '../../project/main-panel/search/date-and-time-picker';
 
-const propTypes = {
-  onCloseSidePanel: PropTypes.func
-};
-
-const itemPropTypes = {
-  item: PropTypes.object.isRequired,
-  groupBy: PropTypes.string.isRequired
-};
+import '@/css/statistics.css';
 
 class Item extends Component {
   constructor(props) {
@@ -104,16 +94,8 @@ class Item extends Component {
   }
 }
 
-Item.propTypes = itemPropTypes;
-
-const contentPropTypes = {
-  loading: PropTypes.bool.isRequired,
-  errorMsg: PropTypes.string,
-  items: PropTypes.array.isRequired,
-  curPerPage: PropTypes.number.isRequired,
-  pageInfo: PropTypes.object.isRequired,
-  getStatisticsByPage: PropTypes.func.isRequired,
-  resetPerPage: PropTypes.func.isRequired,
+Item.propTypes = {
+  item: PropTypes.object.isRequired,
   groupBy: PropTypes.string.isRequired
 };
 
@@ -189,7 +171,16 @@ class Content extends Component {
   }
 }
 
-Content.propTypes = contentPropTypes;
+Content.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  errorMsg: PropTypes.string,
+  items: PropTypes.array.isRequired,
+  curPerPage: PropTypes.number.isRequired,
+  pageInfo: PropTypes.object.isRequired,
+  getStatisticsByPage: PropTypes.func.isRequired,
+  resetPerPage: PropTypes.func.isRequired,
+  groupBy: PropTypes.string.isRequired
+};
 
 class StatisticsAI extends Component {
   constructor(props) {
@@ -413,6 +404,8 @@ class StatisticsAI extends Component {
   }
 }
 
-StatisticsAI.propTypes = propTypes;
+StatisticsAI.propTypes = {
+  onCloseSidePanel: PropTypes.func
+};
 
 export default StatisticsAI;
