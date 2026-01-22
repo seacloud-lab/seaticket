@@ -147,7 +147,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(PROJECT_ROOT, '../../seahub-data/custom/templates'),
+            os.path.join(PROJECT_ROOT, '../../seaqa-web-data/custom/templates'),
             os.path.join(PROJECT_ROOT, 'seahub/templates'),
         ],
         'APP_DIRS': True,
@@ -418,7 +418,7 @@ CUSTOM_FAVICON_PATH = 'custom/favicon.ico'
 CUSTOM_FAVICON_NOTIFICATION_PATH = 'custom/notification-favicon.ico'
 CUSTOM_LOGIN_BG_PATH = 'custom/login-bg.jpg'
 
-# used before version 6.3: the relative path of css file under seahub-data (e.g. custom/custom.css)
+# used before version 6.3: the relative path of css file under seaqa-web-data (e.g. custom/custom.css)
 BRANDING_CSS = ''
 
 # used in 6.3+, enable setting custom css via admin web interface
@@ -529,7 +529,7 @@ CN_FORCE_USER_AGREE_TERMS = False
 CAPTCHA_IMAGE_SIZE = (90, 42)
 
 # Absolute filesystem path to the directory that will hold thumbnail files.
-SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../../seahub-data')
+SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../../seaqa-web-data')
 
 ENABLE_WEBDAV_SECRET = False
 ENABLE_USER_SET_CONTACT_EMAIL = False

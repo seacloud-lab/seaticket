@@ -8,7 +8,7 @@ from django.db import models
 
 
 logger = logging.getLogger(__name__)
-AVATAR_DIR_PREFIX = '/shared/seasearch/seahub-data/'
+AVATAR_DIR_PREFIX = '/shared/seasearch/seaqa-web-data/'
 
 
 class AvatarUploaded(models.Model):

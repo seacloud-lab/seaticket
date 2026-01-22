@@ -1,5 +1,5 @@
 <!-- This file is used to communicate with seafile zimlet on SSO login.  -->
-<!-- Please copy this file to <seafile-root>/seahub-data/custom/templates/shibboleth/success.html, create new path if missing. -->
+<!-- Please copy this file to <seafile-root>/seaqa-web-data/custom/templates/shibboleth/success.html, create new path if missing. -->
 <!-- For security issue, please replace "*" in `parent.postMessage(msg, "*");` with your zimbra service origin, e.g. "https://zimbra-service.com" -->
 <html>
     <head>
