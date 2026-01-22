@@ -9,7 +9,7 @@ const EmptyTip = ({ text, title, type, src, children }) => {
     <div className="empty-tip">
       <img src={src || `${mediaUrl}img/no-items-tip.png`} alt="" width="88" height="88" className="no-items-img-tip" />
       {title && <span className="empty-tip-title">{title}</span>}
-      {text && <span className="empty-tip-text" style={{ color: type === 'error' ? 'red' : '#999' }}>{text}</span>}
+      {text && <span className="empty-tip-text" style={{ color: type === 'error' ? 'red' : '#666' }}>{text}</span>}
       {children}
     </div>
   );
