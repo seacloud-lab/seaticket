@@ -87,7 +87,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, attachments, model });
       }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
