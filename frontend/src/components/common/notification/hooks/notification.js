@@ -113,6 +113,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
           toaster.danger(errorMsg);
         }
       })
+      .catch((err) => err)
       .finally(() => {
         setLoading(false);
         setLoadingMore(false);

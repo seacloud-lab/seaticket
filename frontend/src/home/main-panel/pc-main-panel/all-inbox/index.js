@@ -48,6 +48,16 @@ const AllInbox = () => {
   }, [onHandleClick]);
 
   useEffect(() => {
+    const { search } = location;
+    const params = new URLSearchParams(search);
+    const notifications = params.get('notifications');
+    // Email notification to open the panel
+    if (notifications === 'all') {
+      setShowInboxDrawer(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (showInboxDrawer) {
       setNotificationList([]);
       setAllNotificationCount(0);
