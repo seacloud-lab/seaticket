@@ -51,7 +51,7 @@ const ResourceDetailsDialog = ({
   }, [resource, details, columns]);
 
   const url = useMemo(() => {
-    return getResourceOriginalURL(type, { ...details, ...resource }, { workspaceID, projectName, connections, columns });
+    return getResourceOriginalURL(type, { ...details, ...resource }, connections, columns);
   }, [type, connections, resource, details, columns]);
 
   const internalNetworkAddress = useMemo(() => {

@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Icon } from '../../../components';
 import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
+import { NAVIGATION_BASE_PADDING } from '@/constants';
 
 import './tickets-more-nav.css';
 
@@ -23,7 +24,7 @@ const TicketsMoreNav = ({ onClick }) => {
       <DropdownToggle
         tag="div"
         className={classnames('sea-qa-project-navigation-item')}
-        style={{ paddingLeft: 8 }}
+        style={{ paddingLeft: NAVIGATION_BASE_PADDING }}
       >
         <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
         <span className="sea-qa-project-navigation-item-name">{window.gettext('More')}</span>

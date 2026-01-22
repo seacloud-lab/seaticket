@@ -11,8 +11,6 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const { projectName, workspaceID } = window.app.pageOptions;
-
 const initColumns = [
   { key: 'filename', name: 'filename' },
   { key: 'path', name: 'path' },
@@ -51,7 +49,7 @@ const Record = ({ projectUuid }) => {
   const url = useMemo(() => {
     if (!connection) return '';
     if (!details) return '';
-    return getResourceOriginalURL(connection.type, { ...details, ...resource }, { workspaceID, projectName, connections, columns: initColumns });
+    return getResourceOriginalURL(connection.type, { ...details, ...resource }, connections, initColumns);
   }, [connection, connections, resource, details]);
 
   const updateDetails = useCallback((details) => {

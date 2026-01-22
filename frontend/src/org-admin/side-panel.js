@@ -26,7 +26,7 @@ const SidePanel = ({
         <div className="side-nav">
           <div className="side-nav-con">
             <span className="side-nav-title">{gettext('Admin')}</span>
-            <ul className="nav nav-pills flex-column nav-container mt-2">
+            <ul className="nav nav-pills flex-column nav-container mt-3">
               {BARS.filter(bar => bar).map(bar => {
                 const { icon, name, value, link, isActive } = bar;
                 return (

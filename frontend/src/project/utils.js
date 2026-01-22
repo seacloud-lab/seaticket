@@ -7,20 +7,37 @@ import { generatorTicketURL } from './main-panel/tickets/utils';
 
 export const getResourceIconURL = (type) => {
   const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
-  if (type === 'unknown') return `${root}img/unknown.png`;
-  if (type === TICKET_TYPE) return `${root}img/ticket.png?t=20260104`;
-  if (type === KNOWLEDGE_BASE_TYPE) return `${root}img/knowledge-base.png?t=20260104`;
-  return getConnectionIcon(type);
+  switch (type) {
+    case 'unknown': {
+      return `${root}img/unknown.png`;
+    }
+    case TICKET_TYPE: {
+      return `${root}img/ticket.png?t=20260104`;
+    }
+    case KNOWLEDGE_BASE_TYPE: {
+      return `${root}img/knowledge-base.png?t=20260104`;
+    }
+    default: {
+      return getConnectionIcon(type);
+    }
+  }
 };
 
 export const getInternalNetworkAddress = (type, resourceID, { workspaceID, projectName, connectionID }) => {
-  if (type === TICKET_TYPE) return generatorTicketURL({ ticket: { _id: resourceID, }, workspaceID, projectName });
-  if (type === KNOWLEDGE_BASE_TYPE) return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
-  const baseURL = location.origin + siteRoot + 'workspace/' + workspaceID + '/project/' + projectName + '/';
-  return `${baseURL}connections/${connectionID}/records/${resourceID}/`;
+  switch (type) {
+    case TICKET_TYPE: {
+      return generatorTicketURL({ ticket: { _id: resourceID, }, workspaceID, projectName });
+    }
+    case KNOWLEDGE_BASE_TYPE: {
+      return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
+    }
+    default:
+      const baseURL = location.origin + siteRoot + 'workspace/' + workspaceID + '/project/' + projectName + '/';
+      return `${baseURL}connections/${connectionID}/records/${resourceID}/`;
+  }
 };
 
-export const getResourceOriginalURL = (type, resource, { workspaceID, projectName, connections, columns }) => {
+export const getResourceOriginalURL = (type, resource, connections, columns) => {
   if (type === TICKET_TYPE || type === KNOWLEDGE_BASE_TYPE) return '';
   const connection = connections.find(c => c.id === resource.connection_id);
   if (!connection) return '';

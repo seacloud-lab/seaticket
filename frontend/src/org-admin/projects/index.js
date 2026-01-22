@@ -6,7 +6,7 @@ import { Button } from 'reactstrap';
 import { gettext, orgID } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import TrashProjects from './trash-projects';
-import { EnterSearchInput, AdminProjects } from '@/components';
+import { AdminSearch, AdminProjects } from '@/components';
 import orgAdminAPI from '../api';
 
 const siteRoot = window.app.config.siteRoot;
@@ -34,7 +34,7 @@ class Projects extends React.Component {
   };
 
   getSearch = () => {
-    return (<EnterSearchInput placeholder={gettext('Search projects')} onSubmit={this.searchItems} />);
+    return (<AdminSearch placeholder={gettext('Search projects')} onSubmit={this.searchItems} />);
   };
 
   searchItems = (keyword) => {

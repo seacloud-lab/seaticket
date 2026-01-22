@@ -213,7 +213,7 @@ class Account extends Component {
               <img src={avatarURL} width="32" height="32" className="avatar" alt={gettext('Avatar')} />
               <div className="txt text-truncate">{this.state.userName}</div>
             </div>
-            <div className="item pt-2 pb-0">
+            <div className="item pt-3 pb-0">
               <div className="account-info-card">
                 <p className='account-info-card-title'>{gettext('API calls count')}</p>
                 <p>

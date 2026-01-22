@@ -39,7 +39,7 @@
 .side-panel-north,
 .main-panel-north {
   position: relative;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem 0.75rem 1rem;
   display: flex;
   flex-shrink: 0;
   background: #f7f7f5;
@@ -102,7 +102,7 @@
 .cur-view-path {
   position: relative; /* for the ':after' */
   padding: 8px 16px;
-  max-height: 48px;
+  max-height: 56px;
   background: rgb(247 247 245 / 50%);
   display: flex;
   align-items: center;

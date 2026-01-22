@@ -28,7 +28,7 @@ const propTypes = {
   isDesktop: PropTypes.bool.isRequired,
 };
 
-const GROUP_ITEM_HEIGHT = 40;
+const GROUP_ITEM_HEIGHT = 36;
 const INIT_SIDEBAR_WIDTH = 240;
 
 class SidePanel extends React.Component {
@@ -208,7 +208,7 @@ class SidePanel extends React.Component {
         >
           {!this.props.isDesktop &&
             <header className="side-panel-north sea-qa-home-header">
-              <a className="sea-qa-logo" href={siteRoot}>
+              <a className="sea-qa-logo" href={siteRoot} style={{ height: logoHeight }}>
                 <img
                   src={logoUrl}
                   height={logoHeight}
@@ -244,7 +244,7 @@ class SidePanel extends React.Component {
                     role="button"
                     onKeyDown={this.onKeyDown}
                     onClick={this.onListExtended}
-                    icon={this.state.isDataLoading ? '' : 'arrow-down'}
+                    icon={this.state.isDataLoading ? '' : 'arrow-down-b'}
                     iconClassName="nav-toggle-icon"
                   />
                 </div>

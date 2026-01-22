@@ -1,7 +1,5 @@
 import SearchInput from './search-input';
-import EnterSearchInput from './enter-search-input';
+import AdminSearch from './admin-search';
 
 export default SearchInput;
-export {
-  EnterSearchInput,
-};
+export { AdminSearch };

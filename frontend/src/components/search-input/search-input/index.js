@@ -113,6 +113,7 @@ class SearchInput extends Component {
           onKeyDown={onKeyDown}
           disabled={disabled}
           style={{ height: size, paddingLeft: isShowSearchIcon ? size + 2 : 12 }}
+          name="search-input"
         />
         {this.renderClear()}
       </div>

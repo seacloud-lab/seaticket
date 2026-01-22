@@ -17,7 +17,7 @@
 .project-center .project-org-title .project-org-name {
   max-width: calc(100% - 36px);
   margin: 0;
-  font-weight: 400;
+  font-weight: 500;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

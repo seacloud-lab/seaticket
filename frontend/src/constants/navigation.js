@@ -1,0 +1,2 @@
+export const NAVIGATION_BASE_PADDING = 8;
+export const NAVIGATION_LEVEL_INDENT = 20;
