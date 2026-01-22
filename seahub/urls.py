@@ -116,7 +116,7 @@ urlpatterns = [
     re_path(r'^api/v1/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', TrashProjectView.as_view(), name='api-v1-trash-project'),
 
     ## access project from project_api_tokens
-    re_path(r'^api/v1/via-project-token/search/$', ViaProjectSearchView.as_view(), name='api-v1-via-repo-token-search'),
+    re_path(r'^api/v1/via-project-token/search/$', ViaProjectSearchView.as_view(), name='api-v1-via-project-token-search'),
 
     # search
     re_path(r'^api/v1/search/$', SearchView.as_view(), name='api-v1-search'),

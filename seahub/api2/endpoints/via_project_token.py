@@ -6,8 +6,9 @@ from seahub.api2.authentication import ProjectAPITokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Workspaces, Projects
-from seahub.project.utils import check_project_permission, search
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.project.utils import check_project_permission
+from seahub.utils import uuid_str_to_32_chars
+from seahub.utils.indexer import search
 
 
 class ViaProjectSearchView(APIView):
@@ -15,8 +16,8 @@ class ViaProjectSearchView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request):
-
-        project_uuid = request.data.get('project_uuid')
+        project_api_token_obj = getattr(request, 'project_api_token_obj')
+        project_uuid = str(project_api_token_obj.project_id)
         if not project_uuid:
             error_msg = 'project_uuid invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -60,12 +61,13 @@ class ViaProjectSearchView(APIView):
             error_msg = f'project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        project_api_token_obj = getattr(request, 'project_api_token_obj', None)
-        if not project_api_token_obj:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         username = project_api_token_obj.generated_by
         if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        permission = project_api_token_obj.permission
+        if not permission:
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 

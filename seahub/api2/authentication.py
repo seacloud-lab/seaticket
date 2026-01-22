@@ -7,8 +7,9 @@ from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import APIException
 
+from seahub.auth.models import AnonymousUser
 from seahub.base.accounts import User
-from seahub.api2.models import Token, TokenV2, AnonymousUser
+from seahub.api2.models import Token, TokenV2
 from seahub.constants import DEFAULT_USER
 from seahub.profile.settings import ROLE_CACHE_PREFIX, ROLE_CACHE_TIMEOUT
 from seahub.project.models import ProjectAPIToken
