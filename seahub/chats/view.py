@@ -341,23 +341,6 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to record thought process to db: {e}')
 
-        try:
-            connection_ids = set([
-                source['connection_id']
-                for source in ai_response['sources']
-            ])
-
-            connections = ProjectConnections.objects.filter(id__in=connection_ids)
-            connection_id_name_map = {}
-            for connection in connections:
-                connection_dict = connection.to_dict()
-                connection_id_name_map[connection_dict['id']] = connection_dict['name']
-
-            for source in ai_response['sources']:
-                source['connection_name'] = connection_id_name_map[source['connection_id']]
-        except Exception as e:
-            logger.warning(f'Failure to query connection info: {e}')
-
         user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', attachments=attachments)
         ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
 

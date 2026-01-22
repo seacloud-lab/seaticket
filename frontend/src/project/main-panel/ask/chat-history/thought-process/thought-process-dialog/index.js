@@ -21,7 +21,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
       name,
       children: [
         {
-          value: raw ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: raw } : null,
+          value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
           formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
         }
       ]
@@ -77,7 +77,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         name: gettext('Task step'),
         children: [
           {
-            name: gettext('System prompts'),
+            name: gettext('System prompt'),
             children: [
               {
                 value: system_prompt ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: system_prompt } : null,
