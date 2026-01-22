@@ -12,7 +12,7 @@
   user-select: none;
 }
 
-.search .search-container span.search-input {
+.search .search-container .search-input {
   color: #868E96;
   height: 32px;
   line-height: 32px;
