@@ -71,7 +71,7 @@ const Settings = () => {
               className={activeTab === SETTING_TABS.DISPLAY ? 'active' : ''}
               onClick={() => toggle(SETTING_TABS.DISPLAY)}
             >
-              {gettext('Portal Settings')}
+              {gettext('Portal settings')}
             </NavLink>
           </NavItem>
         </Nav>

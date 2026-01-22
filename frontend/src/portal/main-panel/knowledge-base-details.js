@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Icon, CustomizeMarkdownViewer, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
+import { useTagsData } from '@/sea-metadata/hooks';
+import Tag from '@/sea-metadata/components/tag';
 import { Input, Label } from 'reactstrap';
 import '../../project/main-panel/knowledge-base/view/edit-knowledge/index.css';
 
 const KnowledgeBaseDetails = ({ row, onToggle }) => {
+  const { tagsData } = useTagsData();
   const [details, setDetails] = useState({
     title: '',
     content: '',
@@ -23,7 +26,14 @@ const KnowledgeBaseDetails = ({ row, onToggle }) => {
       setIsLoading(false);
       return;
     }
-    const normalizeTags = (arr) => Array.isArray(arr) ? arr.map(t => (typeof t === 'object' ? (t.name || '') : t)).filter(Boolean) : [];
+    const normalizeTags = (arr) => {
+      if (!Array.isArray(arr)) return [];
+      return arr.map(t => {
+        if (typeof t === 'object') return t;
+        const opt = tagsData?.id_row_map?.[String(t)];
+        return opt || null;
+      }).filter(Boolean);
+    };
     const parseContent = (c) => {
       if (!c) return '';
       if (typeof c === 'string') return c;
@@ -52,7 +62,7 @@ const KnowledgeBaseDetails = ({ row, onToggle }) => {
         .then(res => {
           const rec = res?.data?.record || {};
           const contentText = typeof rec.content === 'string' ? rec.content : (rec.content && rec.content.text) || '';
-          const tags = Array.isArray(rec.tags) ? rec.tags.map(t => t.name || t) : baseTags;
+          const tags = Array.isArray(rec.tags) ? normalizeTags(rec.tags) : baseTags;
           setDetails({
             title: rec.title || row.title || '',
             content: contentText || '',
@@ -92,7 +102,7 @@ const KnowledgeBaseDetails = ({ row, onToggle }) => {
               <div className="mb-4">
                 <Label>{gettext('Tags')}</Label>
                 {Array.isArray(tags) && tags.length > 0 ? (
-                  <div>{tags.map((t, idx) => <span key={idx} className="badge badge-light mr-1">{t}</span>)}</div>
+                  <div className="d-flex align-items-center flex-wrap">{tags.map(tag => <Tag tag={tag} key={tag._id} />)}</div>
                 ) : (
                   <div style={{ color: '#999' }}>{gettext('No tags')}</div>
                 )}

@@ -277,10 +277,8 @@ class PortalKnowledgeBaseViewsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -316,10 +314,8 @@ class PortalKnowledgeBaseRecordsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    @require_org_context
     def get(self, request, project_uuid):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         view_id = request.GET.get('view_id')
         start = request.GET.get('start', 0)
