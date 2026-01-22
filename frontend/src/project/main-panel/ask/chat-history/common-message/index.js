@@ -18,7 +18,13 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     <>
       <Attachments attachments={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} projectUuid={projectUuid} />
       <div className="sea-qa-ai-ask-message-content">
-        <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} settings={settings} />
+        <ThoughtProcess
+          value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]}
+          projectUuid={projectUuid}
+          settings={settings}
+          projectName={projectName}
+          workspaceID={workspaceID}
+        />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
         <CustomizeMarkdownViewer
           ref={markdownMessageRef}

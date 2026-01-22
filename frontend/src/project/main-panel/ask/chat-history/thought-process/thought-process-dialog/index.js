@@ -3,13 +3,15 @@ import { Modal, ModalBody } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import ProcessDetails from './process-details';
-import StepMarkdownViewer from './markdown-viewer';
 import { isObject } from '@/utils/type-detection';
 import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
+import { Attachments } from '../../../components';
+import CustomizeMarkdownViewer from '../../customize-markdown-viewer';
+import { CHAT_MESSAGE_TYPE } from '../../../constants';
 
 import './index.css';
 
-const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
+const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, workspaceID, settings, onToggle }) => {
   const [isLoading, setLoading] = useState(true);
   const [value, setValue] = useState([]);
 
@@ -25,12 +27,60 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
           {
             name: gettext('System prompts'),
             children: [
-              { value: taskValue.system_prompt, formatter: StepMarkdownViewer }
+              {
+                value: taskValue.system_prompt,
+                formatter: ({ className, value }) => (
+                  <CustomizeMarkdownViewer
+                    chatId="thought-process"
+                    message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                    settings={settings}
+                    projectUuid={projectUuid}
+                    projectName={projectName}
+                    workspaceID={workspaceID}
+                    className={className}
+                    canOpenLink={false}
+                  />
+                ),
+              }
             ]
           }, {
             name: gettext('User input'),
             children: [
-              { value: taskValue.user_input, formatter: StepMarkdownViewer }
+              {
+                name: gettext('Attachments'),
+                children: [
+                  {
+                    value: !Array.isArray(taskValue.user_input.attachments) || taskValue.user_input.attachments.length === 0 ? null : taskValue.user_input.attachments,
+                    formatter: () => (
+                      <Attachments
+                        attachments={taskValue.user_input.attachments}
+                        className="mb-0 justify-content-start"
+                        projectUuid={projectUuid}
+                      />
+                    ),
+                  },
+                ]
+              },
+              {
+                name: gettext('Message'),
+                children: [
+                  {
+                    value: taskValue.user_input.message,
+                    formatter: ({ className, value }) => (
+                      <CustomizeMarkdownViewer
+                        chatId="thought-process"
+                        message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                        settings={settings}
+                        projectUuid={projectUuid}
+                        projectName={projectName}
+                        workspaceID={workspaceID}
+                        className={className}
+                        canOpenLink={false}
+                      />
+                    ),
+                  },
+                ]
+              }
             ]
           }
         ]
@@ -65,12 +115,24 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                   {
                     name: gettext('Answer'),
                     children: [
-                      { value: record.assistant_response?.[0]?.content?.answer, formatter: StepMarkdownViewer }
-                    ]
-                  }, {
-                    name: gettext('Sources'),
-                    children: [
-                      { value: record.assistant_response?.[0]?.content?.references, formatter: StepMarkdownViewer }
+                      {
+                        value: {
+                          [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
+                          [CHAT_MESSAGE_TYPE.SOURCES]: record.assistant_response?.[0]?.content?.references,
+                        },
+                        formatter: ({ className, value }) => (
+                          <CustomizeMarkdownViewer
+                            chatId="thought-process"
+                            message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                            settings={settings}
+                            projectUuid={projectUuid}
+                            projectName={projectName}
+                            workspaceID={workspaceID}
+                            className={className}
+                            canOpenLink={false}
+                          />
+                        ),
+                      }
                     ]
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
@@ -108,12 +170,41 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
               children: [
                 { name: gettext('Error type'), value: action.error.type },
                 { name: gettext('Error message'), value: action.error.message },
-                { name: gettext('Step output'), value: action.result, formatter: StepMarkdownViewer },
+                {
+                  name: gettext('Step output'),
+                  value: action.result,
+                  formatter: ({ className, value }) => (
+                    <CustomizeMarkdownViewer
+                      chatId="thought-process"
+                      message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                      settings={settings}
+                      projectUuid={projectUuid}
+                      projectName={projectName}
+                      workspaceID={workspaceID}
+                      className={className}
+                      canOpenLink={false}
+                    />
+                  ),
+                },
               ]
             } : {
               name: gettext('Observation'),
               children: [
-                { value: action.result, formatter: StepMarkdownViewer }
+                {
+                  value: action.result,
+                  formatter: ({ className, value }) => (
+                    <CustomizeMarkdownViewer
+                      chatId="thought-process"
+                      message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                      settings={settings}
+                      projectUuid={projectUuid}
+                      projectName={projectName}
+                      workspaceID={workspaceID}
+                      className={className}
+                      canOpenLink={false}
+                    />
+                  ),
+                }
               ]
             }
           ];
@@ -130,13 +221,39 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
               children: staticValue
             });
           }
-          if (action.tool_calls?.length === 1) {
+          const tool_calls = action.tool_calls;
+          if (tool_calls?.length === 1) {
+            console.log(tool_calls?.[0]?.arguments);
             return {
-              name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
+              name: `${gettext('Step')} ${stepNumber + 1}: ${tool_calls?.[0].name}`,
               children: [
                 {
                   name: gettext('Arguments'),
-                  children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
+                  children: tool_calls?.[0].name === 'generate_markdown' ? [
+                    {
+                      name: gettext('File name'),
+                      value: tool_calls?.[0]?.arguments.file_name,
+                    }, {
+                      name: gettext('Content'),
+                      children: [
+                        {
+                          value: tool_calls?.[0]?.arguments.content,
+                          formatter: ({ className, value }) => (
+                            <CustomizeMarkdownViewer
+                              chatId="thought-process"
+                              message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                              settings={settings}
+                              projectUuid={projectUuid}
+                              projectName={projectName}
+                              workspaceID={workspaceID}
+                              className={className}
+                              canOpenLink={false}
+                            />
+                          ),
+                        }
+                      ]
+                    },
+                  ] : Object.entries(tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
                     return `${argumentKey}: ${argumentValue}`;
                   })
                 },
@@ -177,7 +294,21 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       let finalAnswerValue = [{
         name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
         children: [
-          { value: result, formatter: result ? StepMarkdownViewer : null }
+          {
+            value: result,
+            formatter: result ? ({ className, value }) => (
+              <CustomizeMarkdownViewer
+                chatId="thought-process"
+                message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
+                settings={settings}
+                projectUuid={projectUuid}
+                projectName={projectName}
+                workspaceID={workspaceID}
+                className={className}
+                canOpenLink={false}
+              />
+            ) : null
+          }
         ]
       }];
       if (final_answer.token_usage || final_answer.time_usage) {
