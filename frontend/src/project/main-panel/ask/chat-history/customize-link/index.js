@@ -6,7 +6,7 @@ import { useDocuments } from '../../hooks';
 
 import './index.css';
 
-const CustomizeLink = ({ mdFiles = [], element, isShowPopover, onLinkClick, onHrefClick, attributes, children, editor }) => {
+const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isShowPopover, onLinkClick, onHrefClick, attributes, children, editor }) => {
   const { openDocument } = useDocuments();
 
   const file = useMemo(() => {
@@ -48,10 +48,10 @@ const CustomizeLink = ({ mdFiles = [], element, isShowPopover, onLinkClick, onHr
   }
 
   return (
-    <div className="sea-ai-chat-customize-link p-4" onClick={onClick}>
+    <div className="sea-ai-chat-customize-link p-4" onClick={canPreviewLinkedFile ? onClick : () => {}}>
       <div className="sea-ai-chat-customize-link-header">
         <div className="sea-ai-chat-customize-link-name">{file.name}</div>
-        <IconButton className="sea-ai-chat-customize-md-expand-btn d-flex" icon="expand" />
+        {canPreviewLinkedFile && (<IconButton className="sea-ai-chat-customize-md-expand-btn d-flex" icon="expand" />)}
       </div>
       <SimpleLongTextFormatter
         value={file.content}

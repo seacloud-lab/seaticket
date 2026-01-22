@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import Attachment from './attachment';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
@@ -28,7 +29,9 @@ const Attachments = ({ projectUuid, attachments, className, onRemove }) => {
   let activeAttachment = null;
   if (attachmentIndex > -1) {
     activeAttachment = attachments[attachmentIndex];
-    activeAttachment = { ...activeAttachment, _id: activeAttachment.record_id };
+    if (!hasOwnProperty(activeAttachment, '_id')) {
+      activeAttachment._id = activeAttachment.record_id;
+    }
   }
 
   return (
