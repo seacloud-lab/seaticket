@@ -3,8 +3,8 @@ import { TICKET_TYPE } from '../../tickets/constants';
 
 class AttachmentObject {
   constructor(object) {
-    this.record_id = object._id || object._pk || object.record_id || -1;
-    this._id = String(this.record_id);
+    const record_id = object._id || object._pk || -1;
+    this._id = String(record_id);
     this.title = object.title || '';
     this.type = object.type || '';
     this.connection_id = object.connection_id || '';

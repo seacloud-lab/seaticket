@@ -38,7 +38,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                     projectName={projectName}
                     workspaceID={workspaceID}
                     className={className}
-                    canOpenLink={false}
+                    canPreviewLinkedFile={false}
                   />
                 ),
               }
@@ -75,7 +75,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                         projectName={projectName}
                         workspaceID={workspaceID}
                         className={className}
-                        canOpenLink={false}
+                        canPreviewLinkedFile={false}
                       />
                     ),
                   },
@@ -129,7 +129,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                             projectName={projectName}
                             workspaceID={workspaceID}
                             className={className}
-                            canOpenLink={false}
+                            canPreviewLinkedFile={false}
                           />
                         ),
                       }
@@ -182,7 +182,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                       projectName={projectName}
                       workspaceID={workspaceID}
                       className={className}
-                      canOpenLink={false}
+                      canPreviewLinkedFile={false}
                     />
                   ),
                 },
@@ -201,7 +201,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                       projectName={projectName}
                       workspaceID={workspaceID}
                       className={className}
-                      canOpenLink={false}
+                      canPreviewLinkedFile={false}
                     />
                   ),
                 }
@@ -223,7 +223,6 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
           }
           const tool_calls = action.tool_calls;
           if (tool_calls?.length === 1) {
-            console.log(tool_calls?.[0]?.arguments);
             return {
               name: `${gettext('Step')} ${stepNumber + 1}: ${tool_calls?.[0].name}`,
               children: [
@@ -247,7 +246,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                               projectName={projectName}
                               workspaceID={workspaceID}
                               className={className}
-                              canOpenLink={false}
+                              canPreviewLinkedFile={false}
                             />
                           ),
                         }
@@ -305,7 +304,7 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                 projectName={projectName}
                 workspaceID={workspaceID}
                 className={className}
-                canOpenLink={false}
+                canPreviewLinkedFile={false}
               />
             ) : null
           }

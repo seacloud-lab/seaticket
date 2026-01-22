@@ -61,7 +61,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
 
     for attachment in attachments:
         try:
-            record_id = int(attachment.get('record_id', -1))
+            record_id = int(attachment.get('_id', -1))
         except:
             continue
         if record_id < 0:
