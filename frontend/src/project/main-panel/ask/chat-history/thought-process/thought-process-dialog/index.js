@@ -8,19 +8,71 @@ import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/c
 import { Attachments } from '../../../components';
 import CustomizeMarkdownViewer from '../../customize-markdown-viewer';
 import { CHAT_MESSAGE_TYPE } from '../../../constants';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
-const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, workspaceID, settings, onToggle }) => {
+const generatorUserMessage = (name, messageInfo = {}, props) => {
+  const { attachments, message, raw } = messageInfo || {};
+
+  const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
+  if (!hasAttachments) {
+    return {
+      name,
+      children: [
+        {
+          value: raw ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: raw } : null,
+          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+        }
+      ]
+    };
+  }
+
+  let userMessage = {
+    name,
+    children: [
+      {
+        name: gettext('Attachments'),
+        children: [
+          {
+            value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+          },
+        ]
+      }, {
+        name: gettext('Message'),
+        children: [
+          {
+            value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
+            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+          },
+        ]
+      },
+    ],
+  };
+  if (raw) {
+    userMessage.rawChildren = [
+      {
+        value: raw ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: raw } : null,
+        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+      }
+    ];
+  }
+  return userMessage;
+};
+
+const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...props }) => {
   const [isLoading, setLoading] = useState(true);
   const [value, setValue] = useState([]);
 
   useEffect(() => {
     let value = [];
+    const customizeMDProps = { ...props, projectUuid, canPreviewLinkedFile: false, chatId: 'thought-process' };
 
     // task
-    const taskValue = propsValue?.task;
-    if (taskValue) {
+    if (hasOwnProperty(propsValue, 'task') && propsValue.task) {
+      const { system_prompt, user_input } = propsValue.task || {};
+
       value.push({
         name: gettext('Task step'),
         children: [
@@ -28,68 +80,19 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
             name: gettext('System prompts'),
             children: [
               {
-                value: taskValue.system_prompt,
-                formatter: ({ className, value }) => (
-                  <CustomizeMarkdownViewer
-                    chatId="thought-process"
-                    message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                    settings={settings}
-                    projectUuid={projectUuid}
-                    projectName={projectName}
-                    workspaceID={workspaceID}
-                    className={className}
-                    canPreviewLinkedFile={false}
-                  />
-                ),
+                value: system_prompt ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: system_prompt } : null,
+                formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
               }
             ]
-          }, {
-            name: gettext('User input'),
-            children: [
-              {
-                name: gettext('Attachments'),
-                children: [
-                  {
-                    value: !Array.isArray(taskValue.user_input.attachments) || taskValue.user_input.attachments.length === 0 ? null : taskValue.user_input.attachments,
-                    formatter: () => (
-                      <Attachments
-                        attachments={taskValue.user_input.attachments}
-                        className="mb-0 justify-content-start"
-                        projectUuid={projectUuid}
-                      />
-                    ),
-                  },
-                ]
-              },
-              {
-                name: gettext('Message'),
-                children: [
-                  {
-                    value: taskValue.user_input.message,
-                    formatter: ({ className, value }) => (
-                      <CustomizeMarkdownViewer
-                        chatId="thought-process"
-                        message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                        settings={settings}
-                        projectUuid={projectUuid}
-                        projectName={projectName}
-                        workspaceID={workspaceID}
-                        className={className}
-                        canPreviewLinkedFile={false}
-                      />
-                    ),
-                  },
-                ]
-              }
-            ]
-          }
+          },
+          generatorUserMessage(gettext('User input'), user_input, customizeMDProps),
         ]
       });
     }
 
     // context
-    const contextValue = propsValue?.context;
-    if (Array.isArray(contextValue) && contextValue.length > 0) {
+    if (hasOwnProperty(propsValue, 'context') && Array.isArray(propsValue?.context) && propsValue?.context.length > 0) {
+      const contextValue = propsValue?.context;
       value.push({
         name: gettext('Context'),
         children: contextValue.map(record => {
@@ -104,12 +107,8 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
               </>
             ),
             children: [
+              generatorUserMessage(gettext('User message'), record.user_input, customizeMDProps),
               {
-                name: gettext('User message'),
-                children: [
-                  { value: record.user_input }
-                ],
-              }, {
                 name: gettext('Assistant response'),
                 children: record.assistant_response.length <= 1 ? [
                   {
@@ -118,20 +117,9 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                       {
                         value: {
                           [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
-                          [CHAT_MESSAGE_TYPE.SOURCES]: record.assistant_response?.[0]?.content?.references,
+                          [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
                         },
-                        formatter: ({ className, value }) => (
-                          <CustomizeMarkdownViewer
-                            chatId="thought-process"
-                            message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                            settings={settings}
-                            projectUuid={projectUuid}
-                            projectName={projectName}
-                            workspaceID={workspaceID}
-                            className={className}
-                            canPreviewLinkedFile={false}
-                          />
-                        ),
+                        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                       }
                     ]
                   }
@@ -172,38 +160,16 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                 { name: gettext('Error message'), value: action.error.message },
                 {
                   name: gettext('Step output'),
-                  value: action.result,
-                  formatter: ({ className, value }) => (
-                    <CustomizeMarkdownViewer
-                      chatId="thought-process"
-                      message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                      settings={settings}
-                      projectUuid={projectUuid}
-                      projectName={projectName}
-                      workspaceID={workspaceID}
-                      className={className}
-                      canPreviewLinkedFile={false}
-                    />
-                  ),
+                  value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
+                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                 },
               ]
             } : {
               name: gettext('Observation'),
               children: [
                 {
-                  value: action.result,
-                  formatter: ({ className, value }) => (
-                    <CustomizeMarkdownViewer
-                      chatId="thought-process"
-                      message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                      settings={settings}
-                      projectUuid={projectUuid}
-                      projectName={projectName}
-                      workspaceID={workspaceID}
-                      className={className}
-                      canPreviewLinkedFile={false}
-                    />
-                  ),
+                  value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
+                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                 }
               ]
             }
@@ -236,19 +202,8 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
                       name: gettext('Content'),
                       children: [
                         {
-                          value: tool_calls?.[0]?.arguments.content,
-                          formatter: ({ className, value }) => (
-                            <CustomizeMarkdownViewer
-                              chatId="thought-process"
-                              message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                              settings={settings}
-                              projectUuid={projectUuid}
-                              projectName={projectName}
-                              workspaceID={workspaceID}
-                              className={className}
-                              canPreviewLinkedFile={false}
-                            />
-                          ),
+                          value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
+                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                         }
                       ]
                     },
@@ -294,19 +249,8 @@ const ThoughtProcessDialog = ({ value: propsValue, projectUuid, projectName, wor
         name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
         children: [
           {
-            value: result,
-            formatter: result ? ({ className, value }) => (
-              <CustomizeMarkdownViewer
-                chatId="thought-process"
-                message={{ [CHAT_MESSAGE_TYPE.AI_REPLY]: value }}
-                settings={settings}
-                projectUuid={projectUuid}
-                projectName={projectName}
-                workspaceID={workspaceID}
-                className={className}
-                canPreviewLinkedFile={false}
-              />
-            ) : null
+            value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
+            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
           }
         ]
       }];

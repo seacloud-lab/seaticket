@@ -56,6 +56,7 @@ import UserSelect from './user-select';
 import Switch from './switch';
 import IconTooltip from './icon-tooltip';
 import SelectEditor from './select-editor';
+import RadioGroup from './radio-group';
 
 export {
   FixedWidthTable,
@@ -118,4 +119,5 @@ export {
   IconTooltip,
   SelectEditor,
   LinkVerifiedDialog,
+  RadioGroup,
 };
