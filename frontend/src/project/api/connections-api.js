@@ -202,17 +202,17 @@ class ConnectionsAPI {
   }
 
 
-  getConnectionsEmbeddingAnalysis(projectUuid, connectionIds, startYear, endYear) {
+  getConnectionsEmbeddingAnalysis(projectUuid, connectionIds, startDate, endDate) {
     const url = this.server + '/api/v1/ai/embedding-analysis/';
     const data = {
       project_uuid: projectUuid,
       connection_ids: connectionIds.join(',')
     };
-    if (startYear) {
-      data.start_year = startYear;
+    if (startDate) {
+      data.start_date = startDate;
     }
-    if (endYear) {
-      data.end_year = endYear;
+    if (endDate) {
+      data.end_date = endDate;
     }
     return this.req.post(url, data);
   }

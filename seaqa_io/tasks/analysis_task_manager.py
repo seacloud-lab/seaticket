@@ -55,11 +55,11 @@ class AnalysisTaskManager(object):
         return project_uuid in self.project_tasks_map
 
     @log_function_call
-    def add_embedding_analysis_task(self, project_uuid, connection_ids, username, start_year=None, end_year=None):
+    def add_embedding_analysis_task(self, project_uuid, connection_ids, username, start_date=None, end_date=None):
         from seaqa_io.tasks import perform_embedding_analysis
 
         task_id = str(uuid.uuid4())
-        task = (perform_embedding_analysis, (project_uuid, connection_ids, username, start_year, end_year))
+        task = (perform_embedding_analysis, (project_uuid, connection_ids, username, start_date, end_date))
         self.tasks_map[task_id] = task
         self.tasks_queue.put(task_id)
         self.project_tasks_map[project_uuid] = task_id

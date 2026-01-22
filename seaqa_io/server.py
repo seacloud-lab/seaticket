@@ -156,8 +156,8 @@ class Application:
                 project_uuid = context.get('project_uuid')
                 connection_ids = context.get('connection_ids')
                 username = context.get('username')
-                start_year = context.get('start_year')
-                end_year = context.get('end_year')
+                start_date = context.get('start_date')
+                end_date = context.get('end_date')
 
                 if not project_uuid:
                     status_code, headers_out, body = self._json_response(400, {'error_msg': 'project_uuid is required.'})
@@ -182,7 +182,7 @@ class Application:
 
                 try:
                     task_id = self.analysis_task_manager.add_embedding_analysis_task(
-                        project_uuid, connection_ids, username, start_year, end_year)
+                        project_uuid, connection_ids, username, start_date, end_date)
                 except Exception as e:
                     logger.exception(e)
                     status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})

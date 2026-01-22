@@ -226,7 +226,7 @@ def import_kb_from_excel(project_uuid, username, file_name):
     return {}
 
 
-def perform_embedding_analysis(project_uuid, connection_ids, username, start_year=None, end_year=None):
+def perform_embedding_analysis(project_uuid, connection_ids, username, start_date=None, end_date=None):
     try:
         seadb_api = SeaDBAPI(username)
         all_records = []
@@ -262,8 +262,8 @@ def perform_embedding_analysis(project_uuid, connection_ids, username, start_yea
                 column_names,
                 limit=remaining,
                 extra_columns={'connection_id': connection_id, 'connection_type': connection_type},
-                start_year=start_year,
-                end_year=end_year
+                start_date=start_date,
+                end_date=end_date
             )
             all_records.extend(records)
 

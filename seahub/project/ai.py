@@ -208,8 +208,8 @@ class EmbeddingAnalysisView(APIView):
             error_msg = 'connection_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
-        start_year = request.data.get('start_year')
-        end_year = request.data.get('end_year')
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -227,8 +227,8 @@ class EmbeddingAnalysisView(APIView):
             'project_uuid': project_uuid,
             'connection_ids': connection_ids,
             'username': username,
-            'start_year': start_year,
-            'end_year': end_year
+            'start_date': start_date,
+            'end_date': end_date
         }
 
         try:
