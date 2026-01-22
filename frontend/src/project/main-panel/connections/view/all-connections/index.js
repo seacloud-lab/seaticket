@@ -7,6 +7,7 @@ import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import ConnectionLogsDialog from '../../components/connection-logs-dialog';
+import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
 import createFormatter from '../../components/cell-formatter';
 import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
@@ -20,6 +21,7 @@ import './index.css';
 const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
+  const [isShowWebhookDialog, setIsShowWebhookDialog] = useState(false);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
@@ -70,6 +72,31 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     activeRecordRef.current = null;
     setIsShowLogDialog(false);
   }, []);
+
+  const onConfigureWebhook = useCallback((record) => {
+    activeRecordRef.current = record;
+    setIsShowWebhookDialog(true);
+  }, []);
+
+  const closeWebhookDialog = useCallback(() => {
+    activeRecordRef.current = null;
+    setIsShowWebhookDialog(false);
+  }, []);
+
+  const handleWebhookSubmit = useCallback(({ name, config }, callback) => {
+    const record = activeRecordRef.current;
+    if (!record) return;
+    connectionsAPI.modifyConnection(projectUuid, record.id, { name, config }).then(() => {
+      toaster.success(gettext('Webhook configured successfully'));
+      modifyLocalConnectionRecord(record.id, { config });
+      closeWebhookDialog();
+    }).catch((error) => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    }).finally(() => {
+      callback && callback();
+    });
+  }, [projectUuid, modifyLocalConnectionRecord, closeWebhookDialog]);
 
   const handleExpandRow = useCallback((row) => {
     togglePageSlugId && togglePageSlugId(row.id);
@@ -151,6 +178,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onViewLog={onViewLog}
+        onConfigureWebhook={onConfigureWebhook}
         onUpdate={modifyConnectionIsActiveStatus}
         handleStatusActive={handleStatusActive}
         rowsDidMount={rowsDidMount}
@@ -169,6 +197,13 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           projectUuid={projectUuid}
           connectionId={activeRecordRef.current?.id}
           onToggle={closeLogDialog}
+        />
+      )}
+      {isShowWebhookDialog && activeRecordRef.current && (
+        <ConfigureWebhookDialog
+          record={activeRecordRef.current}
+          onSubmit={handleWebhookSubmit}
+          onToggle={closeWebhookDialog}
         />
       )}
     </>
