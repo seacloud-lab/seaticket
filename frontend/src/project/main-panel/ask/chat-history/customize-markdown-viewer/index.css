@@ -1,0 +1,50 @@
+.sea-qa-message-ai-reply.text * {
+  margin: 0;
+  padding: 0;
+}
+
+.sea-qa-message-ai-reply .sf-slate-viewer-scroll-container {
+  padding-top: 0;
+  padding-bottom: 0;
+  background-color: inherit;
+}
+
+.sea-qa-message-ai-reply .sf-slate-viewer-scroll-container .sf-slate-article-content {
+  overflow-x: hidden;
+}
+
+.sea-qa-message-ai-reply .article {
+  padding: 0 !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.sea-qa-message-ai-reply.rich-text .article :last-child {
+  margin-bottom: 0;
+}
+
+.sea-qa-ai-ask-message-sources,
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-sources-container {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-sources-title {
+  margin: 1.2em 0 .4em;
+  font-weight: 700;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-source {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-source:last-child {
+  margin-bottom: 0;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-source a {
+  color: #007bff;
+}
