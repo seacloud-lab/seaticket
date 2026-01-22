@@ -8,7 +8,7 @@ import SysAdminCreateGroupDialog from '@/sys-admin/dialog/sysadmin-create-group-
 import sysAdminAPI from '@/sys-admin/api';
 import { TopBar, Main } from '../main-panel';
 import GroupsTable from './groups-table';
-import { EnterSearchInput } from '@/components';
+import { AdminSearch } from '@/components';
 import { downloadFile } from '@/utils/download';
 
 const Groups = ({ onCloseSidePanel }) => {
@@ -45,7 +45,7 @@ const Groups = ({ onCloseSidePanel }) => {
     <>
       <TopBar
         onCloseSidePanel={onCloseSidePanel}
-        search={(<EnterSearchInput placeholder={gettext('Search groups by name')} onSubmit={searchItems} />)}
+        search={(<AdminSearch placeholder={gettext('Search groups by name')} onSubmit={searchItems} />)}
       >
       </TopBar>
       <Main title={gettext('Groups')}>

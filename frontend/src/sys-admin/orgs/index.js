@@ -8,7 +8,7 @@ import { ActiveStatusEditor, toaster, EmptyTip, Loading, IconButton } from '@/co
 import SysAdminAddOrgDialog from '@/sys-admin/dialog/sysadmin-add-org-dialog';
 import ConfirmDeleteOrg from '@/components/dialog/confirm-delete-org';
 import OrgNav from './orgs-nav';
-import { Paginator, EnterSearchInput } from '@/components';
+import { Paginator, AdminSearch } from '@/components';
 import { Utils } from '@/utils/utils';
 import sysAdminAPI from '@/sys-admin/api';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '@/constants';
@@ -278,7 +278,7 @@ class Orgs extends Component {
   };
 
   getSearch = () => {
-    return <EnterSearchInput placeholder={gettext('Search organizations')} onSubmit={this.searchItems} />;
+    return <AdminSearch placeholder={gettext('Search organizations')} onSubmit={this.searchItems} />;
   };
 
   searchItems = (keyword) => {

@@ -1,10 +1,11 @@
+.sea-qa-icon-svg-arrow-down-b,
 .sea-qa-icon-svg-arrow-down {
   height: 12px !important;
   width: 12px !important;
 }
 
 .sea-qa-dropdown-menu {
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .sea-qa-dropdown-menu .toggle-icon {
@@ -20,11 +21,6 @@
   width: 14px;
   margin-top: -2px;
   margin-left: 4px;
-}
-
-.sea-qa-dropdown-menu .dropdown-item:focus .item-icon,
-.sea-qa-dropdown-menu .dropdown-item:hover .item-icon {
-  color: #fff;
 }
 
 .sea-qa-sub-dropdown-toggle {

@@ -7,13 +7,12 @@
 
 .org-admin .side-panel,
 .sys-admin .side-panel {
-  flex: 0 0 22%;
+  width: 240px;
 }
 
 .org-admin .main-panel,
 .sys-admin .main-panel {
-  width: 100%;
-  flex: 1 0 78%;
+  width: calc(100% - 240px);
 }
 
 .org-admin .side-nav,
@@ -21,30 +20,105 @@
   background-color: #f7f7f5;
 }
 
+.side-nav-con {
+  overflow: auto;
+  padding: 0 8px;
+}
+
+.side-nav-con>.nav {
+  margin-bottom: 1rem;
+}
+
+.side-nav-con .nav .nav-item,
+.side-nav-con .nav .nav-item .nav-link {
+  display: block;
+  padding-left: 0;
+  margin-right: 0;
+}
+
+.side-nav-con .active [class^="sf2-icon-"],
+.side-nav-con .active [class^="sf3-font-"],
+.side-nav-con .active .sharp {
+  color: #fff;
+}
+
+.side-nav-con .sharp {
+  display: inline-block;
+  width: 2.625rem;
+  margin-right: 0.325rem;
+  text-align: right;
+  color: #aaa;
+}
+
+.side-nav-con .toggle-icon {
+  margin-right: 0.25rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.side-nav-con .draft-info {
+  position: relative;
+  line-height: 1.5rem;
+}
+
+.side-nav-con .draft-info .badge {
+  position: relative;
+  float: right;
+  margin-top: 0.2rem;
+  background-color: #EDEDEE;
+  color: #5B5F65;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  justify-content: center;
+  min-width: 1.3rem;
+  min-height: 1.3rem;
+  padding: 0 .3rem;
+}
+
+.side-nav-con .sub-nav {
+  display: block;
+  overflow: hidden;
+}
+
+.side-nav-con .sub-nav .nav-link {
+  padding: 0;
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
 .org-admin .side-nav-con svg.sea-qa-icon-svg,
 .sys-admin .side-nav-con svg.sea-qa-icon-svg {
   height: 20px;
   width: 20px;
-  margin-right: 6px;
-  margin-left: 6px;
+  margin-right: 8px;
+  margin-left: 12px;
   color: #999;
 }
 
 .org-admin .side-nav-title,
 .sys-admin .side-nav-title {
   color: #666666;
-  padding: 0 4px;
-  font-size: 15px;
+  padding: 0 8px;
+  line-height: 28px;
+  font-size: 14px;
+  margin-top: 4px;
+  height: 28px;
+  display: block;
 }
 
 .org-admin .main-panel .heading,
 .sys-admin .main-panel .heading {
-  height: 48px;
-  line-height: 48px;
-  max-height: 48px;
+  height: 56px;
+  line-height: 56px;
+  max-height: 56px;
   margin: 0 16px;
-  font-size: 1rem;
-  font-weight: normal;
+  font-size: 18px;
+  font-weight: 500;
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
@@ -59,6 +133,7 @@
 .org-admin .main-panel .nav .nav-item .nav-link.active,
 .sys-admin .main-panel .nav .nav-item .nav-link.active {
   color: #ED7109;
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -97,7 +172,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 36px;
+  height: 38px;
 }
 
 .admin-project-icon {

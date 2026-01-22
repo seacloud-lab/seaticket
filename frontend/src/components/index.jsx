@@ -17,7 +17,7 @@ import Loading from './loading';
 import ModalHeader from './modal-header';
 import ResizeBar from './resize-bar';
 import ActiveStatusEditor from './active-status-editor';
-import SearchInput, { EnterSearchInput } from './search-input';
+import SearchInput, { AdminSearch } from './search-input';
 import toaster from './toaster';
 import Paginator from './paginator';
 import ModalPortal from './modal-portal';
@@ -66,7 +66,7 @@ export {
   InfoCard,
   SectionSettings,
   AdminCheckboxSettings,
-  EnterSearchInput,
+  AdminSearch,
   CenteredError, CenteredLoading,
   ClickOutside,
   CustomizeSelect,

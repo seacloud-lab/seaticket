@@ -112,7 +112,7 @@ class Header extends React.Component {
     return (
       <header id="header" className="sea-qa-home-header" style={{ zIndex: Z_INDEX.HOME_HEADER }}>
         <div className="side-panel-north" style={{ flex: '0 0 22%' }}>
-          <a className="sea-qa-logo" href={siteRoot}>
+          <a className="sea-qa-logo" href={siteRoot} style={{ height: logoHeight }}>
             <img
               src={logoUrl}
               height={logoHeight}

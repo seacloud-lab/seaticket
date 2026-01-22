@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
-import { EnterSearchInput, AdminProjects } from '@/components';
+import { AdminSearch, AdminProjects } from '@/components';
 import sysAdminAPI from '@/sys-admin/api';
 import { gettext, siteRoot } from '@/constants';
 import ProjectNav from './project-nav';
@@ -10,7 +10,7 @@ import { TopBar, Main } from '../main-panel';
 class AllProjects extends Component {
 
   getSearch = () => {
-    return (<EnterSearchInput placeholder={gettext('Search projects')} onSubmit={this.searchItems} />);
+    return (<AdminSearch placeholder={gettext('Search projects')} onSubmit={this.searchItems} />);
   };
 
   searchItems = (keyword) => {

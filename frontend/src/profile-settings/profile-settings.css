@@ -15,28 +15,28 @@ body {
 }
 
 .profile-settings .top-header {
-  padding: 0.5rem 0rem;
-  padding-left: 12px;
+  padding: 12px 0rem 12px 4px;
   flex-shrink: 0;
 }
 
+/* Default side-panel width is 240px, but here profile-settings has a padding-left: 12px, so width 240 - 12 = 228 */
 .profile-settings .side-panel {
-  flex: 0 0 22%;
+  width: 228px;
   padding-right: 20px;
 }
 
 .profile-settings .main-panel {
   background-color: #ffffff;
   border-radius: 10px 10px 0 0;
-  width: 100%;
-  flex: 1 0 78%;
+  width: calc(100% - 228px);
 }
 
 .profile-settings .heading {
-  font-size: 1rem;
-  font-weight: normal;
-  line-height: 1.5;
-  border-bottom: 1px solid var(--bs-border-color);
+  height: 56px;
+  line-height: 56px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .profile-settings .content {
@@ -54,7 +54,7 @@ body {
   margin-bottom: 0.7em;
   font-size: 1rem;
   font-weight: normal;
-  border-bottom: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 /* User avatar related */
@@ -100,6 +100,9 @@ body {
   padding: 0;
   padding-left: 0.5rem;
   flex: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Form and input styles */

@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { Icon, IconButton } from '../../../components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ConnectionNav from './connection-nav';
+import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
 
 import './index.css';
 
@@ -35,13 +36,13 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
         className={classnames('sea-qa-project-navigation-item', {
           'sea-qa-project-navigation-item-active': isActive,
         })}
-        style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
+        style={{ paddingLeft: level > 1 ? (level - 1) * NAVIGATION_LEVEL_INDENT + NAVIGATION_BASE_PADDING : NAVIGATION_BASE_PADDING }}
         onClick={() => onClick([nav.key])}
         title={name}
       >
         {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
         <span className="sea-qa-project-navigation-item-name">{name}</span>
-        <IconButton icon="arrow-down" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
+        <IconButton icon="arrow-down-b" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
       </div>
       <div
         className={classnames('w-100 o-hidden', { 'side-panel-slide': isShowChildren, 'side-panel-slide-up': !isShowChildren })}

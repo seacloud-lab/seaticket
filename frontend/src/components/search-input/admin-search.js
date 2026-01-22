@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import classnames from 'classnames';
 import SearchInput from '../search-input';
 import { isEnter } from '@/utils/hotkey';
 
-const EnterSearchInput = ({ value: propsValue, placeholder, className, onSubmit }) => {
+import './admin-search.css';
+
+const AdminSearch = ({ value: propsValue, placeholder, onSubmit }) => {
   const [value, setValue] = useState(propsValue);
 
   const onChange = useCallback((value) => {
@@ -26,7 +27,7 @@ const EnterSearchInput = ({ value: propsValue, placeholder, className, onSubmit 
 
   return (
     <SearchInput
-      className={classnames('h-6 mr-1', className)}
+      className='admin-search-input'
       placeholder={placeholder}
       style={{ width: '15rem' }}
       size={32}
@@ -36,4 +37,4 @@ const EnterSearchInput = ({ value: propsValue, placeholder, className, onSubmit 
   );
 };
 
-export default EnterSearchInput;
+export default AdminSearch;

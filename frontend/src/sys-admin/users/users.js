@@ -1,7 +1,7 @@
 import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
-import { toaster, CommonOperationConfirmationDialog, EnterSearchInput
+import { toaster, CommonOperationConfirmationDialog, AdminSearch
 } from '@/components';
 import SysAdminImportUserDialog from '@/sys-admin/dialog/sysadmin-import-user-dialog';
 import SysAdminAddUserDialog from '@/sys-admin/dialog/sysadmin-add-user-dialog';
@@ -163,7 +163,7 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
   return (
     <>
       <TopBar
-        search={isAdmin ? null : (<EnterSearchInput placeholder={gettext('Search users')} onSubmit={jumpToSearch} />)}
+        search={isAdmin ? null : (<AdminSearch placeholder={gettext('Search users')} onSubmit={jumpToSearch} />)}
         onCloseSidePanel={onCloseSidePanel}
       >
       </TopBar>

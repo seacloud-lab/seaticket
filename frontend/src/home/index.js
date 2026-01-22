@@ -12,7 +12,7 @@ import { NotificationProvider } from '@/components/common/notification/hooks/not
 
 import '../css/layout.css';
 import '../css/side-panel.css';
-import './index.css';
+import './home.css';
 import '@/css/toolbar.css';
 
 class Home extends React.Component {

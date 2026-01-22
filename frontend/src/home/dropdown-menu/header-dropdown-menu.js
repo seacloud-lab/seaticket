@@ -68,13 +68,18 @@ class HeaderDropdownMenu extends React.Component {
         toggle={this.dropdownToggle}
         direction="down"
         className="header-more-operation sea-qa-icon-btn"
+        style={{ backgroundColor: this.state.dropdownOpen ? '#efefef' : 'transparent' }}
       >
         <DropdownToggle
           tag='div'
           role="button"
           className="cursor-pointer d-flex align-items-center"
-          title={gettext('More operations')}aria-label={gettext('More operations')}data-toggle="dropdown"
-          aria-expanded={this.state.dropdownOpen}aria-haspopup={true}tabIndex={0}
+          title={gettext('More operations')}
+          aria-label={gettext('More operations')}
+          data-toggle="dropdown"
+          aria-expanded={this.state.dropdownOpen}
+          aria-haspopup={true}
+          tabIndex={0}
         >
           <Icon symbol="plus" />
           <Icon symbol="arrow-down" />

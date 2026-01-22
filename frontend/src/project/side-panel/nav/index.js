@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { Icon } from '../../../components';
 import { BAR_TYPE } from '../../constants';
 import { siteRoot } from '@/constants';
+import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
 
 import './index.css';
 
@@ -27,7 +28,7 @@ const Nav = ({ nav, level, activeBar, onClick }) => {
       className={classnames('sea-qa-project-navigation-item', {
         'sea-qa-project-navigation-item-active': isActive,
       })}
-      style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
+      style={{ paddingLeft: level > 1 ? (level - 1) * NAVIGATION_LEVEL_INDENT + NAVIGATION_BASE_PADDING : NAVIGATION_BASE_PADDING }}
       onClick={handleClick}
       title={name}
     >

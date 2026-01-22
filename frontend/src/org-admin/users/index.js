@@ -9,7 +9,7 @@ import OrgAdminList from './org-admin-list';
 import { TopBar, Main } from '../main-panel';
 import { gettext, orgID, siteRoot } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { EnterSearchInput } from '@/components';
+import { AdminSearch } from '@/components';
 import orgAdminAPI from '../api';
 import OrgUserInfo from '../models/org-user';
 import AddAdminDialog from './add-admin-dialog';
@@ -212,7 +212,7 @@ class OrgUsers extends Component {
   };
 
   getSearch = () => {
-    return (<EnterSearchInput placeholder={gettext('Search users')} onSubmit={this.searchItems} />);
+    return (<AdminSearch placeholder={gettext('Search users')} onSubmit={this.searchItems} />);
   };
 
   render() {

@@ -199,7 +199,7 @@ class ProfileSettings extends React.Component {
           </div>
           <div className="flex-auto d-flex o-hidden">
             <div className="side-panel o-auto">
-              <ul className="nav flex-column user-setting-nav">
+              <ul className="nav flex-column user-setting-nav mt-1">
                 {this.sideNavItems.map((item, index) => {
                   return item.show ?
                     (
@@ -212,7 +212,7 @@ class ProfileSettings extends React.Component {
               </ul>
             </div>
             <div className="main-panel d-flex flex-column">
-              <h2 className="heading mx-4 py-2 my-0">{gettext('Personal settings')}</h2>
+              <h2 className="heading mx-4 my-0">{gettext('Personal settings')}</h2>
               <div className="content position-relative" onScroll={this.handleContentScroll}>
                 <div id="user-basic-info" className="setting-item">
                   <h3 className="setting-item-heading">{gettext('Profile setting')}</h3>
