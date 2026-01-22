@@ -32,19 +32,19 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
     name,
     children: [
       {
-        name: gettext('Attachments'),
-        children: [
-          {
-            value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-          },
-        ]
-      }, {
         name: gettext('Message'),
         children: [
           {
             value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
             formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+          },
+        ]
+      }, {
+        name: gettext('Attachments'),
+        children: [
+          {
+            value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
           },
         ]
       },
