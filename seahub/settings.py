@@ -147,7 +147,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(PROJECT_ROOT, '../../seaqa-web-data/custom/templates'),
+            os.path.join(PROJECT_ROOT, '../seaqa-web-data/custom/templates'),
             os.path.join(PROJECT_ROOT, 'seahub/templates'),
         ],
         'APP_DIRS': True,
@@ -529,7 +529,7 @@ CN_FORCE_USER_AGREE_TERMS = False
 CAPTCHA_IMAGE_SIZE = (90, 42)
 
 # Absolute filesystem path to the directory that will hold thumbnail files.
-SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../../seaqa-web-data')
+SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../seaqa-web-data')
 
 ENABLE_WEBDAV_SECRET = False
 ENABLE_USER_SET_CONTACT_EMAIL = False
