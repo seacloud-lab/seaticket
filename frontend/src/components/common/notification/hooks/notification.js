@@ -62,7 +62,9 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       })
       .catch(err => {
         const errorMsg = Utils.getErrorMsg(err);
-        toaster.danger(errorMsg);
+        if (errorMsg !== 'canceled') {
+          toaster.danger(errorMsg);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -104,9 +106,12 @@ export const NotificationProvider = ({ children, projectUuid }) => {
           setAllNotificationCount(allCount || 0);
           setUnseen(count);
         }
-      }).catch((err) => {
+      })
+      .catch((err) => {
         const errorMsg = Utils.getErrorMsg(err);
-        toaster.danger(errorMsg);
+        if (errorMsg !== 'canceled') {
+          toaster.danger(errorMsg);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -162,8 +167,8 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
       const projectName = noticeItem.project_name || noticeItem.name || '';
       const projectHref = siteRoot + 'workspace/' + noticeItem.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open';
-      setShowInboxDrawer(false);
-      window.location.href = projectHref;
+      window['show_inbox'] = true;
+      window.open(projectHref, '_blank');
     }
   }, [notificationList]);
 
@@ -201,6 +206,12 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   }, [notificationList, unseen]);
 
   useEffect(() => {
+    // When clicking on the project notification, open the inbox drawer
+    if (window.opener && window.opener['show_inbox']) {
+      setShowInboxDrawer(true);
+      window.opener['show_inbox'] = false;
+    }
+
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
