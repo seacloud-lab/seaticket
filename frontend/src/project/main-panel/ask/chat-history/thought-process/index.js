@@ -5,7 +5,7 @@ import ThoughtProcessDialog from './thought-process-dialog';
 
 import './index.css';
 
-const ThoughtProcess = ({ value, settings }) => {
+const ThoughtProcess = ({ value, projectUuid, projectName, workspaceID, settings }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
   const openDetails = useCallback(() => {
@@ -21,7 +21,14 @@ const ThoughtProcess = ({ value, settings }) => {
         <Icon symbol="open-in-new-tab" />
       </div>
       {isShowDetails && (
-        <ThoughtProcessDialog value={value} onToggle={() => setIsShowDetails(false)} />
+        <ThoughtProcessDialog
+          value={value}
+          projectUuid={projectUuid}
+          projectName={projectName}
+          workspaceID={workspaceID}
+          settings={settings}
+          onToggle={() => setIsShowDetails(false)}
+        />
       )}
     </>
   );

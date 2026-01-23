@@ -605,14 +605,14 @@ CREATE TABLE `stats_ai_by_project` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
-CREATE TABLE `chat_tool_calls` (
-  `id` bigint(11) NOT NULL AUTO_INCREMENT,
-  `session_uuid` varchar(36) NOT NULL,
-  `message_id` varchar(4) NOT NULL,
-  `tool_calls` longtext NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_session_uuid_message_id` (`session_uuid`,`message_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `chat_message_thought_process`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `session_uuid` varchar(36) NULL,
+  `message_id` varchar(4) NULL,
+  `thought_process` longtext NULL,
+  PRIMARY KEY (`id` DESC),
+  UNIQUE KEY `uniq_session_uuid_message_id`(`session_uuid`, `message_id`)
+);
 
 CREATE TABLE `knowledge_base_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,

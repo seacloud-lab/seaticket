@@ -1,16 +1,21 @@
 import { useState, useCallback } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton } from '@/components';
+import { IconButton, RadioGroup } from '@/components';
 import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { getType } from '@/utils/type-detection';
 
 import './index.css';
 
+const rawOptions = [
+  { value: 'normal', label: gettext('Normal') },
+  { value: 'raw', label: gettext('Raw') },
+];
 
 const ProcessDetails = ({ value }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
+  const [displayType, setDisplayType] = useState('normal');
 
   const toggle = useCallback(() => {
     setIsShowDetails(!isShowDetails);
@@ -29,8 +34,10 @@ const ProcessDetails = ({ value }) => {
   if (valueType !== 'Object') return null;
 
   const hasChildren = hasOwnProperty(value, 'children');
+  const hasRawChildren = hasOwnProperty(value, 'rawChildren');
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
+    const children = displayType === 'raw' ? value.rawChildren : value.children;
     return (
       <>
         <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
@@ -41,7 +48,10 @@ const ProcessDetails = ({ value }) => {
         </div>
         {isShowDetails && (
           <div className="sea-qa-ai-thought-process-content">
-            {value.children.map((child, childIndex) => (
+            {hasRawChildren && (
+              <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
+            )}
+            {children.map((child, childIndex) => (
               <ProcessDetails value={child} key={childIndex} />
             ))}
           </div>

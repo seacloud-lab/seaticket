@@ -10,12 +10,12 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
+from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
+from seahub.chats.utils import get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 
@@ -214,7 +214,7 @@ class ChatMessagesView(APIView):
 
             message_ids = set([message.message_id for message in messages])
 
-            tool_calls_history = ChatToolCalls.objects.get_tool_calls_from_session_uuid_and_message_ids(session_uuid, message_ids)
+            message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
 
             messages_data = []
             for message in messages:
@@ -222,11 +222,8 @@ class ChatMessagesView(APIView):
                 if message.role == 'user':
                     data['attachments'] = remove_content_details_in_attachments(data['attachments'])
                 elif message.role == 'assistant':
-                    if message.is_agent_mode:
-                        if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
-                            data['thought_process'] = agent_thought_process
-                    elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
-                        data['thought_process'] = ask_thought_process
+                    if thought_process := message_id_thought_process_map.get(message.message_id, {}):
+                        data['thought_process'] = thought_process
                 messages_data.append(data)
 
             return Response({'messages': messages_data})
@@ -320,7 +317,6 @@ class ChatView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
-            'message_id': message_id,
             'query': query,
             'attachments': attachments,
             'resolve_type': resolve_type,
@@ -341,21 +337,9 @@ class ChatView(APIView):
             }
 
         try:
-            connection_ids = set([
-                source['connection_id']
-                for source in ai_response['sources']
-            ])
-
-            connections = ProjectConnections.objects.filter(id__in=connection_ids)
-            connection_id_name_map = {}
-            for connection in connections:
-                connection_dict = connection.to_dict()
-                connection_id_name_map[connection_dict['id']] = connection_dict['name']
-
-            for source in ai_response['sources']:
-                source['connection_name'] = connection_id_name_map[source['connection_id']]
+            ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_response.get('thought_process', {}))
         except Exception as e:
-            logger.warning(f'Failure to query connection info: {e}')
+            logger.warning(f'Failure to record thought process to db: {e}')
 
         user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', attachments=attachments)
         ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))

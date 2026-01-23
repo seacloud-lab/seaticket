@@ -35,3 +35,8 @@
 .sea-qa-ai-thought-process .sea-qa-ai-thought-process-content-value .article {
   background-color: inherit;
 }
+
+.sea-qa-ai-thought-process-content .radio-group-wrapper {
+  width: 200px;
+  margin-bottom: 8px;
+}

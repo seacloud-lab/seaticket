@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     StatsAIByTeam, StatsAIByOwner, Workspaces
-from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
+from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
@@ -180,7 +180,7 @@ def replace_file_url_in_content(content, new_file_urls_dict):
 def delete_sessions(session_uuids):
     try:
         ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
-        ChatToolCalls.objects.filter(session_uuid__in=session_uuids).delete()
+        ChatMessageThoughtProcess.objects.filter(session_uuid__in=session_uuids).delete()
         ChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
     except Exception as e:
         logger.error('delete sessions error: %s', e)
