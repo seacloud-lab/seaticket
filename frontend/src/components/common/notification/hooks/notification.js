@@ -191,7 +191,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       Promise.all(unSeenList.map(item => notificationAPI.markAllProjectRead(item.project_uuid)))
         .then(() => {
           setUnseen(unseen - count);
-          setNotificationList(prev => prev.map(item => ({ ...item, seen: true, unseen_count: 0 })));
+          setNotificationList([]);
         })
         .catch(err => {
           const errorMsg = Utils.getErrorMsg(err);
