@@ -393,11 +393,4 @@ def rank_search_results(query, results, username, org_id, project_uuid):
             ranked_results.append(result_map[ranked_id])
             seen_keys.add(ranked_id)
 
-    for result in results:
-        _id = result.get('_id')
-        connection_id = result.get('connection_id', '')
-        map_key = f"{_id}:{connection_id}"
-        if map_key not in seen_keys:
-            ranked_results.append(result)
-
     return ranked_results

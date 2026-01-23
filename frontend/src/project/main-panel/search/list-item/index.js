@@ -1,18 +1,17 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { CONNECTION_TYPES, CONNECTION_TYPE } from '../../connections/constants';
-import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { getResourceIconURL } from '@/project/utils';
 
 import './index.css';
 
 const ListItem = ({
-  type, id, title, subtitle, content = '', bumped_at = '', score = '', searchValue, settings,
+  type, id, title, subtitle, content = '', bumped_at = '', searchValue, settings,
   expandItem,
 }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
-  const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
   const detailContentRef = useRef(null);
 
   if (detailContentRef.current === null) {
@@ -65,11 +64,6 @@ const ListItem = ({
       <div className="list-item-content">
         <div className="list-item-title">
           <span className="text-truncate list-item-title-content" title={title || ''}>{title || ''}</span>
-          {isShowScore && score && (
-            <span className="list-item-score ml-2">
-              {getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 })}
-            </span>
-          )}
         </div>
         <div className="list-item-path">{subtitle || ''}</div>
         {bumped_at &&
