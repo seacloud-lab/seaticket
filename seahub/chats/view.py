@@ -310,6 +310,11 @@ class ChatView(APIView):
             if not session:
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            # permission check: current user must be the session owner or the session is shared
+            if session.username != username and not session.is_shared:
+                error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
         try:
             message_id = gen_message_id(session.session_uuid)
