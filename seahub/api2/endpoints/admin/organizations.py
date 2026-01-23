@@ -95,6 +95,11 @@ def get_org_detailed_info(org):
             org_info['metadata_url'] = org_saml_config.metadata_url
             org_info['domain'] = org_saml_config.domain
 
+    if ORG_MEMBER_QUOTA_ENABLED:
+        org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
+
+    org_info['monthly_api_call_limit_per_user'] = OrgQuota.objects.get_monthly_api_call_limit_per_user(org_id)
+
     return org_info
 
 
@@ -447,7 +452,7 @@ class AdminOrganization(APIView):
             logger.exception('check org_id: %s exceed api quota error: %s', org_id, e)
 
         org = Organization.objects.get_org_by_id(org_id)
-        org_info = get_org_info(org)
+        org_info = get_org_detailed_info(org)
         return Response(org_info)
 
     def delete(self, request, org_id):

@@ -672,3 +672,15 @@ CREATE TABLE `invitations_invitation` (
   KEY `invitations_invitation_inviter_b0a7b855` (`inviter`),
   KEY `invitations_invitation_token_25a92a38` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `organizations_org_quota` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `org_id` int(11) NOT NULL,
+  `asset_quota` bigint(20) DEFAULT NULL,
+  `row_limit` int(11) DEFAULT NULL,
+  `big_data_row_limit` bigint(20) DEFAULT NULL,
+  `big_data_storage_quota` bigint(20) DEFAULT NULL,
+  `monthly_api_call_limit_per_user` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id_n3d9m1n7_uniq` (`org_id`)
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
