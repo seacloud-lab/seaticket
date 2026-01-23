@@ -611,7 +611,7 @@ CREATE TABLE `chat_message_thought_process`  (
   `message_id` varchar(4) NULL,
   `thought_process` longtext NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_session_uuid_message_id`(`session_uuid`, `message_id`),
+  UNIQUE KEY `uniq_session_uuid_message_id`(`session_uuid`, `message_id`)
 );
 
 CREATE TABLE `knowledge_base_views`  (
