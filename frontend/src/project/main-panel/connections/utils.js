@@ -1,4 +1,4 @@
-import { mediaUrl, server, siteRoot } from '@/constants';
+import { mediaUrl, server } from '@/constants';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -6,10 +6,9 @@ import { isString } from '@/utils/type-detection';
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;
-  const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
   const connection = CONNECTION_TYPES.find(c => c.type === type);
-  if (!connection) return `${root}img/connection/sites.png`;
-  return `${root}img/connection/${connection.icon}.png`;
+  if (!connection) return `${mediaUrl}img/connection/sites.png`;
+  return `${mediaUrl}img/connection/${connection.icon}.png`;
 };
 
 const getDiscourseOriginalPageUrl = (connection, row, columns) => {
@@ -147,7 +146,7 @@ export const getInfoByEmailFrom = (emailFrom) => {
 };
 
 export const generatorConnectionAssetURLPrefix = (projectUuid, connectionId) => {
-  const assetURLPrefix = `${server}${siteRoot}file/project/${projectUuid}/connections/${connectionId}/path/`;
+  const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connectionId}/path/`;
   return assetURLPrefix;
 };
 
