@@ -173,7 +173,7 @@ class NotificationsAllView(APIView):
             for project_uuid in active_projects.values_list('uuid', flat=True)
         ]
         project_notifications = ProjectNotification.objects.filter(
-            to_user=username, project_uuid__in=active_project_uuids
+            to_user=username, project_uuid__in=active_project_uuids, seen=False
         )
         notification_list = []
         for user_notification in user_notifications:
