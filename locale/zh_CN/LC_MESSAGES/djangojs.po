@@ -3035,7 +3035,7 @@ msgstr "标签"
 
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:109
 msgid "The ticket link has been copied"
-msgstr "ticket 链接已复制"
+msgstr "Ticket 链接已复制"
 
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:300
 msgid "Add a comment"
