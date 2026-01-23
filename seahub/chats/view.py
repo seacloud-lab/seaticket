@@ -49,7 +49,13 @@ class ChatSessionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
+            session_type = request.GET.get('type', 'mine')
+            
+            if session_type == 'team':
+                sessions = ChatSessions.objects.get_shared_sessions_by_project(project_uuid)
+            else:
+                sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, username)
+            
             sessions_data = [session.to_dict() for session in sessions]
 
             return Response({'sessions': sessions_data})
@@ -114,9 +120,11 @@ class ChatSessionView(APIView):
             error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        session_name = request.data.get('session_name', '')
-        if not session_name:
-            error_msg = 'session_name parameter is required.'
+        session_name = request.data.get('session_name')
+        is_shared = request.data.get('is_shared')
+
+        if session_name is None and is_shared is None:
+            error_msg = 'At least one of session_name or is_shared parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -137,10 +145,19 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            session.session_name = session_name
+            if session.username != username:
+                error_msg = 'Permission denied. Only the session owner can modify this session.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if session_name is not None:
+                session.session_name = session_name
+
+            if is_shared is not None:
+                session.is_shared = is_shared
+
             session.save()
 
-            return Response({'success': True})
+            return Response({'success': True, 'session': session.to_dict()})
 
         except Exception as e:
             logger.error(e)
@@ -290,6 +307,11 @@ class ChatView(APIView):
             if not session:
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            # permission check: current user must be the session owner or the session is shared
+            if session.username != username and not session.is_shared:
+                error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
         try:
             message_id = gen_message_id(session.session_uuid)

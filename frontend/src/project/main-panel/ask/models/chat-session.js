@@ -6,6 +6,7 @@ class ChatSession {
     this.name = object.session_name || '';
     this.created_at = object.created_at || '';
     this.updated_at = object.updated_at || '';
+    this.is_shared = object.is_shared || false;
 
     this.is_replying = object.is_replying || false;
     this.problem = object.problem || null;

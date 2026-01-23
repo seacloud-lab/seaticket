@@ -28,12 +28,18 @@ class ChatSessionsManager(models.Manager):
         except self.model.DoesNotExist:
             return None
 
+    def get_shared_sessions_by_project(self, project_uuid):
+        """Retrieve all shared chat sessions of the team"""
+        queryset = self.filter(project_uuid=project_uuid, is_shared=True)
+        return queryset.order_by('-updated_at')
+
 class ChatSessions(models.Model):
     id = models.BigAutoField(primary_key=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
     session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=255, db_index=True)
     session_name = models.CharField(max_length=255)
+    is_shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,6 +47,9 @@ class ChatSessions(models.Model):
 
     class Meta:
         db_table = 'chat_sessions'
+        indexes = [
+            models.Index(fields=['project_uuid', 'is_shared'], name='idx_project_uuid_is_shared')
+        ]
 
     def to_dict(self):
         return {
@@ -49,6 +58,7 @@ class ChatSessions(models.Model):
             'session_uuid': self.session_uuid,
             'username': self.username,
             'session_name': self.session_name,
+            'is_shared': self.is_shared,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

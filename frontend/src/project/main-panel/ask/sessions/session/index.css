@@ -13,6 +13,19 @@
   background-color: var(--bs-nav-active-bg);
 }
 
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 4px;
+}
+
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
   flex: 1;
   overflow: hidden;

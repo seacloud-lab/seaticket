@@ -4,17 +4,17 @@ import { Dropdown } from 'reactstrap';
 import { CustomizeDropdownMoreToggle, CustomizeNameDialog, CommonOperationConfirmationDialog,
   CustomizeDropdownMenu, CustomizeDropdownItem
 } from '@/components';
-import { gettext, PERMISSION_TYPES } from '@/constants';
+import { gettext, PERMISSION_TYPES, mediaUrl } from '@/constants';
 import { useAskPage, useSessions } from '../../hooks';
 
 import './index.css';
 
-const Session = ({ session, permission, isSelected }) => {
+const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isShowRenameDialog, setIsShowRenameDialog] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
 
-  const { modifySession, deleteSession } = useSessions();
+  const { modifySession, deleteSession, shareSession, unshareSession } = useSessions();
   const { togglePageSlugId } = useAskPage();
 
   const openRename = useCallback(() => {
@@ -39,7 +39,33 @@ const Session = ({ session, permission, isSelected }) => {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
+  const handleShare = useCallback(() => {
+    shareSession(session._id);
+  }, [shareSession, session._id]);
+
+  const handleUnshare = useCallback(() => {
+    unshareSession(session._id);
+  }, [unshareSession, session._id]);
+
   const { _id: sessionId } = session;
+
+  if (isTeamTab) {
+    return (
+      <div
+        className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected })}
+        onClick={() => togglePageSlugId(sessionId)}
+      >
+        <img src={`${mediaUrl}img/team.png`} alt="team" className="sea-qa-ai-ask-session-icon" />
+        <div className="sea-qa-ai-ask-session-name text-truncate">
+          {session.name}
+        </div>
+      </div>
+    );
+  }
+
+  // Mine tab - show icon based on is_shared status
+  const iconSrc = session.is_shared ? `${mediaUrl}img/team.png` : `${mediaUrl}img/personal.png`;
+  const iconAlt = session.is_shared ? 'team' : 'personal';
 
   return (
     <>
@@ -47,8 +73,11 @@ const Session = ({ session, permission, isSelected }) => {
         className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected || isOpen })}
         onClick={() => togglePageSlugId(sessionId)}
       >
-        <div className="sea-qa-ai-ask-session-name text-truncate">
-          {session.name}
+        <img src={iconSrc} alt={iconAlt} className="sea-qa-ai-ask-session-icon" />
+        <div className="sea-qa-ai-ask-session-content">
+          <div className="sea-qa-ai-ask-session-name text-truncate">
+            {session.name}
+          </div>
         </div>
         {permission === PERMISSION_TYPES.READ_WRITE && (
           <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
@@ -58,6 +87,17 @@ const Session = ({ session, permission, isSelected }) => {
                 <CustomizeDropdownItem.Icon symbol="rename" />
                 <CustomizeDropdownItem.Text>{gettext('Rename')}</CustomizeDropdownItem.Text>
               </CustomizeDropdownItem>
+              {session.is_shared ? (
+                <CustomizeDropdownItem onClick={handleUnshare}>
+                  <CustomizeDropdownItem.Icon symbol="share" />
+                  <CustomizeDropdownItem.Text>{gettext('Unshare within team')}</CustomizeDropdownItem.Text>
+                </CustomizeDropdownItem>
+              ) : (
+                <CustomizeDropdownItem onClick={handleShare}>
+                  <CustomizeDropdownItem.Icon symbol="share" />
+                  <CustomizeDropdownItem.Text>{gettext('Share within team')}</CustomizeDropdownItem.Text>
+                </CustomizeDropdownItem>
+              )}
               <CustomizeDropdownItem onClick={openDelete}>
                 <CustomizeDropdownItem.Icon symbol="delete" />
                 <CustomizeDropdownItem.Text>{gettext('Delete')}</CustomizeDropdownItem.Text>
