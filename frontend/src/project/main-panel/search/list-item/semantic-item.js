@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { getPreviewContent } from '@seafile/seafile-editor';
 
-const SemanticItem = ({ id, content = '', url = '', score = '', searchValue, settings }) => {
-  const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
+const SemanticItem = ({ id, content = '', url = '', searchValue, settings }) => {
 
   const openOriginalURL = useCallback(() => {
     if (!url) return;
@@ -27,9 +26,6 @@ const SemanticItem = ({ id, content = '', url = '', score = '', searchValue, set
       <div className="list-item-content">
         <div className="list-item-title">
           <span className="text-truncate list-item-title-content">{title || ''}</span>
-          {isShowScore && score && (
-            <span className="list-item-score ml-2">{score}</span>
-          )}
         </div>
         {content &&
           <div className="list-item-detail" dangerouslySetInnerHTML={{ __html: renderDetail() }}></div>
