@@ -247,6 +247,10 @@ def build_final_results(reranked_candidates, records_map, connection_objects, so
     for _, result in reranked_candidates:
         result_type = result.get('source_type', 'connection')
         pk = result.get('_id')
+        try:
+            pk = int(pk)
+        except ValueError:
+            pass
         ai_summary = result.get('ai_summary', '')
 
         if result_type == 'ticket_summary':
