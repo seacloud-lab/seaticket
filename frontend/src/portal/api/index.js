@@ -92,7 +92,7 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  listKBRecords(projectUuid, { view_id, start = 0, limit = 100 } = {}) {
+  listKBRecords(projectUuid, { view_id, start = 0, limit = 1000 } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/?view_id=' + encodeURIComponent(view_id) + '&start=' + start + '&limit=' + limit;
     return this.req.get(url);
   }

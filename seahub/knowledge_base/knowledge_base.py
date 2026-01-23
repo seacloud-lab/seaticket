@@ -122,7 +122,7 @@ class KnowledgeBasesAPIView(APIView):
     @require_org_context
     def get(self, request, project_uuid):
         start = request.GET.get('start', 0)
-        limit = request.GET.get('limit', 100)
+        limit = request.GET.get('limit', 1000)
         view_id = request.GET.get('view_id')
 
         try:
@@ -130,7 +130,7 @@ class KnowledgeBasesAPIView(APIView):
             limit = int(limit)
         except:
             start = 0
-            limit = 100
+            limit = 1000
 
         if start < 0:
             error_msg = 'start invalid'

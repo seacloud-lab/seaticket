@@ -319,13 +319,13 @@ class PortalKnowledgeBaseRecordsView(APIView):
 
         view_id = request.GET.get('view_id')
         start = request.GET.get('start', 0)
-        limit = request.GET.get('limit', 100)
+        limit = request.GET.get('limit', 1000)
         try:
             start = int(start)
             limit = int(limit)
         except Exception:
             start = 0
-            limit = 100
+            limit = 1000
         if not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
