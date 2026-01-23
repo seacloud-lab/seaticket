@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { IconButton, ProjectIcon, toaster } from '@/components';
+import { Dropdown } from 'reactstrap';
+import { CustomizeDropdownMoreToggle, ProjectIcon, toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import ProjectSettingPopover from '../../popover/project-setting-popover';
 import { DEFAULT_COLOR } from '@/constants/project-icon';
-import ProjectItemPopover from './project-item-popover';
+import ProjectItemDropdownMenu from './project-item-dropdown-menu';
 
 const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
@@ -40,7 +41,7 @@ class Project extends React.Component {
       bgColor: color,
       icon,
       isMouseEnter: false,
-      isMoreOperationPopoverShow: false,
+      isProjectDropdownShow: false,
     };
     this.dropDownRef = React.createRef();
   }
@@ -151,21 +152,21 @@ class Project extends React.Component {
     }
   };
 
-  toggleMoreOperation = (event) => {
+  toggleProjectDropdown = (event) => {
     event && event.stopPropagation();
-    this.setState({ isMoreOperationPopoverShow: !this.state.isMoreOperationPopoverShow });
+    this.setState({ isProjectDropdownShow: !this.state.isProjectDropdownShow });
   };
 
   render() {
     let { isOwner, isAdmin, project, className = '', style = {} } = this.props;
-    let { name: newName, bgColor, icon, active, isMoreOperationPopoverShow } = this.state;
+    let { name: newName, bgColor, icon, active, isProjectDropdownShow } = this.state;
     let { workspace_id, id } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
 
     const projectColor = project.color || DEFAULT_COLOR;
     const projectStyle = { ...style };
-    if (active || isMoreOperationPopoverShow) {
+    if (active || isProjectDropdownShow) {
       projectStyle.background = `${projectColor}0F`; // opacity 6%
       projectStyle.border = `1.5px solid ${projectColor}80`; // opacity 50%
     } else {
@@ -198,24 +199,28 @@ class Project extends React.Component {
           <div className="project-item-icon">
             <i className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} style={{ color: project.color || DEFAULT_COLOR }}></i>
           </div>
-          {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) && (
-            <IconButton
-              className={classnames('project-item-icon-more-toggle-btn', { 'active': isMoreOperationPopoverShow })}
-              icon="more"
-              onClick={this.toggleMoreOperation}
-              title={gettext('More operations')}
-              aria-label={gettext('More operations')}
-            />
-          )}
-          {this.state.isMoreOperationPopoverShow && (
-            <ProjectItemPopover
-              target={`project-item-${id}`}
-              project={project}
-              onToggle={this.toggleMoreOperation}
-              onProjectSettingsToggle={this.onProjectSettingsToggle}
-              onAPITokenToggle={this.props.onAPITokenToggle}
-              onDeleteProjectToggle={this.onDeleteProjectToggle}
-            />
+          {(active || isProjectDropdownShow) && (isOwner || isAdmin) && (
+            <Dropdown
+              isOpen={this.state.isProjectDropdownShow}
+              toggle={this.toggleProjectDropdown}
+              direction="right"
+            >
+              <CustomizeDropdownMoreToggle
+                isOpen={this.state.isProjectDropdownShow}
+                className={classnames('project-item-icon-more-toggle-btn', { 'active': isProjectDropdownShow })}
+                onClick={this.toggleProjectDropdown}
+              />
+              {this.state.isProjectDropdownShow && (
+                <ProjectItemDropdownMenu
+                  target={`project-item-${id}`}
+                  project={project}
+                  onToggle={this.toggleProjectDropdown}
+                  onProjectSettingsToggle={this.onProjectSettingsToggle}
+                  onAPITokenToggle={this.props.onAPITokenToggle}
+                  onDeleteProjectToggle={this.onDeleteProjectToggle}
+                />
+              )}
+            </Dropdown>
           )}
         </div>
         <div className="project-item-name" title={project.name}>

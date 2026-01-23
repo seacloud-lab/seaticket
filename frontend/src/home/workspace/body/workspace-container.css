@@ -149,7 +149,7 @@
   min-width: 148px;
   height: 160px;
   border-radius: 8px !important;
-  overflow: hidden;
+  /* overflow: hidden; */
   padding: 20px 20px 16px 20px;
   cursor: pointer;
   flex-direction: column;
