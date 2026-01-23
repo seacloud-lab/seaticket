@@ -53,6 +53,7 @@ export const MetadataProvider = forwardRef(({
     if (!storeRef.current?.data) return;
     if (isShowLoading) {
       setLoading(true);
+      setErrorMessage('');
     }
     storeRef.current.reload(Math.max(storeRef.current.data.rows.length, PER_LOAD_NUMBER)).then(() => {
       setMetadata(storeRef.current.data);
@@ -67,6 +68,7 @@ export const MetadataProvider = forwardRef(({
   const recalculateData = useCallback(() => {
     if (!storeRef.current?.data) return;
     setLoading(true);
+    setErrorMessage('');
     storeRef.current.recalculate().then(() => {
       setMetadata(storeRef.current.data);
       setLoading(false);
@@ -290,6 +292,7 @@ export const MetadataProvider = forwardRef(({
   useEffect(() => {
     let isCancelled = false;
     setLoading(true);
+    setErrorMessage('');
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
@@ -326,7 +329,10 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeLocalRowsChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, updateLocalRows);
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
-    const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
+    const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => {
+      setLoading(loading);
+      setErrorMessage('');
+    });
     const unsubscribeClearData = eventBus.subscribe(EVENT_BUS_TYPE.CLEAR_DATA, clearData);
 
     return () => {
