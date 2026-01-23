@@ -76,7 +76,7 @@ class ChatMessageThoughtProcessManager(models.Manager):
 
 class ChatMessageThoughtProcess(models.Model):
     id = models.BigAutoField(primary_key=True)
-    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
+    session_uuid = models.CharField(max_length=36, null=False)
     message_id = models.CharField(max_length=4, null=False)
     thought_process = models.TextField()
 

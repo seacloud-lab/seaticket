@@ -610,9 +610,8 @@ CREATE TABLE `chat_message_thought_process`  (
   `session_uuid` varchar(36) NULL,
   `message_id` varchar(4) NULL,
   `thought_process` longtext NULL,
-  PRIMARY KEY (`id` DESC),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_session_uuid_message_id`(`session_uuid`, `message_id`),
-  KEY `idx_session_uuid`(`session_uuid`)
 );
 
 CREATE TABLE `knowledge_base_views`  (

@@ -95,5 +95,5 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Deleted {total_sessions} sessions, "
             f"{total_messages + orphan_messages} messages, "
-            f"{total_message_thought_process + orphan_message_thought_process} tool calls."
+            f"{total_message_thought_process + orphan_message_thought_process} message thought processes."
         )
