@@ -8,7 +8,7 @@ import { CONNECTION_TYPES } from '../../constants';
 import { getResourceIconURL } from '@/project/utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { ResourceDetailsDialog } from '@/project/components';
 
 import './index.css';
@@ -95,9 +95,6 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                           <div className='issues-list-item-title'>
                             <div>
                               <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
-                              <span className='issues-list-item-score'>
-                                {getNumberDisplayString(issue.score || '', { format: 'number', enable_precision: true, precision: 2 })}
-                              </span>
                             </div>
                             <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
                               {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}
