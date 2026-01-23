@@ -32,11 +32,11 @@ class Command(BaseCommand):
             # delete chat sessions, messages, and tool calls
             while True:
                 cursor.execute("""
-                    DELETE FROM chat_messages 
-                    WHERE session_uuid IN (
-                        SELECT session_uuid 
-                        FROM chat_sessions 
-                        WHERE updated_at < %s
+                    DELETE FROM chat_messages
+                    WHERE EXISTS (
+                        SELECT 1 FROM chat_sessions
+                        WHERE session_uuid = chat_messages.session_uuid
+                        AND updated_at < %s
                     )
                     LIMIT %s
                 """, [cutoff_date, batch_size])
@@ -48,11 +48,11 @@ class Command(BaseCommand):
             
             while True:
                 cursor.execute("""
-                    DELETE FROM chat_message_thought_process 
-                    WHERE session_uuid IN (
-                        SELECT session_uuid 
-                        FROM chat_sessions 
-                        WHERE updated_at < %s
+                    DELETE FROM chat_message_thought_process
+                    WHERE EXISTS (
+                        SELECT 1 FROM chat_sessions
+                        WHERE session_uuid = chat_message_thought_process.session_uuid
+                        AND updated_at < %s
                     )
                     LIMIT %s
                 """, [cutoff_date, batch_size])
@@ -64,7 +64,7 @@ class Command(BaseCommand):
             
             while True:
                 cursor.execute("""
-                    DELETE FROM chat_sessions 
+                    DELETE FROM chat_sessions
                     WHERE updated_at < %s
                     LIMIT %s
                 """, [cutoff_date, batch_size])
@@ -72,21 +72,22 @@ class Command(BaseCommand):
                 if deleted == 0:
                     break
                 total_sessions += deleted
-                time.sleep(0.1)
-            
+                time.sleep(0.1)                
             # clean up orphaned messages and tool calls
             cursor.execute("""
-                DELETE FROM chat_messages 
-                WHERE session_uuid NOT IN (
-                    SELECT session_uuid FROM chat_sessions
+                DELETE FROM chat_messages
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM chat_sessions
+                    WHERE session_uuid = chat_messages.session_uuid
                 )
             """)
             orphan_messages = cursor.rowcount
-            
+
             cursor.execute("""
-                DELETE FROM chat_message_thought_process 
-                WHERE session_uuid NOT IN (
-                    SELECT session_uuid FROM chat_sessions
+                DELETE FROM chat_message_thought_process
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM chat_sessions
+                    WHERE session_uuid = chat_message_thought_process.session_uuid
                 )
             """)
             orphan_tool_calls = cursor.rowcount
