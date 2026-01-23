@@ -69,7 +69,6 @@ jobs:
             SEAQA_WEB_SECRET_KEY: "test-secret-key"
             JWT_PRIVATE_KEY: "qwertyuiop"
             LLM_MODELS: []
-            AI_PRICES: {}
           seaqa-web: {}
           EOF
 

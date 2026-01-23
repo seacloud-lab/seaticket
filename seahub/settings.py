@@ -650,24 +650,18 @@ SEAQA_IO_LOCAL_SERVER_URL = 'http://127.0.0.1:6002'
 AI_CHAT_TICKET_MAX_COMMENTS_NUM = 20
 AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
-AI_PRICES = {}
 LLM_MODELS = []
 
 TEMP_EXPORT_VIEW_DIR = '/tmp/seaqa-io/export-view-to-excel/'
 
 
-def validate_llm_models_and_prices(models, ai_prices):
-    if not models:
-        return [], {}
-    if not isinstance(models, list):
-        return [], {}
-    if not isinstance(ai_prices, dict):
-        ai_prices = {}
+def validate_llm_models(models):
+    if not models or not isinstance(models, list):
+        return []
     validated_models = []
-    validated_ai_prices = {}
 
     for model in models:
-        if not isinstance(model, dict):
+        if not isinstance(model, dict) or model.get('disable', False):
             continue
         if model.get('type') in ('proxy', 'other', 'hosted_vllm'):
             required_fields = ('model', 'url')
@@ -677,11 +671,8 @@ def validate_llm_models_and_prices(models, ai_prices):
             continue
         model['label'] = model.get('label', model['model'])
         validated_models.append(model)
-        if model['model'] in ai_prices:
-            validated_ai_prices[model['model']] = ai_prices[model['model']]
 
-    return validated_models, validated_ai_prices
-
+    return validated_models
 
 #####################
 # External settings #
@@ -731,7 +722,7 @@ yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'sea
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
 # Available AI Models for user selection
-LLM_MODELS, AI_PRICES = validate_llm_models_and_prices(configs.get('LLM_MODELS', LLM_MODELS), configs.get('AI_PRICES', AI_PRICES))
+LLM_MODELS = validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS))
 
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
