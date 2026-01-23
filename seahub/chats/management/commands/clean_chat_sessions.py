@@ -25,7 +25,7 @@ class Command(BaseCommand):
         cutoff_date = timezone.now() - timedelta(days=days)
         batch_size = 1000        
         total_messages = 0
-        total_tool_calls = 0
+        total_message_thought_process = 0
         total_sessions = 0
 
         with connection.cursor() as cursor:
@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 deleted = cursor.rowcount
                 if deleted == 0:
                     break
-                total_tool_calls += deleted
+                total_message_thought_process += deleted
                 time.sleep(0.1)
             
             while True:
@@ -90,10 +90,10 @@ class Command(BaseCommand):
                     WHERE session_uuid = chat_message_thought_process.session_uuid
                 )
             """)
-            orphan_tool_calls = cursor.rowcount
+            orphan_message_thought_process = cursor.rowcount
 
         self.stdout.write(
             f"Deleted {total_sessions} sessions, "
             f"{total_messages + orphan_messages} messages, "
-            f"{total_tool_calls + orphan_tool_calls} tool calls."
+            f"{total_message_thought_process + orphan_message_thought_process} tool calls."
         )
