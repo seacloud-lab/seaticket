@@ -4,6 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import userAPI from '@/api/user-api';
+import projectAPI from '@/project/api/project-api';
 import LeftBar from './left-bar';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -12,11 +13,12 @@ import { PORTAL_PAGE } from './constants';
 
 import './index.css';
 
-const { projectUuid, isEditMode } = window.app.pageOptions;
+const { projectUuid, isEditMode, showKBInPortal } = window.app.pageOptions;
 
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(PORTAL_PAGE.SUBMIT_TICKET);
+  const [enableKB, setEnableKB] = useState(showKBInPortal === true);
 
   const onPageChange = useCallback((page) => {
     setActivePage(page);
@@ -31,8 +33,8 @@ const Portal = () => {
   }, []);
 
   const getCollaborators = useCallback(() => {
-    return Promise.resolve({ data: { user_list: [] } });
-  }, []);
+    return projectAPI.listProjectRelatedUsers(projectUuid);
+  }, [projectUuid]);
 
   useEffect(() => {
     const { pathname } = location;
@@ -47,6 +49,11 @@ const Portal = () => {
     }
     setLoading(false);
   }, []);
+  useEffect(() => {
+    const handler = (e) => setEnableKB(!!(e.detail && e.detail.enabled));
+    window.addEventListener('portal:kb-visibility', handler);
+    return () => window.removeEventListener('portal:kb-visibility', handler);
+  }, []);
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -57,7 +64,7 @@ const Portal = () => {
           ) : (
             <>
               {isEditMode && <LeftBar />}
-              <SidePanel activePage={activePage} onPageChange={onPageChange} />
+              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
               <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
             </>
           )}

@@ -33,6 +33,18 @@ class PortalAPI {
     }
   }
 
+  _sendPutRequest(url, form, options = {}) {
+    const { onUploadProgress } = options;
+    if (form.getHeaders) {
+      return this.req.put(url, form, {
+        headers: form.getHeaders(),
+        onUploadProgress,
+      });
+    } else {
+      return this.req.put(url, form, { onUploadProgress });
+    }
+  }
+
   listTicketTypes(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/types/';
     return this.req.get(url);
@@ -73,6 +85,24 @@ class PortalAPI {
     const formData = new FormData();
     formData.append('file', file);
     return this._sendPostRequest(url, formData, { onUploadProgress });
+  }
+
+  listKBViews(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-base-views/';
+    return this.req.get(url);
+  }
+
+  listKBRecords(projectUuid, { view_id, start = 0, limit = 1000 } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/?view_id=' + encodeURIComponent(view_id) + '&start=' + start + '&limit=' + limit;
+    return this.req.get(url);
+  }
+
+  updateProjectSettings(workspaceId, projectName, settings) {
+    const url = this.server + '/api/v1/workspace/' + workspaceId + '/project/';
+    const form = new FormData();
+    form.append('name', projectName);
+    form.append('settings', JSON.stringify(settings));
+    return this._sendPutRequest(url, form);
   }
 }
 

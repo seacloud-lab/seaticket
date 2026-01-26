@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import json
 
 from django.shortcuts import render
 from django.utils.translation import gettext as _
@@ -26,12 +27,22 @@ def portal_view(request, project_uuid, page=None):
     if not check_same_org_permission(request.user, workspace):
         return render_error(request, _('Permission denied'))
 
+    project_settings = {}
+    if project.settings:
+        try:
+            project_settings = json.loads(project.settings)
+        except Exception:
+            project_settings = {}
+    show_kb_in_portal = bool(project_settings.get('portal_show_knowledge_base', False))
+
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
         'project_uuid': project_uuid,
         'media_url': MEDIA_URL,
         'is_edit_mode': False,
+        'workspace_id': project.workspace_id,
+        'show_kb_in_portal': show_kb_in_portal,
     }
     return render(request, 'portal_view_react.html', return_dict)
 
@@ -48,11 +59,21 @@ def portal_edit_view(request, project_uuid, page=None):
     if not check_project_admin_permission(username, workspace.owner):
         return render_error(request, _('Permission denied'))
 
+    project_settings = {}
+    if project.settings:
+        try:
+            project_settings = json.loads(project.settings)
+        except Exception:
+            project_settings = {}
+    show_kb_in_portal = bool(project_settings.get('portal_show_knowledge_base', False))
+
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
         'project_uuid': project_uuid,
         'media_url': MEDIA_URL,
         'is_edit_mode': True,
+        'workspace_id': project.workspace_id,
+        'show_kb_in_portal': show_kb_in_portal,
     }
     return render(request, 'portal_view_react.html', return_dict)
