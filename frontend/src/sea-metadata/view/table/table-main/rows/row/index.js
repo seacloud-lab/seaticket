@@ -203,6 +203,7 @@ class Row extends React.Component {
       if (!lastFrozenColumnKey) {
         style.marginLeft = '0px';
       }
+      style.borderBottomLeftRadius = '5px';
     }
     return style;
   };
