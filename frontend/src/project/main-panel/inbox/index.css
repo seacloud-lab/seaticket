@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   height: 48px;
   line-height: 48px;
   width: calc(100% - 32px);
@@ -23,7 +23,7 @@
 .sea-qa-inbox-header .heading {
   margin: 0;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .sea-qa-inbox-actions {
@@ -31,6 +31,13 @@
   gap: 8px;
   align-items: center;
   cursor: pointer;
+  height: 32px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.sea-qa-inbox-actions:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-qa-inbox-actions .sea-qa-icon-svg {

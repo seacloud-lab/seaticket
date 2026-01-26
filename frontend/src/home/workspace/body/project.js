@@ -9,7 +9,6 @@ import ProjectSettingPopover from '../../popover/project-setting-popover';
 import { DEFAULT_COLOR } from '@/constants/project-icon';
 import ProjectItemDropdownMenu from './project-item-dropdown-menu';
 
-const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
 
 const propTypes = {

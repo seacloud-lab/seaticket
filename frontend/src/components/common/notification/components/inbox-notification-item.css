@@ -1,5 +1,5 @@
 .inbox-notification-item {
-  padding: 16px 8px 20px 16px;
+  padding: 16px 8px 16px 16px;
   position: relative;
   cursor: pointer;
 }
@@ -26,7 +26,6 @@
 .inbox-notification-item .notification-header-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   flex: 1;
   margin-left: 4px;
   margin-right: 20px;
@@ -35,7 +34,9 @@
 
 .inbox-notification-item .notification-user-detail {
   display: flex;
-  width: 50%;
+  flex: 1;
+  overflow: hidden;
+  padding-right: 24px;
 }
 
 .inbox-notification-item .notification-user-detail .notification-user-avatar {
@@ -49,11 +50,15 @@
 }
 
 .inbox-notification-item .notification-user-detail .notification-user-name {
-  font-weight: 600;
+  font-weight: 500;
   margin-left: 12px;
   font-size: 16px;
-  line-height: 24px;
-  height: 24px;
+  line-height: 20px;
+  height: 20px;
+}
+
+.inbox-notification-item .notification-user-detail .notification-user-name.non-bold {
+  font-weight: initial;
 }
 
 .inbox-notification-item .notification-header-info .notification-time {
@@ -70,6 +75,7 @@
   width: 8px;
   height: 8px;
   right: 8px;
+  top: 22px;
   border-radius: 50%;
   background-color: #FC6440;
   position: absolute;
@@ -77,11 +83,22 @@
 
 .inbox-notification-item .notification-content-wrapper {
   margin-left: 40px;
-  margin-top: 6px;
+  margin-top: 8px;
+  line-height: 22px;
+}
+
+.inbox-notification-item .notification-content-wrapper.notification-content-title {
+  width: calc(100% - 56px);
+  overflow-wrap: break-word;
 }
 
 .inbox-notification-item .notification-content-wrapper .inbox-text-orange {
   color: #ed7109;
+}
+
+.inbox-notification-item .notification-comment-info-wrapper {
+  margin-left: 40px;
+  line-height: 22px;
 }
 
 .inbox-notification-item .notification-content-quotes {

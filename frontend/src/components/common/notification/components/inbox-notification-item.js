@@ -82,7 +82,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     const noticeType = noticeItem.msg_type;
     if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED) {
       return (
-        <div className="notification-content-wrapper">
+        <div className="notification-content-wrapper notification-content-title">
           {gettext('You are added as a assignee for ticket named') + ' '}
           <span class="inbox-text-orange">{title}</span>
           {gettext('.')}
@@ -92,12 +92,12 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     if (noticeType === MSG_TYPE_TICKET_COMMENTED) {
       return (
         <>
-          <div className="notification-content-wrapper">
+          <div className="notification-content-wrapper notification-content-title">
             {gettext('Added a new comment for ticket named') + ' '}
             <span class='inbox-text-orange'>{title}</span>
             {gettext('.')}
           </div>
-          <div className="notification-content-wrapper d-flex">
+          <div className="notification-comment-info-wrapper d-flex">
             <span className="notification-content-quotes">"</span>
             <div className="notification-comment-content">
               {commentContent}
@@ -108,7 +108,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       );
     }
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
-      return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
+      return <div className="notification-content-wrapper notification-content-title" dangerouslySetInnerHTML={{ __html: title }}/>;
     }
     if (noticeType === MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED) {
       return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
@@ -123,13 +123,13 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       const iconColor = noticeItem.project_color || DEFAULT_COLOR;
       return (
         <div className="inbox-notification-item-header">
-          <div className="notification-header-info">
-            <div className="notification-user-detail">
+          <div className="notification-header-info align-items-center mr-0">
+            <div className="notification-user-detail align-items-center">
               <i className={classnames('notification-user-avatar project-icon', iconClass)} style={{ color: iconColor }} />
-              <span className="text-truncate notification-user-name" title={noticeItem.project_name}>{noticeItem.project_name}</span>
+              <span className="text-truncate notification-user-name non-bold" title={noticeItem.project_name}>{noticeItem.project_name}</span>
             </div>
+            <InboxCount unseen={noticeItem.unseen_count} />
           </div>
-          <InboxCount unseen={noticeItem.unseen_count} />
         </div>
       );
     }
