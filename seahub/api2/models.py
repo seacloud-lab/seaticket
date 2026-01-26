@@ -8,7 +8,6 @@ import operator
 from functools import cmp_to_key
 
 from django.db import models
-from django.db.models.manager import EmptyManager
 from django.utils import timezone
 
 from seahub.base.fields import LowerCaseCharField
