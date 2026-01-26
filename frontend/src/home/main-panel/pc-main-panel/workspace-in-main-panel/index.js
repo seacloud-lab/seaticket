@@ -56,7 +56,7 @@ class WorkspaceInMainPanel extends React.Component {
           <div className="cur-view-container d-flex flex-1 flex-column">
             <div className={`${isDesktop ? '' : 'p-0'} cur-view-content`}>
               {isOrgContext &&
-                <div className={`project-org-title ml-0 justify-content-start ${isDesktop ? '' : ' project-mobile-org-title'}`}>
+                <div className={`project-org-title mx-0 d-flex justify-content-start align-items-center ${isDesktop ? '' : ' project-mobile-org-title'}`}>
                   <h1 title={orgName} aria-label={orgName} className="project-org-name">{orgName}</h1>
                 </div>
               }
