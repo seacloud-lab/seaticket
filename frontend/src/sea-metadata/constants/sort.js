@@ -13,6 +13,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.SINGLE_SELECT,
   CellType.TYPE,
   CellType.MULTIPLE_SELECT,
+  CellType.TAGS,
   CellType.COLLABORATOR,
   CellType.CHECKBOX,
   CellType.NUMBER,

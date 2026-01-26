@@ -53,6 +53,15 @@ class Store {
     this.startIndex = 0;
   };
 
+  async recalculate() {
+    if (!this.mounted) return;
+    DataProcessor.run(this.data, {
+      collaborators: this.collaborators,
+      typesData: this.typesData,
+      tagsData: this.tagsData
+    });
+  }
+
   async loadMetadata(view, limit, isForceReload = false) {
     if (!view) {
       throw Error('View_not_exist');
@@ -71,10 +80,7 @@ class Store {
       if (isFunction(this.dataDidMount)) {
         this.dataDidMount(this.data);
       }
-      DataProcessor.run(this.data, {
-        collaborators: this.collaborators,
-        typesData: this.typesData,
-      });
+      this.recalculate();
     });
   }
 
@@ -114,7 +120,7 @@ class Store {
     this.data.rowsCount = this.data.row_ids.length;
     this.data.linked_records = { ...this.data.linked_records, ...linked_records };
     this.startIndex = this.startIndex + loadedCount;
-    DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
+    this.recalculate();
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
     context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
   }
@@ -128,15 +134,7 @@ class Store {
     const rowIndex = this.data.rows.findIndex(row => row._id === newRowId);
     this.data.id_row_map[newRowId] = newRow;
     this.data.rows[rowIndex] = newRow;
-    DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
-  }
-
-  async recalculate() {
-    if (!this.mounted) return;
-    DataProcessor.run(this.data, {
-      collaborators: this.collaborators,
-      typesData: this.typesData,
-    });
+    this.recalculate();
   }
 
   clearData() {
@@ -148,7 +146,7 @@ class Store {
     this.data.hasMore = false;
     this.data.rowsCount = this.data.row_ids.length;
     this.startIndex = 0;
-    DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
+    this.recalculate();
     this.data = deepCopy(this.data);
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
     context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
