@@ -102,7 +102,7 @@
 .cur-view-path {
   position: relative; /* for the ':after' */
   padding: 8px 16px;
-  max-height: 56px;
+  max-height: 48px;
   background: rgb(247 247 245 / 50%);
   display: flex;
   align-items: center;

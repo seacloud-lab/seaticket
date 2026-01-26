@@ -113,9 +113,9 @@
 
 .org-admin .main-panel .heading,
 .sys-admin .main-panel .heading {
-  height: 56px;
-  line-height: 56px;
-  max-height: 56px;
+  height: 48px;
+  line-height: 48px;
+  max-height: 48px;
   margin: 0 16px;
   font-size: 18px;
   font-weight: 500;
@@ -147,6 +147,11 @@
 .org-admin .main-panel .cur-view-path:after,
 .sys-admin .main-panel .cur-view-path:after {
   display: none;
+}
+
+.org-admin .main-panel .cur-view-content table tbody tr,
+.sys-admin .main-panel .cur-view-content table tbody tr {
+  height: 42px;
 }
 
 .org-admin .text-secondary,
