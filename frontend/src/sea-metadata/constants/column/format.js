@@ -67,7 +67,6 @@ const NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES = {
 const MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP = {
   [CellType.COLLABORATOR]: true,
   [CellType.MULTIPLE_SELECT]: true,
-  [CellType.TAGS]: true,
 };
 const SINGLE_CELL_VALUE_COLUMN_TYPE_MAP = {
   [CellType.TEXT]: true,

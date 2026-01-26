@@ -19,14 +19,14 @@ import context from '../context';
 // get rendered rows depend on filters/sorts etc.
 class DataProcessor {
 
-  static getSortedRows(table, rows, sorts, { collaborators, typesData, tagsData }) {
+  static getSortedRows(table, rows, sorts, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    return sortTableRows(table, tableRows, sorts, { collaborators, typesData, tagsData });
+    return sortTableRows(table, tableRows, sorts, { collaborators, typesData });
   }
 
-  static getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData }) {
+  static getGroupedRows(table, rows, groupbys, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    const groups = getGroupRows(table, tableRows, groupbys, { collaborators, typesData, tagsData });
+    const groups = getGroupRows(table, tableRows, groupbys, { collaborators, typesData });
     return groups;
   }
 
@@ -76,7 +76,7 @@ class DataProcessor {
     });
   };
 
-  static run(table, { collaborators, username, userId, typesData, tagsData }) {
+  static run(table, { collaborators, username, userId, typesData }) {
     let rows = table.rows;
     const { filters, filter_conjunction, basic_filters, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
@@ -93,7 +93,7 @@ class DataProcessor {
     }
 
     if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns)) {
-      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
     }
 
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
@@ -102,13 +102,13 @@ class DataProcessor {
       return;
     }
     let renderedRows = rows;
-    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators, typesData, tagsData }) : [];
+    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators, typesData }) : [];
     const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
     table.view.rows = row_ids;
     table.view.groups = groups;
   }
 
-  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData, tagsData }) {
+  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
@@ -136,13 +136,13 @@ class DataProcessor {
       return;
     }
     let renderedRows = rows;
-    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators, typesData, tagsData }) : [];
+    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators }) : [];
     const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
     table.view.rows = row_ids;
     table.view.groups = groups;
   }
 
-  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
+  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
@@ -173,7 +173,7 @@ class DataProcessor {
     }
     const isRegroup = _isGroupView && this.hasRelatedGroupby(groupbys, relatedColumnKeyMap);
     if (isRegroup) {
-      table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
+      table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators });
     }
   }
 
@@ -368,7 +368,7 @@ class DataProcessor {
           table.view.groups = [];
           break;
         }
-        table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
+        table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators });
         break;
       }
       case OPERATION_TYPE.MODIFY_COLUMN_DATA:
@@ -424,7 +424,7 @@ class DataProcessor {
           table.view.groups = [];
           break;
         }
-        table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
+        table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators });
         break;
       }
       default: {

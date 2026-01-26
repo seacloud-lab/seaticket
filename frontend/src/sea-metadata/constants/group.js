@@ -26,7 +26,6 @@ const SUPPORT_GROUP_COLUMN_TYPES = [
   CellType.SINGLE_SELECT,
   CellType.TYPE,
   CellType.MULTIPLE_SELECT,
-  CellType.TAGS,
   CellType.COLLABORATOR,
   CellType.CREATOR,
   CellType.LAST_MODIFIER,

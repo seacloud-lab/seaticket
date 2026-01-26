@@ -9,15 +9,6 @@
   border-radius: 10px;
   margin-right: 6px;
   padding: 0 6px 0 2px;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.sea-metadata-tag .sea-metadata-tag-text {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sea-metadata-tag-color {
