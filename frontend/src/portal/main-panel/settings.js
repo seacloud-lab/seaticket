@@ -100,14 +100,14 @@ const Settings = () => {
           </TabPane>
           <TabPane tabId={SETTING_TABS.DISPLAY}>
             <div className="portal-settings-content">
-              <label className="portal-settings-label">{gettext('Display knowledge base')}</label>
-              <div className="d-flex align-items-center">
+              <div className="portal-settings-label">
                 <Switch
                   checked={showKB}
                   disabled={isSaving}
                   onChange={onToggleKB}
-                  placeholder={showKB ? gettext('On') : gettext('Off')}
                   textPosition="right"
+                  placeholder={gettext('Show knowledge base')}
+                  className="portal-settings-switch"
                 />
               </div>
             </div>
