@@ -5,6 +5,7 @@ import time
 import logging
 from copy import deepcopy
 from django.db import models
+from django.db import connection
 from django.utils.safestring import mark_safe
 
 from seahub.profile.settings import ROLE_CACHE_PREFIX
@@ -436,6 +437,16 @@ class OrganizationManager(models.Manager):
         INNER JOIN email_user c ON b.email=c.email WHERE a.url_prefix=%s"""
         users = Organization.objects.raw(sql, (url_prefix, ))
         return users
+
+    def count_active_members_by_org_id(self, org_id):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM org_user ou
+                JOIN email_user eu ON ou.email = eu.email
+                WHERE ou.org_id = %s AND eu.is_active = 1
+            """, [org_id])
+            return cursor.fetchone()[0]
 
     def remove_org(self, org_id):
         self.filter(org_id=org_id).delete()

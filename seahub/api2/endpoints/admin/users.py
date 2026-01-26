@@ -2,6 +2,7 @@
 import logging
 import re
 from django.db.models import Q
+from django.db import connection
 from types import FunctionType
 
 from rest_framework import status
@@ -540,14 +541,11 @@ class AdminUser(APIView):
                 is_active_bool = None
             if is_active_bool and (not user_obj.is_active) and ORG_MEMBER_QUOTA_ENABLED:
                 try:
-                    orgs = Organization.objects.get_orgs_by_user(email)
                     if orgs:
                         from seahub.organizations.models import OrgMemberQuota
                         org_id_check = orgs[0].org_id
-                        url_prefix = orgs[0].url_prefix
                         org_members_quota = OrgMemberQuota.objects.get_quota(org_id_check)
-                        org_members = Organization.objects.get_org_users_by_url_prefix(url_prefix)
-                        org_active_members = len([m for m in org_members if m.is_active])
+                        org_active_members = Organization.objects.count_active_members_by_org_id(org_id_check)
                         if org_members_quota is not None and org_active_members >= org_members_quota:
                             error_msg = _('The number of users exceeds the limit.')
                             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
