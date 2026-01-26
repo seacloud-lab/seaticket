@@ -211,7 +211,7 @@ const Search = ({ title, settings }) => {
           <>
             {!value && (
               <div className="sea-qa-project-search-value-empty-tip">
-                <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
+                <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Start your search above to find results')} />
               </div>
             )}
             {value && results.length === 0 && (
