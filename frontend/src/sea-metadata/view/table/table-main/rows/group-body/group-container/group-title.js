@@ -2,15 +2,17 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
-import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
+import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption, getTagsOptions } from '@/sea-metadata/utils/column';
 import { CellType, DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
-import { useTypesData } from '@/sea-metadata/hooks';
+import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
+import Tag from '@/sea-metadata/components/tag';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   const emptyTip = useMemo(() => `(${gettext('Empty')})`, []);
   const deletedOptionTip = useMemo(() => gettext('Deleted option'), []);
 
   const { typesData } = useTypesData();
+  const { tagsData } = useTagsData();
 
   const renderGroupCellVal = useCallback(() => {
     const { type } = column;
@@ -65,6 +67,23 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
               const style = { backgroundColor: option.color };
               return (<div className="sea-metadata-multiple-select-option" style={style} key={option.id} title={option.name}>{option.name}</div>);
             })}
+          </>
+        );
+      }
+      case CellType.TAGS: {
+        const options = getTagsOptions(tagsData);
+        if (options.length === 0 || !Array.isArray(originalCellValue) || originalCellValue.length === 0) return emptyTip;
+        const selectedOptions = options.filter((option) => originalCellValue.includes(option.id) || originalCellValue.includes(option.name));
+        const invalidOptionIds = originalCellValue.filter(optionId => optionId && !options.find(o => o.id === optionId || o.name === optionId));
+        const invalidOptions = invalidOptionIds.map(optionId => ({
+          id: optionId,
+          name: deletedOptionTip,
+          color: DELETED_OPTION_BACKGROUND_COLOR,
+        }));
+        return (
+          <>
+            {selectedOptions.map(tag => (<Tag tag={tag} key={tag.id} />))}
+            {invalidOptions.map(tag => (<Tag tag={tag} key={tag.id} />))}
           </>
         );
       }

@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
+import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import context from '@/sea-metadata/context';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
@@ -6,17 +6,22 @@ import { gettext } from '@/constants';
 import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
 import TagOption from '@/components/tag-option';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import { getRowById } from '@/sea-metadata/utils/row';
+import Tag from '@/sea-metadata/components/tag';
 
 import './index.css';
 
 const TagsEditor = forwardRef(({
   height,
   column,
-  value,
+  value: propsValue,
   editorPosition = { left: 0, top: 0 },
   onCommit,
   onPressTab,
 }, ref) => {
+  const [value, setValue] = useState(propsValue || []);
+
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
 
@@ -34,7 +39,7 @@ const TagsEditor = forwardRef(({
   }, [tagsData]);
 
   const style = useMemo(() => {
-    return { width: 400, top: height - 2 };
+    return { width: 400, top: -1, right: 0 };
   }, [column, height]);
 
   const handleCreateTag = useCallback((name) => {
@@ -59,9 +64,16 @@ const TagsEditor = forwardRef(({
     });
   }, [createTag]);
 
-  const onSubmit = useCallback(() => {
-    setTimeout(() => onCommit && onCommit(false), 1);
-  }, [onCommit]);
+  const handleChange = useCallback((newValue) => {
+    if (!isCellValueChanged(newValue, value)) return;
+    setValue(newValue);
+  }, [value]);
+
+  const handleDeselect = useCallback((tagId) => {
+    const newValue = value.filter(v => v !== tagId);
+    optionEditorContainerRef.current?.setValue(newValue);
+    setValue(newValue);
+  }, [value]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -71,8 +83,7 @@ const TagsEditor = forwardRef(({
         editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
       }
       if (right > window.innerWidth) {
-        editorRef.current.style.left = 'unset';
-        editorRef.current.style.right = 0;
+        editorRef.current.style.right = right - window.innerWidth - 10 + 'px';
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,13 +92,12 @@ const TagsEditor = forwardRef(({
   useImperativeHandle(ref, () => ({
     getValue: () => {
       const { key } = column;
-      const value = optionEditorContainerRef.current.getValue();
       return { [key]: value };
     },
     onBlur: () => {
       onCommit && onCommit(true);
     },
-  }), [column, onCommit]);
+  }), [value, column, onCommit]);
 
   return (
     <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover" style={style} ref={editorRef}>
@@ -99,10 +109,19 @@ const TagsEditor = forwardRef(({
         emptyTip={gettext('No tags available')}
         value={value}
         options={options}
-        onChange={onSubmit}
+        onChange={handleChange}
         onCreate={context.canModify() ? handleCreateTag : null}
         onPressTab={onPressTab}
-      />
+      >
+        {Array.isArray(value) && value.map(v => {
+          const tag = getRowById(tagsData, v);
+          return (
+            <Tag tag={tag} key={v} className="mr-0">
+              <Tag.RemoveBtn callback={() => handleDeselect(v)} />
+            </Tag>
+          );
+        })}
+      </OptionEditorContainer>
     </div>
   );
 });
