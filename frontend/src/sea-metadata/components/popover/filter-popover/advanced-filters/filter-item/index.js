@@ -312,10 +312,16 @@ class FilterItem extends React.Component {
     }
 
     let labelArray = [];
-    if (Array.isArray(options) && Array.isArray(filterTerm)) {
-      filterTerm.forEach((item) => {
+    let sanitizedFilterTerm = Array.isArray(filterTerm) ? filterTerm : [];
+    if (Array.isArray(options) && sanitizedFilterTerm.length > 0) {
+      const validIds = new Set(options.map(option => option.id));
+      const filteredTerm = sanitizedFilterTerm.filter(item => validIds.has(item));
+      if (filteredTerm.length !== sanitizedFilterTerm.length) {
+        sanitizedFilterTerm = filteredTerm;
+        this.onFilterTermChanged(filteredTerm);
+      }
+      sanitizedFilterTerm.forEach((item) => {
         let inOption = options.find(option => option.id === item);
-
         let option = inOption || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_OPTION_TIPS };
         labelArray.push(
           <SelectOption option={option} key={'option_' + item} className="select-option-name multiple-select-option" />
@@ -325,7 +331,7 @@ class FilterItem extends React.Component {
     const selectedOptionNames = labelArray.length > 0 ? { label: (<Fragment>{labelArray}</Fragment>) } : {};
 
     const dataOptions = options.map(option => {
-      return FilterItemUtils.generatorMultipleSelectOption(option, filterTerm);
+      return FilterItemUtils.generatorMultipleSelectOption(option, sanitizedFilterTerm);
     });
     return (
       <CustomizeSelect

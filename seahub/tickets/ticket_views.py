@@ -15,8 +15,6 @@ from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission
-from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import repair_ticket_view_filters
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -261,26 +259,6 @@ class TicketViewView(APIView):
             logger.exception(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not view:
-            return api_error(status.HTTP_404_NOT_FOUND, 'The view does not exist.')
-        
-        try:
-            seadb_api = SeaDBAPI(username)
-        except Exception as e:
-            logger.warning('Failed to create SeaDBAPI for view repair: %s', e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-        
-        view, changed = repair_ticket_view_filters(seadb_api, project_uuid, view)
-        if changed:
-            logger.info('Repair invalid filter options for project %s view %s', project_uuid, view.get('_id'))
-            try:
-                TicketViews.objects.update_view(project_uuid, view.get('_id'), {
-                    'basic_filters': view.get('basic_filters', []),
-                    'filters': view.get('filters', [])
-                })
-            except Exception as e:
-                logger.warning('Failed to persist repaired filters for view %s: %s', view.get('_id'), e)
 
         return Response({'view': view})
 

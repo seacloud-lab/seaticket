@@ -8,7 +8,6 @@ from seahub.seadb_models.models import TicketActivitiesTable
 from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
-from seahub.seadb_models.utils import get_tickets_columns
 from seahub.utils import mq, uuid_str_to_32_chars
 from seahub.seadb_models.models import DiscourseTopicsTable
 from seahub.seadb_models.utils import list_connection_record_titles
@@ -128,44 +127,6 @@ def gen_unique_id(id_set, length=4):
         if _id not in id_set:
             return _id
         _id = generator_base64_code(length)
-
-def repair_ticket_view_filters(seadb_api, project_uuid, view):
-    """Remove invalid select options from a ticket view's filters."""
-    try:
-        columns = get_tickets_columns(seadb_api, project_uuid)
-    except Exception as e:
-        logger.warning('Failed to fetch ticket columns for view repair: %s', e)
-        return view, False
-
-    column_map = {column.get('key'): column for column in (columns or []) if column.get('key')}
-    if not column_map:
-        return view, False
-
-    changed = False
-    for filter_list_name in ['basic_filters', 'filters']:
-        filters = view.get(filter_list_name, []) or []
-        for filter_item in filters:
-            filter_term = filter_item.get('filter_term')
-            if not filter_term:
-                continue
-            column_key = filter_item.get('column_key')
-            column = column_map.get(column_key)
-            if not column:
-                continue
-            options = column.get('data', {}).get('options') or []
-            if not options:
-                continue
-            valid_ids = {opt.get('id') for opt in options if opt.get('id')}
-            filter_term = filter_item.get('filter_term')
-            if not isinstance(filter_term, list):
-                continue
-            new_terms = [term for term in filter_term if term in valid_ids]
-            if len(new_terms) != len(filter_term):
-                filter_item['filter_term'] = new_terms
-                changed = True
-        view[filter_list_name] = filters
-
-    return view, changed
 
 
 def check_ticket_creation_interval(seadb_api, project_uuid, username, deleted=False):

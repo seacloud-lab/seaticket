@@ -3,6 +3,8 @@ import logging
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+from django.db.models import Q
+
 from seahub.project.constants import FilterPredicateTypes, FilterTermModifier
 from seahub.seadb_models.models import PropertyTypes, FormulaResultType, DurationFormatsType
 
@@ -252,10 +254,11 @@ class SingleSelectOperator(Operator):
         super(SingleSelectOperator, self).__init__(column, filter_item)
 
     def _get_option_name_by_key(self, key):
-        options = self.column.get('data', {}).get('options', [])
+        options = self.column.get('data', {}).get('options') or []
         for op in options:
             if op.get('id') == key:
                 return op.get('name')
+        logger.warning('single select option not found: %s' % key)
         return ''
 
     def op_is(self):
@@ -289,6 +292,7 @@ class SingleSelectOperator(Operator):
         if not isinstance(filter_term, list):
             filter_term = [filter_term, ]
         filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        filter_term = [name for name in filter_term if name]
         option_names = ["'%s'" % (op_name) for op_name in filter_term]
         if not option_names:
             return ""
@@ -304,6 +308,7 @@ class SingleSelectOperator(Operator):
         if not isinstance(filter_term, list):
             filter_term = [filter_term, ]
         filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        filter_term = [name for name in filter_term if name]
         option_names = ["'%s'" % (op_name) for op_name in filter_term]
         if not option_names:
             return ""
@@ -328,18 +333,24 @@ class MultipleSelectOperator(Operator):
         super(MultipleSelectOperator, self).__init__(column, filter_item)
 
     def _get_option_name_by_key(self, key):
-        options = self.column.get('data', {}).get('options', [])
+        options = self.column.get('data', {}).get('options') or []
         if not options:
             return key
         for op in options:
             if op.get('id') == key or op.get('name') == key:
                 return op.get('name')
-        raise SQLGeneratorOptionInvalidError('option is invalid')
+        logger.warning('multiple select option not found: %s' % key)
+        return ''
 
     def op_has_any_of(self):
         if not self.filter_term:
             return ""
         filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        filter_term = [name for name in filter_term if name]
+        if not filter_term:
+            return ""
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
         option_names = ["'%s'" % op_name for op_name in filter_term]
         option_names_str = ', '.join(option_names)
         return "`%(column_name)s` in (%(option_names_str)s)" % ({
@@ -354,6 +365,9 @@ class MultipleSelectOperator(Operator):
         if not isinstance(filter_term, list):
             filter_term = [filter_term, ]
         filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        filter_term = [name for name in filter_term if name]
+        if not filter_term:
+            return ""
         option_names = ["'%s'" % op_name for op_name in filter_term]
         option_names_str = ', '.join(option_names)
         return "`%(column_name)s` has none of (%(option_names_str)s)" % ({
@@ -365,6 +379,9 @@ class MultipleSelectOperator(Operator):
         if not self.filter_term:
             return ""
         filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        filter_term = [name for name in filter_term if name]
+        if not filter_term:
+            return ""
         option_names = ["'%s'" % op_name for op_name in filter_term]
         option_names_str = ', '.join(option_names)
         return "`%(column_name)s` has all of (%(option_names_str)s)" % ({
@@ -376,6 +393,9 @@ class MultipleSelectOperator(Operator):
         if not self.filter_term:
             return ""
         filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        filter_term = [name for name in filter_term if name]
+        if not filter_term:
+            return ""
         option_names = ["'%s'" % op_name for op_name in filter_term]
         option_names_str = ', '.join(option_names)
         return "`%(column_name)s` is exactly (%(option_names_str)s)" % ({
