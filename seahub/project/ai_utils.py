@@ -147,7 +147,7 @@ def prepare_candidates_for_rerank(search_results, is_ticket_source, ticket_id,
 
     for result in search_results:
         result_type = result.get('source_type', 'connection')
-        pk = result.get('_id')
+        pk = int(result.get('_id'))
 
         if result_type == 'ticket_summary':
             if is_ticket_source and pk == int(ticket_id):
