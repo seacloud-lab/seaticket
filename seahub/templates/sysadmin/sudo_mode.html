@@ -26,7 +26,13 @@
         <p class="text-center tips">{% trans "You are entering admin area, we won't ask for your password again for a few hours." %}</p>
         <form action="" method="post" id="confirm-password-form">{% csrf_token %}
             <div class="position-relative">
-                <input type="password" class="input password-input" id="confirm-password-input" name="password" placeholder="{% trans "Password" %}" />
+                <input
+                    type="password"
+                    class="input password-input w-100"
+                    id="confirm-password-input"
+                    name="password"
+                    placeholder="{% trans "Password" %}"
+                />
                 <div class="password-toggle" id="eye-icon-wrapper"></div>
             </div>
             {% if password_error %}
