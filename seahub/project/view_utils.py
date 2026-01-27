@@ -3,8 +3,6 @@ import logging
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-from django.db.models import Q
-
 from seahub.project.constants import FilterPredicateTypes, FilterTermModifier
 from seahub.seadb_models.models import PropertyTypes, FormulaResultType, DurationFormatsType
 
