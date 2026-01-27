@@ -7,6 +7,7 @@ import { ClickOutside, Icon } from '@/components';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
+import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import TagOption from '@/components/tag-option';
 
@@ -77,7 +78,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
                   const tag = getRowById(tagsData, v);
                   return (
                     <Tag tag={tag} key={v} className="mr-0">
-                      <Tag.RemoveBtn callback={() => handleDeselect(v)} />
+                      <RemoveBtn callback={() => handleDeselect(v)} />
                     </Tag>
                   );
                 })}

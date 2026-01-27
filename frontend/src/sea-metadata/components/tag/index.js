@@ -1,10 +1,9 @@
 import classnames from 'classnames';
-import RemoveBtn from './remove-btn';
 
 import './index.css';
 
 const Tag = ({ tag, children, className }) => {
-
+  if (!tag) return null;
   return (
     <div key={tag.id} className={classnames('sea-metadata-tag', className)} title={tag.name}>
       <span className="sea-metadata-tag-color mr-1" style={{ backgroundColor: tag.color }}></span>
@@ -14,9 +13,4 @@ const Tag = ({ tag, children, className }) => {
   );
 };
 
-Tag.RemoveBtn = RemoveBtn;
-
 export default Tag;
-export {
-  RemoveBtn
-};
