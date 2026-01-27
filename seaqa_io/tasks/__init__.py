@@ -98,7 +98,10 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
 
 def preview_import_kb_from_excel(project_uuid, file_name, limit=20):
     temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+    os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, file_name)
+    if not os.path.isfile(file_path):
+        raise Exception('File not found')
 
     wb = load_workbook(file_path, read_only=True)
     ws = wb.active
@@ -152,7 +155,10 @@ def preview_import_kb_from_excel(project_uuid, file_name, limit=20):
 
 def import_kb_from_excel(project_uuid, username, file_name):
     temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+    os.makedirs(temp_dir, exist_ok=True)
     file_path = os.path.join(temp_dir, file_name)
+    if not os.path.isfile(file_path):
+        raise Exception('File not found')
 
     wb = load_workbook(file_path, read_only=True)
     ws = wb.active

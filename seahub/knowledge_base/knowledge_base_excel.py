@@ -152,6 +152,11 @@ class KnowledgeBaseImportExcel(APIView):
             with open(file_path, 'wb+') as destination:
                 for chunk in file_obj.chunks():
                     destination.write(chunk)
+        else:
+            temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+            file_path = os.path.join(temp_dir, file_name)
+            if not os.path.isfile(file_path):
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
 
         params = {
             'project_uuid': str(project_uuid),
