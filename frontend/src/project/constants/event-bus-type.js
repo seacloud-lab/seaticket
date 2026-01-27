@@ -11,4 +11,5 @@ export const EVENT_BUS_TYPE = {
   NEW_SUBSTATE: 'new_substate',
   OPEN_CONNECTION_EMBEDDING_VISUALIZATION: 'open_connection_embedding_visualization',
   CLEAN_DELETED_TICKETS: 'clean_deleted_tickets',
+  IMPORT_KB_XLSX: 'import_kb_xlsx',
 };

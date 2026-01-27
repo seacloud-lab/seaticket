@@ -5,6 +5,7 @@ import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
+import KnowledgeMoreNav from './nav/knowledge-more-nav';
 import InboxNav from './nav/inbox-nav';
 
 import './index.css';
@@ -52,7 +53,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <TicketsMoreNav onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH]} {...commonProps} />
+            <KnowledgeMoreNav onClick={toggleBar} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
