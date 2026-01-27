@@ -72,3 +72,24 @@
   height: 24px;
   width: 24px;
 }
+
+/* Timeline styles */
+.sea-qa-project-ticket-comment.with-timeline {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.sea-qa-project-ticket-comment.with-timeline::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  width: 2px;
+  bottom: -8px;
+  background-color: #e1e4e8;
+}
+
+/* Activity 后面紧跟的 Comment 需要额外的顶部间距 */
+.sea-qa-project-ticket-activity + .sea-qa-project-ticket-comment {
+  margin-top: 8px;
+}

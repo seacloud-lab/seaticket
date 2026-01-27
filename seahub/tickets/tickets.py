@@ -18,7 +18,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.tickets.models import TicketViews
+from seahub.tickets.models import TicketViews, TicketActivity
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
@@ -30,7 +30,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
-    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg
+    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg, compare_ticket_changes
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -293,7 +293,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_ids = ticket_id_to_row.keys()
             ticket_ids_str = ','.join(ticket_ids)
-            sql = f'SELECT `_pk`, `assignees`, `title` FROM `tickets` WHERE `_pk` IN ({ticket_ids_str})'
+            sql = f'SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority` FROM `tickets` WHERE `_pk` IN ({ticket_ids_str})'
             query_result = seadb_api.query_rows(project_uuid, sql)
         except Exception as e:
             logger.exception(e)
@@ -362,6 +362,20 @@ class TicketsAPIView(APIView):
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            # record ticket activities
+            try:
+                for ticket in results:
+                    row_data = ticket_id_to_row.get(str(ticket.get('_pk')))
+                    if not row_data:
+                        continue
+                    changes = compare_ticket_changes(ticket, row_data)
+                    if changes:
+                        TicketActivity.objects.record_activities(
+                            project_uuid, ticket.get('_pk'), username, changes
+                        )
+            except Exception as e:
+                logger.error('Failed to record ticket activities: %s', e)
 
             try:
                 for ticket in results:
@@ -668,6 +682,30 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        # record ticket activities
+        new_activities = []
+        try:
+            changes = compare_ticket_changes(ticket, update_row)
+            if changes:
+                created_activities = TicketActivity.objects.record_activities(
+                    project_uuid, ticket.get('_pk'), username, changes
+                )
+                new_activities = []
+                for a in created_activities:
+                    detail = json.loads(a.detail) if a.detail else {}
+                    new_activities.append({
+                        'id': a.id,
+                        'ticket_id': a.ticket_id,
+                        'activity_type': a.activity_type,
+                        'field_name': detail.get('field_name', ''),
+                        'old_value': detail.get('old_value'),
+                        'new_value': detail.get('new_value'),
+                        'creator': a.creator,
+                        'created_time': a.created_time.isoformat(),
+                    })
+        except Exception as e:
+            logger.error('Failed to record ticket activity: %s', e)
+
         old_assignees = set(ticket.get('assignees') or [])
         if is_update_assignees:
             new_assignees = set(assignees or [])
@@ -687,7 +725,7 @@ class TicketAPIView(APIView):
 
         send_ticket_update_msg(project_uuid)
 
-        return Response({'success': True})
+        return Response({'success': True, 'activities': new_activities})
 
     @require_org_context
     def delete(self, request, project_uuid, ticket_id):
@@ -1144,6 +1182,55 @@ class TicketCommentAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
+
+class TicketActivitiesAPIView(APIView):
+    """GET /api/v1/project/{project_uuid}/tickets/{ticket_id}/activities/"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, ticket_id):
+        try:
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 50))
+        except ValueError:
+            page, per_page = 1, 50
+
+        start = (page - 1) * per_page
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        activities = TicketActivity.objects.get_activities(
+            project_uuid, int(ticket_id), start, per_page
+        )
+
+        activities_list = []
+        for a in activities:
+            detail = json.loads(a.detail) if a.detail else {}
+            activities_list.append({
+                'id': a.id,
+                'ticket_id': a.ticket_id,
+                'activity_type': a.activity_type,
+                'field_name': detail.get('field_name', ''),
+                'old_value': detail.get('old_value'),
+                'new_value': detail.get('new_value'),
+                'creator': a.creator,
+                'created_time': a.created_time.isoformat(),
+            })
+        
+        return Response({
+            'activities': activities_list
+        })
+
 
 class MyTicketAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

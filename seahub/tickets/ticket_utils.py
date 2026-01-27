@@ -336,3 +336,56 @@ def send_ticket_update_msg(project_uuid):
             logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
+
+
+def compare_ticket_changes(old_ticket, new_data):
+    """ compare ticket changes, return changes list
+
+    Returns:
+        list of (activity_type, field_name, old_value, new_value)
+    """
+    changes = []
+
+    # title changed
+    if 'title' in new_data and new_data['title'] != old_ticket.get('title'):
+        changes.append(('title_changed', 'title', old_ticket.get('title'), new_data['title']))
+
+    # state changed
+    if 'state' in new_data and new_data['state'] != old_ticket.get('state'):
+        changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
+
+    # substate changed
+    if 'substate' in new_data and new_data['substate'] != old_ticket.get('substate'):
+        changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
+
+    # type changed
+    if 'type' in new_data and new_data['type'] != old_ticket.get('type'):
+        changes.append(('type_changed', 'type', old_ticket.get('type'), new_data['type']))
+
+    # priority changed
+    if 'priority' in new_data and new_data['priority'] != old_ticket.get('priority'):
+        changes.append(('priority_changed', 'priority', old_ticket.get('priority'), new_data['priority']))
+
+    # tags changed
+    if 'tags' in new_data:
+        old_tags = set(old_ticket.get('tags') or [])
+        new_tags = set(new_data['tags'] or [])
+        added = new_tags - old_tags
+        removed = old_tags - new_tags
+        if added:
+            changes.append(('tags_added', 'tags', None, list(added)))
+        if removed:
+            changes.append(('tags_removed', 'tags', list(removed), None))
+
+    # assignees changed
+    if 'assignees' in new_data:
+        old_assignees = set(old_ticket.get('assignees') or [])
+        new_assignees = set(new_data['assignees'] or [])
+        added = new_assignees - old_assignees
+        removed = old_assignees - new_assignees
+        if added:
+            changes.append(('assignees_added', 'assignees', None, list(added)))
+        if removed:
+            changes.append(('assignees_removed', 'assignees', list(removed), None))
+
+    return changes

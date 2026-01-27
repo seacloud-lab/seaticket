@@ -474,6 +474,18 @@ CREATE TABLE `ticket_views`  (
   KEY `ticket_views_project_uuid`(`project_uuid`)
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `ticket_activities`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  `ticket_id` int(11) NOT NULL,
+  `activity_type` varchar(50) NOT NULL,
+  `detail` longtext NOT NULL DEFAULT '{}',
+  `creator` varchar(255) NOT NULL,
+  `created_time` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_project_id_ticket_id_time`(`project_uuid`, `ticket_id`, `created_time`)
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `connection_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,

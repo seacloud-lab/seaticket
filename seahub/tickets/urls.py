@@ -6,7 +6,7 @@ from .ticket_tags import TicketTagsAPIView, TicketTagAPIView
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
 from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
-    TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView
+    TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView, TicketActivitiesAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 
@@ -28,6 +28,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/$', TicketAPIView.as_view(), name='api-v1-project-ticket'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/comments/$', TicketCommentsAPIView.as_view(), name='api-v1-project-ticket-comments'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/comments/(?P<comment_id>\d+)/$', TicketCommentAPIView.as_view(), name='api-v1-project-ticket-comment'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/activities/$', TicketActivitiesAPIView.as_view(), name='api-v1-project-ticket-activities'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v1-project-tickets-search'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/trash/$', TicketTrashAPIView.as_view(), name='api-v1-project-tickets-trash'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/my-tickets/$', MyTicketAPIView.as_view(), name='api-v1-project-my-tickets'),
