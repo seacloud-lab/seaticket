@@ -166,8 +166,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         });
     } else if (curTab === NOTIFICATION_TYPE.PROJECT) {
       const projectName = noticeItem.project_name || noticeItem.name || '';
-      const projectHref = siteRoot + 'workspace/' + noticeItem.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open';
-      window['show_inbox'] = true;
+      const projectHref = siteRoot + 'workspace/' + noticeItem.workspace_id + '/project/' + encodeURIComponent(projectName) + '/tickets/?view=open&show_inbox=open';
       window.open(projectHref, '_blank');
     }
   }, [notificationList]);
@@ -207,9 +206,9 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
   useEffect(() => {
     // When clicking on the project notification, open the inbox drawer
-    if (window.opener && window.opener['show_inbox']) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('show_inbox') === 'open') {
       setShowInboxDrawer(true);
-      window.opener['show_inbox'] = false;
     }
 
     return () => {
