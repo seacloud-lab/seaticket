@@ -8,10 +8,10 @@
     <form action="" method="post" id="sms-login-form">{% csrf_token %}
         <div class="position-relative justify-content-between row m-0">
             {% if send_button_disabled %}
-            <input type="text" name="send_sms_code" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input" style="height: 40px; max-width: calc(100% - 110px); box-sizing: border-box;" readonly />
+            <input type="text" name="send_sms_code" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input w-100" style="height: 40px; max-width: calc(100% - 110px); box-sizing: border-box;" readonly />
             <button id="send_sms_code" type="submit" class="submit btn btn-primary btn-block ml-2 disabled" style="width: 100px">已发送</button>
             {% else %}
-            <input type="text" name="send_sms_code" placeholder="请输入手机号" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input" style="height: 40px; max-width: calc(100% - 110px); box-sizing: border-box;" />
+            <input type="text" name="send_sms_code" placeholder="请输入手机号" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input w-100" style="height: 40px; max-width: calc(100% - 110px); box-sizing: border-box;" />
             <button id="send_sms_code" type="submit" {{ send_button_disabled }} class="submit btn btn-primary btn-block ml-2" style="width: 100px">发送验证码</button>
             {% endif %}
         </div>

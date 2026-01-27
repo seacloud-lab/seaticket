@@ -135,7 +135,7 @@
         {% else %}
         <form action="" method="post" id="sms-send-form">{% csrf_token %}
             <div class="position-relative justify-content-between row m-0">
-                <input id="send_sms_code_phone" type="text" name="phone" placeholder="请输入手机号" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input" style="height: 40px; max-width: calc(100% - 120px); box-sizing: border-box;" />
+                <input id="send_sms_code_phone" type="text" name="phone" placeholder="请输入手机号" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input w-100" style="height: 40px; max-width: calc(100% - 120px); box-sizing: border-box;" />
                 <!-- Button to trigger captcha modal -->
                 {% if enable_slide_captcha %}
                 <button id="send_sms_code" href="#captcha-modal" data-toggle="modal" type="button" class="submit btn btn-primary btn-block ml-2" style="width: 110px">发送验证码</button>
