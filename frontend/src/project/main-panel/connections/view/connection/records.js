@@ -24,6 +24,7 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useData } from '@/project/hooks';
+import copy from 'copy-to-clipboard';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -341,16 +342,31 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection]);
 
+  const generateCopyOriginalLinkOption = useCallback(({ row }) => {
+    const url = getOriginalPageUrl(connection, row, allColumns.current);
+    if (!url) return null;
+    return {
+      label: gettext('Copy original link'),
+      key: 'copy_original_link',
+      callback: () => {
+        copy(url);
+        toaster.success(gettext('The original link has been copied'));
+      },
+    };
+  }, [connection]);
+
   const createRowsTools = useCallback(({ rows, columns, deleteLocalRows, updateLocalRow }) => {
     let children = [];
     if (rows.length === 1) {
       const row = rows[0];
       const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+      const copyOriginalLinkOption = generateCopyOriginalLinkOption({ row });
       const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
       const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
       const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row], updateLocalRow });
       children = [
         openOriginalPageOption,
+        copyOriginalLinkOption,
         createRelatedTicketOption,
         findRelatedIssuesOption,
         markAsOutdatedOption,
@@ -390,7 +406,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       });
     }
     return tools;
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOption]);
+  }, [
+    connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
+    generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOption, generateCopyOriginalLinkOption,
+  ]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -466,6 +485,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const openOriginalPageOption = generateOpenOriginalPageOption({ row });
     list.push(openOriginalPageOption);
 
+    const copyOriginalLinkOption = generateCopyOriginalLinkOption({ row });
+    list.push(copyOriginalLinkOption);
+
     const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
     list.push(createRelatedTicketOption);
 
@@ -483,7 +505,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
     list.push(AIOptions);
     return list.filter(Boolean);
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateMarkAsOutdatedOption, generateAIOptions]);
+  }, [
+    connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
+    generateMarkAsOutdatedOption, generateAIOptions, generateCopyOriginalLinkOption,
+  ]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
