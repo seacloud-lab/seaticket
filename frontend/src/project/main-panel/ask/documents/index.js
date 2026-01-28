@@ -120,7 +120,7 @@ const Documents = () => {
             </div>
           </div>
           <div className="sea-ticket-chat-document-content">
-            <CustomizeMarkdownViewer value={content} showTOC={false} className="sea-ticket-chat-document-md" />
+            <CustomizeMarkdownViewer key={currentDocument.url} value={content} showTOC={false} className="sea-ticket-chat-document-md" />
           </div>
         </div>
       </div>
