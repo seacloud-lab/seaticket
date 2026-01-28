@@ -14,7 +14,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import replace_file_url_in_content, check_same_org_permission
+from seahub.project.utils import replace_file_url_in_content, check_same_org_permission, get_current_table_metadata
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
@@ -360,3 +360,43 @@ class PortalKnowledgeBaseRecordsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'records': records, 'columns': columns})
+
+class PortalTicketMetadataView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        username = request.user.username
+        seadb_api = SeaDBAPI(username)
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            ticket_column_name_to_return_name = {
+                TicketsTable.substate.name: 'substates',
+                TicketsTable.tags.name: 'tags',
+                TicketsTable.type.name: 'types',
+                TicketsTable.state.name: 'states'
+            }
+            select_option_metadata = {}
+            for column in ticket_meta.get('columns'):
+                column_name = column.get('name')
+                return_name = ticket_column_name_to_return_name.get(column_name)
+                if return_name:
+                    column_data = column.get('data', {}) or {}
+                    select_option_metadata[return_name] = column_data
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response(select_option_metadata)

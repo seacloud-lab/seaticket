@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import SeaMetadata, { VIEW_TOOL, DataCacheProvider, useDataCache } from '@/sea-metadata';
 import { gettext } from '@/constants';
@@ -231,40 +231,8 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
   );
 };
 
-const MyTickets = ({ projectUuid }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [tagsData, setTagsData] = useState({ rows: [], row_ids: [], id_row_map: {} });
-  const [typesData, setTypesData] = useState({ rows: [], row_ids: [], id_row_map: {} });
-
-  useEffect(() => {
-    Promise.all([
-      portalAPI.listTicketTags(projectUuid).catch(() => ({ data: { tags: [] } })),
-      portalAPI.listTicketTypes(projectUuid).catch(() => ({ data: { types: [] } })),
-    ]).then(([tagsRes, typesRes]) => {
-      const tags = (tagsRes.data.tags || []).map(t => ({ ...t, _id: t.id }));
-      const types = (typesRes.data.types || []).map(t => ({ ...t, _id: t.id }));
-
-      const tagsRowMap = {};
-      tags.forEach(t => { tagsRowMap[t._id] = t; });
-
-      const typesRowMap = {};
-      types.forEach(t => { typesRowMap[t._id] = t; });
-
-      setTagsData({
-        rows: tags,
-        row_ids: tags.map(t => t._id),
-        id_row_map: tagsRowMap,
-      });
-      setTypesData({
-        rows: types,
-        row_ids: types.map(t => t._id),
-        id_row_map: typesRowMap,
-      });
-      setIsLoading(false);
-    });
-  }, [projectUuid]);
-
-  if (isLoading) {
+const MyTickets = ({ projectUuid, tagsData, typesData, isMetadataLoading }) => {
+  if (isMetadataLoading) {
     return <CenteredLoading />;
   }
 
