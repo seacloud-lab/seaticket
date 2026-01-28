@@ -32,6 +32,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           message={message}
           settings={settings}
           projectName={projectName}
+          projectUuid={projectUuid}
           workspaceID={workspaceID}
         />
       </div>
