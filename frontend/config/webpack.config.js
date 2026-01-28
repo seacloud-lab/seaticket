@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
+const { Compilation } = require('webpack');
 const resolve = require('resolve');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
@@ -377,6 +378,24 @@ module.exports = function (webpackEnv) {
           exclude: /@babel(?:\/|\\{1,2})runtime/,
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
           loader: require.resolve('source-map-loader'),
+        },
+        {
+          test: /node_modules\/embedding-atlas\/.*\.js$/,
+          use: [
+            {
+              loader: path.resolve(__dirname, 'replace-content-loader.js'),
+              options: {
+                rules: [
+                  {
+                    search: /new Worker\s*\(\s*new URL\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)\s*,\s*(\{[^}]*\})\)/g,
+                    replace: (march, arg1, arg2, arg3) => {
+                      return `new Worker(${arg1},${arg3})`;
+                    },
+                  },
+                ]
+              }
+            }
+          ]
         },
         {
           // "oneOf" will traverse all following loaders until one will
