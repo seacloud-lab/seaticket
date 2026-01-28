@@ -464,7 +464,6 @@ class TestKnowledgeBaseGet:
         url = get_knowledge_base_url(project_uuid, 1)
 
         response = api_client.get(url)
-        print("Response data:", response.data)
 
         assert response.status_code == 200
         assert 'record' in response.data
