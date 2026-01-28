@@ -375,6 +375,8 @@ class TicketsTable(BaseModel):
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
+
 
 class TicketCommentsTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)

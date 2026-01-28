@@ -88,6 +88,8 @@ class PortalTicketsView(APIView):
         if not isinstance(tag_names, list):
             tag_names = []
 
+        due_date = request.POST.get('due_date', '')
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -132,6 +134,7 @@ class PortalTicketsView(APIView):
                 TicketsTable.created_time.name: now_datetime,
                 TicketsTable.modified_time.name: now_datetime,
                 TicketsTable.deleted.name: False,
+                TicketsTable.due_date.name: due_date,
             }
             res = seadb_api.insert_rows(project_uuid, TABLE_TICKETS, [row])
             pks = res.get('pks', [])
