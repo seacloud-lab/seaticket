@@ -104,11 +104,6 @@
   flex-direction: column;
 }
 
-.sea-qa-portal-content.with-padding {
-  overflow: auto;
-  padding: 20px;
-}
-
 /* Submit ticket form */
 .sea-qa-portal-submit-ticket {
   max-width: 800px;
