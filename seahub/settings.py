@@ -790,7 +790,16 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
 sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
-IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
+IS_PRO_VERSION = True
+
+CLOUD_MODE = True
+MULTI_TENANCY = True
+
+# service url
+SEATICKET_HOSTNAME = os.environ.get('SEATICKET_HOSTNAME', '')
+SEATICKET_PROTOCOL = os.environ.get('SEATICKET_PROTOCOL', '')
+if SEATICKET_HOSTNAME and SEATICKET_PROTOCOL:
+    SEAQA_WEB_SERVICE_URL = f'{SEATICKET_PROTOCOL}://{SEATICKET_HOSTNAME}'
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
 # then add 'seahub.auth.middleware.SeafileRemoteUserMiddleware' and
