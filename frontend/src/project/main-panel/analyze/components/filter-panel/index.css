@@ -19,22 +19,22 @@
 }
 
 .analyze-add-filter-btn.active {
-	color: var(--bs-orange);
-	background-color: transparent;
+  color: var(--bs-orange);
+  background-color: transparent;
 }
 
 .analyze-add-filter-btn.disabled {
   color: #bbb;
   cursor: not-allowed;
-	background-color: transparent;
+  background-color: transparent;
 }
 
 /* Filter panel styles */
 .analyze-filter-option-editor .popover {
-	width: 120px;
-	min-height: fit-content;
+  width: 120px;
+  min-height: fit-content;
 }
 
 .analyze-filter-option-editor .option-editor-content {
-	min-height: fit-content;
+  min-height: fit-content;
 }
