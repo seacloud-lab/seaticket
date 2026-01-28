@@ -100,7 +100,7 @@ const SettingsPanel = ({
         </FormGroup>
         {/* Mode Setting */}
         <FormGroup className="analyze-settings-section">
-          <Label>{gettext('Display Mode')}</Label>
+          <Label>{gettext('Display mode')}</Label>
           <CustomizeSelect
             className="analyze-settings-select"
             isInModal={true}
