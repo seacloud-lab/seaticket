@@ -9,7 +9,7 @@ import Project from './project';
 import EmptyTip from '../empty-tip';
 import FixedWidthTable from '../fixed-width-table';
 
-const AdminProjects = forwardRef(({
+const ProjectsTable = forwardRef(({
   columns,
   placeholder = gettext('No projects'),
   showPaginator = true,
@@ -178,4 +178,4 @@ const AdminProjects = forwardRef(({
   );
 });
 
-export default AdminProjects;
+export default ProjectsTable;

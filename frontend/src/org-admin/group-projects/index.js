@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { AdminProjects } from '@/components';
+import { ProjectsTable } from '@/components';
 import orgAdminAPI from '../api';
 import { gettext } from '@/constants';
 import { Main, TopBar } from '../main-panel';
@@ -24,7 +24,7 @@ const GroupProjects = ({ onCloseSidePanel, groupID }) => {
         title={<GroupNav groupID={groupID} currentItem="projects" />}
         titleClassName="pl-0"
       >
-        <AdminProjects
+        <ProjectsTable
           columns={[
             { name: '', key: 'icon', width: 44, isFixed: true },
             { name: gettext('Name'), key: 'name', width: 0.18 },

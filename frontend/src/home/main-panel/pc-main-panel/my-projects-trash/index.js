@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { Button, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import homeAPI from '../../../api';
 import { Utils } from '@/utils/utils';
-import { AdminProjects, CommonOperationConfirmationDialog, toaster } from '@/components';
+import { ProjectsTable, CommonOperationConfirmationDialog, toaster } from '@/components';
 import { gettext, trashCleanExpireDays } from '@/constants';
 
 import './index.css';
@@ -75,7 +75,7 @@ const MyProjectsTrash = () => {
             </Nav>
             <TabContent activeTab={activeTab} className="pt-3 h-100">
               <TabPane tabId="personal" className="h-75">
-                <AdminProjects
+                <ProjectsTable
                   ref={projectsRef}
                   showPaginator={false}
                   placeholder={gettext('No deleted projects')}
@@ -92,10 +92,10 @@ const MyProjectsTrash = () => {
                   <p className="seatable-tip-default text-secondary">
                     {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
-                </AdminProjects>
+                </ProjectsTable>
               </TabPane>
               <TabPane tabId="groups" className="h-75">
-                <AdminProjects
+                <ProjectsTable
                   showPaginator={false}
                   placeholder={gettext('No deleted projects')}
                   columns={[
@@ -111,7 +111,7 @@ const MyProjectsTrash = () => {
                   <p className="seatable-tip-default text-secondary">
                     {gettext('Note: Projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
-                </AdminProjects>
+                </ProjectsTable>
               </TabPane>
             </TabContent>
           </div>

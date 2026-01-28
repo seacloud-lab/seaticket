@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { AdminProjects } from '@/components';
+import { ProjectsTable } from '@/components';
 import sysAdminAPI from '@/sys-admin/api';
 import { gettext, trashCleanExpireDays } from '@/constants';
 import ProjectNav from './project-nav';
@@ -15,7 +15,7 @@ class TrashProjects extends Component {
           title={<ProjectNav currentItem="trash-projects"/>}
           titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
         >
-          <AdminProjects
+          <ProjectsTable
             placeholder={gettext('No deleted projects')}
             columns={[
               { name: '', key: 'icon', width: 44, isFixed: true },
@@ -32,7 +32,7 @@ class TrashProjects extends Component {
             <p className="mt-4 seatable-tip-default text-secondary">
               {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
             </p>
-          </AdminProjects>
+          </ProjectsTable>
         </Main>
       </>
     );
