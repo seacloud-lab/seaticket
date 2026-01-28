@@ -61,7 +61,7 @@ const MyProjectsTrash = () => {
                 </Button>
               )}
             </div>
-            <Nav tabs className="mt-2">
+            <Nav tabs className="mx-0">
               <NavItem>
                 <NavLink className={activeTab === 'personal' ? 'active' : ''} onClick={() => setActiveTab('personal')}>
                   {gettext('Personal')}
@@ -73,8 +73,8 @@ const MyProjectsTrash = () => {
                 </NavLink>
               </NavItem>
             </Nav>
-            <TabContent activeTab={activeTab} className="pt-3">
-              <TabPane tabId="personal">
+            <TabContent activeTab={activeTab} className="pt-3 h-100">
+              <TabPane tabId="personal" className="h-75">
                 <AdminProjects
                   ref={projectsRef}
                   showPaginator={false}
@@ -89,12 +89,12 @@ const MyProjectsTrash = () => {
                   api={listTrashProjects}
                   onRestore={(project) => homeAPI.restoreTrashProject(project.uuid)}
                 >
-                  <p className="mt-4 seatable-tip-default text-secondary">
+                  <p className="seatable-tip-default text-secondary">
                     {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
                 </AdminProjects>
               </TabPane>
-              <TabPane tabId="groups">
+              <TabPane tabId="groups" className="h-75">
                 <AdminProjects
                   showPaginator={false}
                   placeholder={gettext('No deleted projects')}
@@ -108,7 +108,7 @@ const MyProjectsTrash = () => {
                   api={listManagedGroupTrashProjects}
                   onRestore={(project) => homeAPI.restoreGroupTrashProject(project.uuid, project.group_id)}
                 >
-                  <p className="mt-4 seatable-tip-default text-secondary">
+                  <p className="seatable-tip-default text-secondary">
                     {gettext('Note: Projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
                 </AdminProjects>
