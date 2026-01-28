@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 import { portalAPI } from '../api';
@@ -85,14 +84,12 @@ const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
     }
   };
 
-  const needPadding = activePage === PORTAL_PAGE.SUBMIT_TICKET;
-
   return (
     <div className="sea-qa-portal-main-panel">
       <div className="sea-qa-portal-top-bar">
         {getTitle()}
       </div>
-      <div className={classnames('sea-qa-portal-content', { 'with-padding': needPadding })}>
+      <div className="sea-qa-portal-content">
         {renderContent()}
       </div>
     </div>

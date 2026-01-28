@@ -1,16 +1,84 @@
-@import '@/project/main-panel/tickets/view/new-ticket/index.css';
-
-.sea-qa-portal-content .sea-qa-project-new-ticket {
-  padding: 0;
+.sea-qa-portal-new-ticket-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.sea-qa-portal-content .sea-qa-project-new-ticket .required-tip {
+.sea-qa-portal-new-ticket {
+  width: 800px;
+  height: fit-content;
+  padding: 0px 50px;
+  margin: 60px 0px;
+  background-color: var(--bs-body-bg);
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex: none;
+  overflow: hidden;
+}
+
+.sea-qa-portal-new-ticket.small {
+  width: calc(100% - 20px);
+  padding: 0px 16px;
+  min-width: 562px; /* comment min-width(542) + 20 */
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-settings {
+  padding-top: 0px;
+  flex: 1;
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-name {
+  position: relative;
+  height: 104px;
+  font-size: 24px;
+  margin-bottom: 30px;
+  font-weight: 600;
+  width: 100%;
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-name:after {
+  content: "";
+  position: absolute;
+  left: -50px;
+  right: -50px;
+  bottom: 0;
+  height: 1px;
+  background: var(--bs-border-secondary-color);
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-content-settings {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 30px;
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-content {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-settings-item .ticket-types-formatter {
+  margin-bottom: 0px;
+}
+
+.sea-qa-portal-new-ticket .required-tip {
   color: #ff1920;
   display: inline-block;
   padding-left: 8px;
   padding-right: 6px;
 }
 
+.sea-qa-portal-new-ticket .sea-qa-portal-ticket-footer {
+  padding: 16px 0px;
+  margin-bottom: 8px;
+}
+
+/* Long text editor container */
 .sea-qa-portal-content .sf-long-text-inline-editor-container {
   min-height: 300px;
   display: flex;
