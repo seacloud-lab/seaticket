@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
-import { AdminSearch, AdminProjects } from '@/components';
+import { AdminSearch, ProjectsTable } from '@/components';
 import sysAdminAPI from '@/sys-admin/api';
 import { gettext, siteRoot } from '@/constants';
 import ProjectNav from './project-nav';
@@ -25,7 +25,7 @@ class AllProjects extends Component {
           title={<ProjectNav currentItem="all-projects" />}
           titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
         >
-          <AdminProjects
+          <ProjectsTable
             columns={[
               { name: '', key: 'icon', width: 44, isFixed: true },
               { name: gettext('Name'), key: 'name', width: 0.18 },

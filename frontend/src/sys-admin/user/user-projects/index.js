@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopBar, Main } from '@/sys-admin/main-panel';
 import sysAdminAPI from '@/sys-admin/api';
-import { CenteredLoading, CenteredError, AdminProjects } from '@/components';
+import { CenteredLoading, CenteredError, ProjectsTable } from '@/components';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 import Nav from '../user-nav';
@@ -34,7 +34,7 @@ const UserProjects = ({ email, onCloseSidePanel }) => {
         {isLoading && (<CenteredLoading />)}
         {errMessage && (<CenteredError>{errMessage}</CenteredError>)}
         {!isLoading && !errMessage && (
-          <AdminProjects
+          <ProjectsTable
             columns={[
               { name: '', key: 'icon', width: 44, isFixed: true },
               { name: gettext('Name'), key: 'name', width: 0.18 },

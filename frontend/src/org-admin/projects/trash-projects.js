@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { toaster, AdminProjects, ClearTrashDialog } from '@/components';
+import { toaster, ProjectsTable, ClearTrashDialog } from '@/components';
 import { orgID, gettext, trashCleanExpireDays } from '@/constants';
 import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
@@ -22,7 +22,7 @@ const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialo
 
   return (
     <>
-      <AdminProjects
+      <ProjectsTable
         placeholder={gettext('No deleted projects')}
         ref={ref}
         columns={[
@@ -40,7 +40,7 @@ const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialo
         <p className="mt-4 text-secondary">
           {gettext('Tip: projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
         </p>
-      </AdminProjects>
+      </ProjectsTable>
       {isShowTrashEmptyConfirmDialog && (
         <ClearTrashDialog
           onToggle={onTrashEmptyConfirmDialogToggle}

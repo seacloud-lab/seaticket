@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import { AdminProjects } from '@/components';
+import { ProjectsTable } from '@/components';
 import OrgNav from './org-nav';
 import OrgTitle from './org-title';
 import { Main, TopBar } from '../main-panel';
@@ -31,7 +31,7 @@ class OrgProjects extends Component {
         <TopBar onCloseSidePanel={onCloseSidePanel} />
         <Main title={(<OrgTitle orgName={this.state.orgName} />)}>
           <OrgNav currentItem="projects" orgID={orgID} />
-          <AdminProjects
+          <ProjectsTable
             columns={[
               { name: '', key: 'icon', width: 44, isFixed: true },
               { name: gettext('Name'), key: 'name', width: 0.18 },

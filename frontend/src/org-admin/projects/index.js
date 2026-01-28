@@ -6,7 +6,7 @@ import { Button } from 'reactstrap';
 import { gettext, orgID } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import TrashProjects from './trash-projects';
-import { AdminSearch, AdminProjects } from '@/components';
+import { AdminSearch, ProjectsTable } from '@/components';
 import orgAdminAPI from '../api';
 
 const siteRoot = window.app.config.siteRoot;
@@ -59,7 +59,7 @@ class Projects extends React.Component {
           titleClassName="cur-view-path org-user-nav tab-nav-container mb-4"
         >
           {this.props.currentTab === 'projects' && (
-            <AdminProjects
+            <ProjectsTable
               columns={[
                 { name: '', key: 'icon', width: 44, isFixed: true },
                 { name: gettext('Name'), key: 'name', width: 0.18 },

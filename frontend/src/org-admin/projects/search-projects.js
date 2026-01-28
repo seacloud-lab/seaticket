@@ -3,7 +3,7 @@ import { navigate } from '@gatsbyjs/reach-router';
 import { Button, Col, Form, FormGroup } from 'reactstrap';
 import { TopBar, Main } from '../main-panel';
 import { orgID, gettext } from '@/constants';
-import { AdminProjects, SearchInput } from '@/components';
+import { ProjectsTable, SearchInput } from '@/components';
 import orgAdminAPI from '../api';
 import { isEnter } from '@/utils/hotkey';
 
@@ -55,7 +55,7 @@ const SearchProjects = ({ onCloseSidePanel }) => {
     <>
       <TopBar onCloseSidePanel={onCloseSidePanel} />
       <Main title={gettext('Projects')} className="mb-6">
-        <AdminProjects
+        <ProjectsTable
           placeholder={gettext('No projects')}
           ref={ref}
           columns={[
@@ -90,7 +90,7 @@ const SearchProjects = ({ onCloseSidePanel }) => {
           <div className="mt-4">
             <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Result')}</h4>
           </div>
-        </AdminProjects>
+        </ProjectsTable>
       </Main>
     </>
   );

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { TopBar, Main } from '../main-panel';
 import GroupTitle from './group-title';
 import GroupNav from './group-nav';
-import { AdminProjects } from '@/components';
+import { ProjectsTable } from '@/components';
 import sysAdminAPI from '../api';
 import { gettext } from '@/constants';
 
@@ -25,7 +25,7 @@ const GroupProjects = ({ onCloseSidePanel, groupID }) => {
       <TopBar onCloseSidePanel={onCloseSidePanel}/>
       <Main title={<GroupTitle groupName={groupName} />} >
         <GroupNav groupID={groupID} currentItem="projects" />
-        <AdminProjects
+        <ProjectsTable
           columns={[
             { name: '', key: 'icon', width: 44, isFixed: true },
             { name: gettext('Name'), key: 'name', width: 0.18 },

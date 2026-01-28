@@ -1,9 +1,11 @@
 .my-projects-trash-title {
   display: flex;
-  font-size: 18px;
-  font-weight: 700;
   justify-content: space-between;
-  margin: 20px 15px 0 0;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 500;
+  height: 48px;  
+  min-height: 48px;
 }
 
 .my-projects-trash-title button {
@@ -20,17 +22,20 @@
 .cur-view-content.my-projects-trash .nav-tabs {
   border-bottom: 1px solid #e9ecef;
 }
+
 .cur-view-content.my-projects-trash .nav-tabs .nav-link {
   padding: 6px 10px;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
 }
+
 .cur-view-content.my-projects-trash .nav-tabs .nav-link.active {
   color: #ED7109;
   font-weight: 600;
   border-bottom-color: #ED7109;
 }
+
 .cur-view-content.my-projects-trash .nav-tabs .nav-link:hover {
   color: #ED7109;
 }

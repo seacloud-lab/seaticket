@@ -51,7 +51,7 @@ import SubDropdown from './sub-dropdown';
 import { UsageCard, MultipleTextCard, InfoCard } from './chart';
 import { SectionSettings, AdminCheckboxSettings } from './settings';
 import FixedWidthTable from './fixed-width-table';
-import AdminProjects from './admin-projects';
+import ProjectsTable from './projects-table';
 import UserSelect from './user-select';
 import Switch from './switch';
 import IconTooltip from './icon-tooltip';
@@ -72,7 +72,7 @@ export {
   ClickOutside,
   CustomizeSelect,
   CommonOperationConfirmationDialog,
-  AdminProjects,
+  ProjectsTable,
   RestoreProjectDialog,
   ClearTrashDialog,
   EmptyTip,
