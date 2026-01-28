@@ -80,6 +80,11 @@ class PortalAPI {
     return this.req.get(url);
   }
 
+  getTicketMetadata(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/metadata/';
+    return this.req.get(url);
+  }
+
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();
