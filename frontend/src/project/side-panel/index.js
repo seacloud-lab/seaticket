@@ -42,11 +42,11 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} {...commonProps} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
-            {isProjectAdmin &&
-              <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
-            }
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} {...commonProps} />
+            {isProjectAdmin &&
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
+            }
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
