@@ -6,12 +6,12 @@ import classnames from 'classnames';
 import './index.css';
 
 const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFilter }) => {
-  const [selectedState, setSelectedState] = useState('');
   const [isShowPopover, setIsShowPopover] = useState(false);
   const popoverRef = useRef(null);
 
-  const isDisabled = Object.keys(filterableFieldOptions).length === 0;
-  const isActive = filters.length > 0;
+  const state = useMemo(() => {
+    return filters.find(item => item.field === 'state');
+  }, [filters]);
 
   const options = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
@@ -22,6 +22,11 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
         value: state,
       };
     });
+  }, [filterableFieldOptions]);
+
+  const isDisabled = useMemo(() => {
+    const { state = [] } = filterableFieldOptions || {};
+    return state.length === 0 ? true : false;
   }, [filterableFieldOptions]);
 
   const handleTogglePopover = useCallback(() => {
@@ -37,14 +42,13 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
     } else {
       onRemoveFilter('state');
     }
-    setSelectedState(value);
     setIsShowPopover(false);
-  }, [onAddFilter, onRemoveFilter, setSelectedState, setIsShowPopover]);
+  }, [onAddFilter, onRemoveFilter, setIsShowPopover]);
 
   return (
     <div className="analyze-filter-panel">
       <div className="analyze-add-filter" ref={popoverRef}>
-        <div className={classnames('analyze-add-filter-btn', { 'active': isActive, 'disabled': isDisabled })} onClick={handleTogglePopover}>
+        <div className={classnames('analyze-add-filter-btn', { 'active': state, 'disabled': isDisabled })} onClick={handleTogglePopover}>
           <span>{gettext('Status')}</span>
           <Icon symbol="arrow-down" />
         </div>
@@ -55,7 +59,7 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
             target={popoverRef}
             checkPlacement="left"
             isSearchEnabled={false}
-            value={selectedState}
+            value={state ? state.value : ''}
             onChange={handleSelectValue}
             onToggle={() => setIsShowPopover(false)}
           />
