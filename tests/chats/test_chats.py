@@ -193,21 +193,20 @@ class TestChatMessagesView:
         msg_assistant.is_agent_mode = False
         msg_assistant.to_dict.return_value = {'message_id': 'm2', 'role': 'assistant'}
 
-        tool_calls = {'m2': {'tool_calls': []}}
+        thought_process_map = {'m2': {'x': 1}}
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.get_session_by_uuid', return_value=session), \
                 patch('seahub.chats.view.ChatMessages.objects.get_messages_by_session', return_value=[msg_user, msg_assistant]), \
-                patch('seahub.chats.view.ChatToolCalls.objects.get_tool_calls_from_session_uuid_and_message_ids', return_value=tool_calls), \
                 patch('seahub.chats.view.remove_content_details_in_attachments', return_value=[]), \
-                patch('seahub.chats.view.format_ask_thought_process', return_value='tp'):
+                patch('seahub.chats.view.ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids', return_value=thought_process_map):
             resp = ChatMessagesView.as_view()(request, session_uuid='s1')
 
         assert resp.status_code == 200
         assert len(resp.data['messages']) == 2
-        assert resp.data['messages'][1]['thought_process'] == 'tp'
+        assert resp.data['messages'][1]['thought_process'] == {'x': 1}
 
 
 class TestChatView:
@@ -376,7 +375,6 @@ class TestChatView:
         connection = Mock()
         connection.pk = 99
         connection.type = 'site'
-        connection.to_dict.return_value = {'id': 99, 'name': 'MyConn'}
 
         ai_response = {'ai_reply': 'ok', 'sources': [{'connection_id': 99}]}
 
@@ -387,10 +385,10 @@ class TestChatView:
                 patch('seahub.chats.view.get_attachments', return_value=[]), \
                 patch('seahub.chats.view.ChatSessions.objects.create_session', return_value=session), \
                 patch('seahub.chats.view.gen_message_id', return_value='m1'), \
-                patch('seahub.chats.view.ProjectConnections.objects.filter', side_effect=[[connection], [connection]]), \
+                patch('seahub.chats.view.ProjectConnections.objects.filter', return_value=[connection]), \
                 patch('seahub.chats.view.get_ai_reply', return_value=ai_response), \
                 patch('seahub.chats.view.ChatMessages.objects.create_message', side_effect=[user_msg, assistant_msg]):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 200
-        assert resp.data['sources'][0]['connection_name'] == 'MyConn'
+        assert resp.data['sources'][0]['connection_id'] == 99

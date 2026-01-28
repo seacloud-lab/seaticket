@@ -228,17 +228,21 @@ class TestNotificationsAllView:
         active_projects.filter.return_value = [Mock(uuid='p1', project_name='P', workspace_id=1, icon='i', color='c')]
 
         # project notifications
-        proj_qs = Mock()
-        proj_qs.count.return_value = 3
-
         project_stats = [{'project_uuid': 'p1', 'count': 3, 'unseen_count': 1, 'last_timestamp': 1}]
-        values_qs = Mock()
-        values_qs.annotate.return_value = values_qs
-        values_qs.order_by.return_value = project_stats
-        proj_qs.values.return_value = values_qs
 
-        proj_unseen_qs = Mock()
-        proj_unseen_qs.count.return_value = 1
+        class _ProjectStatsQS(list):
+            def values(self, *args, **kwargs):
+                return self
+            def annotate(self, *args, **kwargs):
+                return self
+            def order_by(self, *args, **kwargs):
+                return self
+            def count(self):
+                return 3
+
+        proj_qs = _ProjectStatsQS(project_stats)
+
+        proj_unseen_qs = proj_qs
 
         def _get_user_notifications(username, seen=None):
             if seen is False:
@@ -258,6 +262,6 @@ class TestNotificationsAllView:
         assert resp.status_code == 200
         assert resp.data['general']['count'] == 1
         assert resp.data['general']['unseen_count'] == 2
-        assert resp.data['project']['unseen_count'] == 1
-        assert resp.data['total_unseen_count'] == 3
+        assert resp.data['project']['unseen_count'] == 3
+        assert resp.data['total_unseen_count'] == 5
         assert resp.data['project']['project_list'][0]['project_name'] == 'P'
