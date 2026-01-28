@@ -14,7 +14,6 @@ const SettingsPanel = ({
   onRemoveConnection,
   onClose,
   filters,
-  filterableFields,
   filterableFieldOptions,
   onAddFilter,
   onRemoveFilter,
@@ -71,7 +70,6 @@ const SettingsPanel = ({
           <div className="analyze-settings-label">{gettext('Filters')}</div>
           <FilterPanel
             filters={filters}
-            filterableFields={filterableFields}
             filterableFieldOptions={filterableFieldOptions}
             onAddFilter={onAddFilter}
             onRemoveFilter={onRemoveFilter}
