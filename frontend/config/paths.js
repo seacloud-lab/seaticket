@@ -30,6 +30,7 @@ const publicPath = process.env.PUBLIC_PATH || '/assets/bundles/';
 const publicUrlOrPath = `http://${HOST}:${PORT}${publicPath}`;
 
 const buildPath = process.env.BUILD_PATH || 'build/frontend';
+const mediaUrl = process.env.MEDIA_URL || '/media/';
 
 const moduleFileExtensions = [
   'web.mjs',
@@ -78,6 +79,7 @@ module.exports = {
   appTsBuildInfoFile: resolveApp('node_modules/.cache/tsconfig.tsbuildinfo'),
   swSrc: resolveModule(resolveApp, 'src/service-worker'),
   publicUrlOrPath,
+  mediaUrl,
 };
 
 
