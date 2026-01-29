@@ -1,4 +1,13 @@
+import json
+from types import SimpleNamespace
+from uuid import uuid4
 from unittest.mock import Mock, patch
+
+import pytest
+from rest_framework.test import APIRequestFactory
+
+from seahub.project.models import Workspaces, Projects
+from seahub.tickets.models import TicketViews
 
 from seahub.tickets.ticket_views import (
     TicketFolders,
@@ -558,31 +567,38 @@ def test_post_move_missing_target(factory, user):
     assert resp.status_code == 400
 
 
-def test_post_move_success(factory, user):
-    data = {
-        'source_view_id': 'v1',
-        'target_view_id': 'v2',
-        'is_above_folder': False,
+@pytest.mark.django_db
+def test_post_move_success(factory):
+    """使用真实 MySQL 记录，避免 seadb 依赖，仅 mock 权限检查。"""
+    owner = f"owner_{uuid4().hex[:6]}@example.com"
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(username=owner, workspace=workspace, name="proj-move")
+
+    details = {
+        "navigation": [
+            {"_id": "v1", "type": "view"},
+            {"_id": "v2", "type": "view"},
+        ],
+        "views": [
+            {"_id": "v1", "name": "view1", "type": "table"},
+            {"_id": "v2", "name": "view2", "type": "table"},
+        ],
     }
-    request = factory.post('/api/v1/projects/p1/ticket-views/move/', data=data, format='json')
-    request.user = user
+    TicketViews.objects.create(project_uuid=project.uuid, details=json.dumps(details))
 
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+    data = {
+        "source_view_id": "v1",
+        "target_view_id": "v2",
+        "is_above_folder": False,
+    }
+    request = factory.post(f"/api/v1/projects/{project.uuid}/ticket-views/move/", data=data, format="json")
+    request.user = SimpleNamespace(id=1, username=owner, is_authenticated=True, is_active=True)
 
-    record = Mock()
-    record.views_ids = ['v1', 'v2']
-    record.folders_ids = []
-
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.move_view', return_value={'navigation': ['v1', 'v2']}):
-        resp = TicketViewsMoveView.as_view()(request, project_uuid='p1')
+    with patch("seahub.tickets.ticket_views.check_project_permission", return_value=True):
+        resp = TicketViewsMoveView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 200
-    assert resp.data['navigation'] == ['v1', 'v2']
+    assert resp.data["navigation"] == [{"_id": "v1", "type": "view"}, {"_id": "v2", "type": "view"}]
 
 
 def test_post_move_not_allowed_drag_folder_into_folder(factory, user):
@@ -596,7 +612,6 @@ def test_post_move_not_allowed_drag_folder_into_folder(factory, user):
 
     resp = TicketViewsMoveView.as_view()(request, project_uuid='p1')
     assert resp.status_code == 400
-
 
 def test_post_move_source_view_id_not_exists(factory, user):
     data = {

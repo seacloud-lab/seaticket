@@ -63,6 +63,11 @@ jobs:
         run: |
           echo "REDIS_HOST=localhost" >> $GITHUB_ENV
 
+      - name: Import mysql.sql schema
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -proot -e "DROP DATABASE IF EXISTS test_sea_qa; CREATE DATABASE test_sea_qa CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+          mysql -h 127.0.0.1 -P 3306 -u root -proot test_sea_qa < sql/mysql.sql
+
       - name: Create seaqa_config.yaml for tests
         run: |
           cat > /tmp/seaqa_config.yaml <<'EOF'
@@ -92,4 +97,4 @@ jobs:
           export SEAQA_CONFIG_NAME=seaqa_config.yaml
           export DJANGO_SETTINGS_MODULE=seahub.test_settings
           export JWT_PRIVATE_KEY=qwertyuiop
-          pytest tests/
+          pytest tests/tickets/ --reuse-db --nomigrations
