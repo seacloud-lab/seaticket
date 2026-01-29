@@ -385,6 +385,17 @@ class TicketCommentsTable(BaseModel):
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 
+class TicketActivitiesTable(BaseModel):
+    ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
+    activity_type = MappedColumn('activity_type', PropertyTypes.TEXT)
+    detail = MappedColumn('detail', PropertyTypes.TEXT)  # JSON string storing field_name, old_value, new_value
+    creator = MappedColumn('creator', PropertyTypes.TEXT)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'ticket_activities'
+
 class EmailTable(BaseModel):
     email_from = MappedColumn('email_from', PropertyTypes.TEXT)
     email_to = MappedColumn('email_to', PropertyTypes.TEXT)

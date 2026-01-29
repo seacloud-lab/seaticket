@@ -357,7 +357,6 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, []);
 
   // Merge comments and activities into a timeline
-  // Must be before early returns to satisfy React Hooks rules
   const timeline = useMemo(() => {
     if (!ticket) return [];
     const { comments = [] } = ticket;

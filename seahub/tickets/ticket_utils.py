@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from seahub.seadb_models.models import TicketActivitiesTable
 from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
@@ -389,3 +390,58 @@ def compare_ticket_changes(old_ticket, new_data):
             changes.append(('assignees_removed', 'assignees', list(removed), None))
 
     return changes
+
+
+def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, changes):
+    if not changes:
+        return []
+
+    rows = []
+    now = datetime.now(timezone.utc).isoformat()
+    for activity_type, field_name, old_value, new_value in changes:
+        detail = json.dumps({
+            'field_name': field_name,
+            'old_value': old_value,
+            'new_value': new_value,
+        })
+        rows.append({
+            'ticket_id': ticket_id,
+            'activity_type': activity_type,
+            'detail': detail,
+            'creator': creator,
+            'created_time': now,
+        })
+
+    if not rows:
+        return []
+
+    res = seadb_api.insert_rows(project_uuid, TicketActivitiesTable.gen_table_name(), rows)
+    pks = res.get('pks', [])
+
+    # Build activity list with the returned pks
+    activities = []
+    for i, (activity_type, field_name, old_value, new_value) in enumerate(changes):
+        activity = {
+            'id': pks[i] if i < len(pks) else None,
+            'ticket_id': ticket_id,
+            'activity_type': activity_type,
+            'field_name': field_name,
+            'old_value': old_value,
+            'new_value': new_value,
+            'creator': creator,
+            'created_time': now,
+        }
+        activities.append(activity)
+
+    return activities
+
+
+def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50):
+    sql = (
+        f"SELECT * FROM `{TicketActivitiesTable.gen_table_name()}` "
+        f"WHERE `ticket_id` = {ticket_id} "
+        f"ORDER BY `created_time` ASC "
+        f"LIMIT {limit} OFFSET {start}"
+    )
+    res = seadb_api.query_rows(project_uuid, sql)
+    return res.get('results', [])

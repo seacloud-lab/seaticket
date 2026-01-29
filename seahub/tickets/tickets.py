@@ -18,7 +18,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.tickets.models import TicketViews, TicketActivity
+from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
@@ -30,7 +30,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
-    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg, compare_ticket_changes
+    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg, compare_ticket_changes, \
+    record_ticket_activities, get_ticket_activities
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -371,8 +372,8 @@ class TicketsAPIView(APIView):
                         continue
                     changes = compare_ticket_changes(ticket, row_data)
                     if changes:
-                        TicketActivity.objects.record_activities(
-                            project_uuid, ticket.get('_pk'), username, changes
+                        record_ticket_activities(
+                            seadb_api, project_uuid, ticket.get('_pk'), username, changes
                         )
             except Exception as e:
                 logger.error('Failed to record ticket activities: %s', e)
@@ -687,22 +688,9 @@ class TicketAPIView(APIView):
         try:
             changes = compare_ticket_changes(ticket, update_row)
             if changes:
-                created_activities = TicketActivity.objects.record_activities(
-                    project_uuid, ticket.get('_pk'), username, changes
+                new_activities = record_ticket_activities(
+                    seadb_api, project_uuid, ticket.get('_pk'), username, changes
                 )
-                new_activities = []
-                for a in created_activities:
-                    detail = json.loads(a.detail) if a.detail else {}
-                    new_activities.append({
-                        'id': a.id,
-                        'ticket_id': a.ticket_id,
-                        'activity_type': a.activity_type,
-                        'field_name': detail.get('field_name', ''),
-                        'old_value': detail.get('old_value'),
-                        'new_value': detail.get('new_value'),
-                        'creator': a.creator,
-                        'created_time': a.created_time.isoformat(),
-                    })
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -1209,24 +1197,29 @@ class TicketActivitiesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        activities = TicketActivity.objects.get_activities(
-            project_uuid, int(ticket_id), start, per_page
-        )
+        try:
+            seadb_api = SeaDBAPI(username)
+            activities = get_ticket_activities(
+                seadb_api, project_uuid, int(ticket_id), start, per_page
+            )
+        except Exception as e:
+            logger.error('Failed to get ticket activities: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         activities_list = []
         for a in activities:
-            detail = json.loads(a.detail) if a.detail else {}
+            detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             activities_list.append({
-                'id': a.id,
-                'ticket_id': a.ticket_id,
-                'activity_type': a.activity_type,
+                'id': a.get('_pk'),
+                'ticket_id': a.get('ticket_id'),
+                'activity_type': a.get('activity_type'),
                 'field_name': detail.get('field_name', ''),
                 'old_value': detail.get('old_value'),
                 'new_value': detail.get('new_value'),
-                'creator': a.creator,
-                'created_time': a.created_time.isoformat(),
+                'creator': a.get('creator'),
+                'created_time': a.get('created_time'),
             })
-        
+
         return Response({
             'activities': activities_list
         })

@@ -5,7 +5,7 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, EmailTable, ThreadTable, KnowledgeBaseTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, KnowledgeBaseTable
 
 logger = logging.getLogger(__name__)
 
@@ -388,6 +388,30 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         seadb_api.create_column_index(
             project_uuid,
             comments_table_id,
+            [column],
+        )
+
+    # Create ticket_activities table
+    res = seadb_api.create_table(project_uuid, TicketActivitiesTable.gen_table_name())
+    activities_table_id = res['table_id']
+    for column in TicketActivitiesTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, activities_table_id, mapped_column)
+
+    # Create ticket_activities table index for seadb
+    ticket_activities_index_columns = [
+        TicketActivitiesTable.ticket_id.name,
+        TicketActivitiesTable.created_time.name,
+    ]
+    for column in ticket_activities_index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            activities_table_id,
             [column],
         )
 
