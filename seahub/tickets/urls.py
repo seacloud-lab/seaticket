@@ -2,7 +2,6 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .ticket_tags import TicketTagsAPIView, TicketTagAPIView
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
 from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
@@ -33,10 +32,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/trash/$', TicketTrashAPIView.as_view(), name='api-v1-project-tickets-trash'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/my-tickets/$', MyTicketAPIView.as_view(), name='api-v1-project-my-tickets'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/metadata/$', TicketMetadataAPIView.as_view(), name='api-v1-project-ticket-metadata'),
-
-    # tags
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/$', TicketTagsAPIView.as_view(), name='api-v1-project-tags'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', TicketTagAPIView.as_view(), name='api-v1-project-tag'),
 
     # types
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/types/$', TicketTypesAPIView.as_view(), name='api-v1-project-types'),

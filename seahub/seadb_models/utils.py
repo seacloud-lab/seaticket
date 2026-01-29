@@ -5,7 +5,8 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, KnowledgeBaseTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
+    KnowledgeBaseTable, TagTable
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +354,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         TicketsTable.state.name,
         TicketsTable.substate.name,
         TicketsTable.type.name,
-        TicketsTable.tags.name,
+        TicketsTable.tag_ids.name,
         TicketsTable.assignees.name,
         TicketsTable.participants.name,
         TicketsTable.creator.name,
@@ -484,45 +485,43 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.creator.name,
-        ]
-    )
+    index_column_names = [KnowledgeBaseTable.creator.name, KnowledgeBaseTable.created_time.name,
+                          KnowledgeBaseTable.last_modifier.name, KnowledgeBaseTable.modified_time.name,
+                          KnowledgeBaseTable.deleted.name, KnowledgeBaseTable.tag_ids.name]
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.created_time.name,
-        ]
-    )
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.last_modifier.name,
-        ]
-    )
+def init_tag_seadb_table(seadb_api, project_uuid):
+    table_name = TagTable.gen_table_name()
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in TagTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.modified_time.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.deleted.name,
-        ]
-    )
+    index_column_names = [KnowledgeBaseTable.creator.name, KnowledgeBaseTable.created_time.name,
+                          KnowledgeBaseTable.last_modifier.name, KnowledgeBaseTable.modified_time.name,
+                          KnowledgeBaseTable.deleted.name, KnowledgeBaseTable.tag_ids.name]
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
 
 
 def get_connection_table_name(connection):

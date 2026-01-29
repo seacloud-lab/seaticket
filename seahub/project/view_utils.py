@@ -887,6 +887,65 @@ class ArrayOperator(object):
         return operator(linked_column, filter_item)
 
 
+class ListOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.HAS_ANY_OF,
+        FilterPredicateTypes.HAS_NONE_OF,
+        FilterPredicateTypes.HAS_ALL_OF,
+        FilterPredicateTypes.IS_EXACTLY,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(ListOperator, self).__init__(column, filter_item)
+
+    @property
+    def list_type(self):
+        return self.column_data.get('list_type')
+
+    def gen_filter_term_str(self):
+        if self.list_type in ('float64', 'float32', 'int64', 'bool'):
+            item_list = ["%s" % item for item in self.filter_term]
+        else:
+            item_list = ["'%s'" % item for item in self.filter_term]
+        return ", ".join(item_list)
+
+    def op_has_any_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` in (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_none_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` has none of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_all_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` has all of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_is_exactly(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` is exactly (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+
 def _filter2sql(operator):
     support_filter_predicates = operator.SUPPORT_FILTER_PREDICATE
     filter_predicate = operator.filter_predicate
@@ -1024,6 +1083,9 @@ def _get_operator_by_type(column_type):
 
     if column_type == PropertyTypes.LINK:
         return ArrayOperator
+
+    if column_type == PropertyTypes.LIST:
+        return ListOperator
 
     return None
 

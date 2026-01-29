@@ -8,7 +8,7 @@ import { OptionsData, Option } from '../models';
 const MetadataContext = React.createContext(null);
 
 export const MetadataProvider = ({ projectUuid, children }) => {
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
 
   const [tagsData, setTagsData] = useState(new OptionsData());
 
@@ -98,18 +98,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       callback && callback();
     });
   }, [tagsData]);
-
-  useEffect(() => {
-    knowledgeBaseAPI.getKnowledgeBaseMetadata(projectUuid).then(res => {
-      const { tags } = res?.data || {};
-      applyCreateTags(tags?.options);
-      setLoading(false);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      setLoading(false);
-    });
-  }, []);
 
   return (
     <MetadataContext.Provider value={{

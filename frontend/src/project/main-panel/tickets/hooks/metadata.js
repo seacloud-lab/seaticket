@@ -4,6 +4,7 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ticketsAPI } from '../../../api';
 import { OptionsData, Option } from '../models';
+import {Metadata, Row} from '@/sea-metadata/models';
 import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
 
 const MetadataContext = React.createContext(null);
@@ -21,8 +22,9 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     let newData = isReload ? new OptionsData({}) : deepCopy(tagsData);
     if (Array.isArray(newTags) && newTags.length > 0) {
       newTags.forEach(tag => {
-        const newTag = tag instanceof Option ? tag : new Option(tag);
+        const newTag = tag instanceof Option ? tag : new Row(tag);
         newData.rows.push(newTag);
+        newData.columns.push(newTag);
         newData.row_ids.push(newTag._id);
         newData.id_row_map[newTag._id] = newTag;
       });
@@ -313,9 +315,8 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   useEffect(() => {
     ticketsAPI.getTicketMetadata(projectUuid).then(res => {
-      const { states, substates, tags, types } = res?.data || {};
+      const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
-      applyCreateTags(tags?.options);
       applyCreateTypes(types?.options);
       applyCreateStates(states?.options);
       setLoading(false);

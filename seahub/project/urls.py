@@ -17,6 +17,7 @@ from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
 from .search import SearchTickectsAndDocumentsView
+from .tags import TagsAPIView, TagAPIView
 
 
 urlpatterns = [
@@ -78,6 +79,11 @@ urlpatterns = [
     re_path(r'^api/v1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v1-ai-embedding-analysis'),
     re_path(r'^api/v1/ai/embedding-analysis-task-status/(?P<task_id>[-0-9a-zA-Z]+)/$', EmbeddingAnalysisTaskStatusView.as_view(), name='api-v1-ai-embedding-analysis-task-status'),
     re_path(r'^api/v1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v1-ai-related-records'),
+
+    # tag
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', TagsAPIView.as_view(), name='api-v1-project-tags'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', TagAPIView.as_view(), name='api-v1-project-tag'),
+
 ]
 
 # files, must at last

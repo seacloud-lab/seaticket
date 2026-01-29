@@ -42,7 +42,7 @@ class Ticket {
     this.state = object.state || TICKET_STATE.OPEN;
     this.substate = object.substate || '';
     this.type = object.type || '';
-    this.tags = object.tags || [];
+    this.tags = object.tag_ids || [];
     this.priority = object.priority || 0;
 
     this.assignees = object.assignees || [];
