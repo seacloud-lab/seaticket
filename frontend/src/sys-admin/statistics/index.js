@@ -10,7 +10,7 @@ import sysAdminAPI from '../api';
 import { TopBar } from '../main-panel';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
-import Picker from '../../project/main-panel/search/date-and-time-picker';
+import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
 
 import '@/css/statistics.css';
 
@@ -323,7 +323,7 @@ class Statistics extends Component {
               </div>
               <div className="d-flex align-items-center mt-4 mb-4">
                 <span className="mr-2">{`${gettext('Date')}:`}</span>
-                <Picker
+                <DateAndTimePicker
                   showHourAndMinute={false}
                   disabledDate={() => false}
                   value={date}
