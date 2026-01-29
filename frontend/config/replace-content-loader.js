@@ -26,7 +26,7 @@ module.exports = function (source) {
       result = result.replace(regex, replace);
 
     } catch (error) {
-      // nothing todo
+      // Nothing todo
     }
   });
 
