@@ -490,14 +490,10 @@ const Analyze = ({ title }) => {
   }, []);
 
   const handleDateRangeChange = useCallback(({ from, to }) => {
-    if (from) {
-      const newStart = from.format('YYYY-MM-DD');
-      setStartDate(newStart);
-    }
-    if (to) {
-      const newEnd = to.format('YYYY-MM-DD');
-      setEndDate(newEnd);
-    }
+    const newStart = from ? from.format('YYYY-MM-DD') : null;
+    const newEnd = to ? to.format('YYYY-MM-DD') : null;
+    setStartDate(newStart);
+    setEndDate(newEnd);
   }, []);
 
   const handleAddFilter = useCallback((field, value) => {
