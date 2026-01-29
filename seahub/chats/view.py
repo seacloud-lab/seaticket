@@ -268,7 +268,14 @@ class ChatView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
+        clear_context = request.data.get('clear_context', False)
+        if isinstance(clear_context, str):
+            clear_context = clear_context.lower() == 'true'
+        if not isinstance(clear_context, bool):
+            error_msg = 'clear_context invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -297,9 +304,6 @@ class ChatView(APIView):
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
-        clear_context = request.data.get('clear_context', False)
-        if isinstance(clear_context, str):
-            clear_context = clear_context.lower() == 'true'
 
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
