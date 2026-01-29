@@ -56,13 +56,21 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(({ resolveType, message, attachments, model }) => {
+  const sendMessage = useCallback(({ resolveType, message, attachments, model, clearContext }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
       return;
     }
     const newChatHistories = chatHistories.slice(0);
+    if (clearContext) {
+      newChatHistories.push(
+        new ChatMessage({
+          message: '<break_context>',
+          isOperation: true
+        })
+      );
+    }
     newChatHistories.push(new ChatMessage({
       message: {
         [CHAT_MESSAGE_TYPE.TEXT]: validMessage,
@@ -75,7 +83,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model, clearContext });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -110,7 +118,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
 
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
-        if (item.role === 'user') {
+        if (item.role === 'chat_manager') {
+          return new ChatMessage({
+            _id: item.id,
+            message: item.content,
+            isOperation: true,
+          });
+        }
+        else if (item.role === 'user') {
           let attachments = item?.attachments || [];
           return new ChatMessage({
             _id: item.id,
@@ -251,6 +266,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
+          hasHistoryMessages={!isEmpty}
         />
       </div>
     </div>

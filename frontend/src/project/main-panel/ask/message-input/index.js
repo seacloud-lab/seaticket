@@ -11,6 +11,7 @@ import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
 import AddTicketsAndDocs from './add-tickets-and-docs';
 import { useAIChatTools } from '../hooks';
+import ClearContext from './clear_context';
 import ModelSelector from './model-selector';
 import AttachmentsFormatter from './attachments';
 
@@ -22,6 +23,7 @@ const MessageInput = forwardRef(({
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
   sendMessage,
+  hasHistoryMessages
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
@@ -36,6 +38,7 @@ const MessageInput = forwardRef(({
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
     resolveType, updateResolveType, resetResolveType,
+    clearContext, updateClearContext, resetClearContext
   } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
@@ -86,10 +89,12 @@ const MessageInput = forwardRef(({
       resolveType,
       message: value,
       attachments,
-      model: selectedModel
+      model: selectedModel,
+      clearContext
     });
     clearAttachments();
-  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments]);
+    resetClearContext();
+  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -211,6 +216,7 @@ const MessageInput = forwardRef(({
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
+              {hasHistoryMessages && <ClearContext clearContext={clearContext} updateClearContext={updateClearContext} />}
               <IconButton
                 disabled={disabled}
                 icon="send-arrow"
@@ -230,6 +236,7 @@ const MessageInput = forwardRef(({
 MessageInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
+  hasHistoryMessages: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
 };
 

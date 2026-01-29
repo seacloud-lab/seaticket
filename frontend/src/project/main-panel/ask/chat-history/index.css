@@ -2,3 +2,57 @@
   display: flex;
   flex-direction: column;
 }
+
+.message-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.message-divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.message-divider-text {
+  padding: 0 15px;
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.message-divider.primary .message-divider-line {
+  background-color: #1976d2;
+}
+
+.message-divider.primary .message-divider-text {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.message-divider.dashed .message-divider-line {
+  background: repeating-linear-gradient(
+    to right,
+    #e0e0e0,
+    #e0e0e0 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.message-divider.vertical {
+  flex-direction: column;
+  margin: 0 20px;
+}
+
+.message-divider.vertical .message-divider-line {
+  width: 1px;
+  height: 40px;
+  flex: none;
+}
+
+.message-divider.vertical .message-divider-text {
+  padding: 15px 0;
+}

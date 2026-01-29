@@ -6,6 +6,7 @@ class ChatMessage {
     this._id = object.id || slugid.nice();
     this.message = object.message || {};
     this.isUserSpeak = object.isUserSpeak || false;
+    this.isOperation = object.isOperation || false;
     this.time = object.time || getTime(new Date());
     this.type = object.type || '';
   }

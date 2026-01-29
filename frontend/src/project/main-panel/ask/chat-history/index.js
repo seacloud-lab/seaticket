@@ -1,14 +1,16 @@
 import React, { useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import MessageBox from './message-box';
+import MessageDivider from './message-drivider';
 import CommonMessage from './common-message';
 import MessageOperations from './message-operations';
+import getOperationMessage from './chat-operations';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 
 import './index.css';
 
 const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
-  const { _id, message, isUserSpeak, type } = chat;
+  const { _id, message, isUserSpeak, isOperation, type } = chat;
   const ref = useRef(null);
 
   const getMessageHTML = useCallback(() => {
@@ -22,7 +24,9 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) 
   }, []);
 
   if (Object.keys(message).length === 0) return null;
-  return (
+  return isOperation ? (
+    <MessageDivider text={getOperationMessage(message)} />
+  ) : (
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage
         message={message}

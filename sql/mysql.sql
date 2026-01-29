@@ -539,9 +539,10 @@ CREATE TABLE `chat_messages` (
   `sources` longtext DEFAULT NULL,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
-  `is_agent_mode` tinyint(4) NOT NULL,
+  `as_context` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_session_uuid_created_at` (`session_uuid`, `created_at`)
+  KEY `idx_session_uuid_created_at` (`session_uuid` ASC, `created_at` ASC),
+  KEY `idx_session_uuid_created_at_as_context_role` (`session_uuid` ASC, `role` ASC, `created_at` DESC, `as_context` DESC),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_api_token` (
