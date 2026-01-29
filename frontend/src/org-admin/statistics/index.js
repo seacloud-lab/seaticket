@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
-import { CenteredLoading } from '@/components';
-import { gettext, siteRoot, orgID } from '@/constants';
+import { CenteredLoading, EmptyTip } from '@/components';
+import { gettext, siteRoot, orgID, mediaUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
 import orgAdminAPI from '../api';
@@ -121,8 +121,11 @@ class Content extends Component {
 
     if (items.length === 0) {
       return (
-        <div className="text-center text-muted py-5">
-          {gettext('No items')}
+        <div className="h-100">
+          <EmptyTip
+            src={`${mediaUrl}img/no-items-tip.png`}
+            title={gettext('No items')}
+          />
         </div>
       );
     }
