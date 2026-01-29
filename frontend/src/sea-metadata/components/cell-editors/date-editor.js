@@ -85,7 +85,12 @@ class DateEditor extends Component {
 
   getValue = () => {
     const { value } = this.state;
-    return value ? value.format(this.valueSubmitFormat) : null;
+    const formattedValue = value ? value.format(this.valueSubmitFormat) : null;
+    const columnKey = this.props.column?.key;
+    if (columnKey) {
+      return { [columnKey]: formattedValue };
+    }
+    return formattedValue;
   };
 
   getInputNode = () => {

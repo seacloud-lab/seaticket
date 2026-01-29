@@ -9,6 +9,7 @@ export const TICKET_STATE = {
 export const PREDEFINED_TICKET_COLUMN_NAME = {
   PK: '_pk',
   PRIORITY: 'priority',
+  DUE_DATE: 'due_date',
   TITLE: 'title',
   STATE: 'state',
   SUB_STATE: 'substate',
@@ -208,6 +209,12 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.CHECKBOX,
     display_name: gettext('Deleted'),
     editable: false,
+  },
+  [PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE]: {
+    type: CellType.DATE,
+    display_name: gettext('Due date'),
+    editable: true,
+    modify_data_able: true,
   }
 };
 
@@ -235,6 +242,7 @@ export const TICKET_COLUMNS_ORDER_CONFIG = {
   'created_time': 13,
   'modified_time': 14,
   'closed_time': 15,
+  'due_date': 16,
 };
 
 export const TICKET_COLUMNS_WIDTH_CONFIG = {

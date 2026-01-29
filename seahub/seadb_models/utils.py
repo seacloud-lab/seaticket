@@ -358,6 +358,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         TicketsTable.participants.name,
         TicketsTable.creator.name,
         TicketsTable.deleted.name,
+        TicketsTable.due_date.name,
     ]
     for column in ticket_index_columns:
         seadb_api.create_column_index(

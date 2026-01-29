@@ -152,6 +152,8 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         assignees = list(set(assignees))
 
+        due_date = request.POST.get('due_date', '')
+
         substate = request.POST.get('substate', '')
 
         username = request.user.username
@@ -227,6 +229,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.created_time.name: now_datetime,
                 TicketsTable.modified_time.name: now_datetime,
                 TicketsTable.deleted.name: False,
+                TicketsTable.due_date.name: due_date,
             }
             res = seadb_api.insert_rows(project_uuid, TABLE_TICKETS, [row])
             pks = res.get('pks', [])
@@ -592,6 +595,9 @@ class TicketAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
+        is_update_due_date = 'due_date' in request.data
+        due_date = request.data.get('due_date')
+
         is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
         if is_update_tags and tags is not None:
@@ -640,6 +646,8 @@ class TicketAPIView(APIView):
                 update_row[TicketsTable.priority.name] = priority
             if is_update_assignees:
                 update_row[TicketsTable.assignees.name] = assignees
+            if is_update_due_date:
+                update_row[TicketsTable.due_date.name] = due_date or ''
 
             participants = ticket.get('participants') or []
             if username not in participants:
