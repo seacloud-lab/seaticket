@@ -389,7 +389,8 @@ module.exports = function (webpackEnv) {
                   {
                     search: /new Worker\s*\(\s*new URL\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\)\s*,\s*(\{[^}]*\})\)/g,
                     replace: (march, arg1, arg2, arg3) => {
-                      return `new Worker(${arg1},${arg3})`;
+                      const newPath = `${paths.mediaUrl}worker` + arg1.replace('./', '/').replaceAll('"', '');
+                      return `new Worker("${newPath}",${arg3})`;
                     },
                   },
                 ]
