@@ -1,36 +1,37 @@
+import pytest
+from django.urls import reverse
 from unittest.mock import Mock, patch
 
-import pytest
+from seahub.tickets.ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
+    TicketViewsDuplicateView, TicketViewsMoveView
 
-from seahub.tickets.ticket_views import (
-    TicketFolders,
-    TicketViewsAPI,
-    TicketViewView,
-    TicketViewsDuplicateView,
-    TicketViewsMoveView,
-)
+
+FAKE_UUID = "11111111-1111-1111-1111-111111111111"
 
 
 def test_post_folder_missing_name(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-folders/', data={})
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={})
     request.user = user
 
-    resp = TicketFolders.as_view()(request, project_uuid='p1')
+    resp = TicketFolders.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 
 def test_post_folder_project_not_found(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-folders/', data={'name': 'folder1'})
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'folder1'})
     request.user = user
 
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketFolders.as_view()(request, project_uuid='p1')
+        resp = TicketFolders.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 404
 
 
 def test_post_folder_permission_denied(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-folders/', data={'name': 'folder1'})
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'folder1'})
     request.user = user
 
     project = Mock()
@@ -39,13 +40,14 @@ def test_post_folder_permission_denied(factory, user):
 
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
-        resp = TicketFolders.as_view()(request, project_uuid='p1')
+        resp = TicketFolders.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 403
 
 
 def test_post_folder_record_not_exists(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-folders/', data={'name': 'folder1'})
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'folder1'})
     request.user = user
 
     project = Mock()
@@ -55,18 +57,17 @@ def test_post_folder_record_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
-        resp = TicketFolders.as_view()(request, project_uuid='p1')
+        resp = TicketFolders.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_post_folder_success(factory, auth_user, real_project, ticket_views_record):
-    request = factory.post(
-        '/api/v1/projects/p1/ticket-folders/', data={'name': 'folder1'}
-    )
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': project.uuid})
+    request = factory.post(url, data={'name': 'folder1'})
+    request.user = auth_user
 
     resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
@@ -75,11 +76,8 @@ def test_post_folder_success(factory, auth_user, real_project, ticket_views_reco
 
 
 def test_put_folder_missing_folder_id(factory, user):
-    request = factory.put(
-        '/api/v1/projects/p1/ticket-folders/',
-        data={'folder_data': {'name': 'n'}},
-        format='json',
-    )
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.put(url, data={'folder_data': {'name': 'n'}}, format='json')
     request.user = user
 
     resp = TicketFolders.as_view()(request, project_uuid='p1')
@@ -87,8 +85,9 @@ def test_put_folder_missing_folder_id(factory, user):
 
 
 def test_put_folder_invalid_folder_data_reserved_keys(factory, user):
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
     request = factory.put(
-        '/api/v1/projects/p1/ticket-folders/',
+        url,
         data={'folder_id': 'f1', 'folder_data': {'_id': 'x'}},
         format='json',
     )
@@ -99,8 +98,9 @@ def test_put_folder_invalid_folder_data_reserved_keys(factory, user):
 
 
 def test_put_folder_not_exists(factory, user):
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
     request = factory.put(
-        '/api/v1/projects/p1/ticket-folders/',
+        url,
         data={'folder_id': 'f1', 'folder_data': {'name': 'n'}},
         format='json',
     )
@@ -115,20 +115,21 @@ def test_put_folder_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
-        resp = TicketFolders.as_view()(request, project_uuid='p1')
+        resp = TicketFolders.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_put_folder_success(factory, auth_user, real_project, ticket_views_folder_record):
+    _, project = real_project
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': project.uuid})
     request = factory.put(
-        '/api/v1/projects/p1/ticket-folders/',
+        url,
         data={'folder_id': 'f1', 'folder_data': {'name': 'n'}},
         format='json',
     )
     request.user = auth_user
-    _, project = real_project
 
     resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
@@ -137,7 +138,8 @@ def test_put_folder_success(factory, auth_user, real_project, ticket_views_folde
 
 
 def test_delete_folder_missing_folder_id(factory, user):
-    request = factory.delete('/api/v1/projects/p1/ticket-folders/', data={}, format='json')
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.delete(url, data={}, format='json')
     request.user = user
 
     resp = TicketFolders.as_view()(request, project_uuid='p1')
@@ -145,9 +147,8 @@ def test_delete_folder_missing_folder_id(factory, user):
 
 
 def test_delete_folder_not_exists(factory, user):
-    request = factory.delete(
-        '/api/v1/projects/p1/ticket-folders/', data={'folder_id': 'f1'}, format='json'
-    )
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.delete(url, data={'folder_id': 'f1'}, format='json')
     request.user = user
 
     project = Mock()
@@ -166,11 +167,10 @@ def test_delete_folder_not_exists(factory, user):
 
 @pytest.mark.django_db
 def test_delete_folder_success(factory, auth_user, real_project, ticket_views_folder_record):
-    request = factory.delete(
-        '/api/v1/projects/p1/ticket-folders/', data={'folder_id': 'f1'}, format='json'
-    )
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': project.uuid})
+    request = factory.delete(url, data={'folder_id': 'f1'}, format='json')
+    request.user = auth_user
 
     resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
@@ -179,29 +179,35 @@ def test_delete_folder_success(factory, auth_user, real_project, ticket_views_fo
 
 
 def test_get_views_project_not_found(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-views/')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.get(url)
     request.user = user
 
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_get_views_success(factory, auth_user, real_project, ticket_views_record):
-    request = factory.get('/api/v1/projects/p1/ticket-views/')
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': project.uuid})
+    request = factory.get(url)
+    request.user = auth_user
 
     resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 200
-    assert isinstance(resp.data, list)
+    assert isinstance(resp.data, dict)
+    assert 'views' in resp.data
+    assert 'navigation' in resp.data
+    assert isinstance(resp.data['views'], list)
 
 
 def test_get_views_permission_denied(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-views/')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.get(url)
     request.user = user
 
     project = Mock()
@@ -210,13 +216,14 @@ def test_get_views_permission_denied(factory, user):
 
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 403
 
 
 def test_get_views_internal_server_error(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-views/')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.get(url)
     request.user = user
 
     project = Mock()
@@ -226,31 +233,34 @@ def test_get_views_internal_server_error(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.list_views', side_effect=Exception('err')):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 500
 
 
 def test_post_view_missing_name(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/', data={}, format='json')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={}, format='json')
     request.user = user
 
-    resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+    resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 
 def test_post_view_project_not_found(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/', data={'name': 'view1'}, format='json')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'view1'}, format='json')
     request.user = user
 
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 404
 
 
 def test_post_view_permission_denied(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/', data={'name': 'view1'}, format='json')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'view1'}, format='json')
     request.user = user
 
     project = Mock()
@@ -265,7 +275,8 @@ def test_post_view_permission_denied(factory, user):
 
 
 def test_post_view_record_not_exists(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/', data={'name': 'view1'}, format='json')
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={'name': 'view1'}, format='json')
     request.user = user
 
     project = Mock()
@@ -275,14 +286,15 @@ def test_post_view_record_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 404
 
 
 def test_post_view_folder_not_exists(factory, user):
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': FAKE_UUID})
     request = factory.post(
-        '/api/v1/projects/p1/ticket-views/',
+        url,
         data={'name': 'view1', 'folder_id': 'f1'},
         format='json',
     )
@@ -298,18 +310,17 @@ def test_post_view_folder_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
-        resp = TicketViewsAPI.as_view()(request, project_uuid='p1')
+        resp = TicketViewsAPI.as_view()(request, project_uuid=FAKE_UUID)
 
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_post_view_success(factory, auth_user, real_project, ticket_views_record, mock_seadb):
-    request = factory.post(
-        '/api/v1/projects/p1/ticket-views/', data={'name': 'view1'}, format='json'
-    )
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': project.uuid})
+    request = factory.post(url, data={'name': 'view1'}, format='json')
+    request.user = auth_user
 
     resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
@@ -318,7 +329,8 @@ def test_post_view_success(factory, auth_user, real_project, ticket_views_record
 
 
 def test_get_view_record_not_exists(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-views/v1/')
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': FAKE_UUID, 'view_id': 'v1'})
+    request = factory.get(url)
     request.user = user
 
     project = Mock()
@@ -328,16 +340,17 @@ def test_get_view_record_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
-        resp = TicketViewView.as_view()(request, project_uuid='p1', view_id='v1')
+        resp = TicketViewView.as_view()(request, project_uuid=FAKE_UUID, view_id='v1')
 
     assert resp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_get_view_success(factory, auth_user, real_project, ticket_views_record):
-    request = factory.get('/api/v1/projects/p1/ticket-views/v1/')
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': project.uuid, 'view_id': 'v1'})
+    request = factory.get(url)
+    request.user = auth_user
 
     resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
@@ -346,16 +359,18 @@ def test_get_view_success(factory, auth_user, real_project, ticket_views_record)
 
 
 def test_put_view_missing_view_data(factory, user):
-    request = factory.put('/api/v1/projects/p1/ticket-views/v1/', data={}, format='json')
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': FAKE_UUID, 'view_id': 'v1'})
+    request = factory.put(url, data={}, format='json')
     request.user = user
 
-    resp = TicketViewView.as_view()(request, project_uuid='p1', view_id='v1')
+    resp = TicketViewView.as_view()(request, project_uuid=FAKE_UUID, view_id='v1')
     assert resp.status_code == 400
 
 
 def test_put_view_id_not_exists(factory, user):
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': FAKE_UUID, 'view_id': 'v1'})
     request = factory.put(
-        '/api/v1/projects/p1/ticket-views/v1/',
+        url,
         data={'view_data': {'name': 'n'}},
         format='json',
     )
@@ -370,20 +385,21 @@ def test_put_view_id_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
-        resp = TicketViewView.as_view()(request, project_uuid='p1', view_id='v1')
+        resp = TicketViewView.as_view()(request, project_uuid=FAKE_UUID, view_id='v1')
 
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_put_view_success(factory, auth_user, real_project, ticket_views_record):
+    _, project = real_project
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': project.uuid, 'view_id': 'v1'})
     request = factory.put(
-        '/api/v1/projects/p1/ticket-views/v1/',
+        url,
         data={'view_data': {'name': 'n'}},
         format='json',
     )
     request.user = auth_user
-    _, project = real_project
 
     resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
@@ -392,7 +408,8 @@ def test_put_view_success(factory, auth_user, real_project, ticket_views_record)
 
 
 def test_delete_view_id_not_exists(factory, user):
-    request = factory.delete('/api/v1/projects/p1/ticket-views/v1/', data={}, format='json')
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': FAKE_UUID, 'view_id': 'v1'})
+    request = factory.delete(url, data={}, format='json')
     request.user = user
 
     project = Mock()
@@ -405,16 +422,17 @@ def test_delete_view_id_not_exists(factory, user):
     with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
-        resp = TicketViewView.as_view()(request, project_uuid='p1', view_id='v1')
+        resp = TicketViewView.as_view()(request, project_uuid=FAKE_UUID, view_id='v1')
 
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_delete_view_success(factory, auth_user, real_project, ticket_views_record):
-    request = factory.delete('/api/v1/projects/p1/ticket-views/v1/', data={}, format='json')
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-view', kwargs={'project_uuid': project.uuid, 'view_id': 'v1'})
+    request = factory.delete(url, data={}, format='json')
+    request.user = auth_user
 
     resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
@@ -423,22 +441,24 @@ def test_delete_view_success(factory, auth_user, real_project, ticket_views_reco
 
 
 def test_post_duplicate_missing_view_id(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/duplicate/', data={})
+    url = reverse('api-v1-project-ticket-view-duplicate', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={})
     request.user = user
 
-    resp = TicketViewsDuplicateView.as_view()(request, project_uuid='p1')
+    resp = TicketViewsDuplicateView.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_post_duplicate_success(factory, auth_user, real_project, ticket_views_record):
+    _, project = real_project
+    url = reverse('api-v1-project-ticket-view-duplicate', kwargs={'project_uuid': project.uuid})
     request = factory.post(
-        '/api/v1/projects/p1/ticket-views/duplicate/',
+        url,
         data={'view_id': 'v1'},
         format='json',
     )
     request.user = auth_user
-    _, project = real_project
 
     resp = TicketViewsDuplicateView.as_view()(request, project_uuid=str(project.uuid))
 
@@ -448,13 +468,14 @@ def test_post_duplicate_success(factory, auth_user, real_project, ticket_views_r
 
 @pytest.mark.django_db
 def test_post_duplicate_view_id_not_exists(factory, auth_user, real_project, ticket_views_record):
+    _, project = real_project
+    url = reverse('api-v1-project-ticket-view-duplicate', kwargs={'project_uuid': project.uuid})
     request = factory.post(
-        '/api/v1/projects/p1/ticket-views/duplicate/',
+        url,
         data={'view_id': 'v9'},
         format='json',
     )
     request.user = auth_user
-    _, project = real_project
 
     resp = TicketViewsDuplicateView.as_view()(request, project_uuid=str(project.uuid))
 
@@ -462,32 +483,35 @@ def test_post_duplicate_view_id_not_exists(factory, auth_user, real_project, tic
 
 
 def test_post_move_missing_source(factory, user):
-    request = factory.post('/api/v1/projects/p1/ticket-views/move/', data={})
+    url = reverse('api-v1-project-ticket-views-move', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data={})
     request.user = user
 
-    resp = TicketViewsMoveView.as_view()(request, project_uuid='p1')
+    resp = TicketViewsMoveView.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 
 def test_post_move_missing_target(factory, user):
     data = {'source_view_id': 'v1'}
-    request = factory.post('/api/v1/projects/p1/ticket-views/move/', data=data, format='json')
+    url = reverse('api-v1-project-ticket-views-move', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data=data, format='json')
     request.user = user
 
-    resp = TicketViewsMoveView.as_view()(request, project_uuid='p1')
+    resp = TicketViewsMoveView.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
 def test_post_move_success(factory, auth_user, real_project, ticket_views_move_record):
     _, project = real_project
+    url = reverse('api-v1-project-ticket-views-move', kwargs={'project_uuid': project.uuid})
 
     data = {
         "source_view_id": "v1",
         "target_view_id": "v2",
         "is_above_folder": False,
     }
-    request = factory.post(f"/api/v1/projects/{project.uuid}/ticket-views/move/", data=data, format="json")
+    request = factory.post(url, data=data, format="json")
     request.user = auth_user
 
     resp = TicketViewsMoveView.as_view()(request, project_uuid=str(project.uuid))
@@ -502,10 +526,11 @@ def test_post_move_not_allowed_drag_folder_into_folder(factory, user):
         'target_view_id': 'v2',
         'target_folder_id': 'f2',
     }
-    request = factory.post('/api/v1/projects/p1/ticket-views/move/', data=data, format='json')
+    url = reverse('api-v1-project-ticket-views-move', kwargs={'project_uuid': FAKE_UUID})
+    request = factory.post(url, data=data, format='json')
     request.user = user
 
-    resp = TicketViewsMoveView.as_view()(request, project_uuid='p1')
+    resp = TicketViewsMoveView.as_view()(request, project_uuid=FAKE_UUID)
     assert resp.status_code == 400
 
 @pytest.mark.django_db
@@ -514,9 +539,10 @@ def test_post_move_source_view_id_not_exists(factory, auth_user, real_project, t
         'source_view_id': 'v9',
         'target_view_id': 'v2',
     }
-    request = factory.post('/api/v1/projects/p1/ticket-views/move/', data=data, format='json')
-    request.user = auth_user
     _, project = real_project
+    url = reverse('api-v1-project-ticket-views-move', kwargs={'project_uuid': project.uuid})
+    request = factory.post(url, data=data, format='json')
+    request.user = auth_user
 
     resp = TicketViewsMoveView.as_view()(request, project_uuid=str(project.uuid))
 
