@@ -5,6 +5,10 @@ import classnames from 'classnames';
 
 import './index.css';
 
+const STATE_LABELS = {
+  open: gettext('Open'),
+  closed: gettext('Closed'),
+};
 const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFilter }) => {
   const [isShowPopover, setIsShowPopover] = useState(false);
   const popoverRef = useRef(null);
@@ -15,9 +19,10 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
 
   const options = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
+    state.sort().reverse();
     return state.map((state) => {
       return {
-        label: state,
+        label: STATE_LABELS[state],
         name: state,
         value: state,
       };
