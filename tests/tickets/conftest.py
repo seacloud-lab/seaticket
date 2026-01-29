@@ -1,7 +1,13 @@
-from unittest.mock import Mock
+import json
+from types import SimpleNamespace
+from uuid import uuid4
+from unittest.mock import Mock, patch
 
 import pytest
 from rest_framework.test import APIRequestFactory
+
+from seahub.project.models import Projects, Workspaces
+from seahub.tickets.models import TicketViews
 
 
 @pytest.fixture
@@ -11,8 +17,79 @@ def factory():
 
 @pytest.fixture
 def user():
-    u = Mock()
-    u.id = 1
-    u.pk = 1
-    u.username = 'test@seafile.com'
-    return u
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username='test@seafile.com',
+        is_authenticated=True,
+        is_active=True,
+    )
+
+
+@pytest.fixture
+def real_project(db):
+    owner = f"owner_{uuid4().hex[:6]}@example.com"
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name=f"proj-{uuid4().hex[:6]}",
+    )
+    return owner, project
+
+
+@pytest.fixture
+def auth_user(real_project):
+    owner, _ = real_project
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username=owner,
+        is_authenticated=True,
+        is_active=True,
+    )
+
+
+@pytest.fixture
+def mock_seadb():
+    with patch('seahub.project.seadb_api.SeaDBAPI', return_value=Mock()), \
+            patch('seahub.seadb_models.utils.get_tickets_columns', return_value=[]):
+        yield
+
+
+@pytest.fixture
+def ticket_views_record(real_project):
+    _, project = real_project
+    details = {
+        "navigation": [{"_id": "v1", "type": "view"}],
+        "views": [{"_id": "v1", "name": "view1", "type": "table"}],
+    }
+    return TicketViews.objects.create(project_uuid=project.uuid, details=json.dumps(details))
+
+
+@pytest.fixture
+def ticket_views_folder_record(real_project):
+    _, project = real_project
+    details = {
+        "navigation": [
+            {"_id": "f1", "name": "folder1", "type": "folder", "children": []},
+        ],
+        "views": [],
+    }
+    return TicketViews.objects.create(project_uuid=project.uuid, details=json.dumps(details))
+
+
+@pytest.fixture
+def ticket_views_move_record(real_project):
+    _, project = real_project
+    details = {
+        "navigation": [
+            {"_id": "v1", "type": "view"},
+            {"_id": "v2", "type": "view"},
+        ],
+        "views": [
+            {"_id": "v1", "name": "view1", "type": "table"},
+            {"_id": "v2", "name": "view2", "type": "table"},
+        ],
+    }
+    return TicketViews.objects.create(project_uuid=project.uuid, details=json.dumps(details))
