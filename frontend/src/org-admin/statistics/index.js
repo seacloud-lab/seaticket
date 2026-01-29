@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import classNames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
 import { CenteredLoading, EmptyTip } from '@/components';
 import { gettext, siteRoot, orgID, mediaUrl } from '@/constants';
@@ -12,7 +11,8 @@ import MainPanelTopbar from '../main-panel/top-bar';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
-import Picker from '../../project/main-panel/search/date-and-time-picker';
+import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
+import MonthPicker from '../../project/main-panel/search/month-picker';
 
 import '@/css/statistics.css';
 
@@ -192,7 +192,7 @@ class StatisticsAI extends Component {
       perPage: 25,
       currentPage: 1,
       date: dayjs(),
-      month: dayjs().format('YYYYMM'),
+      month: dayjs(),
       isLoading: true,
       errorMsg: '',
       pageInfo: {
@@ -223,15 +223,8 @@ class StatisticsAI extends Component {
   getStatisticsByPage = (page) => {
     const { perPage, date, month, groupBy, queryDate } = this.state;
     this.setState({ isLoading: true });
-
-    let dateParam = null;
-    let monthParam = null;
-
-    if (queryDate === 'month' && (groupBy === 'project' || groupBy === 'workspace')) {
-      monthParam = month;
-    } else {
-      dateParam = date.format('YYYY-MM-DD');
-    }
+    const dateParam = queryDate === 'month' ? null : date.format('YYYY-MM-DD');
+    const monthParam = queryDate === 'month' ? month.format('YYYYMM') : null;
 
     orgAdminAPI.orgAdminGetAIStatistics(orgID, dateParam, monthParam, groupBy, page, perPage)
       .then(res => {
@@ -256,10 +249,10 @@ class StatisticsAI extends Component {
       });
   };
 
-  onDateChange = (value) => {
-    if (value && value.isValid()) {
+  onDateChange = (date) => {
+    if (date && date.isValid()) {
       this.setState({
-        date: value,
+        date: date,
         currentPage: this.initPage,
         results: []
       }, () => {
@@ -268,10 +261,8 @@ class StatisticsAI extends Component {
     }
   };
 
-  onMonthChange = (e) => {
-    const value = e.target.value;
-    if (value) {
-      const month = value.replace('-', '');
+  onMonthChange = (month) => {
+    if (month && month.isValid()) {
       this.setState({
         month: month,
         currentPage: this.initPage,
@@ -300,11 +291,6 @@ class StatisticsAI extends Component {
       currentPage: this.initPage,
       results: []
     };
-
-    if (groupBy === 'owner') {
-      newState.queryDate = 'date';
-    }
-
     this.setState(newState, () => {
       this.getStatisticsByPage(this.initPage);
     });
@@ -326,7 +312,6 @@ class StatisticsAI extends Component {
 
   render() {
     const { isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month } = this.state;
-
     return (
       <Fragment>
         <MainPanelTopbar />
@@ -355,18 +340,16 @@ class StatisticsAI extends Component {
                 </div>
               </div>
               <div className="d-flex mb-4">
-                {groupBy !== 'owner' &&
-                  <CapsuleTabs
-                    tabs={this.dateTabList}
-                    defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
-                    onTabChange={this.changeQueryDateTab}
-                  />
-                }
-                <div className={classNames('d-flex align-items-center', { 'ml-6': groupBy !== 'owner' })}>
+                <CapsuleTabs
+                  tabs={this.dateTabList}
+                  defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
+                  onTabChange={this.changeQueryDateTab}
+                />
+                <div className='d-flex align-items-center ml-6'>
                   {queryDate === 'date' && (
                     <>
                       <span className="mr-2">{`${gettext('Date')}:`}</span>
-                      <Picker
+                      <DateAndTimePicker
                         showHourAndMinute={false}
                         disabledDate={() => false}
                         value={date}
@@ -378,12 +361,11 @@ class StatisticsAI extends Component {
                   {queryDate === 'month' && (
                     <>
                       <span className="mr-2">{`${gettext('Month')}:`}</span>
-                      <input
-                        type="month"
-                        className="form-control"
-                        style={{ width: '200px' }}
-                        value={month.slice(0, 4) + '-' + month.slice(4)}
+                      <MonthPicker
+                        value={month}
                         onChange={this.onMonthChange}
+                        disabledDate={(date) => date.isAfter(dayjs().add(1, 'month').startOf('month'))}
+                        inputWidth={94}
                       />
                     </>
                   )}

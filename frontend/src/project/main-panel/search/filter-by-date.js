@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
-import Picker from './date-and-time-picker';
+import DateAndTimePicker from './date-and-time-picker';
 import { gettext } from '../../../constants';
 import ModalPortal from '@/components/modal-portal';
 import { Utils } from '@/utils/utils';
@@ -170,7 +170,7 @@ const FilterByDate = ({ date, onChange }) => {
               <div className="filter-by-date-custom-date-container">
                 <div className="custom-date-container">
                   <div className="custom-date-label">{gettext('Start date')}</div>
-                  <Picker
+                  <DateAndTimePicker
                     showHourAndMinute={false}
                     disabledDate={disabledStartDate}
                     value={time.from}
@@ -180,7 +180,7 @@ const FilterByDate = ({ date, onChange }) => {
                 </div>
                 <div className="custom-date-container">
                   <div className="custom-date-label">{gettext('End date')}</div>
-                  <Picker
+                  <DateAndTimePicker
                     showHourAndMinute={false}
                     disabledDate={disabledEndDate}
                     value={time.to}
