@@ -75,7 +75,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   }, [isLoading]);
 
   const renderLabel = useCallback((count, label) => {
-    if (count === 0) return gettext('No') + ' ' + label;
+    if (!count || count === 0) return gettext('No') + ' ' + label;
     return count + ' ' + label;
   }, []);
 
