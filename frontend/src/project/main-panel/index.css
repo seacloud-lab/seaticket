@@ -7,12 +7,3 @@
   align-items: center;
   position: relative;
 }
-
-.sea-qa-ticket-priority-dropdown-item:focus .sea-qa-icon-svg-priority-02,
-.sea-qa-ticket-priority-dropdown-item:hover .sea-qa-icon-svg-priority-02, 
-.sea-qa-ticket-priority-dropdown-item:focus .sea-qa-icon-svg-priority-03,
-.sea-qa-ticket-priority-dropdown-item:hover .sea-qa-icon-svg-priority-03, 
-.sea-qa-ticket-priority-dropdown-item:focus .sea-qa-icon-svg-priority-04,
-.sea-qa-ticket-priority-dropdown-item:hover .sea-qa-icon-svg-priority-04 {
-  color: #fff !important;
-}
