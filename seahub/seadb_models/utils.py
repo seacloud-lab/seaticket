@@ -354,7 +354,6 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         TicketsTable.state.name,
         TicketsTable.substate.name,
         TicketsTable.type.name,
-        TicketsTable.tags.name,
         TicketsTable.assignees.name,
         TicketsTable.participants.name,
         TicketsTable.creator.name,
@@ -487,7 +486,7 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
 
     index_column_names = [KnowledgeBaseTable.creator.name, KnowledgeBaseTable.created_time.name,
                           KnowledgeBaseTable.last_modifier.name, KnowledgeBaseTable.modified_time.name,
-                          KnowledgeBaseTable.deleted.name, KnowledgeBaseTable.tags.name]
+                          KnowledgeBaseTable.deleted.name]
     for column_name in index_column_names:
         seadb_api.create_column_index(
             project_uuid,

@@ -333,46 +333,6 @@ class KnowledgeBaseAPIView(APIView):
 
         return Response({'row': row}, status=status.HTTP_200_OK)
 
-# class KnowledgeBaseMetadataAPIView(APIView):
-#     authentication_classes = (TokenAuthentication, SessionAuthentication)
-#     permission_classes = (IsAuthenticated,)
-#     throttle_classes = (UserRateThrottle,)
-#
-#     @require_org_context
-#     def get(self, request, project_uuid):
-#         # resource check
-#         project = Projects.objects.get_project_by_uuid(project_uuid)
-#         if not project:
-#             error_msg = 'Project not found.'
-#             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-#         workspace = project.workspace
-#
-#         # permission check
-#         username = request.user.username
-#         if not check_project_permission(username, workspace.owner):
-#             error_msg = 'Permission denied.'
-#             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-#
-#         seadb_api = SeaDBAPI(username)
-#         try:
-#             base_metadata = seadb_api.get_base_metadata(project_uuid)
-#             kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-#             kb_column_name_to_return_name = {
-#                 KnowledgeBaseTable.tags.name: 'tags',
-#             }
-#             select_option_metadata = {}
-#             for column in kb_meta.get('columns'):
-#                 column_name = column.get('name')
-#                 return_name = kb_column_name_to_return_name.get(column_name)
-#                 if return_name:
-#                     column_data = column.get('data', {}) or {}
-#                     select_option_metadata[return_name] = column_data
-#         except Exception as e:
-#             logger.error(e)
-#             error_msg = 'Internal Server Error'
-#             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-#         return Response(select_option_metadata)
-#
 
 class KnowledgeBasesTrashAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
