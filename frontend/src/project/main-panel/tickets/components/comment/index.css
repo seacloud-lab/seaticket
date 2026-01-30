@@ -89,7 +89,7 @@
   background-color: #e1e4e8;
 }
 
-/* Activity 后面紧跟的 Comment 需要额外的顶部间距 */
+/* Comment after Activity needs extra top margin */
 .sea-qa-project-ticket-activity + .sea-qa-project-ticket-comment {
   margin-top: 8px;
 }
