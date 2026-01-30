@@ -9,10 +9,13 @@ class Comment {
     this.creator = object.creator || '';
 
     this.content = object.content || '';
+    // keep original time for sorting
+    this._created_time = object.created_time || '';
+    this._modified_time = object.modified_time || '';
     this.created_time = object.created_time || '';
     this.modified_time = object.modified_time || '';
 
-    // update
+    // format time for display
     if (this.created_time) {
       this.created_time = dayjs(this.created_time).fromNow();
     }

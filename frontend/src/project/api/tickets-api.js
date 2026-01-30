@@ -161,6 +161,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  listProjectTicketActivities(projectUuid, ticketNumber, page = 1, perPage = 100) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/' + ticketNumber + '/activities/';
+    return this.req.get(url, { params: { page, per_page: perPage } });
+  }
+
   // upload file
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';

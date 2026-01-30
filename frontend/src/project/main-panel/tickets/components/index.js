@@ -1,3 +1,4 @@
+export { default as Activity } from './activity';
 export { default as Comment } from './comment';
 export { default as Option } from './option';
 export { default as OptionDialog } from './option-dialog';

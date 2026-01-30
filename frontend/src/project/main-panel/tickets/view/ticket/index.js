@@ -18,6 +18,7 @@ import {
   StateSettings, SubStateSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
+import Activity from '../../components/activity';
 import StatusToggleButton from './status-toggle-btn';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { ticketsAPI } from '../../../../api';
@@ -35,6 +36,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
+  const [activities, setActivities] = useState([]);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -101,6 +103,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));
+
+      // update activities to immediately display new changes
+      const newActivities = res.data.activities || [];
+      if (newActivities.length > 0) {
+        setActivities(prevActivities => [...prevActivities, ...newActivities]);
+      }
+
       return data;
     });
   }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
@@ -294,6 +303,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     lastTicketID.current = ticketID;
     setLoading(true);
     setTicket(null);
+    setActivities([]);
+
+    // Load ticket data
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
       handleUpdateRowsCacheData(ticketID, res.data.ticket);
       const ticket = new TicketModel(res.data.ticket);
@@ -303,6 +315,14 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setLoading(false);
+    });
+
+    // Load activities
+    ticketsAPI.listProjectTicketActivities(projectUuid, ticketID).then(res => {
+      setActivities(res.data.activities || []);
+    }).catch(error => {
+      // Activities loading failure is not critical
+      console.error('Failed to load activities:', error);
     });
   }, [projectUuid, ticketID, handleUpdateRowsCacheData]);
 
@@ -336,10 +356,26 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     };
   }, []);
 
+  // Merge comments and activities into a timeline
+  const timeline = useMemo(() => {
+    if (!ticket) return [];
+    const { comments = [] } = ticket;
+    const items = [
+      ...comments.map(c => ({ ...c, itemType: 'comment' })),
+      ...activities.map(a => ({ ...a, itemType: 'activity' }))
+    ];
+    // use original time for sorting: comments use _created_time, activities use created_time
+    return items.sort((a, b) => {
+      const timeA = a.itemType === 'comment' ? a._created_time : a.created_time;
+      const timeB = b.itemType === 'comment' ? b._created_time : b.created_time;
+      return new Date(timeA) - new Date(timeB);
+    });
+  }, [ticket, activities]);
+
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
-  const { id, state, title, creator, comments = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -376,22 +412,37 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             isSmallScreen={isSmallScreen}
             comment={ticket}
             isShowStatus={true}
+            showTimeline={timeline.length > 0}
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
             onModify={onContentChange}
           />
-          {comments.map(comment => {
+          {timeline.map((item, index) => {
+            const hasNextItem = index < timeline.length - 1;
+            const nextItem = hasNextItem ? timeline[index + 1] : null;
+            const nextIsComment = nextItem?.itemType === 'comment';
+            if (item.itemType === 'activity') {
+              return (
+                <Activity
+                  key={`activity-${item.id}`}
+                  activity={item}
+                  isSmallScreen={isSmallScreen}
+                  nextIsComment={nextIsComment}
+                />
+              );
+            }
             return (
               <Comment
-                key={comment.id}
+                key={`comment-${item.id}`}
                 isSmallScreen={isSmallScreen}
-                readonly={!(comment.creator === user.email || isAdmin)}
-                comment={comment}
+                showTimeline={hasNextItem}
+                readonly={!(item.creator === user.email || isAdmin)}
+                comment={item}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
                 onDelete={(comment) => deleteComment(id, comment.id)}
-                onModify={(content, callback) => handleModifyComment(comment.id, content, callback)}
+                onModify={(content, callback) => handleModifyComment(item.id, content, callback)}
               />
             );
           })}

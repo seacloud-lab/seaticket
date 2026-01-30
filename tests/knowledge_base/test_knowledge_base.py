@@ -46,7 +46,6 @@ class TestKnowledgeBasesPost:
 
         response = api_client.post(url, data, format='json')
 
-        print(f'[DEBUG]: response.data["error_msg"]: {response.data["error_msg"]}')
         assert response.status_code == 404
         assert 'not found' in response.data['error_msg']
 

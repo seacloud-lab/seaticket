@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from seahub.seadb_models.models import TicketActivitiesTable
 from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
@@ -247,6 +248,16 @@ def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
     return rows
 
 
+def delete_ticket_activities_by_ids(seadb_api, project_uuid, ticket_ids):
+    ticket_ids_str = ", ".join(map(str, ticket_ids))
+    sql = (
+        f"DELETE FROM `{TicketActivitiesTable.gen_table_name()}` "
+        f"WHERE `ticket_id` IN ({ticket_ids_str})"
+    )
+    rows = seadb_api.query_rows(project_uuid, sql).get('results')
+    return rows
+
+
 def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, option_ids):
     option_data = {
         'table_id': table_id,
@@ -336,3 +347,111 @@ def send_ticket_update_msg(project_uuid):
             logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
+
+
+def compare_ticket_changes(old_ticket, new_data):
+    """ compare ticket changes, return changes list
+
+    Returns:
+        list of (activity_type, field_name, old_value, new_value)
+    """
+    changes = []
+
+    # title changed
+    if 'title' in new_data and new_data['title'] != old_ticket.get('title'):
+        changes.append(('title_changed', 'title', old_ticket.get('title'), new_data['title']))
+
+    # state changed
+    if 'state' in new_data and new_data['state'] != old_ticket.get('state'):
+        changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
+
+    # substate changed
+    if 'substate' in new_data and new_data['substate'] != old_ticket.get('substate'):
+        changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
+
+    # type changed
+    if 'type' in new_data and new_data['type'] != old_ticket.get('type'):
+        changes.append(('type_changed', 'type', old_ticket.get('type'), new_data['type']))
+
+    # priority changed
+    if 'priority' in new_data and new_data['priority'] != old_ticket.get('priority'):
+        changes.append(('priority_changed', 'priority', old_ticket.get('priority'), new_data['priority']))
+
+    # tags changed
+    if 'tags' in new_data:
+        old_tags = set(old_ticket.get('tags') or [])
+        new_tags = set(new_data['tags'] or [])
+        added = new_tags - old_tags
+        removed = old_tags - new_tags
+        if added:
+            changes.append(('tags_added', 'tags', None, list(added)))
+        if removed:
+            changes.append(('tags_removed', 'tags', list(removed), None))
+
+    # assignees changed
+    if 'assignees' in new_data:
+        old_assignees = set(old_ticket.get('assignees') or [])
+        new_assignees = set(new_data['assignees'] or [])
+        added = new_assignees - old_assignees
+        removed = old_assignees - new_assignees
+        if added:
+            changes.append(('assignees_added', 'assignees', None, list(added)))
+        if removed:
+            changes.append(('assignees_removed', 'assignees', list(removed), None))
+
+    return changes
+
+
+def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, changes):
+    if not changes:
+        return []
+
+    rows = []
+    now = datetime.now(timezone.utc).isoformat()
+    for activity_type, field_name, old_value, new_value in changes:
+        detail = json.dumps({
+            'field_name': field_name,
+            'old_value': old_value,
+            'new_value': new_value,
+        })
+        rows.append({
+            'ticket_id': ticket_id,
+            'activity_type': activity_type,
+            'detail': detail,
+            'creator': creator,
+            'created_time': now,
+        })
+
+    if not rows:
+        return []
+
+    res = seadb_api.insert_rows(project_uuid, TicketActivitiesTable.gen_table_name(), rows)
+    pks = res.get('pks', [])
+
+    # Build activity list with the returned pks
+    activities = []
+    for i, (activity_type, field_name, old_value, new_value) in enumerate(changes):
+        activity = {
+            'id': pks[i] if i < len(pks) else None,
+            'ticket_id': ticket_id,
+            'activity_type': activity_type,
+            'field_name': field_name,
+            'old_value': old_value,
+            'new_value': new_value,
+            'creator': creator,
+            'created_time': now,
+        }
+        activities.append(activity)
+
+    return activities
+
+
+def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50):
+    sql = (
+        f"SELECT * FROM `{TicketActivitiesTable.gen_table_name()}` "
+        f"WHERE `ticket_id` = {ticket_id} "
+        f"ORDER BY `created_time` ASC "
+        f"LIMIT {limit} OFFSET {start}"
+    )
+    res = seadb_api.query_rows(project_uuid, sql)
+    return res.get('results', [])
