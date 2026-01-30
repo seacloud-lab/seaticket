@@ -5,12 +5,12 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
-import { TagsSettings } from '../../../tickets/components/ticket-settings';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useData, useTags } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
@@ -102,9 +102,6 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
-        value = value.map(v => Number(v));
-      }
       serverData[columnName] = value;
     });
     knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, serverData).then(res => {

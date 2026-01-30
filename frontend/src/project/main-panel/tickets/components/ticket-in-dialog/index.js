@@ -7,10 +7,11 @@ import { CenteredError, CenteredLoading } from '@/components';
 import { gettext, lang } from '@/constants';
 import { useTags } from '@/project/hooks';
 import {
-  CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings,
+  CollaboratorsSettings, TypeSettings, RateSettings,
   StateSettings, SubStateSettings,
 } from '../ticket-settings';
 import Comment from '../comment';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 

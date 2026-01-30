@@ -66,8 +66,9 @@ const TagsEditor = forwardRef(({
   }, [createTag]);
 
   const handleChange = useCallback((newValue) => {
-    if (!isCellValueChanged(newValue, value)) return;
-    setValue(newValue);
+    const validValue = Array.isArray(newValue) ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(validValue, value)) return;
+    setValue(validValue);
   }, [value]);
 
   const handleDeselect = useCallback((tagId) => {

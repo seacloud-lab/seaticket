@@ -14,7 +14,7 @@ import {
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
-  CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings,
+  CollaboratorsSettings, TypeSettings, RateSettings,
   StateSettings, SubStateSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
@@ -28,6 +28,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
@@ -80,9 +81,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
-        value = value.map(v => Number(v));
-      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
+      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
         value = typeOption.name;
       } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {

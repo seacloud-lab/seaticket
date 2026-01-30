@@ -6,7 +6,6 @@ export { default as RelatedIssuesDialog } from './related-issues-dialog';
 export { default as TicketInDialog } from './ticket-in-dialog';
 export {
   CollaboratorsSettings,
-  TagsSettings,
   TypeSettings,
   RateSettings,
   StateSettings,

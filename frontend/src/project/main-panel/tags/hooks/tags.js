@@ -4,7 +4,6 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { TagsData, Tag } from '../models';
 import projectAPI from '@/project/api/project-api';
-import { error } from 'autoprefixer/lib/utils';
 
 const TagsContext = React.createContext(null);
 
@@ -113,8 +112,6 @@ export const TagsProvider = ({ projectUuid, children }) => {
       setLoading(false);
     });
   }, []);
-
-  console.log(tagsData);
 
   return (
     <TagsContext.Provider value={{

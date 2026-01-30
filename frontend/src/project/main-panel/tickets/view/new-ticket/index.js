@@ -7,7 +7,7 @@ import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
-import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -16,6 +16,7 @@ import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { useMetadata } from '../../hooks';
 import { useData, useTags } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
@@ -85,10 +86,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === 'type' && value) {
+      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
         value = typeOption.name;
-      } else if (columnName === 'state' && value) {
+      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {
         value = value === '0001' ? 'open' : 'closed';
       }
       serverData[columnName] = value;

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Option from '../../../../../components/option';
+import Option from '@/project/components/option';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
@@ -71,8 +71,9 @@ const TagsSettings = ({
   }, [createTag]);
 
   const handleChange = useCallback((newValue) => {
-    if (!isCellValueChanged(newValue, value)) return;
-    onChange(newValue);
+    const validValue = Array.isArray(newValue) ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(validValue, value)) return;
+    onChange(validValue);
   }, [onChange, value]);
 
   const onHotKey = useCallback((event) => {
@@ -115,7 +116,7 @@ const TagsSettings = ({
           className="sea-qa-tags-selector-popover"
           placeholder={gettext('Search tags')}
           emptyTip={gettext('No tags')}
-          value={value}
+          value={Array.isArray(value) ? value.map(v => v + '') : value}
           options={tagOptions}
           optionHeight={36}
           onToggle={closeEditor}

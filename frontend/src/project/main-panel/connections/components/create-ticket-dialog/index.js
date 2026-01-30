@@ -4,11 +4,12 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { ticketsAPI, connectionsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
-import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
+import { CollaboratorsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { useData, useMetadata, useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
@@ -42,10 +43,6 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
         validType = typeRow.name;
       }
     }
-    let validTags = tags;
-    if (Array.isArray(validTags) && validTags.length > 0) {
-      validTags = validTags.map(tag => Number(tag));
-    }
 
     const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
     const substateOption = substateOptions[0];
@@ -55,7 +52,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
       content: ticket_content,
       type: validType,
       assignees,
-      tags: validTags,
+      tags,
       priority,
       substate: substateOption?.name,
     };
