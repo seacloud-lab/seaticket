@@ -1,13 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import TopBar from '../../top-bar';
 import { useKnowledgePage } from '../hooks/knowledge-page';
-import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../constants';
+import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
 import { IconButton, CustomizeDropdownMenu, CustomizeDropdownMoreToggle, CustomizeDropdownItem } from '@/components';
 import { Dropdown } from 'reactstrap';
 import { gettext } from '@/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
-import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import eventBus from '@/utils/event-bus';
 
 import './index.css';
 
@@ -74,17 +72,11 @@ const KnowledgeTopBar = ({ title }) => {
       );
     }
 
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS && childrenPageSlugId === KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
-      return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="plus" />
-      );
-    }
-
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW || pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       return null;
     }
 
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS || pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) return null;
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) return null;
 
     return (
       <>

@@ -23,9 +23,6 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS && childrenPageSlugId !== KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
-      urlPart = urlPart + childrenPageSlugId + '/';
-    }
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       urlPart = '/trash/';
     }
@@ -54,16 +51,11 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     const projectNameIndex = decodePathname.indexOf(part);
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
-    const [, pageIdFromURL = '', childrenPageSlugIdFromURL = ''] = params;
+    const [, pageIdFromURL = ''] = params;
     let pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
     let childrenPageSlugId = KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL;
     if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
       pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.NEW;
-    } else if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.TAGS) {
-      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.TAGS;
-      if (childrenPageSlugIdFromURL !== KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
-        childrenPageSlugId = childrenPageSlugIdFromURL || KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL;
-      }
     } else if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.TRASH;
     } else {

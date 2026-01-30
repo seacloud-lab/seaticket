@@ -5,7 +5,7 @@ import context from '@/sea-metadata/context';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { knowledgeBaseAPI } from '@/project/api';
 import {
-  KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID, KB_TABLE_NAME,
+  KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME,
   KNOWLEDGE_PREDEFINED_COLUMN_NAME, KNOWLEDGE_BASE_TYPE,
 } from '../../constants';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
@@ -132,7 +132,6 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
         createContextMenuOptions={createContextMenuOptions}
         tagsData={tagsData}
         createTag={createTag}
-        toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
       />
       {isShowKBDetailsDialog && (
         <ResourceDetailsDialog

@@ -9,14 +9,12 @@ import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { AddButton, RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '@/project/constants';
-import { useTags } from '@/project/hooks';
 
 import './index.css';
 
 const TicketTopBar = ({ title, type, permission }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
   const { typesData, substatesData } = useMetadata();
-  const { tagsData } = useTags();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
@@ -35,23 +33,6 @@ const TicketTopBar = ({ title, type, permission }) => {
         onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
       />
     );
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
-      if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return (<span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>);
-      }
-      const tag = getRowById(tagsData, childrenPageSlugId);
-      const customTitle = gettext('Tags') + ' / ' + (tag?.name || '');
-      return (
-        <>
-          <IconButton
-            icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
-            onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
-          />
-          <span className="text-truncate" title={customTitle}>{customTitle}</span>
-        </>
-      );
-    }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
         return (<span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>);
@@ -101,16 +82,10 @@ const TicketTopBar = ({ title, type, permission }) => {
         <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, tagsData, typesData, substatesData, togglePageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, title, typesData, substatesData, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-      if (!isRW) return null;
-      return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="plus" />
-      );
-    }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (

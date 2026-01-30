@@ -71,10 +71,15 @@ const TagsSettings = ({
   }, [createTag]);
 
   const handleChange = useCallback((newValue) => {
-    const validValue = Array.isArray(newValue) ? newValue.map(v => Number(v)) : newValue;
-    if (!isCellValueChanged(validValue, value)) return;
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
     onChange(validValue);
-  }, [onChange, value]);
+  }, [value, tagsData, onChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover('tags-editor-popover')) return;
