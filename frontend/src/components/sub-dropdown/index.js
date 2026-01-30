@@ -1,9 +1,9 @@
 import React from 'react';
-import { Dropdown } from 'reactstrap';
+import classnames from 'classnames';
+import { Dropdown, DropdownToggle } from 'reactstrap';
 import { hasOwnProperty } from '@/utils/object-utils';
 import CustomizeDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
-import SubDropdownToggle from './sub-dropdown-toggle';
 
 import './index.css';
 
@@ -25,13 +25,15 @@ const SubDropdown = ({
       toggle={onToggle}
       onMouseMove={(e) => e.stopPropagation()}
     >
-      <SubDropdownToggle
-        text={menu.label}
-        className={menu.className}
-        icon="arrow-down"
+      <DropdownToggle
+        tag="div"
+        className={classnames('sea-qa-sub-dropdown-toggle dropdown-item font-weight-normal rotate-icon-270', menu.className)}
         onMouseEnter={(event) => onShow && onShow(event, menu)}
         onClick={(event) => onToggle && onToggle(event, menu)}
-      />
+      >
+        <Text className="mr-auto">{menu.label}</Text>
+        <Icon symbol="arrow-down" className="mr-0 mt-0" />
+      </DropdownToggle>
       <CustomizeDropdownMenu fixed={true} style={{ marginLeft: -1 }}>
         {menu.children.map((item) => {
           const { key, label, icon, className, callback } = item;

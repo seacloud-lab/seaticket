@@ -6,8 +6,6 @@ import context from '@/sea-metadata/context';
 import { SubDropdown, ModalPortal } from '@/components';
 import { isFunction } from '@/utils/type-detection';
 
-import './index.css';
-
 const ContextMenu = ({
   createContextMenuOptions,
   target,
@@ -137,18 +135,16 @@ const ContextMenu = ({
     } else {
       document.removeEventListener('mousedown', handleHide);
     }
-
     return () => {
       document.removeEventListener('mousedown', handleHide);
     };
   }, [visible, handleHide]);
 
-  if (!visible) return null;
-  if (options.length === 0) return null;
+  if (!visible || options.length === 0) return null;
 
   return (
     <ModalPortal>
-      <div className="dropdown-menu sea-metadata-contextmenu" style={position} ref={menuRef}>
+      <div className="dropdown-menu sea-qa-dropdown-menu d-block" style={position} ref={menuRef}>
         {options.map((option, index) => {
           if (option === 'Divider') {
             return <DropdownItem key={index} divider />;

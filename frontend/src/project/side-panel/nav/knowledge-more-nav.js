@@ -1,10 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import { Dropdown, DropdownToggle, Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { Icon, ModalPortal, toaster } from '../../../components';
 import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 import { NAVIGATION_BASE_PADDING } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
+import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 
 import './tickets-more-nav.css';
 
@@ -64,18 +65,20 @@ const KnowledgeMoreNav = ({ onClick }) => {
           <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
           <span className="sea-qa-project-navigation-item-name">{window.gettext('More')}</span>
         </DropdownToggle>
-        <DropdownMenu
+        <CustomizeDropdownMenu
           className="position-fixed"
           modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
         >
-          <DropdownItem className="sea-qa-dropdown-item" onClick={handleImportClick}>
-            <span>{window.gettext('Import records from XLSX')}</span>
-          </DropdownItem>
+          <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={handleImportClick}>
+            <CustomizeDropdownItemIcon symbol={'import-page'} className="sea-qa-dropdown-item-icon" />
+            <CustomizeDropdownItemText>{window.gettext('Import records from XLSX')}</CustomizeDropdownItemText>
+          </CustomizeDropdownItem>
           <div className="dropdown-divider"></div>
-          <DropdownItem className="sea-qa-dropdown-item" onClick={handleTrashClick}>
-            <span>{BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH].name}</span>
-          </DropdownItem>
-        </DropdownMenu>
+          <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={handleTrashClick}>
+            <CustomizeDropdownItemIcon symbol={'trash'} className="sea-qa-dropdown-item-icon" />
+            <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH].name}</CustomizeDropdownItemText>
+          </CustomizeDropdownItem>
+        </CustomizeDropdownMenu>
       </Dropdown>
 
       {isShowImportDialog && (
