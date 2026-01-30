@@ -6,7 +6,6 @@ const AIChatToolsContext = React.createContext(null);
 export const AIChatToolsProvider = ({ children }) => {
   const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
   const [attachments, updateAttachments] = useState([]);
-  const [clearContext, setClearContext] = useState(false);
 
   const removeAttachment = useCallback((attachment, index) => {
     let newAttachments = attachments.slice(0);
@@ -26,19 +25,10 @@ export const AIChatToolsProvider = ({ children }) => {
     setResolveType(resolveType);
   }, []);
 
-  const updateClearContext = useCallback((clearContext) => {
-    setClearContext(clearContext);
-  }, []);
-
-  const resetClearContext = useCallback(() => {
-    setClearContext(false);
-  }, []);
-
   return (
     <AIChatToolsContext.Provider value={{
       attachments, updateAttachments, removeAttachment, clearAttachments,
       resolveType, updateResolveType, resetResolveType,
-      clearContext, updateClearContext, resetClearContext
     }}>
       {children}
     </AIChatToolsContext.Provider>

@@ -22,6 +22,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
+  const [clearContext, setClearContext] = useState(false);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -63,14 +64,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       return;
     }
     const newChatHistories = chatHistories.slice(0);
-    if (clearContext) {
-      newChatHistories.push(
-        new ChatMessage({
-          message: '<break_context>',
-          isOperation: true
-        })
-      );
-    }
     newChatHistories.push(new ChatMessage({
       message: {
         [CHAT_MESSAGE_TYPE.TEXT]: validMessage,
@@ -97,6 +90,30 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
 
+  const toggleClearContext = useCallback(() => {
+    let newChatHistories = chatHistories.slice(0);
+    if (!clearContext) {
+      newChatHistories.push(
+        new ChatMessage({
+          message: '<break_context>',
+          id: 'customize_break_context',
+        })
+      );
+      updateChatHistories(newChatHistories);
+    } else {
+      const lastChat = newChatHistories[newChatHistories.length - 1];
+      if (lastChat._id === 'customize_break_context') {
+        newChatHistories = newChatHistories.slice(0, -1);
+        updateChatHistories(newChatHistories);
+      }
+    }
+    setClearContext(!clearContext);
+  }, [clearContext, chatHistories]);
+
+  const resetClearContext = useCallback(() => {
+    setClearContext(false);
+  }, []);
+
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
     const problem = messageInputRef.current?.getProblem() || '';
@@ -118,14 +135,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
 
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
-        if (item.role === 'chat_manager') {
-          return new ChatMessage({
-            _id: item.id,
-            message: item.content,
-            isOperation: true,
-          });
-        }
-        else if (item.role === 'user') {
+        if (item.role === 'user') {
           let attachments = item?.attachments || [];
           return new ChatMessage({
             _id: item.id,
@@ -134,6 +144,11 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
               [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
             },
             isUserSpeak: true,
+          });
+        } else if (item.role === 'chat_manager') {
+          return new ChatMessage({
+            _id: item.id,
+            message: item.content,
           });
         }
 
@@ -267,6 +282,9 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
           hasHistoryMessages={!isEmpty}
+          clearContext={clearContext}
+          toggleClearContext={toggleClearContext}
+          resetClearContext={resetClearContext}
         />
       </div>
     </div>
