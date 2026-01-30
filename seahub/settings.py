@@ -489,7 +489,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'seaqa_web.log'),
+            'filename': os.path.join(LOG_DIR, 'seaqa-web.log'),
             'formatter': 'file'
         },
     },
