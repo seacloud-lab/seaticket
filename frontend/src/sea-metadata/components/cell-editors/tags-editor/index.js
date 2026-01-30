@@ -108,7 +108,7 @@ const TagsEditor = forwardRef(({
         optionHeight="fit-content"
         placeholder={gettext('Search tags')}
         emptyTip={gettext('No tags available')}
-        value={value}
+        value={Array.isArray(value) ? value.map(v => String(v)) : []}
         options={options}
         onChange={handleChange}
         onCreate={context.canModify() ? handleCreateTag : null}

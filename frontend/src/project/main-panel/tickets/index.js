@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { TicketsPageProvider, useTicketsPage } from './hooks';
-import Tags from './view/tags';
 import Types from './view/types';
-import TagTickets from './view/tag-tickets';
 import TypeTickets from './view/type-tickets';
 import Substates from './view/substates';
 import SubstateTickets from './view/substate-tickets';
@@ -34,10 +32,6 @@ const Page = ({ toggleBar, type }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId } = useTicketsPage();
   if (isLoading) return null;
-  if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
-    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Tags { ...props } />);
-    return (<TagTickets { ...props } tagID={childrenPageSlugId} />);
-  }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
     if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
     return (<TypeTickets { ...props } typeID={childrenPageSlugId}/>);

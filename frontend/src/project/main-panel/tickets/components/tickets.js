@@ -21,7 +21,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import RelatedIssuesDialog from './related-issues-dialog';
 import { isFunction } from '@/utils/type-detection';
-import { useData } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const Tickets = ({
@@ -35,10 +35,10 @@ const Tickets = ({
   const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
   const { updateAttachments } = useAIChatTools();
   const {
-    tagsData, createTag,
     typesData, createType,
     substatesData, createSubstate,
   } = useMetadata();
+  const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows,
@@ -233,7 +233,6 @@ const Tickets = ({
         columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
         tagsData={tagsData}
         createTag={createTag}
-        toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
         typesData={typesData}
         createType={createType}
         toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}

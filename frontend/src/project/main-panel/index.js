@@ -8,9 +8,10 @@ import Ask from './ask';
 import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
+import Tags from './tags';
 import Inbox from './inbox';
 import { useNotification } from '@/components/common/notification/hooks/notification';
-import { useMetadata } from './tickets/hooks';
+import { useTags, useMetadata } from '../hooks';
 import { useConnections } from './connections/hooks';
 import { CenteredLoading } from '@/components';
 
@@ -19,9 +20,10 @@ import './index.css';
 const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocalBar }) => {
   const { isLoading: isMetadataLoading } = useMetadata();
   const { isLoading: isConnectionsLoading } = useConnections();
+  const { isLoading: isTagsLoading } = useTags();
   const barKey = activeBar[0];
   if (!barKey) return (<TopBar />);
-  if (isMetadataLoading || isConnectionsLoading) {
+  if (isMetadataLoading || isConnectionsLoading || isTagsLoading) {
     return (
       <>
         <TopBar />
@@ -44,7 +46,6 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.TICKET:
     case BAR_TYPE.MY_TICKET:
     case BAR_TYPE.TRASH:
-    case BAR_TYPE.TAGS:
     case BAR_TYPE.SUBSTATES:
     case BAR_TYPE.TYPES: {
       return (<Tickets key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
@@ -58,6 +59,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.ANALYZE: {
       return (<Analyze title={title} />);
+    }
+    case BAR_TYPE.TAGS: {
+      return (<Tags title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);

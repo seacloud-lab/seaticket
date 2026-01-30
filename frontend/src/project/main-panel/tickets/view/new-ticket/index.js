@@ -13,9 +13,9 @@ import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { getRowById } from '@/sea-metadata/utils/row';
 import { useMetadata } from '../../hooks';
-import { useData } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
 
 import './index.css';
 
@@ -33,8 +33,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { tagsData, typesData, substatesData, createTag } = useMetadata();
+  const { typesData, substatesData } = useMetadata();
   const { insertRow } = useData();
+  const { tagsData, createTag } = useTags();
 
   const user = useMemo(() => {
     return {
@@ -84,10 +85,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === 'tags' && Array.isArray(value) && value.length > 0) {
-        const tags = getRowsByIds(tagsData, value);
-        value = tags.map(tag => tag.name);
-      } else if (columnName === 'type' && value) {
+      if (columnName === 'type' && value) {
         const typeOption = getRowById(typesData, value);
         value = typeOption.name;
       } else if (columnName === 'state' && value) {

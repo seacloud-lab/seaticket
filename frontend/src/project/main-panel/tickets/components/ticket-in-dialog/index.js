@@ -5,7 +5,7 @@ import { Ticket as TicketModel } from '../../models';
 import { Utils } from '@/utils/utils';
 import { CenteredError, CenteredLoading } from '@/components';
 import { gettext, lang } from '@/constants';
-import { useMetadata } from '../../hooks';
+import { useTags } from '@/project/hooks';
 import {
   CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings,
   StateSettings, SubStateSettings,
@@ -20,7 +20,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
   const [ticket, setTicket] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const { tagsData } = useMetadata();
+  const { tagsData } = useTags();
 
   const ticketRef = useRef(null);
 

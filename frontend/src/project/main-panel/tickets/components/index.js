@@ -1,7 +1,7 @@
 export { default as Activity } from './activity';
 export { default as Comment } from './comment';
-export { default as Option } from './option';
-export { default as OptionDialog } from './option-dialog';
+export { default as Option } from '../../../components/option';
+export { default as OptionDialog } from '../../../components/option-dialog';
 export { default as RelatedIssuesDialog } from './related-issues-dialog';
 export { default as TicketInDialog } from './ticket-in-dialog';
 export {

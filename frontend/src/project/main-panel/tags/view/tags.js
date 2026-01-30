@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import OptionDialog from '../../components/option-dialog';
+import OptionDialog from '@/project/components/option-dialog';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
-import { EVENT_BUS_TYPE } from '../../../../constants';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { useTags } from '@/project/hooks';
 
-const AllTags = ({ projectUuid, permission }) => {
+const Tags = ({ projectUuid, permission }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
-  const { pageSlugId, togglePageSlugId } = useTicketsPage();
+  const { tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useTags();
 
   const columns = useMemo(() => [
     {
@@ -23,23 +22,15 @@ const AllTags = ({ projectUuid, permission }) => {
       editable: false,
       is_name_column: true,
       frozen: true,
-    },
-    {
+    }, {
       type: CellType.TEXT,
       key: 'description',
       name: 'description',
       display_name: gettext('Description'),
       editable: true,
       is_required: false,
-    },
-    {
-      type: CellType.NUMBER,
-      key: 'tickets_count',
-      name: 'tickets_count',
-      display_name: gettext('Tickets count'),
-      editable: false,
-    },
-  ], [pageSlugId, togglePageSlugId]);
+    }
+  ], []);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -234,25 +225,23 @@ const AllTags = ({ projectUuid, permission }) => {
   if (isLoading) return (<CenteredLoading />);
 
   return (
-    <>
-      <SeaMetadata
-        viewID="0000"
-        className="sea-tags-metadata"
-        fixedColumnCount={2}
-        api={api}
-        localStorageNamePrefix={localStorageName}
-        permission={permission}
-        createContextMenuOptions={createContextMenuOptions}
-        viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
-        settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false }}
-        t={t}
-        cascadeUpdateCells={cascadeUpdateCells}
-      >
-        <OptionDialog type={gettext('tag')} />
-      </SeaMetadata>
-    </>
+    <SeaMetadata
+      viewID="0000"
+      className="sea-tags-metadata"
+      fixedColumnCount={2}
+      api={api}
+      localStorageNamePrefix={localStorageName}
+      permission={permission}
+      createContextMenuOptions={createContextMenuOptions}
+      viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
+      settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false }}
+      t={t}
+      cascadeUpdateCells={cascadeUpdateCells}
+    >
+      <OptionDialog type={gettext('tag')} />
+    </SeaMetadata>
   );
 
 };
 
-export default AllTags;
+export default Tags;

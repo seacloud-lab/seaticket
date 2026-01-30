@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTicketsPage, useMetadata } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import OptionDialog from '../../components/option-dialog';
+import OptionDialog from '../../../../components/option-dialog';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';

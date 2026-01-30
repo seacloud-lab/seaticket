@@ -8,18 +8,16 @@ import { CenteredLoading, toaster } from '@/components';
 import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useMetadata } from '@/project/hooks';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
-import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { TagsSettings } from '../../../tickets/components/ticket-settings';
-import { useData } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
 const EditKnowledge = ({ editorAPI, projectUuid }) => {
-  const { tagsData, createTag } = useMetadata();
+  const { tagsData, createTag } = useTags();
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -105,8 +103,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
       if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
-        const tags = getRowsByIds(tagsData, value);
-        value = tags.map(tag => tag.name);
+        value = value.map(v => Number(v));
       }
       serverData[columnName] = value;
     });

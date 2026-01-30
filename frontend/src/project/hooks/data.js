@@ -12,6 +12,7 @@ import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
+import { TagsProvider } from '../main-panel/tags/hooks/tags';
 
 const DataContext = React.createContext(null);
 
@@ -498,13 +499,15 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
-            <MetadataProvider projectUuid={projectUuid}>
-              <ConnectionsProvider projectUuid={projectUuid} >
-                <AnalyzeTaskProvider>
-                  {children}
-                </AnalyzeTaskProvider>
-              </ConnectionsProvider>
-            </MetadataProvider>
+            <TagsProvider projectUuid={projectUuid}>
+              <MetadataProvider projectUuid={projectUuid}>
+                <ConnectionsProvider projectUuid={projectUuid} >
+                  <AnalyzeTaskProvider>
+                    {children}
+                  </AnalyzeTaskProvider>
+                </ConnectionsProvider>
+              </MetadataProvider>
+            </TagsProvider>
           </CollaboratorsProvider>
         </NotificationProvider>
       </AIChatToolsProvider>

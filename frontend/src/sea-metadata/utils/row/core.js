@@ -78,8 +78,7 @@ const convertRowToNameValue = (rowUpdate, { data, typesData, tagsData }) => {
       }
     } else if (type === CellType.TAGS) {
       if (Array.isArray(cellValue) && cellValue.length > 0) {
-        const tags = getRowsByIds(tagsData, cellValue);
-        cellValue = tags.map(tag => tag.name);
+        cellValue = cellValue.map(tagID => Number(tagID));
       }
     } else if (type === CellType.MULTIPLE_SELECT) {
       if (Array.isArray(cellValue) && cellValue.length > 0) {
