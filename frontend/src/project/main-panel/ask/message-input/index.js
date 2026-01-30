@@ -16,8 +16,11 @@ import AttachmentsFormatter from './attachments';
 
 import './index.css';
 
+const { isProjectAdmin } = window.app.pageOptions;
+
 const MessageInput = forwardRef(({
   isReply,
+  isOwner,
   readOnly,
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
@@ -217,7 +220,7 @@ const MessageInput = forwardRef(({
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
-              {hasHistoryMessages && (
+              {hasHistoryMessages && (isProjectAdmin || isOwner) && (
                 <IconButton
                   disabled={disabled}
                   icon="delete"

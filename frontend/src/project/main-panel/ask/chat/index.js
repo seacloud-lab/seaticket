@@ -12,6 +12,7 @@ import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { username } from '@/constants';
 
 import './index.css';
 
@@ -285,6 +286,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           clearContext={clearContext}
           toggleClearContext={toggleClearContext}
           resetClearContext={resetClearContext}
+          isOwner={session?.username === username}
         />
       </div>
     </div>
