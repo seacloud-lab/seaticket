@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownToggle } from 'reactstrap';
 import { Icon } from '../../../components';
 import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 import { NAVIGATION_BASE_PADDING } from '@/constants';
+import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 
 import './tickets-more-nav.css';
 
@@ -29,24 +30,28 @@ const TicketsMoreNav = ({ onClick }) => {
         <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
         <span className="sea-qa-project-navigation-item-name">{window.gettext('More')}</span>
       </DropdownToggle>
-      <DropdownMenu
+      <CustomizeDropdownMenu
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
-          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</span>
-        </DropdownItem>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
-          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</span>
-        </DropdownItem>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
-          <span>{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</span>
-        </DropdownItem>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
+          <CustomizeDropdownItemIcon symbol={'manage-tags'} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
+          <CustomizeDropdownItemIcon symbol={'manage-types'} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
+          <CustomizeDropdownItemIcon symbol={'manage-types'} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
         <div className="dropdown-divider"></div>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
-          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</span>
-        </DropdownItem>
-      </DropdownMenu>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
+          <CustomizeDropdownItemIcon symbol={'trash'} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
+      </CustomizeDropdownMenu>
     </Dropdown>
   );
 };
