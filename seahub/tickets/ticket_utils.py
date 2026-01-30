@@ -190,15 +190,6 @@ def convert_ticket_select_column_name_to_option_id(columns, ticket):
         for opt in options:
             if opt.get('name') == ticket.get('type'):
                 ticket['type'] = opt.get('id')
-    if ticket.get('tags'):
-        column = get_column_from_columns_by_name(columns, 'tags')
-        column_data = column.get('data') or {}
-        options = column_data.get('options', []) or []
-        tag_ids = []
-        for tag_option in options:
-            if tag_option.get('name') in ticket.get('tags'):
-                tag_ids.append(tag_option.get('id'))
-        ticket['tags'] = tag_ids
     if ticket.get('substate'):
         column = get_column_from_columns_by_name(columns, 'substate')
         column_data = column.get('data') or {}

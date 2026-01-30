@@ -223,7 +223,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],
-                TicketsTable.tag_ids.name: tag_ids,
+                TicketsTable.tags.name: [int(tag_id) for tag_id in tag_ids],
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: now_datetime,
@@ -324,7 +324,7 @@ class TicketsAPIView(APIView):
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
             if 'tags' in row_data:
-                updated_row[TicketsTable.tag_ids.name] = [int(tag_id) for tag_id in row_data.get('tags', [])]
+                updated_row[TicketsTable.tags.name] = [int(tag_id) for tag_id in row_data.get('tags', [])]
             if 'type' in row_data:
                 updated_row[TicketsTable.type.name] = row_data.get('type')
             if 'content' in row_data:

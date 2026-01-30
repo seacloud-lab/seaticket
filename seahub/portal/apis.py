@@ -128,7 +128,7 @@ class PortalTicketsView(APIView):
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: [],
                 TicketsTable.participants.name: [username],
-                TicketsTable.tag_ids.name: tag_ids,
+                TicketsTable.tags.name: tag_ids,
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: now_datetime,
@@ -264,35 +264,6 @@ class PortalTicketTypesView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'metadata': res.get('metadata'), 'tags': res.get('results')})
-
-
-class PortalTicketTagsView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        username = request.user.username
-        seadb_api = SeaDBAPI(username)
-
-        try:
-            tag_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select')
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'tags': tag_options})
 
 
 class PortalKnowledgeBaseViewsView(APIView):

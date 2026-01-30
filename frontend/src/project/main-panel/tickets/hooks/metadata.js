@@ -4,7 +4,7 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ticketsAPI } from '../../../api';
 import { OptionsData, Option } from '../models';
-import {Metadata, Row} from '@/sea-metadata/models';
+import { Row } from '@/sea-metadata/models';
 import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
 
 const MetadataContext = React.createContext(null);

@@ -35,29 +35,6 @@ def get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids):
     return seadb_api.query_rows(project_uuid, sql).get('results', [])
 
 
-def convert_kb_record_tags_name_to_id(columns, record):
-    if not record or not record.get('tags'):
-        return record
-
-    column = None
-    for col in columns:
-        if col.get('name') == 'tags':
-            column = col
-            break
-
-    if not column:
-        return record
-
-    column_data = column.get('data') or {}
-    options = column_data.get('options', []) or []
-    tag_ids = []
-    for tag_option in options:
-        if tag_option.get('name') in record.get('tags'):
-            tag_ids.append(tag_option.get('id'))
-    record['tags'] = tag_ids
-    return record
-
-
 def get_kb_counts_group_by_column_name(seadb_api, project_uuid, column_name, column_type='single-select'):
     """
     count single-select and multiple-select column for knowledge base

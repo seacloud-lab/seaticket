@@ -3,7 +3,7 @@ import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
-import { useMetadata } from '../../hooks/metadata';
+import { useMetadata } from '@/project/hooks';
 import { knowledgeBaseAPI } from '@/project/api';
 import {
   KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID, KB_TABLE_NAME,
@@ -11,13 +11,12 @@ import {
 } from '../../constants';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
-import { CenteredLoading } from '@/components';
 import { useData } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
-  const { isLoading: isMetadataLoading, tagsData, createTag } = useMetadata();
+  const { tagsData, createTag } = useMetadata();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, deleteRow, deleteRows,
@@ -118,8 +117,6 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     const kb = KBData[newIndex];
     setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
   }, [currentKB, metadataRef]);
-
-  if (isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <>

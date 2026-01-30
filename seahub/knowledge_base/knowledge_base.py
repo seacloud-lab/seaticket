@@ -21,7 +21,7 @@ from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
-    send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
+    send_knowledge_base_update_msg
 from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,6 @@ class KnowledgeBasesAPIView(APIView):
 
         tag_ids = request.data.get('tags', "[]")
         tag_ids = json.loads(tag_ids)
-        tag_ids = [1,2]
 
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -93,18 +92,11 @@ class KnowledgeBasesAPIView(APIView):
                 logger.error(e)
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        # from seahub.seadb_models.utils import init_knowledge_base_seadb_table
-        # metadata = seadb_api.get_base_metadata(project_uuid)
-        # kb_meta = get_current_table_metadata(metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-        # print('kb_meta')
-        # print(kb_meta)
-        # seadb_api.delete_table(project_uuid, kb_meta.get('id'))
-        # init_knowledge_base_seadb_table(seadb_api, project.uuid)
         try:
             row = {
                 KnowledgeBaseTable.title.name: title,
                 KnowledgeBaseTable.content.name: content_text,
-                KnowledgeBaseTable.tag_ids.name: tag_ids,
+                KnowledgeBaseTable.tags.name: tag_ids,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
@@ -248,7 +240,6 @@ class KnowledgeBaseAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
-            record = convert_kb_record_tags_name_to_id(columns, record)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

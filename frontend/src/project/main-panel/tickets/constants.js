@@ -18,7 +18,7 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   AI_SUMMARY: 'ai_summary',
   AI_PROCESSED_TIME: 'ai_processed_time',
   ASSIGNEES: 'assignees',
-  TAGS: 'tags',
+  TAGS: 'tag_ids',
   PARTICIPANTS: 'participants',
   CREATED_TIME: 'created_time',
   MODIFIED_TIME: 'modified_time',

@@ -8,7 +8,7 @@ import { CenteredLoading, toaster } from '@/components';
 import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useMetadata } from '../../hooks/metadata';
+import { useMetadata } from '@/project/hooks';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
@@ -19,7 +19,7 @@ import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import './index.css';
 
 const EditKnowledge = ({ editorAPI, projectUuid }) => {
-  const { isLoading: isMetadataLoading, tagsData, createTag } = useMetadata();
+  const { tagsData, createTag } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -140,7 +140,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   }, [projectUuid, pageSlugId, handleUpdateRowsCacheData]);
 
   useEffect(() => {
-    if (isLoading || isMetadataLoading) return;
+    if (isLoading) return;
     const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
       if (!knowledgeDom) return;
@@ -152,7 +152,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, [isLoading || isMetadataLoading]);
+  }, [isLoading]);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
@@ -163,7 +163,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     );
   }, [disabled, togglePageSlugId, onSubmit]);
 
-  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+  if (isLoading) return (<CenteredLoading />);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 892;
