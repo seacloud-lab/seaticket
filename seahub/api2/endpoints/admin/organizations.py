@@ -18,7 +18,6 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.api2.permissions import IsProVersion
 from seahub.role_permissions.utils import get_available_roles
 from seahub.profile.models import Profile
 from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup
@@ -167,7 +166,7 @@ def get_orgs_info_by_role(role, page, per_page):
 class AdminOrganizations(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
@@ -316,7 +315,7 @@ class AdminOrganizations(APIView):
 class AdminOrganization(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, org_id):
@@ -476,7 +475,7 @@ class AdminOrganization(APIView):
 class AdminSearchOrganization(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
@@ -524,7 +523,7 @@ class AdminSearchOrganization(APIView):
 
 class AdminOrganizationsBaseInfo(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):

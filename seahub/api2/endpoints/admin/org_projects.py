@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.permissions import IsProVersion
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 class OrgProjects(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
 
     def get(self, request, org_id):
         # arguments check

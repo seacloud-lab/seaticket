@@ -790,8 +790,6 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
 sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
-IS_PRO_VERSION = True
-
 CLOUD_MODE = True
 MULTI_TENANCY = True
 

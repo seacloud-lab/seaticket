@@ -12,7 +12,7 @@ from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.project.models import Workspaces, Projects
 from seahub.signals import group_deleted
-from seahub.utils import is_valid_username, is_pro_version
+from seahub.utils import is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import is_group_member, is_group_admin_or_owner, \
         validate_group_name
@@ -35,7 +35,7 @@ def get_group_info(group, show_size=False):
         "owner": group.creator_name,
         "owner_name": email2nickname(group.creator_name),
         "created_at": isoformat_timestr,
-        "parent_group_id": group.parent_group_id if is_pro_version() else 0
+        "parent_group_id": group.parent_group_id,
     }
 
     return group_info

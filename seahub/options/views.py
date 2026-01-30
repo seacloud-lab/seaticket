@@ -8,6 +8,5 @@ from django.utils.translation import gettext as _
 
 from seahub.auth.decorators import login_required
 from seahub.options.models import UserOptions
-from seahub.utils import is_pro_version
 from seahub.settings import SITE_ROOT
 

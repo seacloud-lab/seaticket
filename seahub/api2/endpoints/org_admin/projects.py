@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
+from seahub.api2.permissions import IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects, ProjectAPIToken
@@ -39,7 +39,7 @@ def _check_org(org_id):
 class OrgAdminProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         # resource check
@@ -76,7 +76,7 @@ class OrgAdminProjectsView(APIView):
 class OrgAdminProjectView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def delete(self, request, org_id, project_id):
         error, _ = _check_org(org_id)
@@ -116,7 +116,7 @@ class OrgAdminProjectView(APIView):
 class OrgAdminTrashProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         error, _ = _check_org(org_id)
@@ -169,7 +169,7 @@ class OrgAdminTrashProjectsView(APIView):
 class OrgAdminTrashProjectView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def put(self, request, org_id, project_id):
         error, _ = _check_org(org_id)
@@ -210,7 +210,7 @@ class OrgAdminTrashProjectView(APIView):
 class OrgAdminSearchProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         error, _ = _check_org(org_id)

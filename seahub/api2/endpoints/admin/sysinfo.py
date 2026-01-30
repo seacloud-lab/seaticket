@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from seahub import settings
-from seahub.utils import is_pro_version
 from seahub.utils.licenseparse import parse_license
 
 from seahub.api2.authentication import TokenAuthentication
@@ -76,11 +75,7 @@ class SysInfo(APIView):
         inactive_users = len(inactive_db_users)
 
         # get license info
-        is_pro = is_pro_version()
-        if is_pro:
-            license_dict = parse_license()
-        else:
-            license_dict = {}
+        license_dict = {}
 
         if license_dict:
             with_license = True
@@ -108,7 +103,6 @@ class SysInfo(APIView):
             'org_count': org_count,
             'projects_count': projects_count,
             'multi_tenancy_enabled': multi_tenancy_enabled,
-            'is_pro': is_pro,
             'with_license': with_license,
             'license_expiration': license_dict.get('Expiration', ''),
             'license_mode': license_dict.get('Mode', ''),

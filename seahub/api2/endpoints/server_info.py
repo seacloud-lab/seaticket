@@ -2,7 +2,6 @@
 from django.conf import settings as dj_settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from seahub.utils import is_pro_version
 
 SEAQA_VERSION = getattr(dj_settings, 'SEAQA_VERSION', 'Dev')
 
@@ -13,10 +12,7 @@ class ServerInfoView(APIView):
             'version': SEAQA_VERSION,
         }
 
-        edition = 'developer edition'
-
-        if is_pro_version():
-            edition = 'enterprise edition'
+        edition = 'enterprise edition'
 
         info['edition'] = edition
         return Response(info)

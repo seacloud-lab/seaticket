@@ -10,7 +10,7 @@ import SysAdminUser from '@/models/sysadmin-user';
 import SysAdminAdminUser from '@/models/sysadmin-admin-user';
 import UsersNav from './users-nav';
 import { Utils } from '@/utils/utils';
-import { isPro, gettext, siteRoot } from '@/constants';
+import { gettext, siteRoot } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
 import { Main, TopBar } from '@/sys-admin/main-panel';
 import UsersTable from './users-table';
@@ -176,7 +176,7 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
       {isAddUserDialogOpen && (
         <SysAdminAddUserDialog
           dialogTitle={gettext('Add user')}
-          showRole={isPro}
+          showRole={true}
           availableRoles={availableRoles}
           addUser={addUser}
           toggleDialog={toggleAddUserDialog}

@@ -22,7 +22,6 @@ from seahub.options.models import UserOptions
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.api2.permissions import IsProVersion
 from seahub.api2.endpoints.utils import is_org_user
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_ACTIVATE, USER_DEACTIVATE, USER_SET_ORG_ADMIN, USER_UNSET_ORG_ADMIN
@@ -97,7 +96,7 @@ class AdminOrgUsers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
 
     def get(self, request, org_id):
         """ Get all users in an org.
@@ -237,7 +236,7 @@ class AdminOrgUser(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
 
     @check_org_user
     def get(self, request, org_id, email):

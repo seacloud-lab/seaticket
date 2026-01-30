@@ -13,7 +13,7 @@ from django.utils.translation import gettext as _
 from seahub.organizations.models import OrgAdminSettings
 from .models import Profile
 from seahub.auth.decorators import login_required
-from seahub.utils import is_org_context, is_pro_version, is_valid_username
+from seahub.utils import is_org_context, is_valid_username
 from seahub.base.accounts import User, UNUSABLE_PASSWORD
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.options.models import UserOptions, COLLABORATE_EMAIL_INTERVAL_DEFAULT
@@ -88,7 +88,6 @@ def edit_profile(request):
         enable_member_modify_name = OrgAdminSettings.objects.is_enable_memeber_modify_name_by_org_id(org_id)
 
     resp_dict = {
-            'is_pro': is_pro_version(),
             'two_factor_auth_enabled': has_two_factor_auth(),
             'ENABLE_WEBDAV_SECRET': settings.ENABLE_WEBDAV_SECRET,
             'ENABLE_DELETE_ACCOUNT': False if is_org_context(request) else ENABLE_DELETE_ACCOUNT,

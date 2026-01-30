@@ -11,7 +11,7 @@ from seahub.api2.utils import api_error
 from seahub.api2.authentication import TokenAuthentication
 from seahub.options.models import UserOptions
 from seahub.two_factor.models import devices_for_user
-from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
+from seahub.api2.permissions import IsOrgAdminUser
 import logging
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 from seahub.organizations.models import Organization, OrgUser
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class OrgAdminTwoFactorAuthView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def put(self, request, org_id, email):
         """Set/unset force 2FA for the user `email`.

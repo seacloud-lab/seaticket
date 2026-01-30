@@ -63,10 +63,6 @@ except Exception as e:
 mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
 
 
-def is_pro_version():
-    return getattr(seahub.settings, 'IS_PRO_VERSION', False) is True
-
-
 def is_cluster_mode():
     enabled = False
 

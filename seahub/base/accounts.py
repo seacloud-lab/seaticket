@@ -17,7 +17,7 @@ from seahub.role_permissions.models import AdminRole
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role, \
         get_enabled_admin_role_permissions_by_role
 from seahub.utils import get_site_name, \
-    clear_token, get_system_admins, is_pro_version, IS_EMAIL_CONFIGURED
+    clear_token, get_system_admins, IS_EMAIL_CONFIGURED
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.models import SocialAuthUser, UserQuota
@@ -645,7 +645,7 @@ class CustomLDAPBackend(object):
         return user
 
     def authenticate(self, username, password):
-        if not is_pro_version() or not ENABLE_LDAP or LDAP_SAML_USE_SAME_UID:
+        if not ENABLE_LDAP or LDAP_SAML_USE_SAME_UID:
             return
 
         self.l = ldap.initialize(LDAP_SERVER_URL)

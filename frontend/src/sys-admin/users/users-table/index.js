@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo } from 'react';
-import { gettext, mediaUrl, loginUrl, isPro, multiInstitution, isShowUint } from '@/constants';
+import { gettext, mediaUrl, loginUrl, multiInstitution, isShowUint } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
   CenteredLoading, CenteredError,
@@ -57,12 +57,12 @@ const UsersTable = forwardRef(({
       { key: 'name-', width: 0.2, name: `${gettext('Name')} / ${gettext('Contact email')}` },
       { key: 'is_active', width: 0.2, name: gettext('Status') },
       isShowUint ? { key: 'unit', width: 0.1, name: gettext('Unit') } : { key: 'placeholder-1', width: 0.1 },
-      isPro ? { key: 'role', width: 0.2, name: gettext('Role') } : { key: 'placeholder-2', width: 0.2 },
+      { key: 'role', width: 0.2, name: gettext('Role') } : { key: 'placeholder-2', width: 0.2 },
       (multiInstitution && !(type === 'admin')) ? { key: 'institution', width: 0.1, name: gettext('Institution') } : { key: 'placeholder-3', width: 0.1 },
       { key: 'create_login', width: 0.2, name: `${gettext('Created at')} / ${gettext('Last login')}` },
       { key: 'op', width: 44, isFixed: true },
     ];
-  }, [isPro, multiInstitution, type, users, selectedUsers, customizeColumns, updateSelectedUsers]);
+  }, [multiInstitution, type, users, selectedUsers, customizeColumns, updateSelectedUsers]);
 
   const loadData = useCallback((page, perPage) => {
     setErrorMessage('');

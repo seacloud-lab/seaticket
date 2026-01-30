@@ -9,7 +9,6 @@ from rest_framework.authentication import SessionAuthentication
 
 from seahub.constants import ORG_DEFAULT
 
-from seahub.api2.permissions import IsProVersion
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
@@ -25,7 +24,7 @@ class OrgAdminInfo(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdmin)
+    permission_classes = (IsOrgAdmin,)
 
     def get(self, request):
         """Get info of an organization

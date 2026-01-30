@@ -27,8 +27,6 @@ from seahub.utils import get_site_name, get_service_url
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 
 
-from seahub.utils import is_pro_version
-
 try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
@@ -117,7 +115,6 @@ def base(request):
         'LOGIN_URL': dj_settings.LOGIN_URL,
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
         'show_logout_icon': SHOW_LOGOUT_ICON,
-        'is_pro': True if is_pro_version() else False,
         'service_url': get_service_url().rstrip('/'),
         'avatar_url': avatar_url if avatar_url else '',
         'is_mobile': request.is_mobile,

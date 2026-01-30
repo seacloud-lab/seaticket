@@ -1,6 +1,5 @@
 export const gettext = window.gettext;
 
-export const isPro = window.app.config.isPro === 'True';
 export const siteRoot = window.app.config.siteRoot;
 export const loginUrl = window.app.config.loginUrl;
 export const mediaUrl = window.app.config.mediaUrl;

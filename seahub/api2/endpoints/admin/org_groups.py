@@ -12,7 +12,6 @@ from rest_framework import status
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.api2.permissions import IsProVersion
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.signals import group_deleted
@@ -46,7 +45,7 @@ class AdminOrgGroups(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
 
     def get(self, request, org_id):
         """ Get all groups in an org.
@@ -80,7 +79,7 @@ class AdminOrgGroups(APIView):
 class AdminOrgGroup(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
 
     def delete(self, request, org_id, group_id):
         """ Remove an organization group
