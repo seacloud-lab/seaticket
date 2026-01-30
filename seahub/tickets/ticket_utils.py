@@ -248,6 +248,16 @@ def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
     return rows
 
 
+def delete_ticket_activities_by_ids(seadb_api, project_uuid, ticket_ids):
+    ticket_ids_str = ", ".join(map(str, ticket_ids))
+    sql = (
+        f"DELETE FROM `{TicketActivitiesTable.gen_table_name()}` "
+        f"WHERE `ticket_id` IN ({ticket_ids_str})"
+    )
+    rows = seadb_api.query_rows(project_uuid, sql).get('results')
+    return rows
+
+
 def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, option_ids):
     option_data = {
         'table_id': table_id,

@@ -30,8 +30,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
-    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg, compare_ticket_changes, \
-    record_ticket_activities, get_ticket_activities
+    delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets_ids, \
+    send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -1448,6 +1448,7 @@ class TicketTrashAPIView(APIView):
             if not need_delete_ticket_ids:
                 return Response({'success': True}, status=status.HTTP_200_OK)
             delete_ticket_comments_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
+            delete_ticket_activities_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             seadb_api.delete_rows(project_uuid, 'tickets', need_delete_ticket_ids)
         except Exception as e:
             logger.error(e)
