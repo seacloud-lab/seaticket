@@ -1,15 +1,18 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { TagsData, Tag } from '../models';
 import projectAPI from '@/project/api/project-api';
+import { shouldReload } from '@/project/utils';
 
 const TagsContext = React.createContext(null);
 
 export const TagsProvider = ({ projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [tagsData, setTagsData] = useState(new TagsData({}));
+
+  const lastLoadTime = useRef(0);
 
   const applyCreateTags = useCallback((newTags) => {
     let newData = deepCopy(tagsData);
@@ -86,17 +89,21 @@ export const TagsProvider = ({ projectUuid, children }) => {
   }, [projectUuid, applyModifyTags]);
 
   const loadTags = useCallback((callback) => {
-    projectAPI.listTags(projectUuid).then(res => {
-      const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
-      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
-      const newData = new TagsData({ tags, columns });
-      setTagsData(newData);
-      callback && callback();
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback();
-    });
+    if (lastLoadTime.current && shouldReload(lastLoadTime.current)) {
+      projectAPI.listTags(projectUuid).then(res => {
+        const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
+        const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
+        const newData = new TagsData({ tags, columns });
+        setTagsData(newData);
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback();
+      });
+      return;
+    }
+    callback && callback();
   }, [tagsData]);
 
   useEffect(() => {
@@ -106,6 +113,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
       const newData = new TagsData({ tags, columns });
       setTagsData(newData);
       setLoading(false);
+      lastLoadTime.current = Date.now();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
