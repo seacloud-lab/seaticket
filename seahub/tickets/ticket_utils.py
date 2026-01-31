@@ -569,13 +569,13 @@ def check_update_ticket_lcr(seadb_api, project_uuid, ticket_lcr_diff):
 
     # validate connections belong to this project
     conn_ids = set(added_by_conn.keys()) | set(removed_by_conn.keys())
-    connection_id_map = {}
+    connections = ProjectConnections.objects.filter(id__in=conn_ids)
+    connection_id_map = {c.id: c for c in connections}
     for conn_id in conn_ids:
-        connection = ProjectConnections.objects.get_connection_by_id(conn_id)
+        connection = connection_id_map.get(conn_id)
         if not connection or str(getattr(connection.project, 'uuid', '')) != str(project_uuid):
             error_msg = 'Connection not found.'
             return False, error_msg, None
-        connection_id_map[conn_id] = connection
 
     # check added_by_conn
     for conn_id, record_ids in added_by_conn.items():
@@ -619,12 +619,11 @@ def update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, 
     if not conn_ids:
         return
 
-    connection_id_map = {}
-    for conn_id in conn_ids:
-        connection = ProjectConnections.objects.get_connection_by_id(conn_id)
-        if connection.type != ConnectionType.DISCOURSE_FORUM.value:
-            continue
-        connection_id_map[conn_id] = connection
+    connections = ProjectConnections.objects.filter(id__in=conn_ids)
+    connection_id_map = {
+        c.id: c for c in connections
+        if c.type == ConnectionType.DISCOURSE_FORUM.value
+    }
 
     # update added_by_conn
     for conn_id, record_ids in added_by_conn.items():
