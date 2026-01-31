@@ -402,7 +402,7 @@ class ProjectConnectionDetailsView(APIView):
             )
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
-            error_msg = _('There are errors with the filters. Please correct it.')
+            error_msg = _('There are errors with the filters. Please correct them.')
             return Response({
                 'records': [],
                 'columns': getattr(e, 'columns', []),
