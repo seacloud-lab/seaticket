@@ -162,7 +162,7 @@ class KnowledgeBasesAPIView(APIView):
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
-            error_msg = _('There are errors with the filters. Please correct it.')
+            error_msg = _('There are errors with the filters. Please correct them.')
             return Response({'records': [], 'columns': getattr(e, 'columns', []), 'error_msg': error_msg})
         except Exception as e:
             logger.error(e)
