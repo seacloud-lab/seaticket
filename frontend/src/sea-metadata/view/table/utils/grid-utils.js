@@ -19,8 +19,9 @@ const isCopyPaste = true;
 
 class GridUtils {
 
-  constructor(metadata, api) {
+  constructor(metadata, api, { tagsData }) {
     this.metadata = metadata;
+    this.tagsData = tagsData;
     this.api = api;
   }
 
@@ -78,7 +79,7 @@ class GridUtils {
         updateRowIds.push(cutRowId);
         copiedColumns.forEach((copiedColumn, index) => {
           if (copiedColumn.editable && !copiedColumn.is_required) {
-            const cellValue = getCellValueByColumn(cutRow, copiedColumn);
+            const cellValue = getCellValueByColumn(cutRow, copiedColumn, { tagsData: this.tagsData });
             const copiedColumnName = getColumnOriginName(copiedColumn);
             idRowUpdates[cutRowId] = Object.assign({}, idRowUpdates[cutRowId], { [copiedColumnName]: null });
             idOldRowOldData[cutRowId] = Object.assign({}, idOldRowOldData[cutRowId], { [copiedColumnName]: cellValue });
@@ -145,8 +146,8 @@ class GridUtils {
         }
         const copiedColumnIndex = j % copiedColumnsLen;
         const copiedColumn = getColumnByIndex(copiedColumnIndex, copiedColumns);
-        const pasteCellValue = getCellValueByColumn(pasteRow, pasteColumn);
-        const copiedCellValue = getCellValueByColumn(copiedRow, copiedColumn);
+        const pasteCellValue = getCellValueByColumn(pasteRow, pasteColumn, { tagsData: this.tagsData });
+        const copiedCellValue = getCellValueByColumn(copiedRow, copiedColumn, { tagsData: this.tagsData });
         let update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData });
         if (!isCellValueChanged(pasteCellValue, update, pasteColumn.type)) continue;
         if (!isValidCellValue(update, pasteColumn) && pasteColumn.is_required) continue;
@@ -207,7 +208,7 @@ class GridUtils {
           const value = draggedRangeMatrix[j - startColumnIdx][idx];
           const rule = rules[cellKey];
           let fillingValue = rule({ n: fillingIndex - 1, value });
-          let oldValue = getCellValueByColumn(dragRow, column);
+          let oldValue = getCellValueByColumn(dragRow, column, { tagsData: this.tagsData });
           if (isCellValueChanged(fillingValue, oldValue, type)) {
             if (type === CellType.LONG_TEXT) {
               if (fillingValue && getType(fillingValue) === 'String') {
@@ -251,7 +252,7 @@ class GridUtils {
         } else {
           selectedRow = rows[j];
         }
-        draggedRangeMatrix[i - startColumnIdx][j - startRowIdx] = getCellValueByColumn(selectedRow, column);
+        draggedRangeMatrix[i - startColumnIdx][j - startRowIdx] = getCellValueByColumn(selectedRow, column, { tagsData: this.tagsData });
         currentGroupRowIndex++;
       }
     }

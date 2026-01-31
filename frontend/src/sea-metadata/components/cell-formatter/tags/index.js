@@ -22,7 +22,7 @@ const TagsFormatter = ({ value: oldValue, className, children: emptyFormatter, s
       <div className="sea-metadata-ui-tags-container">
         {value.map((item) => {
           const tag = getRowById(tagsData, item);
-          const tagColor = tag.color;
+          const tagColor = tag?.color;
           if (!showName) {
             return (
               <span key={item} className="sea-metadata-tag-color" style={{ backgroundColor: tagColor }}></span>

@@ -11,7 +11,7 @@ import context from '@/sea-metadata/context';
 export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData, typesData } = {}) => {
   if (!row) return '';
   const { type, data } = column;
-  const cellValue = getCellValueByColumn(row, column);
+  const cellValue = getCellValueByColumn(row, column, { tagsData });
   switch (type) {
     case CellType.LONG_TEXT: {
       return getLongtextDisplayString(cellValue);
@@ -60,10 +60,10 @@ export const getCellValueDisplayString = (row, column, { collaborators = [], tag
   }
 };
 
-export const getCellValueStringResult = (row, column, { collaborators = [] } = {}) => {
+export const getCellValueStringResult = (row, column, { collaborators = [], tagsData } = {}) => {
   if (!row || !column) return '';
   const { type, data } = column;
-  let cellValue = getCellValueByColumn(row, column);
+  let cellValue = getCellValueByColumn(row, column, { tagsData });
   switch (type) {
     case CellType.TEXT:
     case CellType.EMAIL:

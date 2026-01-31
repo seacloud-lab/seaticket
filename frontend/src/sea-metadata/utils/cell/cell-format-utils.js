@@ -44,9 +44,9 @@ function convertedToRowData(originRowData, keyColumnMap, excludesColumnTypes = [
 }
 
 export const getClientCellValueDisplayString = (row, column, { collaborators = [], tagsData = {} } = {}) => {
-  const cellValue = getCellValueByColumn(row, column);
   const { type } = column;
   if (type === CellType.CTIME || type === CellType.MTIME) {
+    const cellValue = getCellValueByColumn(row, column);
     return getAutoTimeDisplayString(cellValue);
   }
   return getCellValueDisplayString(row, column, { collaborators, tagsData });

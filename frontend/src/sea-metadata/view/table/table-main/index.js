@@ -22,7 +22,7 @@ const TableMain = ({
       rowGetterByIndex,
       rowGetterById,
       modifyColumnData,
-    });
+    }, { tagsData });
   }, [metadata, modifyRow, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData]);
 
   const groupbysCount = useMemo(() => {

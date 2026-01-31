@@ -87,7 +87,7 @@ class DataProcessor {
         { columns: availableColumns },
         rows,
         { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
-        { username, userId, isReturnID: false }
+        { username, userId, isReturnID: false, tagsData }
       );
       rows = filterRows;
     }
@@ -128,7 +128,7 @@ class DataProcessor {
       rows = [...rows, ...newRows];
     }
     if (!isSortComputedOnServer && rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
-      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
@@ -164,7 +164,7 @@ class DataProcessor {
       }
     }
     if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
-      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
@@ -227,7 +227,7 @@ class DataProcessor {
     this.updateSummaries();
   }
 
-  static updateRowsWithModifyColumnData(table, column, operation) {
+  static updateRowsWithModifyColumnData(table, column, operation, tagsData) {
     const { old_data, new_data } = operation;
     const columnName = getColumnOriginName(column);
     const columnType = column.type;
@@ -236,7 +236,7 @@ class DataProcessor {
 
     // modify row data
     for (const row of table.rows) {
-      const cellValue = getCellValueByColumn(row, column);
+      const cellValue = getCellValueByColumn(row, column, { tagsData });
       if (isValidCellValue(cellValue, column)) {
         if (columnType === CellType.SINGLE_SELECT && !checkIsPredefinedOption(column, cellValue)) {
           const oldOptions = old_data?.options || [];
@@ -378,7 +378,7 @@ class DataProcessor {
         if (!column) break;
         if (column.type === CellType.SINGLE_SELECT || column.type === CellType.MULTIPLE_SELECT) {
           if (option_modify_type === COLUMN_DATA_OPERATION_TYPE.RENAME_OPTION) {
-            this.updateRowsWithModifyColumnData(table, column, operation);
+            this.updateRowsWithModifyColumnData(table, column, operation, { tagsData });
           }
         }
         break;
