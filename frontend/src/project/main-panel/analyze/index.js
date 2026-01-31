@@ -638,7 +638,6 @@ const Analyze = ({ title }) => {
             onRemoveConnection={handleRemoveConnection}
             onClose={handleToggleSettings}
             filters={filters}
-            filterableFields={FILTERABLE_FIELDS}
             filterableFieldOptions={filterableFieldOptions}
             onAddFilter={handleAddFilter}
             onRemoveFilter={handleRemoveFilter}

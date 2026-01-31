@@ -1,140 +1,73 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { gettext } from '@/constants';
-import { Icon, IconTooltip } from '@/components';
+import { Icon, OptionEditor } from '@/components';
+import classnames from 'classnames';
 
 import './index.css';
 
-const FilterPanel = ({
-  filters,
-  filterableFields,
-  filterableFieldOptions,
-  onAddFilter,
-  onRemoveFilter
-}) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedField, setSelectedField] = useState(null);
-  const dropdownRef = useRef(null);
+const STATE_LABELS = {
+  open: gettext('Open'),
+  closed: gettext('Closed'),
+};
+const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFilter }) => {
+  const [isShowPopover, setIsShowPopover] = useState(false);
+  const popoverRef = useRef(null);
 
-  const closeDropdown = useCallback(() => {
-    setIsDropdownOpen(false);
-    setSelectedField(null);
-  }, []);
+  const state = useMemo(() => {
+    return filters.find(item => item.field === 'state');
+  }, [filters]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        closeDropdown();
-      }
-    };
+  const options = useMemo(() => {
+    const { state = [] } = filterableFieldOptions || {};
+    state.sort().reverse();
+    return state.map((state) => {
+      return {
+        label: STATE_LABELS[state],
+        name: state,
+        value: state,
+      };
+    });
+  }, [filterableFieldOptions]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [closeDropdown]);
+  const isDisabled = useMemo(() => {
+    const { state = [] } = filterableFieldOptions || {};
+    return state.length === 0 ? true : false;
+  }, [filterableFieldOptions]);
 
-  const handleToggleDropdown = useCallback(() => {
-    if (isDropdownOpen) {
-      closeDropdown();
-    } else {
-      setIsDropdownOpen(true);
-      setSelectedField(null);
+  const handleTogglePopover = useCallback(() => {
+    if (isDisabled) return;
+    if (!isShowPopover) {
+      setIsShowPopover(true);
     }
-  }, [isDropdownOpen, closeDropdown]);
-
-  const handleSelectField = useCallback((field) => {
-    setSelectedField(field);
-  }, []);
+  }, [isShowPopover, isDisabled, setIsShowPopover]);
 
   const handleSelectValue = useCallback((value) => {
-    if (selectedField) {
-      onAddFilter(selectedField.field, value);
-      closeDropdown();
+    if (value) {
+      onAddFilter('state', value);
+    } else {
+      onRemoveFilter('state');
     }
-  }, [selectedField, onAddFilter, closeDropdown]);
-
-  const handleBack = useCallback(() => {
-    setSelectedField(null);
-  }, []);
-
-  const getFieldLabel = (fieldName) => {
-    const field = filterableFields.find(f => f.field === fieldName);
-    return field ? field.label : fieldName;
-  };
-
-  const availableFields = filterableFields.filter(
-    f => !filters.some(filter => filter.field === f.field) && filterableFieldOptions[f.field]?.length > 0
-  );
+    setIsShowPopover(false);
+  }, [onAddFilter, onRemoveFilter, setIsShowPopover]);
 
   return (
     <div className="analyze-filter-panel">
-      {filters.length > 0 && (
-        <div className="analyze-filter-tags">
-          {filters.map(filter => (
-            <div key={filter.field} className="analyze-filter-tag">
-              <span className="analyze-filter-tag-label">{getFieldLabel(filter.field)}:</span>
-              <span className="analyze-filter-tag-value">{filter.value}</span>
-              <IconTooltip
-                icon="close"
-                className="analyze-filter-tag-remove"
-                tip={gettext('Remove')}
-                placement="bottom"
-                onClick={() => onRemoveFilter(filter.field)}
-              />
-            </div>
-          ))}
+      <div className="analyze-add-filter" ref={popoverRef}>
+        <div className={classnames('analyze-add-filter-btn', { 'active': state, 'disabled': isDisabled })} onClick={handleTogglePopover}>
+          <span>{gettext('Status')}</span>
+          <Icon symbol="arrow-down" />
         </div>
-      )}
-
-      <div className="analyze-add-filter" ref={dropdownRef}>
-        <div
-          className={`analyze-add-filter-btn ${availableFields.length === 0 ? 'disabled' : ''}`}
-          onClick={availableFields.length > 0 ? handleToggleDropdown : undefined}
-        >
-          <Icon symbol="plus" className="analyze-add-filter-icon" />
-          <span>{gettext('Add filter')}</span>
-        </div>
-
-        {isDropdownOpen && (
-          <div className="analyze-filter-dropdown">
-            {!selectedField ? (
-              <>
-                <div className="analyze-filter-dropdown-header">
-                  {gettext('Select field')}
-                </div>
-                {availableFields.map(field => (
-                  <div
-                    key={field.field}
-                    className="analyze-filter-dropdown-item"
-                    onClick={() => handleSelectField(field)}
-                  >
-                    <span>{field.label}</span>
-                    <Icon symbol="arrow-right" className="analyze-filter-dropdown-arrow" />
-                  </div>
-                ))}
-              </>
-            ) : (
-              <>
-                <div className="analyze-filter-dropdown-header with-back">
-                  <Icon
-                    symbol="arrow-left"
-                    className="analyze-filter-dropdown-back"
-                    onClick={handleBack}
-                  />
-                  <span>{selectedField.label}</span>
-                </div>
-                <div className="analyze-filter-dropdown-values">
-                  {filterableFieldOptions[selectedField.field]?.map(value => (
-                    <div
-                      key={value}
-                      className="analyze-filter-dropdown-item"
-                      onClick={() => handleSelectValue(value)}
-                    >
-                      <span>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+        {isShowPopover && (
+          <OptionEditor
+            className="analyze-filter-option-editor"
+            options={options}
+            target={popoverRef}
+            checkPlacement="left"
+            isSearchEnabled={false}
+            value={state ? state.value : ''}
+            onChange={handleSelectValue}
+            onToggle={() => setIsShowPopover(false)}
+          />
         )}
       </div>
     </div>
