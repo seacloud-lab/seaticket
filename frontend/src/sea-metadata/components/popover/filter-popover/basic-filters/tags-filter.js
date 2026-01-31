@@ -5,7 +5,7 @@ import { useTagsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 import { ClickOutside, Icon } from '@/components';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
 import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
@@ -33,15 +33,27 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
 
   const closeEditor = useCallback(() => {
     const newValue = optionEditorContainerRef.current.getValue();
-    if (isCellValueChanged(newValue, value)) {
-      onChange?.(newValue);
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (isCellValueChanged(_newValue, value)) {
+      let validValue = newValue;
+      if (Array.isArray(newValue) && newValue.length > 0) {
+        const tags = getRowsByIds(tagsData, newValue);
+        validValue = tags.map(tag => Number(tag._id));
+      }
+      onChange?.(validValue);
     }
     setIsShowEditor(false);
   }, [value, onChange]);
 
   const handleChange = useCallback((newValue) => {
-    if (!isCellValueChanged(newValue, value)) return;
-    onChange?.(newValue);
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
+    onChange?.(validValue);
   }, [value, onChange]);
 
   const handleDeselect = useCallback((tagId) => {
@@ -50,12 +62,15 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
     onChange?.(newValue);
   }, [value, onChange]);
 
+  let validValue = Array.isArray(value) ? value.map(v => v + '') : [];
+  validValue = validValue.filter(id => getRowById(tagsData, id));
+
   return (
     <>
       <div
         ref={editorRef}
         className={classnames('sea-qa-select custom-select sea-qa-customize-select sea-metadata-basic-filters-select position-relative mr-4', {
-          'highlighted': value.length > 0
+          'highlighted': validValue.length > 0
         })}
       >
         <div className="selected-option" onClick={openEditor} >
@@ -70,7 +85,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
                 isMultiple={true}
                 placeholder={gettext('Search tags')}
                 emptyTip={gettext('No tags')}
-                value={value}
+                value={validValue}
                 options={tagOptions}
                 onChange={handleChange}
               >
