@@ -5,6 +5,7 @@ import { Icon } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { PRIORITY_MAP } from '@/sea-metadata/constants/column/priority';
+import { useTags } from '@/project/hooks';
 
 import './index.css';
 
@@ -24,6 +25,7 @@ const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) =>
   const [creator, setCreator] = useState({});
   const [assigneeNames, setAssigneeNames] = useState({ old: [], new: [] });
   const { getCollaborator, queryUser } = useCollaborators();
+  const { tagsData } = useTags();
 
   useEffect(() => {
     const collaborator = getCollaborator(activity.creator);
@@ -36,6 +38,17 @@ const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) =>
       setCreator(user || { name: activity.creator, avatar_url: '' });
     });
   }, [activity.creator, getCollaborator, queryUser]);
+
+  // Convert tag IDs to names
+  const getTagNames = useCallback((tagIds) => {
+    if (!tagIds) return '';
+    const ids = Array.isArray(tagIds) ? tagIds : [tagIds];
+    const names = ids.map(id => {
+      const tag = tagsData?.id_row_map?.[String(id)];
+      return tag?.name || id;
+    });
+    return names.join(', ');
+  }, [tagsData]);
 
   // Convert assignee IDs to names
   useEffect(() => {
@@ -125,13 +138,13 @@ const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) =>
       case 'tags_added':
         return (
           <span>
-            {gettext('added tags:')} <strong className="activity-new-value">{Array.isArray(new_value) ? new_value.join(', ') : new_value}</strong>
+            {gettext('added tags:')} <strong className="activity-new-value">{getTagNames(new_value)}</strong>
           </span>
         );
       case 'tags_removed':
         return (
           <span>
-            {gettext('removed tags:')} <del className="activity-old-value">{Array.isArray(old_value) ? old_value.join(', ') : old_value}</del>
+            {gettext('removed tags:')} <del className="activity-old-value">{getTagNames(old_value)}</del>
           </span>
         );
       case 'assignees_added':
@@ -157,7 +170,7 @@ const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) =>
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity, assigneeNames]);
+  }, [activity, assigneeNames, getTagNames]);
 
   const iconSymbol = ACTIVITY_ICONS[activity.activity_type] || 'info';
 
