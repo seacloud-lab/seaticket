@@ -74,7 +74,7 @@ class OrgSamlConfigInput extends Component {
                 )}
               </InputGroup>
               {this.props.isCertificate &&
-                <p className="small text-secondary mt-1">
+                <p className="small text-secondary mt-1 mb-0 h-auto">
                   {gettext('Copy the IdP\'s certificate and paste it here. The certificate format is as follows:')}
                   <br/>
                   -----BEGIN CERTIFICATE-----
