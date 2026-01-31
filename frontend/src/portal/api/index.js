@@ -84,6 +84,33 @@ class PortalAPI {
     return this.req.get(url);
   }
 
+  listExternalInvitations(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-invitations/';
+    return this.req.get(url);
+  }
+
+  createExternalInvitation(projectUuid, email) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-invitations/';
+    const data = { email };
+    return this.req.post(url, data);
+  }
+
+  listExternalUsers(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-users/';
+    return this.req.get(url);
+  }
+
+  deleteExternalUser(projectUuid, email) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-users/';
+    let params = { email: email };
+    return this.req.delete(url, { data: params });
+  }
+
+  revokeExternalInvitation(projectUuid, token) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-invitations/' + token + '/';
+    return this.req.delete(url);
+  }
+
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();

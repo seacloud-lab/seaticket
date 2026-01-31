@@ -1,0 +1,16 @@
+{% extends 'email_base.html' %}
+{% load i18n %}
+
+{% block email_con %}
+{% autoescape off %}
+<p style="color:#121214;font-size:14px;">{% trans "Hi," %}</p>
+
+<p style="font-size:14px;color:#434144;">
+{% blocktrans %}{{ inviter_name }} invited you to the support portal. Please click the link below to start:{% endblocktrans %}
+</p>
+
+<a href="{{ url_base }}/portal-external/accept/{{ token }}/{{ project_uuid }}/" target="_blank">
+  {{ url_base }}/portal-external/accept/{{ token }}/{{ project_uuid }}/
+</a>
+{% endautoescape %}
+{% endblock %}

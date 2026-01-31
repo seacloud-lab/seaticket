@@ -6,7 +6,7 @@ import json
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from seahub.api2.permissions import PortalAccessPermission
+from seahub.api2.permissions import PortalAccessPermission, PortalExternalSessionPermission
 from rest_framework import status
 from rest_framework.response import Response
 from django.utils.translation import gettext as _
@@ -26,6 +26,15 @@ from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_recor
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
+from seahub.utils.timeutils import datetime_to_isoformat_timestr
+from seahub.portal.models import ProjectExternalUser
+from django.core.cache import cache
+from seahub.utils.verify import get_random_code
+from seahub.utils.auth import gen_user_virtual_id
+from seahub.utils.mail import send_html_email_with_dj_template
+from seahub.portal.models import PortalExternalInvitation
+from seahub.utils import is_valid_email
+from seahub.base.templatetags.seahub_tags import email2nickname
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +53,7 @@ def get_portal_access_username(request):
 
 class PortalTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -159,7 +168,7 @@ class PortalTicketsView(APIView):
 
 class PortalMyTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -228,7 +237,7 @@ class PortalMyTicketsView(APIView):
 
 class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -266,7 +275,7 @@ class PortalTagsView(APIView):
 
 class PortalKnowledgeBaseViewsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -293,7 +302,7 @@ class PortalKnowledgeBaseViewsView(APIView):
 
 class PortalKnowledgeBaseRecordsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -337,9 +346,10 @@ class PortalKnowledgeBaseRecordsView(APIView):
 
         return Response({'records': records, 'columns': columns})
 
+
 class PortalTicketMetadataView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -447,4 +457,204 @@ class PortalSettingsView(APIView):
         project.settings = json.dumps(project_settings)
         project.save(update_fields=['settings'])
 
+        return Response({'success': True})
+
+
+class PortalExternalInvitationsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            invites = PortalExternalInvitation.objects.list_by_project(project_uuid)
+            data = []
+            for iv in invites:
+                data.append({
+                    'token': iv.token,
+                    'link': iv.link,
+                    'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
+                    'email': iv.email,
+                    'inviter': iv.inviter,
+                    'accepted_at': iv.accepted_at,
+                    'created_at': iv.created_at,
+                })
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response({'invite_list': data})
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        email = request.data.get('email')
+        if not email:
+            error_msg = 'Email not provided.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            invitation = PortalExternalInvitation.objects.add(inviter=username, email=email, project_uuid=str(project.uuid))
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        context = {
+            'token': invitation.token,
+            'inviter_name': email2nickname(username),
+            'project_uuid': str(project.uuid),
+        }
+        sent = False
+        try:
+            sent = send_html_email_with_dj_template(email, _('Support Portal Invitation'), 'portal/external_invitation_email.html', context=context)
+        except Exception as e:
+            logger.error(e)
+            sent = False
+        if not sent:
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        try:
+            if not ProjectExternalUser.objects.filter(email=email, project_uuid=str(project.uuid)).exists():
+                ProjectExternalUser.objects.create(email=email, username=gen_user_virtual_id(), project_uuid=str(project.uuid), activated=False)
+        except Exception as e:
+            logger.error(e)
+
+        return Response({'success': True})
+
+    @require_org_context
+    def delete(self, request, project_uuid, token):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        try:
+            invitation = PortalExternalInvitation.objects.get_by_token(token)
+            if not invitation or invitation.project_uuid != str(project.uuid):
+                return api_error(status.HTTP_404_NOT_FOUND, 'Invitation not found.')
+            invitation.delete()
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'success': True})
+
+
+class PortalExternalUsersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        try:
+            items = ProjectExternalUser.objects.list_by_project(project_uuid)
+            users = []
+            for it in items:
+                users.append({
+                    'email': it.email,
+                    'activated': bool(getattr(it, 'activated', False)),
+                })
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'users': users})
+
+    @require_org_context
+    def delete(self, request, project_uuid):
+        email = request.data.get('email')
+        if not email:
+            error_msg = 'email invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            ProjectExternalUser.objects.filter(project_uuid=project_uuid, email=email).delete()
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response({'success': True})
+
+
+class PortalExternalLoginSendCodeView(APIView):
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = ()
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, project_uuid):
+        email = request.data.get('email')
+        if not is_valid_email(email):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+        try:
+            code = get_random_code()
+            cache_key = f"portal_email_login:{project_uuid}:{email}"
+            cache.set(cache_key, code, 600)
+            send_html_email_with_dj_template(email, _('Your login code'), 'portal/email_login_code.html', context={'code': code, 'project_uuid': project_uuid})
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'success': True})
+
+
+class PortalExternalLoginVerifyCodeView(APIView):
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = ()
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, project_uuid):
+        email = request.data.get('email')
+        code = request.data.get('code')
+        if not email or not code:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'param invalid.')
+        cache_key = f"portal_email_login:{project_uuid}:{email}"
+        cached = cache.get(cache_key)
+        if cached != code:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
+        cache.delete(cache_key)
+
+        try:
+            ext_user = ProjectExternalUser.objects.get(email=email, project_uuid=project_uuid)
+            if not ext_user.activated:
+                ext_user.activated = True
+                ext_user.save(update_fields=['activated'])
+        except ProjectExternalUser.DoesNotExist:
+            return api_error(status.HTTP_404_NOT_FOUND, 'External user record not found. Please use the invitation link first.')
+
+        # Set session to log the user in as an external collaborator
+        request.session['portal_external_username'] = ext_user.username
+        request.session['portal_external_project_uuid'] = project_uuid
         return Response({'success': True})

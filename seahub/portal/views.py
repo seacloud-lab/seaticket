@@ -5,13 +5,16 @@ import json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
+from django.http import HttpResponseRedirect, Http404
+from django.utils import timezone
 
+from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub import settings
-from seahub.project.models import Projects
+from seahub.project.models import Projects, Workspaces
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL, LOGIN_URL
+from seahub.settings import MEDIA_URL
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -32,13 +35,27 @@ def portal_view(request, project_uuid, page=None):
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
 
+    is_anonymous = False
     if not allow_anonymous:
-        if not request.user.is_authenticated:
-            return redirect(f"{LOGIN_URL}?next={request.get_full_path()}")
-        workspace = project.workspace
-        if not check_same_org_permission(request.user, workspace):
+        ext_username = request.session.get('portal_external_username')
+        ext_project = request.session.get('portal_external_project_uuid')
+        if not getattr(request, 'user', None) or not request.user.is_authenticated:
+            if ext_username and ext_project == project_uuid and ProjectExternalUser.objects.filter(
+                    project_uuid=project_uuid, username=ext_username, activated=True).exists():
+                allow = True
+            else:
+                is_anonymous = True
+                return render(request, 'portal_login.html', {
+                    'project_uuid': project_uuid,
+                    'project_name': project.name,
+                    'media_url': MEDIA_URL,
+                })
+        else:
+            workspace = project.workspace
+            allow = check_same_org_permission(request.user, workspace) or ProjectExternalUser.objects.filter(
+                project_uuid=project_uuid, username=request.user.username).exists()
+        if not allow:
             return render_error(request, _('Permission denied'))
-
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -47,7 +64,7 @@ def portal_view(request, project_uuid, page=None):
         'media_url': MEDIA_URL,
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
-        'is_anonymous': not request.user.is_authenticated,
+        'is_anonymous': is_anonymous,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
@@ -118,6 +135,41 @@ def portal_anonymous_validate(request, project_uuid):
 
     request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
     return redirect(f"/portal/{project_uuid}/")
+
+
+def portal_external_invitation_accept_view(request, token, project_uuid):
+
+    invitation = PortalExternalInvitation.objects.get_by_token(token)
+    if not invitation or invitation.project_uuid != project_uuid:
+        return render_error(request, _('Invitation link is invalid or expired.'))
+    if invitation.accepted_at:
+        redirect_url = f"{request.scheme}://{request.get_host()}/portal/{project_uuid}/"
+        return HttpResponseRedirect(redirect_url)
+    if invitation.is_expired():
+        return render_error(request, _('Invitation link is invalid or expired.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        raise Http404
+
+    invitation.accepted_at = timezone.now()
+    invitation.save(update_fields=['accepted_at'])
+
+    try:
+        ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
+        request.session['portal_external_username'] = ext_user.username
+        try:
+            ext_user.activated = True
+            ext_user.save(update_fields=['activated'])
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    request.session['portal_external_project_uuid'] = project_uuid
+
+    redirect_url = f"{request.scheme}://{request.get_host()}/portal/{project_uuid}/"
+    return HttpResponseRedirect(redirect_url)
 
 
 @login_required

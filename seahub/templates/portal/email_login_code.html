@@ -1,0 +1,10 @@
+{% extends 'email_base.html' %}
+{% load i18n %}
+{% block email_con %}
+<p style="color:#121214;font-size:14px;">{% trans "Your login code" %}: <strong>{{ code }}</strong></p>
+<p style="font-size:14px;color:#434144;">
+  {% trans "Enter this code on the portal login page to complete login." %}
+  <br>
+  {% trans "The code is valid for 10 minutes." %}
+</p>
+{% endblock %}

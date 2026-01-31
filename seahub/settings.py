@@ -213,7 +213,8 @@ INSTALLED_APPS = [
     'seahub.organizations',
     'seahub.registration',
     'seahub.sysadmin_extra',
-    'seahub.notifications'
+    'seahub.notifications',
+    'seahub.portal',
 ]
 
 AUTHENTICATION_BACKENDS = (

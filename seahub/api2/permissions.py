@@ -8,7 +8,7 @@ from rest_framework.permissions import BasePermission
 import json
 from seahub.project.models import Projects
 from seahub.project.utils import check_same_org_permission
-
+from seahub.portal.models import ProjectExternalUser
 from seahub.group.utils import is_group_member
 
 SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
@@ -90,3 +90,18 @@ class PortalAccessPermission(BasePermission):
                 verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
                 return bool(verified_token and encoded_password and verified_token == encoded_password)
             return True
+
+
+class PortalExternalSessionPermission(BasePermission):
+    def has_permission(self, request, view):
+        user = getattr(request, 'user', None)
+        if user and getattr(user, 'is_authenticated', False):
+            return True
+        project_uuid = getattr(view, 'kwargs', {}).get('project_uuid')
+        ext_username = request.session.get('portal_external_username')
+        ext_project_uuid = request.session.get('portal_external_project_uuid')
+        if ext_username and ext_project_uuid and ext_project_uuid == project_uuid and \
+                ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).exists():
+            request.user.username = ext_username
+            return True
+        return False
