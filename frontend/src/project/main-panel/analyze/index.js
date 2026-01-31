@@ -19,7 +19,7 @@ const getStoredSettings = () => {
 };
 
 const Analyze = ({ title }) => {
-  const { isLoading, records, lastLoadRecordsTime, error, startAnalysis, resetAnalysis } = useAnalyzeTask();
+  const { isLoading, records, lastLoadRecordsTime, error, startAnalysis } = useAnalyzeTask();
 
   // settings
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
@@ -46,12 +46,9 @@ const Analyze = ({ title }) => {
 
   useEffect(() => {
     try {
+      const storedSettings = getStoredSettings();
       const settings = {
-        connections: selectedConnections.map(c => ({
-          id: c.id,
-          name: c.name,
-          type: c.type
-        })),
+        ...storedSettings,
         colorBy,
         displayMode,
         startDate,
@@ -62,18 +59,20 @@ const Analyze = ({ title }) => {
     } catch (e) {
       console.error('Failed to save settings to localStorage:', e);
     }
-  }, [selectedConnections, colorBy, displayMode, startDate, endDate, filters]);
-
-  useEffect(() => {
-    if (selectedConnections.length === 0) {
-      resetAnalysis();
-    }
-  }, [selectedConnections, resetAnalysis]);
+  }, [colorBy, displayMode, startDate, endDate, filters]);
 
   const handleAnalyze = useCallback(() => {
-    if (selectedConnections.length > 0) {
-      startAnalysis(selectedConnections.map(c => c.id), startDate, endDate);
-    }
+    startAnalysis(selectedConnections.map(c => c.id), startDate, endDate);
+    const storedSettings = getStoredSettings();
+    const newSettings = {
+      ...storedSettings,
+      connections: selectedConnections.map(c => ({
+        id: c.id,
+        name: c.name,
+        type: c.type
+      })),
+    };
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
   }, [selectedConnections, startDate, endDate, startAnalysis]);
 
   const FILTERABLE_FIELDS = useMemo(() => [
@@ -131,20 +130,20 @@ const Analyze = ({ title }) => {
   }, []);
 
   const renderContent = () => {
-    if (selectedConnections.length === 0) {
-      return (
-        <div className="analyze-empty-state">
-          <p className="analyze-empty-text">{gettext('Select connections to analyze')}</p>
-        </div>
-      );
-    }
-
     if (isLoading) {
       return (<CenteredLoading />);
     }
 
     if (error) {
       return (<CenteredError>{error.message}</CenteredError>);
+    }
+
+    if (!records && selectedConnections.length === 0) {
+      return (
+        <div className="analyze-empty-state">
+          <p className="analyze-empty-text">{gettext('Select connections to analyze')}</p>
+        </div>
+      );
     }
 
     return (

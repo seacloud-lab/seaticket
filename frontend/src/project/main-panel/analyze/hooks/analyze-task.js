@@ -2,6 +2,7 @@ import React, { useContext, useState, useCallback, useRef, useEffect } from 'rea
 import { connectionsAPI } from '@/project/api';
 import { projectUuid } from '../constants';
 import { Utils } from '@/utils/utils';
+import { gettext } from '@/constants';
 
 const AnalyzeTaskContext = React.createContext(null);
 
@@ -33,7 +34,8 @@ export const AnalyzeTaskProvider = ({ children }) => {
         if (is_finished === null) {
           clearPolling();
           setRecords(null);
-          setError({ expired: true, message: 'Task expired' });
+          setLastLoadRecordsTime('');
+          setError({ expired: true, message: gettext('Task expired') });
           setCurrentTaskId(null);
           setIsLoading(false);
           return;
@@ -52,6 +54,7 @@ export const AnalyzeTaskProvider = ({ children }) => {
         const errorMessage = Utils.getErrorMsg(error);
         setError({ message: errorMessage });
         setRecords(null);
+        setLastLoadRecordsTime('');
         setIsLoading(false);
         clearPolling();
       });
@@ -62,14 +65,18 @@ export const AnalyzeTaskProvider = ({ children }) => {
 
   const startAnalysis = useCallback((connectionIds, startDate, endDate) => {
     if (!connectionIds || connectionIds.length === 0) {
+      clearPolling();
       setRecords(null);
       setError(null);
+      setCurrentTaskId(null);
+      setIsLoading(false);
       return;
     }
 
     clearPolling();
     setIsLoading(true);
     setError(null);
+    setLastLoadRecordsTime('');
 
     connectionsAPI.getConnectionsEmbeddingAnalysis( projectUuid, connectionIds, startDate, endDate).then(res => {
       const { task_id } = res.data;
@@ -79,18 +86,11 @@ export const AnalyzeTaskProvider = ({ children }) => {
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setRecords(null);
+      setLastLoadRecordsTime('');
       setError({ message: errorMessage });
       setIsLoading(false);
     });
   }, [clearPolling, pollTaskStatus]);
-
-  const resetAnalysis = useCallback(() => {
-    clearPolling();
-    setRecords(null);
-    setError(null);
-    setCurrentTaskId(null);
-    setIsLoading(false);
-  }, [clearPolling]);
 
   useEffect(() => {
     return () => {
@@ -106,7 +106,6 @@ export const AnalyzeTaskProvider = ({ children }) => {
       error,
       currentTaskId,
       startAnalysis,
-      resetAnalysis,
     }}>
       {children}
     </AnalyzeTaskContext.Provider>
