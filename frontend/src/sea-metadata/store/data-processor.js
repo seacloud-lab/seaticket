@@ -227,7 +227,7 @@ class DataProcessor {
     this.updateSummaries();
   }
 
-  static updateRowsWithModifyColumnData(table, column, operation, tagsData) {
+  static updateRowsWithModifyColumnData(table, column, operation, { tagsData } = {}) {
     const { old_data, new_data } = operation;
     const columnName = getColumnOriginName(column);
     const columnType = column.type;
