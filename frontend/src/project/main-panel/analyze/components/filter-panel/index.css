@@ -20,7 +20,6 @@
 
 .analyze-add-filter-btn.active {
   color: var(--bs-orange);
-  background-color: transparent;
 }
 
 .analyze-add-filter-btn.disabled {
