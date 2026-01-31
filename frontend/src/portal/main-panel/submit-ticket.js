@@ -64,7 +64,7 @@ const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange, classN
   );
 };
 
-const SubmitTicket = ({ projectUuid, onPageChange, typesData, isMetadataLoading }) => {
+const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState('');
@@ -78,9 +78,8 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData, isMetadataLoading 
   } }), [projectUuid]);
 
   useEffect(() => {
-    if (isMetadataLoading) return;
     setIsLoading(false);
-  }, [isMetadataLoading]);
+  }, []);
 
   useEffect(() => {
     if (isLoading) return;

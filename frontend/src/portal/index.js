@@ -10,6 +10,8 @@ import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { CenteredLoading } from '../components';
 import { PORTAL_PAGE } from './constants';
+import { MetadataProvider } from '@/project/main-panel/tickets/hooks';
+import { TagsProvider } from '@/project/main-panel/tags/hooks';
 
 import './index.css';
 
@@ -58,17 +60,21 @@ const Portal = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
-        <div className="sea-qa-portal">
-          {isLoading ? (
-            <CenteredLoading />
-          ) : (
-            <>
-              {isEditMode && <LeftBar />}
-              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
-              <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
-            </>
-          )}
-        </div>
+        <TagsProvider projectUuid={projectUuid}>
+          <MetadataProvider projectUuid={projectUuid}>
+            <div className="sea-qa-portal">
+              {isLoading ? (
+                <CenteredLoading />
+              ) : (
+                <>
+                  {isEditMode && <LeftBar />}
+                  <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
+                  <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
+                </>
+              )}
+            </div>
+          </MetadataProvider>
+        </TagsProvider>
       </CollaboratorsProvider>
     </I18nextProvider>
   );

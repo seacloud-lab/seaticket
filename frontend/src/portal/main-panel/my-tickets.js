@@ -2,91 +2,12 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import SeaMetadata, { VIEW_TOOL, DataCacheProvider, useDataCache } from '@/sea-metadata';
 import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
-import { TICKET_NOT_DISPLAY_COLUMNS, TICKET_COLUMNS_WIDTH_CONFIG } from '@/project/main-panel/tickets/constants';
+import {
+  TICKET_NOT_DISPLAY_COLUMNS, TICKET_COLUMNS_WIDTH_CONFIG,
+  TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_COLUMNS_ORDER_CONFIG,
+} from '@/project/main-panel/tickets/constants';
 import { portalAPI } from '../api';
-
-const TICKET_PREDEFINED_COLUMN_CONFIG = {
-  'priority': {
-    type: 'priority',
-    display_name: gettext('Priority'),
-    editable: false,
-    is_width_fixed: true,
-    frozen: true,
-    width: 33,
-  },
-  'title': {
-    type: 'text',
-    display_name: gettext('Title'),
-    editable: false,
-    is_name_column: true,
-    frozen: true,
-  },
-  'state': {
-    type: 'single-select',
-    display_name: gettext('State'),
-    editable: false,
-  },
-  'substate': {
-    type: 'single-select',
-    display_name: gettext('Substate'),
-    editable: false,
-  },
-  'type': {
-    type: 'type',
-    display_name: gettext('Type'),
-    editable: false,
-  },
-  'content': {
-    type: 'long-text',
-    display_name: gettext('Content'),
-    editable: false,
-  },
-  'assignees': {
-    type: 'collaborator',
-    display_name: gettext('Assignees'),
-    editable: false,
-  },
-  'tags': {
-    type: 'tags',
-    display_name: gettext('Tags'),
-    editable: false,
-  },
-  'participants': {
-    type: 'collaborator',
-    display_name: gettext('Participants'),
-    editable: false,
-  },
-  'created_time': {
-    type: 'ctime',
-    display_name: gettext('Created time'),
-    editable: false,
-  },
-  'modified_time': {
-    type: 'mtime',
-    display_name: gettext('Last modified time'),
-    editable: false,
-  },
-  'creator': {
-    type: 'creator',
-    display_name: gettext('Creator'),
-    editable: false,
-  },
-};
-
-const TICKET_COLUMNS_ORDER_CONFIG = {
-  'priority': 1,
-  'title': 2,
-  'type': 3,
-  'state': 4,
-  'substate': 5,
-  'assignees': 6,
-  'tags': 7,
-  'created_time': 8,
-  'modified_time': 9,
-  'creator': 10,
-};
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -231,11 +152,7 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
   );
 };
 
-const MyTickets = ({ projectUuid, tagsData, typesData, isMetadataLoading }) => {
-  if (isMetadataLoading) {
-    return <CenteredLoading />;
-  }
-
+const MyTickets = ({ projectUuid, tagsData, typesData }) => {
   return (
     <DataCacheProvider>
       <MyTicketsInner

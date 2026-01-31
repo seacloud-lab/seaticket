@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import { portalAPI } from '../api';
 import KnowledgeBaseDetails from './knowledge-base-details';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
-import { OptionsData, Option } from '@/project/main-panel/knowledge-base/models';
+import { useTags } from '@/project/hooks';
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -21,7 +21,8 @@ const viewTools = [
 const KnowledgeBase = ({ projectUuid }) => {
   const metadataRef = useRef(null);
   const [viewID, setViewID] = useState('0000');
-  const [tagsData, setTagsData] = useState(new OptionsData());
+
+  const { tagsData } = useTags();
 
   const api = useMemo(() => ({
     getMetadata: (params = {}) => {
@@ -32,15 +33,6 @@ const KnowledgeBase = ({ projectUuid }) => {
         columns = columns
           .filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name))
           .map(c => ({ ...c, ...(KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[c.name] || {}) }));
-        const tagsColumn = columns.find(c => c.name === 'tags');
-        if (tagsColumn) {
-          context.setSetting('tagsColumnKey', tagsColumn.key);
-          const options = tagsColumn?.data?.options || [];
-          const rowsOpts = options.map(opt => new Option(opt));
-          setTagsData(new OptionsData({ rows: rowsOpts }));
-        } else {
-          setTagsData(new OptionsData({ rows: [] }));
-        }
         return { data: { rows, columns } };
       });
     },
