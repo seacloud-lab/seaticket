@@ -5,6 +5,7 @@ import json
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -22,6 +23,7 @@ from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
+from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
@@ -97,6 +99,14 @@ class TicketsAPIView(APIView):
             view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
             tickets, columns = list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit)
+        except SQLGeneratorOptionInvalidError as e:
+            logger.error(e)
+            error_msg = _('There are errors with the filters. Please correct them.')
+            return Response({
+                'tickets': [],
+                'columns': getattr(e, 'columns', []),
+                'error_msg': error_msg,
+            })
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

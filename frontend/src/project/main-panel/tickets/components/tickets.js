@@ -104,6 +104,7 @@ const Tickets = ({
               rows,
               columns,
               linked_records,
+              error_msg: res?.data?.error_msg,
             }
           };
         });

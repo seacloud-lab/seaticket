@@ -315,7 +315,6 @@ class FilterItem extends React.Component {
     if (Array.isArray(options) && Array.isArray(filterTerm)) {
       filterTerm.forEach((item) => {
         let inOption = options.find(option => option.id === item);
-
         let option = inOption || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_OPTION_TIPS };
         labelArray.push(
           <SelectOption option={option} key={'option_' + item} className="select-option-name multiple-select-option" />

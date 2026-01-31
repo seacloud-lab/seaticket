@@ -4,6 +4,7 @@ import Row from './row';
 
 class Metadata {
   constructor(object) {
+    this.error_msg = object.error_msg || '';
     const columns = object.columns || [];
     this.columns = columns.map(column => column instanceof Column ? column : new Column(column, object.columnWidthRules));
     this.linked_records = object.linked_records || {};

@@ -33,6 +33,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, list_connection_record_titles
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
+from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
@@ -394,10 +395,25 @@ class ProjectConnectionDetailsView(APIView):
             error_msg = 'Connection view %s not found.' % view_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        seadb_api = SeaDBAPI(username)
-        records, columns = list_connection_view_records(
-            seadb_api, project_uuid, project_connection, view, start, limit
-        )
+        try:
+            seadb_api = SeaDBAPI(username)
+            records, columns = list_connection_view_records(
+                seadb_api, project_uuid, project_connection, view, start, limit
+            )
+        except SQLGeneratorOptionInvalidError as e:
+            logger.error(e)
+            error_msg = _('There are errors with the filters. Please correct them.')
+            return Response({
+                'records': [],
+                'columns': getattr(e, 'columns', []),
+                'name': project_connection.name,
+                'type': project_connection.type,
+                'error_msg': error_msg,
+            })
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         linked_ticket_titles = {}
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
