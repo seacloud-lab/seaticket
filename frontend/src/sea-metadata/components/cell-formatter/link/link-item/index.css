@@ -7,6 +7,7 @@
   font-size: 13px;
   height: 20px;
   max-width: 100%;
+  width: fit-content;
   padding: 0 2px;
   vertical-align: middle;
 }
@@ -14,9 +15,9 @@
 .link-item .link-item-name {
   height: 20px;
   line-height: 20px;
-  margin-left: 4px;
   max-width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding: 0 4px;
 }

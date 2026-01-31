@@ -251,6 +251,13 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
             discourse_topics_table.deleted.name
         ],
     )
+    seadb_api.create_column_index(
+        project_uuid,
+        topics_table_id,
+        [
+            discourse_topics_table.linked_ticket.name
+        ]
+    )
 
     # Create replies table
     discourse_replies_table = DiscourseRepliesTable
@@ -562,8 +569,10 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
     if not table_metadata:
-        return []
+        return [], []
     columns = table_metadata.get('columns') or []
+    if not columns:
+        return [], []
     view_copy = view.copy()
     display_columns = []
     for column in columns:
@@ -712,6 +721,45 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
         logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
     return topic_record
 
+def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
+    topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    pks_str = ','.join([str(pk) for pk in pks])
+    topics_sql = f"SELECT _pk, title, topic_id, created_time FROM `{topics_table_name}` WHERE _pk IN ({pks_str})"
+    try:
+        topics_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topics_records = topics_res.get('results', [])
+    except Exception as e:
+        topics_records = []
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
+    return topics_records
+
+def list_connection_record_titles(seadb_api, project_uuid, connection_id, connection_type, pks):
+    if not pks:
+        return []
+
+    pks_str = ','.join([str(pk) for pk in pks])
+
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.SITE.value:
+        table_name = WebCrawlTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.SEAFILE.value:
+        table_name = SeafileTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.EMAIL.value:
+        table_name = ThreadTable.gen_table_name(connection_id)
+    else:
+        return []
+
+    sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for record titles {table_name}: {e}')
+        records = []
+    return records
 
 def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""

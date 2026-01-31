@@ -1,6 +1,7 @@
 import { gettext } from '@/constants';
 import CellType from '@/sea-metadata/constants/column/type';
 import { DATE_FORMAT_MAP } from '@/sea-metadata/constants/column';
+import { TICKET_TABLE_NAME } from '../tickets/constants';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -331,6 +332,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
   RESOLVED: 'resolved',
+  LINKED_TICKET: 'linked_ticket',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -355,6 +357,14 @@ const CONNECTION_PREDEFINED_COLUMN = {
     display_name: gettext('Outdated'),
     type: CellType.CHECKBOX,
     editable: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: {
+    display_name: gettext('Linked ticket'),
+    data: {
+      linked_table: TICKET_TABLE_NAME,
+    },
+    type: CellType.LINK,
+    editable: false,
   },
 };
 

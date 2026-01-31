@@ -87,8 +87,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     let _api = {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
-        return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params)).then(res => {
+        return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
+          return {
+            data: {
+              ...res.data,
+              linked_records: res.data?.linked_ticket_titles || {},
+            }
+          };
+        })).then(res => {
           const { records } = res.data;
+          const linked_records = res?.data?.linked_records || {};
           const type = connection?.type;
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
@@ -141,6 +149,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
             data: {
               rows,
               columns: columns,
+              linked_records,
             }
           };
         });
@@ -570,6 +579,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           projectUuid={projectUuid}
           row={currentRow}
           connection={connection}
+          columns={allColumns.current}
           relatedUrl={getOriginalPageUrl(connection, currentRow, allColumns.current)}
           onClose={closeAll}
         />
@@ -580,6 +590,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           row={currentRow}
           connectionId={connectionID}
           onClose={closeAll}
+          onRowClick={handleCreateRelatedTicket}
         />
       )}
     </>

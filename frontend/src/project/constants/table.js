@@ -9,5 +9,8 @@ export const EMPTY_TABLE = {
   // built-in views
   built_in_view_map: {},
 
+  // link record titles
+  linked_records: {},
+
   timestamp: 0,
 };

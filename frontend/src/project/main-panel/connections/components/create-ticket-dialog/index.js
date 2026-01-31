@@ -10,10 +10,15 @@ import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/co
 import { useData, useMetadata, useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { getTableName } from '../../utils';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '../../constants';
+import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 
-const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose }) => {
+const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns, onClose }) => {
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrMessage] = useState('');
   const [title, setTitle] = useState('');
@@ -26,6 +31,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
   const { typesData, substatesData } = useMetadata();
   const { tagsData, createTag } = useTags();
   const { insertRow } = useData();
+  const { insertRowByLink } = useData();
 
   const handleSubmit = () => {
     const { previewText, images, links, checklist } = getPreviewContent(content);
@@ -55,11 +61,22 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
       tags,
       priority,
       substate: substateOption?.name,
+      linked_connection_records: [`${connection.id}_${row._id}`],
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
       toaster.success(gettext('Ticket created'));
       onClose();
-      insertRow(TICKET_TABLE_NAME);
+      const tableName = getTableName(connection);
+      const linkedUpdateRecord = {
+        [res.data.ticket._pk]: res.data.ticket.title,
+      };
+      const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+      const rowUpdateData = { [linkColumn.key]: [res.data.ticket._pk] };
+      insertRowByLink(TICKET_TABLE_NAME, tableName, linkedUpdateRecord, row._id, rowUpdateData, () => {
+        const eventBus = context.eventBus;
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row._id, rowUpdateData);
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
+      });
     });
   };
 

@@ -50,6 +50,7 @@ export const EVENT_BUS_TYPE = {
   LOADING: 'loading',
   CLEAR_DATA: 'clear_data',
   RECALCULATE_DATA: 'recalculate_data',
+  UPDATE_DATA_ATTRIBUTE: 'update_data_attribute',
 
   // view
   MODIFY_FILTERS: 'modify_filters',

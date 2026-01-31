@@ -188,6 +188,7 @@ class ConvertRecordToTicket(APIView):
         return Response({
             'title': ai_title,
             'content': ai_content,
+            'linked_connection_records': [f'{connection_id}_{record_id}'],
         })
 
 

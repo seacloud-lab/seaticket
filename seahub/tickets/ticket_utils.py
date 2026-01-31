@@ -9,10 +9,103 @@ from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
+from seahub.seadb_models.models import DiscourseTopicsTable
+from seahub.seadb_models.utils import list_connection_record_titles
+from seahub.project.models import ProjectConnections
+from seahub.project.constants import ConnectionType
 
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
 logger = logging.getLogger(__name__)
+
+def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
+    linked_record_titles = {}
+    if not tickets or not columns:
+        return linked_record_titles
+
+    lcr_column = None
+    for c in (columns or []):
+        if not isinstance(c, dict):
+            continue
+        if c.get('name') == 'linked_connection_records':
+            lcr_column = c
+            break
+    lcr_key = (lcr_column or {}).get('key') or 'linked_connection_records'
+
+    conn_id_to_record_ids = {}
+    for ticket in (tickets or []):
+        lcrs = ticket.get(lcr_key) or []
+        if not isinstance(lcrs, list):
+            continue
+        for linked_key in lcrs:
+            if not isinstance(linked_key, str) or '_' not in linked_key:
+                continue
+            connection_id_str, record_id_str = linked_key.split('_', 1)
+            if not connection_id_str or not record_id_str:
+                continue
+            try:
+                connection_id = int(connection_id_str)
+                record_id = int(record_id_str)
+            except Exception:
+                continue
+            conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+
+    if not conn_id_to_record_ids:
+        return linked_record_titles
+
+    for connection_id, record_ids_set in conn_id_to_record_ids.items():
+        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not connection:
+            continue
+        records = list_connection_record_titles(
+            seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
+        )
+        for record in (records or []):
+            record_pk = record.get('_pk')
+            if record_pk is None:
+                continue
+            linked_record_titles[f'{connection_id}_{record_pk}'] = record.get('title') or ''
+
+    return linked_record_titles
+
+
+def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
+    linked_record_titles = {}
+    keys = lcr_keys or []
+    if not isinstance(keys, list) or not keys:
+        return linked_record_titles
+
+    conn_id_to_record_ids = {}
+    for linked_key in keys:
+        if not isinstance(linked_key, str) or '_' not in linked_key:
+            continue
+        connection_id_str, record_id_str = linked_key.split('_', 1)
+        if not connection_id_str or not record_id_str:
+            continue
+        try:
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except Exception:
+            continue
+        conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+
+    if not conn_id_to_record_ids:
+        return linked_record_titles
+
+    for connection_id, record_ids_set in conn_id_to_record_ids.items():
+        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not connection:
+            continue
+        records = list_connection_record_titles(
+            seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
+        )
+        for record in (records or []):
+            record_pk = record.get('_pk')
+            if record_pk is None:
+                continue
+            linked_record_titles[f'{connection_id}_{record_pk}'] = record.get('title') or ''
+
+    return linked_record_titles
 
 def time_str_to_utc_time(time_str):
     if time_str.endswith('Z'):
@@ -224,13 +317,16 @@ def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records
             result[ticket_comment['ticket_id']].append(ticket_comment)
     return result
 
-def get_deleted_tickets_ids(seadb_api, project_uuid):
-    sql = f"SELECT _pk FROM `{TABLE_TICKETS}` WHERE `deleted` = True"
+def get_deleted_tickets(seadb_api, project_uuid):
+    sql = f"SELECT _pk, `linked_connection_records` FROM `{TABLE_TICKETS}` WHERE `deleted` = True"
     results = seadb_api.query_rows(project_uuid, sql).get('results')
-    ticket_ids = []
+    tickets = []
     for result in results:
-        ticket_ids.append(result['_pk'])
-    return ticket_ids
+        tickets.append({
+            'ticket_id': result['_pk'],
+            'linked_connection_records': result['linked_connection_records'],
+        })
+    return tickets
 
 def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
     ticket_ids_str = ", ".join(map(str, ticket_ids))
@@ -446,3 +542,138 @@ def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50)
     )
     res = seadb_api.query_rows(project_uuid, sql)
     return res.get('results', [])
+
+
+def check_update_ticket_lcr(seadb_api, project_uuid, ticket_lcr_diff):
+    claim_by_pair = {} # {(conn_id, record_id) : ticket_id}
+    added_by_conn = {} # {conn_id : record_ids}
+    removed_by_conn = {} # {conn_id : (ticket_id, record_ids)}
+
+    for tpk, (added_items, removed_items) in ticket_lcr_diff.items():
+        # format: {conn_id:[record_id, ...]}
+        for item in added_items:
+            conn_id, rid = item.split('_', 1)
+            pair = (int(conn_id), int(rid))
+            existed = claim_by_pair.get(pair)
+            if existed and int(existed) != int(tpk):
+                error_msg = 'This record is already linked to a ticket.'
+                return False, error_msg, None
+            claim_by_pair[pair] = int(tpk)
+            added_by_conn.setdefault(int(conn_id), set()).add(int(rid))
+
+        for item in removed_items:
+            conn_id, rid = item.split('_', 1)
+            if conn_id is None or rid is None:
+                continue
+            removed_by_conn.setdefault(int(conn_id), []).append((int(tpk), {int(rid)}))    
+
+    # validate connections belong to this project
+    conn_ids = set(added_by_conn.keys()) | set(removed_by_conn.keys())
+    connections = ProjectConnections.objects.filter(id__in=conn_ids)
+    connection_id_map = {c.id: c for c in connections}
+    for conn_id in conn_ids:
+        connection = connection_id_map.get(conn_id)
+        if not connection or str(getattr(connection.project, 'uuid', '')) != str(project_uuid):
+            error_msg = 'Connection not found.'
+            return False, error_msg, None
+
+    # check added_by_conn
+    for conn_id, record_ids in added_by_conn.items():
+        connection = connection_id_map.get(conn_id)
+        if connection.type != ConnectionType.DISCOURSE_FORUM.value:
+            continue
+        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        ids_sql = f"({', '.join(str(i) for i in record_ids)})"
+        try:
+            sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
+            res = seadb_api.query_rows(project_uuid, sql)
+            rows = res.get('results') or []
+        except Exception as e:
+            logger.exception(e)
+            error_msg = 'Internal Server Error'
+            return False, error_msg, None
+
+        existed_ids = set()
+        for r in rows:
+            existed_ids.add(int(r.get('_pk')))
+
+        missing_ids = set(record_ids) - existed_ids
+        if missing_ids:
+            error_msg = 'Linked record not found.'
+            return False, error_msg, None
+
+        for r in rows:
+            rid = int(r.get('_pk'))
+            desired_ticket = claim_by_pair.get((conn_id, rid))
+            if desired_ticket is None:
+                continue
+            existed_linked = r.get(DiscourseTopicsTable.linked_ticket.name)
+            if existed_linked and int(existed_linked) not in (None, int(desired_ticket)):
+                error_msg = 'This record is already linked to a ticket.'
+                return False, error_msg, None
+    return added_by_conn, removed_by_conn, claim_by_pair
+
+
+def update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, claim_by_pair):
+    conn_ids = set(added_by_conn.keys()) | set(removed_by_conn.keys())
+    if not conn_ids:
+        return
+
+    connections = ProjectConnections.objects.filter(id__in=conn_ids)
+    connection_id_map = {
+        c.id: c for c in connections
+        if c.type == ConnectionType.DISCOURSE_FORUM.value
+    }
+
+    # update added_by_conn
+    for conn_id, record_ids in added_by_conn.items():
+        if conn_id not in connection_id_map:
+            continue
+        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        update_topic_rows = []
+        for rid in record_ids:
+            desired_ticket = claim_by_pair.get((conn_id, int(rid)))
+            if desired_ticket is None:
+                continue
+            update_topic_rows.append({
+                'pk': int(rid),
+                'row': {
+                    DiscourseTopicsTable.linked_ticket.name: int(desired_ticket)
+                }
+            })
+        if update_topic_rows:
+            seadb_api.update_rows(project_uuid, topics_table_name, update_topic_rows)
+
+    # update removed_by_conn
+    for conn_id, ticket_removed_list in removed_by_conn.items():
+        if conn_id not in connection_id_map:
+            continue
+        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        all_removed_ids = set()
+        for ticket_id, ids_set in ticket_removed_list:
+            all_removed_ids |= set(ids_set)
+        if not all_removed_ids:
+            continue
+        ids_sql = f"({', '.join(str(i) for i in all_removed_ids)})"
+        sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
+        res = seadb_api.query_rows(project_uuid, sql)
+        rows = res.get('results') or []
+
+        linked_ticket_by_pk = {}
+        for r in rows:
+            if r.get('_pk') is not None:
+                linked_ticket_by_pk[int(r.get('_pk'))] = r.get(DiscourseTopicsTable.linked_ticket.name)
+
+        clear_rows = []
+        for tpk, ids_set in ticket_removed_list:
+            for rid in ids_set:
+                existed = linked_ticket_by_pk.get(int(rid))
+                if existed and int(existed) == int(tpk):
+                    clear_rows.append({
+                        'pk': int(rid),
+                        'row': {
+                            DiscourseTopicsTable.linked_ticket.name: None
+                            }
+                    })
+        if clear_rows:
+            seadb_api.update_rows(project_uuid, topics_table_name, clear_rows)

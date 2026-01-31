@@ -3,7 +3,7 @@ import dcopy from 'deep-copy';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { EMPTY_TABLE } from '../constants';
 import { shouldReload } from '../utils';
-import { TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
 import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
@@ -13,6 +13,7 @@ import { NotificationProvider } from '@/components/common/notification/hooks/not
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
+import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 
 const DataContext = React.createContext(null);
 
@@ -195,15 +196,38 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
 
   const clearViewRows = useCallback((tableName = '', viewID = '', api, isBuiltIn = false) => {
     return api().then(res => {
-      const table = data[tableName] || null;
-      if (table) {
+      setData(data => {
+        const newData = dcopy(data);
+        let table = newData[tableName];
+        if (!table) return data;
         const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
         let viewMap = { ...table[viewMapName] };
         let newView = viewMap[viewID] || {};
         newView.rows = [];
         viewMap[viewID] = newView;
-        updateTable(tableName, { [viewMapName]: viewMap });
-      }
+        newData[tableName] = { ...table, [viewMapName]: viewMap };
+
+        // update other table's view
+        Object.keys(newData).forEach(tName => {
+          if (![TICKET_TABLE_NAME, KB_TABLE_NAME, 'version'].includes(tName)) {
+            let table = newData[tName];
+            if (hasOwnProperty(table, 'linked_records') && Object.keys(table.linked_records).length > 0) {
+              let id_view_map = { ...table.id_view_map };
+              Object.keys(id_view_map).forEach(viewID => {
+                let view = id_view_map[viewID];
+                view.rows = [];
+                view.timestamp = 0;
+                id_view_map[viewID] = view;
+              });
+              table.linked_records = {};
+              table.id_view_map = id_view_map;
+              newData[tName] = table;
+            }
+          }
+        });
+        newData.version = newData.version + 1;
+        return newData;
+      });
       return res;
     });
   }, [data, updateTable]);
@@ -238,10 +262,12 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     let func = () => api().then(res => {
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
+      const linkedRecords = res?.data?.linked_records || {};
       const columns = res?.data?.columns || [];
       let rowIds = is_reload ? [] : [...(view?.rows || [])];
       let id_row_map = { ...table.id_row_map };
       let key_column_map = { ...table.key_column_map };
+      let linked_records = { ...table.linked_records, ...linkedRecords };
       let view_map = { ...table[viewMapName] };
       rows.forEach(r => {
         const rowId = String(r._pk);
@@ -254,21 +280,54 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
         key_column_map[c.key] = c;
       });
       view_map[view_id] = { ...view, rows: rowIds, columns: columns.map(c => c.key), timestamp: Date.now() };
-      updateTable(tableName, { id_row_map, key_column_map, [viewMapName]: view_map });
+      setData(data => {
+        const newData = dcopy(data);
+        let table = newData[tableName] || dcopy(EMPTY_TABLE);
+        newData[tableName] = { ...table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records };
+
+        if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
+          const ticketTable = newData[TICKET_TABLE_NAME];
+          const titleColumn = Object.values(ticketTable?.key_column_map || {}).find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+          if (titleColumn) {
+            Object.keys(linkedRecords).forEach(ticketKey => {
+              const ticket = ticketTable.id_row_map[ticketKey + ''] || {};
+              ticketTable.id_row_map[ticketKey + ''] = { ...ticket, [titleColumn.key]: linkedRecords[ticketKey] };
+            });
+            newData[TICKET_TABLE_NAME] = ticketTable;
+          }
+        }
+
+        newData.version = newData.version + 1;
+        return newData;
+      });
       return res;
     });
+
     if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
       func = () => new Promise((resolve, reject) => {
+        if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
+          const ticketTable = data[TICKET_TABLE_NAME];
+          const titleColumn = Object.values(ticketTable?.key_column_map || {}).find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+          if (titleColumn) {
+            Object.keys(table.linked_records).forEach(ticketKey => {
+              const value = table.linked_records[ticketKey];
+              const ticket = ticketTable.id_row_map[ticketKey + ''] || {};
+              table.linked_records[ticketKey] = ticket[titleColumn.key] || value;
+            });
+          }
+        }
+
         resolve({
           data: {
             [recordsName]: view.rows.map(rId => table.id_row_map[rId]).filter(Boolean),
             columns: view.columns.map(cKey => table.key_column_map[cKey]).filter(Boolean),
+            linked_records: table.linked_records,
           }
         });
       });
     }
     return func();
-  }, [getTableByName, updateTable]);
+  }, [getTableByName]);
 
   const getRow = useCallback((tableName, rowId, api) => {
     if (!tableName || !rowId) return null;
@@ -382,46 +441,64 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
     });
   }, [updateDataByDeleteRows]);
 
-  const insertRow = useCallback((tableName, rowId = '', rowData = null) => {
-    if (!tableName) return;
-    setData(data => {
-      let isChanged = false;
-      const newData = dcopy(data);
-      const table = newData[tableName];
-      if (!table) return data;
-      if (rowId) {
-        table.id_row_map[rowId + ''] = rowData;
-      }
-      if (hasOwnProperty(table, 'id_view_map')) {
-        let id_view_map = { ...table.id_view_map };
-        Object.keys(id_view_map).forEach(viewID => {
-          let view = id_view_map[viewID];
+  const initDataWithInsertRow = useCallback((data, tableName) => {
+    let isChanged = false;
+    const newData = dcopy(data);
+    const table = newData[tableName];
+    if (!table) return data;
+    if (hasOwnProperty(table, 'id_view_map')) {
+      let id_view_map = { ...table.id_view_map };
+      Object.keys(id_view_map).forEach(viewID => {
+        let view = id_view_map[viewID];
+        if (view && view.timestamp) {
+          isChanged = true;
+          id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+        }
+      });
+      table.id_view_map = id_view_map;
+    }
+    if (hasOwnProperty(table, 'built_in_view_map')) {
+      let built_in_view_map = { ...table.built_in_view_map };
+      Object.keys(built_in_view_map).forEach(viewID => {
+        let view = built_in_view_map[viewID];
+        if (viewID !== 'trash') {
           if (view && view.timestamp) {
             isChanged = true;
-            id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+            built_in_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
           }
-        });
-        table.id_view_map = id_view_map;
-      }
-      if (hasOwnProperty(table, 'built_in_view_map')) {
-        let built_in_view_map = { ...table.built_in_view_map };
-        Object.keys(built_in_view_map).forEach(viewID => {
-          let view = built_in_view_map[viewID];
-          if (viewID !== 'trash') {
-            if (view && view.timestamp) {
-              isChanged = true;
-              built_in_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
-            }
-          }
-        });
-        table.built_in_view_map = built_in_view_map;
-      }
-      if (!isChanged) return data;
+        }
+      });
+      table.built_in_view_map = built_in_view_map;
+    }
+    if (!isChanged) return data;
+    newData[tableName] = table;
+    newData.version = newData.version + 1;
+    return newData;
+  }, []);
+
+  const insertRow = useCallback((tableName) => {
+    if (!tableName) return;
+    setData(data => initDataWithInsertRow(data, tableName));
+  }, [initDataWithInsertRow]);
+
+  const insertRowByLink = useCallback((linkedTableName, tableName, linkedRecord, rowId, rowData, callback) => {
+    if (!linkedTableName || !tableName) return;
+    setData(data => {
+      let newData = initDataWithInsertRow(data, linkedTableName);
+      let table = newData[tableName];
+      table.linked_records = { ...table.linked_records, ...linkedRecord };
+      const rowIdString = rowId + '';
+      const row = table.id_row_map[rowIdString];
+      table.id_row_map[rowIdString] = { ...row, ...rowData };
       newData[tableName] = table;
-      newData.version = newData.version + 1;
+
+      if (data.version !== newData.version) {
+        newData.version = newData.version + 1;
+      }
+      setTimeout(() => callback && callback(), 0);
       return newData;
     });
-  }, []);
+  }, [initDataWithInsertRow]);
 
   const restoreRows = useCallback((tableName, rowIds = []) => {
     if (!tableName) return;
@@ -488,6 +565,7 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       getMetadata,
       getRow,
       insertRow,
+      insertRowByLink,
       modifyRow,
       modifyLocalRow,
       modifyRows,
