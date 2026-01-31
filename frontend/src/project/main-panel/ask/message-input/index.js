@@ -223,7 +223,7 @@ const MessageInput = forwardRef(({
               {hasHistoryMessages && (isProjectAdmin || isOwner) && (
                 <IconButton
                   disabled={disabled}
-                  icon="delete"
+                  icon="clear"
                   className="sea-qa-ai-clear-context-icon-btn icon-clear-context"
                   onClick={disabled ? () => {} : toggleClearContext}
                   title={gettext('Clear context')}
