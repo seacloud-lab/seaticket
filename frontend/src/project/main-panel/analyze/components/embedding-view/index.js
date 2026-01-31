@@ -4,7 +4,7 @@ import { Coordinator, wasmConnector, Selection } from '@uwdata/mosaic-core';
 import * as SQL from '@uwdata/mosaic-sql';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import Legend from '../legend';
-import { CenteredLoading, EmptyTip } from '@/components';
+import { CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { gettext } from '@/constants';
 import { TABLE_SCHEMA, COLOR_BY_FIELDS, projectUuid } from '../../constants';
 
@@ -39,9 +39,10 @@ const EmbeddingView = ({
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
-  const [categoryMappings, setCategoryMappings] = useState();
+  const [categoryMappings, setCategoryMappings] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isProcessingData, setIsProcessingData] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const config = useMemo(() => ({
     colorScheme: 'light',
@@ -199,6 +200,7 @@ const EmbeddingView = ({
   useEffect(() => {
     if (!Array.isArray(records) || records.length === 0) {
       setCategoryMappings({});
+      setErrorMessage('');
       setIsProcessingData(false);
       return;
     }
@@ -211,11 +213,13 @@ const EmbeddingView = ({
     );
     if (validRecords.length === 0) {
       setCategoryMappings({});
+      setErrorMessage('');
       setIsProcessingData(false);
       return;
     }
     if (lastRenderTime.current === lastLoadRecordsTime) return;
     lastRenderTime.current = lastLoadRecordsTime;
+    setErrorMessage('');
     setIsProcessingData(true);
 
     const allMappings = {};
@@ -278,9 +282,10 @@ const EmbeddingView = ({
           }).join(', ');
           await coordinatorRef.current.query(`INSERT INTO ${tableName} VALUES ${values}`);
         }
-        console.log('计算完成');
+        setErrorMessage('');
         setIsProcessingData(false);
       } catch (dbError) {
+        setErrorMessage(gettext('Error loading data to DuckDB'));
         console.error('Error loading data to DuckDB:', dbError);
         setIsProcessingData(false);
       }
@@ -339,9 +344,9 @@ const EmbeddingView = ({
   }
 
   if (records.length === 0) return (<EmptyTip />);
-  if (isProcessingData) {
-    return (<CenteredLoading />);
-  }
+  if (isProcessingData) return (<CenteredLoading />);
+  if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
+
 
   const textColumn = columnKeys?.includes('ai_summary') ? 'ai_summary' : null;
   const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
@@ -349,7 +354,6 @@ const EmbeddingView = ({
   const categoryColumn = useCategory ? `category_${colorBy}` : undefined;
   const categoryColors = useCategory ? currentMapping.colors : undefined;
 
-  console.log(size);
   return (
     <>
       <div className="embedding-visualization-container" ref={containerRef}>
