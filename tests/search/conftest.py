@@ -1,7 +1,10 @@
-from unittest.mock import Mock
+from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
 from rest_framework.test import APIRequestFactory
+
+from seahub.project.models import Projects, Workspaces
 
 
 @pytest.fixture
@@ -10,10 +13,24 @@ def factory():
 
 
 @pytest.fixture
-def user():
-    u = Mock()
-    u.id = 1
-    u.pk = 1
-    u.username = 'test@seafile.com'
-    u.is_authenticated = True
-    return u
+def real_project(db):
+    owner = f"owner_{uuid4().hex[:6]}@example.com"
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name=f"proj-{uuid4().hex[:6]}",
+    )
+    return project
+
+
+@pytest.fixture
+def auth_user(real_project):
+    owner = real_project.creator
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username=owner,
+        is_authenticated=True,
+        is_active=True,
+    )

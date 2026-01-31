@@ -20,18 +20,18 @@ from seahub.utils.storage import FileNotFound
 
 class TestProjectConnectionsView:
 
-    def test_get_feature_not_enabled(self, factory, user):
+    def test_get_feature_not_enabled(self, factory, auth_user):
         request = factory.get('/api/v1/project/p1/connections/')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 403
 
-    def test_get_project_not_found(self, factory, user):
+    def test_get_project_not_found(self, factory, auth_user):
         request = factory.get('/api/v1/project/p1/connections/')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=None):
@@ -39,29 +39,22 @@ class TestProjectConnectionsView:
 
         assert resp.status_code == 404
 
-    def test_get_permission_denied(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/")
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=False):
-            resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 403
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/")
+        request.user = auth_user
 
         record = Mock()
         record.to_dict.return_value = {'id': 1, 'name': 'c1'}
@@ -70,65 +63,65 @@ class TestProjectConnectionsView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.filter', return_value=[record]):
-            resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
         assert 'records' in resp.data
         assert resp.data['records'][0]['id'] == 1
 
-    def test_post_feature_not_enabled(self, factory, user):
+    def test_post_feature_not_enabled(self, factory, auth_user):
         request = factory.post('/api/v1/project/p1/connections/', data={})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 403
 
-    def test_post_role_permission_denied(self, factory, user):
-        user.permissions.can_add_project.return_value = False
+    def test_post_role_permission_denied(self, factory, auth_user):
+        auth_user.permissions = type(auth_user.permissions)(can_add_project=lambda: False)
 
         request = factory.post('/api/v1/project/p1/connections/', data={})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 403
 
-    def test_post_missing_name(self, factory, user):
+    def test_post_missing_name(self, factory, auth_user):
         request = factory.post('/api/v1/project/p1/connections/', data={'config': '{}', 'type': 'site'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 400
 
-    def test_post_missing_config(self, factory, user):
+    def test_post_missing_config(self, factory, auth_user):
         request = factory.post('/api/v1/project/p1/connections/', data={'name': 'c1', 'type': 'site'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 400
 
-    def test_post_type_not_support(self, factory, user):
+    def test_post_type_not_support(self, factory, auth_user):
         request = factory.post(
             '/api/v1/project/p1/connections/',
             data={'name': 'c1', 'config': '{}', 'type': 'not_support'}
         )
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
 
-    def test_post_project_not_found(self, factory, user):
+    def test_post_project_not_found(self, factory, auth_user):
         request = factory.post('/api/v1/project/p1/connections/', data={'name': 'c1', 'config': '{}', 'type': 'site'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=None):
@@ -136,46 +129,41 @@ class TestProjectConnectionsView:
 
         assert resp.status_code == 404
 
-    def test_post_admin_permission_denied(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/', data={'name': 'c1', 'config': '{}', 'type': 'site'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_admin_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/",
+            data={'name': 'c1', 'config': '{}', 'type': 'site'}
+        )
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_admin_permission', return_value=False):
-            resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 403
 
-    def test_post_enable_create_false(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/', data={'name': 'c1', 'config': '{}', 'type': 'site'})
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_enable_create_false(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/",
+            data={'name': 'c1', 'config': '{}', 'type': 'site'}
+        )
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_admin_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.enable_create', return_value=False):
-            resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 500
 
-    def test_post_create_success_site(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/', data={'name': 'c1', 'config': '{}', 'type': 'site'})
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_create_success_site(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/project/{project.uuid}/connections/", data={'name': 'c1', 'config': '{}', 'type': 'site'})
+        request.user = auth_user
 
         record = Mock()
         record.id = 11
@@ -191,7 +179,7 @@ class TestProjectConnectionsView:
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.project.connections.init_site_seadb_table'), \
                 patch('seahub.project.connections.add_connection_sync_task') as add_task_mock:
-            resp = ProjectConnectionsView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 201
         assert 'record' in resp.data
@@ -201,9 +189,9 @@ class TestProjectConnectionsView:
 
 class TestProjectConnectionView:
 
-    def test_get_project_not_found(self, factory, user):
+    def test_get_project_not_found(self, factory, auth_user):
         request = factory.get('/api/v1/project/p1/connections/1/')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=None):
@@ -211,44 +199,35 @@ class TestProjectConnectionView:
 
         assert resp.status_code == 404
 
-    def test_get_permission_denied(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/")
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=False):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 403
 
-    def test_get_connection_not_found(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_connection_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/")
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=None):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/")
+        request.user = auth_user
 
         record = Mock()
         record.to_dict.return_value = {'id': 1, 'name': 'c1'}
@@ -257,44 +236,42 @@ class TestProjectConnectionView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=record):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['record']['id'] == 1
 
-    def test_put_role_permission_denied(self, factory, user):
-        user.permissions.can_add_project.return_value = False
+    def test_put_role_permission_denied(self, factory, auth_user):
+        auth_user.permissions = type(auth_user.permissions)(can_add_project=lambda: False)
 
         request = factory.put('/api/v1/project/p1/connections/1/', data={'name': 'c2'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
 
         assert resp.status_code == 403
 
-    def test_put_admin_permission_denied(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/', data={'name': 'c2'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_admin_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f"/api/v1/project/{project.uuid}/connections/1/", data={'name': 'c2'}, format='json')
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_admin_permission', return_value=False):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 403
 
-    def test_put_enable_modify_false(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/', data={'config': '{"a": 1}'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_enable_modify_false(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/1/",
+            data={'config': '{"a": 1}'},
+            format='json'
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -306,18 +283,14 @@ class TestProjectConnectionView:
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.decrypt_config', return_value={}), \
                 patch('seahub.project.connections.ProjectConnections.objects.enable_modify', return_value=False):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_put_success(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/', data={'name': 'c2'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f"/api/v1/project/{project.uuid}/connections/1/", data={'name': 'c2'}, format='json')
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -331,41 +304,34 @@ class TestProjectConnectionView:
                 patch('seahub.project.connections.check_project_admin_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.ProjectConnections.objects.modify', return_value=record):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['record']['name'] == 'c2'
 
-    def test_delete_admin_permission_denied(self, factory, user):
-        request = factory.delete('/api/v1/project/p1/connections/1/', data={}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_delete_admin_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.delete(f"/api/v1/project/{project.uuid}/connections/1/", data={}, format='json')
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_admin_permission', return_value=False):
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 403
 
-    def test_delete_success(self, factory, user):
-        request = factory.delete('/api/v1/project/p1/connections/1/', data={}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_delete_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.delete(f"/api/v1/project/{project.uuid}/connections/1/", data={}, format='json')
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_admin_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.filter') as filter_mock:
             filter_mock.return_value.update.return_value = 1
-            resp = ProjectConnectionView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
@@ -373,13 +339,10 @@ class TestProjectConnectionView:
 
 class TestProjectConnectionSyncView:
 
-    def test_post_connection_syncing(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/1/sync/', data={})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_connection_syncing(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/project/{project.uuid}/connections/1/sync/", data={})
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -390,17 +353,14 @@ class TestProjectConnectionSyncView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionSyncView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionSyncView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 429
 
-    def test_post_manual_sync_failed_returns_error(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/1/sync/', data={})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_manual_sync_failed_returns_error(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/project/{project.uuid}/connections/1/sync/", data={})
+        request.user = auth_user
 
         connection = Mock()
         connection.id = 1
@@ -413,17 +373,14 @@ class TestProjectConnectionSyncView:
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.manual_sync_connection', return_value=({'success': False, 'error_msg': 'bad'}, 400)):
-            resp = ProjectConnectionSyncView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionSyncView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_post_success(self, factory, user):
-        request = factory.post('/api/v1/project/p1/connections/1/sync/', data={})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/project/{project.uuid}/connections/1/sync/", data={})
+        request.user = auth_user
 
         connection = Mock()
         connection.id = 1
@@ -436,7 +393,7 @@ class TestProjectConnectionSyncView:
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.manual_sync_connection', return_value=({'success': True}, 200)):
-            resp = ProjectConnectionSyncView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionSyncView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
@@ -444,22 +401,19 @@ class TestProjectConnectionSyncView:
 
 class TestProjectConnectionDetailsView:
 
-    def test_get_missing_view_id(self, factory, user):
+    def test_get_missing_view_id(self, factory, auth_user):
         request = factory.get('/api/v1/project/p1/connections/1/details/')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionDetailsView.as_view()(request, project_uuid='p1', connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_get_view_not_found(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/details/', {'view_id': 'v1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_view_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/details/", {'view_id': 'v1'})
+        request.user = auth_user
 
         connection = Mock()
 
@@ -468,17 +422,17 @@ class TestProjectConnectionDetailsView:
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.ConnectionsViews.objects.get_view', return_value=None):
-            resp = ProjectConnectionDetailsView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionDetailsView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/details/', {'view_id': 'v1', 'start': 'a', 'limit': 'b'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/1/details/",
+            {'view_id': 'v1', 'start': 'a', 'limit': 'b'}
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.name = 'c1'
@@ -491,7 +445,7 @@ class TestProjectConnectionDetailsView:
                 patch('seahub.project.connections.ConnectionsViews.objects.get_view', return_value={'_id': 'v1'}), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.project.connections.list_connection_view_records', return_value=([{'_pk': 1}], ['c'])) as list_mock:
-            resp = ProjectConnectionDetailsView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionDetailsView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert 'records' in resp.data
@@ -500,13 +454,10 @@ class TestProjectConnectionDetailsView:
 
 class TestProjectConnectionRowDetailView:
 
-    def test_get_missing_pk(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/details/row-detail/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_missing_pk(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/details/row-detail/")
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -515,17 +466,17 @@ class TestProjectConnectionRowDetailView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_get_type_invalid(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/details/row-detail/', {'_pk': '1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_type_invalid(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/1/details/row-detail/",
+            {'_pk': '1'}
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'unknown'
@@ -535,17 +486,17 @@ class TestProjectConnectionRowDetailView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_get_site_success_no_file(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/details/row-detail/', {'_pk': '1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_site_success_no_file(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/1/details/row-detail/",
+            {'_pk': '1'}
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -559,7 +510,7 @@ class TestProjectConnectionRowDetailView:
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.connections.list_site_record_details', return_value={'url': ''}):
-            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['connection_type'] == 'site'
@@ -567,13 +518,10 @@ class TestProjectConnectionRowDetailView:
 
 class TestProjectConnectionLogView:
 
-    def test_get_format_log(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/logs/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_format_log(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/logs/")
+        request.user = auth_user
 
         connection = Mock()
         connection.last_sync_log = '\nline1\nline2'
@@ -582,7 +530,7 @@ class TestProjectConnectionLogView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionLogView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionLogView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['last_sync_log'] == 'line1<br>line2'
@@ -590,28 +538,25 @@ class TestProjectConnectionLogView:
 
 class TestProjectConnectionsStatusView:
 
-    def test_get_missing_connection_ids(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/query-status/')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_missing_connection_ids(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/query-status/")
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True):
-            resp = ProjectConnectionsStatusView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsStatusView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/query-status/', {'connection_ids': '1,2'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/query-status/",
+            {'connection_ids': '1,2'}
+        )
+        request.user = auth_user
 
         r1 = Mock()
         r1.id = 1
@@ -622,7 +567,7 @@ class TestProjectConnectionsStatusView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.filter', return_value=[r1]):
-            resp = ProjectConnectionsStatusView.as_view()(request, project_uuid='p1')
+            resp = ProjectConnectionsStatusView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
         assert '1' in [str(k) for k in resp.data.keys()]
@@ -630,22 +575,23 @@ class TestProjectConnectionsStatusView:
 
 class TestProjectConnectionRecordView:
 
-    def test_put_invalid_body(self, factory, user):
+    def test_put_invalid_body(self, factory, auth_user):
         request = factory.put('/api/v1/project/p1/connections/1/records/1/', data=None, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionRecordView.as_view()(request, project_uuid='p1', connection_id='1', record_id='1')
 
         assert resp.status_code == 400
 
-    def test_put_type_not_supported(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/records/1/', data={'outdated': True}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_type_not_supported(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/1/records/1/",
+            data={'outdated': True},
+            format='json'
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'unknown'
@@ -654,17 +600,18 @@ class TestProjectConnectionRecordView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionRecordView.as_view()(request, project_uuid='p1', connection_id='1', record_id='1')
+            resp = ProjectConnectionRecordView.as_view()(request, project_uuid=str(project.uuid), connection_id='1', record_id='1')
 
         assert resp.status_code == 400
 
-    def test_put_success_no_fields(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/records/1/', data={'foo': 1}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_success_no_fields(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/1/records/1/",
+            data={'foo': 1},
+            format='json'
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -673,7 +620,7 @@ class TestProjectConnectionRecordView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionRecordView.as_view()(request, project_uuid='p1', connection_id='1', record_id='1')
+            resp = ProjectConnectionRecordView.as_view()(request, project_uuid=str(project.uuid), connection_id='1', record_id='1')
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
@@ -681,26 +628,23 @@ class TestProjectConnectionRecordView:
 
 class TestProjectConnectionRecordsView:
 
-    def test_put_records_data_invalid(self, factory, user):
+    def test_put_records_data_invalid(self, factory, auth_user):
         request = factory.put('/api/v1/project/p1/connections/1/records/', data={}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectConnectionRecordsView.as_view()(request, project_uuid='p1', connection_id='1')
 
         assert resp.status_code == 400
 
-    def test_put_success_skip_invalid_rows(self, factory, user):
+    def test_put_success_skip_invalid_rows(self, factory, auth_user, real_project):
+        project = real_project
         request = factory.put(
-            '/api/v1/project/p1/connections/1/records/',
+            f"/api/v1/project/{project.uuid}/connections/1/records/",
             data={'records_data': [{'row_id': None, 'row': {}}, {'row_id': '1', 'row': {}}]},
             format='json'
         )
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -709,7 +653,7 @@ class TestProjectConnectionRecordsView:
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection):
-            resp = ProjectConnectionRecordsView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionRecordsView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
@@ -717,19 +661,16 @@ class TestProjectConnectionRecordsView:
 
 class TestConnectionFileView:
 
-    def test_get_file_not_found(self, factory, user):
-        request = factory.get('/api/v1/project/p1/connections/1/file/f.txt')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_file_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/1/file/f.txt")
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.connections.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.connections.check_project_permission', return_value=True), \
                 patch('seahub.project.connections.get_file_from_s3_web_crawl', side_effect=FileNotFound()):
-            resp = ConnectionFileView.as_view()(request, project_uuid='p1', connection_id='1', file_path='f.txt')
+            resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id='1', file_path='f.txt')
 
         assert resp.status_code == 404
 
@@ -812,13 +753,14 @@ class TestDiscourseWebhookView:
 
 class TestProjectConnectionRecordUpdate:
 
-    def test_put_update_outdated_success_calls_update_rows(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/records/1/', data={'outdated': True}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_update_outdated_success_calls_update_rows(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/1/records/1/",
+            data={'outdated': True},
+            format='json'
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -831,18 +773,19 @@ class TestProjectConnectionRecordUpdate:
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.connections.WebCrawlTable.gen_table_name', return_value='tbl'):
-            resp = ProjectConnectionRecordView.as_view()(request, project_uuid='p1', connection_id='1', record_id='1')
+            resp = ProjectConnectionRecordView.as_view()(request, project_uuid=str(project.uuid), connection_id='1', record_id='1')
 
         assert resp.status_code == 200
         assert seadb.update_rows.call_count == 1
 
-    def test_put_update_rows_exception(self, factory, user):
-        request = factory.put('/api/v1/project/p1/connections/1/records/1/', data={'outdated': True}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_update_rows_exception(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/1/records/1/",
+            data={'outdated': True},
+            format='json'
+        )
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -856,21 +799,18 @@ class TestProjectConnectionRecordUpdate:
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.connections.WebCrawlTable.gen_table_name', return_value='tbl'):
-            resp = ProjectConnectionRecordView.as_view()(request, project_uuid='p1', connection_id='1', record_id='1')
+            resp = ProjectConnectionRecordView.as_view()(request, project_uuid=str(project.uuid), connection_id='1', record_id='1')
 
         assert resp.status_code == 500
 
-    def test_put_batch_update_success_calls_update_rows(self, factory, user):
+    def test_put_batch_update_success_calls_update_rows(self, factory, auth_user, real_project):
+        project = real_project
         request = factory.put(
-            '/api/v1/project/p1/connections/1/records/',
+            f"/api/v1/project/{project.uuid}/connections/1/records/",
             data={'records_data': [{'row_id': '1', 'row': {'outdated': True}}]},
             format='json'
         )
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -883,7 +823,7 @@ class TestProjectConnectionRecordUpdate:
                 patch('seahub.project.connections.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.connections.WebCrawlTable.gen_table_name', return_value='tbl'):
-            resp = ProjectConnectionRecordsView.as_view()(request, project_uuid='p1', connection_id='1')
+            resp = ProjectConnectionRecordsView.as_view()(request, project_uuid=str(project.uuid), connection_id='1')
 
         assert resp.status_code == 200
         assert seadb.update_rows.call_count == 1

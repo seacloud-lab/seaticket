@@ -97,4 +97,4 @@ jobs:
           export SEAQA_CONFIG_NAME=seaqa_config.yaml
           export DJANGO_SETTINGS_MODULE=seahub.test_settings
           export JWT_PRIVATE_KEY=qwertyuiop
-          pytest tests/tickets/ --reuse-db --nomigrations
+          pytest tests/ --reuse-db --nomigrations

@@ -37,7 +37,7 @@ class TestKnowledgeBaseViewsGet:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_denied_views
     ):
         url = get_kb_views_url(project_uuid)
@@ -48,7 +48,7 @@ class TestKnowledgeBaseViewsGet:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_internal_error_returns_500(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views
     ):
         url = get_kb_views_url(project_uuid)
@@ -62,7 +62,7 @@ class TestKnowledgeBaseViewsGet:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_get_success_returns_views(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_list_views
     ):
         url = get_kb_views_url(project_uuid)
@@ -98,7 +98,7 @@ class TestKnowledgeBaseViewsPost:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_post_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_denied_views
     ):
         url = get_kb_views_url(project_uuid)
@@ -110,7 +110,7 @@ class TestKnowledgeBaseViewsPost:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_post_record_missing_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views_none
     ):
         url = get_kb_views_url(project_uuid)
@@ -122,7 +122,7 @@ class TestKnowledgeBaseViewsPost:
         assert 'The views does not exists' in resp.data['error_msg']
 
     def test_post_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views, mock_add_view
     ):
         url = get_kb_views_url(project_uuid)
@@ -148,7 +148,7 @@ class TestKnowledgeBaseViewDetailGet:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_denied_views
     ):
         url = get_kb_view_url(project_uuid, '0000')
@@ -159,7 +159,7 @@ class TestKnowledgeBaseViewDetailGet:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_record_missing_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views_none
     ):
         url = get_kb_view_url(project_uuid, '0000')
@@ -170,7 +170,7 @@ class TestKnowledgeBaseViewDetailGet:
         assert 'The views does not exists' in resp.data['error_msg']
 
     def test_get_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views,
         mock_get_view, mock_views_record
     ):
@@ -195,7 +195,7 @@ class TestKnowledgeBaseViewDetailPut:
         assert 'view_data is invalid' in resp.data['error_msg']
 
     def test_put_view_not_found_returns_400(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views, mock_views_record
     ):
         mock_views_record.views_ids = ['0000']
@@ -208,7 +208,7 @@ class TestKnowledgeBaseViewDetailPut:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_put_success_returns_true(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views, mock_views_record
     ):
         mock_views_record.views_ids = ['0000']
@@ -230,7 +230,7 @@ class TestKnowledgeBaseViewDetailPut:
 
 class TestKnowledgeBaseViewDetailDelete:
     def test_delete_view_not_found_returns_400(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views, mock_views_record
     ):
         mock_views_record.views_ids = ['0000']
@@ -242,7 +242,7 @@ class TestKnowledgeBaseViewDetailDelete:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_delete_success_returns_true(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views,
         mock_views_record
     ):
@@ -272,7 +272,7 @@ class TestKnowledgeBaseViewsDuplicate:
         assert 'view_id invalid' in resp.data['error_msg']
 
     def test_duplicate_view_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views, mock_views_record
     ):
         mock_views_record.views_ids = ['0000']
@@ -285,7 +285,7 @@ class TestKnowledgeBaseViewsDuplicate:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_duplicate_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views,
         mock_views_record, mock_duplicate_view
     ):
@@ -321,7 +321,7 @@ class TestKnowledgeBaseViewsMove:
         assert 'target_view_id is invalid' in resp.data['error_msg']
 
     def test_move_success_returns_navigation(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
+        self, api_client, project_uuid,
         mock_check_permission_granted_views, mock_get_record_views,
         mock_views_record, mock_move_view
     ):

@@ -12,32 +12,29 @@ from seahub.utils.events import TaskConflictError
 
 class TestConvertRecordToTicket:
 
-    def test_post_feature_not_enabled(self, factory, user):
+    def test_post_feature_not_enabled(self, factory, auth_user):
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data={}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
             resp = ConvertRecordToTicket.as_view()(request)
 
         assert resp.status_code == 403
 
-    def test_post_missing_connection_id(self, factory, user):
+    def test_post_missing_connection_id(self, factory, auth_user):
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data={}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ConvertRecordToTicket.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_permission_denied(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -46,14 +43,11 @@ class TestConvertRecordToTicket:
 
         assert resp.status_code == 403
 
-    def test_post_ai_quota_exceed(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_ai_quota_exceed(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -63,14 +57,11 @@ class TestConvertRecordToTicket:
 
         assert resp.status_code == 402
 
-    def test_post_connection_not_found(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_connection_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -81,14 +72,11 @@ class TestConvertRecordToTicket:
 
         assert resp.status_code == 404
 
-    def test_post_record_detail_not_found(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_record_detail_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'site'
@@ -102,14 +90,11 @@ class TestConvertRecordToTicket:
 
         assert resp.status_code == 404
 
-    def test_post_ai_service_error(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_ai_service_error(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'github_issue'
@@ -129,14 +114,11 @@ class TestConvertRecordToTicket:
 
         assert resp.status_code == 500
 
-    def test_post_success_returns_title_and_content(self, factory, user):
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': 'p1'}
+    def test_post_success_returns_title_and_content(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         connection = Mock()
         connection.type = 'github_issue'
@@ -161,23 +143,20 @@ class TestConvertRecordToTicket:
 
 class TestEmbeddingAnalysisView:
 
-    def test_post_missing_project_uuid(self, factory, user):
+    def test_post_missing_project_uuid(self, factory, auth_user):
         request = factory.post('/api/v1/ai/embedding-analysis/', data={}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = EmbeddingAnalysisView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_task_conflict(self, factory, user):
-        payload = {'project_uuid': 'p1', 'connection_ids': [1]}
+    def test_post_task_conflict(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'project_uuid': str(project.uuid), 'connection_ids': [1]}
         request = factory.post('/api/v1/ai/embedding-analysis/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -187,14 +166,11 @@ class TestEmbeddingAnalysisView:
 
         assert resp.status_code == 409
 
-    def test_post_success_returns_task_id(self, factory, user):
-        payload = {'project_uuid': 'p1', 'connection_ids': [1]}
+    def test_post_success_returns_task_id(self, factory, auth_user, real_project):
+        project = real_project
+        payload = {'project_uuid': str(project.uuid), 'connection_ids': [1]}
         request = factory.post('/api/v1/ai/embedding-analysis/', data=payload, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -208,9 +184,9 @@ class TestEmbeddingAnalysisView:
 
 class TestEmbeddingAnalysisTaskStatusView:
 
-    def test_get_success(self, factory, user):
+    def test_get_success(self, factory, auth_user):
         request = factory.get('/api/v1/ai/embedding-analysis-task-status/task-1/')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.get_embedding_analysis_task_status', return_value={'status': 'done'}):
@@ -222,9 +198,9 @@ class TestEmbeddingAnalysisTaskStatusView:
 
 class TestRelatedRecordsView:
 
-    def test_post_project_not_found(self, factory, user):
+    def test_post_project_not_found(self, factory, auth_user):
         request = factory.post('/api/v1/ai/related-records/', data={'project_uuid': 'p1'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=None):

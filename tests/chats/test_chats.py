@@ -6,27 +6,27 @@ from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesVie
 
 class TestChatSessionsView:
 
-    def test_get_feature_not_enabled(self, factory, user):
+    def test_get_feature_not_enabled(self, factory, auth_user):
         request = factory.get('/api/v1/chat/sessions/', {})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
             resp = ChatSessionsView.as_view()(request)
 
         assert resp.status_code == 403
 
-    def test_get_missing_project_uuid(self, factory, user):
+    def test_get_missing_project_uuid(self, factory, auth_user):
         request = factory.get('/api/v1/chat/sessions/', {})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatSessionsView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_get_project_not_found(self, factory, user):
+    def test_get_project_not_found(self, factory, auth_user):
         request = factory.get('/api/v1/chat/sessions/', {'project_uuid': 'p1'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=None):
@@ -34,13 +34,10 @@ class TestChatSessionsView:
 
         assert resp.status_code == 404
 
-    def test_get_permission_denied(self, factory, user):
-        request = factory.get('/api/v1/chat/sessions/', {'project_uuid': 'p1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get('/api/v1/chat/sessions/', {'project_uuid': str(project.uuid)})
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -49,13 +46,10 @@ class TestChatSessionsView:
 
         assert resp.status_code == 403
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/chat/sessions/', {'project_uuid': 'p1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get('/api/v1/chat/sessions/', {'project_uuid': str(project.uuid)})
+        request.user = auth_user
 
         session = Mock()
         session.to_dict.return_value = {'session_uuid': 's1'}
@@ -69,31 +63,32 @@ class TestChatSessionsView:
         assert resp.status_code == 200
         assert resp.data['sessions'][0]['session_uuid'] == 's1'
 
-    def test_post_missing_project_uuid(self, factory, user):
+    def test_post_missing_project_uuid(self, factory, auth_user):
         request = factory.post('/api/v1/chat/sessions/', data={'session_name': 'n'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatSessionsView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_missing_session_name(self, factory, user):
+    def test_post_missing_session_name(self, factory, auth_user):
         request = factory.post('/api/v1/chat/sessions/', data={'project_uuid': 'p1'})
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatSessionsView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_success(self, factory, user):
-        request = factory.post('/api/v1/chat/sessions/', data={'project_uuid': 'p1', 'session_name': 'n'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(
+            '/api/v1/chat/sessions/',
+            data={'project_uuid': str(project.uuid), 'session_name': 'n'},
+            format='json'
+        )
+        request.user = auth_user
 
         session = Mock()
         session.to_dict.return_value = {'session_uuid': 's1'}
@@ -110,22 +105,23 @@ class TestChatSessionsView:
 
 class TestChatSessionView:
 
-    def test_put_missing_project_uuid(self, factory, user):
+    def test_put_missing_project_uuid(self, factory, auth_user):
         request = factory.put('/api/v1/chat/sessions/s1/', data={'session_name': 'n'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatSessionView.as_view()(request, session_uuid='s1')
 
         assert resp.status_code == 400
 
-    def test_put_session_not_found(self, factory, user):
-        request = factory.put('/api/v1/chat/sessions/s1/', data={'project_uuid': 'p1', 'session_name': 'n'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_put_session_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(
+            '/api/v1/chat/sessions/s1/',
+            data={'project_uuid': str(project.uuid), 'session_name': 'n'},
+            format='json'
+        )
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -135,13 +131,14 @@ class TestChatSessionView:
 
         assert resp.status_code == 404
 
-    def test_delete_success(self, factory, user):
-        request = factory.delete('/api/v1/chat/sessions/s1/', data={'project_uuid': 'p1'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_delete_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.delete(
+            '/api/v1/chat/sessions/s1/',
+            data={'project_uuid': str(project.uuid)},
+            format='json'
+        )
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -156,13 +153,10 @@ class TestChatSessionView:
 
 class TestChatMessagesView:
 
-    def test_get_session_not_found(self, factory, user):
-        request = factory.get('/api/v1/chat/sessions/s1/messages/', {'project_uuid': 'p1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_session_not_found(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get('/api/v1/chat/sessions/s1/messages/', {'project_uuid': str(project.uuid)})
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -172,13 +166,13 @@ class TestChatMessagesView:
 
         assert resp.status_code == 404
 
-    def test_get_success_thought_process(self, factory, user):
-        request = factory.get('/api/v1/chat/sessions/s1/messages/', {'project_uuid': 'p1'})
-        request.user = user
-
-        project = Mock()
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_get_success_thought_process(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(
+            '/api/v1/chat/sessions/s1/messages/',
+            {'project_uuid': str(project.uuid)}
+        )
+        request.user = auth_user
 
         session = Mock()
 
@@ -211,27 +205,27 @@ class TestChatMessagesView:
 
 class TestChatView:
 
-    def test_post_missing_project_uuid(self, factory, user):
+    def test_post_missing_project_uuid(self, factory, auth_user):
         request = factory.post('/api/v1/ai/chat/', data={'query': 'q'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_missing_query(self, factory, user):
+    def test_post_missing_query(self, factory, auth_user):
         request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_project_not_found(self, factory, user):
+    def test_post_project_not_found(self, factory, auth_user):
         request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=None):
@@ -239,14 +233,10 @@ class TestChatView:
 
         assert resp.status_code == 404
 
-    def test_post_permission_denied(self, factory, user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -255,18 +245,14 @@ class TestChatView:
 
         assert resp.status_code == 403
 
-    def test_post_existing_session_not_found(self, factory, user):
+    def test_post_existing_session_not_found(self, factory, auth_user, real_project):
+        project = real_project
         request = factory.post(
             '/api/v1/ai/chat/',
-            data={'project_uuid': 'p1', 'query': 'q', 'session_uuid': 's1'},
+            data={'project_uuid': str(project.uuid), 'query': 'q', 'session_uuid': 's1'},
             format='json'
         )
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -278,14 +264,10 @@ class TestChatView:
 
         assert resp.status_code == 404
 
-    def test_post_gen_message_id_failure(self, factory, user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_gen_message_id_failure(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request.user = auth_user
 
         session = Mock()
         session.session_uuid = 's1'
@@ -301,14 +283,10 @@ class TestChatView:
 
         assert resp.status_code == 500
 
-    def test_post_ai_limit_exceed(self, factory, user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_ai_limit_exceed(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
@@ -318,14 +296,10 @@ class TestChatView:
 
         assert resp.status_code == 402
 
-    def test_post_get_ai_reply_exception_fallback(self, factory, user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_get_ai_reply_exception_fallback(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request.user = auth_user
 
         session = Mock()
         session.session_uuid = 's1'
@@ -354,14 +328,10 @@ class TestChatView:
         assert resp.data['user_message_id'] == 1
         assert resp.data['ai_reply_message_id'] == 2
 
-    def test_post_success_maps_connection_name(self, factory, user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
-        request.user = user
-
-        project = Mock()
-        project.uuid = 'p1'
-        project.workspace = Mock()
-        project.workspace.owner = 'owner@auth.local'
+    def test_post_success_maps_connection_name(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request.user = auth_user
 
         session = Mock()
         session.session_uuid = 's1'

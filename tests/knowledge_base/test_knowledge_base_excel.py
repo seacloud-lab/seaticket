@@ -39,7 +39,7 @@ class TestKnowledgeBaseConvertViewToExcel:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_denied_excel
     ):
         url = get_kb_convert_view_url(project_uuid)
@@ -51,7 +51,7 @@ class TestKnowledgeBaseConvertViewToExcel:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_convert_error_returns_500(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_granted_excel, mock_convert_kb_view_to_excel
     ):
         mock_convert_kb_view_to_excel.side_effect = Exception('boom')
@@ -64,7 +64,7 @@ class TestKnowledgeBaseConvertViewToExcel:
         assert 'Internal Server Error' in resp.data['error_msg']
 
     def test_get_success_returns_task_id(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_granted_excel, mock_convert_kb_view_to_excel
     ):
         url = get_kb_convert_view_url(project_uuid)
@@ -181,7 +181,7 @@ class TestKnowledgeBaseExportExcel:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_denied_excel
     ):
         url = get_kb_export_url(project_uuid)
@@ -193,7 +193,7 @@ class TestKnowledgeBaseExportExcel:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_view_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_granted_excel
     ):
         with patch(
@@ -209,7 +209,7 @@ class TestKnowledgeBaseExportExcel:
         assert 'View not found' in resp.data['error_msg']
 
     def test_get_file_missing_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_granted_excel, mock_get_view_excel
     ):
         url = get_kb_export_url(project_uuid)
@@ -225,7 +225,7 @@ class TestKnowledgeBaseExportExcel:
         assert 'not found' in resp.data['error_msg']
 
     def test_get_success_returns_file_response(
-        self, api_client, project_uuid, mock_get_project_by_uuid_excel,
+        self, api_client, project_uuid,
         mock_check_permission_granted_excel, mock_get_view_excel, tmp_path
     ):
         excel_name = 'Test Project_knowledge_base_All.xlsx'

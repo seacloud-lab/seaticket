@@ -13,19 +13,6 @@ def factory():
 
 
 @pytest.fixture
-def user():
-    return SimpleNamespace(
-        id=1,
-        pk=1,
-        username='test@seafile.com',
-        is_authenticated=True,
-        is_active=True,
-        permissions=SimpleNamespace(can_add_project=lambda: True),
-        org=SimpleNamespace(org_id=1),
-    )
-
-
-@pytest.fixture
 def real_project(db):
     owner = f"owner_{uuid4().hex[:6]}@example.com"
     workspace = Workspaces.objects.create(owner=owner, org_id=1)
@@ -34,18 +21,18 @@ def real_project(db):
         workspace=workspace,
         name=f"proj-{uuid4().hex[:6]}",
     )
-    return project
+    return owner, project
 
 
 @pytest.fixture
 def auth_user(real_project):
-    owner = real_project.creator
+    owner, _ = real_project
     return SimpleNamespace(
         id=1,
         pk=1,
         username=owner,
         is_authenticated=True,
         is_active=True,
-        permissions=SimpleNamespace(can_add_project=lambda: True),
         org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True),
     )

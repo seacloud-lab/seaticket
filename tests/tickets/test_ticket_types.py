@@ -3,9 +3,9 @@ from unittest.mock import Mock, patch
 from seahub.tickets.ticket_types import TicketTypesAPIView, TicketTypeAPIView
 
 
-def test_get_types_feature_not_enabled(factory, user):
+def test_get_types_feature_not_enabled(factory, auth_user):
     request = factory.get('/api/v1/projects/p1/ticket-types/')
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -13,28 +13,25 @@ def test_get_types_feature_not_enabled(factory, user):
     assert resp.status_code == 403
 
 
-def test_get_types_success(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-types/')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+def test_get_types_success(factory, auth_user, real_project):
+    project = real_project
+    request = factory.get(f"/api/v1/projects/{project.uuid}/ticket-types/")
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=True), \
             patch('seahub.tickets.ticket_types.SeaDBAPI'), \
             patch('seahub.tickets.ticket_types.get_ticket_counts_group_by_column_name', return_value=([{'id': 't1', 'name': 'bug'}], None)):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
+        resp = TicketTypesAPIView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 200
     assert 'types' in resp.data
 
 
-def test_get_types_project_not_found(factory, user):
+def test_get_types_project_not_found(factory, auth_user):
     request = factory.get('/api/v1/projects/p1/ticket-types/')
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=None):
@@ -43,26 +40,23 @@ def test_get_types_project_not_found(factory, user):
     assert resp.status_code == 404
 
 
-def test_get_types_permission_denied(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-types/')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+def test_get_types_permission_denied(factory, auth_user, real_project):
+    project = real_project
+    request = factory.get(f"/api/v1/projects/{project.uuid}/ticket-types/")
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True), \
             patch('seahub.tickets.ticket_types.Projects.objects.get_project_by_uuid', return_value=project), \
             patch('seahub.tickets.ticket_types.check_project_permission', return_value=False):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
+        resp = TicketTypesAPIView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
 
 
-def test_post_type_missing_name(factory, user):
+def test_post_type_missing_name(factory, auth_user):
     payload = {'color': '#fff', 'text_color': '#000'}
     request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -70,10 +64,10 @@ def test_post_type_missing_name(factory, user):
     assert resp.status_code == 400
 
 
-def test_post_type_feature_not_enabled(factory, user):
+def test_post_type_feature_not_enabled(factory, auth_user):
     payload = {'name': 'bug', 'color': '#fff', 'text_color': '#000'}
     request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -81,14 +75,11 @@ def test_post_type_feature_not_enabled(factory, user):
     assert resp.status_code == 403
 
 
-def test_post_type_duplicate_name(factory, user):
+def test_post_type_duplicate_name(factory, auth_user, real_project):
+    project = real_project
     payload = {'name': 'bug', 'color': '#fff', 'text_color': '#000'}
-    request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+    request = factory.post(f"/api/v1/projects/{project.uuid}/ticket-types/", data=payload)
+    request.user = auth_user
 
     column = {'key': 'k', 'data': {'options': [{'id': 't1', 'name': 'bug'}]}}
     table_meta = {'id': 'tbl', 'columns': [column]}
@@ -101,19 +92,16 @@ def test_post_type_duplicate_name(factory, user):
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
+        resp = TicketTypesAPIView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 400
 
 
-def test_post_type_success(factory, user):
+def test_post_type_success(factory, auth_user, real_project):
+    project = real_project
     payload = {'name': 'bug', 'color': '#fff', 'text_color': '#000'}
-    request = factory.post('/api/v1/projects/p1/ticket-types/', data=payload)
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+    request = factory.post(f"/api/v1/projects/{project.uuid}/ticket-types/", data=payload)
+    request.user = auth_user
 
     column = {'key': 'k', 'data': {'options': []}}
     table_meta = {'id': 'tbl', 'columns': [column]}
@@ -128,15 +116,15 @@ def test_post_type_success(factory, user):
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_types.add_select_option', return_value={'id': 't1', 'name': 'bug'}):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
+        resp = TicketTypesAPIView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 201
     assert 'type' in resp.data
 
 
-def test_delete_types_missing_type_ids(factory, user):
+def test_delete_types_missing_type_ids(factory, auth_user):
     request = factory.delete('/api/v1/projects/p1/ticket-types/', data={}, format='json')
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -144,11 +132,11 @@ def test_delete_types_missing_type_ids(factory, user):
     assert resp.status_code == 400
 
 
-def test_delete_types_feature_not_enabled(factory, user):
+def test_delete_types_feature_not_enabled(factory, auth_user):
     request = factory.delete(
         '/api/v1/projects/p1/ticket-types/', data={'type_ids': ['t1']}, format='json'
     )
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
@@ -156,14 +144,11 @@ def test_delete_types_feature_not_enabled(factory, user):
     assert resp.status_code == 403
 
 
-def test_delete_types_success(factory, user):
+def test_delete_types_success(factory, auth_user, real_project):
+    project = real_project
     payload = {'type_ids': ['t1']}
-    request = factory.delete('/api/v1/projects/p1/ticket-types/', data=payload, format='json')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+    request = factory.delete(f"/api/v1/projects/{project.uuid}/ticket-types/", data=payload, format='json')
+    request.user = auth_user
 
     table_meta = {'id': 'tbl', 'columns': [{'key': 'k'}]}
 
@@ -177,19 +162,16 @@ def test_delete_types_success(factory, user):
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=table_meta['columns'][0]), \
             patch('seahub.tickets.ticket_types.batch_delete_select_option'):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid='p1')
+        resp = TicketTypesAPIView.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 200
     assert resp.data['success'] is True
 
 
-def test_get_type_not_found(factory, user):
-    request = factory.get('/api/v1/projects/p1/ticket-types/t1/')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+def test_get_type_not_found(factory, auth_user, real_project):
+    project = real_project
+    request = factory.get(f"/api/v1/projects/{project.uuid}/ticket-types/t1/")
+    request.user = auth_user
 
     table_meta = {'columns': [{'data': {'options': []}}]}
 
@@ -202,14 +184,14 @@ def test_get_type_not_found(factory, user):
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=table_meta['columns'][0]):
-        resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
+        resp = TicketTypeAPIView.as_view()(request, project_uuid=str(project.uuid), type_id='t1')
 
     assert resp.status_code == 404
 
 
-def test_put_type_argument_invalid(factory, user):
+def test_put_type_argument_invalid(factory, auth_user):
     request = factory.put('/api/v1/projects/p1/ticket-types/t1/', data={}, format='json')
-    request.user = user
+    request.user = auth_user
 
     with patch('seahub.utils.decorators.is_org_context', return_value=True):
         resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
@@ -217,13 +199,10 @@ def test_put_type_argument_invalid(factory, user):
     assert resp.status_code == 400
 
 
-def test_delete_type_not_found(factory, user):
-    request = factory.delete('/api/v1/projects/p1/ticket-types/t1/', data={}, format='json')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+def test_delete_type_not_found(factory, auth_user, real_project):
+    project = real_project
+    request = factory.delete(f"/api/v1/projects/{project.uuid}/ticket-types/t1/", data={}, format='json')
+    request.user = auth_user
 
     column = {'key': 'k', 'data': {'options': []}}
     table_meta = {'id': 'tbl', 'columns': [column]}
@@ -236,19 +215,16 @@ def test_delete_type_not_found(factory, user):
             patch('seahub.tickets.ticket_types.SeaDBAPI', return_value=seadb), \
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=column):
-        resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
+        resp = TicketTypeAPIView.as_view()(request, project_uuid=str(project.uuid), type_id='t1')
 
     assert resp.status_code == 404
 
 
-def test_put_type_success(factory, user):
+def test_put_type_success(factory, auth_user, real_project):
+    project = real_project
     payload = {'name': 'bug2'}
-    request = factory.put('/api/v1/projects/p1/ticket-types/t1/', data=payload, format='json')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+    request = factory.put(f"/api/v1/projects/{project.uuid}/ticket-types/t1/", data=payload, format='json')
+    request.user = auth_user
 
     type_option = {'id': 't1', 'name': 'bug'}
     column = {'key': 'k', 'data': {'options': [type_option]}}
@@ -264,19 +240,16 @@ def test_put_type_success(factory, user):
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_types.update_select_option'):
-        resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
+        resp = TicketTypeAPIView.as_view()(request, project_uuid=str(project.uuid), type_id='t1')
 
     assert resp.status_code == 200
     assert resp.data['success'] is True
 
 
-def test_delete_type_success(factory, user):
-    request = factory.delete('/api/v1/projects/p1/ticket-types/t1/', data={}, format='json')
-    request.user = user
-
-    project = Mock()
-    project.workspace = Mock()
-    project.workspace.owner = 'owner@auth.local'
+def test_delete_type_success(factory, auth_user, real_project):
+    project = real_project
+    request = factory.delete(f"/api/v1/projects/{project.uuid}/ticket-types/t1/", data={}, format='json')
+    request.user = auth_user
 
     column = {'key': 'k', 'data': {'options': [{'id': 't1', 'name': 'bug'}]}}
     table_meta = {'id': 'tbl', 'columns': [column]}
@@ -291,7 +264,7 @@ def test_delete_type_success(factory, user):
             patch('seahub.tickets.ticket_types.get_current_table_metadata', return_value=table_meta), \
             patch('seahub.tickets.ticket_types.get_column_from_columns_by_name', return_value=column), \
             patch('seahub.tickets.ticket_types.SeaDBAPI.delete_column_option'):
-        resp = TicketTypeAPIView.as_view()(request, project_uuid='p1', type_id='t1')
+        resp = TicketTypeAPIView.as_view()(request, project_uuid=str(project.uuid), type_id='t1')
 
     assert resp.status_code == 200
     assert resp.data['success'] is True

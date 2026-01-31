@@ -16,17 +16,6 @@ def factory():
 
 
 @pytest.fixture
-def user():
-    return SimpleNamespace(
-        id=1,
-        pk=1,
-        username='test@seafile.com',
-        is_authenticated=True,
-        is_active=True,
-    )
-
-
-@pytest.fixture
 def real_project(db):
     owner = f"owner_{uuid4().hex[:6]}@example.com"
     workspace = Workspaces.objects.create(owner=owner, org_id=1)
@@ -35,12 +24,12 @@ def real_project(db):
         workspace=workspace,
         name=f"proj-{uuid4().hex[:6]}",
     )
-    return owner, project
+    return project
 
 
 @pytest.fixture
 def auth_user(real_project):
-    owner, _ = real_project
+    owner = real_project.creator
     return SimpleNamespace(
         id=1,
         pk=1,
@@ -59,7 +48,7 @@ def mock_seadb():
 
 @pytest.fixture
 def ticket_views_record(real_project):
-    _, project = real_project
+    project = real_project
     details = {
         "navigation": [{"_id": "v1", "type": "view"}],
         "views": [{"_id": "v1", "name": "view1", "type": "table"}],
@@ -69,7 +58,7 @@ def ticket_views_record(real_project):
 
 @pytest.fixture
 def ticket_views_folder_record(real_project):
-    _, project = real_project
+    project = real_project
     details = {
         "navigation": [
             {"_id": "f1", "name": "folder1", "type": "folder", "children": []},
@@ -81,7 +70,7 @@ def ticket_views_folder_record(real_project):
 
 @pytest.fixture
 def ticket_views_move_record(real_project):
-    _, project = real_project
+    project = real_project
     details = {
         "navigation": [
             {"_id": "v1", "type": "view"},

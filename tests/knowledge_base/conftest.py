@@ -4,54 +4,72 @@ from copy import deepcopy
 from unittest.mock import Mock, MagicMock, patch
 from rest_framework.test import APIClient
 from seahub.constants import PERMISSION_READ_WRITE
+from types import SimpleNamespace
+from seahub.project.models import Projects, Workspaces
 
 
 @pytest.fixture
-def api_client():
+def api_client(auth_user):
     """Create an authenticated API client for testing."""
     client = APIClient()
-    # Create a mock user
-    mock_user = Mock()
-    mock_user.id = 1
-    mock_user.username = 'test@example.com'
-    mock_user.is_authenticated = True
-    # Force authenticate
-    client.force_authenticate(user=mock_user)
+    client.force_authenticate(user=auth_user)
     return client
 
 
 @pytest.fixture
 def mock_user():
     """Create a mock user object."""
-    user = Mock()
-    user.id = 1
-    user.username = 'test@example.com'
-    user.is_authenticated = True
-    return user
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username='test@example.com',
+        is_authenticated=True,
+        is_active=True,
+    )
 
 
 @pytest.fixture
-def project_uuid():
+def real_project(db):
+    owner = 'test@example.com'
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name='Test Project',
+    )
+    return project
+
+
+@pytest.fixture
+def auth_user(real_project):
+    owner = real_project.creator
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username=owner,
+        is_authenticated=True,
+        is_active=True,
+    )
+
+
+@pytest.fixture
+def project_uuid(real_project):
     """Return a valid project UUID for testing."""
-    return '12345678-1234-1234-1234-123456789abc'
+    project = real_project
+    return str(project.uuid)
 
 
 @pytest.fixture
-def mock_workspace():
+def mock_workspace(real_project):
     """Create a mock workspace object."""
-    workspace = Mock()
-    workspace.owner = 'test@example.com'
-    workspace.org_id = 1
-    return workspace
+    project = real_project
+    return project.workspace
 
 
 @pytest.fixture
-def mock_project(mock_workspace):
+def mock_project(real_project):
     """Create a mock project object with workspace."""
-    project = Mock()
-    project.workspace = mock_workspace
-    project.uuid = '12345678-1234-1234-1234-123456789abc'
-    project.name = 'Test Project'
+    project = real_project
     return project
 
 
