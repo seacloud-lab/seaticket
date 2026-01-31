@@ -8,7 +8,6 @@ import Loading from '@/components/loading';
 import SysAdminUpdateUserDialog from '@/sys-admin/dialog/update-user';
 import Nav from './user-nav';
 import sysAdminAPI from '../api';
-import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
 import { TopBar, Main } from '../main-panel';
 import UserTitle from './user-title';
 
@@ -29,7 +28,6 @@ class Content extends Component {
       currentKey: '',
       dialogTitle: '',
       isUpdateUserDialogOpen: false,
-      isSetAPICallsLimitPerUserDialogOpen: false,
     };
   }
 
@@ -69,10 +67,6 @@ class Content extends Component {
     this.toggleDialog('', '');
   };
 
-  toggleAPICallsLimitPerUserDialog = () => {
-    this.setState({ isSetAPICallsLimitPerUserDialogOpen: !this.state.isSetAPICallsLimitPerUserDialogOpen });
-  };
-
   updateAPICallsLimitPerUser = (value) => {
     this.props.updateUser('monthly_api_call_limit_per_user', value);
   };
@@ -98,7 +92,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const user = this.props.userInfo;
-      const { currentKey, dialogTitle, isUpdateUserDialogOpen, isSetAPICallsLimitPerUserDialogOpen } = this.state;
+      const { currentKey, dialogTitle, isUpdateUserDialogOpen } = this.state;
       return (
         <Fragment>
           <dl className="m-0">
@@ -150,17 +144,6 @@ class Content extends Component {
               </Fragment>
             )}
 
-            <dt className="info-item-heading">{gettext('API calls count')}</dt>
-            <dd className="info-item-content">
-              {user.api_calls_count || 0}
-            </dd>
-
-            <dt className="info-item-heading">{gettext('API calls limit per user')}</dt>
-            <dd className="info-item-content">
-              {user.monthly_api_call_limit_per_user > 0 ? user.monthly_api_call_limit_per_user : '--'}
-              {this.showEditIcon(this.toggleAPICallsLimitPerUserDialog)}
-            </dd>
-
             {twoFactorAuthEnabled &&
               <Fragment>
                 <dt className="info-item-heading">{gettext('Two-Factor Authentication')}</dt>
@@ -191,12 +174,6 @@ class Content extends Component {
               value={user[currentKey]}
               updateValue={this.updateValue}
               toggleDialog={this.toggleUpdateUserDialog}
-            />
-          }
-          {isSetAPICallsLimitPerUserDialogOpen &&
-            <SetAPICallsLimitPerUser
-              updateLimit={this.updateAPICallsLimitPerUser}
-              toggle={this.toggleAPICallsLimitPerUserDialog}
             />
           }
         </Fragment>

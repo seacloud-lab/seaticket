@@ -185,11 +185,6 @@ class AdminOrgUsers(APIView):
             error_msg = 'User %s already exists.' % email
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # check user number limit by license
-        if user_number_over_limit():
-            error_msg = 'The number of users exceeds the limit.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # check user number limit by org member quota
         org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
         org_active_members = len([m for m in org_members if m.is_active])
@@ -227,10 +222,6 @@ class AdminOrgUsers(APIView):
 
         user_info = get_org_user_info(org_id, user)
         user_info['active'] = is_active
-        with_workspace = request.data.get('with_workspace', False)
-        if with_workspace:
-            workspace = create_repo_and_workspace(user.email, org_id)
-            user_info['workspace_id'] = workspace.id
 
         # send admin operation log signal
         admin_op_detail = {

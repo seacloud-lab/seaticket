@@ -533,8 +533,8 @@ class AdminUser(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # Org member quota check when activating
-        is_activating = (is_active is True) and (not user_obj.is_active)
-        if is_activating and ORG_MEMBER_QUOTA_ENABLED and orgs:
+        is_active = (is_active is True) and (not user_obj.is_active)
+        if is_active and ORG_MEMBER_QUOTA_ENABLED and orgs:
             try:
                 from seahub.organizations.models import OrgMemberQuota
                 org_members_quota = OrgMemberQuota.objects.get_quota(org_id)

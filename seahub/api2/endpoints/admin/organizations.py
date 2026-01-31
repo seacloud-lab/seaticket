@@ -98,8 +98,6 @@ def get_org_detailed_info(org):
     if ORG_MEMBER_QUOTA_ENABLED:
         org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
 
-    org_info['monthly_api_call_limit_per_user'] = OrgQuota.objects.get_monthly_api_call_limit_per_user(org_id)
-
     return org_info
 
 
@@ -421,37 +419,6 @@ class AdminOrganization(APIView):
             OrgSettings.objects.add_or_update(org, role=role)
             org_role_updated.send(None, org_id=org_id)
 
-        # api-calls-count
-        monthly_api_call_limit_per_user = request.data.get('monthly_api_call_limit_per_user')
-        if monthly_api_call_limit_per_user:
-            try:
-                monthly_api_call_limit_per_user = int(monthly_api_call_limit_per_user)
-            except:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Must be an integer that is greater than or equal to 0.')
-            if monthly_api_call_limit_per_user < 0:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Limit of API calls is too low (minimum value is 0).')
-
-        if (monthly_api_call_limit_per_user is not None):
-            OrgQuota.objects.add_or_update(org, monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
-
-        # perhaps need to update exceed api calls status
-        try:
-            api_calls_limit = OrgQuota.objects.get_monthly_api_call_limit(org_id)
-            api_calls_count = StatsAPIGatewayByTeam.objects.get_month_all_count(org_id)
-            exceed_obj = ExceedAPIQuotaTeams.objects.filter(org_id=org_id).first()
-            need_publish_redis = False
-            if api_calls_limit < 0 or api_calls_count < api_calls_limit:
-                if exceed_obj:
-                    need_publish_redis = True
-                    exceed_obj.delete()
-            else:
-                if not exceed_obj:
-                    ExceedAPIQuotaTeams.objects.create(org_id=org_id, owner_id='', api_limit=api_calls_limit)
-                    need_publish_redis = True
-        except Exception as e:
-            logger.exception('check org_id: %s exceed api quota error: %s', org_id, e)
-
-        org = Organization.objects.get_org_by_id(org_id)
         org_info = get_org_detailed_info(org)
         return Response(org_info)
 
