@@ -9,7 +9,6 @@ import SysAdminSetOrgMaxUserNumberDialog from '@/sys-admin/dialog/sysadmin-set-o
 import OrgNav from './org-nav';
 import OrgTitle from './org-title';
 import { Main, TopBar } from '../main-panel';
-import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
 import sysAdminAPI from '@/sys-admin/api';
 
 const contentPropTypes = {
@@ -19,7 +18,6 @@ const contentPropTypes = {
   orgInfo: PropTypes.object.isRequired,
   updateName: PropTypes.func.isRequired,
   updateMaxUserNumber: PropTypes.func.isRequired,
-  updateAPICallsLimitPerUser: PropTypes.func,
 };
 
 class Content extends Component {
@@ -29,7 +27,6 @@ class Content extends Component {
     this.state = {
       isSetNameDialogOpen: false,
       isSetMaxUserNumberDialogOpen: false,
-      isSetAPICallsLimitPerUserDialogOpen: false
     };
   }
 
@@ -39,10 +36,6 @@ class Content extends Component {
 
   toggleSetMaxUserNumberDialog = () => {
     this.setState({ isSetMaxUserNumberDialogOpen: !this.state.isSetMaxUserNumberDialogOpen });
-  };
-
-  toggleAPICallsLimitPerUserDialog = () => {
-    this.setState({ isSetAPICallsLimitPerUserDialogOpen: !this.state.isSetAPICallsLimitPerUserDialogOpen });
   };
 
   showEditIcon = (action) => {
@@ -58,10 +51,6 @@ class Content extends Component {
     );
   };
 
-  updateAPICallsLimitPerUser = (value) => {
-    this.props.updateAPICallsLimitPerUser(value);
-  };
-
   render() {
     const { loading, errorMsg, orgInfo } = this.props;
     if (loading) {
@@ -69,9 +58,8 @@ class Content extends Component {
     } else if (errorMsg) {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
-      const { org_name, users_count, max_user_number, groups_count,
-        api_calls_count, monthly_api_call_limit_per_user } = orgInfo;
-      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetAPICallsLimitPerUserDialogOpen } = this.state;
+      const { org_name, users_count, max_user_number, groups_count } = orgInfo;
+      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen } = this.state;
       return (
         <Fragment>
           <dl className="m-0">
@@ -96,17 +84,6 @@ class Content extends Component {
 
             <dt className="info-item-heading">{gettext('Number of groups')}</dt>
             <dd className="info-item-content">{groups_count}</dd>
-
-            <dt className="info-item-heading">{gettext('API calls count')}</dt>
-            <dd className="info-item-content">
-              {api_calls_count}
-            </dd>
-
-            <dt className="info-item-heading">{gettext('API calls limit per user')}</dt>
-            <dd className="info-item-content">
-              {monthly_api_call_limit_per_user > 0 ? monthly_api_call_limit_per_user : '--'}
-              {this.showEditIcon(this.toggleAPICallsLimitPerUserDialog)}
-            </dd>
           </dl>
           {isSetNameDialogOpen &&
             <SysAdminSetOrgNameDialog
@@ -122,12 +99,6 @@ class Content extends Component {
               toggle={this.toggleSetMaxUserNumberDialog}
             />
           }
-          {isSetAPICallsLimitPerUserDialogOpen && (
-            <SetAPICallsLimitPerUser
-              toggle={this.toggleAPICallsLimitPerUserDialog}
-              updateLimit={this.updateAPICallsLimitPerUser}
-            />
-          )}
 
         </Fragment>
       );
@@ -215,20 +186,6 @@ class OrgInfo extends Component {
     });
   };
 
-  updateAPICallsLimitPerUser = (newValue) => {
-    const data = { monthlyAPICallLimitPerUser: newValue };
-    sysAdminAPI.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
-      const newOrgInfo = Object.assign(this.state.orgInfo, {
-        monthly_api_call_limit_per_user: res.data.monthly_api_call_limit_per_user
-      });
-      this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('%s updated').replace('%s', 'API calls limit per user'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
   render() {
     const { orgInfo } = this.state;
     return (
@@ -243,7 +200,6 @@ class OrgInfo extends Component {
             orgInfo={this.state.orgInfo}
             updateName={this.updateName}
             updateMaxUserNumber={this.updateMaxUserNumber}
-            updateAPICallsLimitPerUser={this.updateAPICallsLimitPerUser}
           />
         </Main>
       </Fragment>

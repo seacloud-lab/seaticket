@@ -458,7 +458,7 @@ def clear_token(username):
     when delete/inactive an user
     '''
     Token.objects.filter(user = username).delete()
-    TokenV2.objects.filter(user = username).delete()
+    # TokenV2.objects.filter(user = username).delete()
 
 
 def inactive_user(username):

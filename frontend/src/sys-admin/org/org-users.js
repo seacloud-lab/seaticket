@@ -36,8 +36,20 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
     sysAdminAPI.sysAdminAddOrgUser(orgID, email, name, password).then(res => {
       usersTableRef.current.addUsers([res.data]);
     }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
+      let errMsg = '';
+      if (error.response) {
+        const statusCode = error.response.status;
+        const errorData = error.response.data;
+        const serverMsg = (errorData && errorData['error_msg']) ? errorData['error_msg'] : '';
+        if (statusCode === 409 || /You can only invite \d+ members\./.test(serverMsg)) {
+          errMsg = gettext('The number of users exceeds the limit of your current plan.');
+        } else {
+          errMsg = Utils.getErrorMsg(error);
+        }
+      } else {
+        errMsg = gettext('Please check the network.');
+      }
+      toaster.danger(errMsg);
     });
   }, []);
 

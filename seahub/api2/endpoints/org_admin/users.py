@@ -375,6 +375,13 @@ class OrgAdminUser(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             is_active_bool = to_python_boolean(is_active)
+            if is_active_bool and (not user.is_active) and ORG_MEMBER_QUOTA_ENABLED:
+                from seahub.organizations.models import OrgMemberQuota
+                org_members_quota = OrgMemberQuota.objects.get_quota(org_id)
+                org_active_members = Organization.objects.count_active_members_by_org_id(org_id)
+                if org_members_quota is not None and org_active_members >= org_members_quota:
+                    error_msg = _('The number of users exceeds the limit.')
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             user.is_active = is_active_bool
             user.save()
             if is_active_bool == False:

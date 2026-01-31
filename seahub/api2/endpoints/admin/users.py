@@ -45,6 +45,7 @@ from seahub.auth.models import UserQuota, SocialAuthUser
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.two_factor.models import default_device
 from seahub.organizations.models import Organization
+from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.auth.models import EmailUser
 from seahub.project.models import IdInOrgTuple
 from seahub.group.utils import is_group_admin_or_owner_by_group
@@ -530,6 +531,19 @@ class AdminUser(APIView):
         except User.DoesNotExist:
             error_msg = 'User %s not found.' % email
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # Org member quota check when activating
+        is_active = (is_active is True) and (not user_obj.is_active)
+        if is_active and ORG_MEMBER_QUOTA_ENABLED and orgs:
+            try:
+                from seahub.organizations.models import OrgMemberQuota
+                org_members_quota = OrgMemberQuota.objects.get_quota(org_id)
+                org_active_members = Organization.objects.count_active_members_by_org_id(org_id)
+                if org_members_quota is not None and org_active_members >= org_members_quota:
+                    error_msg = _('The number of users exceeds the limit.')
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+            except Exception as e:
+                logger.error(e)
 
         try:
             update_user_info(request, user=user_obj, password=password, is_active=is_active, is_staff=is_staff,

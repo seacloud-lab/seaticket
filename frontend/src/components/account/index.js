@@ -214,13 +214,6 @@ class Account extends Component {
               <div className="txt text-truncate">{this.state.userName}</div>
             </div>
             <div className="item pt-3 pb-0">
-              <div className="account-info-card">
-                <p className='account-info-card-title'>{gettext('API calls count')}</p>
-                <p>
-                  <span className='account-info-card-used'>{this.state.apiCallsCount || 0}</span>
-                  <span className='account-info-card-total'> / {this.state.apiCallsLimit > 0 ? this.state.apiCallsLimit : '--'}</span>
-                </p>
-              </div>
               {this.state.aiCredit !== undefined && (
                 <div className="account-info-card">
                   <p className='account-info-card-title'>{gettext('AI credit used')}</p>
