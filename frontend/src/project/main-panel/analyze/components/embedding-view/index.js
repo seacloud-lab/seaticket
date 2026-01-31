@@ -63,41 +63,16 @@ const EmbeddingView = ({
     return Object.keys(fields).length > 0 ? fields : null;
   }, []);
 
-  const handlePointClick = useCallback((record) => {
-    if (record) {
-      setSelectedRecord({
-        _id: record._pk,
-        type: record?.connection_type,
-        connection_id: record?.connection_id ? Number(record?.connection_id) : record?.connection_id,
-        title: record.title,
-        path: record.path,
-        filename: record.filename,
-        url: record.url,
-        slug: record.slug,
-        topic_id: record?.topic_id,
-      });
-      setIsDetailsDialogOpen(true);
-    }
-  }, []);
-
   const handleCloseDetailsDialog = useCallback(() => {
     setIsDetailsDialogOpen(false);
     setSelectedRecord(null);
   }, []);
 
   const handleSelection = useCallback((newSelection) => {
-    if (newSelection && newSelection.length > 0) {
-      const point = newSelection[0];
-      if (point?.fields) {
-        handlePointClick(point.fields);
-      }
-      setTimeout(() => setSelection([]), 0);
-    } else {
-      setSelection(newSelection);
-    }
-  }, [handlePointClick]);
+    setSelection(newSelection);
+  }, []);
 
-  const handleLegendItemClick = (categoryIndex, event) => {
+  const handleLegendItemClick = useCallback((categoryIndex, event) => {
     if (event.shiftKey || event.metaKey) {
       setSelectedCategories(prev => {
         if (prev.includes(categoryIndex)) {
@@ -106,16 +81,16 @@ const EmbeddingView = ({
           return [...prev, categoryIndex];
         }
       });
-    } else {
-      setSelectedCategories(prev => {
-        if (prev.length === 1 && prev[0] === categoryIndex) {
-          return [];
-        } else {
-          return [categoryIndex];
-        }
-      });
+      return;
     }
-  };
+    setSelectedCategories(prev => {
+      if (prev.length === 1 && prev[0] === categoryIndex) {
+        return [];
+      } else {
+        return [categoryIndex];
+      }
+    });
+  }, []);
 
   const createCategoryMappingForField = useCallback((connections, records, colorByField) => {
     if (!records || records.length === 0 || !colorByField || colorByField === '--') return null;
@@ -179,6 +154,26 @@ const EmbeddingView = ({
       legend
     };
   }, []);
+
+  const handleClick = useCallback((event) => {
+    if (!selection || selection.length === 0) return;
+    if (event.target.localName !== 'circle') return;
+    const point = selection[0];
+    const record = point?.fields;
+    if (!record) return;
+    setSelectedRecord({
+      _id: record._pk,
+      type: record?.connection_type,
+      connection_id: record?.connection_id ? Number(record?.connection_id) : record?.connection_id,
+      title: record.title,
+      path: record.path,
+      filename: record.filename,
+      url: record.url,
+      slug: record.slug,
+      topic_id: record?.topic_id,
+    });
+    setIsDetailsDialogOpen(true);
+  }, [selection]);
 
   useEffect(() => {
     if (!Array.isArray(records) || records.length === 0) return;
@@ -347,7 +342,6 @@ const EmbeddingView = ({
   if (isProcessingData) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
 
-
   const textColumn = columnKeys?.includes('ai_summary') ? 'ai_summary' : null;
   const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
   const useCategory = colorBy && colorBy !== '--' && currentMapping;
@@ -356,7 +350,7 @@ const EmbeddingView = ({
 
   return (
     <>
-      <div className="embedding-visualization-container" ref={containerRef}>
+      <div className="embedding-visualization-container" ref={containerRef} onClick={handleClick}>
         <EmbeddingViewMosaic
           coordinator={coordinatorRef.current}
           table={tableName}
