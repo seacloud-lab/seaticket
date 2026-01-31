@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
+import { useCallback, useState, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { useTagsData } from '@/sea-metadata/hooks';
@@ -25,19 +25,6 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
       label: <TagOption tag={tag} />,
     }));
   }, [tagsData]);
-
-  const validTagIdSet = useMemo(() => {
-    if (!tagsData?.rows) return new Set();
-    return new Set(tagsData.rows.map(tag => tag._id));
-  }, [tagsData]);
-
-  useEffect(() => {
-    if (!Array.isArray(value) || value.length === 0) return;
-    const sanitizedValue = value.filter(tagId => validTagIdSet.has(tagId));
-    if (sanitizedValue.length !== value.length) {
-      onChange?.(sanitizedValue);
-    }
-  }, [value, validTagIdSet, onChange]);
 
   const openEditor = useCallback(() => {
     if (readOnly) return;
@@ -104,9 +91,6 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
               >
                 {Array.isArray(value) && value.map(v => {
                   const tag = getRowById(tagsData, v);
-                  if (!tag) {
-                    return null;
-                  }
                   return (
                     <Tag tag={tag} key={v} className="mr-0">
                       <RemoveBtn callback={() => handleDeselect(v)} />

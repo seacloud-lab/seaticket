@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
-from seahub.project.view_utils import view_data_2_sql, SQLGenerator
+from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
@@ -579,10 +579,13 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
     try:
+        sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
+    except SQLGeneratorOptionInvalidError as e:
+        logger.error(f'sql generator option invalid: {e}')
+        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
@@ -632,10 +635,16 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
     })
 
     view_copy['basic_filters'] = basic_filters
-
-    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
-    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-    records = res.get('results')
+    try:
+        sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+        records = res.get('results')
+    except SQLGeneratorOptionInvalidError as e:
+        logger.error(f'sql generator option invalid: {e}')
+        records = []
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection tickets: {e}')
+        records = []
     return records, display_columns
 
 
@@ -674,10 +683,13 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
             extra_query_columns.append(column)
 
     view_copy = view.copy()
-    sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
     try:
+        sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
+    except SQLGeneratorOptionInvalidError as e:
+        logger.error(f'sql generator option invalid: {e}')
+        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
@@ -837,10 +849,13 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
     try:
+        sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
+    except SQLGeneratorOptionInvalidError as e:
+        logger.error(f'sql generator option invalid: {e}')
+        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for knowledge base : {e}')
         records = []
