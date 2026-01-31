@@ -7,6 +7,7 @@ import ConnectionsNav from './nav/connections-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
 import KnowledgeMoreNav from './nav/knowledge-more-nav';
 import InboxNav from './nav/inbox-nav';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -47,13 +48,15 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             {isProjectAdmin &&
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }
-            <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
+            <div className="sea-qa-project-side-panel-subtitle">{gettext('Tickets')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
             <TicketsMoreNav onClick={toggleBar} />
-            <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
+            <div className="sea-qa-project-side-panel-subtitle">{gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
             <KnowledgeMoreNav onClick={toggleBar} />
+            <div className="sea-qa-project-side-panel-subtitle">{gettext('Tags')}</div>
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TAGS]} {...commonProps} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />

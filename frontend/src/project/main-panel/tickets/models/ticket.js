@@ -69,10 +69,6 @@ class Ticket {
     if (this.comments) {
       this.comments = this.comments.map(comment => comment instanceof Comment ? comment : new Comment(comment));
     }
-
-    if (this.tags) {
-      this.tags = this.tags.map(id => String(id));
-    }
   }
 
   _update = (keyValue = {}) => {

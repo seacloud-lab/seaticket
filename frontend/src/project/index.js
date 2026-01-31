@@ -40,9 +40,7 @@ const Project = () => {
   const toggleBar = useCallback((newActiveBar) => {
     const activeBarKey = newActiveBar[0];
 
-    if (activeBarKey === 'tickets/tags') {
-      eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.TAGS);
-    } else if (activeBarKey === 'tickets/substates') {
+    if (activeBarKey === 'tickets/substates') {
       eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.SUBSTATES);
     } else if (activeBarKey === 'tickets/types') {
       eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.TYPES);

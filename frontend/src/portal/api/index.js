@@ -75,7 +75,7 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
-  listTicketTags(projectUuid) {
+  listTags(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/tags/';
     return this.req.get(url);
   }

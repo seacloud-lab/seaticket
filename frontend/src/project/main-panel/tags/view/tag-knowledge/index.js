@@ -1,19 +1,16 @@
 import React, { useCallback, useMemo } from 'react';
-import { knowledgeBaseAPI } from '../../../../api';
+import { knowledgeBaseAPI } from '@/project/api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useKnowledgePage, useMetadata } from '../../hooks';
-import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { useTags } from '../../hooks';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { generatorKnowledgeContextMenuOptions } from '../../utils';
+import { generatorKnowledgeContextMenuOptions } from '@/project/main-panel/knowledge-base/utils';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 
-const TagKnowledge = ({ projectUuid, permission }) => {
-
-  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useKnowledgePage();
-  const { isLoading: isTagsLoading, tagsData, createTag } = useMetadata();
+const TagKnowledge = ({ tagID, projectUuid, permission }) => {
+  const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -27,7 +24,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return knowledgeBaseAPI.listKnowledgeBaseByTag(projectUuid, childrenPageSlugId).then(res => {
+      return knowledgeBaseAPI.listKnowledgeBaseByTag(projectUuid, tagID).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
@@ -81,7 +78,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
     deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
 
-  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
+  }), [projectUuid, viewsData]);
 
   const createContextMenuOptions = useCallback((props) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
@@ -96,12 +93,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
     Rows: gettext('Records'),
   }), []);
 
-  if (isLoading || isTagsLoading) return (<CenteredLoading />);
-  const tag = getRowById(tagsData, childrenPageSlugId);
-  if (!tag) {
-    togglePageSlugId(pageSlugId, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
-    return null;
-  }
+  if (isTagsLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata
@@ -111,13 +103,11 @@ const TagKnowledge = ({ projectUuid, permission }) => {
       permission={permission}
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
-      expandRow={(row) => togglePageSlugId(row._id)}
       viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
 
       // tags
       tagsData={tagsData}
       createTag={createTag}
-      toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
 
       t={t}
     />

@@ -4,21 +4,19 @@ import { Button, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { toaster, CenteredLoading } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
+import { toaster } from '@/components';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useMetadata } from '../../hooks/metadata';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
-import { getRowsByIds } from '@/sea-metadata/utils/row';
-import { TagsSettings } from '../../../tickets/components/ticket-settings';
-import { useData } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useData, useTags } from '@/project/hooks';
 
 import './index.css';
 
 const NewKnowledge = ({ editorAPI, projectUuid }) => {
-  const { tagsData, createTag, isLoading: isMetadataLoading, } = useMetadata();
+  const { tagsData, createTag } = useTags();
   const { insertRow } = useData();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -93,10 +91,6 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
-        const tags = getRowsByIds(tagsData, value);
-        value = tags.map(tag => tag.name);
-      }
       serverData[columnName] = value;
     });
     knowledgeBaseAPI.createRecord(projectUuid, serverData).then(res => {
@@ -110,7 +104,6 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
   }, [title, content, tags, insertRow]);
 
   useEffect(() => {
-    if (isMetadataLoading) return;
     const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
       if (!knowledgeDom) return;
@@ -122,7 +115,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, [isMetadataLoading]);
+  }, []);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
@@ -132,8 +125,6 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
       </div>
     );
   }, [disabled, togglePageSlugId, onSubmit]);
-
-  if (isMetadataLoading) return (<CenteredLoading />);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 892;
@@ -186,7 +177,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
             <TagsSettings
               isReadonly={isSubmitting}
               value={tags}
-              isLoading={isMetadataLoading}
+              isLoading={false}
               tagsData={tagsData}
               createTag={createTag}
               onChange={setTags}

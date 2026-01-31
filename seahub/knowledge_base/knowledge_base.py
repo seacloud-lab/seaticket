@@ -21,7 +21,7 @@ from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
-    send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
+    send_knowledge_base_update_msg
 from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
@@ -67,8 +67,8 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        tag_names = request.data.get('tags', "[]")
-        tag_names = json.loads(tag_names)
+        tag_ids = request.data.get('tags', "[]")
+        tag_ids = json.loads(tag_ids)
 
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -96,7 +96,7 @@ class KnowledgeBasesAPIView(APIView):
             row = {
                 KnowledgeBaseTable.title.name: title,
                 KnowledgeBaseTable.content.name: content_text,
-                KnowledgeBaseTable.tags.name: tag_names,
+                KnowledgeBaseTable.tags.name: tag_ids,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
@@ -240,7 +240,6 @@ class KnowledgeBaseAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
-            record = convert_kb_record_tags_name_to_id(columns, record)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -261,7 +260,7 @@ class KnowledgeBaseAPIView(APIView):
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.tags.name] = tags        
+            row[KnowledgeBaseTable.tags.name] = tags
 
         if 'title' in request.data:
             title = request.data.get('title')
@@ -281,7 +280,7 @@ class KnowledgeBaseAPIView(APIView):
             except ValueError:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            
+
             if len(file_urls) > 0:
                 try:
                     new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
@@ -333,46 +332,6 @@ class KnowledgeBaseAPIView(APIView):
         send_knowledge_base_update_msg(project_uuid)
 
         return Response({'row': row}, status=status.HTTP_200_OK)
-
-class KnowledgeBaseMetadataAPIView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        seadb_api = SeaDBAPI(username)
-        try:
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-            kb_column_name_to_return_name = {
-                KnowledgeBaseTable.tags.name: 'tags',
-            }
-            select_option_metadata = {}
-            for column in kb_meta.get('columns'):
-                column_name = column.get('name')
-                return_name = kb_column_name_to_return_name.get(column_name)
-                if return_name:
-                    column_data = column.get('data', {}) or {}
-                    select_option_metadata[return_name] = column_data
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        return Response(select_option_metadata)
 
 
 class KnowledgeBasesTrashAPIView(APIView):

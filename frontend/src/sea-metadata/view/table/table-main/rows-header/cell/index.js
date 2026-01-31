@@ -40,6 +40,7 @@ const Cell = ({
 
   const canEditColumnInfo = useMemo(() => {
     if (isHideTriangle) return false;
+    if (column.type === CellType.TAGS) return false;
     return context.canModifyColumnData(column);
   }, [isHideTriangle, column]);
 

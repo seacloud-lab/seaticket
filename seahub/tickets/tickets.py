@@ -93,8 +93,7 @@ class TicketsAPIView(APIView):
         try:
             view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
-            tickets, columns = list_tickets_view_records(
-                seadb_api, project_uuid, view, username, start, limit)
+            tickets, columns = list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -192,8 +191,8 @@ class TicketsAPIView(APIView):
         else:
             priority = 0
 
-        tag_names = request.POST.get('tags', "[]")
-        tag_names = json.loads(tag_names)
+        tag_ids = request.POST.get('tags', "[]")
+        tag_ids = json.loads(tag_ids)
 
         seadb_api = SeaDBAPI(username)
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
@@ -224,7 +223,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],
-                TicketsTable.tags.name: tag_names,
+                TicketsTable.tags.name: [int(tag_id) for tag_id in tag_ids],
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: now_datetime,
@@ -325,7 +324,7 @@ class TicketsAPIView(APIView):
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
             if 'tags' in row_data:
-                updated_row[TicketsTable.tags.name] = row_data.get('tags')
+                updated_row[TicketsTable.tags.name] = [int(tag_id) for tag_id in row_data.get('tags', [])]
             if 'type' in row_data:
                 updated_row[TicketsTable.type.name] = row_data.get('type')
             if 'content' in row_data:
@@ -1323,7 +1322,6 @@ class TicketMetadataAPIView(APIView):
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             ticket_column_name_to_return_name = {
                 TicketsTable.substate.name: 'substates',
-                TicketsTable.tags.name: 'tags',
                 TicketsTable.type.name: 'types',
                 TicketsTable.state.name: 'states'
             }

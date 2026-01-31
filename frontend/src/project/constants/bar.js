@@ -13,7 +13,7 @@ export const BAR_TYPE = {
   KNOWLEDGE: 'knowledge-base',
   KNOWLEDGE_TRASH: 'knowledge/trash',
   ANALYZE: 'analyze',
-  TAGS: 'tickets/tags',
+  TAGS: 'tags',
   TYPES: 'tickets/types',
   SUBSTATES: 'tickets/substates',
 };
@@ -75,7 +75,8 @@ export const BAR_TYPE_CONFIG = {
   },
   [BAR_TYPE.TAGS]: {
     key: BAR_TYPE.TAGS,
-    name: gettext('Manage tags')
+    name: gettext('Tags'),
+    icon: 'tag-stroked'
   },
   [BAR_TYPE.TYPES]: {
     key: BAR_TYPE.TYPES,

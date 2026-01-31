@@ -103,7 +103,6 @@ export const PREDEFINED_TICKET_SUBSTATE_OPTION = {
 export const TICKET_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
-  TAGS: 'tags',
   TYPES: 'types',
   SUBSTATES: 'substates',
 };

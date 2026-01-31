@@ -27,7 +27,7 @@ class ConnectionType(Enum):
     @classmethod
     def is_valid(cls, value):
         return value in {item.value for item in cls}
-    
+
 class ExtraSourceType(Enum):
     KNOWLEDGE_BASE = 'knowledge_base'
     TICKET = 'ticket'

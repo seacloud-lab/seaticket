@@ -80,13 +80,13 @@ class PortalTicketsView(APIView):
         else:
             priority = 0
 
-        tag_names = request.POST.get('tags', "[]")
+        tag_ids = request.POST.get('tags', "[]")
         try:
-            tag_names = json.loads(tag_names)
+            tag_ids = json.loads(tag_ids)
         except:
-            tag_names = []
-        if not isinstance(tag_names, list):
-            tag_names = []
+            tag_ids = []
+        if not isinstance(tag_ids, list):
+            tag_ids = []
 
         due_date = request.POST.get('due_date', '')
 
@@ -128,7 +128,7 @@ class PortalTicketsView(APIView):
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: [],
                 TicketsTable.participants.name: [username],
-                TicketsTable.tags.name: tag_names,
+                TicketsTable.tags.name: tag_ids,
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: now_datetime,
@@ -224,6 +224,24 @@ class PortalTicketTypesView(APIView):
 
     @require_org_context
     def get(self, request, project_uuid):
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
+
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+
+        if start < 0:
+            error_msg = 'start invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if limit < 0:
+            error_msg = 'limit invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -238,41 +256,14 @@ class PortalTicketTypesView(APIView):
 
         try:
             type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
+            sql = f"SELECT * FROM `tag` LIMIT {start}, {limit}"
+            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'types': type_options})
-
-
-class PortalTicketTagsView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        username = request.user.username
-        seadb_api = SeaDBAPI(username)
-
-        try:
-            tag_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select')
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'tags': tag_options})
+        return Response({'metadata': res.get('metadata'), 'tags': res.get('results')})
 
 
 class PortalKnowledgeBaseViewsView(APIView):

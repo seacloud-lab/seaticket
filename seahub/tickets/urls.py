@@ -2,7 +2,6 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .ticket_tags import TicketTagsAPIView, TicketTagAPIView
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
 from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
@@ -14,8 +13,6 @@ from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
 urlpatterns = [
     # tickets page
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/(?P<children_id>[-0-9a-zA-Z]{4})/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/(?P<children_id>[-0-9a-zA-Z]{4})/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/substates/$', project_view, name='project_view'),
@@ -33,10 +30,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/trash/$', TicketTrashAPIView.as_view(), name='api-v1-project-tickets-trash'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/my-tickets/$', MyTicketAPIView.as_view(), name='api-v1-project-my-tickets'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/metadata/$', TicketMetadataAPIView.as_view(), name='api-v1-project-ticket-metadata'),
-
-    # tags
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/$', TicketTagsAPIView.as_view(), name='api-v1-project-tags'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', TicketTagAPIView.as_view(), name='api-v1-project-tag'),
 
     # types
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/types/$', TicketTypesAPIView.as_view(), name='api-v1-project-types'),

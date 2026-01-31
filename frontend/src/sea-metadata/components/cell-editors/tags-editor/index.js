@@ -7,7 +7,7 @@ import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
 import TagOption from '@/components/tag-option';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
 import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
@@ -66,9 +66,15 @@ const TagsEditor = forwardRef(({
   }, [createTag]);
 
   const handleChange = useCallback((newValue) => {
-    if (!isCellValueChanged(newValue, value)) return;
-    setValue(newValue);
-  }, [value]);
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
+    setValue(validValue);
+  }, [tagsData, value]);
 
   const handleDeselect = useCallback((tagId) => {
     const newValue = value.filter(v => v !== tagId);
@@ -108,7 +114,7 @@ const TagsEditor = forwardRef(({
         optionHeight="fit-content"
         placeholder={gettext('Search tags')}
         emptyTip={gettext('No tags available')}
-        value={value}
+        value={Array.isArray(value) ? value.map(v => String(v)) : []}
         options={options}
         onChange={handleChange}
         onCreate={context.canModify() ? handleCreateTag : null}

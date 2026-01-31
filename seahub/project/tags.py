@@ -1,6 +1,6 @@
+
 # -*- coding: utf-8 -*-
 import logging
-from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -11,19 +11,17 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import add_select_option, update_select_option, get_column_from_columns_by_name, batch_delete_select_option
-from seahub.knowledge_base.knowledge_base_utils import TABLE_KNOWLEDGE_BASE, get_kb_counts_group_by_column_name, filter_kb_by_select
+from seahub.tickets.ticket_utils import TABLE_TICKETS, get_column_from_columns_by_name, filter_tickets_by_select
 from seahub.utils.decorators import require_org_context
-
+from seahub.seadb_models.models import TagTable
 
 logger = logging.getLogger(__name__)
 
 
-class KnowledgeBaseTagsAPIView(APIView):
+class TagsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -35,12 +33,32 @@ class KnowledgeBaseTagsAPIView(APIView):
         1. owner
         2. group member
         """
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
+
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+
+        if start < 0:
+            error_msg = 'start invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if limit < 0:
+            error_msg = 'limit invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
@@ -48,13 +66,15 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            tag_options, _ = get_kb_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
+            table_name = TagTable.gen_table_name()
+            sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
+            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'tags': tag_options})
+        return Response({'columns': res.get('metadata'), 'tags': res.get('results')})
 
     @require_org_context
     def post(self, request, project_uuid):
@@ -63,58 +83,59 @@ class KnowledgeBaseTagsAPIView(APIView):
         1. owner
         2. group member
         """
-        data = request.data or {}
-        name = data.get('name')
+        # argument check
+        name = request.POST.get('name')
         if not name:
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        description = data.get('description')
-        if description is None:
+        description = request.POST.get('description')
+        if not description:
             description = ''
 
-        color = data.get('color')
+        color = request.POST.get('color')
         if not color:
             error_msg = 'color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        text_color = data.get('text_color')
+        text_color = request.POST.get('text_color')
         if not text_color:
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        table_name = TagTable.gen_table_name()
+        # main
         try:
             seadb_api = SeaDBAPI(username)
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-            table_id = table_meta.get('id')
-            tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
-            column_data = tag_column.get('data') or {}
-            existing_options = column_data.get('options', []) or []
-
-            if any(opt.get('name') == name for opt in (existing_options or [])):
-                error_msg = 'tag already exists.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            option_data = {'color': color, 'text_color': text_color, 'description': description or ''}
-            tag_option = add_select_option(seadb_api, project_uuid, table_id, tag_column.get('key'), name, option_data)
+            row = {
+                TagTable.name.name: name,
+                TagTable.color.name: color,
+                TagTable.text_color.name: text_color,
+                TagTable.description.name: description,
+            }
+            res = seadb_api.insert_rows(project_uuid, table_name, [row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'tag': tag_option}, status=status.HTTP_201_CREATED)
+        pks = res.get('pks', [])
+        row.update({'_pk': pks[0]})
+
+        return Response({'tag': row}, status=status.HTTP_201_CREATED)
 
     @require_org_context
     def delete(self, request, project_uuid):
@@ -123,17 +144,26 @@ class KnowledgeBaseTagsAPIView(APIView):
         1. owner
         2. group member
         """
+        # argument check
         tag_ids = request.data.get('tag_ids', [])
         if not tag_ids:
             error_msg = 'tag_ids invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        try:
+            tag_ids = [int(tag_id) for tag_id in tag_ids]
+        except ValueError:
+            error_msg = 'tag_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
@@ -141,10 +171,7 @@ class KnowledgeBaseTagsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-            column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
-            batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), tag_ids)
+            seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), tag_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -153,8 +180,7 @@ class KnowledgeBaseTagsAPIView(APIView):
         return Response({'success': True})
 
 
-class KnowledgeBaseTagAPIView(APIView):
-
+class TagAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -166,12 +192,14 @@ class KnowledgeBaseTagAPIView(APIView):
         1. owner
         2. group member
         """
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
@@ -181,7 +209,7 @@ class KnowledgeBaseTagAPIView(APIView):
             tag_option = None
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_columns = table_meta.get('columns')
             column = get_column_from_columns_by_name(table_columns, 'tags')
             column_data = column.get('data') or {}
@@ -198,16 +226,17 @@ class KnowledgeBaseTagAPIView(APIView):
             error_msg = 'tag option not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        # main
         try:
             seadb_api = SeaDBAPI(username)
-            records, columns = filter_kb_by_select(seadb_api, project_uuid, 'tags', [tag_option.get('name')])
+            tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_option.get('name')])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'records': records,
+            'tickets': tickets,
             'columns': columns,
         })
 
@@ -218,56 +247,30 @@ class KnowledgeBaseTagAPIView(APIView):
         1. owner
         2. group member
         """
+        # argument check
         name = request.data.get('name')
-        description = request.data.get('description')
-        color = request.data.get('color')
-        text_color = request.data.get('text_color')
-        
-        if 'name' in request.data:
-            if not name or not name.strip():
-                error_msg = 'name invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
-        if 'description' in request.data:
-            if not description:
-                description = ''
-            description = description.strip()
+        description = request.POST.get('description')
+        color = request.POST.get('color')
+        text_color = request.POST.get('text_color')
+        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
+            error_msg = 'argument invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if 'color' in request.data:
-            if not color or not color.strip():
-                error_msg = 'color invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
-        if 'text_color' in request.data:
-            if not text_color or not text_color.strip():
-                error_msg = 'text_color invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        tag_option = None
+        # main
         seadb_api = SeaDBAPI(username)
-        base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-        column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
-        column_data = column.get('data') or {}
-        options = column_data.get('options', []) or []
-        for opt in options:
-            if opt.get('id') == tag_id:
-                tag_option = opt
-
-        if not tag_option:
-            error_msg = 'Knowledge base tag not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
             update_data = {}
@@ -279,9 +282,14 @@ class KnowledgeBaseTagAPIView(APIView):
                 update_data['color'] = color
             if text_color:
                 update_data['text_color'] = text_color
-            table_id = table_meta.get('id')
-            column_key = column.get('key')
-            update_select_option(seadb_api, project_uuid, table_id, column_key, tag_option, tag_id, update_data)
+
+            if update_data:
+                table_name = TagTable.gen_table_name()
+                update_row = {
+                    'pk': int(tag_id),
+                    'row': update_data
+                }
+                seadb_api.update_rows(project_uuid, table_name, [update_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -296,12 +304,14 @@ class KnowledgeBaseTagAPIView(APIView):
         1. owner
         2. group member
         """
+        # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
+        # permission check
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
@@ -309,26 +319,7 @@ class KnowledgeBaseTagAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            kb_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
-            column = get_column_from_columns_by_name(kb_table_metadata.get('columns'), 'tags')
-            table_id = kb_table_metadata.get('id')
-            column_key = column.get('key')
-            column_data = column.get('data') or {}
-            options = column_data.get('options', []) or []
-            tag_option = None
-            for opt in options:
-                if opt.get('id') == tag_id:
-                    tag_option = opt
-            if not tag_option:
-                error_msg = 'tag not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            option_data = {
-                'table_id': table_id,
-                'column_key': column_key,
-                'option_id': tag_id,
-            }
-            seadb_api.delete_column_option(project_uuid, option_data)
+            seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), [int(tag_id)])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

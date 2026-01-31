@@ -39,9 +39,6 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-      urlPart = urlPart + childrenPageSlugId + '/';
-    }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + childrenPageSlugId + '/';
     }
@@ -78,11 +75,6 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     let childrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
     if (pageIdFromURL === TICKET_PAGE_SLUG_ID.NEW) {
       pageSlugId = TICKET_PAGE_SLUG_ID.NEW;
-    } else if (pageIdFromURL === TICKET_PAGE_SLUG_ID.TAGS) {
-      pageSlugId = TICKET_PAGE_SLUG_ID.TAGS;
-      if (childrenPageSlugIdFromURL !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        childrenPageSlugId = childrenPageSlugIdFromURL || TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
-      }
     } else if (pageIdFromURL === TICKET_PAGE_SLUG_ID.TYPES) {
       pageSlugId = TICKET_PAGE_SLUG_ID.TYPES;
       if (childrenPageSlugIdFromURL !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {

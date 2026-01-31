@@ -4,12 +4,12 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { ticketsAPI, connectionsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
-import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
-import { useMetadata } from '../../../tickets/hooks';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { CollaboratorsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
+import { getRowById } from '@/sea-metadata/utils/row';
 import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
-import { useData } from '@/project/hooks';
+import { useData, useMetadata, useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
@@ -23,7 +23,8 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { typesData, tagsData, substatesData, createTag } = useMetadata();
+  const { typesData, substatesData } = useMetadata();
+  const { tagsData, createTag } = useTags();
   const { insertRow } = useData();
 
   const handleSubmit = () => {
@@ -42,11 +43,6 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
         validType = typeRow.name;
       }
     }
-    let validTags = tags;
-    if (Array.isArray(validTags) && validTags.length > 0) {
-      validTags = getRowsByIds(tagsData, validTags);
-      validTags = validTags.map(tag => tag.name);
-    }
 
     const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
     const substateOption = substateOptions[0];
@@ -56,7 +52,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, onClose 
       content: ticket_content,
       type: validType,
       assignees,
-      tags: validTags,
+      tags,
       priority,
       substate: substateOption?.name,
     };

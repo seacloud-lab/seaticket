@@ -51,6 +51,9 @@ class ListTypes:
     vector = {
         "list_type": "float32",
     }
+    int = {
+        "list_type": "int64",
+    }
 
 class SelectTypes:
     ticket_status = {
@@ -365,7 +368,7 @@ class TicketsTable(BaseModel):
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
-    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
+    tags = MappedColumn('tags', PropertyTypes.LIST, ListTypes.int)
     assignees = MappedColumn('assignees', PropertyTypes.LIST)
     participants = MappedColumn('participants', PropertyTypes.LIST)
     priority = MappedColumn('priority', PropertyTypes.INT)
@@ -440,7 +443,7 @@ class KnowledgeBaseTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
-    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
+    tags = MappedColumn('tags', PropertyTypes.LIST, ListTypes.int)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
@@ -452,3 +455,14 @@ class KnowledgeBaseTable(BaseModel):
     @classmethod
     def gen_table_name(cls):
         return 'knowledge_base'
+
+
+class TagTable(BaseModel):
+    name = MappedColumn('name', PropertyTypes.TEXT)
+    color = MappedColumn('color', PropertyTypes.TEXT)
+    text_color = MappedColumn('text_color', PropertyTypes.TEXT)
+    description = MappedColumn('description', PropertyTypes.TEXT)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'tag'

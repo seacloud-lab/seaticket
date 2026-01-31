@@ -2,17 +2,18 @@ import React, { useMemo } from 'react';
 import { ticketsAPI } from '../../../../api';
 import { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTicketsPage, useMetadata } from '../../hooks';
-import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
+import { useTicketsPage } from '../../../tickets/hooks';
+import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../../tickets/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
-import Tickets from '../../components/tickets';
+import Tickets from '../../../tickets/components/tickets';
+import { useTags } from '@/project/hooks';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isTagsLoading, tagsData } = useMetadata();
+  const { isLoading: isTagsLoading, tagsData } = useTags();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

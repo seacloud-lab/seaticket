@@ -276,48 +276,6 @@ class TicketsAPI {
   }
 
   // tags
-  listTicketTags(projectUuid) {
-    let url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/';
-    return this.req.get(url);
-  }
-
-  createTicketTag(projectUuid, { name, description, color, text_color }) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/';
-    let form = new FormData();
-    if (name) {
-      form.append('name', name);
-    }
-    if (description) {
-      form.append('description', description);
-    }
-    if (color) {
-      form.append('color', color);
-    }
-    if (text_color) {
-      form.append('text_color', text_color);
-    }
-    return this._sendPostRequest(url, form);
-  }
-
-  modifyTicketTag(projectUuid, tagId, update,) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
-    let form = new FormData();
-    Object.keys(update).forEach(key => {
-      form.append(key, update[key]);
-    });
-    return this.req.put(url, form);
-  }
-
-  deleteTicketTag(projectUuid, tagId) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
-    return this.req.delete(url);
-  }
-
-  deleteTicketTags(projectUuid, tagIds) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/';
-    return this.req.delete(url, { data: { tag_ids: tagIds } });
-  }
-
   listTicketsByTag(projectUuid, tagId) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
     return this.req.get(url);

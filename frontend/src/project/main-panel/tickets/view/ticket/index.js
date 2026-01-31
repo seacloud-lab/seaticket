@@ -14,7 +14,7 @@ import {
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
-  CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings,
+  CollaboratorsSettings, TypeSettings, RateSettings,
   StateSettings, SubStateSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
@@ -23,12 +23,12 @@ import StatusToggleButton from './status-toggle-btn';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
-import { useData } from '@/project/hooks';
+import { useData, useTags, useMetadata } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
@@ -42,8 +42,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
 
-  const { typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
+  const { typesData, statesData, substatesData } = useMetadata();
   const { modifyLocalRow, getTableByName } = useData();
+  const { tagsData, createTag } = useTags();
 
   const lastTicketID = useRef('');
 
@@ -80,10 +81,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
-        const tags = getRowsByIds(tagsData, value);
-        value = tags.map(tag => tag.name);
-      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
+      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
         value = typeOption.name;
       } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {

@@ -3,14 +3,13 @@ import { knowledgeBaseAPI } from '@/project/api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
-import { CenteredLoading, toaster } from '@/components';
+import { toaster } from '@/components';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '../../constants';
-import { useMetadata } from '../../hooks';
-import { useData } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
   const { modifyView, getMetadata, restoreRows } = useData();
-  const { isLoading: isMetadataLoading, tagsData } = useMetadata();
+  const { tagsData } = useTags();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -119,8 +118,6 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
     });
     return list;
   }, [projectUuid]);
-
-  if (isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata

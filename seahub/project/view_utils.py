@@ -284,7 +284,7 @@ class SingleSelectOperator(Operator):
             filter_term
         )
 
-    def op_is_any_of(self):
+    def op_has_any_of(self):
         filter_term = self.filter_term
         if not filter_term:
             return ''
@@ -350,9 +350,12 @@ class MultipleSelectOperator(Operator):
         })
 
     def op_has_none_of(self):
-        if not self.filter_term:
-            return ""
-        filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        filter_term = self.filter_term
+        if not filter_term:
+            return ''
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
+        filter_term = [self._get_option_name_by_key(f) for f in filter_term]
         option_names = ["'%s'" % op_name for op_name in filter_term]
         option_names_str = ', '.join(option_names)
         return "`%(column_name)s` has none of (%(option_names_str)s)" % ({
@@ -380,21 +383,6 @@ class MultipleSelectOperator(Operator):
         return "`%(column_name)s` is exactly (%(option_names_str)s)" % ({
             "column_name": self.column_name,
             "option_names_str": option_names_str
-        })
-
-    def op_is_any_of(self):
-        filter_term = self.filter_term
-        if not filter_term:
-            return ''
-        if not isinstance(filter_term, list):
-            filter_term = [filter_term, ]
-        filter_term = [self._get_option_name_by_key(f) for f in filter_term]
-        option_names = ["'%s'" % (op_name) for op_name in filter_term]
-        if not option_names:
-            return ""
-        return "`%(column_name)s` in (%(option_names)s)" % ({
-            "column_name": self.column_name,
-            "option_names": ", ".join(option_names)
         })
 
 
@@ -887,6 +875,66 @@ class ArrayOperator(object):
         return operator(linked_column, filter_item)
 
 
+class ListOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.HAS_ANY_OF,
+        FilterPredicateTypes.HAS_NONE_OF,
+        FilterPredicateTypes.HAS_ALL_OF,
+        FilterPredicateTypes.IS_EXACTLY,
+        FilterPredicateTypes.IS_ANY_OF,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(ListOperator, self).__init__(column, filter_item)
+
+    @property
+    def list_type(self):
+        return self.column_data.get('list_type')
+
+    def gen_filter_term_str(self):
+        if self.list_type in ('float64', 'float32', 'int64', 'bool'):
+            item_list = ["%s" % item for item in self.filter_term]
+        else:
+            item_list = ["'%s'" % item for item in self.filter_term]
+        return ", ".join(item_list)
+
+    def op_has_any_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` in (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_none_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` has none of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_all_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` has all of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_is_exactly(self):
+        if not self.filter_term:
+            return ""
+        filter_term_str = self.gen_filter_term_str()
+        return "`%(column_name)s` is exactly (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+
 def _filter2sql(operator):
     support_filter_predicates = operator.SUPPORT_FILTER_PREDICATE
     filter_predicate = operator.filter_predicate
@@ -936,8 +984,6 @@ def _filter2sql(operator):
         return operator.op_less_or_equal()
     if filter_predicate == FilterPredicateTypes.IS_EXACTLY:
         return operator.op_is_exactly()
-    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
-        return operator.op_is_any_of()
     if filter_predicate == FilterPredicateTypes.IS_NONE_OF:
         return operator.op_is_none_of()
     if filter_predicate == FilterPredicateTypes.IS_ON_OR_AFTER:
@@ -952,16 +998,12 @@ def _filter2sql(operator):
         return operator.op_is_within()
     if filter_predicate == FilterPredicateTypes.HAS_ALL_OF:
         return operator.op_has_all_of()
-    if filter_predicate == FilterPredicateTypes.HAS_ANY_OF:
+    if filter_predicate == FilterPredicateTypes.IS_ANY_OF or filter_predicate == FilterPredicateTypes.HAS_ANY_OF:
         return operator.op_has_any_of()
     if filter_predicate == FilterPredicateTypes.HAS_NONE_OF:
         return operator.op_has_none_of()
     if filter_predicate == FilterPredicateTypes.INCLUDE_ME:
         return operator.op_include_me()
-    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
-        return operator.op_is_any_of()
-    if filter_predicate == FilterPredicateTypes.HAS_ANY_OF:
-        return operator.op_has_any_of()
     return ''
 
 def _get_operator_by_name(column_name):
@@ -1024,6 +1066,9 @@ def _get_operator_by_type(column_type):
 
     if column_type == PropertyTypes.LINK:
         return ArrayOperator
+
+    if column_type == PropertyTypes.LIST:
+        return ListOperator
 
     return None
 
@@ -1197,4 +1242,3 @@ def sort_data_2_sql(table, columns, sorts):
     """ sorts to sql """
     sql_generator = SQLGenerator(table, columns, {'sorts': sorts})
     return sql_generator.sort_2_sql()
-

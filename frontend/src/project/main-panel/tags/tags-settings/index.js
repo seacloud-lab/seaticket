@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Option from '../../option';
+import Option from '@/project/components/option';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
@@ -71,9 +71,15 @@ const TagsSettings = ({
   }, [createTag]);
 
   const handleChange = useCallback((newValue) => {
-    if (!isCellValueChanged(newValue, value)) return;
-    onChange(newValue);
-  }, [onChange, value]);
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
+    onChange(validValue);
+  }, [value, tagsData, onChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover('tags-editor-popover')) return;
@@ -115,7 +121,7 @@ const TagsSettings = ({
           className="sea-qa-tags-selector-popover"
           placeholder={gettext('Search tags')}
           emptyTip={gettext('No tags')}
-          value={value}
+          value={Array.isArray(value) ? value.map(v => v + '') : value}
           options={tagOptions}
           optionHeight={36}
           onToggle={closeEditor}

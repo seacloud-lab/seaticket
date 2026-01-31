@@ -1,23 +1,24 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { knowledgeBaseAPI } from '../../../api';
-import { OptionsData, Option } from '../models';
+import { TagsData, Tag } from '../models';
+import projectAPI from '@/project/api/project-api';
+import { shouldReload } from '@/project/utils';
 
-const MetadataContext = React.createContext(null);
+const TagsContext = React.createContext(null);
 
-export const MetadataProvider = ({ projectUuid, children }) => {
+export const TagsProvider = ({ projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
+  const [tagsData, setTagsData] = useState(new TagsData({}));
 
-  const [tagsData, setTagsData] = useState(new OptionsData());
+  const lastLoadTime = useRef(0);
 
-  // tags
-  const applyCreateTags = useCallback((newTags, isReload = false) => {
-    let newData = isReload ? new OptionsData({}) : deepCopy(tagsData);
-    if (Array.isArray(newTags) && newTags.length) {
+  const applyCreateTags = useCallback((newTags) => {
+    let newData = deepCopy(tagsData);
+    if (Array.isArray(newTags) && newTags.length > 0) {
       newTags.forEach(tag => {
-        const newTag = tag instanceof Option ? tag : new Option(tag);
+        const newTag = tag instanceof Tag ? tag : new Tag(newData.columns, tag);
         newData.rows.push(newTag);
         newData.row_ids.push(newTag._id);
         newData.id_row_map[newTag._id] = newTag;
@@ -55,22 +56,22 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [tagsData]);
 
   const createTag = useCallback((tag) => {
-    return knowledgeBaseAPI.createKnowledgeBaseTag(projectUuid, tag).then(res => {
-      const tag = new Option(res.data.tag);
+    return projectAPI.createTag(projectUuid, tag).then(res => {
+      const tag = new Tag([], res.data.tag);
       applyCreateTags([tag]);
       return tag;
     });
   }, [projectUuid, applyCreateTags]);
 
   const deleteTag = useCallback((tagID) => {
-    return knowledgeBaseAPI.deleteKnowledgeBaseTag(projectUuid, tagID).then(res => {
+    return projectAPI.deleteTag(projectUuid, tagID).then(res => {
       applyDeleteTags([tagID]);
       return tagID;
     });
   }, [projectUuid, applyDeleteTags]);
 
   const deleteTags = useCallback((tagIDs) => {
-    return knowledgeBaseAPI.deleteKnowledgeBaseTags(projectUuid, tagIDs).then(res => {
+    return projectAPI.deleteTags(projectUuid, tagIDs).then(res => {
       applyDeleteTags(tagIDs);
       return {
         data: {
@@ -82,28 +83,37 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [projectUuid, applyDeleteTags]);
 
   const modifyTag = useCallback((tagID, update) => {
-    return knowledgeBaseAPI.modifyKnowledgeBaseTag(projectUuid, tagID, update).then(res => {
+    return projectAPI.modifyTag(projectUuid, tagID, update).then(res => {
       applyModifyTags({ [tagID]: update });
     });
   }, [projectUuid, applyModifyTags]);
 
   const loadTags = useCallback((callback) => {
-    knowledgeBaseAPI.listKnowledgeBaseTags(projectUuid).then(res => {
-      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
-      applyCreateTags(tags, true);
-      callback && callback();
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback();
-    });
+    if (lastLoadTime.current && shouldReload(lastLoadTime.current)) {
+      projectAPI.listTags(projectUuid).then(res => {
+        const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
+        const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
+        const newData = new TagsData({ tags, columns });
+        setTagsData(newData);
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback();
+      });
+      return;
+    }
+    callback && callback();
   }, [tagsData]);
 
   useEffect(() => {
-    knowledgeBaseAPI.getKnowledgeBaseMetadata(projectUuid).then(res => {
-      const { tags } = res?.data || {};
-      applyCreateTags(tags?.options);
+    projectAPI.listTags(projectUuid).then(res => {
+      const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
+      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
+      const newData = new TagsData({ tags, columns });
+      setTagsData(newData);
       setLoading(false);
+      lastLoadTime.current = Date.now();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -112,7 +122,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, []);
 
   return (
-    <MetadataContext.Provider value={{
+    <TagsContext.Provider value={{
       isLoading,
       tagsData,
       createTag,
@@ -122,14 +132,14 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       loadTags,
     }}>
       {children}
-    </MetadataContext.Provider>
+    </TagsContext.Provider>
   );
 };
 
-export const useMetadata = () => {
-  const context = useContext(MetadataContext);
+export const useTags = () => {
+  const context = useContext(TagsContext);
   if (!context) {
-    throw new Error('\'MetadataContext\' is null');
+    throw new Error('\'TagsContext\' is null');
   }
   return context;
 };

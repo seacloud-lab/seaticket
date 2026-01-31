@@ -11,97 +11,9 @@ const MetadataContext = React.createContext(null);
 export const MetadataProvider = ({ projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
 
-  const [tagsData, setTagsData] = useState(new OptionsData());
   const [substatesData, setSubstatesData] = useState(new OptionsData());
   const [typesData, setTypesData] = useState(new OptionsData());
   const [statesData, setStatesData] = useState(new OptionsData());
-
-  // tags
-  const applyCreateTags = useCallback((newTags, isReload = false) => {
-    let newData = isReload ? new OptionsData({}) : deepCopy(tagsData);
-    if (Array.isArray(newTags) && newTags.length > 0) {
-      newTags.forEach(tag => {
-        const newTag = tag instanceof Option ? tag : new Option(tag);
-        newData.rows.push(newTag);
-        newData.row_ids.push(newTag._id);
-        newData.id_row_map[newTag._id] = newTag;
-      });
-    }
-    setTagsData(newData);
-  }, [tagsData]);
-
-  const applyDeleteTags = useCallback((tagIDs) => {
-    if (!Array.isArray(tagIDs) || tagIDs.length === 0) return;
-    let newData = deepCopy(tagsData);
-    newData.rows = newData.rows.filter(r => !tagIDs.includes(r._id));
-    newData.row_ids = newData.row_ids.filter(r => !tagIDs.includes(r));
-    tagIDs.forEach(tagID => {
-      if (newData.id_row_map[tagID]) {
-        delete newData.id_row_map[tagID];
-      }
-    });
-    setTagsData(newData);
-  }, [tagsData]);
-
-  const applyModifyTags = useCallback((update = {}) => {
-    if (Object.keys(update).length === 0) return;
-    let newData = deepCopy(tagsData);
-    Object.keys(update).forEach(tagID => {
-      const rowIndex = newData.row_ids.findIndex(rID => rID === tagID);
-      if (rowIndex > -1) {
-        let newRow = newData.id_row_map[tagID];
-        newRow = newRow._update(update[tagID]);
-        newData.rows[rowIndex] = newRow;
-        newData.id_row_map[tagID] = newRow;
-      }
-    });
-    setTagsData(newData);
-  }, [tagsData]);
-
-  const createTag = useCallback((tag) => {
-    return ticketsAPI.createTicketTag(projectUuid, tag).then(res => {
-      const tag = new Option(res.data.tag);
-      applyCreateTags([tag]);
-      return tag;
-    });
-  }, [projectUuid, applyCreateTags]);
-
-  const deleteTag = useCallback((tagID) => {
-    return ticketsAPI.deleteTicketTag(projectUuid, tagID).then(res => {
-      applyDeleteTags([tagID]);
-      return tagID;
-    });
-  }, [projectUuid, applyDeleteTags]);
-
-  const deleteTags = useCallback((tagIDs) => {
-    return ticketsAPI.deleteTicketTags(projectUuid, tagIDs).then(res => {
-      applyDeleteTags(tagIDs);
-      return {
-        data: {
-          success: tagIDs,
-          failed: [],
-        }
-      };
-    });
-  }, [projectUuid, applyDeleteTags]);
-
-  const modifyTag = useCallback((tagID, update) => {
-    return ticketsAPI.modifyTicketTag(projectUuid, tagID, update).then(res => {
-      applyModifyTags({ [tagID]: update });
-    });
-  }, [projectUuid, applyModifyTags]);
-
-  const loadTags = useCallback((callback) => {
-    ticketsAPI.listTicketTags(projectUuid).then(res => {
-      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
-      applyCreateTags(tags, true);
-      callback && callback();
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback();
-    });
-  }, [tagsData]);
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
@@ -313,9 +225,8 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   useEffect(() => {
     ticketsAPI.getTicketMetadata(projectUuid).then(res => {
-      const { states, substates, tags, types } = res?.data || {};
+      const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
-      applyCreateTags(tags?.options);
       applyCreateTypes(types?.options);
       applyCreateStates(states?.options);
       setLoading(false);
@@ -329,12 +240,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   return (
     <MetadataContext.Provider value={{
       isLoading,
-      tagsData,
-      createTag,
-      modifyTag,
-      deleteTag,
-      deleteTags,
-      loadTags,
 
       typesData,
       createType,

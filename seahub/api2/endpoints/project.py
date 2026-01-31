@@ -24,7 +24,7 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
     rank_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import search
@@ -237,6 +237,7 @@ class ProjectsView(APIView):
             seadb_api.create_base(project.uuid)
             init_ticket_seadb_table(seadb_api, project.uuid)
             init_knowledge_base_seadb_table(seadb_api, project.uuid)
+            init_tag_seadb_table(seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()
@@ -387,7 +388,7 @@ class SearchView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         search_type = request.data.get('search_type', 'normal_search')
         try:
             count = int(request.GET.get('count', '20'))
@@ -403,7 +404,7 @@ class SearchView(APIView):
         if not connection_ids and not extra_sources:
             error_msg = 'sources invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         time_from = request.data.get('time_from')
         time_to = request.data.get('time_to')
 
@@ -434,7 +435,7 @@ class SearchView(APIView):
             'search_type': search_type,
         }
         results = search(params)
-        
+
         # Rerank results using LLM for semantic search
         if search_type == 'semantic_search' and results:
             org_id = request.user.org.org_id if is_org_context(request) else -1
