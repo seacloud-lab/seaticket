@@ -581,11 +581,12 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
             display_columns.append(column)
     try:
         sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_columns
+        raise
+    try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
-    except SQLGeneratorOptionInvalidError as e:
-        logger.error(f'sql generator option invalid: {e}')
-        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
@@ -637,11 +638,13 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
     view_copy['basic_filters'] = basic_filters
     try:
         sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_columns
+        raise
+
+    try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results')
-    except SQLGeneratorOptionInvalidError as e:
-        logger.error(f'sql generator option invalid: {e}')
-        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
@@ -685,11 +688,13 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     view_copy = view.copy()
     try:
         sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_all_columns + extra_query_columns
+        raise
+
+    try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
-    except SQLGeneratorOptionInvalidError as e:
-        logger.error(f'sql generator option invalid: {e}')
-        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
@@ -849,13 +854,15 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
+
     try:
         sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_columns
+        raise
+    try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
-    except SQLGeneratorOptionInvalidError as e:
-        logger.error(f'sql generator option invalid: {e}')
-        records = []
     except Exception as e:
         logger.error(f'SeaDB query error for knowledge base : {e}')
         records = []

@@ -71,7 +71,15 @@ class Store {
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
       const linked_records = res?.data?.linked_records || {};
-      let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules, linked_records });
+      const errorMsg = res?.data?.error_msg || '';
+      let data = new Metadata({
+        rows,
+        columns,
+        view,
+        columnWidthRules: this.columnWidthRules,
+        linked_records,
+        error_msg: errorMsg,
+      });
       data.view.rows = data.row_ids;
       const loadedCount = rows.length;
       data.hasMore = loadedCount >= limit;

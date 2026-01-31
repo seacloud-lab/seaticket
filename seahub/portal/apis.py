@@ -17,6 +17,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, check_same_org_permission, get_current_table_metadata
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import TicketsTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
@@ -206,6 +207,14 @@ class PortalMyTicketsView(APIView):
 
         try:
             tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
+        except SQLGeneratorOptionInvalidError as e:
+            logger.error(e)
+            error_msg = 'There are errors with the filters. Please correct it.'
+            return Response({
+                'tickets': [],
+                'columns': getattr(e, 'columns', []),
+                'error_msg': error_msg,
+            })
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -348,6 +357,10 @@ class PortalKnowledgeBaseRecordsView(APIView):
             seadb_api = SeaDBAPI(username)
             view = KnowledgeBaseViews.objects.get_view(project_uuid, view_id)
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
+        except SQLGeneratorOptionInvalidError as e:
+            logger.error(e)
+            error_msg = 'There are errors with the filters. Please correct it.'
+            return Response({'records': [], 'columns': getattr(e, 'columns', []), 'error_msg': error_msg})
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

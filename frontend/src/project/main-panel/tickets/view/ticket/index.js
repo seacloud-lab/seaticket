@@ -37,6 +37,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
   const [activities, setActivities] = useState([]);
+  const [loadError, setLoadError] = useState('');
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -302,11 +303,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     setLoading(true);
     setTicket(null);
     setActivities([]);
+    setLoadError('');
 
     // Load ticket data
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
       handleUpdateRowsCacheData(ticketID, res.data.ticket);
       const ticket = new TicketModel(res.data.ticket);
+      setLoadError(res.data?.error_msg || '');
       setTicket(ticket);
       setLoading(false);
     }).catch(error => {
@@ -371,7 +374,15 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [ticket, activities]);
 
   if (isLoading) return (<CenteredLoading />);
-  if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
+  if (!ticket) {
+    const emptyText = loadError || gettext('Not found ticket');
+    return (
+      <EmptyTip
+        src={`${mediaUrl}img/no-items-tip.png`}
+        text={emptyText}
+      />
+    );
+  }
 
   const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate } = ticket;
   const typeOption = getRowById(typesData, type);
