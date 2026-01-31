@@ -49,11 +49,10 @@ export const getTagsOptions = (tagsData) => {
   if (!tagsData) return [];
   const tags = Array.isArray(tagsData.rows) ? tagsData.rows : [];
   return tags.map(tag => {
-    const _tag = convertTagToNameValue(tag) || {};
     return {
       value: tag._id,
       id: tag._id,
-      ..._tag,
+      ...tag,
     };
   });
 };

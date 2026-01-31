@@ -35,9 +35,11 @@ const _getFormattedCellValue = (cellValue, groupby) => {
       return cellValue || null;
     }
     case CellType.MULTIPLE_SELECT:
-    case CellType.TAGS:
     case CellType.COLLABORATOR: {
       return Array.isArray(cellValue) ? cellValue : [];
+    }
+    case CellType.TAGS: {
+      return Array.isArray(cellValue) ? cellValue.map(v => v + '') : [];
     }
     default: {
       return null;
@@ -180,7 +182,7 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, { collaborators, typesDat
       const currentGroupby = validGroupbys[level];
       const { column, column_key } = currentGroupby;
       const { type: columnType } = column;
-      const cellValue = getCellValueByColumn(row, column);
+      const cellValue = getCellValueByColumn(row, column, { tagsData });
       const formattedValue = _getFormattedCellValue(cellValue, currentGroupby);
       const sCellValue = _getStrCellValue(formattedValue, columnType);
       const group = {
@@ -249,7 +251,7 @@ const groupTableRows = (groupbys, rows, { collaborators = [], typesData, tagsDat
   let groups = [];
   let cellValue2GroupIndexMap = {};
   rows.forEach((r) => {
-    const cellValue = getCellValueByColumn(r, column);
+    const cellValue = getCellValueByColumn(r, column, { tagsData });
     const formattedValue = _getFormattedCellValue(cellValue, groupby, { tagsData });
     const cellValueStr = _getStrCellValue(formattedValue, columnType);
     let groupedRowIndex = _findGroupIndex(cellValueStr, cellValue2GroupIndexMap, groups.length);

@@ -16,9 +16,9 @@ import { DateUtils } from '../date';
 import { CellType, DATE_FORMAT_MAP, FILTER_CONJUNCTION_TYPE } from '../../constants';
 import { getCellValueByColumn } from '../cell';
 
-const getFilterResult = (row, filter, { username, userId }) => {
+const getFilterResult = (row, filter, { username, userId, tagsData }) => {
   const { column } = filter;
-  let cellValue = getCellValueByColumn(row, column);
+  let cellValue = getCellValueByColumn(row, column, { tagsData });
   switch (column.type) {
     case CellType.CTIME:
     case CellType.MTIME:
@@ -70,15 +70,15 @@ const getFilterResult = (row, filter, { username, userId }) => {
  * @param {string} userId
  * @returns filter result, bool
  */
-const filterRow = (row, filterConjunction, filters, { username = '', userId } = {}) => {
+const filterRow = (row, filterConjunction, filters, { username = '', userId, tagsData } = {}) => {
   if (filterConjunction === FILTER_CONJUNCTION_TYPE.AND) {
     return filters.every((filter) => (
-      getFilterResult(row, filter, { username, userId })
+      getFilterResult(row, filter, { username, userId, tagsData })
     ));
   }
   if (filterConjunction === FILTER_CONJUNCTION_TYPE.OR) {
     return filters.some((filter) => (
-      getFilterResult(row, filter, { username, userId })
+      getFilterResult(row, filter, { username, userId, tagsData })
     ));
   }
   return false;
@@ -93,11 +93,11 @@ const filterRow = (row, filterConjunction, filters, { username = '', userId } = 
  * @param {string} userId
  * @returns filtered rows ids, array
  */
-const filterRows = (filterConjunction, filters, rows, { username, userId, isReturnID = true }) => {
+const filterRows = (filterConjunction, filters, rows, { username, userId, tagsData, isReturnID = true }) => {
   let filteredRows = [];
   const formattedFilters = getFormattedFilters(filters);
   rows.forEach((row) => {
-    if (filterRow(row, filterConjunction, formattedFilters, { username, userId })) {
+    if (filterRow(row, filterConjunction, formattedFilters, { username, userId, tagsData })) {
       filteredRows.push(isReturnID ? row._id : row);
     }
   });
@@ -115,7 +115,7 @@ const filterRows = (filterConjunction, filters, rows, { username, userId, isRetu
  * @param {string} userId
  * @returns filtered rows: row_ids and error message: error_message, object
  */
-const getFilteredRows = (table, rows, { basicFilters, filters, filterConjunction }, { username = null, userId = null, isReturnID = true } = {}) => {
+const getFilteredRows = (table, rows, { basicFilters, filters, filterConjunction }, { username = null, userId = null, isReturnID = true, tagsData } = {}) => {
   const { columns } = table;
   let validFilters = [];
   try {
@@ -135,8 +135,8 @@ const getFilteredRows = (table, rows, { basicFilters, filters, filterConjunction
   if (validFilters.length === 0 && validBasicFilters.length === 0) {
     filteredRows = isReturnID ? rows.map((row) => row._id) : rows;
   } else {
-    filteredRows = filterRows(FILTER_CONJUNCTION_TYPE.AND, validBasicFilters, rows, { username, userId, isReturnID: false });
-    filteredRows = filterRows(filterConjunction, validFilters, filteredRows, { username, userId, isReturnID });
+    filteredRows = filterRows(FILTER_CONJUNCTION_TYPE.AND, validBasicFilters, rows, { username, userId, isReturnID: false, tagsData });
+    filteredRows = filterRows(filterConjunction, validFilters, filteredRows, { username, userId, isReturnID, tagsData });
   }
 
   return { rows: filteredRows, error_message: null };

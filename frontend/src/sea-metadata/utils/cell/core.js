@@ -1,4 +1,5 @@
 import { CellType } from '../../constants';
+import { getRowById } from '../row';
 
 /**
  * @param {any} value
@@ -18,9 +19,15 @@ export const isValidCellValue = (value, column) => {
  * @param {object} column
  * @return {any} value
  */
-export const getCellValueByColumn = (row, column) => {
+export const getCellValueByColumn = (row, column, { tagsData } = {}) => {
   if (!row || !column) return null;
   const { key } = column;
-  if (Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+  if (Object.prototype.hasOwnProperty.call(row, key)) {
+    const cellValue = row[key];
+    if (column.type === CellType.TAGS && Array.isArray(cellValue) && tagsData) {
+      return cellValue.filter(tagID => getRowById(tagsData, tagID + ''));
+    }
+    return cellValue;
+  }
   return null;
 };

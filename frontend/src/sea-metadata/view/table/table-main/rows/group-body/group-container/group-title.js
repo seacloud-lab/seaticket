@@ -73,11 +73,11 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
       case CellType.TAGS: {
         const options = getTagsOptions(tagsData);
         if (options.length === 0 || !Array.isArray(originalCellValue) || originalCellValue.length === 0) return emptyTip;
-        const selectedOptions = options.filter((option) => originalCellValue.includes(option.id) || originalCellValue.includes(option.name));
-        const invalidOptionIds = originalCellValue.filter(optionId => optionId && !options.find(o => o.id === optionId || o.name === optionId));
+        const selectedOptions = options.filter((option) => cellValue.includes(option.id) || cellValue.includes(option.name));
+        const invalidOptionIds = cellValue.filter(optionId => optionId && !options.find(o => o.id === optionId || o.name === optionId));
         const invalidOptions = invalidOptionIds.map(optionId => ({
           id: optionId,
-          name: deletedOptionTip,
+          name: gettext('Deleted tag'),
           color: DELETED_OPTION_BACKGROUND_COLOR,
         }));
         return (
