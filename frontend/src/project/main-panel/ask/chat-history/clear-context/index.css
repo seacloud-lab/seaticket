@@ -8,14 +8,7 @@
 .sea-ticket-ai-chat-clear-context .sea-ticket-ai-chat-divider-line {
   flex: 1 1;
   height: 1px;
-  border-top: 1px solid transparent;
-  border-image: repeating-linear-gradient(
-    90deg,
-    var(--bs-border-secondary-color),
-    var(--bs-border-secondary-color) 4px,
-    transparent 4px,
-    transparent 8px
-  ) 1;
+  background-color: var(--bs-border-secondary-color);
 }
 
 .sea-ticket-ai-chat-clear-context .sea-ticket-ai-chat-clear-context-tip {
