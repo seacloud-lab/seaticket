@@ -5,6 +5,7 @@ import json
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -100,7 +101,7 @@ class TicketsAPIView(APIView):
             tickets, columns = list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
-            error_msg = 'There are errors with the filters. Please correct it.'
+            error_msg = _('There are errors with the filters. Please correct it.')
             return Response({
                 'tickets': [],
                 'columns': getattr(e, 'columns', []),

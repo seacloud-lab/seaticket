@@ -8,11 +8,11 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
+from django.utils.translation import gettext as _
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, check_same_org_permission, get_current_table_metadata
 from seahub.utils.storage import upload_files_to_s3
@@ -209,7 +209,7 @@ class PortalMyTicketsView(APIView):
             tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
-            error_msg = 'There are errors with the filters. Please correct it.'
+            error_msg = _('There are errors with the filters. Please correct it.')
             return Response({
                 'tickets': [],
                 'columns': getattr(e, 'columns', []),
@@ -359,7 +359,7 @@ class PortalKnowledgeBaseRecordsView(APIView):
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
-            error_msg = 'There are errors with the filters. Please correct it.'
+            error_msg = _('There are errors with the filters. Please correct it.')
             return Response({'records': [], 'columns': getattr(e, 'columns', []), 'error_msg': error_msg})
         except Exception as e:
             logger.error(e)
