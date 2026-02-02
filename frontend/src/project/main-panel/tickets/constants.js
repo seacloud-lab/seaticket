@@ -218,7 +218,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   },
   [PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS]: {
     type: CellType.LINK,
-    display_name: gettext('Linked connection records'),
+    display_name: gettext('Linked records'),
     editable: false,
   },
 };
