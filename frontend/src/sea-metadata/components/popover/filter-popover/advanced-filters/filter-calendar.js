@@ -113,24 +113,21 @@ class FilterCalendar extends Component {
         disabled={true}
       />
     );
-    const calendarFormat = this.getCalendarFormat();
-    const calendar = (
-      <Calendar
-        className="sea-metadata-rc-calendar"
-        locale={translateCalendar(this.lang)}
-        style={{ zIndex: zIndex || 1001 }}
-        dateInputPlaceholder={gettext('Enter date')}
-        format={calendarFormat}
-        defaultValue={this.defaultCalendarValue}
-        showDateInput={true}
-        focusablePanel={false}
-        onClear={this.onClear}
-      />
-    );
     return (
       <div className="date-picker-container">
         <DatePicker
-          calendar={calendar}
+          calendar={
+            <Calendar
+              locale={translateCalendar(this.lang)}
+              style={{ zIndex: zIndex || 1001 }}
+              dateInputPlaceholder={gettext('Enter date')}
+              format={this.getCalendarFormat()}
+              defaultValue={this.defaultCalendarValue}
+              showDateInput={true}
+              focusablePanel={false}
+              onClear={this.onClear}
+            />
+          }
           value={state.value}
           onChange={this.onChange}
           getCalendarContainer={this.getCalendarContainer}
