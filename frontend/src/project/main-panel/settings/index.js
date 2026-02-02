@@ -1,4 +1,6 @@
 import React from 'react';
+import DeveloperModeSettings from './developer-mode-settings';
+import PromptSettings from './prompt-settings';
 import TopBar from '../top-bar';
 import SwitchSettingsItem from './switch-settings-item';
 import LanguageSettings from './language-settings';
@@ -22,6 +24,13 @@ const Settings = ({
         className="mb-4"
         value={settings.streaming_response || false}
         onChange={(value, callback) => modifySettings({ streaming_response: value }, callback)}
+      />
+      <SwitchSettingsItem
+        title={gettext('Project prompt')}
+        placeholder={gettext('Project prompt')}
+        tip={gettext('Set the AI system prompt for this project. This prompt will be applied to all AI conversations within this project.')}
+        value={settings.prompt}
+        onChange={(value, callback) => modifySettings({ prompt: value }, callback)}
       />
       <SwitchSettingsItem
         title={gettext('Developer mode')}
