@@ -4,13 +4,13 @@ import { PORTAL_PAGE } from '../constants';
 import SubmitTicket from './submit-ticket';
 import MyTickets from './my-tickets';
 import KnowledgeBase from './knowledge-base';
-import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading } from '@/components';
+import { useMetadata, useTags } from '@/project/hooks';
 
 const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
-
   const { isLoading: isMetadataLoading, typesData } = useMetadata();
   const { isLoading: isTagsDataLoading, tagsData } = useTags();
+
 
   const getTitle = () => {
     switch (activePage) {

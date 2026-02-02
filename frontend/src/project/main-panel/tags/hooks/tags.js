@@ -89,6 +89,11 @@ export const TagsProvider = ({ projectUuid, api = projectAPI, children }) => {
   }, [projectUuid, applyModifyTags]);
 
   const loadTags = useCallback((callback) => {
+    const username = (window.app && window.app.pageOptions && window.app.pageOptions.username) || '';
+    if (!username) {
+      callback && callback();
+      return;
+    }
     if (lastLoadTime.current && shouldReload(lastLoadTime.current)) {
       api.listTags(projectUuid).then(res => {
         const columns = Array.isArray(res.data.columns) ? res.data.columns : [];

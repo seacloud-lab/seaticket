@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import portal_view, portal_edit_view
-from .apis import PortalTicketsView, PortalMyTicketsView, PortalTicketTypesView, PortalKnowledgeBaseViewsView, \
-    PortalKnowledgeBaseRecordsView, PortalTicketMetadataView
+from .views import portal_view, portal_edit_view, portal_anonymous_validate
+from .apis import PortalTicketsView, PortalMyTicketsView, PortalTicketTypesView, PortalTicketTagsView, \
+    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalTicketMetadataView, PortalSettingsView
 
 urlpatterns = [
     # portal edit page (for admins)
@@ -17,13 +17,17 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),
 
     # portal API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tickets/$', PortalTicketsView.as_view(), name='api-v1-portal-tickets'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', PortalMyTicketsView.as_view(), name='api-v1-portal-my-tickets'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/types/$', PortalTicketTypesView.as_view(), name='api-v1-portal-ticket-types'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/tags/$', PortalTicketTagsView.as_view(), name='api-v1-portal-ticket-tags'),
     # re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/metadata/$', PortalTicketMetadataView.as_view(), name='api-v1-portal-ticket-metadata'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
+
 ]
