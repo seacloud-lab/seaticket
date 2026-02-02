@@ -11,7 +11,8 @@ import { isMobile } from '@/utils/utils';
 import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
 import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
 import context from '@/sea-metadata/context';
-import { useTagsData, useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
+import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -27,7 +28,6 @@ const HeaderDropdownMenu = forwardRef(({
   const [isRenamePopoverShow, setRenamePopoverShow] = useState(false);
   const [isOptionPopoverShow, setOptionPopoverShow] = useState(false);
 
-  const { toggleAllTags } = useTagsData();
   const { toggleAllTypes } = useTypesData();
   const { toggleAllSubstates } = useSubstatesData();
 
@@ -274,15 +274,7 @@ const HeaderDropdownMenu = forwardRef(({
             </>
           )}
           */}
-          {CellType.TAGS === type && (
-            <DropdownItem
-              iconName="tag"
-              title={gettext('Tags')}
-              onChange={toggleAllTags}
-              onMouseEnter={hideSubMenu}
-            />
-          )}
-          {CellType.TYPE === type &&
+          {CellType.TYPE === type && isFunction(toggleAllTypes) &&
             <DropdownItem
               title={gettext('Types')}
               onChange={toggleAllTypes}
@@ -290,7 +282,7 @@ const HeaderDropdownMenu = forwardRef(({
             />
           }
 
-          {CellType.SINGLE_SELECT === type && column?.name === 'substate' && (
+          {CellType.SINGLE_SELECT === type && column?.name === 'substate' && isFunction(toggleAllSubstates) && (
             <DropdownItem
               title={gettext('Substates')}
               onChange={toggleAllSubstates}
