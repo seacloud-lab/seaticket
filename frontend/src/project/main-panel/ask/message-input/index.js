@@ -16,12 +16,19 @@ import AttachmentsFormatter from './attachments';
 
 import './index.css';
 
+const { isProjectAdmin } = window.app.pageOptions;
+
 const MessageInput = forwardRef(({
   isReply,
+  isOwner,
   readOnly,
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
+  clearContext,
   sendMessage,
+  hasHistoryMessages,
+  toggleClearContext,
+  resetClearContext,
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
@@ -86,10 +93,12 @@ const MessageInput = forwardRef(({
       resolveType,
       message: value,
       attachments,
-      model: selectedModel
+      model: selectedModel,
+      clearContext
     });
     clearAttachments();
-  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments]);
+    resetClearContext();
+  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -211,6 +220,16 @@ const MessageInput = forwardRef(({
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
+              {hasHistoryMessages && (isProjectAdmin || isOwner) && (
+                <IconButton
+                  disabled={disabled}
+                  icon="clear"
+                  className="sea-qa-ai-clear-context-icon-btn icon-clear-context"
+                  onClick={disabled ? () => {} : toggleClearContext}
+                  title={gettext('Clear context')}
+                  aria-label={gettext('Clear context')}
+                />
+              )}
               <IconButton
                 disabled={disabled}
                 icon="send-arrow"
@@ -230,6 +249,7 @@ const MessageInput = forwardRef(({
 MessageInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
+  hasHistoryMessages: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
 };
 

@@ -115,7 +115,7 @@ class ChatMessageThoughtProcess(models.Model):
         }
 
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_uuid, message_id, username, role, content, is_agent_mode, sources='', attachments=[]):
+    def create_message(self, session_uuid, message_id, username, role, content, as_context=True, sources='', attachments=[]):
         """Create a new chat message"""
         message = self.model(
             session_uuid=session_uuid,
@@ -125,7 +125,7 @@ class ChatMessagesManager(models.Manager):
             content=content,
             attachments=json.dumps(attachments),
             sources=sources,
-            is_agent_mode=is_agent_mode
+            as_context=as_context
         )
         message.save()
         return message
@@ -133,7 +133,11 @@ class ChatMessagesManager(models.Manager):
     def get_messages_by_session(self, session_uuid):
         """Retrieve all messages of the session"""
         return self.filter(session_uuid=session_uuid).order_by('created_at')
-
+    
+    def clear_context(self, session_uuid, username):
+        self.create_message(session_uuid, None, username, 'chat_manager', '<break_context>', False)
+        records = self.filter(session_uuid=session_uuid)
+        records.update(as_context=False)
 
 class ChatMessages(models.Model):
     ROLE_CHOICES = [
@@ -151,7 +155,7 @@ class ChatMessages(models.Model):
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_agent_mode = models.BooleanField()
+    as_context = models.BooleanField(default=True)
 
     objects = ChatMessagesManager()
 
@@ -161,6 +165,10 @@ class ChatMessages(models.Model):
             models.Index(
                 fields=['session_uuid', 'created_at'],
                 name='idx_session_uuid_created_at'
+            ),
+            models.Index(
+                fields=['session_uuid', 'role', '-created_at', '-as_context'],
+                name='idx_session_uuid_created_at_as_context_role'
             )
         ]
 
@@ -192,5 +200,5 @@ class ChatMessages(models.Model):
             'sources': sources,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'is_agent_mode': self.is_agent_mode
+            'as_context': self.as_context
         }

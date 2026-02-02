@@ -268,7 +268,14 @@ class ChatView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
+        clear_context = request.data.get('clear_context', False)
+        if isinstance(clear_context, str):
+            clear_context = clear_context.lower() == 'true'
+        if not isinstance(clear_context, bool):
+            error_msg = 'clear_context invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -309,9 +316,15 @@ class ChatView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             
             # permission check: current user must be the session owner or the session is shared
-            if session.username != username and not session.is_shared:
-                error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+            if session.username != username:
+                if clear_context:
+                    error_msg = 'Permission denied. You can only clear the context in your own sessions'
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+                elif not session.is_shared:
+                    error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+            elif clear_context:
+                ChatMessages.objects.clear_context(session_uuid, username)
         
         try:
             message_id = gen_message_id(session.session_uuid)
@@ -363,8 +376,8 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to record thought process to db: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', attachments=attachments)
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, attachments=attachments)
+        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], sources=json.dumps(ai_response['sources']))
 
         ai_response.update({
             'session_uuid': session_uuid,

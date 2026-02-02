@@ -12,6 +12,7 @@ import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { username } from '@/constants';
 
 import './index.css';
 
@@ -22,6 +23,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
+  const [clearContext, setClearContext] = useState(false);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -56,7 +58,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(({ resolveType, message, attachments, model }) => {
+  const sendMessage = useCallback(({ resolveType, message, attachments, model, clearContext }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -75,7 +77,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model, clearContext });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -88,6 +90,30 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
+
+  const toggleClearContext = useCallback(() => {
+    let newChatHistories = chatHistories.slice(0);
+    if (!clearContext) {
+      newChatHistories.push(
+        new ChatMessage({
+          message: '<break_context>',
+          id: 'customize_break_context',
+        })
+      );
+      updateChatHistories(newChatHistories);
+    } else {
+      const lastChat = newChatHistories[newChatHistories.length - 1];
+      if (lastChat._id === 'customize_break_context') {
+        newChatHistories = newChatHistories.slice(0, -1);
+        updateChatHistories(newChatHistories);
+      }
+    }
+    setClearContext(!clearContext);
+  }, [clearContext, chatHistories]);
+
+  const resetClearContext = useCallback(() => {
+    setClearContext(false);
+  }, []);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
@@ -119,6 +145,11 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
               [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
             },
             isUserSpeak: true,
+          });
+        } else if (item.role === 'chat_manager') {
+          return new ChatMessage({
+            _id: item.id,
+            message: item.content,
           });
         }
 
@@ -251,6 +282,11 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
+          hasHistoryMessages={!isEmpty}
+          clearContext={clearContext}
+          toggleClearContext={toggleClearContext}
+          resetClearContext={resetClearContext}
+          isOwner={session?.username === username}
         />
       </div>
     </div>
