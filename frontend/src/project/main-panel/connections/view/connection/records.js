@@ -553,6 +553,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   return (
     <>
       <SeaMetadata
+        metadataID={connectionID}
         viewID={viewID}
         api={api}
         ref={seaMetaDataRef}

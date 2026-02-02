@@ -83,6 +83,7 @@ const SeaMetadata = forwardRef(({
   toggleView,
   api,
   viewID,
+  metadataID,
   permission = PERMISSION_TYPES.READ_ONLY,
   settings,
   t,
@@ -93,15 +94,15 @@ const SeaMetadata = forwardRef(({
   const mainRef = useRef(null);
 
   useEffect(() => {
+    setLoading(true);
     context.init({
       username,
       settings: { lang, server, mediaUrl, ...settings, },
       permission,
       api,
       t,
-    });
-    setLoading(false);
-  }, []);
+    }, () => setLoading(false));
+  }, [metadataID]);
 
   useEffect(() => {
     context.re_set({ t, api });
