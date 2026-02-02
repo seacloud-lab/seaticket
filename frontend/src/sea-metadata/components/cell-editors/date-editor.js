@@ -189,28 +189,29 @@ class DateEditor extends Component {
         disabled={true}
       />
     );
-    const calendarFormat = this.getCalendarFormat();
-    const defaultMinutesTime = this.getDefaultMinutesTime();
-    const calendar = (
-      <Calendar
-        className="sea-metadata-rc-calendar"
-        locale={translateCalendar(this.lang)}
-        style={{ zIndex: 1060 }}
-        dateInputPlaceholder={gettext('Enter date')}
-        format={calendarFormat}
-        defaultValue={this.defaultCalendarValue}
-        showDateInput={true}
-        focusablePanel={false}
-        showHourAndMinute={Boolean(this.timeFormat)}
-        defaultMinutesTime={defaultMinutesTime}
-        onClear={this.onClear}
-        onClickRightPanelTime={this.onClickRightPanelTime}
-      />
-    );
     return (
-      <div className="date-picker-container" ref={ref => this.datePickerRef = ref} onKeyDown={(e) => this.handleKeyDown(e)} onClick={(e) => this.onClick(e)}>
+      <div
+        className="date-picker-container"
+        ref={ref => this.datePickerRef = ref}
+        onKeyDown={(e) => this.handleKeyDown(e)}
+        onClick={(e) => this.onClick(e)}
+      >
         <DatePicker
-          calendar={calendar}
+          calendar={
+            <Calendar
+              locale={translateCalendar(this.lang)}
+              style={{ zIndex: 1060 }}
+              dateInputPlaceholder={gettext('Enter date')}
+              format={this.getCalendarFormat()}
+              defaultValue={this.defaultCalendarValue}
+              showDateInput={true}
+              focusablePanel={false}
+              showHourAndMinute={Boolean(this.timeFormat)}
+              defaultMinutesTime={this.getDefaultMinutesTime()}
+              onClear={this.onClear}
+              onClickRightPanelTime={this.onClickRightPanelTime}
+            />
+          }
           value={state.value}
           onChange={this.onChange}
           getCalendarContainer={this.getCalendarContainer}
