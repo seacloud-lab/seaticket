@@ -6,6 +6,7 @@ import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
 import KnowledgeMoreNav from './nav/knowledge-more-nav';
+import DefaultMoreNav from './nav/default-more-nav';
 import InboxNav from './nav/inbox-nav';
 import { gettext } from '@/constants';
 
@@ -40,7 +41,6 @@ const SidePanel = ({ activeBar, toggleBar }) => {
           <Header />
           <div className="sea-qa-project-navigation sea-qa-nav-list">
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} {...commonProps} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} {...commonProps} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />
@@ -48,6 +48,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             {isProjectAdmin &&
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }
+            <DefaultMoreNav onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{gettext('Tickets')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
@@ -55,8 +56,6 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <div className="sea-qa-project-side-panel-subtitle">{gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
             <KnowledgeMoreNav onClick={toggleBar} />
-            <div className="sea-qa-project-side-panel-subtitle">{gettext('Tags')}</div>
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TAGS]} {...commonProps} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
