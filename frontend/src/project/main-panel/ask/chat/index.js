@@ -117,6 +117,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
+    setClearContext(false);
     const problem = messageInputRef.current?.getProblem() || '';
     if (currentSessionId.current !== ASK_PAGE_SLUG_ID.NEW) {
       modifyLocalSession(currentSessionId.current, { problem });
