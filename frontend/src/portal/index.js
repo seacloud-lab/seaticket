@@ -13,7 +13,7 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName } = window.app.pageOptions;
+const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled) => {
   if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
@@ -54,7 +54,7 @@ const Portal = () => {
       }
     }
 
-    if (!isEditMode) {
+    if (!isEditMode && isAnonymous) {
       APIRef.current.listProjectRelatedUsers = (projectUuid) => {
         return new Promise((resolve, reject) => {
           resolve({
@@ -62,8 +62,16 @@ const Portal = () => {
           });
         });
       };
+      APIRef.current.listUserInfo = (projectUuid) => {
+        return new Promise((resolve, reject) => {
+          resolve({
+            data: { user_list: [] }
+          });
+        }); 
+      };
     } else {
       delete APIRef.current['listProjectRelatedUsers'];
+      delete APIRef.current['listUserInfo'];
     }
     setLoading(false);
   }, []);
@@ -90,6 +98,7 @@ const Portal = () => {
       setPasswordError(false);
     }
   }, [passwordError]);
+
 
   if (needPasswordState) {
     return (
@@ -125,7 +134,6 @@ const Portal = () => {
       </I18nextProvider>
     );
   }
-
   return (
     <I18nextProvider i18n={i18n}>
       <div className="sea-qa-portal">

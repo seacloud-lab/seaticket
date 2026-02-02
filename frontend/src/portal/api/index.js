@@ -106,15 +106,6 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  listConnections(projectUuid, page, perPage) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
-    let params = {
-      page: page,
-      per_page: perPage,
-    };
-    return this.req.get(url, { params: params });
-  }
-
   updateSettings(projectUuid, settings) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
     return this.req.post(url, settings);

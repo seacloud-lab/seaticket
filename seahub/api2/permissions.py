@@ -77,8 +77,8 @@ class PortalAccessPermission(BasePermission):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             return False
-
         try:
+            request.project = project
             settings_dict = json.loads(project.settings) if project.settings else {}
         except Exception:
             settings_dict = {}

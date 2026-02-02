@@ -47,6 +47,7 @@ def portal_view(request, project_uuid, page=None):
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'show_kb_in_portal': show_kb_in_portal,
+        'is_anonymous': not request.user.is_authenticated,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,

@@ -155,6 +155,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     } else {
       setLoading(true);
     }
+
     if (!isFunction(api?.listConnections)) {
       setLoadingMore(false);
       setLoading(false);

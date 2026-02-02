@@ -21,9 +21,10 @@ from seahub.utils.storage import upload_files_to_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
+from seahub.project.constants import PORTAL_TICKET_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
-from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
+from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 
@@ -104,11 +105,6 @@ class PortalTicketsView(APIView):
             tag_ids = []
 
         due_date = request.POST.get('due_date', '')
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = get_portal_access_username(request)
         seadb_api = SeaDBAPI(username)
@@ -211,7 +207,7 @@ class PortalMyTicketsView(APIView):
         view_config['basic_filters'] = basic_filters
 
         try:
-            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
+            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, PORTAL_TICKET_DISPLAY_ALL_COLUMNS, view_config)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
             error_msg = _('There are errors with the filters. Please correct them.')
@@ -229,50 +225,6 @@ class PortalMyTicketsView(APIView):
             'tickets': tickets,
             'columns': columns,
         })
-
-
-class PortalTicketTypesView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request, project_uuid):
-        start = request.GET.get('start', 0)
-        limit = request.GET.get('limit', 1000)
-
-        try:
-            start = int(start)
-            limit = int(limit)
-        except:
-            start = 0
-            limit = 1000
-
-        if start < 0:
-            error_msg = 'start invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if limit < 0:
-            error_msg = 'limit invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        username = get_portal_access_username(request)
-        seadb_api = SeaDBAPI(username)
-
-        try:
-            type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
-            sql = f"SELECT * FROM `tag` LIMIT {start}, {limit}"
-            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'metadata': res.get('metadata'), 'tags': res.get('results')})
 
 
 class PortalTagsView(APIView):
@@ -299,11 +251,6 @@ class PortalTagsView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         username = get_portal_access_username(request)
         try:
             seadb_api = SeaDBAPI(username)
@@ -324,13 +271,8 @@ class PortalKnowledgeBaseViewsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         try:
+            project = request.project
             project_settings = json.loads(project.settings) if project.settings else {}
             portal_settings = project_settings.get('portal', {})
             show_kb = bool(portal_settings.get('portal_show_knowledge_base', False))
@@ -369,12 +311,8 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         try:
+            project = request.project
             project_settings = json.loads(project.settings) if project.settings else {}
             portal_settings = project_settings.get('portal', {})
             show_kb = bool(portal_settings.get('portal_show_knowledge_base', False))

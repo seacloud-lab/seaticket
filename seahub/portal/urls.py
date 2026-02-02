@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from .views import portal_view, portal_edit_view, portal_anonymous_validate
-from .apis import PortalTicketsView, PortalMyTicketsView, PortalTicketTypesView, PortalTagsView, \
+from .apis import PortalTicketsView, PortalMyTicketsView, PortalTagsView, \
     PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalTicketMetadataView, PortalSettingsView
 
 urlpatterns = [
@@ -22,7 +22,6 @@ urlpatterns = [
     # portal API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tickets/$', PortalTicketsView.as_view(), name='api-v1-portal-tickets'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', PortalMyTicketsView.as_view(), name='api-v1-portal-my-tickets'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/types/$', PortalTicketTypesView.as_view(), name='api-v1-portal-ticket-types'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
