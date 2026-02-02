@@ -14,6 +14,7 @@ import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
 import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
+import { isFunction } from '@/utils/type-detection';
 
 const DataContext = React.createContext(null);
 
@@ -543,12 +544,18 @@ export const DataProvider = ({
   }, []);
 
   const listUserInfo = useCallback((...params) => {
+    if (isFunction(api?.listUserInfo)) {
+      return api.listUserInfo(...params);
+    }
     return userAPI.listUserInfo(...params);
-  }, []);
+  }, [api]);
 
   const getCollaborators = useCallback(() => {
+    if (isFunction(api?.listProjectRelatedUsers)) {
+      return api.listProjectRelatedUsers(projectUuid);
+    }
     return projectAPI.listProjectRelatedUsers(projectUuid);
-  }, [projectUuid]);
+  }, [projectUuid, api]);
 
   return (
     <DataContext.Provider value={{

@@ -13,6 +13,7 @@ import { useData } from '@/project/hooks';
 import { getTableName, initConnectionStatus } from '../utils';
 import { CONNECTION_SYNC_STATUS } from '../constants';
 import ObjectUtils from '@/utils/object-utils';
+import { isFunction } from '@/utils/type-detection';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -154,6 +155,12 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     } else {
       setLoading(true);
     }
+    if (!isFunction(api?.listConnections)) {
+      setLoadingMore(false);
+      setLoading(false);
+      return;
+    }
+
     api.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
       let newConnections = pageRef.current === 1 ? [] : connections.slice(0);
