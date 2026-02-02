@@ -1,6 +1,8 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { connectionsAPI } from '@/project/api';
-import { TASK_STORAGE_KEY, projectUuid } from '../constants';
+import { projectUuid } from '../constants';
+import { Utils } from '@/utils/utils';
+import { gettext } from '@/constants';
 
 const AnalyzeTaskContext = React.createContext(null);
 
@@ -9,6 +11,7 @@ export const AnalyzeTaskProvider = ({ children }) => {
   const [records, setRecords] = useState(null);
   const [error, setError] = useState(null);
   const [currentTaskId, setCurrentTaskId] = useState(null);
+  const [lastLoadRecordsTime, setLastLoadRecordsTime] = useState('');
 
   const pollingRef = useRef(false);
   const pollingTimerRef = useRef(null);
@@ -22,94 +25,72 @@ export const AnalyzeTaskProvider = ({ children }) => {
   }, []);
 
   const pollTaskStatus = useCallback((taskId) => {
-    if (pollingRef.current) {
-      return;
-    }
-
+    if (pollingRef.current) return;
     pollingRef.current = true;
 
     const poll = () => {
-      connectionsAPI.getEmbeddingAnalysisTaskStatus(taskId)
-        .then(statusResponse => {
-          const { is_finished, records: taskRecords } = statusResponse.data;
-
-          if (is_finished === null) {
-            localStorage.removeItem(TASK_STORAGE_KEY);
-            setIsLoading(false);
-            setError({ expired: true, message: 'Task expired' });
-            clearPolling();
-          } else if (is_finished) {
-            localStorage.removeItem(TASK_STORAGE_KEY);
-            setRecords(taskRecords);
-            setError(null);
-            setIsLoading(false);
-            setCurrentTaskId(null);
-            clearPolling();
-          } else {
-            pollingTimerRef.current = setTimeout(poll, 2000);
-          }
-        })
-        .catch(err => {
-          localStorage.removeItem(TASK_STORAGE_KEY);
-          setIsLoading(false);
-          setError({ message: err.response?.data?.error_msg || 'Failed to get task status' });
+      connectionsAPI.getEmbeddingAnalysisTaskStatus(taskId).then(statusResponse => {
+        const { is_finished, records } = statusResponse.data;
+        if (is_finished === null) {
           clearPolling();
-        });
+          setRecords(null);
+          setLastLoadRecordsTime('');
+          setError({ expired: true, message: gettext('Task expired') });
+          setCurrentTaskId(null);
+          setIsLoading(false);
+          return;
+        }
+        if (is_finished) {
+          clearPolling();
+          setRecords(records || []);
+          setLastLoadRecordsTime(Date.now());
+          setError(null);
+          setCurrentTaskId(null);
+          setIsLoading(false);
+          return;
+        }
+        pollingTimerRef.current = setTimeout(poll, 2000);
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        setError({ message: errorMessage });
+        setRecords(null);
+        setLastLoadRecordsTime('');
+        setIsLoading(false);
+        clearPolling();
+      });
     };
 
     poll();
   }, [clearPolling]);
 
-  const startAnalysis = useCallback(async (connectionIds, startDate, endDate) => {
+  const startAnalysis = useCallback((connectionIds, startDate, endDate) => {
     if (!connectionIds || connectionIds.length === 0) {
+      clearPolling();
       setRecords(null);
       setError(null);
+      setCurrentTaskId(null);
+      setIsLoading(false);
       return;
     }
 
     clearPolling();
-
     setIsLoading(true);
     setError(null);
+    setLastLoadRecordsTime('');
 
-    try {
-      const response = await connectionsAPI.getConnectionsEmbeddingAnalysis(
-        projectUuid,
-        connectionIds,
-        startDate,
-        endDate
-      );
-
-      const { task_id } = response.data;
-      localStorage.setItem(TASK_STORAGE_KEY, task_id);
+    connectionsAPI.getConnectionsEmbeddingAnalysis( projectUuid, connectionIds, startDate, endDate).then(res => {
+      const { task_id } = res.data;
       setCurrentTaskId(task_id);
 
       pollTaskStatus(task_id);
-    } catch (err) {
-      localStorage.removeItem(TASK_STORAGE_KEY);
-      setIsLoading(false);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
       setRecords(null);
-      setError({ message: err.response?.data?.error_msg || 'Failed to start analysis' });
-    }
+      setLastLoadRecordsTime('');
+      setError({ message: errorMessage });
+      setIsLoading(false);
+    });
   }, [clearPolling, pollTaskStatus]);
-
-  const resetAnalysis = useCallback(() => {
-    clearPolling();
-    setRecords(null);
-    setError(null);
-    setIsLoading(false);
-    setCurrentTaskId(null);
-    localStorage.removeItem(TASK_STORAGE_KEY);
-  }, [clearPolling]);
-
-  useEffect(() => {
-    const pendingTaskId = localStorage.getItem(TASK_STORAGE_KEY);
-    if (pendingTaskId && !pollingRef.current && !isLoading) {
-      setIsLoading(true);
-      setCurrentTaskId(pendingTaskId);
-      pollTaskStatus(pendingTaskId);
-    }
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -121,10 +102,10 @@ export const AnalyzeTaskProvider = ({ children }) => {
     <AnalyzeTaskContext.Provider value={{
       isLoading,
       records,
+      lastLoadRecordsTime,
       error,
       currentTaskId,
       startAnalysis,
-      resetAnalysis,
     }}>
       {children}
     </AnalyzeTaskContext.Provider>
