@@ -8,6 +8,8 @@ import HeaderDropdownMenu from './dropdown-menu';
 import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
 import { checkIsNameColumn, checkIsPriorityColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
+import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -38,11 +40,16 @@ const Cell = ({
   const headerCellRef = useRef(null);
   const dropdownRef = useRef(null);
 
+  const { toggleAllTypes } = useTypesData();
+  const { toggleAllSubstates } = useSubstatesData();
+
   const canEditColumnInfo = useMemo(() => {
     if (isHideTriangle) return false;
     if (column.type === CellType.TAGS) return false;
+    if (column.type === CellType.TYPE && !isFunction(toggleAllTypes)) return false;
+    if (column.type === CellType.SINGLE_SELECT && column?.name === 'substate' && !isFunction(toggleAllSubstates)) return false;
     return context.canModifyColumnData(column);
-  }, [isHideTriangle, column]);
+  }, [isHideTriangle, column, toggleAllTypes, toggleAllSubstates]);
 
   const style = useMemo(() => {
     const { left, width } = column;
