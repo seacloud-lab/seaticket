@@ -44,7 +44,7 @@ def get_portal_access_username(request):
 
 class PortalTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -275,7 +275,7 @@ class PortalTicketTypesView(APIView):
         return Response({'metadata': res.get('metadata'), 'tags': res.get('results')})
 
 
-class PortalTicketTagsView(APIView):
+class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalAccessPermission,)
     throttle_classes = (UserRateThrottle,)
@@ -407,14 +407,12 @@ class PortalTicketMetadataView(APIView):
 
     def get(self, request, project_uuid):
         username = get_portal_access_username(request)
-        print(username, '----111')
         seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             ticket_column_name_to_return_name = {
                 TicketsTable.substate.name: 'substates',
-                TicketsTable.tags.name: 'tags',
                 TicketsTable.type.name: 'types',
                 TicketsTable.state.name: 'states'
             }

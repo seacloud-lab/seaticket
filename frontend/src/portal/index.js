@@ -26,6 +26,8 @@ const Portal = () => {
   const [enableKB, setEnableKB] = useState(showKBInPortal === true);
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
 
   const onPageChange = useCallback((page) => {
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
@@ -73,6 +75,22 @@ const Portal = () => {
     return () => window.removeEventListener('portal:kb-visibility', handler);
   }, []);
 
+  const onPasswordSubmit = useCallback((event) => {
+    if (!passwordInput.trim()) {
+      event.preventDefault();
+      setPasswordError(true);
+      return;
+    }
+    setPasswordError(false);
+  }, [passwordInput]);
+
+  const onPasswordChange = useCallback((e) => {
+    setPasswordInput(e.target.value);
+    if (passwordError && e.target.value.trim()) {
+      setPasswordError(false);
+    }
+  }, [passwordError]);
+
   if (needPasswordState) {
     return (
       <I18nextProvider i18n={i18n}>
@@ -80,14 +98,24 @@ const Portal = () => {
           <div className="portal-password-panel">
             <div className="portal-password-header">
               <div className="portal-password-title">{projectName || 'Portal'}</div>
-              <div className="portal-password-subtitle">{gettext('Password required')}</div>
             </div>
-            <form method="post" action={`/portal/${projectUuid}/anonymous-validate/`}>
+            <form method="post" action={`/portal/${projectUuid}/anonymous-validate/`} onSubmit={onPasswordSubmit}>
               <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
               <div className="form-group">
                 <label className="portal-password-label">{gettext('Access password')}</label>
-                <input className="form-control" type="password" name="password" placeholder={gettext('Enter password')} autoFocus />
+                <input
+                  className="form-control"
+                  type="password"
+                  name="password"
+                  placeholder={gettext('Enter password')}
+                  autoFocus
+                  value={passwordInput}
+                  onChange={onPasswordChange}
+                />
               </div>
+              {passwordError && (
+                <div className="portal-password-error">{gettext('Password required')}</div>
+              )}
               <div className="portal-password-actions">
                 <button className="btn btn-primary" type="submit">{gettext('Confirm')}</button>
               </div>

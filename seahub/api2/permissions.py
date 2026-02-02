@@ -91,6 +91,8 @@ class PortalAccessPermission(BasePermission):
                 return False
             return check_same_org_permission(request.user, project.workspace)
         else:
+            if request.user.is_authenticated:
+                return check_same_org_permission(request.user, project.workspace)
             if enable_password_protection:
                 encoded_password = portal_settings.get('password')
                 verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
