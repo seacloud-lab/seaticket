@@ -15,7 +15,7 @@ import {
 import { Utils } from '@/utils/utils';
 import {
   CollaboratorsSettings, TypeSettings, RateSettings,
-  StateSettings, SubStateSettings,
+  StateSettings, SubStateSettings, DueDateSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
 import Activity from '../../components/activity';
@@ -238,6 +238,15 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [ticket, modifyTicket]);
 
+  const onDueDateChange = useCallback((due_date = '') => {
+    modifyTicket(ticket.id, { due_date }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
     const editor = commentEditorRef.current.getEditor();
@@ -384,7 +393,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate } = ticket;
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -501,6 +510,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
+          <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
       </div>
