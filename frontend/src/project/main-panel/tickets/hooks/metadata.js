@@ -8,7 +8,7 @@ import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
 
 const MetadataContext = React.createContext(null);
 
-export const MetadataProvider = ({ projectUuid, children }) => {
+export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) => {
   const [isLoading, setLoading] = useState(true);
 
   const [substatesData, setSubstatesData] = useState(new OptionsData());
@@ -224,7 +224,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [statesData]);
 
   useEffect(() => {
-    ticketsAPI.getTicketMetadata(projectUuid).then(res => {
+    api.getTicketMetadata(projectUuid).then(res => {
       const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
       applyCreateTypes(types?.options);

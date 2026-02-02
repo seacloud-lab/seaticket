@@ -17,7 +17,12 @@ import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 
 const DataContext = React.createContext(null);
 
-export const DataProvider = ({ projectUuid, activeBar, children }) => {
+export const DataProvider = ({
+  projectUuid,
+  activeBar,
+  api,
+  children
+}) => {
   const [data, setData] = useState({ version: 0 });
 
   const updateData = useCallback((data) => {
@@ -577,9 +582,9 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
-            <TagsProvider projectUuid={projectUuid}>
-              <MetadataProvider projectUuid={projectUuid}>
-                <ConnectionsProvider projectUuid={projectUuid} >
+            <TagsProvider projectUuid={projectUuid} api={api}>
+              <MetadataProvider projectUuid={projectUuid} api={api}>
+                <ConnectionsProvider projectUuid={projectUuid} api={api}>
                   <AnalyzeTaskProvider>
                     {children}
                   </AnalyzeTaskProvider>

@@ -8,6 +8,7 @@ import MainPanel from './main-panel';
 import { CenteredLoading } from '../components';
 import { PORTAL_PAGE } from './constants';
 import { DataProvider } from '@/project/hooks';
+import { portalAPI } from './api';
 
 import './index.css';
 
@@ -47,7 +48,7 @@ const Portal = () => {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <DataProvider projectUuid={projectUuid}>
+      <DataProvider projectUuid={projectUuid} api={portalAPI}>
         <div className="sea-qa-portal">
           {isLoading ? (
             <CenteredLoading />

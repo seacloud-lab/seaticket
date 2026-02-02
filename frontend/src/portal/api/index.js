@@ -45,11 +45,6 @@ class PortalAPI {
     }
   }
 
-  listTicketTypes(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/types/';
-    return this.req.get(url);
-  }
-
   createTicket(projectUuid, data) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/tickets/';
     let form = new FormData();
@@ -76,7 +71,7 @@ class PortalAPI {
   }
 
   listTags(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/tags/';
+    let url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
     return this.req.get(url);
   }
 
@@ -108,6 +103,15 @@ class PortalAPI {
     form.append('name', projectName);
     form.append('settings', JSON.stringify(settings));
     return this._sendPutRequest(url, form);
+  }
+
+  listConnections(projectUuid, page, perPage) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
+    let params = {
+      page: page,
+      per_page: perPage,
+    };
+    return this.req.get(url, { params: params });
   }
 }
 

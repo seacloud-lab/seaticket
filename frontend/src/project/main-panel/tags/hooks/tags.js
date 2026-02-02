@@ -8,7 +8,7 @@ import { shouldReload } from '@/project/utils';
 
 const TagsContext = React.createContext(null);
 
-export const TagsProvider = ({ projectUuid, children }) => {
+export const TagsProvider = ({ projectUuid, api = projectAPI, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [tagsData, setTagsData] = useState(new TagsData({}));
 
@@ -90,7 +90,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
 
   const loadTags = useCallback((callback) => {
     if (lastLoadTime.current && shouldReload(lastLoadTime.current)) {
-      projectAPI.listTags(projectUuid).then(res => {
+      api.listTags(projectUuid).then(res => {
         const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
         const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
         const newData = new TagsData({ tags, columns });
@@ -107,7 +107,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
   }, [tagsData]);
 
   useEffect(() => {
-    projectAPI.listTags(projectUuid).then(res => {
+    api.listTags(projectUuid).then(res => {
       const columns = Array.isArray(res.data.columns) ? res.data.columns : [];
       const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       const newData = new TagsData({ tags, columns });
