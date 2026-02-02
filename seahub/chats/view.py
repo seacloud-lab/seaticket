@@ -336,6 +336,15 @@ class ChatView(APIView):
                     'id': connection.pk
                 })
 
+        # Read project-level custom prompt from settings
+        project_prompt = ''
+        if project.settings:
+            try:
+                project_settings = json.loads(project.settings)
+                project_prompt = project_settings.get('prompt', '')
+            except json.JSONDecodeError:
+                pass
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
@@ -346,7 +355,8 @@ class ChatView(APIView):
             'org_id': org_id,
             'llm_model': model,
             'document_connections': document_connections,
-            'issue_connections': issue_connections
+            'issue_connections': issue_connections,
+            'project_prompt': project_prompt
         }
 
         try:

@@ -1,0 +1,45 @@
+.edit-prompt-dialog {
+  max-width: 720px;
+}
+
+.edit-prompt-dialog .modal-content {
+  border-radius: 12px;
+}
+
+.edit-prompt-dialog .modal-header {
+  border-bottom: none;
+  padding: 20px 24px 10px;
+}
+
+.edit-prompt-dialog .modal-header .modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.edit-prompt-dialog .modal-body {
+  padding: 10px 24px 16px;
+}
+
+.edit-prompt-dialog .edit-prompt-textarea {
+  resize: none;
+  min-height: 200px;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.edit-prompt-dialog .edit-prompt-textarea:focus {
+  background-color: #f5f5f5;
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.edit-prompt-dialog .modal-footer {
+  padding: 16px 24px;
+  justify-content: flex-end;
+  border-top: 1px solid #e9ecef;
+}
