@@ -57,7 +57,7 @@ const UsersTable = forwardRef(({
       { key: 'name-', width: 0.2, name: `${gettext('Name')} / ${gettext('Contact email')}` },
       { key: 'is_active', width: 0.2, name: gettext('Status') },
       isShowUint ? { key: 'unit', width: 0.1, name: gettext('Unit') } : { key: 'placeholder-1', width: 0.1 },
-      { key: 'role', width: 0.2, name: gettext('Role') } : { key: 'placeholder-2', width: 0.2 },
+      { key: 'role', width: 0.2, name: gettext('Role') },
       (multiInstitution && !(type === 'admin')) ? { key: 'institution', width: 0.1, name: gettext('Institution') } : { key: 'placeholder-3', width: 0.1 },
       { key: 'create_login', width: 0.2, name: `${gettext('Created at')} / ${gettext('Last login')}` },
       { key: 'op', width: 44, isFixed: true },

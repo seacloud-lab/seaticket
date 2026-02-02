@@ -243,8 +243,7 @@ def is_org_context(request):
     Arguments:
     - `request`:
     """
-    multi_tenancy = getattr(request, 'MULTI_TENANCY', False)
-    return multi_tenancy and request.user.org is not None
+    return request.user.org is not None
 
 
 def calc_file_path_hash(path, bits=12):

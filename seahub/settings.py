@@ -791,10 +791,10 @@ sys.path.pop(0)
 MULTI_TENANCY = True
 
 # service url
-SEATICKET_HOSTNAME = os.environ.get('SEATICKET_HOSTNAME', '')
-SEATICKET_PROTOCOL = os.environ.get('SEATICKET_PROTOCOL', '')
-if SEATICKET_HOSTNAME and SEATICKET_PROTOCOL:
-    SEAQA_WEB_SERVICE_URL = f'{SEATICKET_PROTOCOL}://{SEATICKET_HOSTNAME}'
+SEATICKET_SERVER_HOSTNAME = os.environ.get('SEATICKET_SERVER_HOSTNAME', '')
+SEATICKET_SERVER_PROTOCOL = os.environ.get('SEATICKET_SERVER_PROTOCOL', '')
+if SEATICKET_SERVER_HOSTNAME and SEATICKET_SERVER_PROTOCOL:
+    SEAQA_WEB_SERVICE_URL = f'{SEATICKET_SERVER_PROTOCOL}://{SEATICKET_SERVER_HOSTNAME}'
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
 # then add 'seahub.auth.middleware.SeafileRemoteUserMiddleware' and
