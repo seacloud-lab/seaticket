@@ -16,7 +16,7 @@ import ObjectUtils from '@/utils/object-utils';
 
 const ConnectionsContext = React.createContext(null);
 
-export const ConnectionsProvider = ({ projectUuid, children }) => {
+export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [connections, setConnections] = useState([]);
@@ -154,7 +154,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     } else {
       setLoading(true);
     }
-    connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
+    api.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
       let newConnections = pageRef.current === 1 ? [] : connections.slice(0);
       let recordsMap = newConnections.reduce((pre, cur) => {
