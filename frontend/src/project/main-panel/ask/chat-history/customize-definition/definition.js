@@ -24,7 +24,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   if (!element) return null;
 
-  const { identifier, icon, category_name, content, mtime, score } = source;
+  const { identifier, icon, title, content, mtime, score } = source;
 
   const identifierIndex = identifier - 1;
 
@@ -38,7 +38,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
       <div className="sea-ai-chat-customize-definition-simple-info">
         <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-score">
-          <div className="sea-ai-chat-customize-definition-title text-truncate">{category_name}</div>
+          <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
           {isShowScore && (
             <div className="sea-ai-chat-customize-definition-score">{score}</div>
           )}
