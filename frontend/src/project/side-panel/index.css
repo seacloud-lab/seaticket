@@ -43,3 +43,11 @@
   padding: 8px;
   margin-top: 10px;
 }
+
+.sea-qa-side-panel-more-nav .dropdown-menu {
+  margin-left: 12px;
+}
+
+.sea-qa-side-panel-more-nav .sea-qa-icon-svg {
+  color: #999;
+}

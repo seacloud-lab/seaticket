@@ -30,7 +30,6 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
 
   const { typesData, substatesData } = useMetadata();
   const { tagsData, createTag } = useTags();
-  const { insertRow } = useData();
   const { insertRowByLink } = useData();
 
   const handleSubmit = () => {

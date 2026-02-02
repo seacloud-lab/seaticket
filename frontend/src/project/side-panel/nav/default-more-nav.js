@@ -6,7 +6,7 @@ import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 import { NAVIGATION_BASE_PADDING } from '@/constants';
 import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 
-const TicketsMoreNav = ({ onClick }) => {
+const DefaultMoreNav = ({ onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);
 
   const toggleShowChildren = useCallback(() => {
@@ -32,22 +32,17 @@ const TicketsMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="sea-qa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="sea-qa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</CustomizeDropdownItemText>
-        </CustomizeDropdownItem>
-        <div className="dropdown-divider"></div>
-        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
-          <CustomizeDropdownItemIcon symbol={'trash'} className="sea-qa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.TAGS].icon} className="sea-qa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
       </CustomizeDropdownMenu>
     </Dropdown>
   );
 };
 
-export default TicketsMoreNav;
+export default DefaultMoreNav ;

@@ -7,8 +7,6 @@ import { NAVIGATION_BASE_PADDING } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
 import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 
-import './tickets-more-nav.css';
-
 const { projectUuid } = window.app.pageOptions;
 
 const KnowledgeMoreNav = ({ onClick }) => {
@@ -56,10 +54,10 @@ const KnowledgeMoreNav = ({ onClick }) => {
 
   return (
     <>
-      <Dropdown isOpen={isShowChildren} toggle={toggleShowChildren} className="sea-qa-tickets-more-nav" direction="right">
+      <Dropdown isOpen={isShowChildren} toggle={toggleShowChildren} className="sea-qa-side-panel-more-nav" direction="right">
         <DropdownToggle
           tag="div"
-          className={classnames('sea-qa-project-navigation-item')}
+          className={classnames('sea-qa-project-navigation-item', { 'sea-qa-project-navigation-item-active': isShowChildren })}
           style={{ paddingLeft: NAVIGATION_BASE_PADDING }}
         >
           <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
