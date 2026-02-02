@@ -34,7 +34,7 @@ class Context {
     api,
     localStorageName,
     t,
-  }) => {
+  }, callback) => {
     this.username = username;
     this.settings = {
       ...this.settings,
@@ -47,6 +47,7 @@ class Context {
     this.translate = translate.translate;
 
     this.re_set({ localStorageName });
+    callback && callback();
   };
 
   re_set = ({ localStorageName, t, api }) => {
