@@ -177,7 +177,7 @@ class SortPopover extends Component {
   };
 
   renderSortItem = (column, sort, index) => {
-    const { readOnly = false, type: viewType } = this.props;
+    const { readOnly = false } = this.props;
     const selectedColumn = this.columnsOptions.find(c => c.value.column.key === column.key);
 
     const selectedType = sort.sort_type;
@@ -194,8 +194,8 @@ class SortPopover extends Component {
     return (
       <div key={'sort-item-' + index} className="sort-item">
         {!readOnly &&
-          <div className="delete-sort" onClick={(viewType === VIEW_TYPE.GALLERY && index === 0) ? () => {} : (event) => this.deleteSort(event, index)}>
-            {!(viewType === VIEW_TYPE.GALLERY && index === 0) && <Icon className="sea-metadata-icon" symbol="close"/>}
+          <div className="delete-sort" onClick={(index === 0) ? () => {} : (event) => this.deleteSort(event, index)}>
+            {(index !== 0) && <Icon className="sea-metadata-icon" symbol="close"/>}
           </div>
         }
         <div className="condition">
