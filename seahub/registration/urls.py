@@ -18,10 +18,6 @@ from seahub.two_factor.views.login import TwoFactorVerifyView
 from seahub.auth import views as auth_views
 from seahub.auth.sms_two_factor_auth import sms_two_factor_auth
 from seahub.auth.sms_login import sms_login
-try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
 
 ENABLE_CUSTOM_AUTH = getattr(settings, 'ENABLE_CUSTOM_AUTH', False)
 

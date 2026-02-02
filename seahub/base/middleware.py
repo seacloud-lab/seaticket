@@ -16,10 +16,6 @@ from seahub.profile.models import Profile
 from seahub.organizations.models import Organization
 
 try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
-try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
     MULTI_TENANCY = False
@@ -34,7 +30,6 @@ class BaseMiddleware(MiddlewareMixin):
         username = request.user.username
         request.user.org = None
 
-        request.cloud_mode = CLOUD_MODE
         lang = None
         if not isinstance(request.user, AnonymousUser):
             if MULTI_TENANCY:

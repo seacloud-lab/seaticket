@@ -4,7 +4,7 @@ import { Button, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { SearchInput, toaster, CenteredLoading } from '@/components';
 import { Utils } from '@/utils/utils';
-import { cloudMode, gettext, isOrgContext } from '@/constants/config';
+import { gettext, isOrgContext } from '@/constants/config';
 import homeAPI from '../api';
 import UserSelect from '@/components/user-select';
 import GroupMembers from './group-members';
@@ -133,7 +133,7 @@ class ListAndAddGroupMembers extends React.Component {
     const { groupMembers, isItemFreezed, selectedOption, errMessage, searchValue, searchMembers } = this.state;
     const { groupID, isOwner, isAdmin } = this.props;
     let showDeptBtn = true;
-    if (cloudMode && !isOrgContext) {
+    if (!isOrgContext) {
       showDeptBtn = false;
     }
     return (

@@ -102,7 +102,6 @@ def base(request):
         'logo_path': logo_path,
         'logo_width': LOGO_WIDTH,
         'logo_height': LOGO_HEIGHT,
-        'cloud_mode': request.cloud_mode,
         'org': org,
         'site_name': get_site_name(),
         'enable_signup': ENABLE_SIGNUP,
@@ -121,7 +120,7 @@ def base(request):
         'is_tablet': request.is_tablet,
         'privacy_policy_link': PRIVACY_POLICY_LINK,
         'terms_of_service_link': TERMS_OF_SERVICE_LINK,
-        'cn_force_check_user_agreement': request.cloud_mode and CN_FORCE_USER_AGREE_TERMS,
+        'cn_force_check_user_agreement': CN_FORCE_USER_AGREE_TERMS,
         'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL
     }
 

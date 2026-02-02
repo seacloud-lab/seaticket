@@ -15,10 +15,6 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.models import Group, GroupUser
 from seahub.organizations.models import OrgGroup
 
-try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
 
 def get_group_info(group):
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)

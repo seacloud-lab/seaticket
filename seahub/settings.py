@@ -14,8 +14,6 @@ PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
 
 DEBUG = False
 
-CLOUD_MODE = False
-
 ADMINS = [
     # ('Your Name', 'your_email@domain.com'),
 ]
@@ -790,7 +788,6 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
 sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
-CLOUD_MODE = True
 MULTI_TENANCY = True
 
 # service url

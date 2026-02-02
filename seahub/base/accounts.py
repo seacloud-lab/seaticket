@@ -28,10 +28,6 @@ from seahub.organizations.models import Organization
 from seahub.role_permissions.models import UserRole
 
 try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
-try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
     MULTI_TENANCY = False

@@ -42,10 +42,6 @@ try:
     IS_EMAIL_CONFIGURED = True
 except ImportError:
     IS_EMAIL_CONFIGURED = False
-try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
 
 logger = logging.getLogger(__name__)
 
@@ -247,8 +243,8 @@ def is_org_context(request):
     Arguments:
     - `request`:
     """
-    cloud_mode = getattr(request, 'cloud_mode', False)
-    return cloud_mode and request.user.org is not None
+    multi_tenancy = getattr(request, 'MULTI_TENANCY', False)
+    return multi_tenancy and request.user.org is not None
 
 
 def calc_file_path_hash(path, bits=12):
