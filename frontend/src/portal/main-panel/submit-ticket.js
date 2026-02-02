@@ -11,7 +11,7 @@ import { PORTAL_PAGE } from '../constants';
 
 import './submit-ticket.css';
 
-const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange, className = 'mb-4' }) => {
+const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
   const editorRef = useRef(null);
 
@@ -41,7 +41,7 @@ const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange, classN
 
   return (
     <>
-      <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
+      <div className="sea-qa-portal-ticket-settings-item">
         <Label>{gettext('Type')}</Label>
         <div className="ticket-types-formatter" onClick={openEditor} ref={editorRef}>
           {typeOption ? (<Option option={typeOption} />) : (<div className="tip-default">{gettext('No type')}</div>)}
@@ -155,9 +155,9 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
     return (!title || !title.trim()) || (!content || !content.text?.trim()) || isSubmitting;
   }, [title, content, isSubmitting]);
 
-  const renderSubmitBtns = useCallback((className = 'ml-2') => {
+  const renderSubmitBtns = useCallback(() => {
     return (
-      <div className={className}>
+      <div>
         <Button onClick={onSubmit} color="primary" disabled={disabled}>
           {isSubmitting ? gettext('Submitting...') : gettext('Submit')}
         </Button>
@@ -169,55 +169,56 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
     return <CenteredLoading />;
   }
 
-  const isSmallScreen = containerWidth < 700;
+  const isSmallScreen = containerWidth < 800; // 800 is the width of the ticket form
 
   return (
-    <div className={classnames('sea-qa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
-      <div className="sea-qa-project-ticket-settings">
-        <div className="sea-qa-project-ticket-name mb-3">{gettext('New ticket')}</div>
-        <div className="sea-qa-project-ticket-settings-container">
-          <div className="sea-qa-project-ticket-content-settings">
-            <div className="sea-qa-project-ticket-title mb-4">
-              <Label>
-                {gettext('Title')}
-                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-              </Label>
-              <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
-            </div>
-            <div className="sea-qa-project-ticket-content mb-4">
-              <Label>
-                {gettext('Content')}
-                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-              </Label>
-              <LongTextInlineEditor
-                isAlwaysEnableEdit={true}
-                lang={lang}
-                headerName={gettext('Content')}
-                value={content || ''}
-                autoSave={true}
-                saveDelay={20 * 1000}
-                isCheckBrowser={true}
-                isImageUploadOnly={false}
-                isSupportMultipleFiles={true}
-                editorApi={longtextAPI}
-                autoFocus={false}
-                onSaveEditorValue={onContentChange}
-              />
-            </div>
-            {typesData.rows.length > 0 && (
-              <PortalTypeSettings
-                id="portal-type-editor-popover"
-                isReadonly={isSubmitting}
-                value={type}
-                typesData={typesData}
-                onChange={onTypeChange}
-              />
-            )}
-            <div className="sea-qa-project-ticket-footer">
-              {!isSmallScreen && renderSubmitBtns()}
+    <div className="sea-qa-portal-new-ticket-container" ref={ticketRef}>
+      <div className={classnames('sea-qa-portal-new-ticket', { 'small': isSmallScreen })}>
+        <div className="sea-qa-portal-ticket-settings">
+          <div className="sea-qa-portal-ticket-name d-flex align-items-center">{gettext('New ticket')}</div>
+          <div className="sea-qa-portal-ticket-settings-container d-flex">
+            <div className="sea-qa-portal-ticket-content-settings">
+              <div className="sea-qa-portal-ticket-label">
+                <Label>
+                  {gettext('Title')}
+                  <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+                </Label>
+                <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
+              </div>
+              <div className="sea-qa-portal-ticket-content">
+                <Label>
+                  {gettext('Content')}
+                  <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+                </Label>
+                <LongTextInlineEditor
+                  isAlwaysEnableEdit={true}
+                  lang={lang}
+                  headerName={gettext('Content')}
+                  value={content || ''}
+                  autoSave={true}
+                  saveDelay={20 * 1000}
+                  isCheckBrowser={true}
+                  isImageUploadOnly={false}
+                  isSupportMultipleFiles={true}
+                  editorApi={longtextAPI}
+                  autoFocus={false}
+                  onSaveEditorValue={onContentChange}
+                />
+              </div>
+              {typesData.rows.length > 0 && (
+                <PortalTypeSettings
+                  id="portal-type-editor-popover"
+                  isReadonly={isSubmitting}
+                  value={type}
+                  typesData={typesData}
+                  onChange={onTypeChange}
+                />
+              )}
+              <div className="sea-qa-portal-ticket-footer">
+                {renderSubmitBtns()}
+              </div>
             </div>
           </div>
-          {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>
       </div>
     </div>
