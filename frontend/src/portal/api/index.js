@@ -71,7 +71,7 @@ class PortalAPI {
   }
 
   listTags(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/ticket/tags/';
+    let url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
     return this.req.get(url);
   }
 
