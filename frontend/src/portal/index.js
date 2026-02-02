@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
@@ -18,6 +18,7 @@ const Portal = () => {
   const [isLoading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(PORTAL_PAGE.SUBMIT_TICKET);
   const [enableKB, setEnableKB] = useState(showKBInPortal === true);
+  const APIRef = useRef(portalAPI);
 
   const onPageChange = useCallback((page) => {
     setActivePage(page);
@@ -38,8 +39,21 @@ const Portal = () => {
         setActivePage(pageKey);
       }
     }
+
+    if (!isEditMode) {
+      APIRef.current.listProjectRelatedUsers = (projectUuid) => {
+        return new Promise((resolve, reject) => {
+          resolve({
+            data: { user_list: [] }
+          });
+        });
+      };
+    } else {
+      delete APIRef.current['listProjectRelatedUsers'];
+    }
     setLoading(false);
   }, []);
+
   useEffect(() => {
     const handler = (e) => setEnableKB(!!(e.detail && e.detail.enabled));
     window.addEventListener('portal:kb-visibility', handler);
@@ -48,19 +62,17 @@ const Portal = () => {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <DataProvider projectUuid={projectUuid} api={portalAPI}>
-        <div className="sea-qa-portal">
-          {isLoading ? (
-            <CenteredLoading />
-          ) : (
-            <>
-              {isEditMode && <LeftBar />}
-              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
-              <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
-            </>
-          )}
-        </div>
-      </DataProvider>
+      <div className="sea-qa-portal">
+        {isLoading ? (
+          <CenteredLoading />
+        ) : (
+          <DataProvider projectUuid={projectUuid} api={APIRef.current}>
+            {isEditMode && <LeftBar />}
+            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
+            <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
+          </DataProvider>
+        )}
+      </div>
     </I18nextProvider>
   );
 };
