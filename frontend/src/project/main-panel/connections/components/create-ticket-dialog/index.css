@@ -21,3 +21,12 @@
 .sea-qa-create-ticket-dialog .sea-qa-ticket-content {
   height: 250px;
 }
+
+.sea-qa-create-ticket-dialog .modal-footer .btn {
+  height: 38px;;
+}
+
+.sea-qa-create-ticket-dialog .modal-footer .sea-qa-loading-icon {
+  width: 16px;
+  height: 16px;;
+}
