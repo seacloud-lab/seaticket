@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
 from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
-    get_ai_credit_by_owner_id, get_ai_cost_by_owner_id
+    get_ai_credit_by_username, get_ai_cost_by_username
 
 
 logger = logging.getLogger(__name__)
@@ -166,8 +166,8 @@ class AccountInfo(APIView):
                 info['ai_credit'] = get_ai_credit_by_org_id(org_id)
                 info['ai_cost'] = round(get_ai_cost_by_org_id(org_id), 2)
             else:
-                info['ai_credit'] = get_ai_credit_by_owner_id(request.user.username)
-                info['ai_cost'] = round(get_ai_cost_by_owner_id(request.user.username), 2)
+                info['ai_credit'] = get_ai_credit_by_username(request.user.username)
+                info['ai_cost'] = round(get_ai_cost_by_username(request.user.username), 2)
 
             if info['ai_credit'] <= 0:
                 info['ai_usage_rate'] = '0%'

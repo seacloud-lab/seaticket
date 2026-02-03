@@ -10,7 +10,10 @@ import sysAdminAPI from '../api';
 import { TopBar } from '../main-panel';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
+import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
+import MonthPicker from '../../project/main-panel/search/month-picker';
+import { Label } from 'reactstrap';
 
 import '@/css/statistics.css';
 
@@ -43,10 +46,14 @@ class Item extends Component {
     return `${siteRoot}sys/organizations/${orgID}/info/`;
   };
 
+  getGroupURL = (groupID) => {
+    return `${siteRoot}sys/groups/${groupID}/members/`;
+  };
+
   getOwnerURL = (owner) => {
     if (!owner) return '';
     if (owner.indexOf('@seafile_group') !== -1) {
-      return `${siteRoot}sys/groups/${owner.split('@')[0]}/members/`;
+      return this.getGroupURL(owner.split('@')[0]);
     } else {
       return `${siteRoot}sys/users/${encodeURIComponent(owner)}/`;
     }
@@ -62,8 +69,13 @@ class Item extends Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
-        {groupBy === 'owner' && (
+        {groupBy === 'user' && (
           <>
+            <td>
+              <Link to={this.getOwnerURL(item.username)}>
+                {item.nickname}
+              </Link>
+            </td>
             <td>
               {item.org_name && item.org_id > 0 && (
                 <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
@@ -71,18 +83,55 @@ class Item extends Component {
               {item.org_id === -1 && '-'}
               {item.org_id !== -1 && !item.org_name && item.org_id}
             </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
+        {groupBy === 'project' && (
+          <>
+            <td>{item.project_name || item.project_uuid}</td>
             <td>
-              {(item.nickname || item.group_name) && (
+              {(item.nickname || item.group_name) && item.group_name ? (
+                <div>
+                  <Link to={this.getOwnerURL(item.owner)}>{item.group_name}</Link>
+                  {' '}
+                  <Label>{'(' + gettext('group') + ')'}</Label>
+                </div>
+              ) : (
                 <Link to={this.getOwnerURL(item.owner)}>
                   {item.group_name ? item.group_name : item.nickname}
                 </Link>
               )}
               {!(item.nickname || item.group_name) && item.owner}
             </td>
+            <td>
+              {item.org_name && item.org_id > 0 && (
+                <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
+              )}
+              {item.org_id === -1 && '-'}
+              {item.org_id !== -1 && !item.org_name && item.org_id}
+            </td>
             <td>{item.total_cost}</td>
           </>
         )}
-        {groupBy === 'workspace' && (
+        {groupBy === 'group' && (
+          <>
+            <td>
+              <Link to={this.getGroupURL(item.group_id)}>
+                {item.group_name}
+              </Link>
+            </td>
+            <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
+            <td>
+              {item.org_name && item.org_id > 0 && (
+                <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
+              )}
+              {item.org_id === -1 && '-'}
+              {item.org_id !== -1 && !item.org_name && item.org_id}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
+        {groupBy === 'org' && (
           <>
             <td>
               {item.org_name && item.org_id > 0 && (
@@ -91,26 +140,7 @@ class Item extends Component {
               {item.org_id === -1 && '-'}
               {item.org_id !== -1 && !item.org_name && item.org_id}
             </td>
-            <td>
-              {(item.workspace_name) && (
-                <Link to={this.getOwnerURL(item.owner)}>
-                  {item.workspace_name}
-                </Link>
-              )}
-              {!(item.workspace_name) && item.owner}
-            </td>
-            <td>{item.total_cost}</td>
-          </>
-        )}
-        {groupBy === 'org_id' && (
-          <>
-            <td>
-              {item.org_name && item.org_id > 0 && (
-                <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
-              )}
-              {item.org_id === -1 && '-'}
-              {item.org_id !== -1 && !item.org_name && item.org_id}
-            </td>
+            <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
             <td>{item.total_cost}</td>
           </>
         )}
@@ -167,23 +197,33 @@ class Content extends Component {
       <Fragment>
         <table className="table table-hover table-vcenter">
           <thead>
-            {groupBy === 'owner' && (
+            {groupBy === 'user' && (
               <tr>
+                <th>{gettext('User')}</th>
                 <th>{gettext('Organization')}</th>
-                <th>{gettext('Users')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
-            {groupBy === 'workspace' && (
+            {groupBy === 'project' && (
               <tr>
+                <th>{gettext('Project')}</th>
+                <th>{gettext('Owner')}</th>
                 <th>{gettext('Organization')}</th>
-                <th>{gettext('Workspace')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
-            {groupBy === 'org_id' && (
+            {groupBy === 'group' && (
+              <tr>
+                <th>{gettext('Group')}</th>
+                <th>{gettext('Owner')}</th>
+                <th>{gettext('Organization')}</th>
+                <th>{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'org' && (
               <tr>
                 <th>{gettext('Organization')}</th>
+                <th>{gettext('Owner')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
@@ -217,6 +257,7 @@ class Statistics extends Component {
       perPage: 25,
       currentPage: 1,
       date: dayjs(),
+      month: dayjs(),
       isLoading: true,
       errorMsg: '',
       pageInfo: {
@@ -224,9 +265,20 @@ class Statistics extends Component {
         has_next_page: false
       },
       results: [],
-      groupBy: 'owner'
+      groupBy: 'user',
+      queryDate: 'date'
     };
     this.initPage = 1;
+    this.dateTabList = [
+      {
+        label: gettext('By date'),
+        value: 'date'
+      },
+      {
+        label: gettext('By month'),
+        value: 'month'
+      },
+    ];
   }
 
   componentDidMount() {
@@ -234,10 +286,12 @@ class Statistics extends Component {
   }
 
   getStatisticsByPage = (page) => {
-    const { perPage, groupBy, date } = this.state;
+    const { perPage, date, month, groupBy, queryDate } = this.state;
     this.setState({ isLoading: true });
+    const dateParam = queryDate === 'month' ? null : date.format('YYYY-MM-DD');
+    const monthParam = queryDate === 'month' ? month.format('YYYYMM') : null;
 
-    sysAdminAPI.sysAdminGetAIStatistics(date.format('YYYY-MM-DD'), groupBy, page, perPage)
+    sysAdminAPI.sysAdminGetAIStatistics(dateParam, monthParam, groupBy, page, perPage)
       .then(res => {
         this.setState({
           isLoading: false,
@@ -272,6 +326,18 @@ class Statistics extends Component {
     }
   };
 
+  onMonthChange = (month) => {
+    if (month && month.isValid()) {
+      this.setState({
+        month: month,
+        currentPage: this.initPage,
+        results: []
+      }, () => {
+        this.getStatisticsByPage(this.initPage);
+      });
+    }
+  };
+
   resetPerPage = (newPerPage) => {
     this.setState({
       perPage: newPerPage,
@@ -291,8 +357,22 @@ class Statistics extends Component {
     });
   };
 
+  changeQueryDateTab = (index) => {
+    const queryDate = this.dateTabList[index].value;
+    if (queryDate === this.state.queryDate) {
+      return;
+    }
+    this.setState({
+      queryDate: queryDate,
+      currentPage: this.initPage,
+      results: []
+    }, () => {
+      this.getStatisticsByPage(this.initPage);
+    });
+  };
+
   render() {
-    const { isLoading, results, groupBy, perPage, pageInfo, errorMsg, date } = this.state;
+    const { isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month } = this.state;
 
     return (
       <Fragment>
@@ -303,33 +383,61 @@ class Statistics extends Component {
             <div className="cur-view-content">
               <div className="statistic-tabs">
                 <div
-                  className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('owner')}
+                  className={`statistic-tab-item ${groupBy === 'user' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('user')}
                 >
                   {gettext('Users')}
                 </div>
                 <div
-                  className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('workspace')}
+                  className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('project')}
                 >
-                  {gettext('Workspaces')}
+                  {gettext('Projects')}
                 </div>
                 <div
-                  className={`statistic-tab-item ${groupBy === 'org_id' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('org_id')}
+                  className={`statistic-tab-item ${groupBy === 'group' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('group')}
+                >
+                  {gettext('Groups')}
+                </div>
+                <div
+                  className={`statistic-tab-item ${groupBy === 'org' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('org')}
                 >
                   {gettext('Organizations')}
                 </div>
               </div>
               <div className="d-flex align-items-center mt-4 mb-4">
-                <span className="mr-2">{`${gettext('Date')}:`}</span>
-                <DateAndTimePicker
-                  showHourAndMinute={false}
-                  disabledDate={() => false}
-                  value={date}
-                  onChange={this.onDateChange}
-                  inputWidth={118}
+                <CapsuleTabs
+                  tabs={this.dateTabList}
+                  defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
+                  onTabChange={this.changeQueryDateTab}
                 />
+                <div className='d-flex align-items-center ml-6'>
+                  {queryDate === 'date' && (
+                    <>
+                      <span className="mr-2">{`${gettext('Date')}:`}</span>
+                      <DateAndTimePicker
+                        showHourAndMinute={false}
+                        disabledDate={() => false}
+                        value={date}
+                        onChange={this.onDateChange}
+                        inputWidth={118}
+                      />
+                    </>
+                  )}
+                  {queryDate === 'month' && (
+                    <>
+                      <span className="mr-2">{`${gettext('Month')}:`}</span>
+                      <MonthPicker
+                        value={month}
+                        onChange={this.onMonthChange}
+                        disabledDate={(date) => date.isAfter(dayjs().add(1, 'month').startOf('month'))}
+                        inputWidth={94}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
               <Content
                 loading={isLoading}

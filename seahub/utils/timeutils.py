@@ -3,6 +3,8 @@ import logging
 import pytz
 import datetime
 import six
+import calendar
+from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import get_current_timezone
@@ -121,3 +123,22 @@ def lines_monthly(month_num):
         ym = "%s-%02d" % (y, m)
         lines.append(ym)
     return lines
+
+def get_month_date_range(year=None, month=None):
+    if year is None or month is None:
+        today = datetime.date.today()
+        year, month = today.year, today.month
+    
+    cache_key = f'month_range_{year}_{month}'
+    date_range = cache.get(cache_key)
+    
+    if date_range is None:
+        first_day = datetime.date(year, month, 1)
+        last_day = datetime.date(year, month, 
+                               calendar.monthrange(year, month)[1])
+        date_range = (first_day, last_day)
+        days_in_month = calendar.monthrange(year, month)[1]
+        cache_timeout = 60 * 60 * 24 * days_in_month # cache time out
+        cache.set(cache_key, date_range, cache_timeout)
+    
+    return date_range

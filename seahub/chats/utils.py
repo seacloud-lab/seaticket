@@ -209,19 +209,8 @@ def get_attachments(seadb_api, project_uuid, attachments):
 
 def remove_content_details_in_attachments(attachments):
     for attachment in attachments:
-        try:
-            del attachment['content']
-        except:
-            pass
-
-        try:
-            del attachment['comments']
-        except:
-            pass
-
-        try:
-            del attachment['emails']
-        except:
-            pass
+        attachment.pop('content', None)
+        attachment.pop('comments', None)
+        attachment.pop('emails', None)
     
     return attachments

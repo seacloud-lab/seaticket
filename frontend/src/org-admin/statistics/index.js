@@ -15,6 +15,7 @@ import DateAndTimePicker from '../../project/main-panel/search/date-and-time-pic
 import MonthPicker from '../../project/main-panel/search/month-picker';
 
 import '@/css/statistics.css';
+import { Label } from 'reactstrap';
 
 class Item extends Component {
   constructor(props) {
@@ -32,10 +33,14 @@ class Item extends Component {
     this.setState({ highlight: false });
   };
 
+  getGroupURL = (groupID) => {
+    return `${siteRoot}org/groups/${groupID}/`;
+  };
+
   getOwnerURL = (owner) => {
     if (!owner) return '';
     if (owner.indexOf('@seafile_group') !== -1) {
-      return `${siteRoot}org/groups/${owner.split('@')[0]}/`;
+      return this.getGroupURL(owner.split('@')[0]);
     } else {
       return `${siteRoot}org/users/info/${encodeURIComponent(owner)}/`;
     }
@@ -51,15 +56,12 @@ class Item extends Component {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
-        {groupBy === 'owner' && (
+        {groupBy === 'user' && (
           <>
             <td>
-              {(item.nickname || item.group_name) && (
-                <Link to={this.getOwnerURL(item.owner)}>
-                  {item.group_name ? item.group_name : item.nickname}
-                </Link>
-              )}
-              {!(item.nickname || item.group_name) && item.owner}
+              <Link to={this.getOwnerURL(item.username)}>
+                {item.nickname}
+              </Link>
             </td>
             <td>{item.total_cost}</td>
           </>
@@ -68,7 +70,13 @@ class Item extends Component {
           <>
             <td>{item.project_name || item.project_uuid}</td>
             <td>
-              {(item.nickname || item.group_name) && (
+              {(item.nickname || item.group_name) && item.group_name ? (
+                <div>
+                  <Link to={this.getOwnerURL(item.owner)}>{item.group_name}</Link>
+                  {' '}
+                  <Label>{'(' + gettext('group') + ')'}</Label>
+                </div>
+              ) : (
                 <Link to={this.getOwnerURL(item.owner)}>
                   {item.group_name ? item.group_name : item.nickname}
                 </Link>
@@ -78,11 +86,11 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
-        {groupBy === 'workspace' && (
+        {groupBy === 'group' && (
           <>
             <td>
-              <Link to={this.getOwnerURL(item.owner)}>
-                {item.workspace_name}
+              <Link to={this.getGroupURL(item.group_id)}>
+                {item.group_name}
               </Link>
             </td>
             <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
@@ -133,7 +141,7 @@ class Content extends Component {
       <Fragment>
         <table className="table table-hover table-vcenter">
           <thead>
-            {groupBy === 'owner' && (
+            {groupBy === 'user' && (
               <tr>
                 <th>{`${gettext('User')}`}</th>
                 <th>{gettext('Cost')}</th>
@@ -142,14 +150,14 @@ class Content extends Component {
             {groupBy === 'project' && (
               <tr>
                 <th width="40%">{gettext('Project')}</th>
-                <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th width="35%">{`${gettext('Owner')}`}</th>
                 <th width="25%">{gettext('Cost')}</th>
               </tr>
             )}
-            {groupBy === 'workspace' && (
+            {groupBy === 'group' && (
               <tr>
-                <th>{gettext('Workspace')}</th>
-                <th>{gettext('Creator')}</th>
+                <th>{gettext('Group')}</th>
+                <th>{gettext('Owner')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
@@ -200,7 +208,7 @@ class StatisticsAI extends Component {
         has_next_page: false
       },
       results: [],
-      groupBy: 'owner',
+      groupBy: 'user',
       queryDate: 'date'
     };
     this.initPage = 1;
@@ -321,8 +329,8 @@ class StatisticsAI extends Component {
             <div className="cur-view-content">
               <div className="statistic-tabs">
                 <div
-                  className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('owner')}
+                  className={`statistic-tab-item ${groupBy === 'user' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('user')}
                 >
                   {gettext('Users')}
                 </div>
@@ -330,13 +338,13 @@ class StatisticsAI extends Component {
                   className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
                   onClick={() => this.changeTabActive('project')}
                 >
-                  {gettext('Project')}
+                  {gettext('Projects')}
                 </div>
                 <div
-                  className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('workspace')}
+                  className={`statistic-tab-item ${groupBy === 'group' ? 'active' : ''}`}
+                  onClick={() => this.changeTabActive('group')}
                 >
-                  {gettext('Workspace')}
+                  {gettext('Groups')}
                 </div>
               </div>
               <div className="d-flex mb-4">
