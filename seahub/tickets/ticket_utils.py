@@ -1,7 +1,9 @@
 import json
 import logging
 import random
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Dict
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.seadb_models.models import TicketActivitiesTable
@@ -13,6 +15,20 @@ from seahub.seadb_models.models import DiscourseTopicsTable
 from seahub.seadb_models.utils import list_connection_record_titles
 from seahub.project.models import ProjectConnections
 from seahub.project.constants import ConnectionType
+
+
+class TicketLinkValidationError(Exception):
+    """Ticket link validation error"""
+    pass
+
+
+@dataclass
+class TicketLinkSyncPlan:
+    """Ticket link sync plan"""
+    # {connection_id: {record_id: ticket_id}}
+    records_to_link: Dict[int, Dict[int, int]] = field(default_factory=dict)
+    records_to_unlink: Dict[int, Dict[int, int]] = field(default_factory=dict)
+
 
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
@@ -544,136 +560,160 @@ def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50)
     return res.get('results', [])
 
 
-def check_update_ticket_lcr(seadb_api, project_uuid, ticket_lcr_diff):
-    claim_by_pair = {} # {(conn_id, record_id) : ticket_id}
-    added_by_conn = {} # {conn_id : record_ids}
-    removed_by_conn = {} # {conn_id : (ticket_id, record_ids)}
+def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
+    """
+    Validate the legality of ticket link record changes.
 
-    for tpk, (added_items, removed_items) in ticket_lcr_diff.items():
-        # format: {conn_id:[record_id, ...]}
+    Args:
+        seadb_api: SeaDB API instance
+        project_uuid: project UUID
+        ticket_link_diff: {ticket_id: (added_keys, removed_keys)}
+            key format is "connection_id_record_id"
+
+    Returns:
+        TicketLinkSyncPlan: Validated sync plan
+
+    Raises:
+        TicketLinkValidationError: Validation failed
+    """
+    sync_plan = TicketLinkSyncPlan()
+
+    for ticket_id, (added_items, removed_items) in ticket_link_diff.items():
+        ticket_id = int(ticket_id)
+
+        # Parse added items
         for item in added_items:
             conn_id, rid = item.split('_', 1)
-            pair = (int(conn_id), int(rid))
-            existed = claim_by_pair.get(pair)
-            if existed and int(existed) != int(tpk):
-                error_msg = 'This record is already linked to a ticket.'
-                return False, error_msg, None
-            claim_by_pair[pair] = int(tpk)
-            added_by_conn.setdefault(int(conn_id), set()).add(int(rid))
+            conn_id, rid = int(conn_id), int(rid)
 
+            # Check if there is a conflict in the same batch (a record is linked to multiple tickets)
+            existing_ticket = sync_plan.records_to_link.get(conn_id, {}).get(rid)
+            if existing_ticket is not None and existing_ticket != ticket_id:
+                raise TicketLinkValidationError('This record is already linked to a ticket.')
+
+            sync_plan.records_to_link.setdefault(conn_id, {})[rid] = ticket_id
+
+        # Parse removed items
         for item in removed_items:
             conn_id, rid = item.split('_', 1)
             if conn_id is None or rid is None:
                 continue
-            removed_by_conn.setdefault(int(conn_id), []).append((int(tpk), {int(rid)}))    
+            conn_id, rid = int(conn_id), int(rid)
+            sync_plan.records_to_unlink.setdefault(conn_id, {})[rid] = ticket_id
 
-    # validate connections belong to this project
-    conn_ids = set(added_by_conn.keys()) | set(removed_by_conn.keys())
-    connections = ProjectConnections.objects.filter(id__in=conn_ids)
+    # Check if the connection belongs to this project
+    all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
+    if not all_conn_ids:
+        return sync_plan
+
+    connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
     connection_id_map = {c.id: c for c in connections}
-    for conn_id in conn_ids:
+
+    for conn_id in all_conn_ids:
         connection = connection_id_map.get(conn_id)
         if not connection or str(getattr(connection.project, 'uuid', '')) != str(project_uuid):
-            error_msg = 'Connection not found.'
-            return False, error_msg, None
+            raise TicketLinkValidationError('Connection not found.')
 
-    # check added_by_conn
-    for conn_id, record_ids in added_by_conn.items():
+    # Check if the Discourse records exist and are occupied
+    for conn_id, record_ticket_map in sync_plan.records_to_link.items():
         connection = connection_id_map.get(conn_id)
         if connection.type != ConnectionType.DISCOURSE_FORUM.value:
             continue
+
         topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        record_ids = list(record_ticket_map.keys())
         ids_sql = f"({', '.join(str(i) for i in record_ids)})"
+
         try:
             sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
             res = seadb_api.query_rows(project_uuid, sql)
             rows = res.get('results') or []
         except Exception as e:
             logger.exception(e)
-            error_msg = 'Internal Server Error'
-            return False, error_msg, None
+            raise TicketLinkValidationError('Internal Server Error')
 
-        existed_ids = set()
-        for r in rows:
-            existed_ids.add(int(r.get('_pk')))
-
+        # Check if the records exist
+        existed_ids = {int(r.get('_pk')) for r in rows}
         missing_ids = set(record_ids) - existed_ids
         if missing_ids:
-            error_msg = 'Linked record not found.'
-            return False, error_msg, None
+            raise TicketLinkValidationError('Linked record not found.')
 
+        # Check if the records are occupied by other tickets
         for r in rows:
             rid = int(r.get('_pk'))
-            desired_ticket = claim_by_pair.get((conn_id, rid))
+            desired_ticket = record_ticket_map.get(rid)
             if desired_ticket is None:
                 continue
             existed_linked = r.get(DiscourseTopicsTable.linked_ticket.name)
             if existed_linked and int(existed_linked) not in (None, int(desired_ticket)):
-                error_msg = 'This record is already linked to a ticket.'
-                return False, error_msg, None
-    return added_by_conn, removed_by_conn, claim_by_pair
+                raise TicketLinkValidationError('This record is already linked to a ticket.')
+
+    return sync_plan
 
 
-def update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, claim_by_pair):
-    conn_ids = set(added_by_conn.keys()) | set(removed_by_conn.keys())
-    if not conn_ids:
+def sync_links_in_discourse(seadb_api, project_uuid, sync_plan):
+    """
+    Sync ticket links in Discourse topics table.
+
+    Args:
+        seadb_api: SeaDB API instance
+        project_uuid: project UUID
+        sync_plan: TicketLinkSyncPlan instance
+    """
+    all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
+    if not all_conn_ids:
         return
 
-    connections = ProjectConnections.objects.filter(id__in=conn_ids)
-    connection_id_map = {
-        c.id: c for c in connections
+    # Only process Discourse connections right now
+    connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
+    discourse_conn_ids = {
+        c.id for c in connections
         if c.type == ConnectionType.DISCOURSE_FORUM.value
     }
 
-    # update added_by_conn
-    for conn_id, record_ids in added_by_conn.items():
-        if conn_id not in connection_id_map:
+    # Sync added links: set linked_ticket to the corresponding ticket ID
+    for conn_id, record_ticket_map in sync_plan.records_to_link.items():
+        if conn_id not in discourse_conn_ids:
             continue
         topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
-        update_topic_rows = []
-        for rid in record_ids:
-            desired_ticket = claim_by_pair.get((conn_id, int(rid)))
-            if desired_ticket is None:
-                continue
-            update_topic_rows.append({
-                'pk': int(rid),
-                'row': {
-                    DiscourseTopicsTable.linked_ticket.name: int(desired_ticket)
-                }
-            })
-        if update_topic_rows:
-            seadb_api.update_rows(project_uuid, topics_table_name, update_topic_rows)
+        update_rows = [
+            {
+                'pk': rid,
+                'row': {DiscourseTopicsTable.linked_ticket.name: ticket_id}
+            }
+            for rid, ticket_id in record_ticket_map.items()
+        ]
+        if update_rows:
+            seadb_api.update_rows(project_uuid, topics_table_name, update_rows)
 
-    # update removed_by_conn
-    for conn_id, ticket_removed_list in removed_by_conn.items():
-        if conn_id not in connection_id_map:
+    # Sync removed links: clear linked_ticket
+    for conn_id, record_ticket_map in sync_plan.records_to_unlink.items():
+        if conn_id not in discourse_conn_ids:
             continue
+
         topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
-        all_removed_ids = set()
-        for ticket_id, ids_set in ticket_removed_list:
-            all_removed_ids |= set(ids_set)
-        if not all_removed_ids:
-            continue
-        ids_sql = f"({', '.join(str(i) for i in all_removed_ids)})"
+        record_ids = list(record_ticket_map.keys())
+        ids_sql = f"({', '.join(str(i) for i in record_ids)})"
+
+        # Query the current link status
         sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
         res = seadb_api.query_rows(project_uuid, sql)
         rows = res.get('results') or []
 
-        linked_ticket_by_pk = {}
-        for r in rows:
-            if r.get('_pk') is not None:
-                linked_ticket_by_pk[int(r.get('_pk'))] = r.get(DiscourseTopicsTable.linked_ticket.name)
+        current_linked = {
+            int(r.get('_pk')): r.get(DiscourseTopicsTable.linked_ticket.name)
+            for r in rows if r.get('_pk') is not None
+        }
 
+        # Only clear the links that actually point to the current ticket
         clear_rows = []
-        for tpk, ids_set in ticket_removed_list:
-            for rid in ids_set:
-                existed = linked_ticket_by_pk.get(int(rid))
-                if existed and int(existed) == int(tpk):
-                    clear_rows.append({
-                        'pk': int(rid),
-                        'row': {
-                            DiscourseTopicsTable.linked_ticket.name: None
-                            }
-                    })
+        for rid, expected_ticket_id in record_ticket_map.items():
+            actual_linked = current_linked.get(rid)
+            if actual_linked and int(actual_linked) == expected_ticket_id:
+                clear_rows.append({
+                    'pk': rid,
+                    'row': {DiscourseTopicsTable.linked_ticket.name: None}
+                })
+
         if clear_rows:
             seadb_api.update_rows(project_uuid, topics_table_name, clear_rows)

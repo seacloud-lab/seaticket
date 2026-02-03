@@ -35,7 +35,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
-    build_linked_record_titles_map, build_linked_record_titles_map_for_keys, update_tickets_lcr, check_update_ticket_lcr
+    build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
+    check_ticket_link_changes, sync_links_in_discourse, TicketLinkValidationError
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -279,18 +280,16 @@ class TicketsAPIView(APIView):
 
             # sync reverse link to discourse topics
             if linked_connection_records:
-                ticket_lcr_diff = {
+                ticket_link_diff = {
                     int(ticket_pk): (set(row.get(TicketsTable.linked_connection_records.name) or []), set())
                 }
-                added_by_conn, removed_by_conn, claim_by_pair = check_update_ticket_lcr(
-                    seadb_api, project_uuid, ticket_lcr_diff
-                )
-                if added_by_conn is False:
+                try:
+                    sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+                except TicketLinkValidationError as e:
                     # rollback ticket creation if discourse topic already claimed
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
-                    error_msg = removed_by_conn
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, claim_by_pair)
+                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+                sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -368,7 +367,7 @@ class TicketsAPIView(APIView):
         for r in results:
             old_lcr_by_ticket_id[int(r.get('_pk'))] = r.get(TicketsTable.linked_connection_records.name) or []
 
-        ticket_lcr_diff = {}
+        ticket_link_diff = {}
         update_rows = []
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for row in results:
@@ -425,9 +424,9 @@ class TicketsAPIView(APIView):
                 new_set = set(updated_row.get(TicketsTable.linked_connection_records.name) or [])
                 added_items = list(new_set - old_set)
                 removed_items = list(old_set - new_set)
-                ticket_lcr_diff[ticket_pk] = (added_items, removed_items)
+                ticket_link_diff[ticket_pk] = (added_items, removed_items)
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records'):
                     continue
                 updated_row[key] = value
 
@@ -439,11 +438,12 @@ class TicketsAPIView(APIView):
                 }
             )
 
-        if ticket_lcr_diff:
-            added_by_conn, removed_by_conn, claim_by_pair = check_update_ticket_lcr(seadb_api, project_uuid, ticket_lcr_diff)
-            if added_by_conn == False:
-                error_msg = removed_by_conn
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if ticket_link_diff:
+            try:
+                sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
 
         if update_rows:
             try:
@@ -491,8 +491,6 @@ class TicketsAPIView(APIView):
                     )
             except Exception as e:
                 logger.error(e)
-        if ticket_lcr_diff:
-            update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, claim_by_pair)
 
         return Response({'success': True})
 
@@ -725,7 +723,7 @@ class TicketAPIView(APIView):
 
         is_update_linked_connection_records = 'linked_connection_records' in request.data
         new_linked_connection_records = request.data.get('linked_connection_records')
-        ticket_lcr_diff = {}
+        ticket_link_diff = {}
         if is_update_linked_connection_records:
             # check new_linked_connection_records
             if new_linked_connection_records in (None, ''):
@@ -752,11 +750,11 @@ class TicketAPIView(APIView):
             removed_linked_records = set(old_linked_connection_records) - set(new_linked_connection_records)
 
             if added_linked_records or removed_linked_records:
-                ticket_lcr_diff[ticket_id] = (added_linked_records, removed_linked_records)
-            added_by_conn, removed_by_conn, claim_by_pair = check_update_ticket_lcr(seadb_api, project_uuid, ticket_lcr_diff)
-            if added_by_conn == False:
-                error_msg = removed_by_conn
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                ticket_link_diff[ticket_id] = (added_linked_records, removed_linked_records)
+            try:
+                sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         if assignees:
             for assignee in assignees:
                 if not check_project_permission(assignee, workspace.owner):
@@ -815,8 +813,8 @@ class TicketAPIView(APIView):
                 }
             ]
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
-            if is_update_linked_connection_records and ticket_lcr_diff:
-                update_tickets_lcr(seadb_api, project_uuid, added_by_conn, removed_by_conn, claim_by_pair)
+            if is_update_linked_connection_records and ticket_link_diff:
+                sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
