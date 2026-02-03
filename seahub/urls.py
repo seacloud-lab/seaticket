@@ -27,6 +27,7 @@ from seahub.api2.endpoints.organization import OrganizationView, OrganizationMem
 
 from seahub.api2.endpoints.notifications import NotificationsView, NotificationView, NotificationsAllView, \
     ProjectNotificationsView, ProjectNotificationView
+from seahub.api2.endpoints.via_project_token import ViaProjectSearchView
 
 from seahub.api2.endpoints.user_list import UserListView
 
@@ -113,6 +114,9 @@ urlpatterns = [
     re_path(r'^api/v1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v1-workspace-project'),
     re_path(r'^api/v1/trash-projects/$', TrashProjectsView.as_view(), name='api-v1-trash-projects'),
     re_path(r'^api/v1/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', TrashProjectView.as_view(), name='api-v1-trash-project'),
+
+    ## access project from project_api_tokens
+    re_path(r'^api/v1/via-project-token/search/$', ViaProjectSearchView.as_view(), name='api-v1-via-project-token-search'),
 
     # search
     re_path(r'^api/v1/search/$', SearchView.as_view(), name='api-v1-search'),
