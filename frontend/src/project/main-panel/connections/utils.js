@@ -113,6 +113,14 @@ export const initConnectionResourceDetails = (type, {
       ...prams
     };
   }
+  if (type === CONNECTION_TYPE.NOTION) {
+    return {
+      title: title,
+      time: modified_time,
+      details: content,
+      ...prams
+    };
+  }
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     const mainPost = {
       author: author,

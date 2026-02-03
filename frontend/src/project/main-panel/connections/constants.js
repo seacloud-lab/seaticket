@@ -9,11 +9,13 @@ export const CONNECTION_TYPE = {
   DISCOURSE_FORUM: 'discourse_forum',
   SITE: 'site',
   SEAFILE: 'seafile',
+  NOTION: 'notion',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.SITE]: true,
   [CONNECTION_TYPE.SEAFILE]: true,
+  [CONNECTION_TYPE.NOTION]: true,
 };
 
 export const ISSUE_CONNECTION_TYPE_MAP = {
@@ -249,6 +251,22 @@ export const CONNECTION_FIELDS = {
       can_edit_multiple_times: false,
       is_custom: true
     }
+  ],
+  [CONNECTION_TYPE.NOTION]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true
+    }, {
+      key: 'integration_secret',
+      name: gettext('Token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      can_edit_multiple_times: false,
+      is_custom: true
+    }
   ]
 };
 
@@ -273,6 +291,10 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.SEAFILE,
     icon: 'seafile',
     name: gettext('Seafile libraries'),
+  }, {
+    type: CONNECTION_TYPE.NOTION,
+    icon: 'sites',
+    name: gettext('Notion'),
   }
 ];
 
@@ -318,6 +340,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   AI_SUMMARY: 'ai_summary',
   AI_PROCESSED_TIME: 'ai_processed_time',
   AUTHOR: 'author',
+  CREATOR: 'creator',
+  LAST_MODIFIER: 'last_modifier',
   STATE: 'state',
   STATE_REASON: 'state_reason',
   ISSUE_TYPE: 'issue_type',
@@ -486,6 +510,34 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       modify_data_able: true,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.NOTION]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
+      display_name: gettext('Modified time'),
+      type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATOR]: {
+      display_name: gettext('Creator'),
+      type: CellType.TEXT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIER]: {
+      display_name: gettext('Last modifier'),
+      type: CellType.TEXT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]: {
+      display_name: gettext('Outdated'),
+      type: CellType.CHECKBOX,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
@@ -495,6 +547,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.NOTION,
 ];
 
 export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
@@ -516,6 +569,7 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.NOTION,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
@@ -530,4 +584,5 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.NOTION,
 ];

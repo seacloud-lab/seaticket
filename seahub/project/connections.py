@@ -31,11 +31,11 @@ from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_site_record_details, list_email_record_details
+    list_seafile_record_details, list_site_record_details, list_email_record_details, init_notion_seadb_table, list_notion_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
@@ -149,6 +149,8 @@ class ProjectConnectionsView(APIView):
                 init_seafile_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.EMAIL.value:
                 init_email_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.NOTION.value:
+                init_notion_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -701,6 +703,8 @@ class ProjectConnectionRowDetailView(APIView):
             record = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.EMAIL.value:
             record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+        elif project_connection.type == ConnectionType.NOTION.value:
+            record = list_notion_record_details(seadb_api, project_uuid, connection_id, _pk)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -817,6 +821,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
+            ConnectionType.NOTION.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -833,6 +838,8 @@ class ProjectConnectionRecordView(APIView):
             table_cls = SeafileTable
         elif project_connection.type == ConnectionType.EMAIL.value:
             table_cls = ThreadTable
+        elif project_connection.type == ConnectionType.NOTION.value:
+            table_cls = NotionTable
 
         update_row = {'pk': int(record_id), 'row': {}}
 
@@ -925,6 +932,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
+            ConnectionType.NOTION.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -941,6 +949,8 @@ class ProjectConnectionRecordsView(APIView):
             table_cls = SeafileTable
         elif project_connection.type == ConnectionType.EMAIL.value:
             table_cls = ThreadTable
+        elif project_connection.type == ConnectionType.NOTION.value:
+            table_cls = NotionTable
 
         update_rows = []
         for record in records_data:
