@@ -48,7 +48,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     }
     if (!chatHistoryContentRef.current) return;
     timer.current = setTimeout(() => {
-      chatHistoryContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+      chatHistoryContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
     }, delay);
   }, [chatHistoryContentRef, timer]);
 

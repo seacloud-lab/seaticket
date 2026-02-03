@@ -4,7 +4,7 @@ import './index.css';
 
 const CustomizeLinkReference = ({ element, onClick, attributes, editor }) => {
   return (
-    <div
+    <span
       onClick={onClick}
       className="sea-ai-chat-customize-link-reference"
       data-id={element.id}
@@ -12,7 +12,7 @@ const CustomizeLinkReference = ({ element, onClick, attributes, editor }) => {
       title={element.label}
     >
       {element.identifier}
-    </div>
+    </span>
   );
 };
 
