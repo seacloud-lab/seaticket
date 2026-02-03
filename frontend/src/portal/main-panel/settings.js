@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import { Icon, toaster, Switch } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
@@ -88,13 +88,9 @@ const Settings = () => {
                   value={portalUrl}
                   readOnly
                 />
-                <button
-                  className="btn btn-outline-primary portal-copy-btn"
-                  onClick={onCopyUrl}
-                  title={gettext('Copy URL')}
-                >
+                <Button color="outline-primary" onClick={onCopyUrl} title={gettext('Copy URL')}>
                   <Icon symbol="copy" />
-                </button>
+                </Button>
               </div>
             </div>
           </TabPane>

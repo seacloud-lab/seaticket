@@ -13,11 +13,11 @@ class Users extends React.Component {
       isItemFreezed: false,
     };
     this.columns = [
-      { key: 'name', name: gettext('Name'), width: '30%' },
-      { key: 'status', name: gettext('Status'), width: '15%' },
-      { key: 'create_at_last_login', name: gettext('Create at / Last login'), width: '20%' },
-      { key: 'placeholder', name: '', width: '30%' },
-      { key: 'op', width: '5%' },
+      { key: 'name', name: gettext('Name'), width: '30%', isFixed: true },
+      { key: 'status', name: gettext('Status'), width: '15%', isFixed: true },
+      { key: 'create_at_last_login', name: gettext('Create at / Last login'), width: '20%', isFixed: true },
+      { key: 'placeholder', name: '', width: '30%', isFixed: true },
+      { key: 'op', width: '5%', isFixed: true },
     ];
   }
 
@@ -41,9 +41,7 @@ class Users extends React.Component {
     }
     return (
       <>
-        <FixedWidthTable
-          columns={this.columns}
-        >
+        <FixedWidthTable columns={this.columns}>
           {users.map(user => {
             return (
               <User
@@ -76,7 +74,6 @@ Users.propTypes = {
   currentTab: PropTypes.string.isRequired,
   initOrgUsersData: PropTypes.func.isRequired,
   toggleDelete: PropTypes.func.isRequired,
-  orgUsers: PropTypes.array.isRequired,
   page: PropTypes.number.isRequired,
   pageNext: PropTypes.bool.isRequired,
   perPage: PropTypes.number.isRequired,

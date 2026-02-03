@@ -27,10 +27,14 @@ const FixedWidthTable = ({ className, columns, theadOptions = {}, children }) =>
         <tr>
           {columns.map((column, index) => {
             const { width, isFixed, className, onClick = () => {}, title = '', ariaLabel = '' } = column;
+            let widthStyle = isFixed ? width : (containerWidth - fixedWidth) * width;
+            if (Number.isNaN(widthStyle)) {
+              widthStyle = 'fit-content';
+            }
             return (
               <th
                 key={index}
-                style={{ width: isFixed ? width : (containerWidth - fixedWidth) * width }}
+                style={{ width: widthStyle }}
                 className={className}
                 onClick={onClick}
                 title={title}
