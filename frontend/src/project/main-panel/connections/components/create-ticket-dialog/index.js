@@ -20,6 +20,7 @@ import './index.css';
 
 const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns, onClose }) => {
   const [isLoading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrMessage] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -33,6 +34,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
   const { insertRowByLink } = useData();
 
   const handleSubmit = () => {
+    setIsSubmitting(true);
     const { previewText, images, links, checklist } = getPreviewContent(content);
     const ticket_content = {
       text: content,
@@ -76,6 +78,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row._id, rowUpdateData);
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
       });
+      setIsSubmitting(false);
     });
   };
 
@@ -155,7 +158,9 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
+        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim() || isSubmitting}>
+          {isSubmitting ? (<CenteredLoading />) : gettext('Submit')}
+        </Button>
       </ModalFooter>
     </Modal>
   );
