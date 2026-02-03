@@ -27,7 +27,8 @@ const Portal = () => {
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
   const [passwordInput, setPasswordInput] = useState('');
-  const [passwordError, setPasswordError] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const onPageChange = useCallback((page) => {
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
@@ -67,7 +68,7 @@ const Portal = () => {
           resolve({
             data: { user_list: [] }
           });
-        }); 
+        });
       };
     } else {
       delete APIRef.current['listProjectRelatedUsers'];
@@ -83,19 +84,53 @@ const Portal = () => {
     return () => window.removeEventListener('portal:kb-visibility', handler);
   }, []);
 
-  const onPasswordSubmit = useCallback((event) => {
+  const onPasswordSubmit = useCallback(async (event) => {
+    event.preventDefault();
     if (!passwordInput.trim()) {
-      event.preventDefault();
-      setPasswordError(true);
+      setPasswordError('required');
       return;
     }
-    setPasswordError(false);
-  }, [passwordInput]);
+
+    try {
+      setIsSubmittingPassword(true);
+      setPasswordError('');
+      const formData = new FormData();
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      formData.append('password', passwordInput);
+
+      const response = await fetch(`/portal/${projectUuid}/anonymous-validate/`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+      });
+
+      if (response.redirected) {
+        // Django 会重定向：成功到 /portal/{uuid}/，失败回 /portal/{uuid}/anonymous-validate/
+        if (response.url.includes('/anonymous-validate/')) {
+          setPasswordError('invalid');
+          return;
+        }
+        location.href = response.url;
+        return;
+      }
+
+      if (response.ok) {
+        location.reload();
+        return;
+      }
+
+      setPasswordError('invalid');
+    } catch (err) {
+      setPasswordError('invalid');
+    } finally {
+      setIsSubmittingPassword(false);
+    }
+  }, [csrfToken, passwordInput]);
 
   const onPasswordChange = useCallback((e) => {
     setPasswordInput(e.target.value);
     if (passwordError && e.target.value.trim()) {
-      setPasswordError(false);
+      setPasswordError('');
     }
   }, [passwordError]);
 
@@ -122,11 +157,16 @@ const Portal = () => {
                   onChange={onPasswordChange}
                 />
               </div>
-              {passwordError && (
+              {passwordError === 'required' && (
                 <div className="portal-password-error">{gettext('Password required')}</div>
               )}
+              {passwordError === 'invalid' && (
+                <div className="portal-password-error">{gettext('Password invalid')}</div>
+              )}
               <div className="portal-password-actions">
-                <button className="btn btn-primary" type="submit">{gettext('Confirm')}</button>
+                <button className="btn btn-primary" type="submit" disabled={isSubmittingPassword}>
+                  {isSubmittingPassword ? gettext('Validating...') : gettext('Confirm')}
+                </button>
               </div>
             </form>
           </div>
