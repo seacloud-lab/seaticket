@@ -71,9 +71,9 @@ export const DataProvider = ({
         }
       });
       newData.version = newData.version + 1;
-      setTimeout(() => callback && callback(), 0);
       return newData;
     });
+    setTimeout(() => callback && callback(), 0);
   }, []);
 
   const getTableViews = useCallback((tableName, api, isBuiltIn = false) => {
