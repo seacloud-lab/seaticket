@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, ModalBody, ModalFooter } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
@@ -63,8 +63,8 @@ class SetOrgUserContactEmail extends React.Component {
           </React.Fragment>
         </ModalBody>
         <ModalFooter>
-          <button className="btn btn-secondary" onClick={this.props.toggleDialog}>{gettext('Cancel')}</button>
-          <button className="btn btn-primary" disabled={submitBtnDisabled} onClick={this.formSubmit}>{gettext('Submit')}</button>
+          <Button color="secondary" onClick={this.props.toggleDialog}>{gettext('Cancel')}</Button>
+          <Button color="primary" disabled={submitBtnDisabled} onClick={this.formSubmit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

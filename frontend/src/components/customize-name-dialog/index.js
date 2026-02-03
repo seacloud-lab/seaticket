@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Modal, ModalBody, ModalFooter, Alert, Input } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Alert, Input, Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
@@ -45,8 +45,8 @@ const CustomizeNameDialog = ({
         {errorMessage && <Alert color='danger' className="mt-2">{errorMessage}</Alert>}
       </ModalBody>
       <ModalFooter>
-        <button className="btn btn-secondary" onClick={onToggle}>{gettext('Cancel')}</button>
-        <button className="btn btn-primary" disabled={!value || isSubmitting} onClick={handleSubmit}>{gettext('Submit')}</button>
+        <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
+        <Button color="primary" disabled={!value || isSubmitting} onClick={handleSubmit}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>
   );

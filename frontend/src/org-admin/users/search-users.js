@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Col, Form, FormGroup, Input } from 'reactstrap';
+import { Col, Form, FormGroup, Input, Button } from 'reactstrap';
 import { toaster, EmptyTip, CenteredLoading, CenteredError } from '@/components';
 import OrgUserInfo from '../models/org-user';
 import orgAdminAPI from '../api';
@@ -156,10 +156,7 @@ class SearchUsers extends Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={{ size: 5 }}>
-                  <button
-                    className="btn btn-outline-primary" disabled={!query.trim()}
-                    onClick={this.getSearchUsers}>{gettext('Submit')}
-                  </button>
+                  <Button color="outline-primary" disabled={!query.trim()} onClick={this.getSearchUsers}>{gettext('Submit')}</Button>
                 </Col>
               </FormGroup>
             </Form>

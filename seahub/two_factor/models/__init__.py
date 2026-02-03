@@ -15,7 +15,9 @@ def devices_for_user(user):
 
     :rtype: iterable
     """
-    if user.is_anonymous:
+    if not user or (hasattr(user, 'is_anonymous') and user.is_anonymous):
+        return
+    if not hasattr(user, 'username'):
         return
 
     for model in TOTPDevice, PhoneDevice, StaticDevice:
@@ -43,7 +45,9 @@ def user_has_device(user):
     return has_device
 
 def default_device(user):
-    if not user or user.is_anonymous:
+    if not user or (hasattr(user, 'is_anonymous') and user.is_anonymous):
+        return
+    if not hasattr(user, 'username'):
         return
 
     for device in devices_for_user(user):
