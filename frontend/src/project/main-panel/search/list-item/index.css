@@ -69,7 +69,6 @@
 .list-item-content .list-item-detail {
   font-size: 13px;
   color: #666;
-  white-space: break-word;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
@@ -83,6 +82,11 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow-y: hidden;
+}
+
+.list-item-content .list-item-detail svg {
+  max-height: 20px;
+  max-width: 20px;
 }
 
 .list-item-detail-dialog .modal-body {
