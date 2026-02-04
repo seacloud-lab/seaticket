@@ -35,10 +35,10 @@ TABLE_TICKET_COMMENTS = 'ticket_comments'
 logger = logging.getLogger(__name__)
 
 def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
-    linked_record_titles = {}
     if not tickets or not columns:
-        return linked_record_titles
+        return {}
 
+    # Find the linked_connection_records column and get its key
     lcr_column = None
     for c in (columns or []):
         if not isinstance(c, dict):
@@ -48,41 +48,15 @@ def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
             break
     lcr_key = (lcr_column or {}).get('key') or 'linked_connection_records'
 
-    conn_id_to_record_ids = {}
+    # Collect all linked keys from all tickets
+    all_keys = []
     for ticket in (tickets or []):
         lcrs = ticket.get(lcr_key) or []
         if not isinstance(lcrs, list):
             continue
-        for linked_key in lcrs:
-            if not isinstance(linked_key, str) or '_' not in linked_key:
-                continue
-            connection_id_str, record_id_str = linked_key.split('_', 1)
-            if not connection_id_str or not record_id_str:
-                continue
-            try:
-                connection_id = int(connection_id_str)
-                record_id = int(record_id_str)
-            except Exception:
-                continue
-            conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+        all_keys.extend(lcrs)
 
-    if not conn_id_to_record_ids:
-        return linked_record_titles
-
-    for connection_id, record_ids_set in conn_id_to_record_ids.items():
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            continue
-        records = list_connection_record_titles(
-            seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
-        )
-        for record in (records or []):
-            record_pk = record.get('_pk')
-            if record_pk is None:
-                continue
-            linked_record_titles[f'{connection_id}_{record_pk}'] = record.get('title') or ''
-
-    return linked_record_titles
+    return build_linked_record_titles_map_for_keys(seadb_api, project_uuid, all_keys)
 
 
 def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
