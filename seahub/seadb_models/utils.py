@@ -183,6 +183,14 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         ],
     )
 
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.linked_ticket.name
+        ],
+    )
+
     comments_table_name = github_issue_comments_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, comments_table_name)
     table_id = res['table_id']

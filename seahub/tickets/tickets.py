@@ -36,7 +36,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
-    check_ticket_link_changes, sync_links_in_discourse, TicketLinkValidationError
+    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
+    get_connection_table_name
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -269,7 +270,7 @@ class TicketsAPIView(APIView):
             if linked_connection_records is not None:
                 # keep stored value as list[str]
                 row[TicketsTable.linked_connection_records.name] = list(set(linked_connection_records or []))
-            
+
             res = seadb_api.insert_rows(project_uuid, TABLE_TICKETS, [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
@@ -289,7 +290,7 @@ class TicketsAPIView(APIView):
                     # rollback ticket creation if discourse topic already claimed
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -443,7 +444,7 @@ class TicketsAPIView(APIView):
                 sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-            sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
+            sync_links_in_connection(seadb_api, project_uuid, sync_plan)
 
         if update_rows:
             try:
@@ -814,7 +815,7 @@ class TicketAPIView(APIView):
             ]
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
             if is_update_linked_connection_records and ticket_link_diff:
-                sync_links_in_discourse(seadb_api, project_uuid, sync_plan)
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1587,28 +1588,38 @@ class TicketTrashAPIView(APIView):
             need_delete_ticket_ids = [ticket['ticket_id'] for ticket in need_delete_tickets]
             if not need_delete_ticket_ids:
                 return Response({'success': True}, status=status.HTTP_200_OK)
-            
+
             need_update_connection_records = [ticket['linked_connection_records'] for ticket in need_delete_tickets if ticket['linked_connection_records']]
             update_connection_ids = set()
             for ticket_linked in need_update_connection_records:
                 update_connection_ids.update([int(record.split('_')[0]) for record in ticket_linked if record])
+
+            # Get connection types for each connection_id
+            connections = ProjectConnections.objects.filter(id__in=update_connection_ids)
+            connection_map = {c.id: c for c in connections}
+
             for connection_id in update_connection_ids:
-                discourse_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+                connection = connection_map.get(connection_id)
+                if not connection:
+                    continue
+                table_name = get_connection_table_name(connection.type, connection_id)
+                if not table_name:
+                    continue
                 ticket_ids_str = ','.join([str(ticket_id) for ticket_id in need_delete_ticket_ids])
-                update_discourse_sql = f"""
-                SELECT _pk FROM `{discourse_table_name}` WHERE `linked_ticket` IN ({ticket_ids_str})
+                update_sql = f"""
+                SELECT _pk FROM `{table_name}` WHERE `linked_ticket` IN ({ticket_ids_str})
                 """
-                need_update_discourse = seadb_api.query_rows(project_uuid, update_discourse_sql).get('results')
-                update_discourse_row = []
-                for row in need_update_discourse:
-                    update_discourse_row.append({
+                need_update_records = seadb_api.query_rows(project_uuid, update_sql).get('results')
+                update_rows = []
+                for row in need_update_records:
+                    update_rows.append({
                         'pk': row.get('_pk'),
                         'row': {
                             'linked_ticket': None,
                         }
                     })
-                if update_discourse_row:
-                    seadb_api.update_rows(project_uuid, discourse_table_name, update_discourse_row)
+                if update_rows:
+                    seadb_api.update_rows(project_uuid, table_name, update_rows)
 
             delete_ticket_comments_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             delete_ticket_activities_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)

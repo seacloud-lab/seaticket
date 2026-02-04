@@ -11,7 +11,7 @@ from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
-from seahub.seadb_models.models import DiscourseTopicsTable
+from seahub.seadb_models.models import DiscourseTopicsTable, GithubIssuesTable
 from seahub.seadb_models.utils import list_connection_record_titles
 from seahub.project.models import ProjectConnections
 from seahub.project.constants import ConnectionType
@@ -33,6 +33,21 @@ class TicketLinkSyncPlan:
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
 logger = logging.getLogger(__name__)
+
+# Connection types that support linked_ticket
+LINKED_TICKET_SUPPORT_TYPES = [
+    ConnectionType.DISCOURSE_FORUM.value,
+    ConnectionType.GITHUB_ISSUE.value,
+]
+
+
+def get_connection_table_name(connection_type, connection_id):
+    """Get the table name for a connection based on its type."""
+    if connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        return DiscourseTopicsTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GITHUB_ISSUE.value:
+        return GithubIssuesTable.gen_table_name(connection_id)
+    return None
 
 def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
     if not tickets or not columns:
@@ -102,12 +117,12 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
     Returns:
         Dict mapping ticket_id (as string) to ticket title
     """
-    
+
     linked_ticket_titles = {}
-    
+
     if not records or not columns:
         return linked_ticket_titles
-    
+
     # Find the linked ticket column and get its key
     linked_ticket_column = None
     for c in (columns or []):
@@ -117,7 +132,7 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
             linked_ticket_column = c
             break
     linked_ticket_key = (linked_ticket_column or {}).get('key') or column_name
-    
+
     # Collect all ticket IDs from records
     ticket_ids = set()
     for record in (records or []):
@@ -128,7 +143,7 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
             ticket_ids.add(int(v))
         except Exception:
             continue
-    
+
     # Query ticket titles if we have any IDs
     if ticket_ids:
         ticket_ids_str = ','.join([str(i) for i in ticket_ids])
@@ -143,7 +158,7 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
         except Exception as e:
             logger.error(f'Error querying linked ticket titles: {e}')
             linked_ticket_titles = {}
-    
+
     return linked_ticket_titles
 
 def time_str_to_utc_time(time_str):
@@ -637,18 +652,21 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
         if not connection or str(getattr(connection.project, 'uuid', '')) != str(project_uuid):
             raise TicketLinkValidationError('Connection not found.')
 
-    # Check if the Discourse records exist and are occupied
+    # Check if the connection records exist and are occupied
     for conn_id, record_ticket_map in sync_plan.records_to_link.items():
         connection = connection_id_map.get(conn_id)
-        if connection.type != ConnectionType.DISCOURSE_FORUM.value:
+        if connection.type not in LINKED_TICKET_SUPPORT_TYPES:
             continue
 
-        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        table_name = get_connection_table_name(connection.type, conn_id)
+        if not table_name:
+            continue
+
         record_ids = list(record_ticket_map.keys())
         ids_sql = f"({', '.join(str(i) for i in record_ids)})"
 
         try:
-            sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
+            sql = f"SELECT _pk, `linked_ticket` FROM `{table_name}` WHERE _pk IN {ids_sql}"
             res = seadb_api.query_rows(project_uuid, sql)
             rows = res.get('results') or []
         except Exception as e:
@@ -667,16 +685,16 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
             desired_ticket = record_ticket_map.get(rid)
             if desired_ticket is None:
                 continue
-            existed_linked = r.get(DiscourseTopicsTable.linked_ticket.name)
+            existed_linked = r.get('linked_ticket')
             if existed_linked and int(existed_linked) not in (None, int(desired_ticket)):
                 raise TicketLinkValidationError('This record is already linked to a ticket.')
 
     return sync_plan
 
 
-def sync_links_in_discourse(seadb_api, project_uuid, sync_plan):
+def sync_links_in_connection(seadb_api, project_uuid, sync_plan):
     """
-    Sync ticket links in Discourse topics table.
+    Sync ticket links in connection tables (Discourse topics, GitHub issues, emails).
 
     Args:
         seadb_api: SeaDB API instance
@@ -687,44 +705,52 @@ def sync_links_in_discourse(seadb_api, project_uuid, sync_plan):
     if not all_conn_ids:
         return
 
-    # Only process Discourse connections right now
+    # Get connections that support linked_ticket
     connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
-    discourse_conn_ids = {
+    connection_map = {c.id: c for c in connections}
+    supported_conn_ids = {
         c.id for c in connections
-        if c.type == ConnectionType.DISCOURSE_FORUM.value
+        if c.type in LINKED_TICKET_SUPPORT_TYPES
     }
 
     # Sync added links: set linked_ticket to the corresponding ticket ID
     for conn_id, record_ticket_map in sync_plan.records_to_link.items():
-        if conn_id not in discourse_conn_ids:
+        if conn_id not in supported_conn_ids:
             continue
-        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        connection = connection_map.get(conn_id)
+        table_name = get_connection_table_name(connection.type, conn_id)
+        if not table_name:
+            continue
         update_rows = [
             {
                 'pk': rid,
-                'row': {DiscourseTopicsTable.linked_ticket.name: ticket_id}
+                'row': {'linked_ticket': ticket_id}
             }
             for rid, ticket_id in record_ticket_map.items()
         ]
         if update_rows:
-            seadb_api.update_rows(project_uuid, topics_table_name, update_rows)
+            seadb_api.update_rows(project_uuid, table_name, update_rows)
 
     # Sync removed links: clear linked_ticket
     for conn_id, record_ticket_map in sync_plan.records_to_unlink.items():
-        if conn_id not in discourse_conn_ids:
+        if conn_id not in supported_conn_ids:
             continue
 
-        topics_table_name = DiscourseTopicsTable.gen_table_name(conn_id)
+        connection = connection_map.get(conn_id)
+        table_name = get_connection_table_name(connection.type, conn_id)
+        if not table_name:
+            continue
+
         record_ids = list(record_ticket_map.keys())
         ids_sql = f"({', '.join(str(i) for i in record_ids)})"
 
         # Query the current link status
-        sql = f"SELECT _pk, `{DiscourseTopicsTable.linked_ticket.name}` FROM `{topics_table_name}` WHERE _pk IN {ids_sql}"
+        sql = f"SELECT _pk, `linked_ticket` FROM `{table_name}` WHERE _pk IN {ids_sql}"
         res = seadb_api.query_rows(project_uuid, sql)
         rows = res.get('results') or []
 
         current_linked = {
-            int(r.get('_pk')): r.get(DiscourseTopicsTable.linked_ticket.name)
+            int(r.get('_pk')): r.get('linked_ticket')
             for r in rows if r.get('_pk') is not None
         }
 
@@ -735,8 +761,8 @@ def sync_links_in_discourse(seadb_api, project_uuid, sync_plan):
             if actual_linked and int(actual_linked) == expected_ticket_id:
                 clear_rows.append({
                     'pk': rid,
-                    'row': {DiscourseTopicsTable.linked_ticket.name: None}
+                    'row': {'linked_ticket': None}
                 })
 
         if clear_rows:
-            seadb_api.update_rows(project_uuid, topics_table_name, clear_rows)
+            seadb_api.update_rows(project_uuid, table_name, clear_rows)

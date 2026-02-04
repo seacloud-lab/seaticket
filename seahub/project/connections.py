@@ -416,7 +416,7 @@ class ProjectConnectionDetailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         linked_ticket_titles = {}
-        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+        if project_connection.type in [ConnectionType.DISCOURSE_FORUM.value, ConnectionType.GITHUB_ISSUE.value]:
             linked_ticket_titles = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )
