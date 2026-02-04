@@ -5,9 +5,10 @@ import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import EmbeddingView from './components/embedding-view';
 import { useAnalyzeTask } from './hooks/analyze-task';
-import { SETTINGS_STORAGE_KEY } from './constants';
 
 import './index.css';
+
+const SETTINGS_STORAGE_KEY = `sea-qa-analyze-settings-${window.app.pageOptions.projectUuid}`;
 
 const getStoredSettings = () => {
   try {
@@ -91,6 +92,7 @@ const Analyze = ({ title }) => {
         options[field] = uniqueValues;
       }
     });
+    options['state'].push('all');
     return options;
   }, [records, FILTERABLE_FIELDS]);
 
@@ -113,20 +115,20 @@ const Analyze = ({ title }) => {
     setEndDate(newEnd);
   }, []);
 
-  const handleAddFilter = useCallback((field, value) => {
+  const handleFilterChange = useCallback((field, value) => {
     setFilters(prev => {
-      const existingIndex = prev.findIndex(f => f.field === field);
-      if (existingIndex >= 0) {
-        const newFilters = [...prev];
-        newFilters[existingIndex] = { field, value };
-        return newFilters;
+      if (value) {
+        const existingIndex = prev.findIndex(f => f.field === field);
+        if (existingIndex >= 0) {
+          const newFilters = [...prev];
+          newFilters[existingIndex] = { field, value };
+          return newFilters;
+        }
+        return [...prev, { field, value }];
+      } else {
+        return prev.filter(f => f.field !== field);
       }
-      return [...prev, { field, value }];
     });
-  }, []);
-
-  const handleRemoveFilter = useCallback((field) => {
-    setFilters(prev => prev.filter(f => f.field !== field));
   }, []);
 
   const renderContent = () => {
@@ -179,8 +181,7 @@ const Analyze = ({ title }) => {
             onClose={handleToggleSettings}
             filters={filters}
             filterableFieldOptions={filterableFieldOptions}
-            onAddFilter={handleAddFilter}
-            onRemoveFilter={handleRemoveFilter}
+            handleFilterChange={handleFilterChange}
             colorBy={colorBy}
             onColorByChange={handleColorByChange}
             displayMode={displayMode}
