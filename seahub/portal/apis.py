@@ -5,7 +5,7 @@ import json
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from seahub.api2.permissions import PortalAccessPermission
 from rest_framework import status
 from rest_framework.response import Response
@@ -382,10 +382,10 @@ class PortalSettingsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            settings_dict = json.loads(project.settings) if project.settings else {}
+            project_settings = json.loads(project.settings) if project.settings else {}
         except Exception:
-            settings_dict = {}
-        portal_settings = settings_dict.get('portal', {})
+            project_settings = {}
+        portal_settings = project_settings.get('portal', {})
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         has_password = bool(portal_settings.get('password'))
@@ -429,11 +429,11 @@ class PortalSettingsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            settings_dict = json.loads(project.settings) if project.settings else {}
+            project_settings = json.loads(project.settings) if project.settings else {}
         except Exception:
-            settings_dict = {}
+            project_settings = {}
 
-        portal_settings = settings_dict.get('portal', {})
+        portal_settings = project_settings.get('portal', {})
         portal_settings['allow_anonymous'] = bool(allow_anonymous)
         portal_settings['enable_password_protection'] = bool(enable_password_protection)
         if portal_show_knowledge_base is not None:
@@ -446,8 +446,8 @@ class PortalSettingsView(APIView):
         else:
             portal_settings.pop('password', None)
 
-        settings_dict['portal'] = portal_settings
-        project.settings = json.dumps(settings_dict)
+        project_settings['portal'] = portal_settings
+        project.settings = json.dumps(project_settings)
         project.save(update_fields=['settings'])
 
         return Response({'success': True})

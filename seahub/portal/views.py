@@ -3,6 +3,7 @@ import logging
 import json
 
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.utils.translation import gettext as _
 
 from seahub import settings
@@ -23,12 +24,13 @@ def portal_view(request, project_uuid, page=None):
         return render_error(request, _('This project does not exist'))
 
     try:
-        settings_dict = json.loads(project.settings) if project.settings else {}
+        project_settings = json.loads(project.settings) if project.settings else {}
     except Exception:
-        settings_dict = {}
-    portal_settings = settings_dict.get('portal', {})
+        project_settings = {}
+    portal_settings = project_settings.get('portal', {})
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+    show_kb_in_portal = bool(portal_settings.get('portal_show_knowledge_base', False))
 
     if not allow_anonymous:
         if not request.user.is_authenticated:
@@ -37,7 +39,6 @@ def portal_view(request, project_uuid, page=None):
         if not check_same_org_permission(request.user, workspace):
             return render_error(request, _('Permission denied'))
 
-    show_kb_in_portal = bool(portal_settings.get('portal_show_knowledge_base', False))
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -46,11 +47,11 @@ def portal_view(request, project_uuid, page=None):
         'media_url': MEDIA_URL,
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
-        'show_kb_in_portal': show_kb_in_portal,
         'is_anonymous': not request.user.is_authenticated,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
+            'show_kb_in_portal': show_kb_in_portal,
         }
     }
 
@@ -63,9 +64,7 @@ def portal_view(request, project_uuid, page=None):
     if need_password:
         return redirect(f"/portal/{project_uuid}/anonymous-validate/")
 
-    invalid_password = bool(request.session.pop(f'portal_invalid_password_{project_uuid}', False))
     return_dict['need_password'] = need_password
-    return_dict['invalid_password'] = invalid_password
     return render(request, 'portal_view_react.html', return_dict)
 
 
@@ -75,10 +74,10 @@ def portal_anonymous_validate(request, project_uuid):
         return render_error(request, _('This project does not exist'))
 
     try:
-        settings_dict = json.loads(project.settings) if project.settings else {}
+        project_settings = json.loads(project.settings) if project.settings else {}
     except Exception:
-        settings_dict = {}
-    portal_settings = settings_dict.get('portal', {})
+        project_settings = {}
+    portal_settings = project_settings.get('portal', {})
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
 
@@ -94,7 +93,6 @@ def portal_anonymous_validate(request, project_uuid):
     if request.method == 'GET':
         if not need_password:
             return redirect(f"/portal/{project_uuid}/")
-        invalid_password = bool(request.session.pop(f'portal_invalid_password_{project_uuid}', False))
         return_dict = {
             'version': SEAQA_VERSION,
             'project_name': project.name,
@@ -106,20 +104,17 @@ def portal_anonymous_validate(request, project_uuid):
                 'enable_password_protection': enable_password_protection,
             },
             'need_password': True,
-            'invalid_password': invalid_password,
         }
         return render(request, 'portal_view_react.html', return_dict)
 
     password = request.POST.get('password', '')
     if not encoded_password or not password:
-        request.session[f'portal_invalid_password_{project_uuid}'] = True
-        return redirect(f"/portal/{project_uuid}/anonymous-validate/")
+        return HttpResponse(_('Password invalid'), status=400)
 
     from seahub.utils.hasher import AESPasswordHasher
     cryptor = AESPasswordHasher()
     if not cryptor.verify(password, encoded_password):
-        request.session[f'portal_invalid_password_{project_uuid}'] = True
-        return redirect(f"/portal/{project_uuid}/anonymous-validate/")
+        return HttpResponse(_('Password invalid'), status=400)
 
     request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
     return redirect(f"/portal/{project_uuid}/")
@@ -153,6 +148,8 @@ def portal_edit_view(request, project_uuid, page=None):
         'media_url': MEDIA_URL,
         'is_edit_mode': True,
         'workspace_id': project.workspace_id,
-        'show_kb_in_portal': show_kb_in_portal,
+        'portal': {
+            'show_kb_in_portal': show_kb_in_portal,
+        },
     }
     return render(request, 'portal_view_react.html', return_dict)
