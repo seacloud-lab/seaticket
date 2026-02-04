@@ -34,7 +34,7 @@ const TagsEditor = forwardRef(({
       return {
         ...tag,
         value: tag._id,
-        label: <TagOption tag={tag} />,
+        label: <TagOption tag={tag} hiddenDescription={true} />,
       };
     });
   }, [tagsData]);
