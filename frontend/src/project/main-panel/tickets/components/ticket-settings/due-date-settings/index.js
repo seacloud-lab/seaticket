@@ -36,7 +36,7 @@ const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) =>
       <div className="ticket-due-date-formatter">
         <DatePicker
           getCalendarContainer={calendarContainerRef.current}
-          calendar={<Calendar format='YYYY-MM-DD' locale={locale}/>}
+          calendar={<Calendar format='YYYY-MM-DD' locale={locale} className="sea-ticket-calendar"/>}
           disabled={isReadonly}
           value={formatValue}
           onChange={onDueDateChange}
