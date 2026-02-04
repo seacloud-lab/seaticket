@@ -38,6 +38,7 @@ from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopi
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map
+from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -416,7 +417,7 @@ class ProjectConnectionDetailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         linked_ticket_titles = {}
-        if project_connection.type in [ConnectionType.DISCOURSE_FORUM.value, ConnectionType.GITHUB_ISSUE.value]:
+        if project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
             linked_ticket_titles = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )

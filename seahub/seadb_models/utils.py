@@ -473,7 +473,8 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
         ThreadTable.title.name,
         ThreadTable.modified_time.name,
         ThreadTable.deleted.name,
-        ThreadTable.sync_time.name
+        ThreadTable.sync_time.name,
+        ThreadTable.linked_ticket.name,
     ]
 
     for column_name in index_column_names:

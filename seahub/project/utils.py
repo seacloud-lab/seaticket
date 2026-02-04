@@ -29,11 +29,17 @@ from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT
+from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType
 
 
 logger = logging.getLogger(__name__)
 
+# Connection types that support linked_ticket
+LINKED_TICKET_SUPPORT_TYPES = [
+    ConnectionType.DISCOURSE_FORUM.value,
+    ConnectionType.GITHUB_ISSUE.value,
+    ConnectionType.EMAIL.value,
+]
 
 def check_project_limit(workspace, request):
     from seahub.settings import PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
