@@ -97,6 +97,55 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
 
     return linked_record_titles
 
+def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, column_name='linked_ticket'):
+    """
+    Returns:
+        Dict mapping ticket_id (as string) to ticket title
+    """
+    
+    linked_ticket_titles = {}
+    
+    if not records or not columns:
+        return linked_ticket_titles
+    
+    # Find the linked ticket column and get its key
+    linked_ticket_column = None
+    for c in (columns or []):
+        if not isinstance(c, dict):
+            continue
+        if c.get('name') == column_name:
+            linked_ticket_column = c
+            break
+    linked_ticket_key = (linked_ticket_column or {}).get('key') or column_name
+    
+    # Collect all ticket IDs from records
+    ticket_ids = set()
+    for record in (records or []):
+        v = record.get(linked_ticket_key)
+        if v is None or v == '':
+            continue
+        try:
+            ticket_ids.add(int(v))
+        except Exception:
+            continue
+    
+    # Query ticket titles if we have any IDs
+    if ticket_ids:
+        ticket_ids_str = ','.join([str(i) for i in ticket_ids])
+        sql = f"SELECT _pk, title FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+        try:
+            res = seadb_api.query_rows(project_uuid, sql)
+            for row in (res.get('results') or []):
+                _pk = row.get('_pk')
+                if _pk is None:
+                    continue
+                linked_ticket_titles[str(_pk)] = row.get('title') or ''
+        except Exception as e:
+            logger.error(f'Error querying linked ticket titles: {e}')
+            linked_ticket_titles = {}
+    
+    return linked_ticket_titles
+
 def time_str_to_utc_time(time_str):
     if time_str.endswith('Z'):
         # python 3.12 can convert but 3.10 not support
