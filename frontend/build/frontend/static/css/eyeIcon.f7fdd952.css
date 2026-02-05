@@ -1,0 +1,1 @@
+.password-toggle{align-items:center;color:#999;cursor:pointer;display:flex;height:16px;position:absolute;right:10px;top:10px;width:16px}.password-toggle:hover{color:#666}.password-toggle .sea-qa-icon-svg-eye,.password-toggle.password-show .sea-qa-icon-svg-eye-slash{display:none}.password-toggle.password-show .sea-qa-icon-svg-eye{display:inline;display:initial}

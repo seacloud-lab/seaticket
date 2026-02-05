@@ -1,189 +1,176 @@
 {
   "status": "done",
   "assets": {
-    "static/css/commons.c26ff779.css": {
-      "name": "static/css/commons.c26ff779.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/commons.c26ff779.css"
+    "static/css/commons.60503a3b.css": {
+      "name": "static/css/commons.60503a3b.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/commons.60503a3b.css"
     },
-    "static/css/eyeIcon.f80b7183.css": {
-      "name": "static/css/eyeIcon.f80b7183.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/eyeIcon.f80b7183.css"
+    "static/css/eyeIcon.f7fdd952.css": {
+      "name": "static/css/eyeIcon.f7fdd952.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/eyeIcon.f7fdd952.css"
     },
-    "static/css/home.8150a42e.css": {
-      "name": "static/css/home.8150a42e.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/home.8150a42e.css"
+    "static/css/home.af9258cb.css": {
+      "name": "static/css/home.af9258cb.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/home.af9258cb.css"
     },
-    "static/css/orgAdmin.d15f8ce7.css": {
-      "name": "static/css/orgAdmin.d15f8ce7.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/orgAdmin.d15f8ce7.css"
+    "static/css/orgAdmin.302a4f05.css": {
+      "name": "static/css/orgAdmin.302a4f05.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/orgAdmin.302a4f05.css"
     },
-    "static/css/project.b2950700.css": {
-      "name": "static/css/project.b2950700.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/project.b2950700.css"
+    "static/css/portal.22a9672f.css": {
+      "name": "static/css/portal.22a9672f.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/portal.22a9672f.css"
     },
-    "static/css/settings.65069120.css": {
-      "name": "static/css/settings.65069120.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/settings.65069120.css"
+    "static/css/project.b87bdd41.css": {
+      "name": "static/css/project.b87bdd41.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/project.b87bdd41.css"
     },
-    "static/css/sysAdmin.d1587713.css": {
-      "name": "static/css/sysAdmin.d1587713.css",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/css/sysAdmin.d1587713.css"
+    "static/css/settings.ab753d8a.css": {
+      "name": "static/css/settings.ab753d8a.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/settings.ab753d8a.css"
     },
-    "static/js/130.836d4ce9.chunk.js": {
-      "name": "static/js/130.836d4ce9.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/130.836d4ce9.chunk.js"
+    "static/css/sysAdmin.3480f6cb.css": {
+      "name": "static/css/sysAdmin.3480f6cb.css",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/css/sysAdmin.3480f6cb.css"
     },
-    "static/js/483.de61988c.chunk.js": {
-      "name": "static/js/483.de61988c.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/483.de61988c.chunk.js"
+    "static/js/checkCircleIcon.6231f300.js": {
+      "name": "static/js/checkCircleIcon.6231f300.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/checkCircleIcon.6231f300.js"
     },
-    "static/js/571.86c0b7f3.chunk.js": {
-      "name": "static/js/571.86c0b7f3.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/571.86c0b7f3.chunk.js"
+    "static/js/commons.e2aebebd.js": {
+      "name": "static/js/commons.e2aebebd.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/commons.e2aebebd.js"
     },
-    "static/js/740.8d0a2f65.chunk.js": {
-      "name": "static/js/740.8d0a2f65.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/740.8d0a2f65.chunk.js"
+    "static/js/commons.e2aebebd.js.LICENSE.txt": {
+      "name": "static/js/commons.e2aebebd.js.LICENSE.txt",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/commons.e2aebebd.js.LICENSE.txt"
     },
-    "static/js/749.72e4d98e.chunk.js": {
-      "name": "static/js/749.72e4d98e.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/749.72e4d98e.chunk.js"
+    "static/js/downIcon.7f75c459.js": {
+      "name": "static/js/downIcon.7f75c459.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/downIcon.7f75c459.js"
     },
-    "static/js/752.87012154.chunk.js": {
-      "name": "static/js/752.87012154.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/752.87012154.chunk.js"
+    "static/js/exclamationCircleIcon.487c3b4d.js": {
+      "name": "static/js/exclamationCircleIcon.487c3b4d.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/exclamationCircleIcon.487c3b4d.js"
     },
-    "static/js/806.086d778d.chunk.js": {
-      "name": "static/js/806.086d778d.chunk.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/806.086d778d.chunk.js"
+    "static/js/eyeIcon.8e5a2ad9.js": {
+      "name": "static/js/eyeIcon.8e5a2ad9.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/eyeIcon.8e5a2ad9.js"
     },
-    "static/js/checkCircleIcon.c40391aa.js": {
-      "name": "static/js/checkCircleIcon.c40391aa.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/checkCircleIcon.c40391aa.js"
+    "static/js/home.b6d13713.js": {
+      "name": "static/js/home.b6d13713.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/home.b6d13713.js"
     },
-    "static/js/commons.42d05d0e.js": {
-      "name": "static/js/commons.42d05d0e.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/commons.42d05d0e.js"
+    "static/js/moreIcon.fc7088ef.js": {
+      "name": "static/js/moreIcon.fc7088ef.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/moreIcon.fc7088ef.js"
     },
-    "static/js/commons.42d05d0e.js.LICENSE.txt": {
-      "name": "static/js/commons.42d05d0e.js.LICENSE.txt",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/commons.42d05d0e.js.LICENSE.txt"
+    "static/js/orgAdmin.3302ed2a.js": {
+      "name": "static/js/orgAdmin.3302ed2a.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/orgAdmin.3302ed2a.js"
     },
-    "static/js/downIcon.237c4253.js": {
-      "name": "static/js/downIcon.237c4253.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/downIcon.237c4253.js"
+    "static/js/portal.0fe21f60.js": {
+      "name": "static/js/portal.0fe21f60.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/portal.0fe21f60.js"
     },
-    "static/js/exclamationCircleIcon.b3db10ec.js": {
-      "name": "static/js/exclamationCircleIcon.b3db10ec.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/exclamationCircleIcon.b3db10ec.js"
+    "static/js/project.ebb97b50.js": {
+      "name": "static/js/project.ebb97b50.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/project.ebb97b50.js"
     },
-    "static/js/eyeIcon.5d680120.js": {
-      "name": "static/js/eyeIcon.5d680120.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/eyeIcon.5d680120.js"
+    "static/js/project.ebb97b50.js.LICENSE.txt": {
+      "name": "static/js/project.ebb97b50.js.LICENSE.txt",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/project.ebb97b50.js.LICENSE.txt"
     },
-    "static/js/home.2f6ef6ae.js": {
-      "name": "static/js/home.2f6ef6ae.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/home.2f6ef6ae.js"
+    "static/js/runtime.a90d09cb.js": {
+      "name": "static/js/runtime.a90d09cb.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/runtime.a90d09cb.js"
     },
-    "static/js/moreIcon.86352b78.js": {
-      "name": "static/js/moreIcon.86352b78.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/moreIcon.86352b78.js"
+    "static/js/settings.64432806.js": {
+      "name": "static/js/settings.64432806.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/settings.64432806.js"
     },
-    "static/js/orgAdmin.6ee9ff80.js": {
-      "name": "static/js/orgAdmin.6ee9ff80.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/orgAdmin.6ee9ff80.js"
+    "static/js/sysAdmin.ed5d4af2.js": {
+      "name": "static/js/sysAdmin.ed5d4af2.js",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/sysAdmin.ed5d4af2.js"
     },
-    "static/js/project.99f84642.js": {
-      "name": "static/js/project.99f84642.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/project.99f84642.js"
-    },
-    "static/js/project.99f84642.js.LICENSE.txt": {
-      "name": "static/js/project.99f84642.js.LICENSE.txt",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/project.99f84642.js.LICENSE.txt"
-    },
-    "static/js/runtime.bb0ce5f4.js": {
-      "name": "static/js/runtime.bb0ce5f4.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/runtime.bb0ce5f4.js"
-    },
-    "static/js/settings.3646fa20.js": {
-      "name": "static/js/settings.3646fa20.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/settings.3646fa20.js"
-    },
-    "static/js/sysAdmin.71c97fac.js": {
-      "name": "static/js/sysAdmin.71c97fac.js",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/sysAdmin.71c97fac.js"
-    },
-    "static/js/sysAdmin.71c97fac.js.LICENSE.txt": {
-      "name": "static/js/sysAdmin.71c97fac.js.LICENSE.txt",
-      "path": "/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/build/frontend/static/js/sysAdmin.71c97fac.js.LICENSE.txt"
+    "static/js/sysAdmin.ed5d4af2.js.LICENSE.txt": {
+      "name": "static/js/sysAdmin.ed5d4af2.js.LICENSE.txt",
+      "path": "/home/runner/work/seaqa-web/seaqa-web/frontend/build/frontend/static/js/sysAdmin.ed5d4af2.js.LICENSE.txt"
     }
   },
   "chunks": {
     "checkCircleIcon": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/js/checkCircleIcon.c40391aa.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/js/checkCircleIcon.6231f300.js"
     ],
     "downIcon": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/js/downIcon.237c4253.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/js/downIcon.7f75c459.js"
     ],
     "exclamationCircleIcon": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/js/exclamationCircleIcon.b3db10ec.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/js/exclamationCircleIcon.487c3b4d.js"
     ],
     "eyeIcon": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/eyeIcon.f80b7183.css",
-      "static/js/eyeIcon.5d680120.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/eyeIcon.f7fdd952.css",
+      "static/js/eyeIcon.8e5a2ad9.js"
     ],
     "home": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/home.8150a42e.css",
-      "static/js/home.2f6ef6ae.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/home.af9258cb.css",
+      "static/js/home.b6d13713.js"
     ],
     "moreIcon": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/js/moreIcon.86352b78.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/js/moreIcon.fc7088ef.js"
     ],
     "orgAdmin": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/orgAdmin.d15f8ce7.css",
-      "static/js/orgAdmin.6ee9ff80.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/orgAdmin.302a4f05.css",
+      "static/js/orgAdmin.3302ed2a.js"
+    ],
+    "portal": [
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/portal.22a9672f.css",
+      "static/js/portal.0fe21f60.js"
     ],
     "project": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/project.b2950700.css",
-      "static/js/project.99f84642.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/project.b87bdd41.css",
+      "static/js/project.ebb97b50.js"
     ],
     "settings": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/settings.65069120.css",
-      "static/js/settings.3646fa20.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/settings.ab753d8a.css",
+      "static/js/settings.64432806.js"
     ],
     "sysAdmin": [
-      "static/js/runtime.bb0ce5f4.js",
-      "static/css/commons.c26ff779.css",
-      "static/js/commons.42d05d0e.js",
-      "static/css/sysAdmin.d1587713.css",
-      "static/js/sysAdmin.71c97fac.js"
+      "static/js/runtime.a90d09cb.js",
+      "static/css/commons.60503a3b.css",
+      "static/js/commons.e2aebebd.js",
+      "static/css/sysAdmin.3480f6cb.css",
+      "static/js/sysAdmin.ed5d4af2.js"
     ]
   }
 }
