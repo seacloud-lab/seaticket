@@ -32,9 +32,10 @@ const Settings = () => {
       const data = res.data || {};
       setAllowAnonymous(!!data.allow_anonymous);
       setEnablePassword(!!data.enable_password_protection);
-      setHasSavedPassword(!!data.has_password && !!data.enable_password_protection);
+      setHasSavedPassword(!!data.enable_password_protection);
+      setIsEditingPassword(false);
 
-      const kbEnabled = data.portal_show_knowledge_base ?? data.show_kb_in_portal;
+      const kbEnabled = data.show_knowledge_base ?? data.show_kb_in_portal;
       if (typeof kbEnabled !== 'undefined') {
         setShowKB(!!kbEnabled);
         window.app.pageOptions.showKBInPortal = !!kbEnabled;
@@ -56,7 +57,7 @@ const Settings = () => {
       allow_anonymous: allowAnonymous ? 1 : 0,
       enable_password_protection: needPwd ? 1 : 0,
       password: '',
-      portal_show_knowledge_base: next ? 1 : 0,
+      show_knowledge_base: next ? 1 : 0,
     })
       .then(() => {
         window.app.pageOptions.showKBInPortal = next;
@@ -86,7 +87,19 @@ const Settings = () => {
   }, []);
 
   const onTogglePassword = useCallback(() => {
-    setEnablePassword(prev => !prev);
+    setEnablePassword(prev => {
+      const next = !prev;
+      if (next) {
+        setIsEditingPassword(true);
+        setHasSavedPassword(false);
+      } else {
+        setIsEditingPassword(false);
+        setHasSavedPassword(false);
+        setPassword('');
+        setConfirmPassword('');
+      }
+      return next;
+    });
   }, []);
 
   const onPasswordChange = useCallback((val) => {
@@ -100,7 +113,6 @@ const Settings = () => {
   const onEditPassword = useCallback(() => {
     setIsEditingPassword(true);
   }, []);
-
 
   const onSaveSettings = useCallback(() => {
     const needPwd = allowAnonymous && enablePassword;
@@ -119,18 +131,18 @@ const Settings = () => {
       allow_anonymous: allowAnonymous ? 1 : 0,
       enable_password_protection: needPwd ? 1 : 0,
       password: shouldSendPassword ? password : '',
-      portal_show_knowledge_base: showKB ? 1 : 0,
+      show_knowledge_base: showKB ? 1 : 0,
     };
     portalAPI.updateSettings(projectUuid, payload).then(() => {
       portalAPI.getSettings(projectUuid).then(res => {
         const data = res.data || {};
         setAllowAnonymous(!!data.allow_anonymous);
         setEnablePassword(!!data.enable_password_protection);
-        setHasSavedPassword(!!data.has_password && !!data.enable_password_protection);
+        setHasSavedPassword(!!data.enable_password_protection);
+        setIsEditingPassword(false);
       }).finally(() => {
         toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
         if (shouldSendPassword) {
-          setIsEditingPassword(false);
           setPassword('');
           setConfirmPassword('');
         }
@@ -198,46 +210,50 @@ const Settings = () => {
                   />
                 </div>
               )}
-              {allowAnonymous && enablePassword && !isEditingPassword && hasSavedPassword && (
+              {allowAnonymous && enablePassword && (
                 <>
-                  <label className="portal-settings-label" style={{ marginTop: 8 }}>
-                    {gettext('Password (at least 8 characters)')}
-                  </label>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <PasswordInput
-                      value={'********'}
-                      onChange={() => {}}
-                      disabled={true}
-                      enableRandomGeneration={false}
-                      enableCheckStrength={false}
-                      placeholder={gettext('Enter password')}
-                    />
-                    <IconButton icon="rename" className="btn btn-outline-secondary p-0" onClick={onEditPassword} />
-                  </div>
-                </>
-              )}
-              {allowAnonymous && enablePassword && (isEditingPassword || !hasSavedPassword) && (
-                <>
-                  <label className="portal-settings-label" style={{ marginTop: 8 }}>
-                    {gettext('Password (at least 8 characters)')}
-                  </label>
-                  <PasswordInput
-                    value={password}
-                    onChange={onPasswordChange}
-                    enableRandomGeneration={false}
-                    enableCheckStrength={false}
-                    placeholder={gettext('Enter password')}
-                  />
-                  <label className="portal-settings-label" style={{ marginTop: 8 }}>
-                    {gettext('Confirm password')}
-                  </label>
-                  <PasswordInput
-                    value={confirmPassword}
-                    onChange={onConfirmPasswordChange}
-                    enableRandomGeneration={false}
-                    enableCheckStrength={false}
-                    placeholder={gettext('Re-enter password')}
-                  />
+                  {!isEditingPassword && hasSavedPassword && (
+                    <>
+                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                        {gettext('Password (at least 8 characters)')}
+                      </label>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <PasswordInput
+                          value={'********'}
+                          onChange={() => {}}
+                          disabled={true}
+                          enableRandomGeneration={false}
+                          enableCheckStrength={false}
+                          placeholder={gettext('Enter password')}
+                        />
+                        <IconButton icon="rename" className="btn btn-outline-secondary p-0" onClick={onEditPassword} />
+                      </div>
+                    </>
+                  )}
+                  {(isEditingPassword || !hasSavedPassword) && (
+                    <>
+                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                        {gettext('Password (at least 8 characters)')}
+                      </label>
+                      <PasswordInput
+                        value={password}
+                        onChange={onPasswordChange}
+                        enableRandomGeneration={false}
+                        enableCheckStrength={false}
+                        placeholder={gettext('Enter password')}
+                      />
+                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                        {gettext('Confirm password')}
+                      </label>
+                      <PasswordInput
+                        value={confirmPassword}
+                        onChange={onConfirmPasswordChange}
+                        enableRandomGeneration={false}
+                        enableCheckStrength={false}
+                        placeholder={gettext('Re-enter password')}
+                      />
+                    </>
+                  )}
                 </>
               )}
               <div style={{ marginTop: 16 }}>

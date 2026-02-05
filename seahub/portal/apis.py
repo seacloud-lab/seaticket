@@ -275,7 +275,7 @@ class PortalKnowledgeBaseViewsView(APIView):
             project = request.project
             project_settings = json.loads(project.settings) if project.settings else {}
             portal_settings = project_settings.get('portal', {})
-            show_kb = bool(portal_settings.get('portal_show_knowledge_base', False))
+            show_kb = bool(portal_settings.get('show_knowledge_base', False))
         except Exception:
             show_kb = False
         if not show_kb:
@@ -315,7 +315,7 @@ class PortalKnowledgeBaseRecordsView(APIView):
             project = request.project
             project_settings = json.loads(project.settings) if project.settings else {}
             portal_settings = project_settings.get('portal', {})
-            show_kb = bool(portal_settings.get('portal_show_knowledge_base', False))
+            show_kb = bool(portal_settings.get('show_knowledge_base', False))
         except Exception:
             show_kb = False
         if not show_kb:
@@ -388,14 +388,12 @@ class PortalSettingsView(APIView):
         portal_settings = project_settings.get('portal', {})
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-        has_password = bool(portal_settings.get('password'))
-        portal_show_knowledge_base = bool(portal_settings.get('portal_show_knowledge_base', False))
+        show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
 
         return Response({
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
-            'has_password': has_password,
-            'portal_show_knowledge_base': portal_show_knowledge_base,
+            'show_knowledge_base': show_knowledge_base,
         })
 
     @require_org_context
@@ -412,13 +410,13 @@ class PortalSettingsView(APIView):
         allow_anonymous = request.data.get('allow_anonymous', 0)
         enable_password_protection = request.data.get('enable_password_protection', 0)
         password = request.data.get('password', '')
-        portal_show_knowledge_base = request.data.get('portal_show_knowledge_base', None)
+        show_knowledge_base = request.data.get('show_knowledge_base', None)
 
         try:
             allow_anonymous = int(allow_anonymous)
             enable_password_protection = int(enable_password_protection)
-            if portal_show_knowledge_base is not None:
-                portal_show_knowledge_base = int(portal_show_knowledge_base)
+            if show_knowledge_base is not None:
+                show_knowledge_base = int(show_knowledge_base)
         except Exception:
             error_msg = 'Invalid params.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -436,8 +434,8 @@ class PortalSettingsView(APIView):
         portal_settings = project_settings.get('portal', {})
         portal_settings['allow_anonymous'] = bool(allow_anonymous)
         portal_settings['enable_password_protection'] = bool(enable_password_protection)
-        if portal_show_knowledge_base is not None:
-            portal_settings['portal_show_knowledge_base'] = bool(portal_show_knowledge_base)
+        if show_knowledge_base is not None:
+            portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
 
         if enable_password_protection:
             if password:

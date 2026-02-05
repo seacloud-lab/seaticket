@@ -30,7 +30,7 @@ def portal_view(request, project_uuid, page=None):
     portal_settings = project_settings.get('portal', {})
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-    show_kb_in_portal = bool(portal_settings.get('portal_show_knowledge_base', False))
+    show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
 
     if not allow_anonymous:
         if not request.user.is_authenticated:
@@ -139,7 +139,7 @@ def portal_edit_view(request, project_uuid, page=None):
         except Exception:
             project_settings = {}
     portal_settings = project_settings.get('portal', {})
-    show_kb_in_portal = bool(portal_settings.get('portal_show_knowledge_base', False))
+    show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
 
     return_dict = {
         'version': SEAQA_VERSION,
