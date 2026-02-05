@@ -10,7 +10,7 @@ from rest_framework import status
 from seahub.api2.utils import api_error
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
-from seahub.utils import is_pro_version, is_org_context
+from seahub.utils import is_org_context
 from seahub.organizations.models import OrgUser, Organization
 from seahub.group.models import Group
 
@@ -60,7 +60,7 @@ def is_org_user(username, org_id=None):
     check if the user is a member of the specific org.
     """
 
-    if not is_pro_version() or not MULTI_TENANCY:
+    if not MULTI_TENANCY:
         return False
 
     try:

@@ -26,7 +26,7 @@ from seahub.profile.models import Profile
 from seahub.profile.settings import CONTACT_CACHE_TIMEOUT, CONTACT_CACHE_PREFIX, \
     NICKNAME_CACHE_PREFIX, NICKNAME_CACHE_TIMEOUT
 from seahub.utils import is_valid_username, is_org_context, \
-    is_pro_version, normalize_cache_key, is_valid_email, \
+    normalize_cache_key, is_valid_email, \
     IS_EMAIL_CONFIGURED, send_html_email, get_site_name
 from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
     SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_EMAIL_ON_ACTIVATING_USER, ENABLE_LDAP, \
@@ -69,7 +69,7 @@ def get_virtual_id_by_email(email):
 def create_user_info(request, email, role, nickname, contact_email, quota_total_mb):
     # update additional user info
 
-    if is_pro_version() and role:
+    if role:
         User.objects.update_role(email, role)
 
     if nickname is not None:
@@ -110,7 +110,7 @@ def update_user_info(request, user, password, is_active, is_staff, role,
     user.save()
 
     # update additional user info
-    if is_pro_version() and role:
+    if role:
         User.objects.update_role(email, role)
 
     if nickname is not None:
@@ -832,7 +832,7 @@ class AdminUserGroups(APIView):
                 "owner_email": group.creator_name,
                 "owner_name": nickname_dict.get(group.creator_name, ''),
                 "created_at": isoformat_timestr,
-                "parent_group_id": group.parent_group_id if is_pro_version() else 0
+                "parent_group_id": group.parent_group_id,
             }
             groups_info.append(group_info)
 

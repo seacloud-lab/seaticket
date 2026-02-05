@@ -41,7 +41,6 @@
             logoPath: '{{ logo_path }}',
             logoWidth: '{{ logo_width }}',
             logoHeight: '{{ logo_height }}',
-            isPro: '{{ is_pro }}'
         },
         pageOptions: {
             server: '{{ service_url }}',
@@ -57,7 +56,6 @@
             canUseAdvancedPerms: {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %},
             canUseAdvancedCustomization: {% if user.permissions.can_use_advanced_customization %} true {% else %} false {% endif %},
 
-            cloudMode: {% if cloud_mode %} true {% else %} false {% endif %},
             isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
             orgName: {% if org is not None %} '{{ org.org_name|escapejs }}' {% else %} '' {% endif %},
             orgID: {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %},

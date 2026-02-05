@@ -42,10 +42,6 @@ try:
     IS_EMAIL_CONFIGURED = True
 except ImportError:
     IS_EMAIL_CONFIGURED = False
-try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
 
 logger = logging.getLogger(__name__)
 
@@ -61,10 +57,6 @@ except Exception as e:
     s3_client = None
 
 mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
-
-
-def is_pro_version():
-    return getattr(seahub.settings, 'IS_PRO_VERSION', False) is True
 
 
 def is_cluster_mode():
@@ -251,8 +243,7 @@ def is_org_context(request):
     Arguments:
     - `request`:
     """
-    cloud_mode = getattr(request, 'cloud_mode', False)
-    return cloud_mode and request.user.org is not None
+    return request.user.org is not None
 
 
 def calc_file_path_hash(path, bits=12):

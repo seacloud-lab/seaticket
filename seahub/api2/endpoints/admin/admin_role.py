@@ -10,7 +10,6 @@ from rest_framework import status
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.permissions import IsProVersion
 from seahub.api2.utils import api_error
 
 from seahub.base.accounts import User
@@ -23,7 +22,7 @@ logger = logging.getLogger(__name__)
 class AdminAdminRole(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):

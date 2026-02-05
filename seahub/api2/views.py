@@ -135,18 +135,13 @@ class AccountInfo(APIView):
         info = {}
         email = request.user.username
         p = Profile.objects.get_profile_by_user(email)
-        is_cloud_personal_account = False
         if is_org_context(request):
             org_id = request.user.org.org_id
             is_org_staff = request.user.org.is_staff
             info['org_id'] = org_id
             info['is_org_staff'] = is_org_staff
-        else:
-            if request.cloud_mode:
-                is_cloud_personal_account = True
 
         url, _, _ = api_avatar_url(email)
-        info['is_cloud_personal_account'] = is_cloud_personal_account
         info['avatar_url'] = url
         info['email'] = email
         info['name'] = email2nickname(email)

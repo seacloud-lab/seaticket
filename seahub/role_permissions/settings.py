@@ -2,14 +2,11 @@
 import logging
 
 from django.conf import settings
-from seahub.utils import is_pro_version
 from seahub.constants import DEFAULT_USER, GUEST_USER, \
     DEFAULT_ADMIN, SYSTEM_ADMIN, DAILY_ADMIN, AUDIT_ADMIN, ORG_DEFAULT
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-
-is_pro = is_pro_version()
 
 
 def merge_roles(default, custom, fallback_role):
@@ -50,8 +47,8 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_use_global_address_book': True,
         'can_invite_guest': False,
         'can_generate_external_link': True,
-        'can_use_advanced_permissions': True if is_pro else False,
-        'can_use_advanced_customization': True if is_pro else False,
+        'can_use_advanced_permissions': True,
+        'can_use_advanced_customization': True,
         'can_use_automation_rules': True,
         'monthly_api_call_limit_per_user': -1,
         'ai_credit_per_user': -1
@@ -71,7 +68,7 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
 }
 
 try:
-    custom_role_permissions = settings.ENABLED_ROLE_PERMISSIONS if is_pro else {}
+    custom_role_permissions = settings.ENABLED_ROLE_PERMISSIONS
 except AttributeError:
     custom_role_permissions = {}
 
@@ -146,7 +143,7 @@ DEFAULT_ENABLED_ADMIN_ROLE_PERMISSIONS = {
 }
 
 try:
-    custom_admin_role_permissions = settings.ENABLED_ADMIN_ROLE_PERMISSIONS if is_pro else {}
+    custom_admin_role_permissions = settings.ENABLED_ADMIN_ROLE_PERMISSIONS
 except AttributeError:
     custom_admin_role_permissions = {}
 

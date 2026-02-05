@@ -20,8 +20,7 @@ class OrganizationView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, org_id):
-        if not request.cloud_mode:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Feature not enabled.')
+
         org_id = int(org_id)
         if org_id == 0:
             return api_error(status.HTTP_400_BAD_REQUEST, 'org_id invalid.')

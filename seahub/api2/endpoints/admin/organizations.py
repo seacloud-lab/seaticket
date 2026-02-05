@@ -18,7 +18,6 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.api2.permissions import IsProVersion
 from seahub.role_permissions.utils import get_available_roles
 from seahub.profile.models import Profile
 from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup
@@ -32,11 +31,6 @@ except ImportError:
 
 if ORG_MEMBER_QUOTA_ENABLED:
     from seahub.organizations.models import OrgMemberQuota
-
-try:
-    from seahub.settings import CLOUD_MODE
-except ImportError:
-    CLOUD_MODE = False
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -167,7 +161,7 @@ def get_orgs_info_by_role(role, page, per_page):
 class AdminOrganizations(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
@@ -177,7 +171,7 @@ class AdminOrganizations(APIView):
         1. only admin can perform this action.
         """
 
-        if not (CLOUD_MODE and MULTI_TENANCY):
+        if not MULTI_TENANCY:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -232,7 +226,7 @@ class AdminOrganizations(APIView):
         Permission checking:
         1. only admin can perform this action.
         """
-        if not (CLOUD_MODE and MULTI_TENANCY):
+        if not MULTI_TENANCY:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -316,7 +310,7 @@ class AdminOrganizations(APIView):
 class AdminOrganization(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, org_id):
@@ -326,7 +320,7 @@ class AdminOrganization(APIView):
         1. only admin can perform this action.
         """
 
-        if not (CLOUD_MODE and MULTI_TENANCY):
+        if not MULTI_TENANCY:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -360,7 +354,7 @@ class AdminOrganization(APIView):
         1. only admin can perform this action.
         """
 
-        if not (CLOUD_MODE and MULTI_TENANCY):
+        if not MULTI_TENANCY:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -429,7 +423,7 @@ class AdminOrganization(APIView):
         1. only admin can perform this action.
         """
 
-        if not (CLOUD_MODE and MULTI_TENANCY):
+        if not MULTI_TENANCY:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -476,7 +470,7 @@ class AdminOrganization(APIView):
 class AdminSearchOrganization(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
@@ -524,7 +518,7 @@ class AdminSearchOrganization(APIView):
 
 class AdminOrganizationsBaseInfo(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
+    permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):

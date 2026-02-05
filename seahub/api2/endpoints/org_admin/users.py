@@ -8,7 +8,7 @@ from rest_framework.authentication import SessionAuthentication
 from django.utils.translation import gettext as _
 from django.conf import settings
 
-from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
+from seahub.api2.permissions import IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error, to_python_boolean
@@ -43,7 +43,7 @@ class OrgAdminUsers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         """List organization user
@@ -229,7 +229,7 @@ class OrgAdminUser(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id, email):
         """Get org user info
@@ -467,7 +467,7 @@ class OrgAdminUser(APIView):
 class OrgAdminSearchUsers(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         """List organization user
@@ -558,7 +558,7 @@ class OrgAdminInviteUsers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def post(self, request, org_id):
         org_id = int(org_id)

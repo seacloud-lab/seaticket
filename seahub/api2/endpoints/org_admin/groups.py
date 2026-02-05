@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from django.utils.translation import gettext as _
 
-from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
+from seahub.api2.permissions import IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
@@ -39,7 +39,7 @@ class OrgAdminGroups(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         """List organization group
@@ -185,7 +185,7 @@ class OrgAdminGroups(APIView):
 class OrgAdminGroup(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id, group_id):
         """get org group info
@@ -374,7 +374,7 @@ class AdminGroupMembers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id, group_id, format=None):
         """ List all group members
@@ -542,7 +542,7 @@ class AdminGroupMember(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def put(self, request, org_id, group_id, email, format=None):
         """ update role of a group member
@@ -644,7 +644,7 @@ class AdminGroupMember(APIView):
 
 class OrgAdminGroupProjects(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, org_id, group_id):
@@ -692,7 +692,7 @@ class OrgAdminGroupProjects(APIView):
 
 class OrgAdminGroupProject(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
 
     def delete(self, request, org_id, group_id, project_uuid):

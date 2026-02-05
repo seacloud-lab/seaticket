@@ -24,7 +24,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
 from seahub.profile.models import Profile
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.project.models import IdInOrgTuple
-from seahub.settings import CLOUD_MODE, ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER
+from seahub.settings import ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER
 from seahub.organizations.models import OrgUser, Organization
 from seahub.auth.models import EmailUser
 
@@ -58,14 +58,11 @@ class SearchUser(APIView):
         email_list = []
         username = request.user.username
 
-        if CLOUD_MODE:
-            if is_org_context(request):
-                result_users, err = search_user_in_org(request, q)
-                if err:
-                    return err
-                email_list += result_users
-            else:
-                email_list += search_user_with_exact_match(request, q)
+        if is_org_context(request):
+            result_users, err = search_user_in_org(request, q)
+            if err:
+                return err
+            email_list += result_users
         else:
             if self._can_use_global_address_book(request):
                 # check user permission according to user's role(default, guest, etc.)

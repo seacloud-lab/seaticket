@@ -1,7 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 from django.conf import settings
-from seahub.utils import is_pro_version
 from seahub.base.accounts import User
 
 logger = logging.getLogger(__name__)
@@ -50,13 +49,7 @@ def parse_license():
 def user_number_over_limit(new_users=1):
     logger = logging.getLogger(__name__)
     try:
-        if is_pro_version():
-            # get license user limit
-            license_dict = parse_license()
-            max_users = int(license_dict.get('MaxUsers', 3))
-        else:
-            # 200 for seatable-developer
-            max_users = 200
+        max_users = 1000000
 
         # get active user number
         active_users = User.objects.count_emailusers()

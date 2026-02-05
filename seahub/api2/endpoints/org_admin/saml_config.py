@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
-from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
+from seahub.api2.permissions import IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
@@ -36,7 +36,7 @@ class OrgSAMLConfigView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
         # resource check
@@ -117,7 +117,7 @@ class OrgVerifyDomain(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
+    permission_classes = (IsOrgAdminUser,)
 
     def put(self, request, org_id):
         # argument check

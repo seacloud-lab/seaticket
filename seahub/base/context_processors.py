@@ -27,8 +27,6 @@ from seahub.utils import get_site_name, get_service_url
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 
 
-from seahub.utils import is_pro_version
-
 try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
@@ -104,7 +102,6 @@ def base(request):
         'logo_path': logo_path,
         'logo_width': LOGO_WIDTH,
         'logo_height': LOGO_HEIGHT,
-        'cloud_mode': request.cloud_mode,
         'org': org,
         'site_name': get_site_name(),
         'enable_signup': ENABLE_SIGNUP,
@@ -117,14 +114,13 @@ def base(request):
         'LOGIN_URL': dj_settings.LOGIN_URL,
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
         'show_logout_icon': SHOW_LOGOUT_ICON,
-        'is_pro': True if is_pro_version() else False,
         'service_url': get_service_url().rstrip('/'),
         'avatar_url': avatar_url if avatar_url else '',
         'is_mobile': request.is_mobile,
         'is_tablet': request.is_tablet,
         'privacy_policy_link': PRIVACY_POLICY_LINK,
         'terms_of_service_link': TERMS_OF_SERVICE_LINK,
-        'cn_force_check_user_agreement': request.cloud_mode and CN_FORCE_USER_AGREE_TERMS,
+        'cn_force_check_user_agreement': CN_FORCE_USER_AGREE_TERMS,
         'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL
     }
 

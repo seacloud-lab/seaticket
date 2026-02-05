@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.settings import LICENSE_PATH
-from seahub.utils import get_file_type_and_ext, is_pro_version
+from seahub.utils import get_file_type_and_ext
 from seahub.utils.licenseparse import parse_license
 from seahub.utils.error_msg import file_type_error_msg, file_size_error_msg
 
@@ -59,11 +59,7 @@ class AdminLicense(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # get license info
-        is_pro = is_pro_version()
-        if is_pro:
-            license_dict = parse_license()
-        else:
-            license_dict = {}
+        license_dict = {}
 
         if license_dict:
             try:

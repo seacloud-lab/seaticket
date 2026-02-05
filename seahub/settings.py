@@ -14,8 +14,6 @@ PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
 
 DEBUG = False
 
-CLOUD_MODE = False
-
 ADMINS = [
     # ('Your Name', 'your_email@domain.com'),
 ]
@@ -489,7 +487,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'seaqa_web.log'),
+            'filename': os.path.join(LOG_DIR, 'seaqa-web.log'),
             'formatter': 'file'
         },
     },
@@ -790,7 +788,13 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
 sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
-IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
+MULTI_TENANCY = True
+
+# service url
+SEATICKET_SERVER_HOSTNAME = os.environ.get('SEATICKET_SERVER_HOSTNAME', '')
+SEATICKET_SERVER_PROTOCOL = os.environ.get('SEATICKET_SERVER_PROTOCOL', '')
+if SEATICKET_SERVER_HOSTNAME and SEATICKET_SERVER_PROTOCOL:
+    SEAQA_WEB_SERVICE_URL = f'{SEATICKET_SERVER_PROTOCOL}://{SEATICKET_SERVER_HOSTNAME}'
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
 # then add 'seahub.auth.middleware.SeafileRemoteUserMiddleware' and

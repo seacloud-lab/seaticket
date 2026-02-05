@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { toaster, Loading } from '@/components';
-import { gettext, isPro, isDefaultAdmin } from '@/constants';
+import { gettext, isDefaultAdmin } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { TopBar, Main } from '../main-panel';
 import sysAdminAPI from '@/sys-admin/api';
@@ -125,30 +125,30 @@ class Info extends Component {
           {(!loading && !errorMsg) && (
             <dl className="m-0">
               <dt className="info-item-heading">{gettext('System info')}</dt>
-              {isPro ?
-                <dd className="info-item-content">
-                  {gettext('Enterprise Edition')}
-                  {with_license &&
-                    ' ' + this.renderLicenseDescString(license_mode, license_to, license_expiration)
-                  }<br/>
-                  {isDefaultAdmin &&
-                    <Fragment>
-                      <Button
-                        type="button"
-                        className="mt-2"
-                        color="primary"
-                        outline={true}
-                        onClick={this.openFileInput}
-                      >{gettext('Upload license')}
-                      </Button>
-                      <input className="d-none" type="file" onChange={this.uploadLicenseFile} ref={this.fileInput} />
-                    </Fragment>
-                  }
-                </dd> :
-                <dd className="info-item-content">
-                  {gettext('Developer edition')}
-                </dd>
-              }
+
+              <dd className="info-item-content">
+                {gettext('Enterprise Edition')}
+                {with_license &&
+                  ' ' + this.renderLicenseDescString(license_mode, license_to, license_expiration)
+                }<br/>
+                {isDefaultAdmin &&
+                  <Fragment>
+                    <Button
+                      type="button"
+                      className="mt-2"
+                      color="primary"
+                      outline={true}
+                      onClick={this.openFileInput}
+                    >{gettext('Upload license')}
+                    </Button>
+                    <input className="d-none" type="file" onChange={this.uploadLicenseFile} ref={this.fileInput} />
+                  </Fragment>
+                }
+              </dd> :
+              <dd className="info-item-content">
+                {gettext('Developer edition')}
+              </dd>
+
               <dt className="info-item-heading">{gettext('Version info')}</dt>
               <dd className="info-item-content">{version}</dd>
 
@@ -156,16 +156,16 @@ class Info extends Component {
               <dd className="info-item-content">
                 {this.renderProjectInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
               </dd>
-              {isPro ?
-                <Fragment>
-                  <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')} / {gettext('Limits')}</dt>
-                  <dd className="info-item-content">{active_users_count}{' / '}{users_count}{' / '}{with_license ? license_maxusers : '--'}</dd>
-                </Fragment> :
-                <Fragment>
-                  <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')}</dt>
-                  <dd className="info-item-content">{active_users_count} / {users_count}</dd>
-                </Fragment>
-              }
+
+              <Fragment>
+                <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')} / {gettext('Limits')}</dt>
+                <dd className="info-item-content">{active_users_count}{' / '}{users_count}{' / '}{with_license ? license_maxusers : '--'}</dd>
+              </Fragment> :
+              <Fragment>
+                <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')}</dt>
+                <dd className="info-item-content">{active_users_count} / {users_count}</dd>
+              </Fragment>
+
 
               <dt className="info-item-heading">{gettext('Groups')}</dt>
               <dd className="info-item-content">{groups_count}</dd>

@@ -27,8 +27,7 @@ os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
 #### OAuth Login to Seatable
 ENABLE_OAUTH = getattr(settings, 'ENABLE_OAUTH', False)
-IS_PRO_VERSION = getattr(settings, 'IS_PRO_VERSION', False)
-if ENABLE_OAUTH and IS_PRO_VERSION:
+if ENABLE_OAUTH:
 
     # Used for oauth workflow.
     CLIENT_ID = getattr(settings, 'OAUTH_CLIENT_ID', '')
@@ -63,7 +62,7 @@ def oauth_check(func):
     def _decorated(request):
 
         error = False
-        if not IS_PRO_VERSION or not ENABLE_OAUTH:
+        if not ENABLE_OAUTH:
             logger.error('OAuth not enabled.')
             error = True
         else:

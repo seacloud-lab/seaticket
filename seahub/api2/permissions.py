@@ -9,7 +9,6 @@ import json
 from seahub.project.models import Projects
 from seahub.project.utils import check_same_org_permission
 
-from seahub.utils import is_pro_version
 from seahub.group.utils import is_group_member
 
 SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
@@ -24,13 +23,6 @@ class IsGroupMember(BasePermission):
         username = request.user.username if request.user else ''
         return True if is_group_member(group_id, username) else False
 
-class IsProVersion(BasePermission):
-    """
-    Check whether Seafile is pro version
-    """
-
-    def has_permission(self, request, *args, **kwargs):
-        return is_pro_version()
 
 class IsOrgAdminUser(BasePermission):
     """
