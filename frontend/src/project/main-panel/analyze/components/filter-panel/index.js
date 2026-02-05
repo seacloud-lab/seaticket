@@ -59,7 +59,6 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
             className="analyze-filter-option-editor"
             options={stateOptions}
             target={popoverRef}
-            checkPlacement="left"
             isSearchEnabled={false}
             value={state ? state.value : ''}
             onChange={onStateChange}
