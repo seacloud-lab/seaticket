@@ -6,9 +6,11 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 import Legend from '../legend';
 import { CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { gettext } from '@/constants';
-import { TABLE_SCHEMA, COLOR_BY_FIELDS, projectUuid } from '../../constants';
+import { TABLE_SCHEMA, COLOR_BY_FIELDS } from '../../constants';
 
 import './index.css';
+
+const { projectUuid } = window.app.pageOptions;
 
 const columnKeys = Object.keys(TABLE_SCHEMA);
 const columnDefs = columnKeys.map(key => `"${key}" ${TABLE_SCHEMA[key]}`).join(', ');
@@ -308,9 +310,13 @@ const EmbeddingView = ({
     }
 
     if (filters.length > 0) {
-      const filterPredicates = filters.map(f =>
-        SQL.eq(SQL.column(f.field), SQL.literal(f.value))
-      );
+      const filterPredicates = [];
+      for (const filter of filters) {
+        if (filter.field === 'state' && filter.value === '--') {
+          continue;
+        }
+        filterPredicates.push(SQL.eq(SQL.column(filter.field), SQL.literal(filter.value)));
+      }
       predicates.push(...filterPredicates);
     }
 

@@ -8,8 +8,10 @@ import './index.css';
 const STATE_LABELS = {
   open: gettext('Open'),
   closed: gettext('Closed'),
+  '--': '--',
 };
-const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFilter }) => {
+
+const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) => {
   const [isShowPopover, setIsShowPopover] = useState(false);
   const popoverRef = useRef(null);
 
@@ -17,9 +19,8 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
     return filters.find(item => item.field === 'state');
   }, [filters]);
 
-  const options = useMemo(() => {
+  const stateOptions = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
-    state.sort().reverse();
     return state.map((state) => {
       return {
         label: STATE_LABELS[state],
@@ -41,14 +42,10 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
     }
   }, [isShowPopover, isDisabled, setIsShowPopover]);
 
-  const handleSelectValue = useCallback((value) => {
-    if (value) {
-      onAddFilter('state', value);
-    } else {
-      onRemoveFilter('state');
-    }
+  const onStateChange = useCallback((value) => {
+    handleFilterChange('state', value);
     setIsShowPopover(false);
-  }, [onAddFilter, onRemoveFilter, setIsShowPopover]);
+  }, [handleFilterChange, setIsShowPopover]);
 
   return (
     <div className="analyze-filter-panel">
@@ -60,12 +57,11 @@ const FilterPanel = ({ filters, filterableFieldOptions, onAddFilter, onRemoveFil
         {isShowPopover && (
           <OptionEditor
             className="analyze-filter-option-editor"
-            options={options}
+            options={stateOptions}
             target={popoverRef}
-            checkPlacement="left"
             isSearchEnabled={false}
             value={state ? state.value : ''}
-            onChange={handleSelectValue}
+            onChange={onStateChange}
             onToggle={() => setIsShowPopover(false)}
           />
         )}

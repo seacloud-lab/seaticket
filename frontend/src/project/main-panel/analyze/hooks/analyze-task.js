@@ -1,6 +1,5 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { connectionsAPI } from '@/project/api';
-import { projectUuid } from '../constants';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 
@@ -78,10 +77,10 @@ export const AnalyzeTaskProvider = ({ children }) => {
     setError(null);
     setLastLoadRecordsTime('');
 
-    connectionsAPI.getConnectionsEmbeddingAnalysis( projectUuid, connectionIds, startDate, endDate).then(res => {
+    const { projectUuid } = window.app.pageOptions;
+    connectionsAPI.getConnectionsEmbeddingAnalysis(projectUuid, connectionIds, startDate, endDate).then(res => {
       const { task_id } = res.data;
       setCurrentTaskId(task_id);
-
       pollTaskStatus(task_id);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

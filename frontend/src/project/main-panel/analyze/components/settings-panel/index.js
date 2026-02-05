@@ -15,8 +15,7 @@ const SettingsPanel = ({
   onClose,
   filters,
   filterableFieldOptions,
-  onAddFilter,
-  onRemoveFilter,
+  handleFilterChange,
   colorBy,
   onColorByChange,
   displayMode,
@@ -66,13 +65,13 @@ const SettingsPanel = ({
             onRemoveConnection={onRemoveConnection}
           />
         </FormGroup>
+        {/* Filter Setting */}
         <div className="analyze-settings-section">
           <div className="analyze-settings-label">{gettext('Filters')}</div>
           <FilterPanel
             filters={filters}
             filterableFieldOptions={filterableFieldOptions}
-            onAddFilter={onAddFilter}
-            onRemoveFilter={onRemoveFilter}
+            handleFilterChange={handleFilterChange}
           />
         </div>
 
