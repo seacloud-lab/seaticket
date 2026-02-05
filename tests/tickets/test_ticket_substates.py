@@ -7,7 +7,7 @@ def test_get_substates_feature_not_enabled(factory, user):
     request = factory.get('/api/v1/projects/p1/ticket-substates/')
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=False):
+    with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
@@ -113,7 +113,7 @@ def test_delete_substates_feature_not_enabled(factory, user):
     )
     request.user = user
 
-    with patch('seahub.tickets.ticket_substates.is_org_context', return_value=False):
+    with patch('seahub.utils.decorators.is_org_context', return_value=False):
         resp = TicketSubstatesAPIView.as_view()(request, project_uuid='p1')
 
     assert resp.status_code == 403
