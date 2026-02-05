@@ -8,7 +8,7 @@ import './index.css';
 const STATE_LABELS = {
   open: gettext('Open'),
   closed: gettext('Closed'),
-  all: '--',
+  '--': '--',
 };
 
 const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) => {
@@ -21,7 +21,6 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
 
   const stateOptions = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
-    state.sort().reverse();
     return state.map((state) => {
       return {
         label: STATE_LABELS[state],

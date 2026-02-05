@@ -312,7 +312,7 @@ const EmbeddingView = ({
     if (filters.length > 0) {
       const filterPredicates = [];
       for (const filter of filters) {
-        if (filter.field === 'state' && filter.value === 'all') {
+        if (filter.field === 'state' && filter.value === '--') {
           continue;
         }
         filterPredicates.push(SQL.eq(SQL.column(filter.field), SQL.literal(filter.value)));

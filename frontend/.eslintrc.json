@@ -46,6 +46,7 @@
     "one-var": ["error", "never"],
     "no-multiple-empty-lines": ["warn", { "max": 2, "maxEOF": 1 }],
     "no-multi-spaces": "warn",
+    "no-loss-of-precision": "warn",
     "react/jsx-closing-tag-location": "warn"
   }
 }
