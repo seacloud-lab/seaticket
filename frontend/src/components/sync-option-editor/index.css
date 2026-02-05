@@ -1,6 +1,2 @@
 @import url('../option-editor/index.css');
-@import url('../option-editor/option-editor-container.css');
-
-.sync-option-editor-popover.option-editor-popover .option-editor-content .option-editor-option.check-placement-left {
-  padding-left: 6px !important;
-}
+@import url('../option-editor/option-editor-container/index.css');

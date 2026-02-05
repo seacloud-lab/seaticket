@@ -34,44 +34,6 @@
   height: 40px;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-tabs {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 40px;
-  padding: 0px 8px;
-}
-
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-tabs .sea-qa-tab-item {
-  display: flex;
-  align-items: center;
-  height: 30px;
-  font-size: 14px;
-  padding: 0px 8px;
-  cursor: pointer;
-}
-
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-tabs .sea-qa-tab-item:not(.active):hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
-}
-
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-tabs .sea-qa-tab-item.active {
-  color: #ed7109;
-  font-weight: 500;
-  position: relative;
-}
-
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-tabs .sea-qa-tab-item.active::before {
-  background-color: #ff8000;
-  bottom: -5px;
-  content: "";
-  height: 2px;
-  left: 8px;
-  position: absolute;
-  width: calc(100% - 16px);
-}
-
 .sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions {
   display: flex;
   cursor: pointer;

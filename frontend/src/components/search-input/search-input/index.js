@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
+import ClearIconButton from '../../clear-icon-button';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -84,7 +86,12 @@ class SearchInput extends Component {
     if (!isFunction(onClear)) return null;
     if (!isShowClearIcon && !searchValue) return null;
     return (
-      <IconButton icon="close" className="sea-qa-search-input-clear" onClick={this.onClear} style={{ height: 20, width: 20, top: (size - 20) / 2, right: (size - 20) / 2 }} />
+      <ClearIconButton
+        onClick={this.onClear}
+        className="position-absolute"
+        title={gettext('Clear search')}
+        style={{ height: 14, width: 14, top: (size - 14) / 2, right: 12 }}
+      />
     );
   };
 
@@ -98,13 +105,13 @@ class SearchInput extends Component {
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size }} />
+          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size + 2 }} />
         )}
         <input
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control sea-qa-search-input', inputClassName)}
+          className={classnames('form-control sea-qa-search-input', inputClassName, { 'small': size <= 30 })}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -112,8 +119,9 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={{ height: size, paddingLeft: isShowSearchIcon ? size + 2 : 12 }}
+          style={{ height: size, paddingLeft: isShowSearchIcon ? size + 2 : 12, paddingRight: 30 }}
           name="search-input"
+          autoComplete="off"
         />
         {this.renderClear()}
       </div>

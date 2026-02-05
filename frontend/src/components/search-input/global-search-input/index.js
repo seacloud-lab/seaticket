@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
+import ClearIconButton from '@/components/clear-icon-button';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -100,7 +102,7 @@ class GlobalSearchInput extends Component {
     const { onClear, size = 38 } = this.props;
     const { searchValue } = this.state;
     if (!isFunction(onClear) || !searchValue) return null;
-    const clearButtonSize = 20;
+    const clearButtonSize = 14;
     const verticalOffset = (size - clearButtonSize) / 2;
     const clearButtonStyle = {
       height: clearButtonSize,
@@ -109,9 +111,9 @@ class GlobalSearchInput extends Component {
       right: verticalOffset
     };
     return (
-      <IconButton
-        icon="close"
-        className="sea-qa-search-input-clear"
+      <ClearIconButton
+        title={gettext('Clear search')}
+        className="position-absolute"
         onClick={this.onClear}
         style={clearButtonStyle}
       />

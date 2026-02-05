@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import SearchedList from './searched-list';
-import { Loading, SearchInput } from '@/components';
+import { CustomizeTabs, Loading, SearchInput } from '@/components';
 import homeAPI from '../../api';
 import { getValueLength } from '../search-utils';
 import { gettext } from '@constants';
-import { QUERY_TYPE, SEARCHED_STORE_KEY, QUERY_TYPE_DISPLAY } from './constant';
+import { QUERY_TYPE, SEARCHED_STORE_KEY } from './constant';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 
 const MIN_HEIGHT = 200;
@@ -196,8 +195,6 @@ const ProjectSearcher = (props) => {
     );
   };
 
-  let queryTypes = [QUERY_TYPE.PROJECT];
-
   return (
     <div className='project-searcher' ref={searcherRef}>
       <SearchInput
@@ -209,21 +206,14 @@ const ProjectSearcher = (props) => {
         placeholder={gettext('Search')}
       />
       <div className='search-type-wrapper'>
-        <div className='search-type-content'>
-          {queryTypes.map((queryType) => {
-            return (
-              <div
-                key={queryType}
-                className={classnames('sea-qa-search-type', `search-type-${queryType}`, {
-                  active: queryType === currQueryType,
-                })}
-                onClick={() => onChangeQueryType(queryType)}
-              >
-                {gettext(QUERY_TYPE_DISPLAY[queryType])}
-              </div>
-            );
-          })}
-        </div>
+        <CustomizeTabs
+          tabs={[
+            { value: QUERY_TYPE.PROJECT, label: gettext('Project') },
+          ]}
+          className="search-type-content"
+          value={currQueryType}
+          onChange={onChangeQueryType}
+        />
       </div>
       <div
         className='sea-qa-search-results'

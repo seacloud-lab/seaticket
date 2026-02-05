@@ -25,7 +25,7 @@ const RowHeightSetter = ({ readOnly, wrapperClass, rowHeight, target, modifyRowH
     <>
       <IconBtn
         icon={`row-height-${rowHeight}`}
-        size={24}
+        size={{ btn: 24 }}
         className={wrapperClass}
         onClick={onSetterToggle}
         role="button"

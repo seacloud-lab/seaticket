@@ -54,7 +54,7 @@ const Searcher = ({ viewId, onChange }) => {
   }, [viewId]);
 
   return (
-    <div className="sea-metadata-searcher-container mr-2">
+    <div className="sea-metadata-searcher-container">
       {!isSearchActive &&
         <IconButton
           icon="search"

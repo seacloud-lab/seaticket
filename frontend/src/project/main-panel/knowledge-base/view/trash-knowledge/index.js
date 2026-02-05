@@ -121,6 +121,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
 
   return (
     <SeaMetadata
+      className="sea-kb-metadata"
       viewID="all"
       api={api}
       permission={permission}

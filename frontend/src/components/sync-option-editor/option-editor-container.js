@@ -1,14 +1,11 @@
-import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import axios from 'axios';
 import classnames from 'classnames';
 import SearchInput from '../search-input';
-import Option from '../option';
-import IconButton from '../icon-button';
-import { gettext, KeyCodes } from '@/constants';
+import { KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { isFunction } from '@utils/type-detection';
 import toaster from '../toaster';
-import CenteredLoading from '../centered-loading';
+import Options from '../option-editor/options';
 
 const OptionEditorContainer = forwardRef(({
   isMultiple = false,
@@ -18,7 +15,7 @@ const OptionEditorContainer = forwardRef(({
   checkPlacement = 'right',
   className,
   optionClassName,
-  maxHeight = 200,
+  maxHeight = 240,
   optionHeight = 30,
   onChange,
   onToggle,
@@ -28,16 +25,11 @@ const OptionEditorContainer = forwardRef(({
   const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [options, setOptions] = useState([]);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
 
-  const displayOptionsRef = useRef(null);
   const abortControllerRef = useRef(null);
   const timer = useRef(null);
   const lastSearchValue = useRef('');
-
-  const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
-  const validCheckPlacement = useMemo(() => checkPlacement === 'left' ? 'left' : 'right', [checkPlacement]);
 
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
@@ -63,80 +55,6 @@ const OptionEditorContainer = forwardRef(({
     onToggle && onToggle();
   }, [isMultiple, value, onChange, onToggle]);
 
-  const onMenuMouseEnter = useCallback((highlightIndex) => {
-    setHighlightIndex(highlightIndex);
-  }, []);
-
-  const onMenuMouseLeave = useCallback(() => {
-    setHighlightIndex(-1);
-  }, []);
-
-  const onEnter = useCallback((event) => {
-    event.preventDefault();
-    let option;
-    if (options.length === 1) {
-      option = options[0];
-    } else if (highlightIndex > -1) {
-      option = options[highlightIndex];
-    }
-    if (!option) return;
-    toggleOption(option.value);
-  }, [options, highlightIndex, toggleOption]);
-
-  const onUpArrow = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (highlightIndex === 0) {
-      setHighlightIndex(options.length - 1);
-      displayOptionsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex - 1);
-    if (highlightIndex > options.length - maxItemNum) {
-      displayOptionsRef.current.scrollTop -= optionHeight;
-    }
-  }, [displayOptionsRef, highlightIndex, maxItemNum, options, optionHeight]);
-
-  const onDownArrow = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (highlightIndex === options.length - 1) {
-      setHighlightIndex(0);
-      displayOptionsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex + 1);
-    if (highlightIndex >= maxItemNum) {
-      displayOptionsRef.current.scrollTop += optionHeight;
-    }
-  }, [displayOptionsRef, highlightIndex, maxItemNum, options, optionHeight]);
-
-  const blur = useCallback(() => {
-    onChange && onChange();
-  }, [onChange]);
-
-  const onEsc = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    blur();
-  }, [blur]);
-
-  const onHotKey = useCallback((event) => {
-    if (event.keyCode === KeyCodes.Enter) {
-      onEnter(event);
-    } else if (event.keyCode === KeyCodes.UpArrow) {
-      onUpArrow(event);
-    } else if (event.keyCode === KeyCodes.DownArrow) {
-      onDownArrow(event);
-    } else if (event.keyCode === KeyCodes.Tab) {
-      if (isFunction(onPressTab)) {
-        onPressTab(event);
-      }
-    } else if (event.keyCode === KeyCodes.Esc) {
-      onEsc(event);
-    }
-  }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc]);
-
   const onKeyDown = useCallback((event) => {
     if (
       event.keyCode === KeyCodes.ChineseInputMethod ||
@@ -146,19 +64,6 @@ const OptionEditorContainer = forwardRef(({
       event.stopPropagation();
     }
   }, []);
-
-  useEffect(() => {
-    document.addEventListener('keydown', onHotKey, true);
-    return () => {
-      document.removeEventListener('keydown', onHotKey, true);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onHotKey]);
-
-  useEffect(() => {
-    const highlightIndex = options.length === 0 ? -1 : 0;
-    setHighlightIndex(highlightIndex);
-  }, [options]);
 
   useEffect(() => {
     if (lastSearchValue.current === searchValue) return;
@@ -218,58 +123,27 @@ const OptionEditorContainer = forwardRef(({
         <SearchInput
           autoFocus={true}
           value={searchValue}
-          size={28}
+          size={36}
           placeholder={placeholder}
           onKeyDown={onKeyDown}
           onChange={onSearchValueChange}
           onClear={() => onSearchValueChange('')}
         />
       </div>
-      <div
-        className={classnames('option-editor-content', { 'empty': options.length === 0 })}
-        style={{ maxHeight }}
-        ref={displayOptionsRef}
-      >
-        {isLoading && (
-          <CenteredLoading style={{ minHeight: '100px' }} />
-        )}
-        {!isLoading && options.length === 0 && (
-          <div className="tip-default">
-            {searchValue ? emptyTip : gettext('Enter characters to start searching')}
-          </div>
-        )}
-        {!isLoading && options.length > 0 && (
-          <>
-            {options.map((option, i) => {
-              const isSelected = value.includes(option.value);
-              return (
-                <div
-                  className={classnames('option-editor-option', optionClassName, {
-                    'active': highlightIndex === i,
-                    [`check-placement-${validCheckPlacement}`]: validCheckPlacement
-                  })}
-                  key={option.value}
-                  onClick={() => toggleOption(option.value)}
-                  onMouseEnter={() => onMenuMouseEnter(i)}
-                  onMouseLeave={() => onMenuMouseLeave(i)}
-                >
-                  {validCheckPlacement === 'right' ? (
-                    <>
-                      {option.label ? option.label : (<Option option={option} />)}
-                      <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
-                    </>
-                  ) : (
-                    <>
-                      <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
-                      {option.label ? option.label : (<Option option={option} />)}
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </>
-        )}
-      </div>
+      <Options
+        isLoading={isLoading}
+        options={options}
+        maxHeight={maxHeight - 26} // 26: padding-top(12) + padding-bottom(12) + border(2)
+        searchValue={searchValue}
+        emptyTip={emptyTip}
+        value={value}
+        checkPlacement={checkPlacement}
+        optionHeight={optionHeight}
+        optionClassName={optionClassName}
+        onToggleOption={toggleOption}
+        onPressTab={onPressTab}
+        onChange={onChange}
+      />
     </div>
   );
 });

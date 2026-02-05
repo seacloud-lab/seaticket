@@ -1,0 +1,17 @@
+.option-editor-start-searching-tip,
+.option-editor-no-results-tip {
+  min-height: 140px;
+  justify-content: flex-start;
+}
+
+.option-editor-start-searching-tip img,
+.option-editor-no-results-tip img {
+  height: 48px !important;
+  width: 48px !important;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.option-editor-no-results-tip img {
+  margin-bottom: 0;
+}

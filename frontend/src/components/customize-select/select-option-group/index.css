@@ -1,0 +1,77 @@
+.option-group {
+  position: absolute;
+  left: 0;
+  min-height: 60px;
+  max-height: 300px;
+  min-width: 100%;
+  max-width: 15rem;
+  padding: 0.75rem 0;
+  background: #fff;
+  border: 1px solid var(--bs-border-secondary-color);
+  box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1);
+  border-radius: 8px;
+  z-index: 10001;
+}
+
+.option-group .option-group-search {
+  width: 100%;
+  padding: 0 12px 8px 12px;
+  min-width: 170px;
+}
+
+.option-group-search .form-control {
+  height: 31px;
+}
+
+.option-group .none-search-result {
+  height: 100px;
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.option-group .option-group-content {
+  max-height: 252px;
+  overflow-y: auto;
+  padding: 0 12px;
+}
+
+.option-group .option {
+  display: block;
+  width: 100%;
+  line-height: 24px;
+  padding: 0.25rem 0.75rem;
+  clear: both;
+  font-weight: 400;
+  text-align: inherit;
+  background-color: transparent;
+  border: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #212529;
+}
+
+.option-group:not(.searchable) .option {
+  padding: 0.25rem 0.5rem;
+}
+
+.option-group .option.active {
+  background-color: var(--option-bg-color);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.option-group .option .sea-qa-icon-svg {
+  color: var(--bs-icon-color);
+  height: 14px;
+  width: 14px;
+}
+
+.option-group .option .select-option-name .single-select-option {
+  margin: 0 0 0 12px;
+}
+
+.option-group .option .select-option-name .multiple-select-option {
+  margin: 0;
+}

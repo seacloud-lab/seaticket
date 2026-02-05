@@ -6,7 +6,14 @@ import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
-const Attachments = ({ projectUuid, attachments, className, onRemove }) => {
+const Attachments = ({
+  projectUuid,
+  attachments,
+  className,
+  innerRef,
+  onRemove,
+  ...props
+}) => {
   const [attachmentIndex, setAttachmentIndex] = useState(-1);
 
   const openAttachment = useCallback((attachmentIndex) => {
@@ -36,7 +43,7 @@ const Attachments = ({ projectUuid, attachments, className, onRemove }) => {
 
   return (
     <>
-      <div className={classnames('sea-qa-ai-chat-message-attachments', className)}>
+      <div className={classnames('sea-qa-ai-chat-message-attachments', className)} ref={innerRef} { ...props }>
         {attachments.map((attachment, index) => {
           return (
             <Attachment

@@ -51,3 +51,12 @@
 .sea-qa-side-panel-more-nav .sea-qa-icon-svg {
   color: #999;
 }
+
+.sea-qa-project-side-panel .resize-bar {
+  top: 20px;
+  height: calc(100% - 40px);
+}
+
+.sea-qa-project-side-panel .resize-bar-content {
+  background-color: inherit;
+}

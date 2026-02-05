@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import classnames from 'classnames';
 import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
 import { Icon } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
@@ -8,6 +7,7 @@ import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
 import { Z_INDEX } from '@/constants';
 import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
+import { CustomizeTabs } from '@/components';
 
 import './index.css';
 
@@ -74,14 +74,14 @@ const AllInbox = () => {
         <span className="heading">{title}</span>
       </div>
       <div className="sea-qa-all-inbox-tabs-wrapper">
-        <div className="sea-qa-tabs">
-          <div className={classnames('sea-qa-tab-item', { 'active': curTab === NOTIFICATION_TYPE.GENERAL })} onClick={() => setCurTab(NOTIFICATION_TYPE.GENERAL)}>
-            {gettext('General')}
-          </div>
-          <div className={classnames('sea-qa-tab-item', { 'active': curTab === NOTIFICATION_TYPE.PROJECT })} onClick={() => setCurTab(NOTIFICATION_TYPE.PROJECT)}>
-            {gettext('Project')}
-          </div>
-        </div>
+        <CustomizeTabs
+          value={curTab}
+          tabs={[
+            { value: NOTIFICATION_TYPE.GENERAL, label: gettext('General') },
+            { value: NOTIFICATION_TYPE.PROJECT, label: gettext('Project') },
+          ]}
+          onChange={setCurTab}
+        />
         <div className="sea-qa-inbox-actions" onClick={() => markAllAsReadByTab(curTab)} title={gettext('mark all as read')}>
           <Icon symbol="mark-all-as-read" />
         </div>

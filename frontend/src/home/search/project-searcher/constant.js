@@ -7,7 +7,3 @@ export const SEARCHED_STORE_KEY = {
 };
 
 export const RECENT_USED_STORE_KEY = 'recent_used_projects_search_results';
-
-export const QUERY_TYPE_DISPLAY = {
-  [QUERY_TYPE.PROJECT]: 'Projects',
-};

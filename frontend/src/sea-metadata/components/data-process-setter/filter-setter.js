@@ -73,7 +73,7 @@ const FilterSetter = ({
     <>
       <IconBtn
         icon="filter"
-        size={24}
+        size={{ btn: 24 }}
         className={className}
         onClick={onSetterToggle}
         role="button"

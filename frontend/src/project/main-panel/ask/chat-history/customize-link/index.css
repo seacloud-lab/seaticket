@@ -2,51 +2,49 @@
   width: 100%;
   overflow: hidden;
   height: auto;
-  border: 1px solid #d1d9e0;
-  border-radius: 12px;
+  border: 1px solid #EAEAEA;
+  border-radius: 4px;
   gap: 16px;
-  display: flex;
-  flex-direction: column;
   cursor: pointer;
-}
-
-.sea-ai-chat-customize-link:hover {
-  background-color: #F7F7F5;
+  padding-bottom: 24px !important;
+  margin-top: -0.5px !important;
+  margin-bottom: -16.5px !important;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-link-header {
   width: 100%;
+  height: 40px;
+  padding: 0 16px !important;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-
+  border-bottom: 1px solid #EAEAEA;
+  background-color: #F7F7F5;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-link-header .sea-ai-chat-customize-link-name {
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
   font-weight: 500;
-}
-
-.sea-ai-chat-customize-link .sea-ai-chat-customize-link-header sea-ai-chat-customize-md-expand-btn {
-  flex-shrink: 0;
+  gap: 8px;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-md-link-body {
+  width: 100%;
   height: unset;
-  min-height: 28px;
-  max-height: 84px;
-  -webkit-line-clamp: 4;
+  min-height: 48px;
+  max-height: 106px;
+  -webkit-line-clamp: 3;
   word-wrap: break-word;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   white-space: pre-wrap;
   align-items: unset;
   line-height: 1.5;
+  padding: 16px 16px 0 16px !important;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-md-link-body .preview-text-content {

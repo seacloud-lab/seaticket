@@ -577,7 +577,6 @@ class FilterItem extends React.Component {
             <div className="filter-column">
               <CustomizeSelect
                 disabled={readOnly}
-                className="sea-qa-customize-select"
                 value={activeColumn}
                 options={filterColumnOptions}
                 onChange={this.onSelectColumn}
@@ -588,7 +587,6 @@ class FilterItem extends React.Component {
             </div>
             <div className={`filter-predicate ml-2 ${_isCheckboxColumn ? 'filter-checkbox-predicate' : ''}`}>
               <CustomizeSelect
-                className="sea-qa-customize-select"
                 disabled={readOnly}
                 value={activePredicate}
                 options={filterPredicateOptions}
@@ -599,7 +597,6 @@ class FilterItem extends React.Component {
               <div className="filter-term-modifier ml-2">
                 <CustomizeSelect
                   disabled={readOnly}
-                  className="sea-qa-customize-select"
                   value={activeTermModifier}
                   options={filterTermModifierOptions}
                   onChange={this.onSelectTermModifier}

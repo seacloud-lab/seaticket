@@ -1,0 +1,15 @@
+.sea-ticket-clear-icon-button.sea-qa-icon-btn {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  line-height: 14px;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.sea-ticket-clear-icon-button.sea-qa-icon-btn .sea-qa-icon-svg {
+  margin-top: 0;
+  color: var(--bs-icon-color);
+  height: 14px;
+  width: 14px;
+}
