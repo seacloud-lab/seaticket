@@ -85,6 +85,7 @@ const Analyze = ({ title }) => {
       return {};
     }
     const options = {};
+    options['state'].push('all');
     FILTERABLE_FIELDS.forEach(({ field }) => {
       const values = records.map(r => r[field]);
       const uniqueValues = [...new Set(values.filter(v => v != null))].sort();
@@ -92,7 +93,6 @@ const Analyze = ({ title }) => {
         options[field] = uniqueValues;
       }
     });
-    options['state'].push('all');
     return options;
   }, [records, FILTERABLE_FIELDS]);
 
