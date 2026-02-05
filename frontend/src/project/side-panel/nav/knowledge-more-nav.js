@@ -6,6 +6,7 @@ import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 import { NAVIGATION_BASE_PADDING } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
 import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
+import ImportDialog from '@/project/components/import-dialog';
 
 const { projectUuid } = window.app.pageOptions;
 
@@ -25,31 +26,33 @@ const KnowledgeMoreNav = ({ onClick }) => {
   }, [onClick]);
 
   const handleImportClick = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      knowledgeBaseAPI.importExcel(projectUuid, file, true).then(res => {
-        const taskId = res?.data?.task_id;
-        if (!taskId) return;
-        const poll = () => {
-          knowledgeBaseAPI.queryIOStatus(taskId).then(r => {
-            if (r?.data?.is_finished) {
-              setImportPreview(r?.data || {});
-              setIsShowImportDialog(true);
-            } else {
-              setTimeout(poll, 1000);
-            }
-          }).catch(() => {});
-        };
-        poll();
-      }).catch(() => {});
-    };
-    input.click();
-    setIsShowChildren(false);
-    onClick([BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE].key]);
+    setIsShowImportDialog(true);
+
+    // const input = document.createElement('input');
+    // input.type = 'file';
+    // input.accept = '.xlsx';
+    // input.onchange = (e) => {
+    //   const file = e.target.files[0];
+    //   if (!file) return;
+    //   knowledgeBaseAPI.importExcel(projectUuid, file, true).then(res => {
+    //     const taskId = res?.data?.task_id;
+    //     if (!taskId) return;
+    //     const poll = () => {
+    //       knowledgeBaseAPI.queryIOStatus(taskId).then(r => {
+    //         if (r?.data?.is_finished) {
+    //           setImportPreview(r?.data || {});
+    //           setIsShowImportDialog(true);
+    //         } else {
+    //           setTimeout(poll, 1000);
+    //         }
+    //       }).catch(() => {});
+    //     };
+    //     poll();
+    //   }).catch(() => {});
+    // };
+    // input.click();
+    // setIsShowChildren(false);
+    // onClick([BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE].key]);
   }, [onClick]);
 
   return (
@@ -71,7 +74,6 @@ const KnowledgeMoreNav = ({ onClick }) => {
             <CustomizeDropdownItemIcon symbol={'import-xlsx'} className="sea-qa-dropdown-item-icon" />
             <CustomizeDropdownItemText>{window.gettext('Import records from XLSX')}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
-          <div className="dropdown-divider"></div>
           <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={handleTrashClick}>
             <CustomizeDropdownItemIcon symbol={'trash'} className="sea-qa-dropdown-item-icon" />
             <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH].name}</CustomizeDropdownItemText>
@@ -79,7 +81,7 @@ const KnowledgeMoreNav = ({ onClick }) => {
         </CustomizeDropdownMenu>
       </Dropdown>
 
-      {isShowImportDialog && (
+      {/* {isShowImportDialog && (
         <ModalPortal>
           <Modal isOpen={true} toggle={() => setIsShowImportDialog(false)}>
             <ModalBody>
@@ -118,6 +120,10 @@ const KnowledgeMoreNav = ({ onClick }) => {
             </ModalFooter>
           </Modal>
         </ModalPortal>
+      )} */}
+
+      {isShowImportDialog && (
+        <ImportDialog toggle={() => setIsShowImportDialog(false)} />
       )}
     </>
   );
