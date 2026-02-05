@@ -49,3 +49,34 @@ def rank_related_issues(params):
     resp_json = resp.json()
     ranked_ids = resp_json.get('ranked_ids', [])
     return ranked_ids
+
+
+# ── Agent APIs ────────────────────────────────────────────────────
+
+def list_agent_runs(project_uuid, page=1, per_page=50):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/agent/runs/')
+    resp = requests.get(url, params={
+        'project_uuid': project_uuid, 'page': page, 'per_page': per_page
+    }, headers=headers, timeout=30)
+    if resp.status_code != 200:
+        raise Exception(f'list agent runs error status: {resp.status_code} body: {resp.text}')
+    return resp.json()
+
+
+def get_agent_run_detail(project_uuid, run_id):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, f'/agent/runs/{run_id}/')
+    resp = requests.get(url, params={'project_uuid': project_uuid}, headers=headers, timeout=30)
+    if resp.status_code != 200:
+        raise Exception(f'get agent run detail error status: {resp.status_code} body: {resp.text}')
+    return resp.json()
+
+def trigger_agent(project_uuid):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/agent/trigger/')
+    data = {'project_uuid': project_uuid}
+    resp = requests.post(url, json=data, headers=headers, timeout=300)
+    if resp.status_code != 200:
+        raise Exception(f'trigger agent error status: {resp.status_code} body: {resp.text}')
+    return resp.json()

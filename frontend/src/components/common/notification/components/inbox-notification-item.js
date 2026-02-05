@@ -8,7 +8,14 @@ import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
 import { removeTextMark } from '@/utils/remove-text-mark';
 import { DEFAULT_COLOR } from '@/constants';
-import { MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED, MSG_TYPE_PROJECT } from '../constants';
+import {
+  MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+  MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
+  MSG_TYPE_TICKET_COMMENTED,
+  MSG_TYPE_ADD_USER_TO_GROUP,
+  MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
+  MSG_TYPE_PROJECT
+} from '../constants';
 import InboxCount from './inbox-count';
 
 import './inbox-notification-item.css';
@@ -28,19 +35,26 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     const noticeType = noticeItem.msg_type;
     const detail = noticeItem.detail || {};
 
-    if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED || noticeType === MSG_TYPE_TICKET_COMMENTED) {
+    if (
+      noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED ||
+      noticeType === MSG_TYPE_AGENT_NOTIFY_ASSIGNEE ||
+      noticeType === MSG_TYPE_TICKET_COMMENTED
+    ) {
       const {
         from_user_name,
         from_user_id,
         ticket_title,
         comment_content,
+        message,
       } = detail;
 
       const username = from_user_name || from_user_id || gettext('System');
       const ticketTitle = ticket_title;
       const newCommentContent = removeTextMark(comment_content, false);
       const escapedContent = Utils.HTMLescape(newCommentContent);
-      return { username, title: ticketTitle, commentContent: escapedContent };
+      const reminderMessage = removeTextMark(message, false);
+      const escapedReminderMessage = Utils.HTMLescape(reminderMessage);
+      return { username, title: ticketTitle, commentContent: escapedContent, reminderMessage: escapedReminderMessage };
     }
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
       // group name does not support special characters
@@ -61,7 +75,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
     return { username: null, title: null, commentContent: '' };
   }, [noticeItem]);
 
-  const { username, title, commentContent } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
+  const { username, title, commentContent, reminderMessage } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
 
   const handleMarkNotificationRead = useCallback((e) => {
     e.preventDefault();
@@ -72,7 +86,11 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
   const handleNoticeItemClick = useCallback(() => {
     onNoticeItemClick(noticeItem);
     const { msg_type, detail } = noticeItem;
-    if (msg_type === MSG_TYPE_TICKET_ASSIGNEE_ADDED || msg_type === MSG_TYPE_TICKET_COMMENTED) {
+    if (
+      msg_type === MSG_TYPE_TICKET_ASSIGNEE_ADDED ||
+      msg_type === MSG_TYPE_AGENT_NOTIFY_ASSIGNEE ||
+      msg_type === MSG_TYPE_TICKET_COMMENTED
+    ) {
       setShowInboxDrawer(false);
       toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
     }
@@ -107,6 +125,26 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         </>
       );
     }
+    if (noticeType === MSG_TYPE_AGENT_NOTIFY_ASSIGNEE) {
+      return (
+        <>
+          <div className="notification-content-wrapper notification-content-title">
+            {gettext('Sent you a reminder for ticket named') + ' '}
+            <span className='inbox-text-orange'>{title}</span>
+            {gettext('.')}
+          </div>
+          {reminderMessage && (
+            <div className="notification-comment-info-wrapper d-flex">
+              <span className="notification-content-quotes">"</span>
+              <div className="notification-comment-content">
+                {reminderMessage}
+              </div>
+              <span className="notification-content-quotes text-end">"</span>
+            </div>
+          )}
+        </>
+      );
+    }
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
       return <div className="notification-content-wrapper notification-content-title" dangerouslySetInnerHTML={{ __html: title }}/>;
     }
@@ -114,7 +152,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       return <div className="notification-content-wrapper" dangerouslySetInnerHTML={{ __html: title }}/>;
     }
     return null;
-  }, [noticeItem, title, commentContent]);
+  }, [noticeItem, title, commentContent, reminderMessage]);
 
   const renderHead = useCallback(() => {
     const noticeType = noticeItem.msg_type;

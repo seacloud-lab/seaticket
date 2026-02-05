@@ -2,6 +2,7 @@ import { gettext } from '@/constants';
 
 export const BAR_TYPE = {
   CHAT: 'chat',
+  AGENT: 'agent',
   SEARCH: 'search',
   TICKET: 'tickets',
   MY_TICKET: 'my-tickets',
@@ -23,6 +24,11 @@ export const BAR_TYPE_CONFIG = {
     key: BAR_TYPE.CHAT,
     name: gettext('Chat'),
     icon: 'chat'
+  },
+  [BAR_TYPE.AGENT]: {
+    key: BAR_TYPE.AGENT,
+    name: gettext('Agent'),
+    icon: 'ai-processing'
   },
   [BAR_TYPE.SEARCH]: {
     key: BAR_TYPE.SEARCH,

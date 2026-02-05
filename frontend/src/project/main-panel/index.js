@@ -5,6 +5,7 @@ import Tickets from './tickets';
 import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
+import Agent from './agent';
 import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
@@ -39,6 +40,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
   switch (barKey) {
     case BAR_TYPE.CHAT: {
       return (<Ask title={title} settings={settings}/>);
+    }
+    case BAR_TYPE.AGENT: {
+      return (<Agent title={title} />);
     }
     case BAR_TYPE.SEARCH: {
       return (<Search title={title} settings={settings} />);

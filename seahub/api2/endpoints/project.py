@@ -23,7 +23,7 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
     rank_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import search
@@ -209,6 +209,7 @@ class ProjectsView(APIView):
             init_ticket_seadb_table(seadb_api, project.uuid)
             init_knowledge_base_seadb_table(seadb_api, project.uuid)
             init_tag_seadb_table(seadb_api, project.uuid)
+            init_agent_seadb_table(seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

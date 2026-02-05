@@ -34,6 +34,19 @@ def ticket_assignee_added_msg_to_json(ticket_id, ticket_title, from_user_id, wor
         'project_name': project_name,
     })
 
+def agent_notify_assignee_msg_to_json(
+    ticket_id, ticket_title, from_user_id, message=None, workspace_id=None, project_name=None
+):
+    return json.dumps({
+        'ticket_id': ticket_id,
+        'ticket_title': ticket_title,
+        'from_user_name': email2nickname(from_user_id),
+        'from_user_id': from_user_id,
+        'message': message or '',
+        'workspace_id': workspace_id,
+        'project_name': project_name,
+    })
+
 def ticket_comment_msg_to_json(ticket_id, ticket_title, from_user_id, comment_id=None, comment_content=None, workspace_id=None, project_name=None):
     return json.dumps({
         'ticket_id': ticket_id,

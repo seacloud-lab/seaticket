@@ -41,6 +41,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
           <Header />
           <div className="sea-qa-project-navigation sea-qa-nav-list">
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.AGENT]} {...commonProps} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />

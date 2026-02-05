@@ -406,6 +406,9 @@ class TicketsTable(BaseModel):
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
 
+    @classmethod
+    def gen_table_name(cls):
+        return 'tickets'
 
 class TicketCommentsTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
@@ -415,6 +418,9 @@ class TicketCommentsTable(BaseModel):
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
+    @classmethod
+    def gen_table_name(cls):
+        return 'ticket_comments'
 
 class TicketActivitiesTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
@@ -496,3 +502,35 @@ class TagTable(BaseModel):
     @classmethod
     def gen_table_name(cls):
         return 'tag'
+
+
+class AgentRunsTable(BaseModel):
+    """Agent single run record, each project has its own agent_runs table in SeaDB"""
+    status = MappedColumn('status', PropertyTypes.TEXT)              # pending / running / completed / failed
+    started_at = MappedColumn('started_at', PropertyTypes.DATETIME)
+    finished_at = MappedColumn('finished_at', PropertyTypes.DATETIME)
+    tickets_processed = MappedColumn('tickets_processed', PropertyTypes.INT)
+    error_message = MappedColumn('error_message', PropertyTypes.TEXT)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'agent_runs'
+
+
+class AgentActionsTable(BaseModel):
+    """Agent generated actions"""
+    run_id = MappedColumn('run_id', PropertyTypes.INT)               # references agent_runs._pk
+    ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)         # references tickets._pk
+    ticket_title = MappedColumn('ticket_title', PropertyTypes.TEXT)
+    action_type = MappedColumn('action_type', PropertyTypes.TEXT)     # analysis / tool_call / suggestion
+    tool_name = MappedColumn('tool_name', PropertyTypes.TEXT)         # notify_assignee / add_comment etc.
+    content = MappedColumn('content', PropertyTypes.TEXT)             # analysis content or suggestion text
+    result = MappedColumn('result', PropertyTypes.TEXT)               # tool execution result
+    status = MappedColumn('status', PropertyTypes.TEXT)               # pending / confirmed / cancelled / executed / completed
+    suggestion_text = MappedColumn('suggestion_text', PropertyTypes.TEXT)
+    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    executed_at = MappedColumn('executed_at', PropertyTypes.DATETIME)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'agent_actions'
