@@ -71,8 +71,12 @@ class PortalAPI {
   }
 
   listTags(projectUuid) {
-    let url = this.server + '/api/v1/project/' + projectUuid + '/tags/';
+    let url = this.server + '/api/v1/portal/' + projectUuid + '/tags/';
     return this.req.get(url);
+  }
+
+  listTicketTags(projectUuid) {
+    return this.listTags(projectUuid);
   }
 
   getTicketMetadata(projectUuid) {
@@ -97,22 +101,16 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  updateProjectSettings(workspaceId, projectName, settings) {
-    const url = this.server + '/api/v1/workspace/' + workspaceId + '/project/';
-    const form = new FormData();
-    form.append('name', projectName);
-    form.append('settings', JSON.stringify(settings));
-    return this._sendPutRequest(url, form);
+  getSettings(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
+    return this.req.get(url);
   }
 
-  listConnections(projectUuid, page, perPage) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
-    let params = {
-      page: page,
-      per_page: perPage,
-    };
-    return this.req.get(url, { params: params });
+  updateSettings(projectUuid, settings) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
+    return this.req.post(url, settings);
   }
+
 }
 
 const portalAPI = new PortalAPI();

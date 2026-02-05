@@ -96,6 +96,11 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [projectUuid, applyModifyTypes]);
 
   const loadTypes = useCallback((callback) => {
+    const username = (window.app && window.app.pageOptions && window.app.pageOptions.username) || '';
+    if (!username) {
+      callback && callback();
+      return;
+    }
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
@@ -198,6 +203,11 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [applyCreateSubstates]);
 
   const loadSubStates = useCallback((callback) => {
+    const username = (window.app && window.app.pageOptions && window.app.pageOptions.username) || '';
+    if (!username) {
+      callback && callback();
+      return;
+    }
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);

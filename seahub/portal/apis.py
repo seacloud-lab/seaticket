@@ -6,6 +6,7 @@ import json
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from seahub.api2.permissions import PortalAccessPermission
 from rest_framework import status
 from rest_framework.response import Response
 from django.utils.translation import gettext as _
@@ -14,17 +15,31 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
-from seahub.project.utils import replace_file_url_in_content, check_same_org_permission, get_current_table_metadata
+from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, \
+    check_project_admin_permission
 from seahub.utils.storage import upload_files_to_s3
+from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.seadb_models.models import TicketsTable
+from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
-from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket_counts_group_by_column_name
+from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 
+
 logger = logging.getLogger(__name__)
+
+
+def get_portal_access_username(request):
+    if request.user.is_authenticated:
+        return request.user.username
+
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.save()
+        session_key = request.session.session_key
+    return f'portal-anon-{session_key}'
 
 
 class PortalTicketsView(APIView):
@@ -32,7 +47,6 @@ class PortalTicketsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
         title = request.POST.get('title')
         if not title:
@@ -91,16 +105,7 @@ class PortalTicketsView(APIView):
 
         due_date = request.POST.get('due_date', '')
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        username = request.user.username
+        username = get_portal_access_username(request)
         seadb_api = SeaDBAPI(username)
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
@@ -157,7 +162,6 @@ class PortalMyTicketsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
         view_id = request.POST.get('view_id', 'open')
         start = request.POST.get('start', 0)
@@ -189,10 +193,6 @@ class PortalMyTicketsView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         seadb_api = SeaDBAPI(username)
@@ -226,12 +226,11 @@ class PortalMyTicketsView(APIView):
         })
 
 
-class PortalTicketTypesView(APIView):
+class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
@@ -251,51 +250,31 @@ class PortalTicketTypesView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        username = request.user.username
-        seadb_api = SeaDBAPI(username)
-
+        username = get_portal_access_username(request)
         try:
-            type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
-            sql = f"SELECT * FROM `tag` LIMIT {start}, {limit}"
+            seadb_api = SeaDBAPI(username)
+            table_name = TagTable.gen_table_name()
+            sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'metadata': res.get('metadata'), 'tags': res.get('results')})
+        return Response({'columns': res.get('metadata'), 'tags': res.get('results')})
 
 
 class PortalKnowledgeBaseViewsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        show_kb = False
         try:
-            settings_obj = json.loads(project.settings) if project.settings else {}
-            show_kb = bool(settings_obj.get('portal_show_knowledge_base', False))
+            project = request.project
+            project_settings = json.loads(project.settings) if project.settings else {}
+            portal_settings = project_settings.get('portal', {})
+            show_kb = bool(portal_settings.get('show_knowledge_base', False))
         except Exception:
             show_kb = False
         if not show_kb:
@@ -314,12 +293,10 @@ class PortalKnowledgeBaseViewsView(APIView):
 
 class PortalKnowledgeBaseRecordsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
-
         view_id = request.GET.get('view_id')
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
@@ -333,26 +310,18 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        show_kb = False
         try:
-            settings_obj = json.loads(project.settings) if project.settings else {}
-            show_kb = bool(settings_obj.get('portal_show_knowledge_base', False))
+            project = request.project
+            project_settings = json.loads(project.settings) if project.settings else {}
+            portal_settings = project_settings.get('portal', {})
+            show_kb = bool(portal_settings.get('show_knowledge_base', False))
         except Exception:
             show_kb = False
         if not show_kb:
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        username = request.user.username
+        username = request.user.username if request.user.is_authenticated else ''
         try:
             seadb_api = SeaDBAPI(username)
             view = KnowledgeBaseViews.objects.get_view(project_uuid, view_id)
@@ -370,27 +339,17 @@ class PortalKnowledgeBaseRecordsView(APIView):
 
 class PortalTicketMetadataView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not check_same_org_permission(request.user, project.workspace):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        username = request.user.username
+        username = get_portal_access_username(request)
         seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             ticket_column_name_to_return_name = {
                 TicketsTable.substate.name: 'substates',
-                TicketsTable.tags.name: 'tags',
                 TicketsTable.type.name: 'types',
                 TicketsTable.state.name: 'states'
             }
@@ -407,3 +366,85 @@ class PortalTicketMetadataView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response(select_option_metadata)
+
+
+class PortalSettingsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            project_settings = json.loads(project.settings) if project.settings else {}
+        except Exception:
+            project_settings = {}
+        portal_settings = project_settings.get('portal', {})
+        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
+        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+        show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
+
+        return Response({
+            'allow_anonymous': allow_anonymous,
+            'enable_password_protection': enable_password_protection,
+            'show_knowledge_base': show_knowledge_base,
+        })
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        allow_anonymous = request.data.get('allow_anonymous', 0)
+        enable_password_protection = request.data.get('enable_password_protection', 0)
+        password = request.data.get('password', '')
+        show_knowledge_base = request.data.get('show_knowledge_base', None)
+
+        try:
+            allow_anonymous = int(allow_anonymous)
+            enable_password_protection = int(enable_password_protection)
+            if show_knowledge_base is not None:
+                show_knowledge_base = int(show_knowledge_base)
+        except Exception:
+            error_msg = 'Invalid params.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if enable_password_protection:
+            if password and len(password) < 8:
+                error_msg = 'Password too short.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            project_settings = json.loads(project.settings) if project.settings else {}
+        except Exception:
+            project_settings = {}
+
+        portal_settings = project_settings.get('portal', {})
+        portal_settings['allow_anonymous'] = bool(allow_anonymous)
+        portal_settings['enable_password_protection'] = bool(enable_password_protection)
+        if show_knowledge_base is not None:
+            portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
+
+        if enable_password_protection:
+            if password:
+                cryptor = AESPasswordHasher()
+                portal_settings['password'] = cryptor.encode(password)
+        else:
+            portal_settings.pop('password', None)
+
+        project_settings['portal'] = portal_settings
+        project.settings = json.dumps(project_settings)
+        project.save(update_fields=['settings'])
+
+        return Response({'success': True})
