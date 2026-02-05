@@ -15,14 +15,15 @@ import './index.css';
 
 const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous } = window.app.pageOptions;
 
-const getDefaultPage = (kbEnabled) => {
+const getDefaultPage = (kbEnabled, anonymous) => {
+  if (anonymous) return kbEnabled ? PORTAL_PAGE.KNOWLEDGE_BASE : null;
   if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
   return PORTAL_PAGE.SUBMIT_TICKET;
 };
 
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activePage, setActivePage] = useState(getDefaultPage(showKBInPortal));
+  const [activePage, setActivePage] = useState(getDefaultPage(showKBInPortal, isAnonymous));
   const [enableKB, setEnableKB] = useState(showKBInPortal === true);
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
@@ -31,13 +32,14 @@ const Portal = () => {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const onPageChange = useCallback((page) => {
+    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS)) return;
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(page);
     const { origin } = location;
     const basePath = isEditMode ? 'portal-edit' : 'portal';
     const url = `${origin}/${basePath}/${projectUuid}/${page}/`;
     history.replaceState(null, null, url);
-  }, []);
+  }, [enableKB]);
 
   useEffect(() => {
     const { pathname } = location;
@@ -47,8 +49,11 @@ const Portal = () => {
     if (match && match[1]) {
       const pageKey = match[1];
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
-        if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
-          setActivePage(getDefaultPage(showKBInPortal));
+        const isTicketPage = pageKey === PORTAL_PAGE.SUBMIT_TICKET || pageKey === PORTAL_PAGE.MY_TICKETS;
+        if (isAnonymous && isTicketPage) {
+          setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
+        } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
+          setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
         } else {
           setActivePage(pageKey);
         }
@@ -105,7 +110,6 @@ const Portal = () => {
       });
 
       if (response.redirected) {
-        // Django 会重定向：成功到 /portal/{uuid}/，失败回 /portal/{uuid}/anonymous-validate/
         if (response.url.includes('/anonymous-validate/')) {
           setPasswordError('invalid');
           return;
@@ -182,7 +186,7 @@ const Portal = () => {
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current}>
             {isEditMode && <LeftBar />}
-            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} />
+            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} />
             <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
           </DataProvider>
         )}

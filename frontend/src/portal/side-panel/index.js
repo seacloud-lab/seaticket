@@ -9,10 +9,12 @@ const BASE_NAV_ITEMS = [
   { key: PORTAL_PAGE.MY_TICKETS, name: gettext('My tickets'), icon: 'my-tickets' },
 ];
 
-const SidePanel = ({ activePage, onPageChange, enableKB }) => {
-  const navItems = enableKB
-    ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
-    : BASE_NAV_ITEMS;
+const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
+  const navItems = isAnonymous
+    ? (enableKB ? [{ key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }] : [])
+    : (enableKB
+      ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
+      : BASE_NAV_ITEMS);
   return (
     <div className="sea-qa-portal-side-panel">
       <div className="sea-qa-portal-side-panel-header">

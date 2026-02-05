@@ -21,7 +21,6 @@ from seahub.utils.storage import upload_files_to_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.constants import PORTAL_TICKET_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
@@ -160,7 +159,7 @@ class PortalTicketsView(APIView):
 
 class PortalMyTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission,)
+    permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -195,7 +194,7 @@ class PortalMyTicketsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        username = get_portal_access_username(request)
+        username = request.user.username
         seadb_api = SeaDBAPI(username)
 
         basic_filters = view_config.get('basic_filters', [])
@@ -207,7 +206,7 @@ class PortalMyTicketsView(APIView):
         view_config['basic_filters'] = basic_filters
 
         try:
-            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, PORTAL_TICKET_DISPLAY_ALL_COLUMNS, view_config)
+            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
             error_msg = _('There are errors with the filters. Please correct them.')

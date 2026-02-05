@@ -56,7 +56,7 @@ def portal_view(request, project_uuid, page=None):
     }
 
     need_password = False
-    if enable_password_protection and allow_anonymous:
+    if not request.user.is_authenticated and enable_password_protection and allow_anonymous:
         encoded_password = portal_settings.get('password')
         verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
         need_password = not (verified_token and encoded_password and verified_token == encoded_password)

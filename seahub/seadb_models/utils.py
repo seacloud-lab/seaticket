@@ -605,12 +605,9 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
     return ticket_data
 
 
-def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, ticket_display_columns=None, view_config={}):
+def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
     columns = get_tickets_columns(seadb_api, project_uuid)
-    if ticket_display_columns:
-        all_columns_names = ticket_display_columns
-    else:
-        all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
+    all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
         all_columns_names = [column_name for column_name in all_columns_names if column_name != TicketsTable.closed_time.name]
 
