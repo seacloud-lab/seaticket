@@ -4,22 +4,20 @@ import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
-import MessageInput from '../message-input';
+import ChatInput from '../chat-input';
 import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
 import { Thinking } from '../components';
 import { Utils } from '@/utils/utils';
-import { useAskPage, useSessions } from '../hooks';
+import { useAskPage, useSessions, useDocuments } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import { username } from '@/constants';
+import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, workspaceID }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) => {
   const [isReply, setReply] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [size, setSize] = useState('');
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -32,8 +30,15 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   const currentSessionId = useRef('');
   const newSessionProblem = useRef('');
 
-  const { createSession, sessions, modifyLocalSession } = useSessions();
+  const { isShowSessions, sessions, createSession, modifyLocalSession } = useSessions();
   const { togglePageSlugId } = useAskPage();
+  const { isShowDocuments, documents } = useDocuments();
+
+  const isSmall = useMemo(() => {
+    if (isShowDocuments && Array.isArray(documents) && documents.length > 0) return true;
+    if (isShowSessions) return true;
+    return false;
+  }, [isShowDocuments, documents, isShowSessions]);
 
   const readOnly = useMemo(() => false, []);
   const session = useMemo(() => {
@@ -189,7 +194,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     const wrapper = wrapperRef.current;
     const handleResize = () => {
       if (!wrapper) return;
-      setSize(wrapper.offsetWidth > 600 ? 'large' : '');
       setHeight(wrapper.offsetHeight);
     };
     const resizeObserver = new ResizeObserver(handleResize);
@@ -245,10 +249,22 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   }, [loading, sessionId, chatHistories, modifyLocalSession]);
 
   const isEmpty = chatHistories.length === 0 && !loading;
+  const _isReply = loading || isReply;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
-      <div className="sea-qa-ai-ask-chats-wrapper">
+    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small': isSmall })} ref={wrapperRef}>
+      {sessionId !== ASK_PAGE_SLUG_ID.NEW && (
+        <div className="sea-qa-ai-ask-chats-header">
+          <ChatHeader
+            isReply={_isReply}
+            readOnly={readOnly}
+            hasHistoryMessages={!isEmpty}
+            session={session}
+            toggleClearContext={toggleClearContext}
+          />
+        </div>
+      )}
+      <div className="sea-qa-ai-ask-chats-body">
         <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
@@ -275,19 +291,16 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           {loading && (<CenteredLoading className="flex-1" />)}
         </div>
       </div>
-      <div className="sea-qa-ai-ask-chat-input-wrapper-shell">
-        <MessageInput
+      <div className="sea-qa-ai-ask-chats-footer">
+        <ChatInput
           ref={messageInputRef}
-          isReply={loading || isReply}
+          isReply={_isReply}
           readOnly={readOnly}
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
-          hasHistoryMessages={!isEmpty}
           clearContext={clearContext}
-          toggleClearContext={toggleClearContext}
           resetClearContext={resetClearContext}
-          isOwner={session?.username === username}
         />
       </div>
     </div>

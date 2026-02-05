@@ -557,7 +557,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         viewID={viewID}
         api={api}
         ref={seaMetaDataRef}
-        className="sea-qa-connection-details"
+        className="sea-qa-connection-details-metadata"
         localStorageNamePrefix={localStorageName}
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}

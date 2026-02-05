@@ -120,6 +120,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   return (
     <>
       <SeaMetadata
+        className="sea-kb-metadata"
         viewID={viewID}
         api={api}
         ref={metadataRef}

@@ -16,6 +16,7 @@
   justify-content: flex-end;
   align-items: center;
   padding: 0 8px;
+  gap: 8px;
 }
 
 .sea-metadata-view-tools .sea-metadata-view-tool-filter.active:hover,

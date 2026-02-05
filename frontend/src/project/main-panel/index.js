@@ -73,8 +73,10 @@ const MainPanel = (props) => {
 
   return (
     <div className="sea-qa-project-main-panel">
-      <Container { ...props } />
-      {showInboxDrawer && <Inbox toggleBar={props.toggleBar} />}
+      <div className="sea-qa-project-main-panel-content">
+        <Container { ...props } />
+        {showInboxDrawer && <Inbox toggleBar={props.toggleBar} />}
+      </div>
     </div>
   );
 };

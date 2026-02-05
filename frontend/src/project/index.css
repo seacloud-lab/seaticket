@@ -13,7 +13,6 @@
 }
 
 .sea-qa-project .sea-qa-project-panel-header {
-  border-bottom: 1px solid var(--bs-border-secondary-color);
   flex-shrink: 0;
   padding: 0 1rem;
   width: 100%;

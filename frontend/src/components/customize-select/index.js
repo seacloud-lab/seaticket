@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
-import OptionGroup from '../select-option-group';
+import OptionGroup from './select-option-group';
 import Icon from '../icon';
 import { getEventClassName } from '@/utils/dom';
 

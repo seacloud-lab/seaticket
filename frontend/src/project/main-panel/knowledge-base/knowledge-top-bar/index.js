@@ -2,8 +2,7 @@ import React, { useCallback, useState } from 'react';
 import TopBar from '../../top-bar';
 import { useKnowledgePage } from '../hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
-import { IconButton, CustomizeDropdownMenu, CustomizeDropdownMoreToggle, CustomizeDropdownItem } from '@/components';
-import { Dropdown } from 'reactstrap';
+import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
 
@@ -68,7 +67,7 @@ const KnowledgeTopBar = ({ title }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
+        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" />
       );
     }
 
@@ -77,18 +76,7 @@ const KnowledgeTopBar = ({ title }) => {
     }
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) return null;
-
-    return (
-      <>
-        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
-        <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-inline-flex">
-          <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} />
-          <CustomizeDropdownMenu>
-            <CustomizeDropdownItem onClick={() => { togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TRASH); toggleMoreMenu(); }}>{gettext('Deleted records')}</CustomizeDropdownItem>
-          </CustomizeDropdownMenu>
-        </Dropdown>
-      </>
-    );
+    return null;
   }, [pageSlugId, childrenPageSlugId, togglePageSlugId, isMoreMenuShow, toggleMoreMenu]);
 
   return (

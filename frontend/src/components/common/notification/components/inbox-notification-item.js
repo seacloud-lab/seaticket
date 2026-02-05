@@ -84,7 +84,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       return (
         <div className="notification-content-wrapper notification-content-title">
           {gettext('You are added as a assignee for ticket named') + ' '}
-          <span class="inbox-text-orange">{title}</span>
+          <span className="inbox-text-orange">{title}</span>
           {gettext('.')}
         </div>
       );
@@ -94,7 +94,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         <>
           <div className="notification-content-wrapper notification-content-title">
             {gettext('Added a new comment for ticket named') + ' '}
-            <span class='inbox-text-orange'>{title}</span>
+            <span className='inbox-text-orange'>{title}</span>
             {gettext('.')}
           </div>
           <div className="notification-comment-info-wrapper d-flex">

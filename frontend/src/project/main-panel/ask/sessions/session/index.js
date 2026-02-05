@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
-import { CustomizeDropdownMoreToggle, CustomizeNameDialog, CommonOperationConfirmationDialog,
-  CustomizeDropdownMenu, CustomizeDropdownItem
+import {
+  CustomizeDropdownMoreToggle, CustomizeNameDialog, CommonOperationConfirmationDialog,
+  CustomizeDropdownMenu, CustomizeDropdownItem,
+  IconButton,
 } from '@/components';
-import { gettext, PERMISSION_TYPES, mediaUrl } from '@/constants';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import { useAskPage, useSessions } from '../../hooks';
 
 import './index.css';
@@ -55,7 +57,7 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
         className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected })}
         onClick={() => togglePageSlugId(sessionId)}
       >
-        <img src={`${mediaUrl}img/team.png`} alt="team" className="sea-qa-ai-ask-session-icon" />
+        <IconButton icon="chat-team" className="no-hover-bg mr-2 w-4 h-4" />
         <div className="sea-qa-ai-ask-session-name text-truncate">
           {session.name}
         </div>
@@ -63,9 +65,7 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
     );
   }
 
-  // Mine tab - show icon based on is_shared status
-  const iconSrc = session.is_shared ? `${mediaUrl}img/team.png` : `${mediaUrl}img/personal.png`;
-  const iconAlt = session.is_shared ? 'team' : 'personal';
+  const icon = session.is_shared ? 'chat-team' : 'new-chat';
 
   return (
     <>
@@ -73,15 +73,15 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
         className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected || isOpen })}
         onClick={() => togglePageSlugId(sessionId)}
       >
-        <img src={iconSrc} alt={iconAlt} className="sea-qa-ai-ask-session-icon" />
-        <div className="sea-qa-ai-ask-session-content">
+        <IconButton icon={icon} className="no-hover-bg mr-2 w-4 h-4" />
+        <div className="sea-qa-ai-ask-session-content mr-4">
           <div className="sea-qa-ai-ask-session-name text-truncate">
             {session.name}
           </div>
         </div>
         {permission === PERMISSION_TYPES.READ_WRITE && (
           <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
-            <CustomizeDropdownMoreToggle isOpen={isOpen} className={classnames('sea-qa-ai-ask-session-more-op-btn', { 'd-flex': isOpen })} />
+            <CustomizeDropdownMoreToggle isOpen={isOpen} className={classnames('sea-qa-ai-ask-session-more-op-btn', { 'd-flex': isSelected || isOpen })} />
             <CustomizeDropdownMenu fixed={true}>
               <CustomizeDropdownItem onClick={openRename}>
                 <CustomizeDropdownItem.Icon symbol="rename" />

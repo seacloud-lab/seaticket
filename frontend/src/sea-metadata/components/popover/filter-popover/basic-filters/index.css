@@ -77,10 +77,6 @@
   display: flex;
 }
 
-.sea-metadata-table-view-basic-checkbox-select .sea-qa-select-option {
-  padding: 0.25rem 1rem;
-}
-
 .sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox {
   display: inline-flex;
   align-items: center;

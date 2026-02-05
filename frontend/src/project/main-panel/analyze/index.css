@@ -4,6 +4,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: row;
+  padding: 0 16px;
 }
 
 .analyze-main-content {

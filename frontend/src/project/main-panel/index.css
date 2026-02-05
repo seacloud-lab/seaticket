@@ -3,7 +3,34 @@
   overflow: hidden;
   height: 100%;
   display: flex;
+  background: #f7f7f5;
+  padding: 16px 16px 16px 0;
+}
+
+.sea-qa-project-main-panel-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  background: #ffff;
+  border-radius: 8px;
+}
+
+.sea-qa-project-main-panel .sea-metadata {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.sea-qa-project-main-panel .sea-metadata .sea-metadata-views {
+  padding-left: 0;
+}
+
+.sea-qa-project-main-panel .sea-metadata .sea-metadata-view-tools {
+  padding-right: 0;
+}
+
+.sea-qa-project-main-panel .sea-metadata .sea-metadata-table-footer {
+  border-bottom: none;
 }

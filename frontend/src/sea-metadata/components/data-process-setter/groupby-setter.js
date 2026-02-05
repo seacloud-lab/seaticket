@@ -53,7 +53,7 @@ const GroupbySetter = ({
     <>
       <IconBtn
         icon="groupby"
-        size={24}
+        size={{ btn: 24 }}
         className={className}
         onClick={onSetterToggle}
         role="button"

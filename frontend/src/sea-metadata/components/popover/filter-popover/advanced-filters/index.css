@@ -311,23 +311,10 @@
 
 .sea-metadata-filter-header-icon .sea-qa-icon-svg,
 .sea-metadata-select-icon .sea-qa-icon-svg {
-  height: 14px;
-  width: 14px;
-  color: var(--bs-icon-secondary-color);
   cursor: default;
   margin-top: -2px;
 }
 
 [data-bs-theme=dark] .sea-metadata-setting-selector__control {
   background-color: column !important;
-}
-
-.sea-qa-select-option:hover .sea-metadata-filter-header-icon .sea-qa-icon-svg,
-.sea-qa-select-option.active .sea-metadata-filter-header-icon .sea-qa-icon-svg,
-.sea-metadata-setting-selector__menu .sea-metadata-setting-selector__option--is-selected .sea-qa-icon-svg {
-  color: #fff;
-}
-
-.sea-qa-select-option:not(.active):hover .sea-metadata-filter-header-icon .sea-qa-icon-svg {
-  color: var(--bs-icon-secondary-color);
 }

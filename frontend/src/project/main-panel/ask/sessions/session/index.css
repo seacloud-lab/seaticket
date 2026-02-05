@@ -2,34 +2,27 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  border-radius: 3px;
+  border-radius: 4px;
   width: 100%;
-  height: 38px;
+  height: 36px;
   cursor: pointer;
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item.active,
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover {
-  background-color: var(--bs-nav-active-bg);
-}
-
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  flex-shrink: 0;
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover,
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn:hover {
+  background-color: var(--option-bg-color);
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
-  flex: 1;
+  /* 64: icon-width(16) + icon-mr(8) + more-width(24) + more-ml(16) */
+  width: calc(100% - 64px);
   overflow: hidden;
-  margin-right: 4px;
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
   flex: 1;
   overflow: hidden;
-  margin-right: 4px;
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn {
@@ -38,4 +31,8 @@
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-more-op-btn {
   display: flex;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn .sea-qa-icon-svg {
+  color: var(--bs-icon-secondary-color);
 }

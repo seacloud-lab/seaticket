@@ -31,7 +31,7 @@ const Main = ({ title, settings }) => {
               <IconButton
                 icon="new-chat"
                 onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
-                style={{ marginRight: '10px' }}
+                className="mr-2"
                 title={gettext('New chat')}
                 aria-label={gettext('New chat')}
               />
@@ -50,10 +50,9 @@ const Main = ({ title, settings }) => {
           <CenteredLoading />
         ) : (
           <>
-            <div className="sea-ticket-ask-chat-documents">
+            <div className="d-flex o-hidden flex-1">
               <Chat
                 sessionId={pageSlugId}
-                isShowSessions={isShowSessions}
                 workspaceID={workspaceID}
                 projectUuid={projectUuid}
                 projectName={projectName}

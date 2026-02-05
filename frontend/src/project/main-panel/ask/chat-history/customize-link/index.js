@@ -5,6 +5,7 @@ import SimpleLongTextFormatter from '../../../connections/components/cell-format
 import { useDocuments } from '../../hooks';
 
 import './index.css';
+import { gettext } from '@/constants';
 
 const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isShowPopover, onLinkClick, onHrefClick, attributes, children, editor }) => {
   const { openDocument } = useDocuments();
@@ -48,10 +49,13 @@ const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isS
   }
 
   return (
-    <div className="sea-ai-chat-customize-link p-4" onClick={canPreviewLinkedFile ? onClick : () => {}}>
+    <div className="sea-ai-chat-customize-link" onClick={canPreviewLinkedFile ? onClick : () => {}}>
       <div className="sea-ai-chat-customize-link-header">
-        <div className="sea-ai-chat-customize-link-name">{file.name}</div>
-        {canPreviewLinkedFile && (<IconButton className="sea-ai-chat-customize-md-expand-btn d-flex" icon="expand" />)}
+        <div className="sea-ai-chat-customize-link-name o-hidden">
+          <IconButton icon="ai-file" size={14} className="no-hover-bg d-inline-flex" />
+          <span className="text-truncate">{file.name}</span>
+        </div>
+        {canPreviewLinkedFile && (<IconButton className="d-flex" icon="view-issue" size={{ icon: 14 }} title={gettext('View file')} />)}
       </div>
       <SimpleLongTextFormatter
         value={file.content}

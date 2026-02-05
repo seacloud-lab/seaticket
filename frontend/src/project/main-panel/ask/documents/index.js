@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Dropdown } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
@@ -12,24 +12,35 @@ import {
 } from '@/components';
 import { gettext } from '@/constants';
 import { downloadBlobByA, downloadContentByA } from '@/utils/download';
-import { Utils } from '@/utils/utils';
+import { Selector } from '../components';
 
 import './index.css';
 
 const Documents = () => {
-  const { isShowDocuments, documents, currentDocument, openDocument, closeDocument, closeDocuments, clear } = useDocuments();
+  const { isShowDocuments, documents, currentDocument, openDocument, closeDocuments, clear } = useDocuments();
   const [isFull, setIsFull] = useState(false);
   const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
+
+  const documentsOptions = useMemo(() => {
+    if (!Array.isArray(documents) || documents.length === 0) return [];
+    return documents.map(document => {
+      return {
+        value: document.url,
+        label: document.name,
+        icon: 'ai-file',
+      };
+    });
+  }, [documents]);
 
   const toggleMoreMenu = useCallback(() => {
     !setIsMoreMenuShow(!isMoreMenuShow);
   }, [isMoreMenuShow]);
 
-  const handleToggleCurrentDocument = useCallback((event, document) => {
-    event.stopPropagation();
-    event.nativeEvent.stopImmediatePropagation();
+  const handleToggleCurrentDocument = useCallback((documentURL) => {
+    if (!documentURL) return;
+    const document = documents.find(d => d.url === documentURL);
     openDocument(document);
-  }, [openDocument]);
+  }, [openDocument, documents]);
 
   const handleDownLoadAll = useCallback(async () => {
     const zip = new JSZip();
@@ -49,12 +60,6 @@ const Documents = () => {
     downloadBlobByA(blob, 'files.zip');
   }, [documents]);
 
-  const handleCloseDocument = useCallback((event, document) => {
-    event.stopPropagation();
-    event.nativeEvent.stopImmediatePropagation();
-    closeDocument(document);
-  }, [closeDocument]);
-
   const handleCopyCurrentDocument = useCallback(() => {
     const { content } = currentDocument;
     copy(content);
@@ -72,27 +77,27 @@ const Documents = () => {
   if (!Array.isArray(documents) || documents.length === 0) return null;
 
   const { content } = currentDocument;
-  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-  const size = Utils.bytesToSize(blob.size);
 
   return (
-    <div className={classnames('sea-ticket-chat-documents-wrapper', { 'w-100': isFull, 'pl-0': !isFull })}>
+    <div className={classnames('sea-ticket-chat-documents-wrapper', { 'full-content': isFull })}>
       <div className="sea-ticket-chat-documents">
         <div className="sea-ticket-chat-documents-header">
-          <div className="sea-ticket-chat-documents-header-names">
-            {documents.map(document => {
-              const isSelected = document.url === currentDocument.url;
-              return (
-                <div
-                  className={classnames('sea-ticket-chat-document-name-content', { 'active': isSelected })}
-                  onClick={(event) => handleToggleCurrentDocument(event, document)}
-                >
-                  <span className="sea-ticket-chat-document-name text-truncate">{document.name}</span>
-                  <IconButton className="sea-ticket-chat-document-name-btn" icon="close" onClick={(event) => handleCloseDocument(event, document)} title={gettext('Close')} />
-                </div>
-              );
-            })}
-          </div>
+          <Selector
+            value={currentDocument.url}
+            options={documentsOptions}
+            icon="arrow-down"
+            className="sea-ticket-chat-documents-selector"
+            iconPlacement="right"
+            border={false}
+            onChange={handleToggleCurrentDocument}
+            isSearchEnabled={false}
+            displayBgColor={true}
+          >
+            <IconButton icon="ai-file" size={14} className="no-hover-bg sea-ticket-chat-document-icon" />
+            <div className="sea-ticket-chat-documents-count">{documents.length}</div>
+            <div className="sea-ticket-chat-documents-divider"></div>
+            <div className="sea-ticket-chat-document-name text-truncate" title={currentDocument.name}>{currentDocument.name}</div>
+          </Selector>
           <div className="sea-ticket-chat-documents-header-btns">
             <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-flex">
               <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} className="ml-0" />
@@ -105,20 +110,13 @@ const Documents = () => {
                 </CustomizeDropdownItem>
               </CustomizeDropdownMenu>
             </Dropdown>
-            <IconButton icon={isFull ? 'collapse' : 'expand'} onClick={() => setIsFull(!isFull)} title={isFull ? gettext('Collapse') : gettext('Expand')} />
+            <IconButton icon="copy" title={gettext('Copy')} onClick={handleCopyCurrentDocument} />
+            <IconButton icon="download" title={gettext('Download')} onClick={handleDownloadCurrentDocument} />
+            <IconButton icon={isFull ? 'collapse' : 'view-issue'} onClick={() => setIsFull(!isFull)} title={isFull ? gettext('Collapse') : gettext('Expand')} />
             <IconButton icon="close" title={gettext('Close')} onClick={closeDocuments} />
           </div>
         </div>
         <div className="sea-ticket-chat-documents-body">
-          <div className="sea-ticket-chat-document-info">
-            <div className="sea-ticket-chat-document-info-content">
-              <div className="sea-ticket-chat-document-info-size">{size}</div>
-            </div>
-            <div className="sea-ticket-chat-document-btns">
-              <IconButton icon="copy" title={gettext('Copy')} onClick={handleCopyCurrentDocument} />
-              <IconButton icon="download" title={gettext('Download')} onClick={handleDownloadCurrentDocument} />
-            </div>
-          </div>
           <div className="sea-ticket-chat-document-content">
             <CustomizeMarkdownViewer key={currentDocument.url} value={content} showTOC={false} className="sea-ticket-chat-document-md" />
           </div>

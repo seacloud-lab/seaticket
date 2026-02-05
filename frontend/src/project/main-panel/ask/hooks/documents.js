@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useAskPage } from './page-type';
+import { useSessions } from './sessions';
 
 const DocumentsContext = React.createContext(null);
 
@@ -7,7 +8,9 @@ export const DocumentsProvider = ({ projectUuid, workspaceID, children }) => {
   const [isShowDocuments, setIsShowDocuments] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [currentDocument, setCurrentDocument] = useState(null);
+
   const { pageSlugId } = useAskPage();
+  const { closeShowSessions } = useSessions();
 
   const openDocument = useCallback((document) => {
     setIsShowDocuments(true);
@@ -17,7 +20,8 @@ export const DocumentsProvider = ({ projectUuid, workspaceID, children }) => {
     if (currentDocument?.url !== document.url) {
       setCurrentDocument(document);
     }
-  }, [documents, currentDocument]);
+    closeShowSessions();
+  }, [documents, currentDocument, closeShowSessions]);
 
   const closeDocument = useCallback((document) => {
     const documentIndex = documents.findIndex(d => d.url === document.url);

@@ -8,9 +8,11 @@ const TopBar = ({ children, className }) => {
   if (!Array.isArray(children)) {
     return (
       <div className={_className}>
-        <div className="sea-qa-project-main-panel-header-left">
-          <div className="sea-qa-project-main-panel-header-name">
-            {children}
+        <div className="sea-qa-project-main-panel-header-content">
+          <div className="sea-qa-project-main-panel-header-left">
+            <div className="sea-qa-project-main-panel-header-name">
+              {children}
+            </div>
           </div>
         </div>
       </div>
@@ -18,16 +20,18 @@ const TopBar = ({ children, className }) => {
   }
   return (
     <div className={_className}>
-      <div className="sea-qa-project-main-panel-header-left">
-        <div className="sea-qa-project-main-panel-header-name">
-          {children[0]}
+      <div className="sea-qa-project-main-panel-header-content">
+        <div className="sea-qa-project-main-panel-header-left">
+          <div className="sea-qa-project-main-panel-header-name">
+            {children[0]}
+          </div>
         </div>
+        {children[1] && (
+          <div className="sea-qa-project-main-panel-header-right d-flex">
+            {children[1]}
+          </div>
+        )}
       </div>
-      {children[1] && (
-        <div className="sea-qa-project-main-panel-header-right d-flex">
-          {children[1]}
-        </div>
-      )}
     </div>
   );
 };

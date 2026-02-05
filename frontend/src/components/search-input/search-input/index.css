@@ -9,6 +9,16 @@
 .sea-qa-search-input-wrapper .sea-qa-search-input {
   width: 100%;
   padding-left: 2.5rem;
+  border-radius: 8px;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input.small {
+  border-radius: 4px;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input:focus {
+  border-color: #0094F2;
+  box-shadow: none;
 }
 
 .sea-qa-search-input-wrapper .sea-qa-search-input-search {
@@ -24,13 +34,9 @@
 }
 
 .sea-qa-search-input-wrapper .sea-qa-search-input-search .sea-qa-icon-svg {
-  color: #9aa0ac;
-}
-
-.sea-qa-search-input-wrapper .sea-qa-search-input-clear {
-  position: absolute;
-  height: 20px;
-  width: 20px;
+  color: var(--bs-icon-secondary-color);
+  height: 14px;
+  width: 14px;
 }
 
 .sea-qa-project-search-in-popover.sea-qa-search-input-wrapper {

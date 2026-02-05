@@ -90,8 +90,22 @@
   white-space: nowrap;
 }
 
+.sea-qa-select .selected-option-show .sea-qa-icon-svg {
+  color: var(--bs-icon-color);
+  height: 14px;
+  width: 14px;
+}
+
 .sea-qa-select .select-placeholder {
   line-height: 1;
   font-size: 14px;
   white-space: nowrap;
+}
+
+.sea-qa-customize-select .option-group .option-group-content {
+  padding:  0;
+}
+
+.sea-qa-customize-select .option-group .option.active {
+  border-radius: 0;
 }

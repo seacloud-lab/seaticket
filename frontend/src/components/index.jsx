@@ -22,7 +22,6 @@ import toaster from './toaster';
 import Paginator from './paginator';
 import ModalPortal from './modal-portal';
 import Radio from './radio';
-import CustomizeGroupSelect from './customize-group-select';
 import CustomizeDropdownMenu from './customize-dropdown-menu';
 import CustomizeDropdownItem, { CustomizeDropdownItemIcon, CustomizeDropdownItemText } from './customize-dropdown-item';
 import CustomizeDropdownMoreToggle from './customize-dropdown-more-toggle';
@@ -57,6 +56,8 @@ import Switch from './switch';
 import IconTooltip from './icon-tooltip';
 import SelectEditor from './select-editor';
 import RadioGroup from './radio-group';
+import ClearIconButton from './clear-icon-button';
+import CustomizeTabs from './customize-tabs';
 
 export {
   FixedWidthTable,
@@ -86,7 +87,6 @@ export {
   Paginator,
   ModalPortal,
   Radio,
-  CustomizeGroupSelect,
   CustomizeDropdownMenu,
   CustomizeDropdownItem,
   CustomizeDropdownItemIcon,
@@ -120,4 +120,6 @@ export {
   SelectEditor,
   LinkVerifiedDialog,
   RadioGroup,
+  ClearIconButton,
+  CustomizeTabs,
 };

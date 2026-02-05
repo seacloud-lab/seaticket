@@ -31,7 +31,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
-          wrapperClass="sea-metadata-view-tool-filter mr-2"
+          wrapperClass="sea-metadata-view-tool-filter"
           filtersClassName="sea-metadata-filters"
           target="sea-metadata-filter-popover"
           readOnly={isReadOnly}
@@ -46,7 +46,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.SORTS) && (
         <SortSetter
-          wrapperClass="sea-metadata-view-tool-sort mr-2"
+          wrapperClass="sea-metadata-view-tool-sort"
           target="sea-metadata-sort-popover"
           readOnly={isReadOnly}
           sorts={view.sorts}
@@ -57,7 +57,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.GROUPBYS) && (
         <GroupbySetter
-          wrapperClass="sea-metadata-view-tool-groupby mr-2"
+          wrapperClass="sea-metadata-view-tool-groupby"
           target="sea-metadata-groupby-popover"
           readOnly={isReadOnly}
           columns={viewColumns}
@@ -67,7 +67,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.ROW_HEIGHT) && (
         <RowHeightSetter
-          wrapperClass="sea-metadata-view-tool-row-height mr-2"
+          wrapperClass="sea-metadata-view-tool-row-height"
           target="sea-metadata-row-height-popover"
           readOnly={isReadOnly}
           rowHeight={view.row_height}
@@ -76,7 +76,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && (
         <HideColumnSetter
-          wrapperClass="sea-metadata-view-tool-hide-column mr-2"
+          wrapperClass="sea-metadata-view-tool-hide-column"
           target="sea-metadata-hide-column-popover"
           readOnly={isReadOnly}
           columns={viewColumns.slice(fixedColumnCount)}

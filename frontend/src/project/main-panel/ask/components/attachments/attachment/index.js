@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { IconTooltip, Icon } from '@/components';
+import { ClearIconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { AttachmentObject } from '../../../models';
 
@@ -28,11 +28,10 @@ const Attachment = ({ value, index, onRemove, openAttachment }) => {
       <Icon symbol={icon} className={`sea-qa-project-ticket-state-${icon}-icon sea-qa-project-ai-attachment-icon mr-2`} />
       <span className="text-truncate flex-1" title={title} aria-label={title}>{title}</span>
       {onRemove && (
-        <IconTooltip
-          icon="close"
-          className="sea-qa-ai-chat-attachment-remove"
-          tip={gettext('Remove')}
-          placement="bottom"
+        <ClearIconButton
+          useTooltip={true}
+          className="mr-0 ml-4"
+          title={gettext('Remove')}
           onClick={handleRemove}
         />
       )}
