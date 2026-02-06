@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
-import SeaMetadata from '@/sea-metadata';
 import { knowledgeBaseAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getFileExtension } from '@/utils/download';
@@ -19,66 +18,9 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
   const [previewData, setPreviewData] = useState([]);
   const uploadBoxRef = useRef(null);
 
-  const api = useMemo(() => {
-    return {
-      getViews: () => {
-        const view = { _id: 'preview', name: gettext('Preview'), type: 'table' };
-        return Promise.resolve({
-          data: {
-            views: [view],
-            navigation: [{ _id: view._id, type: 'view' }],
-          }
-        });
-      },
-
-      getView: (viewID) => {
-        return Promise.resolve({
-          data: {
-            view: { _id: viewID || 'preview', name: gettext('Preview'), type: 'table' }
-          }
-        });
-      },
-
-      getMetadata: ({ start = 0, limit = 100 } = {}) => {
-        const rows = previewData.map((r, index) => {
-          return {
-            _pk: index + 1,
-            title: r?.title,
-            content: r?.content,
-          };
-        });
-
-        const slicedRows = rows.slice(start, start + limit);
-        const columns = [
-          {
-            key: 'title',
-            name: 'title',
-            type: 'text',
-            data: null,
-            display_name: gettext('Title'),
-            editable: false,
-            is_required: false,
-          },
-          {
-            key: 'content',
-            name: 'content',
-            type: 'long-text',
-            data: null,
-            display_name: gettext('Content'),
-            editable: false,
-            is_required: false,
-          }
-        ];
-
-        return Promise.resolve({ data: { rows: slicedRows, columns } });
-      },
-    };
-  }, [previewData]);
-
   const onQueryIOStatus = useCallback((taskId) => {
     knowledgeBaseAPI.queryIOStatus(taskId).then(r => {
       if (r?.data?.is_finished) {
-        console.log('previewData', r.data);
         if (r?.data?.preview_rows?.length === 0) {
           toaster.warning(gettext('Upload file is empty'));
         } else {
@@ -156,11 +98,22 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
           {previewData.length !== 0 && (
             <div className="preview-file-box">
               <div className="preview-file-title">{gettext('%s rows are about to be imported into this knowledge base.').replace('%s', previewData.length)}</div>
-              <SeaMetadata
-                viewID="preview"
-                api={api}
-                viewTools={[]}
-              />
+              <table className="sea-qa-preview-table">
+                <thead>
+                  <tr>
+                    <th className="title-cell">{gettext('Title')}</th>
+                    <th className="content-cell">{gettext('Content')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewData.map((row, index) => (
+                    <tr key={index}>
+                      <td className="title-cell">{row.title}</td>
+                      <td className="content-cell">{row.content}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
           {previewData.length === 0 && (
