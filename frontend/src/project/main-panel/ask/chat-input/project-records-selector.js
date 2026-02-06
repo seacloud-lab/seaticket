@@ -5,7 +5,7 @@ import { searchAPI } from '@/project/api';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { SyncSelector } from '../components';
 
-const ProjectRecordsSelector = ({ projectUuid, value: attachments = [], isSimple, onChange: propsOnChange }) => {
+const ProjectRecordsSelector = ({ projectUuid, value: attachments = [], onChange: propsOnChange }) => {
   const attachmentsRef = useRef([]);
 
   const onSearch = useCallback((value, signal) => {
@@ -28,13 +28,12 @@ const ProjectRecordsSelector = ({ projectUuid, value: attachments = [], isSimple
   return (
     <SyncSelector
       icon="plus"
-      className={classnames('sea-qa-ask-chat-records-selector', { 'simple': isSimple })}
+      className={classnames('sea-qa-ask-chat-records-selector', { 'simple': true })}
       value={Array.isArray(attachments) ? attachments.map(t => t.key) : []}
       onSearch={onSearch}
       onChange={onChange}
-    >
-      {gettext('Add tickets and docs')}
-    </SyncSelector>
+      title={gettext('Add tickets and docs')}
+    />
   );
 
 };

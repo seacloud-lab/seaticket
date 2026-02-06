@@ -5,7 +5,7 @@ import SelectorDisplay from './selector-display';
 
 import './index.css';
 
-const SyncSelector = ({ icon, className, value, onChange, children, onSearch }) => {
+const SyncSelector = ({ icon, className, value, title, onChange, children, onSearch }) => {
   const [isShowSelector, setIsShowSelector] = useState(false);
 
   const ref = useRef();
@@ -29,6 +29,7 @@ const SyncSelector = ({ icon, className, value, onChange, children, onSearch }) 
         onClick={openSelector}
         icon={icon}
         className={className}
+        title={title}
       >
         {children}
       </SelectorDisplay>

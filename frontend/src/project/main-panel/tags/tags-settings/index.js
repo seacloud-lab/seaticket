@@ -53,19 +53,11 @@ const TagsSettings = ({
     const option = SELECT_OPTION_COLORS[random];
     const { COLOR, TEXT_COLOR } = option;
     return createTag({ name, description: '', color: COLOR, text_color: TEXT_COLOR }).then(tag => {
-      const { _id, color, name, description } = tag;
+      const { _id } = tag;
       return {
         ...tag,
         value: _id,
-        label: (
-          <>
-            <div className="sea-qa-tags-selector-tag-bg" style={{ backgroundColor: color }}></div>
-            <div className="sea-qa-tags-selector-tag-name-description">
-              <div className="sea-qa-tags-selector-tag-name">{name}</div>
-              {description && (<div className="sea-qa-tags-selector-tag-description">{description}</div>)}
-            </div>
-          </>
-        ),
+        label: (<TagOption tag={tag} />),
       };
     });
   }, [createTag]);
@@ -118,7 +110,7 @@ const TagsSettings = ({
           target={editorRef}
           isLoading={isLoading}
           isMultiple={true}
-          className="sea-qa-tags-selector-popover"
+          className="sea-qa-tags-selector-popover hide-description"
           placeholder={gettext('Search tags')}
           emptyTip={gettext('No tags')}
           value={Array.isArray(value) ? value.map(v => v + '') : value}

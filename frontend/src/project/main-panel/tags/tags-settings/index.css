@@ -13,10 +13,3 @@
   margin-top: 4px;
   margin-right: 10px;
 }
-
-.sea-qa-tags-selector-popover.option-editor-popover .option-editor-content .option-editor-option {
-  height: fit-content;
-  align-items: flex-start;
-  padding: 8px 10px;
-  gap: 8px;
-}

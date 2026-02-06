@@ -10,3 +10,14 @@
   box-shadow: 0px 2px 10px 0 #dedede;
   position: absolute;
 }
+
+.sea-qa-tags-selector-popover.option-editor-popover .option-editor-content .option-editor-option {
+  height: fit-content;
+  align-items: flex-start;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.sea-qa-tags-selector-popover.option-editor-popover.hide-description .option-editor-content .option-editor-option {
+  align-items: center;
+}

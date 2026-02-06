@@ -13,6 +13,7 @@ const SelectorDisplay = ({
   border = true,
   displayBgColor = false,
   iconPlacement = 'left',
+  title,
   onClick,
 }) => {
   const _className = useMemo(() => {
@@ -28,10 +29,11 @@ const SelectorDisplay = ({
       className={_className}
       ref={innerRef}
       onClick={onClick}
+      title={title}
     >
       <div className={classnames('selected-option', `icon-in-${iconPlacement}`)}>
         {icon && iconPlacement === 'left' && (<Icon symbol={icon} />)}
-        <div className="selected-option-show">{children}</div>
+        {children && (<div className="selected-option-show">{children}</div>)}
         {icon && iconPlacement === 'right' && (<Icon symbol={icon} />)}
       </div>
     </div>
