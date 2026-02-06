@@ -1,0 +1,33 @@
+.resolved-tag-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 5px;
+  background-color: #EDF8E2;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.resolved-tag-icon-bg {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resolved-tag-icon {
+  width: 8px;
+  height: 8px;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.resolved-tag-text {
+  color: #5EBA00;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+}
