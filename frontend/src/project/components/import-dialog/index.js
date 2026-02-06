@@ -3,13 +3,16 @@ import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert }
 import classnames from 'classnames';
 import { knowledgeBaseAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
+import { getFileExtension } from '@/utils/download';
 import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
-const ImportDialog = ({ onToggle }) => {
+const HOVER_BACKGROUND = 'rgba(237, 113, 9, 0.1)';
+const DEFAULT_BACKGROUND = 'transparent';
+const ImportDialog = ({ onToggle, onClickBar }) => {
   const [previewData, setPreviewData] = useState(null);
   const uploadBoxRef = useRef(null);
 
@@ -31,40 +34,42 @@ const ImportDialog = ({ onToggle }) => {
     });
   }, []);
 
-  const onHandleUpload = useCallback(() => {
+  const onHandleFileUpload = useCallback((file) => {
+    if (!file) return;
+    knowledgeBaseAPI.importExcel(projectUuid, file, true).then(res => {
+      const taskId = res?.data?.task_id;
+      if (!taskId) return;
+      onQueryIOStatus(taskId);
+    }).catch(err => {
+      const errorMsg = Utils.getErrorMsg(err);
+      toaster.danger(errorMsg);
+    });
+  }, [onQueryIOStatus]);
+
+  const onClickUpload = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx';
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      knowledgeBaseAPI.importExcel(projectUuid, file, true).then(res => {
-        const taskId = res?.data?.task_id;
-        if (!taskId) return;
-        onQueryIOStatus(taskId);
-      }).catch(err => {
-        const errorMsg = Utils.getErrorMsg(err);
-        toaster.danger(errorMsg);
-      });
+      onHandleFileUpload(file);
     };
     input.click();
   }, []);
 
-  const onHandleDragUpload = useCallback((event) => {
+  const onDragUpload = useCallback((event) => {
     event.preventDefault();
-    console.log(event.type);
     if (event.type === 'drop') {
-      uploadBoxRef.current.style.backgroundColor = 'transparent';
-      // for (let file of event.dataTransfer.files) {
-      //   // 把文件保存到文件数组中
-      //   fileArr.push(file)
-      //   // 初始化文件
-      //   filesToBlod(file)
-      // }
+      uploadBoxRef.current.style.backgroundColor = DEFAULT_BACKGROUND;
+      const file = event.dataTransfer.files[0];
+      const extension = getFileExtension(file.name);
+      if (!file || extension !== 'xlsx') return;
+      onHandleFileUpload(file);
     } else if (event.type === 'dragleave') {
-      uploadBoxRef.current.style.backgroundColor = 'transparent';
+      uploadBoxRef.current.style.backgroundColor = DEFAULT_BACKGROUND;
     } else {
-      uploadBoxRef.current.style.backgroundColor = 'rgba(237, 113, 9, 0.1)';
+      uploadBoxRef.current.style.backgroundColor = HOVER_BACKGROUND;
     }
   }, []);
 
@@ -81,11 +86,11 @@ const ImportDialog = ({ onToggle }) => {
           <div
             ref={uploadBoxRef}
             className="upload-file-box d-flex align-items-center justify-content-center"
-            onClick={onHandleUpload}
-            onDrop={onHandleDragUpload}
-            onDragEnter={onHandleDragUpload}
-            onDragOver={onHandleDragUpload}
-            onDragLeave={onHandleDragUpload}
+            onClick={onClickUpload}
+            onDrop={onDragUpload}
+            onDragEnter={onDragUpload}
+            onDragOver={onDragUpload}
+            onDragLeave={onDragUpload}
           >
             <div className="upload-icon-wrapper d-flex flex-column align-items-center">
               <Icon symbol="upload" />

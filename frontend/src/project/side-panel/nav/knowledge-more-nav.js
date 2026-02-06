@@ -123,7 +123,7 @@ const KnowledgeMoreNav = ({ onClick }) => {
       )} */}
 
       {isShowImportDialog && (
-        <ImportDialog onToggle={() => { console.log(11), setIsShowImportDialog(false);}} />
+        <ImportDialog onToggle={() => setIsShowImportDialog(false)} onClickBar={onClick} />
       )}
     </>
   );
