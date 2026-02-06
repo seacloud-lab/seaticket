@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
+from io import BytesIO
 from urllib.parse import quote
 
 from rest_framework.views import APIView
@@ -9,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from django.http import FileResponse
+from openpyxl import Workbook
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle, ExportRateThrottle, ImportRateThrottle
@@ -55,6 +57,36 @@ class KnowledgeBaseConvertViewToExcel(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'task_id': task_id})
+
+
+class KnowledgeBaseImportExcelExample(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        wb = Workbook(write_only=True)
+        ws = wb.create_sheet('Knowledge Base')
+        ws.append(['Title', 'Content'])
+        for i in range(5):
+            ws.append([f'Title {i + 1}', f'Example content {i + 1}'])
+
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        resp = FileResponse(output, content_type='application/ms-excel', as_attachment=True)
+        resp['Content-Disposition'] = "attachment;filename*=UTF-8''knowledge_base_import_sample.xlsx"
+        return resp
 
 
 class KnowledgeBaseIOStatus(APIView):

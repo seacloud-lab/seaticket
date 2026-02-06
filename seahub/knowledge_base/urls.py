@@ -6,7 +6,7 @@ from seahub.knowledge_base.knowledge_base import KnowledgeBasesAPIView, Knowledg
 from seahub.knowledge_base.knowledge_base_views import KnowledgeBaseViewsAPI, KnowledgeBaseViewView, \
     KnowledgeBaseViewsMoveView, KnowledgeBaseViewsDuplicateView
 from seahub.knowledge_base.knowledge_base_excel import KnowledgeBaseConvertViewToExcel, KnowledgeBaseExportExcel, \
-    KnowledgeBaseIOStatus, KnowledgeBaseImportExcel
+    KnowledgeBaseIOStatus, KnowledgeBaseImportExcel, KnowledgeBaseImportExcelExample
 
 
 urlpatterns = [
@@ -28,6 +28,7 @@ urlpatterns = [
 
     # Knowledge base import
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/import-excel/$', KnowledgeBaseImportExcel.as_view(), name='api-v1-kb-import-excel'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/import-excel-example/$', KnowledgeBaseImportExcelExample.as_view(), name='api-v1-kb-import-excel-example'),
 
     # Knowledge base trash
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/trash/$', KnowledgeBasesTrashAPIView.as_view(), name='api-v1-knowledge-bases-trash'),
