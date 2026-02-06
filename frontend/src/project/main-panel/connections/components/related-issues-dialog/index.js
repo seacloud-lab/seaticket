@@ -10,6 +10,7 @@ import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { ResourceDetailsDialog } from '@/project/components';
+import ResolvedTag from './resolved-tag';
 
 import './index.css';
 
@@ -95,6 +96,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                           <div className='issues-list-item-title'>
                             <div>
                               <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
+                              {issue.resolved && <ResolvedTag />}
                             </div>
                             <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
                               {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}
