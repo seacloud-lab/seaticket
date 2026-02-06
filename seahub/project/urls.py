@@ -12,7 +12,7 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import ConvertRecordToTicket, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, RelatedRecordsView
+from .ai import ConvertRecordToTicket, ConvertTicketToKnowledgeBaseRecord, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, RelatedRecordsView
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
@@ -76,6 +76,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets-and-documents/$', SearchTickectsAndDocumentsView.as_view(), name='api-v1-search-ticket-and-documents'),
 
     re_path(r'^api/v1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v1-ai-create-ticket'),
+    re_path(r'^api/v1/ai/convert-ticket-to-knowledge-base/$', ConvertTicketToKnowledgeBaseRecord.as_view(), name='api-v1-ai-convert-ticket-to-kb-record'),
     re_path(r'^api/v1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v1-ai-embedding-analysis'),
     re_path(r'^api/v1/ai/embedding-analysis-task-status/(?P<task_id>[-0-9a-zA-Z]+)/$', EmbeddingAnalysisTaskStatusView.as_view(), name='api-v1-ai-embedding-analysis-task-status'),
     re_path(r'^api/v1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v1-ai-related-records'),
