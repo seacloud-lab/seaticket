@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { gettext } from '@/constants';
 import { useSessions } from '../hooks';
 import { SESSION_TAB_TYPE } from '../constants';
-import { EmptyTip, IconButton, CustomizeTabs } from '@/components';
+import { EmptyTip, IconButton, CustomizeTabs, CenteredLoading } from '@/components';
 import Session from './session';
 
 import './index.css';
@@ -46,7 +46,7 @@ const Sessions = ({ sessionId, permission }) => {
       />
       <div className="sea-qa-ai-ask-sessions-body">
         {isTeamTab && isTeamSessionsLoading && (
-          <div className="sea-qa-ai-ask-sessions-loading">{gettext('Loading...')}</div>
+          <CenteredLoading />
         )}
         {!isTeamSessionsLoading && displaySessions.length === 0 && (
           <EmptyTip className="sea-qa-ai-ask-sessions-empty" text={gettext('No chats')} />
