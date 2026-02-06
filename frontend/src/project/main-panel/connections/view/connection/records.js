@@ -306,10 +306,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
     if (!enableUseAI) return null;
 
-    const children = [
-      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL ? {
-        label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
+    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL) {
+      return {
         key: 'chat_issues',
+        label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
         callback: () => {
           let newRows = [];
           const titleColumn = getColumnByName(allColumns.current, 'title');
@@ -330,16 +330,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           });
           handleResolveIssueByAI(newRows);
         }
-      } : null,
-    ].filter(Boolean);
+      };
+    }
 
-    if (children.length === 0) return null;
-
-    return {
-      key: 'AI',
-      label: gettext('AI'),
-      children
-    };
+    return null;
   }, [connection, connectionID, handleResolveIssueByAI]);
 
   const generateOpenOriginalPageOption = useCallback(({ row }) => {
@@ -447,14 +441,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       if (rows.length > 0) {
         const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
-        if (markAsOutdatedOption) {
-          list.push(markAsOutdatedOption);
-          if (AIOptions) {
-            list.push('Divider');
-          }
-        }
         if (AIOptions) {
           list.push(AIOptions);
+        }
+        if (markAsOutdatedOption) {
+          list.push(markAsOutdatedOption);
         }
       }
       return list;
@@ -473,14 +464,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       if (rows.length > 0) {
         const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
-        if (markAsOutdatedOption) {
-          list.push(markAsOutdatedOption);
-          if (AIOptions) {
-            list.push('Divider');
-          }
-        }
         if (AIOptions) {
           list.push(AIOptions);
+        }
+        if (markAsOutdatedOption) {
+          list.push(markAsOutdatedOption);
         }
       }
       return list;
@@ -491,6 +479,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return [];
+
+    const AIOptions = generateAIOptions({ rows: [row], columns: table.columns });
+    list.push(AIOptions);
 
     const openOriginalPageOption = generateOpenOriginalPageOption({ row });
     list.push(openOriginalPageOption);
@@ -509,11 +500,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
     list = list.filter(Boolean);
 
-    const AIOptions = generateAIOptions({ rows: [row], columns: table.columns });
-    if (list.length > 0 && AIOptions) {
-      list.push('Divider');
-    }
-    list.push(AIOptions);
     return list.filter(Boolean);
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
