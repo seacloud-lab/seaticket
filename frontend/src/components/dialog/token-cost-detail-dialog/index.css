@@ -144,6 +144,14 @@
   font-weight: 400;
 }
 
+.view-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #e9ecef;
+}
+
 .models-section {
   background: #f8f9fa;
   border-radius: 8px;

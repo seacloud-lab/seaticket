@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { gettext } from '@/constants';
+import dayjs from 'dayjs';
 import {
   ComposedChart,
   Bar,
@@ -25,15 +26,37 @@ const TokenCostChart = ({
   },
   height = 500
 }) => {
+  const getXDataKey = () => {
+    if (data.length === 0) return 'date';
+
+    const firstItem = data[0];
+    if (firstItem.date) return 'date';
+    if (firstItem.user) return 'user';
+    if (firstItem.project) return 'project';
+    return 'date';
+  };
+
+  const getXAxisLabel = () => {
+    const xDataKey = getXDataKey();
+    switch (xDataKey) {
+      case 'user': return 'User';
+      case 'project': return 'Project';
+      default: return 'Date';
+    }
+  };
+
+  const xDataKey = getXDataKey();
+  const xAxisLabel = getXAxisLabel();
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-      const dataPoint = data.find(item => item.date === label);
-
+      const dataPoint = data.find(item => {
+        return item[xDataKey] === label;
+      });
       return (
         <div className='custom-tooltip'>
           <p className='tooltip-label'>
-            {`${gettext('Date')}: ${label}`}
+            {label}
           </p>
           {payload.map((entry, index) => {
             if (entry.dataKey === 'input_tokens' || entry.dataKey === 'output_tokens') {
@@ -82,22 +105,50 @@ const TokenCostChart = ({
   const getMaxCostValue = useMemo(() => {
     if (!data.length) return 10;
     const maxCost = Math.max(...data.map(item => item.cost));
-    return Math.ceil(maxCost * 1.2);
+    return maxCost * 1.2;
   }, [data]);
+
+  const sortedData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    const xDataKey = getXDataKey();
+
+    if (xDataKey === 'date') {
+      return [...data].sort((a, b) => {
+        const dateA = dayjs(a.date).valueOf();
+        const dateB = dayjs(b.date).valueOf();
+        return dateA - dateB;
+      });
+    }
+
+    return [...data];
+  }, [data]);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className='chart-wrapper'>
+        <div className='chart-container' style={{ height: `${height}px` }}>
+          <div className='no-data'>
+            {gettext('No data available')}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='chart-wrapper'>
       <div className='chart-container' style={{ height: `${height}px` }}>
         <ResponsiveContainer width='100%' height='100%'>
           <ComposedChart
-            data={data}
+            data={sortedData}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
             <XAxis
-              dataKey='date'
+              dataKey={xDataKey}
               label={{
-                value: gettext('Date'),
+                value: gettext(xAxisLabel),
                 position: 'insideBottom',
                 offset: -10,
                 style: { fontSize: '12px' }
@@ -190,40 +241,12 @@ const TokenCostChart = ({
         </ResponsiveContainer>
       </div>
 
-      <div className='legend-container'>
-        <div className='legend-item'>
-          <span
-            className='color-indicator'
-            style={{ backgroundColor: colors.inputTokens }}
-          />
-          <span>{gettext('Input tokens')}</span>
-        </div>
-        <div className='legend-item'>
-          <span
-            className='color-indicator'
-            style={{ backgroundColor: colors.outputTokens }}
-          />
-          <span>{gettext('Output tokens')}</span>
-        </div>
-        <div className='legend-item'>
-          <span
-            className='color-indicator circle'
-            style={{ backgroundColor: colors.costLine }}
-          />
-          <span>{gettext('Cost')}</span>
-        </div>
-      </div>
     </div>
   );
 };
 
 TokenCostChart.defaultProps = {
-  data: {
-    date: [],
-    input_tokens: [],
-    output_tokens: [],
-    cost: []
-  },
+  data: [],
   colors: {
     inputTokens: '#8884d8',
     outputTokens: '#82ca9d',

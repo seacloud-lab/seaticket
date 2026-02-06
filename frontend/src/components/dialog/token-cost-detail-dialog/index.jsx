@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import dayjs from 'dayjs';
 import { gettext, mediaUrl } from '@/constants';
-import { Loading, EmptyTip, TokenCostChart, OptionEditor, ModalHeader } from '@/components';
+import { Loading, EmptyTip, TokenCostChart, ModalHeader } from '@/components';
+import { Utils } from '@/utils/utils';
+import toaster from '@/components/toaster';
 import { Modal, ModalBody, Label } from 'reactstrap';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
+import Select from 'react-select';
 
 import './index.css';
 
@@ -11,24 +15,17 @@ class TokenCostDetailDialog extends Component {
   constructor(props) {
     super(props);
 
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-
     this.state = {
       isLoading: true,
-      group_by: props.group_by || 'user',
-      condition: props.condition || '',
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      models: [], // models from fetchModels
+      view: 'daily',
+      startDate: dayjs().subtract(30, 'day'),
+      endDate: dayjs(),
       selectedModels: [], // selected models
       fullData: null,
       data: null,
-      isOptionEditorOpen: false
+      condition: { ...this.props.basicCondition }
     };
 
-    this.optionEditorTarget = React.createRef();
   }
 
   componentDidMount() {
@@ -36,116 +33,143 @@ class TokenCostDetailDialog extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // re-fetch model when group_by has changed
-    if (prevState.group_by !== this.state.group_by ||
-        prevState.condition !== this.state.condition) {
-      this.fetchModels();
+    if (prevProps.basicCondition !== this.props.basicCondition ||
+      prevProps.availableViews !== this.props.availableViews ||
+      prevProps.models !== this.props.models
+    ) {
+      this.initializeData();
     }
   }
 
-  initializeData = async () => {
-    await this.fetchModels();
+  initializeData = () => {
+    this.setState({ startDate: dayjs().subtract(30, 'day'), endDate: dayjs(), view: 'daily', selectedModels: this.props.models }, () => {
+      this.fetchStatistics();
+    });
   };
 
-  setDefaultSelectedModels = () => {
-    // set default models
-    if (this.state.models.length > 0) {
-      const allModels = this.state.models.map(model => model.value);
-      this.setState({ selectedModels: allModels });
-    }
-  };
-
-  fetchModels = async () => {
-    this.setState({ isLoading: true });
-    try {
-      const { group_by, condition } = this.state;
-
-      const models = await this.props.getModels(group_by, condition);
-
-      this.setState({
-        models: Array.isArray(models) ? models : [],
-      });
-      this.setDefaultSelectedModels();
-      await this.fetchStatistics();
-    } catch (error) {
-      this.setState({ isLoading: false });
-    }
-  };
-
-  updateDataByDate = () => {
+  updateDailyData = () => {
     const { fullData, startDate, endDate } = this.state;
     if (!fullData || !fullData.length === 0) {
       this.setState({ data: null, isLoading: false });
       return;
     }
 
-    let new_data = [];
+    let newData = [];
 
     fullData.forEach((data) => {
-      if (data.date && data.date >= startDate && data.date <= endDate) {
-        new_data.push({
-          date: data.date,
-          input_tokens: data.total_input_tokens || 0,
-          output_tokens: data.total_output_tokens || 0,
-          cost: data.total_cost || 0,
-          total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
-        });
+      if (data.date) {
+        const date = dayjs(data.date);
+        if (date >= startDate && date <= endDate) {
+          newData.push({
+            date: data.date,
+            input_tokens: data.total_input_tokens || 0,
+            output_tokens: data.total_output_tokens || 0,
+            cost: data.total_cost || 0,
+            total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
+          });
+        }
       }
     });
 
-    this.setState({ data: new_data, isLoading: false });
+    this.setState({ data: newData });
   };
 
-  fetchStatistics = async () => {
-    try {
-      const { selectedModels, group_by, condition } = this.state;
+  updateDataByDate = () => {
+    const { view } = this.state;
 
-      if (!selectedModels || selectedModels.length === 0) {
-        this.setState({ fullData: null, date: null, isLoading: false });
-        return;
-      }
-
-      const fullData = await this.props.getAIStatisticsDetail(
-        selectedModels,
-        group_by,
-        condition
-      );
-
-      this.setState({ fullData: fullData || null });
-
-      this.updateDataByDate();
-    } catch (error) {
-      this.setState({ isLoading: false });
+    this.setState({ isLoading: true });
+    if (view === 'daily') {
+      this.updateDailyData();
+    } else {
+      let condition = { ...this.props.basicCondition };
+      const { startDate, endDate } = this.state;
+      condition.start_date = startDate;
+      condition.end_date = endDate;
+      this.setState({ condition }, () => {
+        this.fetchStatistics();
+      });
     }
+    this.setState({ isLoading: false });
+  };
+
+  fetchStatistics = () => {
+    this.setState({ isLoading: true });
+    const { view, selectedModels, condition } = this.state;
+
+    if (!selectedModels || selectedModels.length === 0) {
+      this.setState({ fullData: null, date: null, isLoading: false });
+      return;
+    }
+
+    this.props.getAIStatisticsDetail(view, JSON.stringify(selectedModels), JSON.stringify(condition)).then(res => {
+      const fullData = res.data.results;
+      this.setState({ fullData: fullData || null }, () => {
+        if (view === 'daily') {
+          this.updateDailyData();
+          this.setState({ isLoading: false });
+        } else if (!fullData || !fullData.length === 0) {
+          this.setState({ data: null, isLoading: false });
+        } else {
+          let newData = [];
+          fullData.forEach((data) => {
+            let record = {
+              input_tokens: data.total_input_tokens || 0,
+              output_tokens: data.total_output_tokens || 0,
+              cost: data.total_cost || 0,
+              total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
+            };
+            if (view === 'user') {
+              record.user = data.user;
+            } else if (view === 'project') {
+              record.project = data.project;
+            }
+            newData.push(record);
+          });
+          this.setState({ data: newData, isLoading: false });
+        }
+      });
+    }).catch (error => {
+      let errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+      this.setState({ isLoading: false });
+    });
   };
 
   onDateChange = (date, type) => {
-    if (type === 'start') {
-      this.setState({ startDate: date }, () => {
-        this.setState({ isLoading: true });
-        this.updateDataByDate();
-      });
-    } else if (type === 'end') {
-      this.setState({ endDate: date }, () => {
-        this.setState({ isLoading: true });
-        this.updateDataByDate();
-      });
+    if (date && date.isValid()) {
+      if (type === 'start') {
+        this.setState({ startDate: date }, () => {
+        });
+      } else if (type === 'end') {
+        this.setState({ endDate: date }, () => {
+        });
+      }
+      this.updateDataByDate();
     }
   };
 
   updateFilterModels = (selectedModels) => {
-    this.setState({ selectedModels }, () => {
-      this.setState({ isLoading: true });
+    let newSelectedModels = [];
+    selectedModels.forEach((item) => {
+      newSelectedModels.push(item.value);
+    });
+    this.setState({ selectedModels: newSelectedModels }, () => {
       this.fetchStatistics();
     });
   };
 
-  openOptionEditor = () => {
-    this.setState({ isOptionEditorOpen: true });
+  updateView = (view) => {
+    this.setState({ view: view.value }, () => {
+      this.fetchStatistics();
+    });
   };
 
-  closeOptionEditor = () => {
-    this.setState({ isOptionEditorOpen: false });
+  arrayToSelectComponentsObject = (arrayObject) => {
+    let newObject = [];
+    arrayObject.forEach((item) => {
+      newObject.push({ value: item, label: item });
+    });
+    return newObject;
   };
 
   render() {
@@ -153,18 +177,18 @@ class TokenCostDetailDialog extends Component {
       isLoading,
       startDate,
       endDate,
-      models,
       selectedModels,
       data,
     } = this.state;
+    const { models, view, availableViews, onCloseDialog } = this.props;
 
     return (
-      <Modal isOpen={true} toggle={this.props.onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
-        <ModalHeader toggle={this.props.onCloseDialog}>{gettext('Token cost statistics detail')}</ModalHeader>
+      <Modal isOpen={true} toggle={onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
+        <ModalHeader toggle={onCloseDialog}>{gettext('Token cost statistics detail')}</ModalHeader>
         <ModalBody className="dialog-content">
           <div className="filters-section">
             <div className="filter-row">
-              <div className="filter-item full-width">
+              <div className="filter-item">
                 <Label>{gettext('Date range')}</Label>
                 <div className="date-range-row">
                   <div className="date-range-item">
@@ -192,21 +216,28 @@ class TokenCostDetailDialog extends Component {
               </div>
             </div>
           </div>
-
+          {availableViews.length > 1 && (
+            <div className="view-section">
+              <Select
+                value={{ value: view, label: view }}
+                onChange={this.updateView}
+                options={this.arrayToSelectComponentsObject(availableViews)}
+                placeholder={gettext('View')}
+                isSearchable={true}
+              />
+            </div>
+          )}
           <div className="models-section">
-            <OptionEditor
-              className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-chat-ai-model-type-select-editor"
-              options={models}
-              target={this.optionEditorTarget}
-              checkPlacement="right"
-              isMultiple={true}
-              isSearchEnabled={false}
-              value={gettext('Selected_<num>_models').replace('<num>', selectedModels.length.toString())}
+            <Select
+              value={this.arrayToSelectComponentsObject(selectedModels)}
               onChange={this.updateFilterModels}
-              onToggle={this.closeOptionEditor}
+              options={this.arrayToSelectComponentsObject(models)}
+              placeholder={gettext('Filter_models')}
+              closeMenuOnSelect={false}
+              isSearchable={true}
+              isMulti={true}
             />
           </div>
-
           <div className="chart-section">
             {isLoading ? (
               <Loading />
@@ -216,7 +247,7 @@ class TokenCostDetailDialog extends Component {
                 height={400}
               />
             ) : (
-              <EmptyTip text={gettext('No users')} src={`${mediaUrl}img/no-items-tip.png`} />
+              <EmptyTip text={gettext('Empty')} src={`${mediaUrl}img/no-items-tip.png`} />
             )}
           </div>
         </ModalBody>
@@ -226,11 +257,11 @@ class TokenCostDetailDialog extends Component {
 }
 
 TokenCostDetailDialog.propTypes = {
-  group_by: PropTypes.oneOf(['user', 'project', 'group', 'org']).isRequired,
-  condition: PropTypes.string.isRequired,
+  availableViews: PropTypes.array.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
-  getModels: PropTypes.func.isRequired,
-  getAIStatisticsDetail: PropTypes.func.isRequired
+  models: PropTypes.array.isRequired,
+  getAIStatisticsDetail: PropTypes.func.isRequired,
+  basicCondition: PropTypes.object.isRequired
 };
 
 export default TokenCostDetailDialog;

@@ -17,6 +17,7 @@ from seahub.api2.utils import api_error
 from seahub.profile.models import Profile
 from seahub.group.models import Group
 from seahub.base.templatetags.seahub_tags import email2nickname
+from seahub.project.db_utils import query_ai_statistics_data
 from seahub.project.models import AIUsageStatistics, Projects, Workspaces
 from seahub.group.utils import group_id_to_name
 from seahub.organizations.models import Organization
@@ -29,36 +30,6 @@ class AdminAIStatisticsView(APIView):
     throttle_classes = (UserRateThrottle,)
     permission_classes = (IsAdminUser,)
 
-    def _query_data(self, group_by, date_query):
-        org_condition = ''
-        if group_by == 'org_id':
-            org_condition = ' AND `org_id` != -1'
-        sql = f"""
-            SELECT 
-                `id`,
-                `{group_by}`,
-                `org_id`,
-                SUM(`cost`) as `total_cost`,
-                GROUP_CONCAT(`model`) as `model_list`
-            FROM `ai_usage_statistics`
-            WHERE {date_query}{org_condition}
-            GROUP BY `{group_by}` ORDER BY `total_cost` DESC
-        """
-        queryset = AIUsageStatistics.objects.raw(sql)
-        records = []
-        for item in queryset:
-            record = {
-                'total_cost': item.total_cost,
-                'model_list': item.model_list.split(','),
-                'org_id': item.org_id
-            }
-            if group_by == 'project_uuid':
-                record['project_uuid'] = item.project_uuid
-            elif group_by == 'username':
-                record['username'] = item.username
-            records.append(record)
-        return records
-
     def get(self, request):
         date = request.GET.get('date')
         month = request.GET.get('month')
@@ -68,7 +39,7 @@ class AdminAIStatisticsView(APIView):
         if date:
             try:
                 date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
-                date_query = f'`date` = "{date.isoformat()}"'
+                date_query = {'date': date.isoformat()}
             except:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'date invalid')
         elif month:
@@ -76,7 +47,7 @@ class AdminAIStatisticsView(APIView):
                 start_date = datetime.datetime.strptime(month, '%Y%m').date()
                 _, last_day_num = calendar.monthrange(start_date.year, start_date.month)
                 end_date = datetime.date(start_date.year, start_date.month, last_day_num)
-                date_query = f'`date` >= "{start_date.isoformat()}" and `date` <= "{end_date.isoformat()}"'
+                date_query = {'date__gte': start_date.isoformat(), 'date__lte': end_date.isoformat()}
             except:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'month invalid')
 
@@ -92,7 +63,7 @@ class AdminAIStatisticsView(APIView):
         start, end = (page - 1) * per_page, page * per_page
 
         if group_by == 'user':
-            records = self._query_data('username', date_query)
+            records = query_ai_statistics_data('username', date_query)
 
             total_count = len(records)
             stats = records[start:end]
@@ -129,7 +100,7 @@ class AdminAIStatisticsView(APIView):
             return Response({'results': results, 'count': total_count})
 
         elif group_by == 'project':
-            records = self._query_data('project_uuid', date_query)
+            records = query_ai_statistics_data('project_uuid', date_query)
 
             total_count = len(records)
             stats = records[start:end]
@@ -186,7 +157,7 @@ class AdminAIStatisticsView(APIView):
             return Response({'results': results, 'count': total_count})
 
         elif group_by == 'group':
-            records = self._query_data('project_uuid', date_query)
+            records = query_ai_statistics_data('project_uuid', date_query)
             if not records:
                 return Response({'results': [], 'count': 0})
 
@@ -220,7 +191,7 @@ class AdminAIStatisticsView(APIView):
                         'model_list': set(),
                         'total_cost': 0
                     }
-                    for p_uuid, st in group_id_stats_map.items():
+                    for p_uuid, st in project_uuid_stats_map.items():
                         if p_uuid in project_uuids:
                             group_id_stats_map[group_id]['model_list'].update(st['model_list'])
                             group_id_stats_map[group_id]['total_cost'] += st['total_cost']
@@ -270,7 +241,7 @@ class AdminAIStatisticsView(APIView):
             return Response({'results': results, 'count': total_count})
         
         elif group_by == 'org':
-            records = self._query_data('org_id', date_query)
+            records = query_ai_statistics_data('org_id', date_query)
 
             total_count = len(records)
             stats = records[start:end]
@@ -304,6 +275,13 @@ class AdminAIStatisticsView(APIView):
 
             return Response({'results': results, 'count': total_count})
 
+def _get_start_end_date(condition):
+    if (start_date := condition.get('start_date')) and (end_date := condition.get('end_date')):
+        start_date = datetime.datetime.strptime(start_date, '%Y%m%d').date()
+        end_date = datetime.datetime.strptime(end_date, '%Y%m%d').date()
+        return start_date, end_date
+    return None, None
+
 class AdminAIStatisticsDetailView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
@@ -315,8 +293,15 @@ class AdminAIStatisticsDetailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be "user", "project", "group" or "org"')
 
         condition = request.GET.get('condition')
-        if not condition:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'condition invalid')
+        if isinstance(condition, str):
+            try:
+                condition = json.loads(condition)
+            except:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'condition invalid. Must be an object')
+        if not isinstance(condition, dict):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'condition invalid. Must be an object')
+        elif not condition:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'condition must cannot be empty')
         
         models = request.GET.get('models')
         if isinstance(models, str):
@@ -328,31 +313,105 @@ class AdminAIStatisticsDetailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'models invalid. Must be a list')
         elif not models:
             return api_error(status.HTTP_400_BAD_REQUEST, 'models must cannot be empty')
+
+        view = request.GET.get('view')
+        invalid_view = True
+        if group_by == 'user' and view == 'daily':
+            invalid_view = False
+        elif group_by == 'project' and view in ('daily', 'user'):
+            invalid_view = False
+        elif group_by in 'group' and view in ('daily', 'project'):
+            invalid_view = False
+        elif group_by == 'org' and view in ('daily', 'user', 'project'):
+            invalid_view = False
+        if invalid_view:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'view invalid. Must be sub-group_by of "project" or "group", "org", or dependent value "daily"')
         
-        if group_by == 'group':
+        # get usage detail
+        query_args = {'model__in': models}
+        if group_by == 'user':
+            query_args['username'] = condition.get('username', '')
+        elif group_by == 'project':
+            query_args['project_uuid'] = condition.get('project_uuid', '').replace('-', '')
+            start_date, end_date = _get_start_end_date(condition)
+            if start_date and end_date:
+                query_args['date__gte'] = start_date
+                query_args['date__lte'] = end_date
+        elif group_by == 'group':
+            group_id = condition.get('group_id', -1)
+            start_date, end_date = _get_start_end_date(condition)
+            if start_date and end_date:
+                query_args['date__gte'] = start_date
+                query_args['date__lte'] = end_date
+
             # 1. get workspace id
-            owner = f'{condition}@seafile_group'
+            owner = f'{group_id}@seafile_group'
             workspace = Workspaces.objects.filter(owner=owner).first()
             if not workspace:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Workspace not found')
             
             # 2. get projects belong to this group (group workspace)
             project_uuids = Projects.objects.filter(workspace_id=workspace.pk).values_list('uuid', flat=True)
-        
-        # get usage detail
-        query_args = {'model__in': models}
-        if group_by == 'user':
-            query_args['username'] = condition
-        elif group_by == 'project':
-            query_args['project_uuid'] = condition.replace('-', '')
-        elif group_by == 'group':
             query_args['project_uuid__in'] = project_uuids
         elif group_by == 'org':
-            query_args['org_id'] = condition
+            query_args['org_id'] = condition.get('org_id', -1)
+            start_date, end_date = _get_start_end_date(condition)
+            if start_date and end_date:
+                query_args['date__gte'] = start_date
+                query_args['date__lte'] = end_date
 
-        base_queryset = AIUsageStatistics.objects.filter(**query_args).values('date').annotate(
-            total_cost=Sum('cost'),
-            total_input_tokens=Sum('input_tokens'),
-            total_output_tokens=Sum('output_tokens')
-        ).values('date', 'total_cost', 'total_input_tokens', 'total_output_tokens')
-        return Response({'results': list(base_queryset)})
+
+        basic_query_set = AIUsageStatistics.objects.filter(**query_args)
+
+        if view == 'daily':
+            daily_query_set = basic_query_set.values('date').annotate(
+                total_cost=Sum('cost'),
+                total_input_tokens=Sum('input_tokens'),
+                total_output_tokens=Sum('output_tokens')
+            ).values('date', 'total_cost', 'total_input_tokens', 'total_output_tokens')
+            results = list(daily_query_set)
+        elif view == 'user':
+            user_usage_query_set = basic_query_set.values('username').annotate(
+                total_cost=Sum('cost'),
+                total_input_tokens=Sum('input_tokens'),
+                total_output_tokens=Sum('output_tokens')
+            ).values('username', 'total_cost', 'total_input_tokens', 'total_output_tokens').order_by('-total_cost')[:30]
+            usernames = [item['username'] for item in user_usage_query_set if item['username'] != 'seaqa-indexer']
+            profiles_dict = {}
+            if usernames:
+                profiles = Profile.objects.filter(user__in=usernames)
+                profiles_dict = {p.user: p.nickname for p in profiles}
+            results = []
+            for item in user_usage_query_set:
+                nickname = item['username']
+                if item != 'seaqa-indexer':
+                    nickname = profiles_dict.get(item['username'], email2nickname(item['username']))
+                results.append({
+                    'user': nickname,
+                    'total_cost': item['total_cost'],
+                    'total_input_tokens': item['total_input_tokens'],
+                    'total_output_tokens': item['total_output_tokens']
+                })
+        elif view == 'project':
+            project_usage_query_set = basic_query_set.values('project_uuid').annotate(
+                total_cost=Sum('cost'),
+                total_input_tokens=Sum('input_tokens'),
+                total_output_tokens=Sum('output_tokens')
+            ).values('project_uuid', 'total_cost', 'total_input_tokens', 'total_output_tokens').order_by('-total_cost')[:30]
+            project_uuids = [item['project_uuid'] for item in project_usage_query_set]
+            projects = Projects.objects.filter(uuid__in=project_uuids)
+            project_uuid_name_map = {
+                str(project.uuid).replace('-', ''): project.name
+                for project in projects
+            }
+            results = [
+                {
+                    'project': project_uuid_name_map.get(item['project_uuid'], '<Unknow project>'),
+                    'total_cost': item['total_cost'],
+                    'total_input_tokens': item['total_input_tokens'],
+                    'total_output_tokens': item['total_output_tokens']
+                }
+                for item in project_usage_query_set
+            ]
+
+        return Response({'results': results})

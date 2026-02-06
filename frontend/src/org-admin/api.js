@@ -298,6 +298,17 @@ class OrgAdminAPI {
     return this.req.get(url, { params: params });
   }
 
+  orgAdminGetAIStatisticsDetail(orgID, view, models, groupBy, condition) {
+    const url = this.server + '/api/v1/org/' + orgID + '/admin/statistics/ai/detail/';
+    let params = {
+      view,
+      models,
+      group_by: groupBy,
+      condition
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const orgAdminAPI = new OrgAdminAPI();
