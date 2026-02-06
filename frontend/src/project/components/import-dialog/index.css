@@ -8,37 +8,46 @@
 
 .sea-qa-import-example-file .btn-outline-primary {
   margin-top: 10px;
-	padding: 1px 12px;
-	color: var(--bs-orange);
-	border: solid 1px var(--bs-orange);
+  padding: 1px 12px;
+  color: var(--bs-orange);
+  border: solid 1px var(--bs-orange);
 }
 
 .sea-qa-import-example-file .btn-outline-primary:hover {
-	color: var(--bs-body-bg);
-	border: solid 1px var(--bs-orange);
-	background-color: #ff9800;
+  color: var(--bs-body-bg);
+  border: solid 1px var(--bs-orange);
+  background-color: #ff9800;
 }
 
 .sea-qa-import-upload-file-wrapper {
-	margin: 32px 0px 16px 0px;
+  margin: 32px 0px 16px 0px;
 }
 
 .sea-qa-import-upload-file-wrapper .upload-file-box {
   margin-top: 10px;
-	height: 300px;
-	border: dashed 1px var(--bs-orange);
-	border-radius: 6px;
-	background-color: transparent;
-	cursor: pointer;
+  height: 300px;
+  border: dashed 1px var(--bs-orange);
+  border-radius: 6px;
+  background-color: transparent;
+  cursor: pointer;
 }
 
 .sea-qa-import-upload-file-wrapper .upload-file-box .upload-icon-wrapper .sea-qa-icon-svg-upload {
   width: 64px;
-	height: 64px;
-	color: var(--bs-orange);
+  height: 64px;
+  color: var(--bs-orange);
 }
 
-.sea-qa-import-upload-file-wrapper .upload-file-box .upload-icon-wrapper .drag-text {
-	margin-top: 16px;
-	color: var(--bs-body-secondary-color);
+.sea-qa-import-upload-file-wrapper .upload-file-box .upload-icon-wrapper .upload-prompt-text {
+  margin-top: 16px;
+  color: var(--bs-body-secondary-color);
+}
+
+.sea-qa-import-upload-file-wrapper .preview-file-box {
+  margin-top: 10px;
+}
+
+.sea-qa-import-upload-file-wrapper .preview-file-box .preview-file-title {
+  color: var(--bs-body-secondary-color);
+  font-size: 12px;
 }

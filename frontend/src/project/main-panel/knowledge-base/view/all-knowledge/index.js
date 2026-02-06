@@ -55,6 +55,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
+          console.log({ data: { rows, columns } });
           return { data: { rows, columns } };
         });
       },
