@@ -67,6 +67,7 @@ def process_connection_result(result, conn, record, ai_summary):
         processed_result['slug'] = slug
         processed_result['topic_id'] = topic_id
         processed_result['modified_time'] = record.get('modified_time', '')
+        processed_result['resolved'] = record.get('resolved', False)
 
     elif connection_type == ConnectionType.GITHUB_ISSUE.value:
         connection_config = json.loads(conn.config)

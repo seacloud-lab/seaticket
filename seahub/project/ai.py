@@ -404,7 +404,6 @@ class RelatedRecordsView(APIView):
             error_msg = 'Error calling vector search indexer.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # TODO: return record.resolved, boolean
         return Response({
             'related_records': reranked_results,
         })
