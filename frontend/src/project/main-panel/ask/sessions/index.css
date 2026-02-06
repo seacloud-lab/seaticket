@@ -31,12 +31,6 @@
   padding: 16px 0 0 16px;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-loading {
-  text-align: center;
-  color: #999;
-  padding: 20px 0;
-}
-
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-empty .no-items-img-tip {
   height: 48px;
   width: 48px;

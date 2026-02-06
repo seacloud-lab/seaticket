@@ -27,6 +27,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, project
   const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
     if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
+    let aiReplyForCopy = '';
 
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
@@ -78,7 +79,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, project
         });
     }
 
-    if (value && sources.length > 0) {
+    if (value && Array.isArray(sources) && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
 
@@ -137,14 +138,24 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, project
           return ` [${source.title}][${order}]`;
         });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
-      value = value + `\n\n${sourcesString}` ;
+      aiReplyForCopy = value.slice(0);
+      mdFiles.forEach(file => {
+        const { url, name, content } = file;
+        aiReplyForCopy = aiReplyForCopy.replace(`[${name}](${url})`, `\n\`\`\`markdown filename=${name} \n${content}\n\`\`\``);
+      });
+      sources.forEach((source, index) => {
+        aiReplyForCopy = aiReplyForCopy.replaceAll(` [${source.title}][${index + 1}]`, '');
+      });
+
+      value = value + `\n\n${sourcesString}`;
     }
-    let aiReplyForCopy = value;
-    mdFiles.forEach(file => {
-      const { url, name, content } = file;
-      aiReplyForCopy = aiReplyForCopy.replace(`[${name}](${url})`, `\n\`\`\`markdown filename=${name} \n${content}\n\`\`\``);
-    });
-    return { aiReply: value, aiReplyForCopy, sources, mdFiles };
+
+    return {
+      aiReply: value,
+      aiReplyForCopy,
+      sources,
+      mdFiles,
+    };
   }, [message, projectName, workspaceID, chatId, connections]);
 
   const handleConnectionRecord = useCallback((record) => {
