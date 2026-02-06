@@ -69,7 +69,14 @@ class KnowledgeBaseImportExcelExample(APIView):
         ws = wb.create_sheet('Knowledge Base')
         ws.append(['Title', 'Content', 'Creator', 'Created time', 'Last modifier', 'Last modified time'])
         for i in range(5):
-            ws.append([f'Title {i + 1}', f'Example content {i + 1}', 'Creator', 'Created time', 'Last modifier', 'Last modified time'])
+            ws.append([
+                f'Sample title {i + 1}',
+                f'This is sample content {i + 1} for knowledge base import demonstration.',
+                'SeaTicket@seafile.com',
+                '2026-01-01 00:00:00',
+                'SeaTicket@seafile.com',
+                '2026-01-01 00:00:00',
+            ])
 
         output = BytesIO()
         wb.save(output)
