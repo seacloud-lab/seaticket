@@ -7,6 +7,7 @@ import { getFileExtension } from '@/utils/download';
 import { ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
+import { BAR_TYPE_CONFIG, BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -74,10 +75,6 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
     };
   }, [previewData]);
 
-  const handleSubmit = useCallback(() => {
-
-  }, []);
-
   const onQueryIOStatus = useCallback((taskId) => {
     knowledgeBaseAPI.queryIOStatus(taskId).then(r => {
       if (r?.data?.is_finished) {
@@ -136,6 +133,13 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
       uploadBoxRef.current.style.backgroundColor = HOVER_BACKGROUND;
     }
   }, []);
+
+  const handleSubmit = useCallback(() => {
+    if (previewData.length !== 0) {
+      onClickBar([BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE].key]);
+    }
+    onToggle();
+  }, [previewData]);
 
   return (
     <Modal isOpen={true} autoFocus={false} className="sea-qa-import-dialog" toggle={onToggle}>
