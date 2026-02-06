@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert } from 'reactstrap';
-import classnames from 'classnames';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import SeaMetadata from '@/sea-metadata';
 import { knowledgeBaseAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getFileExtension } from '@/utils/download';
-import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
+import { ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
 
@@ -21,28 +20,56 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
 
   const api = useMemo(() => {
     return {
-      getMetadata: (...params) => {
-        return { data: {
-          rows: previewData,
-          columns: [
-            {
-              'key': 'ccMM',
-              'name': 'title',
-              'type': 'text',
-              'data': null,
-              'display_name': 'Title'
-            },
-            {
-              'key': 'rzY2',
-              'name': 'content',
-              'type': 'long-text',
-              'data': null,
-              'display_name': 'Content',
-              'editable': false,
-              'is_required': false
-            }
-          ]
-        } };
+      getViews: () => {
+        const view = { _id: 'preview', name: gettext('Preview'), type: 'table' };
+        return Promise.resolve({
+          data: {
+            views: [view],
+            navigation: [{ _id: view._id, type: 'view' }],
+          }
+        });
+      },
+
+      getView: (viewID) => {
+        return Promise.resolve({
+          data: {
+            view: { _id: viewID || 'preview', name: gettext('Preview'), type: 'table' }
+          }
+        });
+      },
+
+      getMetadata: ({ start = 0, limit = 100 } = {}) => {
+        const rows = previewData.map((r, index) => {
+          return {
+            _pk: index + 1,
+            title: r?.title,
+            content: r?.content,
+          };
+        });
+
+        const slicedRows = rows.slice(start, start + limit);
+        const columns = [
+          {
+            key: 'title',
+            name: 'title',
+            type: 'text',
+            data: null,
+            display_name: gettext('Title'),
+            editable: false,
+            is_required: false,
+          },
+          {
+            key: 'content',
+            name: 'content',
+            type: 'long-text',
+            data: null,
+            display_name: gettext('Content'),
+            editable: false,
+            is_required: false,
+          }
+        ];
+
+        return Promise.resolve({ data: { rows: slicedRows, columns } });
       },
     };
   }, [previewData]);
@@ -110,8 +137,6 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
     }
   }, []);
 
-  console.log('isLoading', isLoading);
-
   return (
     <Modal isOpen={true} autoFocus={false} className="sea-qa-import-dialog" toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{gettext('Import records from a .xlsx file')}</ModalHeader>
@@ -128,15 +153,9 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
             <div className="preview-file-box">
               <div className="preview-file-title">{gettext('%s rows are about to be imported into this knowledge base.').replace('%s', previewData.length)}</div>
               <SeaMetadata
-                // viewID={viewID}
+                viewID="preview"
                 api={api}
-                // ref={metadataRef}
-                // permission={permission}
-                // settings={{ enableExportAndImportXlsx: true }}
-                // localStorageNamePrefix={localStorageName}
-                // toggleView={toggleView}
-                // expandRow={handleExpandRow}
-                // t={t}
+                viewTools={[]}
               />
             </div>
           )}

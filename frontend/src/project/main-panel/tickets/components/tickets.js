@@ -105,14 +105,6 @@ const Tickets = ({
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
           allColumns.current = columns;
-          console.log({
-            data: {
-              rows,
-              columns,
-              linked_records,
-              error_msg: res?.data?.error_msg,
-            }
-          });
           return {
             data: {
               rows,
