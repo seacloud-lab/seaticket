@@ -64,21 +64,12 @@ class KnowledgeBaseImportExcelExample(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
+    def get(self, request):
         wb = Workbook(write_only=True)
         ws = wb.create_sheet('Knowledge Base')
-        ws.append(['Title', 'Content'])
+        ws.append(['Title', 'Content', 'Creator', 'Created time', 'Last modifier', 'Last modified time'])
         for i in range(5):
-            ws.append([f'Title {i + 1}', f'Example content {i + 1}'])
+            ws.append([f'Title {i + 1}', f'Example content {i + 1}', 'Creator', 'Created time', 'Last modifier', 'Last modified time'])
 
         output = BytesIO()
         wb.save(output)
