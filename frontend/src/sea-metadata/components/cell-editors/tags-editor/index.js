@@ -1,5 +1,6 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import context from '@/sea-metadata/context';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { gettext } from '@/constants';
@@ -34,7 +35,7 @@ const TagsEditor = forwardRef(({
       return {
         ...tag,
         value: tag._id,
-        label: <TagOption tag={tag} hiddenDescription={true} />,
+        label: <TagOption tag={tag} />,
       };
     });
   }, [tagsData]);
@@ -48,19 +49,11 @@ const TagsEditor = forwardRef(({
     const option = SELECT_OPTION_COLORS[random];
     const { COLOR, TEXT_COLOR } = option;
     return createTag({ name, description: '', color: COLOR, text_color: TEXT_COLOR }).then(tag => {
-      const { _id, color, name, description } = tag;
+      const { _id } = tag;
       return {
         ...tag,
         value: _id,
-        label: (
-          <>
-            <div className="sea-qa-tags-selector-tag-bg" style={{ backgroundColor: color }}></div>
-            <div className="sea-qa-tags-selector-tag-name-description">
-              <div className="sea-qa-tags-selector-tag-name">{name}</div>
-              {description && (<div className="sea-qa-tags-selector-tag-description">{description}</div>)}
-            </div>
-          </>
-        ),
+        label: (<TagOption tag={tag} />),
       };
     });
   }, [createTag]);
@@ -107,7 +100,11 @@ const TagsEditor = forwardRef(({
   }), [value, column, onCommit]);
 
   return (
-    <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover" style={style} ref={editorRef}>
+    <div
+      className={classnames('sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover', { 'hide-description': true })}
+      style={style}
+      ref={editorRef}
+    >
       <OptionEditorContainer
         ref={optionEditorContainerRef}
         isMultiple={true}

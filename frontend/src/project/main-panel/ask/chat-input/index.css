@@ -151,6 +151,11 @@
   flex-shrink: 0;
 }
 
+.sea-qa-ask-chat-records-selector {
+  width: 36px !important;
+  padding: 0 10px !important;
+}
+
 .sea-qa-ask-chat-records-selector.simple .selected-option-show {
   display: none;
 }

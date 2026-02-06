@@ -11,6 +11,8 @@ import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import TagOption from '@/components/tag-option';
 
+import '../../../cell-editors/tags-editor/index.css';
+
 const TagsFilter = ({ readOnly, value, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
   const editorRef = useRef(null);
@@ -79,7 +81,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         </div>
         {isShowEditor && (
           <ClickOutside onClickOutside={closeEditor}>
-            <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector">
+            <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description">
               <OptionEditorContainer
                 ref={optionEditorContainerRef}
                 isMultiple={true}
