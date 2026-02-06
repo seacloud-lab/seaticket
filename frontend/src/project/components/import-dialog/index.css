@@ -28,6 +28,7 @@
 	height: 300px;
 	border: dashed 1px var(--bs-orange);
 	border-radius: 6px;
+	background-color: transparent;
 	cursor: pointer;
 }
 
