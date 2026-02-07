@@ -267,7 +267,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
       <div className="sea-qa-ai-ask-chats-body">
         <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
           {isEmpty && (
-            <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
+            <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: Math.max(0, (height - 324) / 2) }}>
               <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
               <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
               <div className="sea-qa-ai-ask-chats-tip-description">

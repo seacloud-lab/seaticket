@@ -44,6 +44,7 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
       value={option.value}
       options={options}
       className="sea-qa-ai-model-selector"
+      editorClassName="sea-qa-ai-model-selector-editor"
       icon="arrow-down"
       iconPlacement="right"
       border={false}

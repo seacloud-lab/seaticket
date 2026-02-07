@@ -30,7 +30,6 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           ref={markdownMessageRef}
           chatId={chatId}
           message={message}
-          settings={settings}
           projectName={projectName}
           projectUuid={projectUuid}
           workspaceID={workspaceID}
