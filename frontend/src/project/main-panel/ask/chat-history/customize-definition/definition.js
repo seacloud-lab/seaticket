@@ -7,8 +7,7 @@ import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';
 
-const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources, settings }) => {
-  const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
+const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources }) => {
 
   const source = useMemo(() => {
     if (!element) return {};
@@ -39,9 +38,6 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
         <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-score">
           <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
-          {isShowScore && (
-            <div className="sea-ai-chat-customize-definition-score">{score}</div>
-          )}
         </div>
         <div className="sea-ai-chat-customize-definition-avatar">
           <img src={icon} alt={''} />

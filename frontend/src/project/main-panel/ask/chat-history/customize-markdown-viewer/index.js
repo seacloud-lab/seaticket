@@ -16,7 +16,7 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 
 import './index.css';
 
-const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, projectUuid, projectName, workspaceID, className, canPreviewLinkedFile = true }, ref) => {
+const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, projectName, workspaceID, className, canPreviewLinkedFile = true }, ref) => {
   const [aiMessageType, setAIMessageType] = useState('rich-text');
   const [isShowResourceDetails, setIsShowResourceDetails] = useState(false);
   const [resource, setResource] = useState(null);
@@ -178,7 +178,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, project
         render: (() => null)()
       },
       [ELementTypes.DEFINITION]: {
-        render: (<CustomizeDefinition sources={sources} settings={settings} openDefinitionRecord={openConnectionRecord} />)
+        render: (<CustomizeDefinition sources={sources} openDefinitionRecord={openConnectionRecord} />)
       },
       [ELementTypes.LINK_REFERENCE]: {
         render: (<CustomizeLinkReference />)
@@ -187,7 +187,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, settings, project
         render: (<CustomizeLink canPreviewLinkedFile={canPreviewLinkedFile} mdFiles={mdFiles} />)
       }
     };
-  }, [sources, mdFiles, settings, canPreviewLinkedFile, openConnectionRecord]);
+  }, [sources, mdFiles, canPreviewLinkedFile, openConnectionRecord]);
 
   const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {

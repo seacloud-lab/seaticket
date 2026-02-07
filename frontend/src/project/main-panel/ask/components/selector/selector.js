@@ -10,6 +10,7 @@ const Selector = ({
   options,
   onChange,
   className,
+  editorClassName,
   isSearchEnabled,
   border,
   icon,
@@ -47,7 +48,7 @@ const Selector = ({
       </SelectorDisplay>
       {isShowMenu && (
         <OptionEditor
-          className="sea-qa-ai-chat-selector-display-editor "
+          className={`sea-qa-ai-chat-selector-display-editor ${editorClassName} `}
           options={options}
           target={ref}
           isSearchEnabled={isSearchEnabled}

@@ -45,11 +45,18 @@
   max-height: 184px;
   overflow-y: auto;
   padding: 0px 24px 12px 24px;
-  line-height: 1.5;
   border: none;
   border-radius: 6px;
   cursor: text;
   resize: none;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.sea-qa-ai-ask-chat-input-content .message-input::placeholder {
+  color: #666;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 .sea-qa-ai-ask-chat-input-content .message-input:focus-visible {
@@ -158,4 +165,9 @@
 
 .sea-qa-ask-chat-records-selector.simple .selected-option-show {
   display: none;
+}
+
+.sea-qa-ai-model-selector-editor .popover,
+.sea-qa-ai-model-selector-editor .option-editor-container {
+  min-height: fit-content;
 }
