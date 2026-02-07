@@ -23,7 +23,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   if (!element) return null;
 
-  const { identifier, icon, title, content, mtime, score } = source;
+  const { identifier, icon, title, content, mtime } = source;
 
   const identifierIndex = identifier - 1;
 
