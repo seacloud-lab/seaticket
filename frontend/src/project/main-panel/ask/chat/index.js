@@ -252,7 +252,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
   const _isReply = loading || isReply;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small': isSmall })} ref={wrapperRef}>
+    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small-page': isSmall })} ref={wrapperRef}>
       {sessionId !== ASK_PAGE_SLUG_ID.NEW && (
         <div className="sea-qa-ai-ask-chats-header">
           <ChatHeader

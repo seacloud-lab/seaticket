@@ -39,11 +39,11 @@
   margin: 0 auto;
 }
 
-.sea-qa-ai-ask-wrapper.small .sea-qa-ai-ask-chats {
+.sea-qa-ai-ask-wrapper.small-page .sea-qa-ai-ask-chats {
   width: calc(100% - 80px);
 }
 
-.sea-qa-ai-ask-wrapper.small .sea-qa-ai-ask-chats-footer {
+.sea-qa-ai-ask-wrapper.small-page .sea-qa-ai-ask-chats-footer {
   padding-left: 40px;
   padding-right: 40px;
 }
