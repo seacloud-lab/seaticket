@@ -7,7 +7,7 @@ import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
+const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const Nav = ({ nav, level, activeBar, onClick }) => {
   const { key, name, icon } = nav;
@@ -16,7 +16,7 @@ const Nav = ({ nav, level, activeBar, onClick }) => {
   const handleClick = useCallback(() => {
     if (key === BAR_TYPE.EXTERNAL_PORTAL) {
       const { origin } = window.location;
-      const url = `${origin}${siteRoot}portal-edit/${projectUuid}/`;
+      const url = `${origin}${siteRoot}${isProjectAdmin ? 'portal-edit' : 'portal'}/${projectUuid}/`;
       window.open(url);
       return;
     }
