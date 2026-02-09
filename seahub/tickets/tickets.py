@@ -285,12 +285,12 @@ class TicketsAPIView(APIView):
                     int(ticket_pk): (set(row.get(TicketsTable.linked_connection_records.name) or []), set())
                 }
                 try:
-                    sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+                    sync_plan, all_conn_ids = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
                 except TicketLinkValidationError as e:
                     # rollback ticket creation if discourse topic already claimed
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                sync_links_in_connection(seadb_api, project_uuid, sync_plan)
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -441,10 +441,10 @@ class TicketsAPIView(APIView):
 
         if ticket_link_diff:
             try:
-                sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+                sync_plan, all_conn_ids = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-            sync_links_in_connection(seadb_api, project_uuid, sync_plan)
+            sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids)
 
         if update_rows:
             try:
@@ -753,7 +753,7 @@ class TicketAPIView(APIView):
             if added_linked_records or removed_linked_records:
                 ticket_link_diff[ticket_id] = (added_linked_records, removed_linked_records)
             try:
-                sync_plan = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+                sync_plan, all_conn_ids = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         if assignees:
@@ -815,7 +815,7 @@ class TicketAPIView(APIView):
             ]
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
             if is_update_linked_connection_records and ticket_link_diff:
-                sync_links_in_connection(seadb_api, project_uuid, sync_plan)
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

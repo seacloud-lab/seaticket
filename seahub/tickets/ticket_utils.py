@@ -106,10 +106,10 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
         Dict mapping ticket_id (as string) to ticket title
     """
 
-    linked_ticket_titles = {}
+    ticket_pk_to_ticket_title = {}
 
     if not records or not columns:
-        return linked_ticket_titles
+        return ticket_pk_to_ticket_title
 
     # Find the linked ticket column and get its key
     linked_ticket_column = None
@@ -142,12 +142,12 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
                 _pk = row.get('_pk')
                 if _pk is None:
                     continue
-                linked_ticket_titles[str(_pk)] = row.get('title') or ''
+                ticket_pk_to_ticket_title[str(_pk)] = row.get('title') or ''
         except Exception as e:
             logger.error(f'Error querying linked ticket titles: {e}')
-            linked_ticket_titles = {}
+            ticket_pk_to_ticket_title = {}
 
-    return linked_ticket_titles
+    return ticket_pk_to_ticket_title
 
 def time_str_to_utc_time(time_str):
     if time_str.endswith('Z'):
@@ -630,7 +630,7 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
     # Check if the connection belongs to this project
     all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
     if not all_conn_ids:
-        return sync_plan
+        return sync_plan, all_conn_ids
 
     connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
     connection_id_map = {c.id: c for c in connections}
@@ -677,10 +677,10 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
             if existed_linked and int(existed_linked) not in (None, int(desired_ticket)):
                 raise TicketLinkValidationError('This record is already linked to a ticket.')
 
-    return sync_plan
+    return sync_plan, all_conn_ids
 
 
-def sync_links_in_connection(seadb_api, project_uuid, sync_plan):
+def sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids):
     """
     Sync ticket links in connection tables (Discourse topics, GitHub issues, emails).
 
@@ -689,7 +689,6 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan):
         project_uuid: project UUID
         sync_plan: TicketLinkSyncPlan instance
     """
-    all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
     if not all_conn_ids:
         return
 

@@ -416,9 +416,9 @@ class ProjectConnectionDetailsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        linked_ticket_titles = {}
+        ticket_pk_to_ticket_title = {}
         if project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
-            linked_ticket_titles = build_linked_ticket_titles_map(
+            ticket_pk_to_ticket_title = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )
 
@@ -427,7 +427,7 @@ class ProjectConnectionDetailsView(APIView):
             'columns': columns,
             'name': project_connection.name,
             'type': project_connection.type,
-            'linked_ticket_titles': linked_ticket_titles,
+            'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
         })
 
 class GithubWebhookView(APIView):
