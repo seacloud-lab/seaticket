@@ -218,6 +218,9 @@ class ConvertTicketToKnowledgeBaseRecord(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
         if not workspace:
             error_msg = 'Workspace not found.'
@@ -228,7 +231,7 @@ class ConvertTicketToKnowledgeBaseRecord(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        org_id = request.user.org.org_id
         is_exceed = check_ai_limit(username, org_id)
         if is_exceed:
             error_msg = 'AI credit not enough.'
