@@ -688,7 +688,7 @@ CREATE TABLE `organizations_org_quota` (
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `portal_external_invitations` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `token` varchar(40) NOT NULL,
   `inviter` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -698,13 +698,11 @@ CREATE TABLE `portal_external_invitations` (
   `accepted_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portal_external_invitations_token_uniq` (`token`),
-  KEY `portal_external_invitations_inviter_idx` (`inviter`),
-  KEY `portal_external_invitations_email_idx` (`email`),
   KEY `portal_external_invitations_project_uuid_idx` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_external_users` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `username` varchar(255) NOT NULL,
   `project_uuid` char(36) NOT NULL,
@@ -713,6 +711,6 @@ CREATE TABLE `project_external_users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_external_users_email_project_uuid_uniq` (`email`,`project_uuid`),
   KEY `project_external_users_email_idx` (`email`),
-  KEY `project_externam_username_idx` (`username`),
+  KEY `project_external_username_idx` (`username`),
   KEY `project_external_users_project_uuid_idx` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

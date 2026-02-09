@@ -14,7 +14,7 @@ class PortalExternalInvitationManager(models.Manager):
         obj.save(using=self._db)
         return obj
 
-    def list_by_project(self, project_uuid):
+    def list_invites_by_project_uuid(self, project_uuid):
         return super().filter(project_uuid=project_uuid).order_by('-created_at')
 
     def get_by_token(self, token):
@@ -23,8 +23,8 @@ class PortalExternalInvitationManager(models.Manager):
 
 class PortalExternalInvitation(models.Model):
     token = models.CharField(max_length=40, unique=True)
-    inviter = models.CharField(max_length=255, db_index=True)
-    email = models.CharField(max_length=255, db_index=True)
+    inviter = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
     project_uuid = models.CharField(max_length=36, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expire_time = models.DateTimeField()
@@ -46,13 +46,13 @@ class PortalExternalInvitation(models.Model):
 
 class ProjectExternalUserManager(models.Manager):
 
-    def list_by_project(self, project_uuid):
+    def list_ext_users_by_project_uuid(self, project_uuid):
         return super().filter(project_uuid=project_uuid)
 
 
 class ProjectExternalUser(models.Model):
-    email = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, db_index=True)
+    username = models.CharField(max_length=255, db_index=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
     activated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

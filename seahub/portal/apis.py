@@ -473,7 +473,7 @@ class PortalExternalInvitationsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            invites = PortalExternalInvitation.objects.list_by_project(project_uuid)
+            invites = PortalExternalInvitation.objects.list_invites_by_project_uuid(project_uuid)
             data = []
             for iv in invites:
                 data.append({
@@ -573,7 +573,7 @@ class PortalExternalUsersView(APIView):
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         try:
-            items = ProjectExternalUser.objects.list_by_project(project_uuid)
+            items = ProjectExternalUser.objects.list_ext_users_by_project_uuid(project_uuid)
             users = []
             for it in items:
                 users.append({

@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub import settings
-from seahub.project.models import Projects, Workspaces
+from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
