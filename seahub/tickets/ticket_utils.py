@@ -16,6 +16,7 @@ from seahub.seadb_models.utils import list_connection_record_titles
 from seahub.project.models import ProjectConnections
 from seahub.project.constants import ConnectionType
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
+from seahub.seadb_models.utils import get_connection_table_name
 
 
 class TicketLinkValidationError(Exception):
@@ -35,17 +36,6 @@ TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
 logger = logging.getLogger(__name__)
 
-
-def get_connection_table_name(connection_type, connection_id):
-    """Get the table name for a connection based on its type."""
-    if connection_type in LINKED_TICKET_SUPPORT_TYPES:
-        if connection_type == ConnectionType.DISCOURSE_FORUM.value:
-            return DiscourseTopicsTable.gen_table_name(connection_id)
-        elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-            return GithubIssuesTable.gen_table_name(connection_id)
-        elif connection_type == ConnectionType.EMAIL.value:
-            return ThreadTable.gen_table_name(connection_id)
-    return None
 
 def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
     if not tickets or not columns:
