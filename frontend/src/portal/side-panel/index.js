@@ -34,7 +34,17 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             <span className="sea-qa-portal-nav-item-name">{item.name}</span>
           </div>
         ))}
-        {!window.app.pageOptions.isEditMode && !window.app.pageOptions.username && (
+        {!window.app.pageOptions.isEditMode && isAnonymous && (
+          <div
+            className="sea-qa-portal-nav-item"
+            onClick={() => { window.location.href = siteRoot + `portal/${window.app.pageOptions.projectUuid}/login/`; }}
+            title={gettext('Log in')}
+          >
+            <Icon symbol="external-portal" className="sea-qa-portal-nav-item-icon" />
+            <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
+          </div>
+        )}
+        {!window.app.pageOptions.isEditMode && !!window.app.pageOptions.username && (
           <div
             className="sea-qa-portal-nav-item"
             onClick={() => { window.location.href = siteRoot + 'accounts/logout/'; }}

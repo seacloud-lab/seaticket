@@ -32,7 +32,11 @@ const Portal = () => {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const onPageChange = useCallback((page) => {
-    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS)) return;
+    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS)) {
+      const { origin } = location;
+      location.href = `${origin}/portal/${projectUuid}/login/`;
+      return;
+    }
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(page);
     const { origin } = location;

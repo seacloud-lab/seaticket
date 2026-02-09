@@ -35,27 +35,26 @@ def portal_view(request, project_uuid, page=None):
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
 
-    is_anonymous = False
+    ext_username = request.session.get('portal_external_username')
+    ext_project = request.session.get('portal_external_project_uuid')
+    ext_is_valid = bool(ext_username and ext_project == project_uuid and ProjectExternalUser.objects.filter(
+        project_uuid=project_uuid, username=ext_username, activated=True).exists())
+    is_logged_in = bool(getattr(request, 'user', None) and request.user.is_authenticated) or ext_is_valid
+
+    is_anonymous = not is_logged_in
     if not allow_anonymous:
-        ext_username = request.session.get('portal_external_username')
-        ext_project = request.session.get('portal_external_project_uuid')
-        if not getattr(request, 'user', None) or not request.user.is_authenticated:
-            if ext_username and ext_project == project_uuid and ProjectExternalUser.objects.filter(
-                    project_uuid=project_uuid, username=ext_username, activated=True).exists():
-                allow = True
-            else:
-                is_anonymous = True
-                return render(request, 'portal_login.html', {
-                    'project_uuid': project_uuid,
-                    'project_name': project.name,
-                    'media_url': MEDIA_URL,
-                })
-        else:
-            workspace = project.workspace
-            allow = check_same_org_permission(request.user, workspace) or ProjectExternalUser.objects.filter(
-                project_uuid=project_uuid, username=request.user.username).exists()
+        if not is_logged_in:
+            return render(request, 'portal_login.html', {
+                'project_uuid': project_uuid,
+                'project_name': project.name,
+                'media_url': MEDIA_URL,
+            })
+        workspace = project.workspace
+        allow = ext_is_valid or (request.user.is_authenticated and check_same_org_permission(request.user, workspace))
         if not allow:
             return render_error(request, _('Permission denied'))
+
+    page_username = request.user.username if getattr(request, 'user', None) and request.user.is_authenticated else (ext_username if ext_is_valid else '')
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -65,6 +64,7 @@ def portal_view(request, project_uuid, page=None):
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
+        'page_username': page_username,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
@@ -73,7 +73,7 @@ def portal_view(request, project_uuid, page=None):
     }
 
     need_password = False
-    if not request.user.is_authenticated and enable_password_protection and allow_anonymous:
+    if not is_logged_in and enable_password_protection and allow_anonymous:
         encoded_password = portal_settings.get('password')
         verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
         need_password = not (verified_token and encoded_password and verified_token == encoded_password)
@@ -84,6 +84,16 @@ def portal_view(request, project_uuid, page=None):
     return_dict['need_password'] = need_password
     return render(request, 'portal_view_react.html', return_dict)
 
+
+def portal_login_view(request, project_uuid):
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('This project does not exist'))
+    return render(request, 'portal_login.html', {
+        'project_uuid': project_uuid,
+        'project_name': project.name,
+        'media_url': MEDIA_URL,
+    })
 
 def portal_anonymous_validate(request, project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -116,6 +126,7 @@ def portal_anonymous_validate(request, project_uuid):
             'project_uuid': project_uuid,
             'media_url': MEDIA_URL,
             'is_edit_mode': False,
+            'page_username': '',
             'portal': {
                 'allow_anonymous': allow_anonymous,
                 'enable_password_protection': enable_password_protection,
@@ -157,18 +168,27 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
     try:
         ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
-        request.session['portal_external_username'] = ext_user.username
-        try:
-            ext_user.activated = True
-            ext_user.save(update_fields=['activated'])
-        except Exception:
-            pass
+        if ext_user and not getattr(ext_user, 'activated', False):
+            try:
+                ext_user.activated = True
+                ext_user.save(update_fields=['activated'])
+            except Exception:
+                pass
     except Exception:
-        pass
+        ext_user = None
 
-    request.session['portal_external_project_uuid'] = project_uuid
+    try:
+        project_settings = json.loads(project.settings) if project.settings else {}
+    except Exception:
+        project_settings = {}
+    allow_anonymous = bool(project_settings.get('portal', {}).get('allow_anonymous', False))
 
-    redirect_url = f"{request.scheme}://{request.get_host()}/portal/{project_uuid}/"
+    if allow_anonymous:
+        redirect_url = f"{request.scheme}://{request.get_host()}/portal/{project_uuid}/login/"
+    else:
+        request.session['portal_external_username'] = (ext_user.username if ext_user else '')
+        request.session['portal_external_project_uuid'] = project_uuid
+        redirect_url = f"{request.scheme}://{request.get_host()}/portal/{project_uuid}/"
     return HttpResponseRedirect(redirect_url)
 
 
@@ -200,6 +220,7 @@ def portal_edit_view(request, project_uuid, page=None):
         'media_url': MEDIA_URL,
         'is_edit_mode': True,
         'workspace_id': project.workspace_id,
+        'page_username': request.user.username,
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
         },
