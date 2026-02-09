@@ -91,7 +91,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           return {
             data: {
               ...res.data,
-              linked_records: res.data?.linked_ticket_titles || {},
+              linked_records: res.data?.ticket_pk_to_ticket_title || {},
             }
           };
         })).then(res => {

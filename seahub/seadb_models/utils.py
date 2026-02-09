@@ -183,6 +183,14 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         ],
     )
 
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.linked_ticket.name
+        ],
+    )
+
     comments_table_name = github_issue_comments_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, comments_table_name)
     table_id = res['table_id']
@@ -465,7 +473,8 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
         ThreadTable.title.name,
         ThreadTable.modified_time.name,
         ThreadTable.deleted.name,
-        ThreadTable.sync_time.name
+        ThreadTable.sync_time.name,
+        ThreadTable.linked_ticket.name,
     ]
 
     for column_name in index_column_names:
@@ -528,9 +537,7 @@ def init_tag_seadb_table(seadb_api, project_uuid):
         )
 
 
-def get_connection_table_name(connection):
-    connection_id = connection.id
-    connection_type = connection.type
+def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = GithubIssuesTable.gen_table_name(connection_id)
@@ -548,7 +555,7 @@ def get_connection_table_name(connection):
 def get_connection_columns(seadb_api, project_uuid, connection):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
-    table_name = get_connection_table_name(connection)
+    table_name = get_connection_table_name(connection.type, connection.id)
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
         return []
@@ -667,7 +674,7 @@ def list_trash_tickets(seadb_api, project_uuid, start, limit):
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
     connection_type = connection.type
-    table_name = get_connection_table_name(connection)
+    table_name = get_connection_table_name(connection.type, connection.id)
     columns = get_connection_columns(seadb_api, project_uuid, connection)
 
     if not columns:
@@ -702,7 +709,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
 
 
 def list_connection_view_records_with_columns(seadb_api, project_uuid, connection, view, column_names, start, limit, username=''):
-    table_name = get_connection_table_name(connection)
+    table_name = get_connection_table_name(connection.type, connection.id)
     columns = get_connection_columns(seadb_api, project_uuid, connection)
 
     if not columns:

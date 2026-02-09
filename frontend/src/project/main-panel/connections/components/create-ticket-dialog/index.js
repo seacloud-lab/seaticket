@@ -78,6 +78,10 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row._id, rowUpdateData);
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
       });
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      setErrMessage(errorMessage);
+    }).finally(() => {
       setIsSubmitting(false);
     });
   };
