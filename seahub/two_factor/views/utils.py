@@ -6,15 +6,9 @@ from django.utils.translation import gettext as _
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
-try:
-    from formtools.wizard.forms import ManagementForm
-    from formtools.wizard.views import SessionWizardView
-    from formtools.wizard.storage.session import SessionStorage
-except ImportError:
-    # pylint: disable=import-error,no-name-in-module
-    from django.contrib.formtools.wizard.forms import ManagementForm
-    from django.contrib.formtools.wizard.views import SessionWizardView
-    from django.contrib.formtools.wizard.storage.session import SessionStorage
+from formtools.wizard.forms import ManagementForm
+from formtools.wizard.views import SessionWizardView
+from formtools.wizard.storage.session import SessionStorage
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 logger = logging.getLogger(__name__)

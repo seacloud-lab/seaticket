@@ -15,7 +15,11 @@ from django.shortcuts import redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.debug import sensitive_post_parameters
 
-from formtools.wizard.views import SessionWizardView
+try:
+    from formtools.wizard.views import SessionWizardView
+except ImportError:
+    # pylint: disable=import-error,no-name-in-module
+    from django.contrib.formtools.wizard.views import SessionWizardView
 
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 from seahub.auth import REDIRECT_FIELD_NAME, get_backends
