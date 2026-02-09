@@ -11,19 +11,21 @@ import FilterCalendar from '../filter-calendar';
 import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { gettext } from '@/constants';
-import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions } from '../../../../../utils/column';
+import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getTagsOptions } from '../../../../../utils/column';
 import {
   getFilterByColumn, getUpdatedFilterBySelectSingle, getUpdatedFilterBySelectMultiple, getUpdatedFilterByCreator, getUpdatedFilterByCollaborator,
-  getColumnOptions, getUpdatedFilterByPredicate,
+  getColumnOptions, getUpdatedFilterByPredicate, getUpdatedFilterBySelectTag,
 } from '../../../../../utils/filter';
 import {
   CellType, DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS, FILTER_PREDICATE_TYPE, FILTER_TERM_MODIFIER_TYPE, FILTER_ERR_MSG,
-  filterTermModifierIsWithin, PRIORITIES,
+  filterTermModifierIsWithin, PRIORITIES, DELETED_TAG_TIPS,
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
 import CustomizePopover from '@/components/customize-popover';
 import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
+import Tag from '@/sea-metadata/components/tag';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -188,6 +190,15 @@ class FilterItem extends React.Component {
     this.props.updateFilter(index, newFilter);
   };
 
+  onSelectTag = (value) => {
+    const { index, filter } = this.props;
+    const { tag } = value;
+
+    let newFilter = getUpdatedFilterBySelectTag(filter, tag);
+    this.resetState(newFilter);
+    this.props.updateFilter(index, newFilter);
+  };
+
   onSelectCollaborator = (value) => {
     const { index, filter } = this.props;
     const { columnOption: collaborator } = value;
@@ -341,6 +352,53 @@ class FilterItem extends React.Component {
     );
   };
 
+  renderTagsOption = (filterTerm) => {
+    const { filter } = this.props;
+    const { filter_predicate } = filter;
+    let isSupportMultipleSelect = false;
+    // The first two options are used for single selection, and the last four options are used for multiple selection
+    const supportMultipleSelectOptions = [
+      FILTER_PREDICATE_TYPE.IS_ANY_OF,
+      FILTER_PREDICATE_TYPE.IS_NONE_OF,
+      FILTER_PREDICATE_TYPE.HAS_ANY_OF,
+      FILTER_PREDICATE_TYPE.HAS_ALL_OF,
+      FILTER_PREDICATE_TYPE.HAS_NONE_OF,
+      FILTER_PREDICATE_TYPE.IS_EXACTLY
+    ];
+    if (supportMultipleSelectOptions.includes(filter_predicate)) {
+      isSupportMultipleSelect = true;
+    }
+    const tags = getTagsOptions(this.props.tagsData);
+
+    let labelArray = [];
+    if (Array.isArray(tags) && Array.isArray(filterTerm)) {
+      filterTerm.forEach((item) => {
+        const tag = getRowById(this.props.tagsData, item + '') || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_TAG_TIPS };
+        labelArray.push(
+          <Tag className="d-inline-flex" tag={tag} key={'option_' + item} />
+        );
+      });
+    }
+    const selectedOptionNames = labelArray.length > 0 ? { label: (<Fragment>{labelArray}</Fragment>) } : {};
+
+    const dataOptions = tags.map(option => {
+      return FilterItemUtils.generatorTagOption(option, filterTerm);
+    });
+    return (
+      <CustomizeSelect
+        className="sea-metadata-selector-tags-select"
+        value={selectedOptionNames}
+        options={dataOptions}
+        onChange={this.onSelectTag}
+        placeholder={gettext('Select tag(s)')}
+        searchable={true}
+        searchPlaceholder={gettext('Search tag')}
+        noOptionsPlaceholder={gettext('No tags available')}
+        supportMultipleSelect={isSupportMultipleSelect}
+      />
+    );
+  };
+
   onPriorityFilterOpen = () => {
     this.setState({ isPriorityFilterOpen: true });
   };
@@ -466,6 +524,9 @@ class FilterItem extends React.Component {
         let { options = [] } = filterColumn.data || {};
         return this.renderMultipleSelectOption(options, filter_term, readOnly);
       }
+      case CellType.TAGS: {
+        return this.renderTagsOption(filter_term, readOnly);
+      }
       case CellType.PRIORITY: {
         return (
           <div>
@@ -529,7 +590,7 @@ class FilterItem extends React.Component {
       return null;
     }
     return (
-      <div className="ml-2">
+      <div className="ml-2 d-flex align-items-center">
         <div ref={this.invalidFilterTip}>
           <IconBtn icon="exclamation-triangle-filled" iconStyle={{ color: '#cd201f' }}/>
         </div>
@@ -550,7 +611,7 @@ class FilterItem extends React.Component {
     const { filter, filterColumn, filterColumnOptions, readOnly } = this.props;
     const { filter_predicate, filter_term_modifier } = filter;
     const activeColumn = FilterItemUtils.generatorColumnOption(filterColumn);
-    const activePredicate = FilterItemUtils.generatorPredicateOption(filter_predicate);
+    const activePredicate = FilterItemUtils.generatorPredicateOption(filter_predicate, true);
     let activeTermModifier = null;
     let _isCheckboxColumn = false;
     if (isDateColumn(filterColumn)) {

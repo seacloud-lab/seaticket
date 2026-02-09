@@ -99,13 +99,14 @@ class AdvancedFilters extends Component {
         updateConjunction={this.updateConjunction}
         collaborators={this.props.collaborators}
         typesData={this.props.typesData}
+        tagsData={this.props.tagsData}
         isPre={this.props.isPre}
       />
     );
   };
 
   render() {
-    let { filters, className, emptyPlaceholder, columns } = this.props;
+    let { filters, className, emptyPlaceholder, columns, tagsData } = this.props;
     const isEmpty = filters.length === 0;
     return (
       <div className={classnames('sea-metadata-filters-list', { 'empty-filters-container': isEmpty }, { [className]: className })}>
@@ -113,7 +114,7 @@ class AdvancedFilters extends Component {
         {!isEmpty &&
           filters.map((filter, index) => {
             const { column_key } = filter;
-            const { error_message } = ValidateFilter.validate(filter, columns);
+            const { error_message } = ValidateFilter.validate(filter, columns, { tagsData });
             const filterColumn = getColumnByKey(columns, column_key) || {};
             return this.renderFilterItem(filter, index, error_message, filterColumn);
           })

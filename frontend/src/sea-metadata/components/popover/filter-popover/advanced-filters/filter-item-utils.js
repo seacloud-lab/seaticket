@@ -7,6 +7,7 @@ import { isWhiteColor } from '@/utils/color-utils';
 import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 import { IconButton } from '@/components';
+import TagOption from '@/components/tag-option';
 
 class FilterItemUtils {
 
@@ -27,10 +28,13 @@ class FilterItemUtils {
     };
   }
 
-  static generatorPredicateOption(filterPredicate) {
+  static generatorPredicateOption(filterPredicate, isActive) {
+    const filterPredicateDisplay = FILTER_PREDICATE_SHOW[filterPredicate] || '';
+    const translatedPredicateText = isActive ? filterPredicateDisplay.replace(/\s*\.{3}$/, '') : filterPredicateDisplay;
+
     return {
       value: { filterPredicate },
-      label: <span className="select-option-name">{FILTER_PREDICATE_SHOW[filterPredicate]}</span>
+      label: <span className="select-option-name">{translatedPredicateText}</span>
     };
   }
 
@@ -57,10 +61,24 @@ class FilterItemUtils {
   static generatorMultipleSelectOption(option, filterTerm) {
     return {
       value: { columnOption: option },
+      name: getOptionDisplayNameByOption(option),
       label: (
         <div className="select-option-name multiple-option-name">
           <SelectOption option={option} className={classnames('multiple-select-option ml-0', { 'multiple-select-option-white': isWhiteColor(option.color) })} />
           <IconButton className="single-check-icon no-hover-bg" icon={filterTerm.indexOf(option.id) > -1 ? 'check-mark' : ''} />
+        </div>
+      )
+    };
+  }
+
+  static generatorTagOption(tag, filterTerm) {
+    return {
+      value: { tag },
+      name: tag.name,
+      label: (
+        <div className="select-option-name multiple-option-name">
+          <TagOption tag={tag} className="multiple-select-option" />
+          <IconButton className="single-check-icon no-hover-bg" icon={filterTerm.indexOf(Number(tag.id)) > -1 ? 'check-mark' : ''} />
         </div>
       )
     };

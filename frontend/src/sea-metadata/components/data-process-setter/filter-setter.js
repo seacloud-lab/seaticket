@@ -10,6 +10,7 @@ import { isEnter, isSpace } from '@/utils/hotkey';
 import { VIEW_TYPE } from '../../constants';
 import { getType } from '@/utils/type-detection';
 import { useTypesData } from '@/sea-metadata/hooks';
+import { useTags } from '@/project/hooks';
 
 const FilterSetter = ({
   readOnly,
@@ -28,6 +29,7 @@ const FilterSetter = ({
   const [isShowSetter, setShowSetter] = useState(false);
 
   const { typesData } = useTypesData();
+  const { tagsData } = useTags();
 
   const filters = useMemo(() => {
     return deepCopy(getValidFilters(propsFilters || [], columns));
@@ -92,6 +94,7 @@ const FilterSetter = ({
           columns={columns}
           collaborators={collaborators}
           typesData={typesData}
+          tagsData={tagsData}
           filterConjunction={filterConjunction}
           filters={filters}
           basicFilters={basicFilters}

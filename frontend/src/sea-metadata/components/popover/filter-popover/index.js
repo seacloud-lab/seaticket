@@ -172,6 +172,7 @@ class FilterPopover extends Component {
                   modifyFilterConjunction={this.modifyFilterConjunction}
                   collaborators={this.props.collaborators}
                   typesData={this.props.typesData}
+                  tagsData={this.props.tagsData}
                   readOnly={readOnly}
                   scheduleUpdate={scheduleUpdate}
                   isPre={this.props.isPre}

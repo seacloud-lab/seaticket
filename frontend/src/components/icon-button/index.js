@@ -10,6 +10,7 @@ const IconButton = React.forwardRef(({
   size,
   style,
   icon,
+  iconStyle: propsIconStyle,
   iconClassName,
   ...otherProperties
 }, ref) => {
@@ -20,11 +21,11 @@ const IconButton = React.forwardRef(({
   }, [style, size]);
 
   const iconStyle = useMemo(() => {
-    if (icon === 'arrow-down-b' || icon === 'arrow-down') return {};
-    if (size && isNumber(size)) return { ...style, height: size, width: size };
-    if (size && isObject(size) && size.icon) return { ...style, height: size.icon, width: size.icon };
-    return {};
-  }, [size, icon]);
+    if (icon === 'arrow-down-b' || icon === 'arrow-down') return { ...propsIconStyle };
+    if (size && isNumber(size)) return { ...propsIconStyle, height: size, width: size };
+    if (size && isObject(size) && size.icon) return { ...propsIconStyle, height: size.icon, width: size.icon };
+    return { ...propsIconStyle };
+  }, [size, icon, propsIconStyle]);
 
   return (
     <div

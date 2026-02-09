@@ -116,6 +116,18 @@ export const getUpdatedFilterBySelectMultiple = (filter, columnOption) => {
   return Object.assign({}, filter, { filter_term: filterTerm });
 };
 
+export const getUpdatedFilterBySelectTag = (filter, tag) => {
+  let filterTerm = filter.filter_term ? filter.filter_term : [];
+  const tagId = Number(tag.id);
+  let index = filterTerm.indexOf(tagId);
+  if (index > -1) {
+    filterTerm.splice(index, 1);
+  } else {
+    filterTerm.push(tagId);
+  }
+  return Object.assign({}, filter, { filter_term: filterTerm });
+};
+
 export const getUpdatedFilterByCollaborator = (filter, collaborator) => {
   let filterTerm = filter.filter_term ? filter.filter_term.slice(0) : [];
   let selectedEmail = collaborator.email;
