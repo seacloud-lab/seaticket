@@ -102,6 +102,8 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
       viewTools={viewTools}
       isBuiltInView={true}
       toggleView={toggleView}
+      createContextMenuOptions={() => []}
+      createRowsTools={() => []}
     />
   );
 };
