@@ -386,7 +386,11 @@ class TicketsAPIView(APIView):
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
             if 'tags' in row_data:
-                updated_row[TicketsTable.tags.name] = [int(tag_id) for tag_id in row_data.get('tags', [])]
+                tags_value = row_data.get('tags')
+                if tags_value is None:
+                    updated_row[TicketsTable.tags.name] = []
+                else:
+                    updated_row[TicketsTable.tags.name] = [int(tag_id) for tag_id in tags_value]
             if 'type' in row_data:
                 updated_row[TicketsTable.type.name] = row_data.get('type')
             if 'content' in row_data:
