@@ -12,7 +12,7 @@ const viewTools = [
 ];
 
 const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
-  const { viewID } = useTicketsPage();
+  const { viewID, toggleView, isLoading, togglePageSlugId } = useTicketsPage();
 
   const myTicketViewsData = useMemo(() => ({
     navigation: [
@@ -104,6 +104,9 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
       dataDidMount={dataDidMount}
       viewTools={viewTools}
       isBuiltInView={true}
+      toggleView={toggleView}
+      isLoading={isLoading}
+      togglePageSlugId={togglePageSlugId}
     />
   );
 };

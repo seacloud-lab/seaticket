@@ -12,7 +12,7 @@ import { useTags } from '@/project/hooks';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
-  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, toggleView } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData } = useTags();
 
   const viewsData = useMemo(() => ({
@@ -77,6 +77,9 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
       viewTools={[VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
       localStorageNamePrefix={localStorageNamePrefix}
+      toggleView={toggleView}
+      isLoading={isLoading}
+      togglePageSlugId={togglePageSlugId}
     />
   );
 };

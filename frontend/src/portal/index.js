@@ -13,7 +13,7 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous } = window.app.pageOptions;
+const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous, workspaceId } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
   if (anonymous) return kbEnabled ? PORTAL_PAGE.KNOWLEDGE_BASE : null;
@@ -187,7 +187,7 @@ const Portal = () => {
           <DataProvider projectUuid={projectUuid} api={APIRef.current}>
             {isEditMode && <LeftBar />}
             <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} />
-            <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
+            <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceId={workspaceId} onPageChange={onPageChange} />
           </DataProvider>
         )}
       </div>

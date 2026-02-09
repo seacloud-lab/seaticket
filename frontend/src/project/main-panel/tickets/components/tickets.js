@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ticketsAPI } from '../../../api';
 import SeaMetadata from '@/sea-metadata';
-import { useTicketsPage, useMetadata } from '../hooks';
+import { useMetadata } from '../hooks';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
@@ -27,12 +27,16 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 const Tickets = ({
   viewID, canFindRelatedIssues = true, isBuiltInView = false,
   projectUuid, workspaceID, projectName, permission,
-  toggleBar, api, localStorageNamePrefix: customizeLocalStorageNamePrefix,
+  toggleBar = () => {},
+  api, localStorageNamePrefix: customizeLocalStorageNamePrefix,
   createContextMenuOptions: customizeCreateContextMenuOptions,
   createRowsTools: customizeCreateRowsTools,
+  togglePageSlugId = () => {},
+  toggleView,
+  isLoading = false,
   ...props
 }) => {
-  const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
+  // const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
   const { updateAttachments } = useAIChatTools();
   const {
     typesData, createType,

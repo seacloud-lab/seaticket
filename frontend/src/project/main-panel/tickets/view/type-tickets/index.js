@@ -11,7 +11,7 @@ import Tickets from '../../components/tickets';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
-  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, toggleView } = useTicketsPage();
   const { typesData } = useMetadata();
 
   const viewsData = useMemo(() => ({
@@ -77,6 +77,9 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
       viewTools={[VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
       localStorageNamePrefix={localStorageNamePrefix}
+      toggleView={toggleView}
+      isLoading={isLoading}
+      togglePageSlugId={togglePageSlugId}
     />
   );
 };

@@ -7,10 +7,10 @@ import KnowledgeBase from './knowledge-base';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading } from '@/components';
 
-const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
+const MainPanel = ({ activePage, onPageChange, ...props }) => {
 
   const { isLoading: isMetadataLoading, typesData } = useMetadata();
-  const { isLoading: isTagsDataLoading, tagsData } = useTags();
+  const { isLoading: isTagsDataLoading } = useTags();
 
   const getTitle = () => {
     switch (activePage) {
@@ -34,21 +34,17 @@ const MainPanel = ({ activePage, projectUuid, onPageChange }) => {
       case PORTAL_PAGE.SUBMIT_TICKET:
         return (
           <SubmitTicket
-            projectUuid={projectUuid}
+            { ...props }
             onPageChange={onPageChange}
             typesData={typesData}
           />
         );
       case PORTAL_PAGE.MY_TICKETS:
         return (
-          <MyTickets
-            projectUuid={projectUuid}
-            tagsData={tagsData}
-            typesData={typesData}
-          />
+          <MyTickets { ...props } />
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
-        return <KnowledgeBase projectUuid={projectUuid} />;
+        return <KnowledgeBase { ...props } />;
       default:
         return null;
     }
