@@ -363,34 +363,22 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     let children = [];
     if (rows.length === 1) {
       const row = rows[0];
-      const openOriginalPageOption = generateOpenOriginalPageOption({ row });
-      const copyOriginalLinkOption = generateCopyOriginalLinkOption({ row });
-      const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
-      const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
-      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row], updateLocalRow });
       children = [
-        openOriginalPageOption,
-        copyOriginalLinkOption,
-        createRelatedTicketOption,
-        findRelatedIssuesOption,
-        markAsOutdatedOption,
+        generateAIOptions({ rows, columns }),
+        generateFindRelatedIssuesOption({ row }),
+        generateCreateRelatedTicketOption({ row }),
+        { key: 'divider' },
+        generateOpenOriginalPageOption({ row }),
+        generateCopyOriginalLinkOption({ row }),
+        { key: 'divider' },
+        generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
       ].filter(Boolean);
     } else if (rows.length > 1) {
-      // handle multiple rows selection
-      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
-      if (markAsOutdatedOption) {
-        children.push(markAsOutdatedOption);
-      }
+      children = [
+        generateAIOptions({ rows, columns }),
+        generateMarkAsOutdatedOption({ rows, updateLocalRow }),
+      ].filter(Boolean);
     }
-
-    const AIOption = generateAIOptions({ rows, columns });
-    if (children.length > 0 && AIOption) {
-      children.push({ key: 'divider' });
-    }
-    if (AIOption) {
-      children.push(AIOption);
-    }
-
     const tools = [];
 
     // if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
@@ -439,16 +427,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       }
       if (rows.length > 0) {
-        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
-        const AIOptions = generateAIOptions({ rows, columns: table.columns });
-        if (AIOptions) {
-          list.push(AIOptions);
-        }
-        if (markAsOutdatedOption) {
-          list.push(markAsOutdatedOption);
-        }
+        list.push(generateAIOptions({ rows, columns: table.columns }));
+        list.push(generateMarkAsOutdatedOption({ rows, updateLocalRow }));
       }
-      return list;
+      return list.filter(Boolean);
     }
 
     // handle selected rows
@@ -462,16 +444,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       });
       if (rows.length > 0) {
-        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows, updateLocalRow });
-        const AIOptions = generateAIOptions({ rows, columns: table.columns });
-        if (AIOptions) {
-          list.push(AIOptions);
-        }
-        if (markAsOutdatedOption) {
-          list.push(markAsOutdatedOption);
-        }
+        list.push(generateAIOptions({ rows, columns: table.columns }));
+        list.push(generateMarkAsOutdatedOption({ rows, updateLocalRow }));
       }
-      return list;
+      return list.filter(Boolean);
     }
 
     // handle selected cell
@@ -479,26 +455,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return [];
-
-    const AIOptions = generateAIOptions({ rows: [row], columns: table.columns });
-    list.push(AIOptions);
-
-    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
-    list.push(openOriginalPageOption);
-
-    const copyOriginalLinkOption = generateCopyOriginalLinkOption({ row });
-    list.push(copyOriginalLinkOption);
-
-    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
-    list.push(createRelatedTicketOption);
-
-    const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
-    list.push(findRelatedIssuesOption);
-
-    const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row], updateLocalRow });
-    list.push(markAsOutdatedOption);
-
-    list = list.filter(Boolean);
+    list = [
+      generateAIOptions({ rows: [row], columns: table.columns }),
+      generateFindRelatedIssuesOption({ row }),
+      generateCreateRelatedTicketOption({ row }),
+      'Divider',
+      generateOpenOriginalPageOption({ row }),
+      generateCopyOriginalLinkOption({ row }),
+      'Divider',
+      generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
+    ];
 
     return list.filter(Boolean);
   }, [
