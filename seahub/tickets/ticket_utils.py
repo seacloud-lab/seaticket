@@ -630,7 +630,7 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
     # Check if the connection belongs to this project
     all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
     if not all_conn_ids:
-        return sync_plan, all_conn_ids
+        return sync_plan, None
 
     connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
     connection_id_map = {c.id: c for c in connections}
@@ -677,10 +677,10 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
             if existed_linked and int(existed_linked) not in (None, int(desired_ticket)):
                 raise TicketLinkValidationError('This record is already linked to a ticket.')
 
-    return sync_plan, all_conn_ids
+    return sync_plan, connections
 
 
-def sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids):
+def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
     """
     Sync ticket links in connection tables (Discourse topics, GitHub issues, emails).
 
@@ -689,11 +689,10 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, all_conn_ids):
         project_uuid: project UUID
         sync_plan: TicketLinkSyncPlan instance
     """
-    if not all_conn_ids:
+    if not connections:
         return
 
     # Get connections that support linked_ticket
-    connections = ProjectConnections.objects.filter(id__in=all_conn_ids)
     connection_map = {c.id: c for c in connections}
     supported_conn_ids = {
         c.id for c in connections
