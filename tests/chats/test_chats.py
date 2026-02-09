@@ -24,12 +24,11 @@ class TestChatSessionsView:
 
         assert resp.status_code == 400
 
-    def test_get_project_not_found(self, factory, auth_user):
+    def test_get_project_not_found(self, factory, auth_user, real_project):
         request = factory.get('/api/v1/chat/sessions/', {'project_uuid': 'p1'})
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatSessionsView.as_view()(request)
 
         assert resp.status_code == 404
@@ -40,7 +39,6 @@ class TestChatSessionsView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.chats.view.check_project_permission', return_value=False):
             resp = ChatSessionsView.as_view()(request)
 
@@ -55,8 +53,6 @@ class TestChatSessionsView:
         session.to_dict.return_value = {'session_uuid': 's1'}
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.get_sessions_by_project', return_value=[session]):
             resp = ChatSessionsView.as_view()(request)
 
@@ -72,8 +68,9 @@ class TestChatSessionsView:
 
         assert resp.status_code == 400
 
-    def test_post_missing_session_name(self, factory, auth_user):
-        request = factory.post('/api/v1/chat/sessions/', data={'project_uuid': 'p1'})
+    def test_post_missing_session_name(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/chat/sessions/', data={'project_uuid': project.uuid})
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
@@ -94,8 +91,6 @@ class TestChatSessionsView:
         session.to_dict.return_value = {'session_uuid': 's1'}
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.create_session', return_value=session):
             resp = ChatSessionsView.as_view()(request)
 
@@ -124,8 +119,6 @@ class TestChatSessionView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.get_session_by_uuid', return_value=None):
             resp = ChatSessionView.as_view()(request, session_uuid='s1')
 
@@ -141,8 +134,6 @@ class TestChatSessionView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.delete_sessions') as del_mock:
             resp = ChatSessionView.as_view()(request, session_uuid='s1')
 
@@ -159,8 +150,6 @@ class TestChatMessagesView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.get_session_by_uuid', return_value=None):
             resp = ChatMessagesView.as_view()(request, session_uuid='s1')
 
@@ -190,8 +179,6 @@ class TestChatMessagesView:
         thought_process_map = {'m2': {'x': 1}}
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.ChatSessions.objects.get_session_by_uuid', return_value=session), \
                 patch('seahub.chats.view.ChatMessages.objects.get_messages_by_session', return_value=[msg_user, msg_assistant]), \
                 patch('seahub.chats.view.remove_content_details_in_attachments', return_value=[]), \
@@ -214,8 +201,9 @@ class TestChatView:
 
         assert resp.status_code == 400
 
-    def test_post_missing_query(self, factory, auth_user):
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1'}, format='json')
+    def test_post_missing_query(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': project.uuid}, format='json')
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
@@ -227,8 +215,7 @@ class TestChatView:
         request = factory.post('/api/v1/ai/chat/', data={'project_uuid': 'p1', 'query': 'q'}, format='json')
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 404
@@ -239,7 +226,6 @@ class TestChatView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.chats.view.check_project_permission', return_value=False):
             resp = ChatView.as_view()(request)
 
@@ -255,8 +241,6 @@ class TestChatView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.check_ai_limit', return_value=False), \
                 patch('seahub.chats.view.get_attachments', return_value=[]), \
                 patch('seahub.chats.view.ChatSessions.objects.get_session_by_uuid', return_value=None):
@@ -273,8 +257,6 @@ class TestChatView:
         session.session_uuid = 's1'
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.check_ai_limit', return_value=False), \
                 patch('seahub.chats.view.get_attachments', return_value=[]), \
                 patch('seahub.chats.view.ChatSessions.objects.create_session', return_value=session), \
@@ -289,8 +271,6 @@ class TestChatView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.check_ai_limit', return_value=True):
             resp = ChatView.as_view()(request)
 
@@ -311,8 +291,6 @@ class TestChatView:
         assistant_msg.id = 2
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.check_ai_limit', return_value=False), \
                 patch('seahub.chats.view.get_attachments', return_value=[]), \
                 patch('seahub.chats.view.ChatSessions.objects.create_session', return_value=session), \
@@ -349,8 +327,6 @@ class TestChatView:
         ai_response = {'ai_reply': 'ok', 'sources': [{'connection_id': 99}]}
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.chats.view.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.chats.view.check_project_permission', return_value=True), \
                 patch('seahub.chats.view.check_ai_limit', return_value=False), \
                 patch('seahub.chats.view.get_attachments', return_value=[]), \
                 patch('seahub.chats.view.ChatSessions.objects.create_session', return_value=session), \

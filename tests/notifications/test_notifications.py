@@ -121,15 +121,17 @@ class TestNotificationView:
 
 class TestProjectNotificationsView:
 
-    def test_get_invalid_page(self, factory, auth_user):
-        request = factory.get('/api2/project/p1/notifications/', {'page': '0'})
+    def test_get_invalid_page(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api2/project/{project.uuid}/notifications/", {'page': '0'})
         request.user = auth_user
 
-        resp = ProjectNotificationsView.as_view()(request, project_uuid='p1')
+        resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 400
 
-    def test_get_success(self, factory, auth_user):
-        request = factory.get('/api2/project/p1/notifications/', {'page': '1', 'per_page': '2'})
+    def test_get_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api2/project/{project.uuid}/notifications/", {'page': '1', 'per_page': '2'})
         request.user = auth_user
 
         n1 = Mock()
@@ -144,30 +146,32 @@ class TestProjectNotificationsView:
         qs.__getitem__.return_value = [n1, n2]
 
         with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.filter', return_value=qs):
-            resp = ProjectNotificationsView.as_view()(request, project_uuid='p1')
+            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data['count'] == 3
         assert resp.data['unseen_count'] == 1
         assert resp.data['notification_list'] == [{'id': 1}, {'id': 2}]
 
-    def test_put_success(self, factory, auth_user):
-        request = factory.put('/api2/project/p1/notifications/')
+    def test_put_success(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f"/api2/project/{project.uuid}/notifications/")
         request.user = auth_user
 
         with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_all_read_by_project') as m:
-            resp = ProjectNotificationsView.as_view()(request, project_uuid='p1')
+            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
-        m.assert_called_once_with('p1', auth_user.username)
+        m.assert_called_once_with(project.uuid, auth_user.username)
 
-    def test_put_internal_error(self, factory, auth_user):
-        request = factory.put('/api2/project/p1/notifications/')
+    def test_put_internal_error(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f"/api2/project/{project.uuid}/notifications/")
         request.user = auth_user
 
         with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_all_read_by_project', side_effect=Exception('boom')):
-            resp = ProjectNotificationsView.as_view()(request, project_uuid='p1')
+            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 500
 

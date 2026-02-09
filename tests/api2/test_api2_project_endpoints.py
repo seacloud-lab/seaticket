@@ -27,7 +27,7 @@ class TestWorkspacesView:
         assert resp.status_code == 400
 
     def test_get_detail_false_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.get('/api/v1/workspaces/', {'detail': 'false'})
         request.user = auth_user
 
@@ -67,7 +67,7 @@ class TestProjectsView:
         assert resp.status_code == 404
 
     def test_post_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         workspace = project.workspace
         request = factory.post(
             '/api/v1/projects/',
@@ -80,7 +80,6 @@ class TestProjectsView:
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.api2.endpoints.project.check_project_limit', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_admin_permission', return_value=True), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI', return_value=seadb), \
                 patch('seahub.api2.endpoints.project.init_ticket_seadb_table'), \
                 patch('seahub.api2.endpoints.project.init_knowledge_base_seadb_table'), \
@@ -95,7 +94,7 @@ class TestProjectsView:
 class TestProjectView:
 
     def test_put_name_invalid(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.put(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={},
@@ -118,7 +117,7 @@ class TestProjectView:
         assert resp.status_code == 404
 
     def test_put_permission_denied(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.put(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={'name': project.name, 'new_name': 'x'},
@@ -133,7 +132,7 @@ class TestProjectView:
         assert resp.status_code == 403
 
     def test_put_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.put(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={'name': project.name, 'new_name': 'renamed'},
@@ -141,15 +140,14 @@ class TestProjectView:
         )
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_admin_permission', return_value=True):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 200
         assert 'project' in resp.data
 
     def test_delete_name_invalid(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.delete(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={},
@@ -163,7 +161,7 @@ class TestProjectView:
         assert resp.status_code == 400
 
     def test_delete_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.delete(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={'name': project.name},
@@ -172,7 +170,6 @@ class TestProjectView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_admin_permission', return_value=True), \
                 patch('seahub.api2.endpoints.project.convert_project_trash_names', return_value=f"trash-{project.name}"):
             resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
@@ -193,7 +190,7 @@ class TestSearchView:
         assert resp.status_code == 400
 
     def test_post_permission_denied(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.post(
             '/api/v1/search/',
             data={'project_uuid': str(project.uuid), 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
@@ -208,7 +205,7 @@ class TestSearchView:
         assert resp.status_code == 403
 
     def test_post_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         request = factory.post(
             '/api/v1/search/',
             data={'project_uuid': str(project.uuid), 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
@@ -217,7 +214,6 @@ class TestSearchView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_permission', return_value=True), \
                 patch('seahub.api2.endpoints.project.search', return_value=[{'id': 1}]):
             resp = SearchView.as_view()(request)
 
@@ -229,7 +225,7 @@ class TestSearchView:
 class TestTrashProjectsView:
 
     def test_get_success(self, factory, auth_user, real_project):
-        owner, project = real_project
+        project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.get('/api/v1/trash-projects/')
@@ -254,7 +250,7 @@ class TestTrashProjectView:
         assert resp.status_code == 404
 
     def test_put_permission_denied(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.put(f'/api/v1/trash-projects/{project.uuid}/', data={}, format='json')
@@ -265,7 +261,7 @@ class TestTrashProjectView:
         assert resp.status_code == 403
 
     def test_put_success(self, factory, auth_user, real_project):
-        _, project = real_project
+        project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.put(f'/api/v1/trash-projects/{project.uuid}/', data={}, format='json')

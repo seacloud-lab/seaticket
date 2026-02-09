@@ -46,8 +46,7 @@ class TestTagsAPIView:
         request = factory.get(url)
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.tags.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TagsAPIView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
@@ -134,8 +133,7 @@ class TestTagsAPIView:
         request = factory.post(url, data={'name': 't1', 'color': '#fff', 'text_color': '#000'})
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.tags.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TagsAPIView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
@@ -210,8 +208,7 @@ class TestTagsAPIView:
         request = factory.delete(url, data={'tag_ids': [1]}, format='json')
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.tags.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TagsAPIView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
@@ -278,8 +275,7 @@ class TestTagAPIView:
         request = factory.get(url)
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.tags.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TagAPIView.as_view()(request, project_uuid='p1', tag_id='1')
 
         assert resp.status_code == 404
@@ -420,8 +416,7 @@ class TestTagAPIView:
         request = factory.delete(url)
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.tags.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TagAPIView.as_view()(request, project_uuid='p1', tag_id='1')
 
         assert resp.status_code == 404

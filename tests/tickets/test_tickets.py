@@ -48,8 +48,6 @@ class TestTicketsAPIView:
         )
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.TicketViews.objects.get_view', return_value=Mock()), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.list_tickets_view_records') as list_mock:
@@ -65,8 +63,7 @@ class TestTicketsAPIView:
             {'view_id': 'v1', 'start': '0', 'limit': '10'},
         )
         request.user = auth_user
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             response = TicketsAPIView.as_view()(request, project_uuid='p1')
         assert response.status_code == 404
 
@@ -75,7 +72,6 @@ class TestTicketsAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/", {'view_id': 'v1'})
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=False):
             response = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert response.status_code == 403
@@ -88,8 +84,6 @@ class TestTicketsAPIView:
         )
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.TicketViews.objects.get_view') as get_view_mock, \
                 patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.list_tickets_view_records') as list_mock:
@@ -106,8 +100,6 @@ class TestTicketsAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/", {'view_id': 'v1'})
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.TicketViews.objects.get_view', side_effect=Exception('err')):
             response = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert response.status_code == 500
@@ -139,7 +131,6 @@ class TestTicketsAPIView:
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=False):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 403
@@ -150,8 +141,6 @@ class TestTicketsAPIView:
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=False):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -171,8 +160,6 @@ class TestTicketsAPIView:
         seadb_api = Mock()
         seadb_api.insert_rows.return_value = {'pks': [1]}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -193,9 +180,7 @@ class TestTicketsAPIView:
         data = {'tickets_data': [{'row': {'state': 'closed'}}]}
         request = factory.put(f"/api/v1/projects/{project.uuid}/tickets/", data=data, format='json')
         request.user = auth_user
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 400
 
@@ -207,8 +192,6 @@ class TestTicketsAPIView:
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {'results': [{'_pk': 1}]}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 400
@@ -221,8 +204,6 @@ class TestTicketsAPIView:
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {'results': [{'_pk': 1}]}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 200
@@ -247,8 +228,6 @@ class TestTicketsAPIView:
         request.user = auth_user
         seadb_api = Mock()
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_tickets_by_ids', return_value=[{'_pk': 1}]):
             resp = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -263,8 +242,6 @@ class TestTicketAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/1/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(None, None)):
             seadb_cls_mock.return_value = Mock()
@@ -278,8 +255,6 @@ class TestTicketAPIView:
         ticket = {'_pk': 1, 'title': 'test_ticket'}
         metadata = {'columns': []}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
                 patch('seahub.tickets.tickets.convert_ticket_select_column_name_to_option_id'), \
@@ -294,7 +269,6 @@ class TestTicketAPIView:
         request = factory.put(f"/api/v1/projects/{project.uuid}/tickets/1/", data={'title': 't'}, format='json')
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(None, None)):
             resp = TicketAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1')
@@ -306,7 +280,6 @@ class TestTicketAPIView:
         request.user = auth_user
         ticket = {'_pk': 1}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
                 patch('seahub.tickets.tickets.check_ticket_permission', return_value=False):
@@ -319,7 +292,6 @@ class TestTicketAPIView:
         request.user = auth_user
         ticket = {'_pk': 1}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
                 patch('seahub.tickets.tickets.check_ticket_permission', return_value=True):
@@ -334,7 +306,6 @@ class TestTicketAPIView:
         ticket = {'_pk': 1, 'participants': []}
         seadb_api = Mock()
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
                 patch('seahub.tickets.tickets.check_ticket_permission', return_value=True):
@@ -352,8 +323,6 @@ class TestTicketAPIView:
         request = factory.delete(f"/api/v1/projects/{project.uuid}/tickets/1/", data={}, format='json')
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(None, None)):
             resp = TicketAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1')
@@ -373,8 +342,6 @@ class TestTicketsSearchAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/search/", {'query': 'test'})
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.list_tickets_by_search', return_value=[{'_pk': 1, 'title': 'T'}]):
             resp = TicketsSearchAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -386,18 +353,18 @@ class TestTicketsSearchAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/search/", {'query': 'test'})
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=False):
             resp = TicketsSearchAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 403
 
 
 class TestMyTicketAPIView:
-    def test_feature_not_enabled(self, factory, auth_user):
-        request = factory.post('/api/v1/projects/p1/tickets/my/')
+    def test_feature_not_enabled(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = MyTicketAPIView.as_view()(request, project_uuid='p1')
+            resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 403
 
     def test_post_success(self, factory, auth_user, real_project):
@@ -405,7 +372,6 @@ class TestMyTicketAPIView:
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.list_my_tickets', return_value=([{'_pk': 1}], ['title'])):
@@ -413,30 +379,30 @@ class TestMyTicketAPIView:
         assert resp.status_code == 200
         assert 'tickets' in resp.data
 
-    def test_post_invalid_view_id_default_open(self, factory, auth_user):
+    def test_post_invalid_view_id_default_open(self, factory, auth_user, real_project):
+        project = real_project
         request = factory.post(
-            '/api/v1/projects/p1/tickets/my/',
+            f"/api/v1/projects/{project.uuid}/tickets/my/",
             data={'view': 'invalid', 'config': {"filters": [], "filter_conjunction": "And", "basic_filters": [], "sorts": []}},
             format='json',
         )
         request.user = auth_user
         seadb_api = Mock()
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=Mock()), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.list_my_tickets', return_value=([], [])) as list_my_tickets_mock:
-            resp = MyTicketAPIView.as_view()(request, project_uuid='p1')
+            resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 200
         assert list_my_tickets_mock.call_args[0][3] == 'open'
 
 
 class TestTicketMetadataAPIView:
-    def test_feature_not_enabled(self, factory, auth_user):
-        request = factory.get('/api/v1/projects/p1/tickets/meta/')
+    def test_feature_not_enabled(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/meta/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = TicketMetadataAPIView.as_view()(request, project_uuid='p1')
+            resp = TicketMetadataAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 403
 
     def test_get_success(self, factory, auth_user, real_project):
@@ -444,8 +410,6 @@ class TestTicketMetadataAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/meta/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.get_current_table_metadata', return_value={'columns': [{'name': 'tags'}]}):
             resp = TicketMetadataAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -456,18 +420,18 @@ class TestTicketMetadataAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/meta/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=False):
             resp = TicketMetadataAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert resp.status_code == 403
 
 
 class TestTicketTrashAPIView:
-    def test_feature_not_enabled(self, factory, auth_user):
-        request = factory.get('/api/v1/projects/p1/tickets/trash/')
+    def test_feature_not_enabled(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/trash/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = TicketTrashAPIView.as_view()(request, project_uuid='p1')
+            resp = TicketTrashAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 403
 
     def test_get_success(self, factory, auth_user, real_project):
@@ -475,8 +439,6 @@ class TestTicketTrashAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/trash/")
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.list_trash_tickets', return_value=([{'_pk': 1}], ['title'])):
             resp = TicketTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -489,8 +451,6 @@ class TestTicketTrashAPIView:
         request.user = auth_user
         seadb_api = Mock()
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_deleted_tickets', return_value=[]):
             resp = TicketTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
@@ -500,11 +460,12 @@ class TestTicketTrashAPIView:
 
 
 class TestTicketCommentsAPIView:
-    def test_get_feature_not_enabled(self, factory, auth_user):
-        request = factory.get('/api/v1/projects/p1/tickets/1/comments/')
+    def test_get_feature_not_enabled(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f'/api/v1/projects/{project.uuid}/tickets/1/comments/')
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = TicketCommentsAPIView.as_view()(request, project_uuid='p1', ticket_id='1')
+            resp = TicketCommentsAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 403
 
     def test_get_success(self, factory, auth_user, real_project):
@@ -514,10 +475,8 @@ class TestTicketCommentsAPIView:
         ticket = {'_pk': 1}
         metadata = {}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.get_ticket_comments', return_value=[{'_pk': 2}]):
             resp = TicketCommentsAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1')
         assert resp.status_code == 200
@@ -530,10 +489,8 @@ class TestTicketCommentsAPIView:
         ticket = {'_pk': 1}
         metadata = {}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.get_ticket_comments', return_value=[]) as get_comments_mock:
             resp = TicketCommentsAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1')
         assert resp.status_code == 200
@@ -547,28 +504,28 @@ class TestTicketCommentsAPIView:
         ticket = {'_pk': 1, 'participants': []}
         seadb_api = Mock()
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
-                patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.check_ticket_comment_creation_interval', return_value=False):
             resp = TicketCommentsAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1')
         assert resp.status_code == 429
 
 
 class TestTicketCommentAPIView:
-    def test_put_feature_not_enabled(self, factory, auth_user):
-        request = factory.put('/api/v1/projects/p1/tickets/1/comments/1/', data={}, format='json')
+    def test_put_feature_not_enabled(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f'/api/v1/projects/{project.uuid}/tickets/1/comments/1/', data={}, format='json')
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = TicketCommentAPIView.as_view()(request, project_uuid='p1', ticket_id='1', comment_id='1')
+            resp = TicketCommentAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1', comment_id='1')
         assert resp.status_code == 403
 
-    def test_put_missing_content(self, factory, auth_user):
-        request = factory.put('/api/v1/projects/p1/tickets/1/comments/1/', data={}, format='json')
+    def test_put_missing_content(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.put(f'/api/v1/projects/{project.uuid}/tickets/1/comments/1/', data={}, format='json')
         request.user = auth_user
         with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = TicketCommentAPIView.as_view()(request, project_uuid='p1', ticket_id='1', comment_id='1')
+            resp = TicketCommentAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1', comment_id='1')
         assert resp.status_code == 400
 
     def test_put_comment_not_found(self, factory, auth_user, real_project):
@@ -578,7 +535,6 @@ class TestTicketCommentAPIView:
         request.user = auth_user
         ticket = {'_pk': 1}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
                 patch('seahub.tickets.tickets.get_ticket_comment_by_pk', return_value=None):
@@ -594,11 +550,9 @@ class TestTicketCommentAPIView:
         ticket = {'_pk': 1}
         ticket_comment = {'_pk': 2, 'modified_time': (now - datetime.timedelta(seconds=5)).isoformat()}
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
                 patch('seahub.tickets.tickets.get_ticket_comment_by_pk', return_value=ticket_comment), \
-                patch('seahub.tickets.tickets.check_comment_permission', return_value=True), \
                 patch('seahub.tickets.tickets.timezone.now', return_value=now):
             resp = TicketCommentAPIView.as_view()(request, project_uuid=str(project.uuid), ticket_id='1', comment_id='1')
         assert resp.status_code == 429

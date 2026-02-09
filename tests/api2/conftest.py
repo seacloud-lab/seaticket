@@ -21,12 +21,12 @@ def real_project(db):
         workspace=workspace,
         name=f"proj-{uuid4().hex[:6]}",
     )
-    return owner, project
+    return project
 
 
 @pytest.fixture
 def auth_user(real_project):
-    owner, _ = real_project
+    owner = real_project.creator
     return SimpleNamespace(
         id=1,
         pk=1,

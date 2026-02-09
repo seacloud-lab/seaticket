@@ -18,8 +18,7 @@ class TestSearchTickectsAndDocumentsView:
         request = factory.get('/api/v1/project/p1/search-tickets-and-documents/', {})
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.search.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
@@ -30,7 +29,6 @@ class TestSearchTickectsAndDocumentsView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.search.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.search.check_project_permission', return_value=False):
             resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=str(project.uuid))
 
@@ -50,8 +48,6 @@ class TestSearchTickectsAndDocumentsView:
         filter_qs.values_list.return_value = [(3, 'site')]
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.search.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.search.check_project_permission', return_value=True), \
                 patch('seahub.project.search.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.search.list_tickets_by_search', return_value=tickets) as ticket_mock, \
                 patch('seahub.project.search.ProjectConnections.objects.filter', return_value=filter_qs), \
@@ -80,8 +76,6 @@ class TestSearchTickectsAndDocumentsView:
         filter_qs.values_list.return_value = []
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.search.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.search.check_project_permission', return_value=True), \
                 patch('seahub.project.search.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.search.list_tickets_by_search', return_value=[]) as ticket_mock, \
                 patch('seahub.project.search.ProjectConnections.objects.filter', return_value=filter_qs), \
@@ -98,8 +92,6 @@ class TestSearchTickectsAndDocumentsView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.search.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.search.check_project_permission', return_value=True), \
                 patch('seahub.project.search.SeaDBAPI', side_effect=Exception('boom')):
             resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=str(project.uuid))
 

@@ -15,7 +15,7 @@ class TestProjectRelatedUsersView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=False):
-            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=str(project.uuid))
+            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 403
 
@@ -23,8 +23,7 @@ class TestProjectRelatedUsersView:
         request = factory.get('/api/v1/project/p1/related-users/')
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.apis.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             resp = ProjectRelatedUsersView.as_view()(request, project_uuid='p1')
 
         assert resp.status_code == 404
@@ -36,7 +35,7 @@ class TestProjectRelatedUsersView:
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.apis.check_project_permission', return_value=False):
-            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=str(project.uuid))
+            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 403
 
@@ -48,7 +47,7 @@ class TestProjectRelatedUsersView:
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
                 patch('seahub.project.apis.check_project_permission', return_value=True), \
                 patch('seahub.project.apis.get_project_related_users', side_effect=Exception('boom')):
-            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=str(project.uuid))
+            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 500
 
@@ -58,9 +57,8 @@ class TestProjectRelatedUsersView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.apis.check_project_permission', return_value=True), \
                 patch('seahub.project.apis.get_project_related_users', return_value=['u1']):
-            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=str(project.uuid))
+            resp = ProjectRelatedUsersView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data == {'user_list': ['u1']}

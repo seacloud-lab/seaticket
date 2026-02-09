@@ -34,8 +34,7 @@ def test_post_folder_permission_denied(factory, auth_user, real_project):
     request = factory.post(url, data={'name': 'folder1'})
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
+    with patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
         resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
@@ -47,9 +46,7 @@ def test_post_folder_record_not_exists(factory, auth_user, real_project):
     request = factory.post(url, data={'name': 'folder1'})
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
         resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 404
@@ -105,9 +102,7 @@ def test_put_folder_not_exists(factory, auth_user, real_project):
     record = Mock()
     record.folders_ids = []
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
         resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 400
@@ -149,9 +144,7 @@ def test_delete_folder_not_exists(factory, auth_user, real_project):
     record = Mock()
     record.folders_ids = []
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
         resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 400
@@ -170,14 +163,13 @@ def test_delete_folder_success(factory, auth_user, real_project, ticket_views_fo
     assert resp.data['success'] is True
 
 
-def test_get_views_project_not_found(factory, auth_user, real_project):
-    project = real_project
-    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': project.uuid})
+def test_get_views_project_not_found(factory, auth_user):
+    missing_uuid = '00000000-0000-0000-0000-000000000000'
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': missing_uuid})
     request = factory.get(url)
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketViewsAPI.as_view()(request, project_uuid=project.uuid)
+    resp = TicketViewsAPI.as_view()(request, project_uuid=missing_uuid)
 
     assert resp.status_code == 404
 
@@ -204,8 +196,7 @@ def test_get_views_permission_denied(factory, auth_user, real_project):
     request = factory.get(url)
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
+    with patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
         resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
@@ -221,14 +212,13 @@ def test_post_view_missing_name(factory, auth_user, real_project):
     assert resp.status_code == 400
 
 
-def test_post_view_project_not_found(factory, auth_user, real_project):
-    project = real_project
-    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': project.uuid})
+def test_post_view_project_not_found(factory, auth_user):
+    missing_uuid = '00000000-0000-0000-0000-000000000000'
+    url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': missing_uuid})
     request = factory.post(url, data={'name': 'view1'}, format='json')
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=None):
-        resp = TicketViewsAPI.as_view()(request, project_uuid=project.uuid)
+    resp = TicketViewsAPI.as_view()(request, project_uuid=missing_uuid)
 
     assert resp.status_code == 404
 
@@ -239,9 +229,7 @@ def test_get_views_internal_server_error(factory, auth_user, real_project):
     request = factory.get(url)
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.list_views', side_effect=Exception('err')):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.list_views', side_effect=Exception('err')):
         resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 500
@@ -266,9 +254,7 @@ def test_post_view_record_not_exists(factory, auth_user, real_project):
     request = factory.post(url, data={'name': 'view1'}, format='json')
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
         resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 404
@@ -300,9 +286,7 @@ def test_post_view_folder_not_exists(factory, auth_user, real_project):
     record = Mock()
     record.folders_ids = []
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
         resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 400
@@ -337,9 +321,7 @@ def test_get_view_record_not_exists(factory, auth_user, real_project):
     request = factory.get(url)
     request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=None):
         resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
     assert resp.status_code == 404
@@ -375,9 +357,7 @@ def test_put_view_id_not_exists(factory, auth_user, real_project):
     record = Mock()
     record.views_ids = []
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
         resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
     assert resp.status_code == 400
@@ -393,9 +373,7 @@ def test_delete_view_id_not_exists(factory, auth_user, real_project):
     record.views_ids = []
     record.folders_ids = []
 
-    with patch('seahub.tickets.ticket_views.Projects.objects.get_project_by_uuid', return_value=project), \
-            patch('seahub.tickets.ticket_views.check_project_permission', return_value=True), \
-            patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
+    with patch('seahub.tickets.ticket_views.TicketViews.objects.get_record', return_value=record):
         resp = TicketViewView.as_view()(request, project_uuid=str(project.uuid), view_id='v1')
 
     assert resp.status_code == 400

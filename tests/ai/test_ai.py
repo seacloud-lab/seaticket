@@ -37,7 +37,6 @@ class TestConvertRecordToTicket:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.project.ai.check_project_permission', return_value=False):
             resp = ConvertRecordToTicket.as_view()(request)
 
@@ -50,8 +49,6 @@ class TestConvertRecordToTicket:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.check_ai_limit', return_value=True):
             resp = ConvertRecordToTicket.as_view()(request)
 
@@ -59,15 +56,12 @@ class TestConvertRecordToTicket:
 
     def test_post_connection_not_found(self, factory, auth_user, real_project):
         project = real_project
-        payload = {'connection_id': 1, 'record_id': 2, 'project_uuid': str(project.uuid)}
+        payload = {'connection_id': -1, 'record_id': 2, 'project_uuid': str(project.uuid)}
         request = factory.post('/api/v1/ai/convert-record-to-ticket/', data=payload, format='json')
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
-                patch('seahub.project.ai.check_ai_limit', return_value=False), \
-                patch('seahub.project.ai.ProjectConnections.objects.get_connection_by_id', return_value=None):
+                patch('seahub.project.ai.check_ai_limit', return_value=False):
             resp = ConvertRecordToTicket.as_view()(request)
 
         assert resp.status_code == 404
@@ -82,8 +76,6 @@ class TestConvertRecordToTicket:
         connection.type = 'site'
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.check_ai_limit', return_value=False), \
                 patch('seahub.project.ai.ProjectConnections.objects.get_connection_by_id', return_value=connection):
             resp = ConvertRecordToTicket.as_view()(request)
@@ -104,8 +96,6 @@ class TestConvertRecordToTicket:
         github_api.get_comments_by_issue_id.return_value = []
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.check_ai_limit', return_value=False), \
                 patch('seahub.project.ai.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.ai.GitHubSeaDBAPI', return_value=github_api), \
@@ -128,8 +118,6 @@ class TestConvertRecordToTicket:
         github_api.get_comments_by_issue_id.return_value = []
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.check_ai_limit', return_value=False), \
                 patch('seahub.project.ai.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.project.ai.GitHubSeaDBAPI', return_value=github_api), \
@@ -159,8 +147,6 @@ class TestEmbeddingAnalysisView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.submit_embedding_analysis_task', side_effect=TaskConflictError('conflict')):
             resp = EmbeddingAnalysisView.as_view()(request)
 
@@ -173,8 +159,6 @@ class TestEmbeddingAnalysisView:
         request.user = auth_user
 
         with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=project), \
-                patch('seahub.project.ai.check_project_permission', return_value=True), \
                 patch('seahub.project.ai.submit_embedding_analysis_task', return_value='task-1'):
             resp = EmbeddingAnalysisView.as_view()(request)
 
@@ -202,8 +186,7 @@ class TestRelatedRecordsView:
         request = factory.post('/api/v1/ai/related-records/', data={'project_uuid': 'p1'}, format='json')
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.project.ai.Projects.objects.get_project_by_uuid', return_value=None):
+        with patch('seahub.utils.decorators.is_org_context', return_value=True):
             view = RelatedRecordsView()
             drf_request = view.initialize_request(request)
             result = view.post(drf_request)
