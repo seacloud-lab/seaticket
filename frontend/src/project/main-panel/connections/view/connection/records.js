@@ -364,13 +364,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (rows.length === 1) {
       const row = rows[0];
       children = [
-        generateOpenOriginalPageOption({ row }),
-        generateCopyOriginalLinkOption({ row }),
-        { key: 'divider' },
+        generateAIOptions({ rows, columns }),
         generateFindRelatedIssuesOption({ row }),
         generateCreateRelatedTicketOption({ row }),
         { key: 'divider' },
-        generateAIOptions({ rows, columns }),
+        generateOpenOriginalPageOption({ row }),
+        generateCopyOriginalLinkOption({ row }),
+        { key: 'divider' },
         generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
       ].filter(Boolean);
     } else if (rows.length > 1) {
@@ -456,13 +456,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return [];
     list = [
-      generateOpenOriginalPageOption({ row }),
-      generateCopyOriginalLinkOption({ row }),
-      'Divider',
+      generateAIOptions({ rows: [row], columns: table.columns }),
       generateFindRelatedIssuesOption({ row }),
       generateCreateRelatedTicketOption({ row }),
       'Divider',
-      generateAIOptions({ rows: [row], columns: table.columns }),
+      generateOpenOriginalPageOption({ row }),
+      generateCopyOriginalLinkOption({ row }),
+      'Divider',
       generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
     ];
 
