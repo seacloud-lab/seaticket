@@ -260,11 +260,11 @@ class StatisticsAI extends Component {
 
   onOpenAIStaticsDetailDialog = (groupBy, models, condition) => {
     let statisticsDetailViews = ['daily'];
-    if (groupBy === 'project') {
-      statisticsDetailViews.push('user');
-    }
-    if (groupBy === 'group') {
+    if (groupBy === 'user' || groupBy === 'group') {
       statisticsDetailViews.push('project');
+    }
+    if (groupBy === 'project' || groupBy === 'group') {
+      statisticsDetailViews.push('user');
     }
     this.setState({ statisticsDetailViews, statisticsDetailModels: models, isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });
   };

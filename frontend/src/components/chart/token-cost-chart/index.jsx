@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { gettext } from '@/constants';
-import dayjs from 'dayjs';
 import {
   ComposedChart,
   Bar,
@@ -108,22 +107,6 @@ const TokenCostChart = ({
     return maxCost * 1.2;
   }, [data]);
 
-  const sortedData = useMemo(() => {
-    if (!data || data.length === 0) return [];
-
-    const xDataKey = getXDataKey();
-
-    if (xDataKey === 'date') {
-      return [...data].sort((a, b) => {
-        const dateA = dayjs(a.date).valueOf();
-        const dateB = dayjs(b.date).valueOf();
-        return dateA - dateB;
-      });
-    }
-
-    return [...data];
-  }, [data]);
-
   if (!data || data.length === 0) {
     return (
       <div className='chart-wrapper'>
@@ -141,7 +124,7 @@ const TokenCostChart = ({
       <div className='chart-container' style={{ height: `${height}px` }}>
         <ResponsiveContainer width='100%' height='100%'>
           <ComposedChart
-            data={sortedData}
+            data={data}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />

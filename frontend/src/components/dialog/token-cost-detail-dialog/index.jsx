@@ -56,7 +56,13 @@ class TokenCostDetailDialog extends Component {
 
     let newData = [];
 
-    fullData.forEach((data) => {
+    const dateSorted = fullData.sort((a, b) => {
+      const dateA = dayjs(a.date).valueOf();
+      const dateB = dayjs(b.date).valueOf();
+      return dateA - dateB;
+    });
+
+    dateSorted.forEach((data) => {
       if (data.date) {
         const date = dayjs(data.date);
         if (date >= startDate && date <= endDate) {
@@ -159,7 +165,13 @@ class TokenCostDetailDialog extends Component {
   };
 
   updateView = (view) => {
-    this.setState({ view: view.value }, () => {
+    let newView = view.value;
+    let newCondition = this.props.basicCondition;
+    if (view !== 'daily') {
+      newCondition.start_date = this.state.startDate;
+      newCondition.end_date = this.state.endDate;
+    }
+    this.setState({ view: newView, condition: newCondition }, () => {
       this.fetchStatistics();
     });
   };

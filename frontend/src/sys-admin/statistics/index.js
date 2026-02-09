@@ -322,10 +322,10 @@ class Statistics extends Component {
 
   onOpenAIStaticsDetailDialog = (groupBy, models, condition) => {
     let statisticsDetailViews = ['daily'];
-    if (groupBy === 'project' || groupBy === 'org') {
+    if (groupBy === 'project' || groupBy === 'group' || groupBy === 'org') {
       statisticsDetailViews.push('user');
     }
-    if (groupBy === 'group' || groupBy === 'org') {
+    if (groupBy === 'user' || groupBy === 'group' || groupBy === 'org') {
       statisticsDetailViews.push('project');
     }
     this.setState({ statisticsDetailViews, statisticsDetailModels: models, isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });

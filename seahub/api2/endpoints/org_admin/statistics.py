@@ -213,13 +213,6 @@ class OrgAdminAIStatisticsView(APIView):
 
         return Response({'results': results, 'count': total_count})
 
-def _get_start_end_date(condition):
-    if (start_date := condition.get('start_date')) and (end_date := condition.get('end_date')):
-        start_date = datetime.datetime.strptime(start_date, '%Y%m%d').date()
-        end_date = datetime.datetime.strptime(end_date, '%Y%m%d').date()
-        return start_date, end_date
-    return None, None
-
 class OrgAdminAIStatisticsDetailView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
@@ -236,11 +229,11 @@ class OrgAdminAIStatisticsDetailView(APIView):
         
         view = request.GET.get('view')
         invalid_view = True
-        if group_by == 'user' and view == 'daily':
+        if group_by == 'user' and view in ('daily', 'project'):
             invalid_view = False
         elif group_by == 'project' and view in ('daily', 'user'):
             invalid_view = False
-        elif group_by == 'group' and view in ('daily', 'project'):
+        elif group_by == 'group' and view in ('daily', 'user', 'project'):
             invalid_view = False
         if invalid_view:
             return api_error(status.HTTP_400_BAD_REQUEST, 'view invalid. Must be sub-group_by of "project" or "group", or dependent value "daily"')
@@ -273,26 +266,21 @@ class OrgAdminAIStatisticsDetailView(APIView):
             query_args['username'] = condition.get('username', '')
         elif group_by == 'project':
             query_args['project_uuid'] = condition.get('project_uuid', '').replace('-', '')
-            start_date, end_date = _get_start_end_date(condition)
-            if start_date and end_date:
-                query_args['date__gte'] = start_date
-                query_args['date__lte'] = end_date
         elif group_by == 'group':
             group_id = condition.get('group_id', -1)
-            start_date, end_date = _get_start_end_date(condition)
-            if start_date and end_date:
-                query_args['date__gte'] = start_date
-                query_args['date__lte'] = end_date
 
             # 1. get workspace id
             owner = f'{group_id}@seafile_group'
             workspace = Workspaces.objects.filter(owner=owner).first()
             if not workspace:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Workspace not found')
-            
-            # 2. get projects belong to this group (group workspace)
+
+            # 2. get projects/users belong to this group (group workspace)
             project_uuids = Projects.objects.filter(workspace_id=workspace.pk).values_list('uuid', flat=True)
             query_args['project_uuid__in'] = project_uuids
+        if (start_date := condition.get('start_date')) and (end_date := condition.get('end_date')):
+            query_args['date__gte'] = datetime.datetime.strptime(start_date.split('T')[0], '%Y-%m-%d').date()
+            query_args['date__lte'] = datetime.datetime.strptime(end_date.split('T')[0], '%Y-%m-%d').date()
 
         basic_query_set = AIUsageStatistics.objects.filter(**query_args)
 
