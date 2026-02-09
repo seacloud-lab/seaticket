@@ -68,7 +68,7 @@ const KnowledgeMoreNav = ({ onClick }) => {
           modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
         >
           <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={handleImportClick}>
-            <CustomizeDropdownItemIcon symbol={'import-page'} className="sea-qa-dropdown-item-icon" />
+            <CustomizeDropdownItemIcon symbol={'import-xlsx'} className="sea-qa-dropdown-item-icon" />
             <CustomizeDropdownItemText>{window.gettext('Import records from XLSX')}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
           <div className="dropdown-divider"></div>
