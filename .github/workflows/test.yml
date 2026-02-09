@@ -55,6 +55,7 @@ jobs:
       - name: pip install
         run: |
           cd $GITHUB_WORKSPACE
+          pip install 'setuptools==68.2.0'
           pip install -r test-requirements.txt
           sudo rm -rf /usr/lib/python3/dist-packages/pytz/
 
