@@ -32,6 +32,7 @@ body {
   --ticket-open-color: #1a7f37;
   --ticket-close-color: #8250df;
   --ticket-invalid-color: #59636e;
+  overflow-y: auto;
 }
 
 /* icon color */

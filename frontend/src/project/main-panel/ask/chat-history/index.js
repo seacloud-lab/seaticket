@@ -1,8 +1,7 @@
-import React, { useCallback, useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import MessageBox from './message-box';
 import CommonMessage from './common-message';
-import MessageOperations from './message-operations';
 import ClearContext from './clear-context';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 
@@ -10,17 +9,6 @@ import './index.css';
 
 const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
   const { _id, message, isUserSpeak, type } = chat;
-  const ref = useRef(null);
-
-  const getMessageHTML = useCallback(() => {
-    if (!ref?.current) return '';
-    return ref.current.getHTML();
-  }, []);
-
-  const getAIReply = useCallback(() => {
-    if (!ref?.current) return '';
-    return ref.current.getAIReply();
-  }, []);
 
   if (Object.keys(message).length === 0) return null;
 
@@ -37,9 +25,8 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) 
         projectUuid={projectUuid}
         projectName={projectName}
         workspaceID={workspaceID}
-        ref={ref}
+        showOperations={!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP)}
       />
-      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations getAIReply={getAIReply} getMessageHTML={getMessageHTML} />)}
     </MessageBox>
   );
 };

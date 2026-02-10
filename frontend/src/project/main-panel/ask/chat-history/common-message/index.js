@@ -1,18 +1,22 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import ThoughtProcess from '../thought-process';
 import { Attachments } from '../../components';
 import CustomizeMarkdownViewer from '../customize-markdown-viewer';
+import MessageOperations from '../message-operations';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, projectName, workspaceID }, ref) => {
+const CommonMessage = ({
+  chatId, message, settings, projectUuid, projectName, workspaceID,
+  showOperations,
+}) => {
   const markdownMessageRef = useRef(null);
 
-  useImperativeHandle(ref, () => ({
-    getAIReply: () => markdownMessageRef.current.getAIReply(),
-  }), [markdownMessageRef]);
+  const getAIReply = useCallback(() => {
+    return markdownMessageRef.current.getAIReply();
+  }, [markdownMessageRef.current]);
 
   return (
     <>
@@ -34,11 +38,11 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           projectUuid={projectUuid}
           workspaceID={workspaceID}
         />
+        {showOperations && (<MessageOperations getAIReply={getAIReply} />)}
       </div>
     </>
   );
-
-});
+};
 
 CommonMessage.propTypes = {
   messages: PropTypes.array,
