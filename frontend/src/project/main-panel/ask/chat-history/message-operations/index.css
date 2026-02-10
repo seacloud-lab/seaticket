@@ -6,6 +6,10 @@
   height: 24px;
 }
 
+.sea-qa-message-ai-reply.text:not(.ends-with-link) + .sea-qa-ai-answer-operations {
+  margin-top: 9px;
+}
+
 .sea-qa-ai-ask-chat .sea-qa-icon-btn {
   display: none;
 }

@@ -1,6 +1,9 @@
 .chat-header-title-content {
   font-weight: 500;
   font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sea-qa-ai-ask-chats-header .chat-header-divider {

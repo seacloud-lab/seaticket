@@ -8,8 +8,11 @@
   cursor: pointer;
   padding-bottom: 24px !important;
   margin-top: -0.5px !important;
-  margin-bottom: -19.5px !important;
   background-color: #FDFDFD;
+}
+
+.sea-ai-chat-customize-link + span {
+  display: none;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-link-header {

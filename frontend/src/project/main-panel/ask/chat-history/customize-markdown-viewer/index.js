@@ -16,8 +16,9 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 
 import './index.css';
 
-const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, projectName, workspaceID, className, canPreviewLinkedFile = true }, ref) => {
+const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, projectName, workspaceID, className: propsClassName, canPreviewLinkedFile = true }, ref) => {
   const [aiMessageType, setAIMessageType] = useState('rich-text');
+  const [className, setClassName] = useState('');
   const [isShowResourceDetails, setIsShowResourceDetails] = useState(false);
   const [resource, setResource] = useState(null);
   const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
@@ -77,6 +78,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
           });
           return `[${fileName}](${url})`;
         });
+      aiReplyForCopy = value;
     }
 
     if (value && Array.isArray(sources) && sources.length > 0) {
@@ -190,8 +192,16 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
   }, [sources, mdFiles, canPreviewLinkedFile, openConnectionRecord]);
 
   const beforeAIReplyRenderCallback = useCallback((value) => {
-    if (value.length === 1 && value[0].type === 'paragraph') {
+    const valueCount = value.length;
+    if (valueCount === 1 && value[0].type === 'paragraph') {
       setAIMessageType('text');
+    }
+    const lastDom = value[valueCount - 1];
+    if (lastDom.type === 'paragraph' && lastDom.children.length > 2) {
+      const last2Child = lastDom.children[lastDom.children.length - 2];
+      if (last2Child.type === 'link' && last2Child.url.startsWith('file:///sea-ticket/')) {
+        setClassName('ends-with-link');
+      }
     }
   }, []);
 
@@ -217,7 +227,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
   return (
     <>
       {aiReply && (
-        <div className={classnames('sea-qa-message-ai-reply', aiMessageType, className)}>
+        <div className={classnames('sea-qa-message-ai-reply', aiMessageType, className, propsClassName)}>
           <CustomizeMarkdownViewerComponent
             value={aiReply}
             showTOC={false}
