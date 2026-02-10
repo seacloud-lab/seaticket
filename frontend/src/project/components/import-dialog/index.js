@@ -101,8 +101,14 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
               <table className="sea-qa-preview-table">
                 <thead>
                   <tr>
-                    <th className="title-cell">{gettext('Title')}</th>
-                    <th className="content-cell">{gettext('Content')}</th>
+                    <th className="title-column-header text-truncate">
+                      <span className="mr-2 header-column-icon"><Icon symbol="text"/></span>
+                      <span>{gettext('Title')}</span>
+                    </th>
+                    <th className="content-column-header text-truncate">
+                      <span className="mr-2 header-column-icon"><Icon symbol="long-text"/></span>
+                      <span>{gettext('Content')}</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
