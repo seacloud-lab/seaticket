@@ -87,13 +87,14 @@ const Documents = () => {
             options={documentsOptions}
             icon="arrow-down"
             className="sea-ticket-chat-documents-selector"
+            editorClassName="sea-ticket-chat-documents-selector-editor"
             iconPlacement="right"
             border={false}
             onChange={handleToggleCurrentDocument}
             isSearchEnabled={false}
             displayBgColor={true}
           >
-            <IconButton icon="ai-file" size={14} className="no-hover-bg sea-ticket-chat-document-icon" />
+            <IconButton icon="ai-file" size={16} className="no-hover-bg sea-ticket-chat-document-icon" />
             <div className="sea-ticket-chat-documents-count">{documents.length}</div>
             <div className="sea-ticket-chat-documents-divider"></div>
             <div className="sea-ticket-chat-document-name text-truncate" title={currentDocument.name}>{currentDocument.name}</div>

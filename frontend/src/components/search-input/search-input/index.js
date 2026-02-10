@@ -105,7 +105,7 @@ class SearchInput extends Component {
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size + 2 }} />
+          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size - 2 }} />
         )}
         <input
           ref={ref => this.inputRef = ref}
@@ -119,7 +119,7 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={{ height: size, paddingLeft: isShowSearchIcon ? size + 2 : 12, paddingRight: 30 }}
+          style={{ height: size, paddingLeft: isShowSearchIcon ? size - 2 : 12, paddingRight: 30 }}
           name="search-input"
           autoComplete="off"
         />

@@ -1,15 +1,12 @@
-.chat-header-title-content.sea-qa-ai-chat-selector-display {
-  margin-left: -4px;
-  padding: 0 4px;
-  height: 24px;
-  border-radius: 4px;
+.chat-header-title-content {
   font-weight: 500;
+  font-size: 14px;
 }
 
 .sea-qa-ai-ask-chats-header .chat-header-divider {
   height: 12px;
   width: 1px;
-  background-color: #eee;
+  background-color: #eaeaea;
   margin: 0 12px;
 }
 

@@ -18,7 +18,6 @@ import './index.css';
 
 const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) => {
   const [isReply, setReply] = useState(false);
-  const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
   const [clearContext, setClearContext] = useState(false);
@@ -191,16 +190,6 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
   }, [sessionId]);
 
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    const handleResize = () => {
-      if (!wrapper) return;
-      setHeight(wrapper.offsetHeight);
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    wrapper && resizeObserver.observe(wrapper);
-  }, []);
-
-  useEffect(() => {
     setReply(Boolean(session?.is_replying));
   }, [session?.is_replying]);
 
@@ -267,8 +256,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
       <div className="sea-qa-ai-ask-chats-body">
         <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
           {isEmpty && (
-            <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: Math.max(0, (height - 324) / 2) }}>
-              <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
+            <div className="sea-qa-ai-ask-chats-tip">
+              <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
               <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
               <div className="sea-qa-ai-ask-chats-tip-description">
                 {gettext('You can say "Help solving the following issue: <issue description>" to let AI solving the issue by searching knowledge bases.')}

@@ -21,11 +21,18 @@
   box-shadow: none;
 }
 
+.sea-qa-search-input-wrapper .sea-qa-search-input::placeholder {
+  color: #868E96;
+  font: 14px;
+}
+
 .sea-qa-search-input-wrapper .sea-qa-search-input-search {
   position: absolute;
   left: 0;
   top: 0;
   pointer-events: none;
+  padding-left: 12px;
+  padding-right: 8px;
 }
 
 .sea-qa-search-input-wrapper .sea-qa-search-input-search:hover {

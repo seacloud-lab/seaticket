@@ -20,6 +20,10 @@
   background-color: var(--option-bg-color);
 }
 
+.sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border):hover {
+  background-color: #EDEDEB;
+}
+
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display.highlight {
   margin: 0;
   min-height: unset;

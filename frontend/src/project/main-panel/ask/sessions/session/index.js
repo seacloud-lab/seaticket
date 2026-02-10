@@ -89,7 +89,7 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
               </CustomizeDropdownItem>
               {session.is_shared ? (
                 <CustomizeDropdownItem onClick={handleUnshare}>
-                  <CustomizeDropdownItem.Icon symbol="share" />
+                  <CustomizeDropdownItem.Icon symbol="unshare" />
                   <CustomizeDropdownItem.Text>{gettext('Unshare within team')}</CustomizeDropdownItem.Text>
                 </CustomizeDropdownItem>
               ) : (

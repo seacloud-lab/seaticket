@@ -118,7 +118,7 @@ const OptionEditorContainer = forwardRef(({
   }), [value]);
 
   return (
-    <div className={classnames('option-editor-container', className)}>
+    <div className={classnames('option-editor-container search-enabled', className)}>
       <div className="option-editor-search-wrapper">
         <SearchInput
           autoFocus={true}

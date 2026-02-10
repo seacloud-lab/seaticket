@@ -52,7 +52,7 @@ const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isS
     <div className="sea-ai-chat-customize-link" onClick={canPreviewLinkedFile ? onClick : () => {}}>
       <div className="sea-ai-chat-customize-link-header">
         <div className="sea-ai-chat-customize-link-name o-hidden">
-          <IconButton icon="ai-file" size={14} className="no-hover-bg d-inline-flex" />
+          <IconButton icon="ai-file" size={16} className="no-hover-bg d-inline-flex" />
           <span className="text-truncate">{file.name}</span>
         </div>
         {canPreviewLinkedFile && (<IconButton className="d-flex" icon="view-issue" size={{ icon: 14 }} title={gettext('View file')} />)}

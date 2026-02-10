@@ -37,20 +37,31 @@
   height: 30px;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector:hover {
-  background-color: var(--option-bg-color);
-}
-
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .selected-option-show {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.sea-ticket-chat-documents-selector-editor .popover {
+  width: fit-content;
+  min-width: 240px;
+  max-width: 400px;
+  min-height: auto;
+}
+
+.sea-ticket-chat-documents-selector-editor .option-editor-container {
+  min-height: auto;
+}
+
+.sea-ticket-chat-documents-selector-editor .option-editor-container .option-editor-content {
+  min-height: auto;
+}
+
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-documents-divider {
   height: 12px;
   width: 1px;
-  background-color: #eee;
+  background-color: #eaeaea;
 }
 
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-document-name {
