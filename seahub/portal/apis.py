@@ -104,7 +104,6 @@ class PortalTicketsView(APIView):
         due_date = request.POST.get('due_date', '')
 
         username = request.user.username
-        print(username)
         seadb_api = SeaDBAPI(username)
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
