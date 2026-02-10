@@ -16,6 +16,7 @@ const Selector = ({
   icon,
   displayBgColor,
   iconPlacement,
+  placement,
   children,
 }) => {
   const [isShowMenu, setIsShowMenu] = useState(false);
@@ -53,6 +54,7 @@ const Selector = ({
           target={ref}
           isSearchEnabled={isSearchEnabled}
           value={value}
+          placement={placement}
           onChange={handleChange}
           onToggle={() => setIsShowMenu(false)}
         />

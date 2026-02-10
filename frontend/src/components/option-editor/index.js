@@ -14,6 +14,7 @@ const OptionsEditor = ({
   optionClassName = '',
   contentClassName = '',
   placeholder,
+  placement,
   emptyTip,
   value,
   className,
@@ -37,6 +38,7 @@ const OptionsEditor = ({
     <CustomizePopover
       target={target}
       className={classnames('option-editor-popover', className)}
+      placement={placement}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
     >

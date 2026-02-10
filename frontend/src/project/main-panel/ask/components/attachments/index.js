@@ -31,7 +31,7 @@ const Attachments = ({
     setAttachmentIndex(nextAttachmentIndex);
   }, [attachmentIndex, attachments]);
 
-  if (!Array.isArray(attachments) || attachments.length < 0) return null;
+  if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
   let activeAttachment = null;
   if (attachmentIndex > -1) {

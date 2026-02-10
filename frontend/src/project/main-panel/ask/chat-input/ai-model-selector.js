@@ -51,6 +51,7 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
       onChange={updateModel}
       isSearchEnabled={false}
       displayBgColor={true}
+      placement="top-start"
     >
       <div className="sea-qa-ai-model-logo">
         <img src={option.img} alt="" />

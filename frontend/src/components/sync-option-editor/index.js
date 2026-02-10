@@ -8,6 +8,7 @@ import './index.css';
 const SyncOptionsEditor = ({
   target,
   isMultiple = false,
+  placement,
   checkPlacement = 'right',
   optionClassName = '',
   contentClassName = '',
@@ -35,6 +36,7 @@ const SyncOptionsEditor = ({
       className={classnames('option-editor-popover sync-option-editor-popover', className)}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
+      placement={placement}
     >
       <OptionEditorContainer
         ref={optionEditorContainerRef}

@@ -41,6 +41,7 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
           placeholder={gettext('Search')}
           emptyTip={gettext('No results')}
           value={Array.isArray(value) ? value : []}
+          placement="top-start"
           onChange={handleChange}
           onToggle={onToggle}
           onSearch={onSearch}
