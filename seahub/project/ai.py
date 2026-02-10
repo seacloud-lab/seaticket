@@ -17,6 +17,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit
 from seahub.utils.ai_client import (
     convert_record_to_ticket,
+    convert_ticket_to_kb_record,
     rank_related_issues,
 )
 from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
@@ -190,6 +191,86 @@ class ConvertRecordToTicket(APIView):
             'content': ai_content,
             'linked_connection_records': [f'{connection_id}_{record_id}'],
         })
+
+
+class ConvertTicketToKnowledgeBaseRecord(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request):
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        ticket_title = request.data.get('ticket_title')
+        ticket_content = request.data.get('ticket_content')
+        ticket_comments = request.data.get('ticket_comments', [])
+
+        if not ticket_title and not ticket_content:
+            error_msg = 'ticket data invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if ticket_comments and not isinstance(ticket_comments, list):
+            error_msg = 'ticket_comments invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+        if not workspace:
+            error_msg = 'Workspace not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        org_id = request.user.org.org_id
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            error_msg = 'AI credit not enough.'
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
+
+        ticket_title = (ticket_title or '')[:MAX_LENGTH]
+        ticket_content = (ticket_content or '')[:MAX_LENGTH]
+
+        sanitized_comments = []
+        for c in (ticket_comments or [])[:50]:
+            content = c.get('content', '')[:2000]
+            author = c.get('creator')
+            created_time = c.get('created_time')
+
+            if not content.strip():
+                continue
+            sanitized_comments.append({
+                'author': author,
+                'created_time': created_time,
+                'content': content,
+            })
+
+        params = {
+            'username': username,
+            'ticket_title': ticket_title,
+            'ticket_content': ticket_content,
+            'ticket_comments': sanitized_comments,
+            'project_uuid': project_uuid,
+            'org_id': org_id,
+        }
+
+        try:
+            kb_title, kb_content = convert_ticket_to_kb_record(params)
+        except Exception as e:
+            logger.error(f'AI service error: {e}')
+            error_msg = 'AI service error.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'kb_title': kb_title, 'kb_content': kb_content})
 
 
 class EmbeddingAnalysisView(APIView):

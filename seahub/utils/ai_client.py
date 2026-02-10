@@ -28,6 +28,18 @@ def convert_record_to_ticket(params):
     return title, content
 
 
+def convert_ticket_to_kb_record(params):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/convert-ticket-to-kb-record')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception(f'convert ticket to kb record error status: {resp.status_code} body: {resp.text}')
+    resp_json = resp.json()
+    kb_title = resp_json.get('kb_title', '')
+    kb_content = resp_json.get('kb_content', '')
+    return kb_title, kb_content
+
+
 def rank_related_issues(params):
     headers = _build_headers()
     url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/rank-related-issues')

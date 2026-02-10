@@ -20,9 +20,12 @@ import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/ut
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import RelatedIssuesDialog from './related-issues-dialog';
+import CreateKBRecordDialog from './create-kb-record-dialog';
 import { isFunction } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const Tickets = ({
   viewID, canFindRelatedIssues = true, isBuiltInView = false,
@@ -50,6 +53,9 @@ const Tickets = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
+
+  const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
+  const [kbSourceTicket, setKbSourceTicket] = useState(null);
 
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket({ ...ticket, type: TICKET_TYPE });
@@ -184,6 +190,30 @@ const Tickets = ({
     setIsShowRelatedIssuesDialog(true);
   }, []);
 
+  const createKnowledgeBaseRecord = useCallback((ticket) => {
+    if (!ticket) return;
+
+    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+    const contentColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
+
+    const title = titleColumn ? (getCellValueByColumn(ticket, titleColumn) || '') : (ticket?.title || '');
+
+    const rawContent = contentColumn ? getCellValueByColumn(ticket, contentColumn) : ticket?.content;
+    let content = '';
+    if (rawContent && typeof rawContent === 'object') {
+      content = rawContent.text || rawContent.preview || '';
+    } else {
+      content = rawContent || '';
+    }
+
+    setKbSourceTicket({
+      _id: ticket._id,
+      title,
+      content,
+    });
+    setIsShowCreateKBRecordDialog(true);
+  }, []);
+
   const createRowsTools = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId };
     if (canFindRelatedIssues) {
@@ -196,7 +226,7 @@ const Tickets = ({
   }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId]);
 
   const createContextMenuOptions = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId };
+    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId, createKnowledgeBaseRecord };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -204,7 +234,7 @@ const Tickets = ({
       return customizeCreateContextMenuOptions(params);
     }
     return generatorTicketsContextMenuOptions(params);
-  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId]);
+  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord]);
 
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
@@ -269,6 +299,16 @@ const Tickets = ({
           columns={allColumns.current}
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
+        />
+      )}
+      {isShowCreateKBRecordDialog && kbSourceTicket && (
+        <CreateKBRecordDialog
+          projectUuid={projectUuid}
+          ticket={kbSourceTicket}
+          onClose={() => {
+            setIsShowCreateKBRecordDialog(false);
+            setKbSourceTicket(null);
+          }}
         />
       )}
     </>

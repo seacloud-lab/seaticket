@@ -206,6 +206,7 @@ export const generatorTicketsContextMenuOptions = ({
   projectName,
   permission,
   findRelatedIssues,
+  createKnowledgeBaseRecord,
 }) => {
   let list = [];
 
@@ -264,16 +265,24 @@ export const generatorTicketsContextMenuOptions = ({
       if (list.length > 0) {
         list.push('Divider');
       }
+      const aiChildren = [
+        {
+          label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
+          key: 'chat_tickets',
+          callback: () => handleChatTicketsByAI(rows),
+        },
+      ];
+      if (rows.length === 1 && createKnowledgeBaseRecord) {
+        aiChildren.push({
+          label: gettext('Create knowledge base record'),
+          key: 'create_kb_record',
+          callback: () => createKnowledgeBaseRecord(rows[0]),
+        });
+      }
       list.push({
         key: 'AI',
         label: gettext('AI'),
-        children: [
-          {
-            label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
-            key: 'chat_tickets',
-            callback: () => handleChatTicketsByAI(rows),
-          }
-        ],
+        children: aiChildren,
       });
     }
     return list;
@@ -359,16 +368,24 @@ export const generatorTicketsContextMenuOptions = ({
   }
 
   list.push('Divider');
+  const aiChildren = [
+    {
+      label: gettext('Chat ticket'),
+      key: 'chat_tickets',
+      callback: () => handleChatTicketsByAI([row]),
+    },
+  ];
+  if (createKnowledgeBaseRecord) {
+    aiChildren.push({
+      label: gettext('Create knowledge base record'),
+      key: 'create_kb_record',
+      callback: () => createKnowledgeBaseRecord(row),
+    });
+  }
   list.push({
     key: 'AI',
     label: gettext('AI'),
-    children: [
-      {
-        label: gettext('Chat ticket'),
-        key: 'chat_tickets',
-        callback: () => handleChatTicketsByAI([row]),
-      }
-    ],
+    children: aiChildren,
   });
   return list;
 };

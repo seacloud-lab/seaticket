@@ -374,6 +374,17 @@ class TicketsAPI {
     };
     return this.req.post(url, data);
   }
+
+  convertTicketToKnowledgeBaseRecord(projectUuid, ticketTitle, ticketContent, ticketComments = []) {
+    const url = this.server + '/api/v1/ai/convert-ticket-to-knowledge-base/';
+    const data = {
+      project_uuid: projectUuid,
+      ticket_title: ticketTitle,
+      ticket_content: ticketContent,
+      ticket_comments: ticketComments,
+    };
+    return this.req.post(url, data);
+  }
 }
 
 const ticketsAPI = new TicketsAPI();
