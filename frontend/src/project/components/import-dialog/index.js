@@ -114,8 +114,8 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
                 <tbody>
                   {previewData.map((row, index) => (
                     <tr key={index}>
-                      <td className="title-cell">{row.title}</td>
-                      <td className="content-cell">{row.content}</td>
+                      <td className="title-cell text-truncate">{row.title}</td>
+                      <td className="content-cell text-truncate">{row.content}</td>
                     </tr>
                   ))}
                 </tbody>

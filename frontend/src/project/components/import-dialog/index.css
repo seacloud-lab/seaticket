@@ -56,6 +56,25 @@
 .sea-qa-preview-table {
   width: 100%;
   margin-top: 10px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  display: block;
+}
+
+.sea-qa-preview-table thead {
+  display: block;
+}
+
+.sea-qa-preview-table tbody {
+  display: block;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.sea-qa-preview-table tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .sea-qa-preview-table th {
