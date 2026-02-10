@@ -48,6 +48,9 @@ class ProjectExternalUserManager(models.Manager):
 
     def list_ext_users_by_project_uuid(self, project_uuid):
         return super().filter(project_uuid=project_uuid)
+    
+    def get_contact_email_by_user(self, username):
+        return super().filter(username=username).first()
 
 
 class ProjectExternalUser(models.Model):

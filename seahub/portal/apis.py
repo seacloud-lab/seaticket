@@ -6,7 +6,6 @@ import json
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from seahub.api2.permissions import PortalAccessPermission, PortalExternalSessionPermission
 from rest_framework import status
 from rest_framework.response import Response
 from django.utils.translation import gettext as _
@@ -27,6 +26,7 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TI
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
+from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalTicketPermission
 from seahub.portal.models import ProjectExternalUser
 from django.core.cache import cache
 from seahub.utils.verify import get_random_code
@@ -40,20 +40,9 @@ from seahub.base.templatetags.seahub_tags import email2nickname
 logger = logging.getLogger(__name__)
 
 
-def get_portal_access_username(request):
-    if request.user.is_authenticated:
-        return request.user.username
-
-    session_key = request.session.session_key
-    if not session_key:
-        request.session.save()
-        session_key = request.session.session_key
-    return f'portal-anon-{session_key}'
-
-
 class PortalTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalExternalSessionPermission,)
+    permission_classes = (PortalTicketPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -114,7 +103,8 @@ class PortalTicketsView(APIView):
 
         due_date = request.POST.get('due_date', '')
 
-        username = get_portal_access_username(request)
+        username = request.user.username
+        print(username)
         seadb_api = SeaDBAPI(username)
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
@@ -168,7 +158,7 @@ class PortalTicketsView(APIView):
 
 class PortalMyTicketsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalExternalSessionPermission,)
+    permission_classes = (PortalTicketPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -237,7 +227,7 @@ class PortalMyTicketsView(APIView):
 
 class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
+    permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -259,7 +249,7 @@ class PortalTagsView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        username = get_portal_access_username(request)
+        username = request.user.username if request.user else 'Anonymous'
         try:
             seadb_api = SeaDBAPI(username)
             table_name = TagTable.gen_table_name()
@@ -275,7 +265,7 @@ class PortalTagsView(APIView):
 
 class PortalKnowledgeBaseViewsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
+    permission_classes = (PortalKnowledgeBasePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -302,7 +292,7 @@ class PortalKnowledgeBaseViewsView(APIView):
 
 class PortalKnowledgeBaseRecordsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
+    permission_classes = (PortalKnowledgeBasePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -349,11 +339,11 @@ class PortalKnowledgeBaseRecordsView(APIView):
 
 class PortalTicketMetadataView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAccessPermission | PortalExternalSessionPermission,)
+    permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
-        username = get_portal_access_username(request)
+        username = request.user.username if request.user else 'Anonymous'
         seadb_api = SeaDBAPI(username)
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
