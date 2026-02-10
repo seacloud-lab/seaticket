@@ -8,7 +8,7 @@ import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
 import TagOption from '@/components/tag-option';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
 import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
@@ -63,8 +63,7 @@ const TagsEditor = forwardRef(({
     if (!isCellValueChanged(_newValue, value)) return;
     let validValue = newValue;
     if (Array.isArray(newValue) && newValue.length > 0) {
-      const tags = getRowsByIds(tagsData, newValue);
-      validValue = tags.map(tag => Number(tag._id));
+      validValue = newValue.map(id => Number(id));
     }
     setValue(validValue);
   }, [tagsData, value]);
