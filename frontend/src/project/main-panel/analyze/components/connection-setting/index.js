@@ -38,8 +38,8 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
   const closeEditor = useCallback(() => {
     if (!isShowPopover) return;
 
-    const currentIds = value.sort();
-    const tempIds = selectedConnectionIds.sort();
+    const currentIds = [...value].sort();
+    const tempIds = [...selectedConnectionIds].sort();
     const hasChanged = currentIds.length !== tempIds.length || currentIds.some((id, index) => id !== tempIds[index]);
     if (hasChanged) {
       const newSelectedConnections = connections.filter(item => selectedConnectionIds.includes(item.id));
@@ -50,9 +50,10 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
 
   const handleTogglePopover = useCallback(() => {
     if (!isShowPopover) {
+      setSelectedConnectionIds(value);
       setIsShowPopover(true);
     }
-  }, [isShowPopover]);
+  }, [isShowPopover, value]);
 
   return (
     <>
