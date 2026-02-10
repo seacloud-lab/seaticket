@@ -40,7 +40,6 @@
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .selected-option-show {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .sea-ticket-chat-documents-selector-editor .popover {

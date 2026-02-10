@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { gettext } from '@/constants';
-import { useSessions } from '../hooks';
+import React, { useEffect, useMemo } from 'react';
+import { gettext, mediaUrl } from '@/constants';
+import { useSessions, useDocuments } from '../hooks';
 import { SESSION_TAB_TYPE } from '../constants';
 import { EmptyTip, IconButton, CustomizeTabs, CenteredLoading } from '@/components';
 import Session from './session';
@@ -22,6 +22,13 @@ const Sessions = ({ sessionId, permission }) => {
     closeShowSessions,
     loadTeamSessions
   } = useSessions();
+  const { isShowDocuments, documents } = useDocuments();
+
+  const _isShowDocuments = useMemo(() => {
+    if (!isShowDocuments) return false;
+    if (!Array.isArray(documents) || documents.length === 0) return false;
+    return true;
+  }, [isShowDocuments, documents]);
 
   const isTeamTab = activeTab === SESSION_TAB_TYPE.TEAM;
   const displaySessions = isTeamTab ? teamSessions : sessions;
@@ -33,7 +40,7 @@ const Sessions = ({ sessionId, permission }) => {
   }, [activeTab, loadTeamSessions]);
 
   return (
-    <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 280 }}>
+    <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: _isShowDocuments ? 16 : 0 }}>
       <div className="sea-qa-ai-ask-sessions-header">
         <div>{gettext('Histories')}</div>
         <IconButton icon="close" onClick={closeShowSessions} title={gettext('Close')} aria-label={gettext('Close')} />
@@ -49,7 +56,7 @@ const Sessions = ({ sessionId, permission }) => {
           <CenteredLoading />
         )}
         {!isTeamSessionsLoading && displaySessions.length === 0 && (
-          <EmptyTip className="sea-qa-ai-ask-sessions-empty" text={gettext('No chats')} />
+          <EmptyTip src={`${mediaUrl}img/no-nitification.png`} className="sea-qa-ai-ask-sessions-empty" text={gettext('No chats')} />
         )}
         {!isTeamSessionsLoading && displaySessions.map(session => {
           const isSelected = sessionId === session._id;
