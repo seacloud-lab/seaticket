@@ -97,6 +97,7 @@
 /* empty */
 .sea-qa-ai-ask-wrapper.empty {
   overflow-y: auto;
+  justify-content: center;
 }
 
 .sea-qa-ai-ask-wrapper.empty .sea-qa-ai-ask-chats-body {
@@ -112,7 +113,6 @@
   align-items: center;
   height: fit-content;
   width: 100%;
-  margin-top: 134px;
 }
 
 .sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-icon {
