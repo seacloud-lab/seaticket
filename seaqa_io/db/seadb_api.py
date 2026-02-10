@@ -5,7 +5,7 @@ import requests
 from seaqa_io.config import JWT_PRIVATE_KEY, SEADB_INNER_SERVER_URL
 from seaqa_io.log import setup_logger
 from seaqa_io.utils import uuid_str_to_36_chars
-from seahub.seadb_models.utils import get_connection_table_name
+from seaqa_io.utils import get_connection_table_name
 
 logger = setup_logger('seaqa_io', propagate=False)
 
