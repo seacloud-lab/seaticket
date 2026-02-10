@@ -131,7 +131,7 @@ class GlobalSearchInput extends Component {
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size }} />
+          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size - 2 }} />
         )}
         <input
           ref={ref => this.inputRef = ref}

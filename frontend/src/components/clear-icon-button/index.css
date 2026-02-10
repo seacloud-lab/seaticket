@@ -9,7 +9,7 @@
 
 .sea-ticket-clear-icon-button.sea-qa-icon-btn .sea-qa-icon-svg {
   margin-top: 0;
-  color: var(--bs-icon-color);
+  color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
 }

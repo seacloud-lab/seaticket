@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 6px;
+  border-radius: 16px;
   box-shadow: 0px 0px 0px 1px #E2E2E2;
 }
 
@@ -19,14 +19,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  border-radius: 6px;
+  border-radius: 16px;
   background-color: #FFF;
   box-shadow: 0px 0px 0px 1px #EAEAEA;
 }
-
-/* .sea-qa-ai-ask-chat-input-container.focus {
-  box-shadow: 0px 0px 0px 1px #ED7109;
-} */
 
 .sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-container {
   box-shadow: 0px 0px 0px 1px #BDBDBD;
@@ -53,7 +49,7 @@
 }
 
 .sea-qa-ai-ask-chat-input-content .message-input::placeholder {
-  color: #666;
+  color: #868E96;
   font-size: 14px;
   line-height: 22px;
 }
@@ -104,7 +100,7 @@
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn:not(.disabled) {
-  background-color: #ed7109;
+  background-color: var(--bs-primary);
 }
 
 .sea-qa-ai-ask-chat-operations-container-left .sea-qa-ai-ask-icon-btn,

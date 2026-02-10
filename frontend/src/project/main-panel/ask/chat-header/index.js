@@ -1,6 +1,4 @@
 import React from 'react';
-import { useSessions } from '../hooks';
-import { SelectorDisplay } from '../components';
 import { IconTooltip } from '@/components';
 import { username, gettext } from '@/constants';
 
@@ -15,22 +13,13 @@ const ChatHeader = ({
   hasHistoryMessages,
   toggleClearContext,
 }) => {
-  const { openShowSessions } = useSessions();
   const isOwner = session?.username === username;
   const disabled = isReply || readOnly;
   const showClearBtn = hasHistoryMessages && (isProjectAdmin || isOwner);
 
   return (
     <>
-      <SelectorDisplay
-        onClick={openShowSessions}
-        className="o-hidden chat-header-title-content"
-        icon="arrow-down"
-        iconPlacement="right"
-        border={false}
-      >
-        {session?.name}
-      </SelectorDisplay>
+      <div className="chat-header-title-content" title={session?.name}>{session?.name}</div>
       {showClearBtn && (
         <>
           <div className="chat-header-divider"></div>

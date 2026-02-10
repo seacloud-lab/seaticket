@@ -3,12 +3,13 @@
   overflow: hidden;
   height: auto;
   border: 1px solid #EAEAEA;
-  border-radius: 4px;
+  border-radius: 8px;
   gap: 16px;
   cursor: pointer;
   padding-bottom: 24px !important;
   margin-top: -0.5px !important;
-  margin-bottom: -16.5px !important;
+  margin-bottom: -19.5px !important;
+  background-color: #FDFDFD;
 }
 
 .sea-ai-chat-customize-link .sea-ai-chat-customize-link-header {

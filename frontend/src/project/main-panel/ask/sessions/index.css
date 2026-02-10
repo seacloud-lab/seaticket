@@ -9,10 +9,11 @@
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-header {
-  width: 100%;
+  width: calc(100% - 16px);
+  margin-left: 16px;
   border-bottom: 1px solid var(--bs-border-secondary-color);
-  height: 44px;
-  padding: 0 0 0 16px;
+  height: 40px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
