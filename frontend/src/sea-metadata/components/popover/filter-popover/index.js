@@ -14,6 +14,7 @@ import context from '@/sea-metadata/context';
 import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
+import dcopy from 'deep-copy';
 
 /**
  * filter = {
@@ -27,15 +28,17 @@ class FilterPopover extends Component {
 
   constructor(props) {
     super(props);
-    this.initData = {
+    const initData = {
       basicFilters: props.basicFilters,
       filters: getValidFilters(props.filters, props.columns),
       filterConjunction: props.filterConjunction || 'And',
     };
+
+    this.initData = dcopy(initData);
     this.state = {
-      basicFilters: this.initData.basicFilters,
-      filters: this.initData.filters,
-      filterConjunction: this.initData.filterConjunction,
+      basicFilters: initData.basicFilters,
+      filters: initData.filters,
+      filterConjunction: initData.filterConjunction,
     };
     this.isSelectOpen = false;
   }
