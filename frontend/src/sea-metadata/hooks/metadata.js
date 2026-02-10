@@ -23,8 +23,10 @@ export const MetadataProvider = forwardRef(({
   cascadeUpdateCells,
   columnOrderRules,
   columnWidthRules,
+  notDisplayColumns,
   t,
   dataDidMount,
+  generatorRowClassName,
   children,
   ...params
 }, ref) => {
@@ -151,7 +153,10 @@ export const MetadataProvider = forwardRef(({
     });
     storeRef.current.modifyRows(validRowIds, validIdRowUpdates, validIdOldRowData, isCopyPaste, {
       fail_callback: (error) => {
-        fail_callback && fail_callback(error);
+        if (fail_callback && isFunction(fail_callback)) {
+          fail_callback(error);
+          return;
+        }
         error && toaster.danger(error);
       },
       success_callback: () => {
@@ -303,7 +308,7 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, columnOrderRules, columnWidthRules, dataDidMount });
+    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, columnOrderRules, columnWidthRules, notDisplayColumns, dataDidMount });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {
@@ -398,6 +403,7 @@ export const MetadataProvider = forwardRef(({
         insertColumn,
         updateLocalRow,
         createContextMenuOptions,
+        generatorRowClassName,
       }}
     >
       {children}

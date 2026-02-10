@@ -846,6 +846,7 @@ class GroupBody extends Component {
             columnColor={columnColor}
             onRowExpand={this.props.onRowExpand}
             isShowRowExpandBtn={isShowRowExpandBtn}
+            generatorRowClassName={this.props.generatorRowClassName}
           />
         );
       }

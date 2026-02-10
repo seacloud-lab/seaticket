@@ -39,6 +39,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
     createContextMenuOptions,
     insertColumn,
     updateLocalRow,
+    generatorRowClassName,
   } = useMetadata();
   const { updateSelectedRowIds } = useSelectedRows();
 
@@ -203,6 +204,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           onRowExpand={onRowExpand}
           updateSelectedRowIds={updateSelectedRowIds}
           updateLocalRow={updateLocalRow}
+          generatorRowClassName={generatorRowClassName}
         />
       </div>
       {isShowRowExpand && isValidElement(children) && (

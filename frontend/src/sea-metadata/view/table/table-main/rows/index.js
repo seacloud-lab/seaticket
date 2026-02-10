@@ -679,6 +679,7 @@ class Rows extends Component {
           createContextMenuOptions={this.props.createContextMenuOptions}
           updateLocalRow={this.props.updateLocalRow}
           deleteLocalRows={this.props.deleteLocalRows}
+          modifyRows={this.props.modifyRows}
         />
       ),
       hasSelectedRow: this.hasSelectedRow(),

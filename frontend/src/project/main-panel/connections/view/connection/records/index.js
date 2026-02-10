@@ -1,10 +1,11 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
+import copy from 'copy-to-clipboard';
 import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
-import CreateTicketDialog from '../../components/create-ticket-dialog';
-import RelatedIssuesDialog from '../../components/related-issues-dialog';
-import { useConnectionsPage } from '../../hooks';
+import CreateTicketDialog from '../../../components/create-ticket-dialog';
+import RelatedIssuesDialog from '../../../components/related-issues-dialog';
+import { useConnectionsPage } from '../../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -13,18 +14,19 @@ import {
   SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME,
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
   SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
-} from '../../constants';
+} from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
-import { useConnections } from '../../hooks';
-import { getOriginalPageUrl, getTableName } from '../../utils';
+import { useConnections } from '../../../hooks';
+import { getOriginalPageUrl, getTableName, generatorRowClassName } from '../../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useData } from '@/project/hooks';
-import copy from 'copy-to-clipboard';
+
+import './index.css';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -217,27 +219,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateAttachments]);
 
-  const handleMarkAsOutdated = useCallback((rows, updateLocalRow) => {
-    if (!rows) return;
-    const rowList = Array.isArray(rows) ? rows : [rows];
-    const recordIds = rowList.filter(row => row && row._id).map(row => row._id);
-    if (recordIds.length === 0) return;
-    const rowsData = recordIds.map(id => ({ row_id: id, row: { outdated: true } }));
-    connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData)
-      .then(() => {
-        toaster.success(gettext('Marked as outdated'));
-        // Update local rows to reflect the change
-        const outdatedColumn = allColumns.current.find(c => c.name === 'outdated');
-        if (outdatedColumn && updateLocalRow) {
-          recordIds.forEach(rowId => {
-            updateLocalRow({ rowId }, { [outdatedColumn.key]: true });
-          });
-        }
-      }, () => {
-        toaster.danger(gettext('Failed to mark as outdated'));
-      });
-  }, [projectUuid, connectionID]);
-
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
     setCurrentRow(row);
@@ -290,17 +271,69 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generateMarkAsOutdatedOption = useCallback(({ rows, updateLocalRow }) => {
+  const generateMarkAsOutdatedOptions = useCallback(({ rows, modifyRows }) => {
     const enableMarkAsOutdated = SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection?.type);
-    if (!enableMarkAsOutdated) return null;
+    if (!enableMarkAsOutdated) return [];
     const rowList = Array.isArray(rows) ? rows : [rows];
-    if (rowList.length === 0) return null;
-    return {
-      key: 'mark_as_outdated',
-      label: gettext('Mark as outdated'),
-      callback: () => handleMarkAsOutdated(rowList, updateLocalRow),
-    };
-  }, [connection, handleMarkAsOutdated]);
+    if (rowList.length === 0) return [];
+    const outdatedColumn = getColumnByName(allColumns.current, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+    if (!outdatedColumn) return [];
+    let activeRows = [];
+    let outdatedRows = [];
+    rows.forEach(row => {
+      const oldValue = row[outdatedColumn.key];
+      if (oldValue) {
+        outdatedRows.push(row);
+      } else {
+        activeRows.push(row);
+      }
+    });
+    let options = [];
+    if (outdatedRows.length > 0) {
+      options.push({
+        key: 'mark_as_active',
+        label: gettext('Mark as active'),
+        callback: () => {
+          let rowIds = [];
+          let idRowUpdates = {};
+          let idOldRowOldData = {};
+          outdatedRows.forEach(row => {
+            const { _id } = row;
+            rowIds.push(_id);
+            idRowUpdates[_id] = { [outdatedColumn.key]: false };
+            idOldRowOldData[_id] = { [outdatedColumn.key]: true };
+          });
+          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false, {
+            success_callback: () => toaster.success(gettext('Marked as active')),
+            fail_callback: () => toaster.danger(gettext('Failed to mark as active')),
+          });
+        },
+      });
+    }
+    if (activeRows.length > 0) {
+      options.push({
+        key: 'mark_as_outdated',
+        label: gettext('Mark as outdated'),
+        callback: () => {
+          let rowIds = [];
+          let idRowUpdates = {};
+          let idOldRowOldData = {};
+          activeRows.forEach(row => {
+            const { _id } = row;
+            const oldValue = row[outdatedColumn.key];
+            rowIds.push(_id);
+            idRowUpdates[_id] = { [outdatedColumn.key]: true };
+            idOldRowOldData[_id] = { [outdatedColumn.key]: oldValue };
+          });
+          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false, {
+            success_callback: () => toaster.success(gettext('Marked as outdated')),
+            fail_callback: () => toaster.danger(gettext('Failed to mark as outdated')),
+          });
+        },
+      });
+    }
+    return options.length > 0 ? options : [];
+  }, [connection]);
 
   const generateAIOptions = useCallback(({ rows }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
@@ -359,10 +392,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection]);
 
-  const createRowsTools = useCallback(({ rows, columns, deleteLocalRows, updateLocalRow }) => {
+  const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let children = [];
     if (rows.length === 1) {
       const row = rows[0];
+      const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], modifyRows });
       children = [
         generateAIOptions({ rows, columns }),
         generateFindRelatedIssuesOption({ row }),
@@ -370,8 +404,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         { key: 'divider' },
         generateOpenOriginalPageOption({ row }),
         generateCopyOriginalLinkOption({ row }),
-        { key: 'divider' },
-        generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
       ].filter(Boolean);
       children = children.reduce((acc, item, index, array) => {
         if (item && item.key === 'divider' && index > 0 && array[index - 1] && array[index - 1].key === 'divider') {
@@ -388,12 +420,20 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           children.pop();
         }
       }
+      if (markAsOutdatedOptions.length > 0) {
+        children.push({ key: 'divider' });
+        children.push(...markAsOutdatedOptions);
+      }
     } else if (rows.length > 1) {
       children = [
         generateAIOptions({ rows, columns }),
-        generateMarkAsOutdatedOption({ rows, updateLocalRow }),
-      ].filter(Boolean);
+      ];
+      const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows, modifyRows });
+      if (markAsOutdatedOptions.length > 0) {
+        children.push(...markAsOutdatedOptions);
+      }
     }
+    children = children.filter(Boolean);
     const tools = [];
 
     // if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
@@ -415,7 +455,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return tools;
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
-    generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOption, generateCopyOriginalLinkOption,
+    generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOptions, generateCopyOriginalLinkOption,
   ]);
 
   const createContextMenuOptions = useCallback(({
@@ -426,6 +466,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     rowMetrics,
     rowGetterByIndex,
     updateLocalRow,
+    modifyRows,
   }) => {
     let list = [];
 
@@ -443,7 +484,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       }
       if (rows.length > 0) {
         list.push(generateAIOptions({ rows, columns: table.columns }));
-        list.push(generateMarkAsOutdatedOption({ rows, updateLocalRow }));
+        const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows, modifyRows });
+        if (markAsOutdatedOptions.length > 0) {
+          list.push(...markAsOutdatedOptions);
+        }
       }
       return list.filter(Boolean);
     }
@@ -460,7 +504,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       });
       if (rows.length > 0) {
         list.push(generateAIOptions({ rows, columns: table.columns }));
-        list.push(generateMarkAsOutdatedOption({ rows, updateLocalRow }));
+        const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows, modifyRows });
+        if (markAsOutdatedOptions.length > 0) {
+          list.push(...markAsOutdatedOptions);
+        }
       }
       return list.filter(Boolean);
     }
@@ -477,8 +524,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       'Divider',
       generateOpenOriginalPageOption({ row }),
       generateCopyOriginalLinkOption({ row }),
-      'Divider',
-      generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
     ].filter(Boolean);
     list = list.reduce((acc, item, index, array) => {
       if (item === 'Divider' && index > 0 && array[index - 1] === 'Divider') {
@@ -496,10 +541,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       }
     }
 
-    return list;
+    const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], modifyRows });
+    if (markAsOutdatedOptions.length > 0) {
+      list.push('Divider');
+      list.push(...markAsOutdatedOptions);
+    }
+
+    return list.filter(Boolean);
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
-    generateMarkAsOutdatedOption, generateAIOptions, generateCopyOriginalLinkOption,
+    generateMarkAsOutdatedOptions, generateAIOptions, generateCopyOriginalLinkOption,
   ]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
@@ -548,6 +599,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         toggleView={toggleView}
         expandRow={handleExpandRow}
         t={t}
+        notDisplayColumns={[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]}
+        generatorRowClassName={(row) => generatorRowClassName(row, allColumns.current)}
       />
       {isShowRowDetailsDialog && (
         <ResourceDetailsDialog

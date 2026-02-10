@@ -8,6 +8,7 @@ import { ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
 import { Z_INDEX } from '@/constants/zIndexes';
 
 import './index.css';
+import { isFunction } from '@/utils/type-detection';
 
 class Row extends React.Component {
 
@@ -229,17 +230,19 @@ class Row extends React.Component {
 
   render() {
     const {
-      isSelected, isGroupView, index, isLastRow, lastFrozenColumnKey, height, row
+      isSelected, isGroupView, index, isLastRow, lastFrozenColumnKey, height, row,
+      generatorRowClassName, columns
     } = this.props;
     const isLocked = row._locked ? true : false;
     const cellHeight = isGroupView ? height : height - 1;
 
     const frozenCells = this.getFrozenCells();
     const columnCells = this.getColumnCells();
+    const rowClassName = generatorRowClassName && isFunction(generatorRowClassName) ? generatorRowClassName(row, columns) : '';
 
     return (
       <div
-        className={classnames('sea-metadata-table-row', {
+        className={classnames('sea-metadata-table-row', rowClassName, {
           'sea-metadata-last-table-row': isLastRow,
           'row-selected': isSelected,
           'row-locked': isLocked

@@ -3,7 +3,7 @@ import { VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE, ROW_HEIGHT_T
 
 class View {
 
-  constructor(object, columns) {
+  constructor(object, columns, notDisplayColumns = []) {
     this._id = object._id || '';
     this.type = object.type || VIEW_TYPE.TABLE;
 
@@ -34,6 +34,7 @@ class View {
     // columns
     // all columns
     this.available_columns = columns || [];
+    this.available_columns = this.available_columns.filter(c => !(notDisplayColumns.includes(c.name) || notDisplayColumns.includes(c.key)));
 
     // order display
     this.columns = this.available_columns;

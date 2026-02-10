@@ -1,5 +1,8 @@
 import { mediaUrl, server } from '@/constants';
-import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS } from './constants';
+import {
+  CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
+  CONNECTION_PREDEFINED_COLUMN_NAME,
+} from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
@@ -184,4 +187,13 @@ export const getTableName = (connection) => {
 export const isConnectionSyncCompleted = ({ status } = {}) => {
   const validStatus = initConnectionStatus(status);
   return CONNECTION_SYNC_COMPLETED_STATUS.includes(validStatus?.last_sync_status);
+};
+
+export const generatorRowClassName = (row, columns = []) => {
+  if (!row || !Array.isArray(columns) || columns.length === 0) return '';
+  const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+  if (!outdatedColumn) return '';
+  const value = getCellValueByColumn(row, outdatedColumn);
+  if (value) return 'outdated-record';
+  return '';
 };
