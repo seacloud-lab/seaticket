@@ -2,7 +2,7 @@ import {
   CellType, COLLABORATOR_COLUMN_TYPES, FILTER_COLUMN_OPTIONS, FILTER_TERM_MODIFIER_TYPE, FILTER_PREDICATE_TYPE, FILTER_ERR_MSG,
   filterTermModifierIsWithin, filterTermModifierNotWithin,
 } from '../../constants';
-import { isDateColumn, getColumnOptions } from '../column';
+import { isDateColumn, getColumnOptions, getTagsOptions } from '../column';
 
 const TERM_TYPE_MAP = {
   NUMBER: 'number',
@@ -51,7 +51,7 @@ class ValidateFilter {
    *  @param {bool} isValidTerm No longer to validate filter term if false. default as false
    *  @returns { error_message }, object
    */
-  static validate(filter, columns, isValidTerm = true) {
+  static validate(filter, columns, data = {}, isValidTerm = true) {
     const {
       column_key, filter_predicate, filter_term_modifier, filter_term,
     } = filter;
@@ -86,7 +86,7 @@ class ValidateFilter {
     if (isValidTerm) {
       const {
         error_message: term_error_message,
-      } = this.validateTerm(filter_term, filter_predicate, filter_term_modifier, filterColumn);
+      } = this.validateTerm(filter_term, filter_predicate, filter_term_modifier, filterColumn, data);
       if (term_error_message) {
         return { error_message: term_error_message };
       }
@@ -198,12 +198,12 @@ class ValidateFilter {
     return false;
   }
 
-  static validateTerm(term, predicate, modifier, filterColumn) {
+  static validateTerm(term, predicate, modifier, filterColumn, data) {
     if (this.isTermMissing(term)) {
       return { error_message: FILTER_ERR_MSG.INCOMPLETE_FILTER };
     }
 
-    if (!this.isValidTerm(term, predicate, modifier, filterColumn)) {
+    if (!this.isValidTerm(term, predicate, modifier, filterColumn, data)) {
       return { error_message: FILTER_ERR_MSG.INVALID_TERM };
     }
     return { error_message: null };
@@ -214,7 +214,7 @@ class ValidateFilter {
       || (Array.isArray(term) && term.length === 0);
   }
 
-  static isValidTerm(term, predicate, modifier, filterColumn) {
+  static isValidTerm(term, predicate, modifier, filterColumn, { tagsData } = {}) {
     switch (filterColumn.type) {
       case CellType.TEXT:{
         return this.isValidTermType(term, TERM_TYPE_MAP.STRING);
@@ -264,8 +264,7 @@ class ValidateFilter {
         // invalid filter_term if selected option is deleted
         return !!options.find((option) => term === option.id);
       }
-      case CellType.MULTIPLE_SELECT:
-      case CellType.TAGS: {
+      case CellType.MULTIPLE_SELECT: {
         if (!this.isValidTermType(term, TERM_TYPE_MAP.ARRAY)) {
           return false;
         }
@@ -273,6 +272,17 @@ class ValidateFilter {
         // contains deleted option(s)
         const options = getColumnOptions(filterColumn);
         return this.isValidSelectedOptions(term, options);
+      }
+      case CellType.TAGS: {
+        if (!this.isValidTermType(term, TERM_TYPE_MAP.ARRAY)) {
+          return false;
+        }
+
+        // contains deleted tag(s)
+        const _term = term.map(v => v + '');
+        const options = getTagsOptions(tagsData);
+        return this.isValidSelectedOptions(_term, options);
+
       }
       default: {
         return false;

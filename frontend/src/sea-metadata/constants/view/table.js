@@ -82,6 +82,7 @@ export const OVER_SCAN_COLUMNS = 10;
 export const DELETED_OPTION_BACKGROUND_COLOR = '#eaeaea';
 
 export const DELETED_OPTION_TIPS = gettext('Deleted option');
+export const DELETED_TAG_TIPS = gettext('Deleted tag');
 
 export const SUPPORT_BATCH_DOWNLOAD_TYPES = [];
 
