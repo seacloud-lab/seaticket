@@ -7,6 +7,7 @@ import { ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
 import { BAR_TYPE_CONFIG, BAR_TYPE } from '@/project/constants';
+import { useKnowledgePage } from '@/project/main-panel/knowledge-base/hooks/index';
 
 import './index.css';
 
@@ -14,8 +15,10 @@ const { projectUuid } = window.app.pageOptions;
 const HOVER_BACKGROUND = 'rgba(237, 113, 9, 0.1)';
 const DEFAULT_BACKGROUND = 'transparent';
 const ImportDialog = ({ onToggle, onClickBar }) => {
+  const { onRefresh } = useKnowledgePage();
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState([]);
+  const [previewFileName, setPreviewFileName] = useState('');
   const uploadBoxRef = useRef(null);
 
   const onQueryIOStatus = useCallback((taskId) => {
@@ -25,6 +28,7 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
           toaster.warning(gettext('Upload file is empty'));
         } else {
           setPreviewData(r?.data?.preview_rows);
+          setPreviewFileName(r?.data?.file_name);
         }
         setIsLoading(false);
       } else {
@@ -77,11 +81,17 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
   }, []);
 
   const handleSubmit = useCallback(() => {
-    if (previewData.length !== 0) {
+    if (!previewFileName) return toaster.warning(gettext('Empty files cannot be imported'));
+    knowledgeBaseAPI.commitImportExcel(projectUuid, previewFileName).then(res => {
+      toaster.success(gettext('Import successfully'));
       onClickBar([BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE].key]);
-    }
-    onToggle();
-  }, [previewData]);
+      onRefresh();
+      onToggle();
+    }).catch(err => {
+      const errorMsg = Utils.getErrorMsg(err);
+      toaster.danger(errorMsg);
+    });
+  }, [previewFileName]);
 
   return (
     <Modal isOpen={true} autoFocus={false} className="sea-qa-import-dialog" toggle={onToggle}>
@@ -142,7 +152,7 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>
+        <Button color="primary" onClick={handleSubmit}>{gettext('Import')}</Button>
       </ModalFooter>
     </Modal>
   );
