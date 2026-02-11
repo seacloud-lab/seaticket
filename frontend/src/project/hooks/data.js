@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useState } from 'react';
-import dcopy from 'deep-copy';
+import deepcopy from 'deep-copy';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { EMPTY_TABLE } from '../constants';
 import { shouldReload } from '../utils';
@@ -31,7 +31,7 @@ export const DataProvider = ({
     setData(data);
   }, []);
 
-  const getTableByName = useCallback((tableName, defaultTable = dcopy(EMPTY_TABLE)) => {
+  const getTableByName = useCallback((tableName, defaultTable = deepcopy(EMPTY_TABLE)) => {
     if (!tableName) return defaultTable;
     return data[tableName] || defaultTable;
   }, [data]);
@@ -39,15 +39,15 @@ export const DataProvider = ({
   const deleteTableByName = useCallback((tableName) => {
     if (!tableName) return;
     if (!data[tableName]) return;
-    let newData = dcopy(data);
+    let newData = deepcopy(data);
     delete newData[tableName];
     updateData(newData);
   }, [data, updateData]);
 
-  const updateTable = useCallback((tableName, update = {}, defaultTable = dcopy(EMPTY_TABLE)) => {
+  const updateTable = useCallback((tableName, update = {}, defaultTable = deepcopy(EMPTY_TABLE)) => {
     if (!tableName) return;
     setData(data => {
-      const newData = dcopy(data);
+      const newData = deepcopy(data);
       let table = newData[tableName] || defaultTable;
       newData[tableName] = { ...table, ...update };
       newData.version = newData.version + 1;
@@ -58,7 +58,7 @@ export const DataProvider = ({
   const markTablesViewExpired = useCallback((tableNames, callback) => {
     if (!Array.isArray(tableNames) || tableNames.length === 0) return;
     setData(data => {
-      const newData = dcopy(data);
+      const newData = deepcopy(data);
       tableNames.forEach(tableName => {
         const table = newData[tableName];
         if (table) {
@@ -203,7 +203,7 @@ export const DataProvider = ({
   const clearViewRows = useCallback((tableName = '', viewID = '', api, isBuiltIn = false) => {
     return api().then(res => {
       setData(data => {
-        const newData = dcopy(data);
+        const newData = deepcopy(data);
         let table = newData[tableName];
         if (!table) return data;
         const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
@@ -240,7 +240,7 @@ export const DataProvider = ({
 
   const duplicateView = useCallback((tableName, api) => {
     return api().then(res => {
-      let table = data[tableName] ? dcopy(data[tableName]) : null;
+      let table = data[tableName] ? deepcopy(data[tableName]) : null;
       if (table) {
         const view = res.data.view;
         let navigation = table.navigation.slice(0);
@@ -287,8 +287,8 @@ export const DataProvider = ({
       });
       view_map[view_id] = { ...view, rows: rowIds, columns: columns.map(c => c.key), timestamp: Date.now() };
       setData(data => {
-        const newData = dcopy(data);
-        let table = newData[tableName] || dcopy(EMPTY_TABLE);
+        const newData = deepcopy(data);
+        let table = newData[tableName] || deepcopy(EMPTY_TABLE);
         newData[tableName] = { ...table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records };
 
         if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
@@ -388,7 +388,7 @@ export const DataProvider = ({
     if (!Array.isArray(rowIds) || rowIds.length === 0) return;
     const rowIdsString = rowIds.map(r => r + '');
     setData(data => {
-      const newData = dcopy(data);
+      const newData = deepcopy(data);
       const table = newData[tableName];
       if (!table) return data;
       let id_row_map = { ...table.id_row_map };
@@ -449,7 +449,7 @@ export const DataProvider = ({
 
   const initDataWithInsertRow = useCallback((data, tableName) => {
     let isChanged = false;
-    const newData = dcopy(data);
+    const newData = deepcopy(data);
     const table = newData[tableName];
     if (!table) return data;
     if (hasOwnProperty(table, 'id_view_map')) {
@@ -511,7 +511,7 @@ export const DataProvider = ({
     if (!Array.isArray(rowIds) || rowIds.length === 0) return;
     const rowIdsString = rowIds.map(r => r + '');
     setData(data => {
-      const newData = dcopy(data);
+      const newData = deepcopy(data);
       const table = newData[tableName];
       if (!table) return data;
       if (hasOwnProperty(table, 'id_view_map')) {
