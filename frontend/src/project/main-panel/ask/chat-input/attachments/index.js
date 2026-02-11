@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { IconButton } from '@/components';
 import { Attachments } from '../../components';
 
 import './index.css';
-import { IconButton } from '@/components';
 
 const AttachmentsFormatter = ({ projectUuid, value = [], onRemove }) => {
   const validValue = Array.isArray(value) ? value.filter(Boolean) : [];

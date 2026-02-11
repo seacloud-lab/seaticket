@@ -1,4 +1,4 @@
-import dcopy from 'deep-copy';
+import deepcopy from 'deep-copy';
 import { CellType, SEQUENCE_COLUMN_WIDTH } from '../../constants';
 import context from '../../context';
 import { getCellValueByColumn } from '../cell';
@@ -173,7 +173,7 @@ export const recalculate = (columns, allColumns) => {
 };
 
 export const recalculateColumnMetricsByResizeColumn = (columnMetrics, columnKey, width) => {
-  let newColumnMetrics = dcopy(columnMetrics);
+  let newColumnMetrics = deepcopy(columnMetrics);
 
   const columnIndex = columnMetrics.columns.findIndex((column) => column.key === columnKey);
   newColumnMetrics.columns[columnIndex] = { ...columnMetrics.columns[columnIndex], width };

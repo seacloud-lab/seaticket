@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isHotkey from 'is-hotkey';
+import deepcopy from 'deep-copy';
 import { FormGroup, Label, UncontrolledPopover } from 'reactstrap';
 import classnames from 'classnames';
 import CommonAddTool from '@/components/customize-add-tool';
@@ -14,7 +15,6 @@ import context from '@/sea-metadata/context';
 import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
-import dcopy from 'deep-copy';
 
 /**
  * filter = {
@@ -34,7 +34,7 @@ class FilterPopover extends Component {
       filterConjunction: props.filterConjunction || 'And',
     };
 
-    this.initData = dcopy(initData);
+    this.initData = deepcopy(initData);
     this.state = {
       basicFilters: initData.basicFilters,
       filters: initData.filters,

@@ -3,9 +3,9 @@ import classnames from 'classnames';
 import { IconButton } from '@/components';
 import SimpleLongTextFormatter from '../../../connections/components/cell-formatter/long-text-formatter';
 import { useDocuments } from '../../hooks';
+import { gettext } from '@/constants';
 
 import './index.css';
-import { gettext } from '@/constants';
 
 const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isShowPopover, onLinkClick, onHrefClick, attributes, children, editor }) => {
   const { openDocument } = useDocuments();
