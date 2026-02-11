@@ -103,7 +103,7 @@ def portal_view(request, project_uuid, page=None):
     }
 
     need_password = False
-    if (not has_ticket_access) and enable_password_protection and allow_anonymous:
+    if enable_password_protection and allow_anonymous:
         encoded_password = portal_settings.get('password')
         verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
         need_password = not (verified_token and encoded_password and verified_token == encoded_password)
@@ -235,6 +235,13 @@ def portal_edit_view(request, project_uuid, page=None):
             project_settings = {}
     portal_settings = project_settings.get('portal', {})
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
+    allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
+    enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+
+    if allow_anonymous and enable_password_protection:
+        encoded_password = portal_settings.get('password')
+        if encoded_password:
+            request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
 
     return_dict = {
         'version': SEAQA_VERSION,
