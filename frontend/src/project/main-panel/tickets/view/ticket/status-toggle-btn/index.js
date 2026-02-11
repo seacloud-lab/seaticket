@@ -65,7 +65,7 @@ const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, 
         }
         return {
           value,
-          icon,
+          // icon,
           name,
           label: (
             <>
