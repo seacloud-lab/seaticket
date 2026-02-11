@@ -58,8 +58,16 @@ def portal_view(request, project_uuid, page=None):
 
     ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
     is_authenticated_user = bool(getattr(request, 'user', None) and request.user.is_authenticated)
+
+    same_org = False
+    if is_authenticated_user:
+        try:
+            same_org = check_same_org_permission(request.user, project.workspace)
+        except Exception:
+            same_org = False
+
+    has_ticket_access = ext_is_valid or same_org
     is_logged_in = is_authenticated_user or ext_is_valid
-    is_anonymous = not is_logged_in
 
     if not allow_anonymous:
         if not is_logged_in:
@@ -68,11 +76,15 @@ def portal_view(request, project_uuid, page=None):
                 'project_name': project.name,
                 'media_url': MEDIA_URL,
             })
-        allow = ext_is_valid or (is_authenticated_user and check_same_org_permission(request.user, project.workspace))
-        if not allow:
+        if not has_ticket_access:
             return render_error(request, _('Permission denied'))
 
-    username = request.user.username if is_authenticated_user else (ext_username if ext_is_valid else 'Anonymous')
+    is_anonymous = allow_anonymous and (not has_ticket_access)
+
+    if has_ticket_access:
+        username = request.user.username if is_authenticated_user else ext_username
+    else:
+        username = ''
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -91,7 +103,7 @@ def portal_view(request, project_uuid, page=None):
     }
 
     need_password = False
-    if not is_logged_in and enable_password_protection and allow_anonymous:
+    if (not has_ticket_access) and enable_password_protection and allow_anonymous:
         encoded_password = portal_settings.get('password')
         verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
         need_password = not (verified_token and encoded_password and verified_token == encoded_password)
@@ -144,7 +156,7 @@ def portal_anonymous_validate(request, project_uuid):
             'project_uuid': project_uuid,
             'media_url': MEDIA_URL,
             'is_edit_mode': False,
-            'username': 'Anonymous',
+            'username': '',
             'portal': {
                 'allow_anonymous': allow_anonymous,
                 'enable_password_protection': enable_password_protection,
