@@ -709,8 +709,7 @@ CREATE TABLE `project_external_users` (
   `created_at` datetime(6) NOT NULL,
   `activated` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `project_external_users_email_project_uuid_uniq` (`email`,`project_uuid`),
+  UNIQUE KEY `project_external_project_uuid_users_email_uniq` (`project_uuid`,`email`),
   KEY `project_external_users_email_idx` (`email`),
-  KEY `project_external_username_idx` (`username`),
-  KEY `project_external_users_project_uuid_idx` (`project_uuid`)
+  KEY `project_external_username_idx` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
