@@ -16,6 +16,11 @@
   gap: 8px;
 }
 
+.sea-qa-project-ticket-state-toggle-popover.option-editor-popover .option-editor-content .option-editor-option-content {
+  align-items: flex-start;
+  gap: 8px;
+}
+
 .sea-qa-project-ticket-state-toggle-popover .sea-qa-project-ticket-state-option-icon {
   height: 14px;
   width: 14px;
