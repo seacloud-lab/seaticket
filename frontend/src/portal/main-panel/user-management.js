@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Nav, NavItem, NavLink, Button, Input, Label } from 'reactstrap';
-import { Icon, toaster } from '@/components';
+import { Nav, NavItem, NavLink, Button, Input, Label, FormGroup } from 'reactstrap';
+import { EmptyTip, toaster, IconButton } from '@/components';
 import dayjs from '@/utils/dayjs';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
@@ -75,10 +75,11 @@ const UserManagement = ({ projectUuid }) => {
       </div>
       <div className="portal-settings-dialog-main">
         {activeTab === Tabs.USERS && (
-          <div className="p-3">
-            <div className="mb-3 d-flex" style={{ gap: 8 }}>
-              <Input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={gettext('Search users')} />
+          <div className="p-3 w-100">
+            <div className="mb-3">
+              <Input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={gettext('Search users')} />
             </div>
+            {users.length > 0 &&
             <table className="table table-sm">
               <thead>
                 <tr>
@@ -92,34 +93,47 @@ const UserManagement = ({ projectUuid }) => {
                   .filter(u => !query || (u.name || '').toLowerCase().includes(query.toLowerCase()) || (u.email || '').toLowerCase().includes(query.toLowerCase()))
                   .map(u => (
                     <tr key={u.username}>
-                      <td>
+                      <td className="align-middle">
                         <div className="d-flex align-items-center" style={{ gap: 8 }}>
                           <span className="text-truncate" title={u.name || u.email}>{u.name || u.email}</span>
                         </div>
                       </td>
-                      <td className="text-center">{u.activated ? gettext('Activated') : gettext('Inactive')}</td>
-                      <td className="text-right">
-                        <button className="btn btn-link p-0" onClick={() => portalAPI.deleteExternalUser(projectUuid, u.email).then(() => loadUsers()).catch(() => toaster.danger(gettext('Delete failed')))} title={gettext('Delete')}>
-                          <Icon symbol="delete" />
-                        </button>
+                      <td className="text-center align-middle">{u.activated ? gettext('Activated') : gettext('Inactive')}</td>
+                      <td className="text-right operation-btns align-middle">
+                        <IconButton icon="close" onClick={() => portalAPI.deleteExternalUser(projectUuid, u.email).then(() => loadUsers()).catch(() => toaster.danger(gettext('Delete failed')))} title={gettext('Delete')} />
                       </td>
                     </tr>
                   ))}
               </tbody>
             </table>
+            }
+            {users.length === 0 &&
+            <div className="h-100">
+              <EmptyTip text={gettext('No users')} />
+            </div>
+            }
           </div>
         )}
         {activeTab === Tabs.INVITE_LINKS && (
-          <div className="p-3">
+          <div className="p-3 w-100">
             <div className="mb-3">
-              <Label className="mr-2">{gettext('Email')}</Label>
-              <div className="d-flex" style={{ gap: 8 }}>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={gettext('Enter email')} />
+              <Label for="email" className="mr-2">{gettext('Email')}</Label>
+              <FormGroup className="d-flex">
+                <Input
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={gettext('Enter email')}
+                  className="mr-2"
+                  style={{ maxWidth: 'calc(100% - 100px)' }}
+                />
                 <Button color="primary" disabled={isSubmitting || !email} onClick={createLink} className={isSubmitting ? 'btn-loading' : ''}>
-                  {gettext('Generate link')}
+                  {gettext('Generate')}
                 </Button>
-              </div>
+              </FormGroup>
             </div>
+            {list.length > 0 &&
             <div className="mt-3">
               <table className="table table-sm">
                 <thead>
@@ -133,21 +147,17 @@ const UserManagement = ({ projectUuid }) => {
                 <tbody>
                   {list.map(item => (
                     <tr key={item.token}>
-                      <td>
-                        <span className="text-truncate" title={item.email} style={{ maxWidth: 200, display: 'inline-block' }}>
+                      <td className="align-middle">
+                        <span className="text-truncate d-inline-block" title={item.email} style={{ maxWidth: 200 }}>
                           {item.email}
                         </span>
                       </td>
-                      <td className="text-truncate" title={item.link}>{shorten(item.link)}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>{item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}</td>
-                      <td className="text-right">
-                        <div className="d-inline-flex" style={{ gap: 8 }}>
-                          <button className="btn btn-link p-0" onClick={() => onCopy(item.link)} title={gettext('Copy')}>
-                            <Icon symbol="copy" />
-                          </button>
-                          <button className="btn btn-link p-0" onClick={() => portalAPI.revokeExternalInvitation(projectUuid, item.token).then(() => loadInvites())} title={gettext('Disable')}>
-                            <Icon symbol="revoke" />
-                          </button>
+                      <td className="text-truncate align-middle" title={item.link}>{shorten(item.link)}</td>
+                      <td className="align-middle" style={{ whiteSpace: 'nowrap' }}>{item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}</td>
+                      <td className="text-right operation-btns align-middle">
+                        <div className="d-inline-flex align-items-center" style={{ gap: 8 }}>
+                          <IconButton icon="copy" onClick={() => onCopy(item.link)} title={gettext('Copy')} />
+                          <IconButton icon="close" onClick={() => portalAPI.revokeExternalInvitation(projectUuid, item.token).then(() => loadInvites())} title={gettext('Delete')} />
                         </div>
                       </td>
                     </tr>
@@ -155,6 +165,12 @@ const UserManagement = ({ projectUuid }) => {
                 </tbody>
               </table>
             </div>
+            }
+            {list.length === 0 &&
+            <div className="h-100">
+              <EmptyTip text={gettext('No invitation links')} />
+            </div>
+            }
           </div>
         )}
       </div>

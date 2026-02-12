@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Modal, ModalBody, ModalHeader } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
+import CustomModalHeader from '../../components/modal-header';
 import { Icon } from '../../components';
 import { gettext } from '@/constants';
 import Settings from '../main-panel/settings';
@@ -58,7 +59,7 @@ const LeftBar = () => {
       </div>
       {isShowSettings && (
         <Modal isOpen={true} toggle={closeSettings} className="portal-settings-dialog">
-          <ModalHeader toggle={closeSettings}>{gettext('Settings')}</ModalHeader>
+          <CustomModalHeader toggle={closeSettings}>{gettext('Settings')}</CustomModalHeader>
           <ModalBody>
             <Settings />
           </ModalBody>
@@ -66,7 +67,7 @@ const LeftBar = () => {
       )}
       {isShowInvite && (
         <Modal isOpen={true} toggle={closeInvite} className="portal-settings-dialog">
-          <ModalHeader toggle={closeInvite}>{gettext('User and role management')}</ModalHeader>
+          <CustomModalHeader toggle={closeInvite}>{gettext('User and role management')}</CustomModalHeader>
           <ModalBody>
             <UserManagement projectUuid={window.app.pageOptions.projectUuid} />
           </ModalBody>
