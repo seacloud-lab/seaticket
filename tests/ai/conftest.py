@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from rest_framework.test import APIRequestFactory
 
-from seahub.project.models import Projects, Workspaces
+from seahub.project.models import Projects, Workspaces, ProjectConnections
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def real_project(db):
 
 
 @pytest.fixture
-def auth_user(real_project):
+def project_creator(real_project):
     owner = real_project.creator
     return SimpleNamespace(
         id=1,
@@ -46,4 +46,52 @@ def auth_user(real_project):
         is_authenticated=True,
         is_active=True,
         org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True),
+    )
+
+@pytest.fixture
+def auth_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=2,
+        pk=2,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True)
+    )
+
+@pytest.fixture
+def no_org_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=3,
+        pk=3,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=None
+    )
+
+
+@pytest.fixture
+def site_connection(real_project, project_creator):
+    return ProjectConnections.objects.create(
+        username=project_creator.username,
+        project=real_project,
+        connection_type='site',
+        name='site-conn',
+        config={},
+    )
+
+
+@pytest.fixture
+def github_issue_connection(real_project, project_creator):
+    return ProjectConnections.objects.create(
+        username=project_creator.username,
+        project=real_project,
+        connection_type='github_issue',
+        name='gh-conn',
+        config={},
     )

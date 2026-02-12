@@ -17,25 +17,20 @@ from seahub.project.models import Projects
 @pytest.mark.django_db
 class TestWorkspacesView:
 
-    def test_get_detail_invalid(self, factory, auth_user):
+    def test_get_detail_invalid(self, factory, project_creator):
         request = factory.get('/api/v1/workspaces/', {'detail': 'x'})
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = WorkspacesView.as_view()(request)
+        resp = WorkspacesView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_get_detail_false_success(self, factory, auth_user, real_project):
+    def test_get_detail_false_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.get('/api/v1/workspaces/', {'detail': 'false'})
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.OrgGroup.objects.get_org_groups_by_user', return_value=[]), \
-                patch('seahub.api2.endpoints.project.ProjectGroupOrders.objects.filter') as mock_filter:
-            mock_filter.return_value.first.return_value = None
-            resp = WorkspacesView.as_view()(request)
+        resp = WorkspacesView.as_view()(request)
 
         assert resp.status_code == 200
         assert 'workspace_list' in resp.data
@@ -46,27 +41,25 @@ class TestWorkspacesView:
 @pytest.mark.django_db
 class TestProjectsView:
 
-    def test_post_permission_denied(self, factory, auth_user):
+    def test_post_permission_denied(self, factory, project_creator):
         request = factory.post('/api/v1/projects/', data={'name': 'p1'}, format='multipart')
-        user_dict = dict(auth_user.__dict__)
+        user_dict = dict(project_creator.__dict__)
         user_dict['permissions'] = SimpleNamespace(can_add_project=lambda: False)
         request.user = SimpleNamespace(**user_dict)
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectsView.as_view()(request)
+        resp = ProjectsView.as_view()(request)
 
         assert resp.status_code == 403
 
-    def test_post_workspace_not_found(self, factory, auth_user):
+    def test_post_workspace_not_found(self, factory, project_creator):
         request = factory.post('/api/v1/projects/', data={'workspace_id': 999999, 'name': 'p1'}, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectsView.as_view()(request)
+        resp = ProjectsView.as_view()(request)
 
         assert resp.status_code == 404
 
-    def test_post_success(self, factory, auth_user, real_project):
+    def test_post_success(self, factory, project_creator, real_project):
         project = real_project
         workspace = project.workspace
         request = factory.post(
@@ -74,13 +67,11 @@ class TestProjectsView:
             data={'workspace_id': workspace.id, 'name': 'new-proj'},
             format='multipart',
         )
-        request.user = auth_user
+        request.user = project_creator
 
         seadb = MagicMock()
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_limit', return_value=True), \
-                patch('seahub.api2.endpoints.project.SeaDBAPI', return_value=seadb), \
+        with patch('seahub.api2.endpoints.project.SeaDBAPI', return_value=seadb), \
                 patch('seahub.api2.endpoints.project.init_ticket_seadb_table'), \
                 patch('seahub.api2.endpoints.project.init_knowledge_base_seadb_table'), \
                 patch('seahub.api2.endpoints.project.init_tag_seadb_table'):
@@ -93,26 +84,24 @@ class TestProjectsView:
 @pytest.mark.django_db
 class TestProjectView:
 
-    def test_put_name_invalid(self, factory, auth_user, real_project):
+    def test_put_name_invalid(self, factory, project_creator, real_project):
         project = real_project
         request = factory.put(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={},
             format='json',
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 400
 
-    def test_put_workspace_not_found(self, factory, auth_user):
+    def test_put_workspace_not_found(self, factory, project_creator):
         request = factory.put('/api/v1/workspace/999999/project/', data={'name': 'x'}, format='json')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectView.as_view()(request, workspace_id='999999')
+        resp = ProjectView.as_view()(request, workspace_id='999999')
 
         assert resp.status_code == 404
 
@@ -125,53 +114,47 @@ class TestProjectView:
         )
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_admin_permission', return_value=False):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 403
 
-    def test_put_success(self, factory, auth_user, real_project):
+    def test_put_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.put(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={'name': project.name, 'new_name': 'renamed'},
             format='json',
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 200
         assert 'project' in resp.data
 
-    def test_delete_name_invalid(self, factory, auth_user, real_project):
+    def test_delete_name_invalid(self, factory, project_creator, real_project):
         project = real_project
         request = factory.delete(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={},
             format='json',
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 400
 
-    def test_delete_success(self, factory, auth_user, real_project):
+    def test_delete_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.delete(
             f'/api/v1/workspace/{project.workspace.id}/project/',
             data={'name': project.name},
             format='json',
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.convert_project_trash_names', return_value=f"trash-{project.name}"):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 200
         assert resp.data.get('success') is True
@@ -180,41 +163,37 @@ class TestProjectView:
 @pytest.mark.django_db
 class TestSearchView:
 
-    def test_post_project_uuid_invalid(self, factory, auth_user):
+    def test_post_project_uuid_invalid(self, factory, project_creator):
         request = factory.post('/api/v1/search/', data={'workspace_id': 1, 'query': 'x'}, format='json')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = SearchView.as_view()(request)
+        resp = SearchView.as_view()(request)
 
         assert resp.status_code == 400
 
-    def test_post_permission_denied(self, factory, auth_user, real_project):
+    def test_post_permission_denied(self, factory, no_org_user, real_project):
         project = real_project
         request = factory.post(
             '/api/v1/search/',
-            data={'project_uuid': str(project.uuid), 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
+            data={'project_uuid': project.uuid, 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
             format='json',
         )
-        request.user = auth_user
+        request.user = no_org_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.check_project_permission', return_value=False):
-            resp = SearchView.as_view()(request)
+        resp = SearchView.as_view()(request)
 
         assert resp.status_code == 403
 
-    def test_post_success(self, factory, auth_user, real_project):
+    def test_post_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             '/api/v1/search/',
-            data={'project_uuid': str(project.uuid), 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
+            data={'project_uuid': project.uuid, 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
             format='json',
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.api2.endpoints.project.search', return_value=[{'id': 1}]):
+        with patch('seahub.api2.endpoints.project.search', return_value=[{'id': 1}]):
             resp = SearchView.as_view()(request)
 
         assert resp.status_code == 200
@@ -224,12 +203,12 @@ class TestSearchView:
 @pytest.mark.django_db
 class TestTrashProjectsView:
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.get('/api/v1/trash-projects/')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = TrashProjectsView.as_view()(request)
 
@@ -241,34 +220,33 @@ class TestTrashProjectsView:
 @pytest.mark.django_db
 class TestTrashProjectView:
 
-    def test_put_project_not_found(self, factory, auth_user):
+    def test_put_project_not_found(self, factory, project_creator):
         request = factory.put('/api/v1/trash-projects/p1/', data={}, format='json')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = TrashProjectView.as_view()(request, project_uuid='00000000-0000-0000-0000-000000000000')
 
         assert resp.status_code == 404
 
-    def test_put_permission_denied(self, factory, auth_user, real_project):
+    def test_put_permission_denied(self, factory, project_creator, real_project):
         project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.put(f'/api/v1/trash-projects/{project.uuid}/', data={}, format='json')
-        request.user = SimpleNamespace(**{**auth_user.__dict__, 'username': 'other@example.com'})
+        request.user = SimpleNamespace(**{**project_creator.__dict__, 'username': 'other@example.com'})
 
-        resp = TrashProjectView.as_view()(request, project_uuid=str(project.uuid))
+        resp = TrashProjectView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 403
 
-    def test_put_success(self, factory, auth_user, real_project):
+    def test_put_success(self, factory, project_creator, real_project):
         project = real_project
         Projects.objects.filter(id=project.id).update(deleted=True)
 
         request = factory.put(f'/api/v1/trash-projects/{project.uuid}/', data={}, format='json')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.project.restore_trash_project_name', return_value='restored'):
-            resp = TrashProjectView.as_view()(request, project_uuid=str(project.uuid))
+        resp = TrashProjectView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data.get('success') is True

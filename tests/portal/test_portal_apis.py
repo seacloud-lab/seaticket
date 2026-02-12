@@ -30,48 +30,48 @@ def _set_portal_settings(project, *, allow_anonymous=False, enable_password_prot
 
 class TestPortalTicketsView:
 
-    def test_post_missing_title(self, factory, auth_user, real_project):
+    def test_post_missing_title(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data={'content': json.dumps({'text': 'x'})}, format='multipart')
-        request.user = auth_user
-
-        resp = PortalTicketsView.as_view()(request, project_uuid='p1')
-
-        assert resp.status_code == 400
-
-    def test_post_missing_content(self, factory, auth_user, real_project):
-        project = real_project
-        request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data={'title': 't'}, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = PortalTicketsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 400
 
-    def test_post_invalid_content_json(self, factory, auth_user, real_project):
+    def test_post_missing_content(self, factory, project_creator, real_project):
         project = real_project
-        request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data={'title': 't', 'content': '{'}, format='multipart')
-        request.user = auth_user
+        request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data={'title': 't'}, format='multipart')
+        request.user = project_creator
 
-        resp = PortalTicketsView.as_view()(request, project_uuid='p1')
+        resp = PortalTicketsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 400
 
-    def test_post_priority_invalid(self, factory, auth_user, real_project):
+    def test_post_invalid_content_json(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data={'title': 't', 'content': '{'}, format='multipart')
+        request.user = project_creator
+
+        resp = PortalTicketsView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_priority_invalid(self, factory, project_creator, real_project):
         project = real_project
         data = {'title': 't', 'content': json.dumps({'text': 'x'}), 'priority': 'x'}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
-        resp = PortalTicketsView.as_view()(request, project_uuid='p1')
+        resp = PortalTicketsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 400
 
-    def test_post_creation_interval(self, factory, auth_user, real_project):
+    def test_post_creation_interval(self, factory, project_creator, real_project):
         project = real_project
         data = {'title': 't', 'content': json.dumps({'text': 'x'})}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=False):
@@ -79,12 +79,12 @@ class TestPortalTicketsView:
 
         assert resp.status_code == 429
 
-    def test_post_upload_files_failed(self, factory, auth_user, real_project):
+    def test_post_upload_files_failed(self, factory, project_creator, real_project):
         project = real_project
         content = {'text': 'x', 'images': ['http://x/a.png']}
         data = {'title': 't', 'content': json.dumps(content)}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
@@ -93,11 +93,11 @@ class TestPortalTicketsView:
 
         assert resp.status_code == 500
 
-    def test_post_insert_rows_returns_bad_pks(self, factory, auth_user, real_project):
+    def test_post_insert_rows_returns_bad_pks(self, factory, project_creator, real_project):
         project = real_project
         data = {'title': 't', 'content': json.dumps({'text': 'x'})}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         seadb_api.insert_rows.return_value = {'pks': []}
@@ -108,11 +108,11 @@ class TestPortalTicketsView:
 
         assert resp.status_code == 500
 
-    def test_post_internal_error(self, factory, auth_user, real_project):
+    def test_post_internal_error(self, factory, project_creator, real_project):
         project = real_project
         data = {'title': 't', 'content': json.dumps({'text': 'x'})}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         seadb_api.insert_rows.side_effect = Exception('boom')
@@ -123,12 +123,12 @@ class TestPortalTicketsView:
 
         assert resp.status_code == 500
 
-    def test_post_success(self, factory, auth_user, real_project):
+    def test_post_success(self, factory, project_creator, real_project):
         project = real_project
         content = {'text': 'x', 'images': ['http://x/a.png']}
         data = {'title': 't', 'content': json.dumps(content), 'priority': '3', 'tags': json.dumps(['a'])}
         request = factory.post(f"/api/v1/portal/{project.uuid}/tickets/", data=data, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         seadb_api.insert_rows.return_value = {'pks': [1]}
@@ -145,31 +145,32 @@ class TestPortalTicketsView:
 
 class TestPortalMyTicketsView:
 
-    def test_post_start_invalid(self, factory, auth_user, real_project):
+    def test_post_start_invalid(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(f"/api/v1/portal/{project.uuid}/my-tickets/", data={'start': '-1'}, format='multipart')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = PortalMyTicketsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 400
 
-    def test_post_project_not_found(self, factory, auth_user):
-        request = factory.post('/api/v1/portal/p1/my-tickets/', data={}, format='multipart')
-        request.user = auth_user
+    def test_post_project_not_found(self, factory, project_creator):
+        project_uuid = '00000000-0000-0000-0000-000000000000'
+        request = factory.post(f"/api/v1/portal/{project_uuid}/my-tickets/", data={}, format='multipart')
+        request.user = project_creator
 
-        resp = PortalMyTicketsView.as_view()(request, project_uuid='p1')
+        resp = PortalMyTicketsView.as_view()(request, project_uuid=project_uuid)
 
         assert resp.status_code == 404
 
-    def test_post_sql_option_invalid(self, factory, auth_user, real_project):
+    def test_post_sql_option_invalid(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/my-tickets/",
             data={'view_id': 'open', 'config': json.dumps({'basic_filters': []})},
             format='multipart'
         )
-        request.user = auth_user
+        request.user = project_creator
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.list_my_tickets', side_effect=SQLGeneratorOptionInvalidError('bad')):
@@ -178,14 +179,14 @@ class TestPortalMyTicketsView:
         assert resp.status_code == 200
         assert 'error_msg' in resp.data
 
-    def test_post_internal_error(self, factory, auth_user, real_project):
+    def test_post_internal_error(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/my-tickets/",
             data={'view_id': 'open', 'config': json.dumps({'basic_filters': []})},
             format='multipart'
         )
-        request.user = auth_user
+        request.user = project_creator
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.list_my_tickets', side_effect=Exception('boom')):
@@ -193,14 +194,14 @@ class TestPortalMyTicketsView:
 
         assert resp.status_code == 500
 
-    def test_post_success_appends_creator_filter(self, factory, auth_user, real_project):
+    def test_post_success_appends_creator_filter(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/my-tickets/",
             data={'view_id': 'open', 'config': json.dumps({'basic_filters': []})},
             format='multipart'
         )
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
 
@@ -219,30 +220,28 @@ class TestPortalMyTicketsView:
 @pytest.mark.django_db
 class TestPortalTagsView:
 
-    def test_get_start_invalid(self, factory, auth_user, real_project):
+    def test_get_start_invalid(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/tags/", {'start': '-1'})
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True):
-            resp = PortalTagsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalTagsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/tags/")
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {'metadata': {'columns': []}, 'results': [{'id': 1}]}
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True), \
-                patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
             resp = PortalTagsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -252,27 +251,25 @@ class TestPortalTagsView:
 @pytest.mark.django_db
 class TestPortalKnowledgeBaseViewsView:
 
-    def test_get_feature_not_enabled(self, factory, auth_user, real_project):
+    def test_get_feature_not_enabled(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/views/")
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True):
-            resp = PortalKnowledgeBaseViewsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalKnowledgeBaseViewsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 403
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/views/")
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True), \
-                patch('seahub.portal.apis.KnowledgeBaseViews.objects.list_views', return_value=[{'_id': 'v1'}]):
+        with patch('seahub.portal.apis.KnowledgeBaseViews.objects.list_views', return_value=[{'_id': 'v1'}]):
             resp = PortalKnowledgeBaseViewsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -282,42 +279,39 @@ class TestPortalKnowledgeBaseViewsView:
 @pytest.mark.django_db
 class TestPortalKnowledgeBaseRecordsView:
 
-    def test_get_missing_view_id(self, factory, auth_user, real_project):
+    def test_get_missing_view_id(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/")
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True):
-            resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
 
-    def test_get_feature_not_enabled(self, factory, auth_user, real_project):
+    def test_get_feature_not_enabled(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/", {'view_id': 'v1'})
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True):
-            resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 403
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/", {'view_id': 'v1', 'start': 'a', 'limit': 'b'})
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         view = Mock()
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True), \
-                patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.KnowledgeBaseViews.objects.get_view', return_value=view), \
                 patch('seahub.portal.apis.list_knowledge_base_records', return_value=([{'_pk': 1}], ['c1'])):
             resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
@@ -329,12 +323,12 @@ class TestPortalKnowledgeBaseRecordsView:
 @pytest.mark.django_db
 class TestPortalTicketMetadataView:
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/tickets/meta/")
-        request.user = auth_user
+        request.user = project_creator
 
         seadb_api = Mock()
         seadb_api.get_base_metadata.return_value = {'tables': []}
@@ -347,8 +341,7 @@ class TestPortalTicketMetadataView:
             ]
         }
 
-        with patch('seahub.api2.permissions.check_same_org_permission', return_value=True), \
-                patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_current_table_metadata', return_value=ticket_meta):
             resp = PortalTicketMetadataView.as_view()(request, project_uuid=str(project.uuid))
 
@@ -361,24 +354,23 @@ class TestPortalTicketMetadataView:
 @pytest.mark.django_db
 class TestPortalSettingsView:
 
-    def test_get_project_not_found(self, factory, auth_user):
-        request = factory.get('/api/v1/portal/p1/settings/')
-        request.user = auth_user
+    def test_get_project_not_found(self, factory, project_creator):
+        project_uuid = '00000000-0000-0000-0000-000000000000'
+        request = factory.get(f"/api/v1/portal/{project_uuid}/settings/")
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = PortalSettingsView.as_view()(request, project_uuid='p1')
+        resp = PortalSettingsView.as_view()(request, project_uuid=project_uuid)
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=True, enable_password_protection=False, show_knowledge_base=True)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/settings/")
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True):
-            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
@@ -389,50 +381,42 @@ class TestPortalSettingsView:
         request = factory.post(f"/api/v1/portal/{project.uuid}/settings/", data={'allow_anonymous': 1}, format='json')
         request.user = auth_user
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.portal.apis.check_project_admin_permission', return_value=False):
-            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 403
 
-    def test_post_invalid_params(self, factory, auth_user, real_project):
+    def test_post_invalid_params(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(f"/api/v1/portal/{project.uuid}/settings/", data={'allow_anonymous': 'x'}, format='json')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.portal.apis.check_project_admin_permission', return_value=True):
-            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
 
-    def test_post_password_too_short(self, factory, auth_user, real_project):
+    def test_post_password_too_short(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
             data={'allow_anonymous': 1, 'enable_password_protection': 1, 'password': 'short'},
             format='json'
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.portal.apis.check_project_admin_permission', return_value=True):
-            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
 
-    def test_post_success(self, factory, auth_user, real_project):
+    def test_post_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
             data={'allow_anonymous': 1, 'enable_password_protection': 0, 'show_knowledge_base': 1},
             format='json'
         )
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.utils.decorators.is_org_context', return_value=True), \
-                patch('seahub.portal.apis.check_project_admin_permission', return_value=True):
-            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
         assert resp.data['success'] is True

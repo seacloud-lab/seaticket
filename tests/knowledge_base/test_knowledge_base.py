@@ -4,9 +4,7 @@ Unit tests for Knowledge Base API endpoints.
 """
 import json
 import pytest
-from unittest.mock import patch, MagicMock
-from django.urls import reverse
-
+from unittest.mock import patch
 
 def get_knowledge_bases_url(project_uuid):
     """Get URL for knowledge bases list/create/delete endpoint."""
@@ -26,22 +24,22 @@ class TestKnowledgeBasesPost:
     """Tests for POST /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_post_non_org_context_returns_403(
-        self, api_client, project_uuid, mock_org_context_false
+        self, api_client_no_org, project_uuid
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_bases_url(project_uuid)
         data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
-        response = api_client.post(url, data, format='json')
+        response = api_client_no_org.post(url, data, format='json')
 
         assert response.status_code == 403
         assert 'Feature is not enabled' in response.data['error_msg']
 
     def test_post_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid_none
+        self, api_client, missing_project_uuid
     ):
         """Test that non-existent project returns 404."""
-        url = get_knowledge_bases_url(project_uuid)
+        url = get_knowledge_bases_url(missing_project_uuid)
         data = {'title': 'Test Q', 'content': {'text': 'Test A'}}
 
         response = api_client.post(url, data, format='json')
@@ -50,21 +48,19 @@ class TestKnowledgeBasesPost:
         assert 'not found' in response.data['error_msg']
 
     def test_post_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_denied
+        self, api_client_other, project_uuid
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_bases_url(project_uuid)
         data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
-        response = api_client.post(url, data, format='json')
+        response = api_client_other.post(url, data, format='json')
 
         assert response.status_code == 403
         assert 'Permission denied' in response.data['error_msg']
 
     def test_post_missing_title_returns_400(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted
+        self, api_client, project_uuid
     ):
         """Test that missing title returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -76,8 +72,7 @@ class TestKnowledgeBasesPost:
         assert 'title invalid' in response.data['error_msg']
 
     def test_post_missing_content_returns_400(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted
+        self, api_client, project_uuid
     ):
         """Test that missing content returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -89,8 +84,7 @@ class TestKnowledgeBasesPost:
         assert 'content invalid' in response.data['error_msg']
 
     def test_post_empty_content_returns_400(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted
+        self, api_client, project_uuid
     ):
         """Test that empty content returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -102,8 +96,8 @@ class TestKnowledgeBasesPost:
         assert 'content invalid' in response.data['error_msg']
 
     def test_post_content_as_dict_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test that content as dict with 'text' field succeeds."""
         mock_seadb_api.insert_rows.return_value = {'pks': [1]}
@@ -118,8 +112,8 @@ class TestKnowledgeBasesPost:
         assert response.data['row']['title'] == 'Test Title'
 
     def test_post_content_as_json_string_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test that content as JSON string with 'text' field succeeds."""
         mock_seadb_api.insert_rows.return_value = {'pks': [1]}
@@ -133,8 +127,8 @@ class TestKnowledgeBasesPost:
         assert 'row' in response.data
 
     def test_post_seadb_exception_returns_500(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test that SeaDBAPI exception returns 500."""
         mock_seadb_api.insert_rows.side_effect = Exception('Database error')
@@ -148,8 +142,8 @@ class TestKnowledgeBasesPost:
         assert 'Internal Server Error' in response.data['error_msg']
 
     def test_post_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test successful knowledge base record creation."""
         mock_seadb_api.insert_rows.return_value = {'pks': [123]}
@@ -175,19 +169,18 @@ class TestKnowledgeBasesGet:
     """Tests for GET /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_get_non_org_context_returns_403(
-        self, api_client, project_uuid, mock_org_context_false
+        self, api_client_no_org, project_uuid
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_bases_url(project_uuid)
 
-        response = api_client.get(url, {'view_id': '0000'})
+        response = api_client_no_org.get(url, {'view_id': '0000'})
 
         assert response.status_code == 403
         assert 'Feature is not enabled' in response.data['error_msg']
 
     def test_get_invalid_start_uses_default(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid,
         mock_knowledge_base_views, mock_list_knowledge_base_records
     ):
         """Test that invalid start parameter uses default value."""
@@ -198,7 +191,7 @@ class TestKnowledgeBasesGet:
         assert response.status_code == 200
 
     def test_get_negative_start_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client, project_uuid,
     ):
         """Test that negative start returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -209,7 +202,7 @@ class TestKnowledgeBasesGet:
         assert 'start invalid' in response.data['error_msg']
 
     def test_get_negative_limit_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client, project_uuid,
     ):
         """Test that negative limit returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -220,21 +213,21 @@ class TestKnowledgeBasesGet:
         assert 'limit invalid' in response.data['error_msg']
 
     def test_get_missing_view_id_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client_other, project_uuid,
     ):
         """Test that missing view_id returns 400."""
         url = get_knowledge_bases_url(project_uuid)
 
-        response = api_client.get(url)
+        response = api_client_other.get(url)
 
         assert response.status_code == 400
         assert 'view_id is invalid' in response.data['error_msg']
 
     def test_get_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid_none
+        self, api_client, missing_project_uuid
     ):
         """Test that non-existent project returns 404."""
-        url = get_knowledge_bases_url(project_uuid)
+        url = get_knowledge_bases_url(missing_project_uuid)
 
         response = api_client.get(url, {'view_id': '0000'})
 
@@ -242,20 +235,19 @@ class TestKnowledgeBasesGet:
         assert 'Project not found' in response.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_denied
+        self, api_client_other, project_uuid
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_bases_url(project_uuid)
 
-        response = api_client.get(url, {'view_id': '0000'})
+        response = api_client_other.get(url, {'view_id': '0000'})
 
         assert response.status_code == 403
         assert 'Permission denied' in response.data['error_msg']
 
     def test_get_seadb_exception_returns_500(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_knowledge_base_views
+        self, api_client, project_uuid, 
+        mock_knowledge_base_views
     ):
         """Test that SeaDBAPI exception returns 500."""
         with patch('seahub.knowledge_base.knowledge_base.list_knowledge_base_records',
@@ -268,8 +260,7 @@ class TestKnowledgeBasesGet:
             assert 'Internal Server Error' in response.data['error_msg']
 
     def test_get_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_knowledge_base_views, mock_list_knowledge_base_records
     ):
         """Test successful knowledge base records retrieval."""
@@ -291,18 +282,18 @@ class TestKnowledgeBasesDelete:
     """Tests for DELETE /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_delete_non_org_context_returns_403(
-        self, api_client, project_uuid, mock_org_context_false
+        self, api_client_no_org, project_uuid
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_bases_url(project_uuid)
 
-        response = api_client.delete(url, {'record_ids': [1, 2]}, format='json')
+        response = api_client_no_org.delete(url, {'record_ids': [1, 2]}, format='json')
 
         assert response.status_code == 403
         assert 'Feature is not enabled' in response.data['error_msg']
 
     def test_delete_missing_record_ids_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client, project_uuid,
     ):
         """Test that missing record_ids returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -313,7 +304,7 @@ class TestKnowledgeBasesDelete:
         assert 'record_ids is required' in response.data['error_msg']
 
     def test_delete_record_ids_not_list_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client, project_uuid,
     ):
         """Test that record_ids not being a list returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -324,7 +315,7 @@ class TestKnowledgeBasesDelete:
         assert 'record_ids must be a list' in response.data['error_msg']
 
     def test_delete_record_ids_non_integer_returns_400(
-        self, api_client, project_uuid, mock_org_context
+        self, api_client, project_uuid,
     ):
         """Test that record_ids containing non-integers returns 400."""
         url = get_knowledge_bases_url(project_uuid)
@@ -335,10 +326,10 @@ class TestKnowledgeBasesDelete:
         assert 'record_ids must be a list of integers' in response.data['error_msg']
 
     def test_delete_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid_none
+        self, api_client, missing_project_uuid
     ):
         """Test that non-existent project returns 404."""
-        url = get_knowledge_bases_url(project_uuid)
+        url = get_knowledge_bases_url(missing_project_uuid)
 
         response = api_client.delete(url, {'record_ids': [1, 2]}, format='json')
 
@@ -346,20 +337,19 @@ class TestKnowledgeBasesDelete:
         assert 'not found' in response.data['error_msg']
 
     def test_delete_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_denied
+        self, api_client_other, project_uuid
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_bases_url(project_uuid)
 
-        response = api_client.delete(url, {'record_ids': [1, 2]}, format='json')
+        response = api_client_other.delete(url, {'record_ids': [1, 2]}, format='json')
 
         assert response.status_code == 403
         assert 'Permission denied' in response.data['error_msg']
 
     def test_delete_seadb_exception_returns_500(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test that SeaDBAPI exception returns 500."""
         mock_seadb_api.update_rows.side_effect = Exception('Database error')
@@ -372,8 +362,8 @@ class TestKnowledgeBasesDelete:
         assert 'Internal Server Error' in response.data['error_msg']
 
     def test_delete_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted, mock_seadb_api
+        self, api_client, project_uuid, 
+        mock_seadb_api
     ):
         """Test successful batch delete of knowledge base records."""
         mock_seadb_api.update_rows.return_value = None
@@ -395,21 +385,21 @@ class TestKnowledgeBaseGet:
     """Tests for GET /api/v1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
 
     def test_get_non_org_context_returns_403(
-        self, api_client, project_uuid, mock_org_context_false
+        self, api_client_no_org, project_uuid
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_base_url(project_uuid, 1)
 
-        response = api_client.get(url)
+        response = api_client_no_org.get(url)
 
         assert response.status_code == 403
         assert 'Feature is not enabled' in response.data['error_msg']
 
     def test_get_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid_none
+        self, api_client, missing_project_uuid
     ):
         """Test that non-existent project returns 404."""
-        url = get_knowledge_base_url(project_uuid, 1)
+        url = get_knowledge_base_url(missing_project_uuid, 1)
 
         response = api_client.get(url)
 
@@ -417,20 +407,18 @@ class TestKnowledgeBaseGet:
         assert 'Project not found' in response.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_denied
+        self, api_client_other, project_uuid
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_base_url(project_uuid, 1)
 
-        response = api_client.get(url)
+        response = api_client_other.get(url)
 
         assert response.status_code == 403
         assert 'Permission denied' in response.data['error_msg']
 
     def test_get_seadb_exception_returns_500(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted
+        self, api_client, project_uuid
     ):
         """Test that SeaDBAPI exception returns 500."""
         with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk',
@@ -443,8 +431,7 @@ class TestKnowledgeBaseGet:
             assert 'Internal Server Error' in response.data['error_msg']
 
     def test_get_record_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_get_knowledge_base_record_by_pk_none
     ):
         """Test that non-existent record returns 404."""
@@ -456,8 +443,7 @@ class TestKnowledgeBaseGet:
         assert 'Knowledge base record not found' in response.data['error_msg']
 
     def test_get_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_get_knowledge_base_record_by_pk
     ):
         """Test successful single knowledge base record retrieval."""
@@ -479,22 +465,22 @@ class TestKnowledgeBasePut:
     """Tests for PUT /api/v1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
 
     def test_put_non_org_context_returns_403(
-        self, api_client, project_uuid, mock_org_context_false
+        self, api_client_no_org, project_uuid
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_base_url(project_uuid, 1)
         data = {'title': 'Updated Q', 'content': {'text': 'Updated A'}}
 
-        response = api_client.put(url, data, format='json')
+        response = api_client_no_org.put(url, data, format='json')
 
         assert response.status_code == 403
         assert 'Feature is not enabled' in response.data['error_msg']
 
     def test_put_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context, mock_get_project_by_uuid_none
+        self, api_client, missing_project_uuid
     ):
         """Test that non-existent project returns 404."""
-        url = get_knowledge_base_url(project_uuid, 1)
+        url = get_knowledge_base_url(missing_project_uuid, 1)
         data = {'title': 'Updated Title', 'content': {'text': 'Updated Content'}}
 
         response = api_client.put(url, data, format='json')
@@ -503,21 +489,19 @@ class TestKnowledgeBasePut:
         assert 'not found' in response.data['error_msg']
 
     def test_put_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_denied
+        self, api_client_other, project_uuid
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_base_url(project_uuid, 1)
         data = {'title': 'Updated Q', 'content': {'text': 'Updated A'}}
 
-        response = api_client.put(url, data, format='json')
+        response = api_client_other.put(url, data, format='json')
 
         assert response.status_code == 403
         assert 'Permission denied' in response.data['error_msg']
 
     def test_put_invalid_content_returns_400(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted
+        self, api_client, project_uuid
     ):
         """Test that invalid content (empty/whitespace) returns 400."""
         url = get_knowledge_base_url(project_uuid, 1)
@@ -529,8 +513,7 @@ class TestKnowledgeBasePut:
         assert 'content invalid' in response.data['error_msg']
 
     def test_put_record_not_found_returns_404(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_seadb_api, mock_get_knowledge_base_record_by_pk_none
     ):
         """Test that non-existent record returns 404."""
@@ -543,8 +526,7 @@ class TestKnowledgeBasePut:
         assert 'Knowledge base record not found' in response.data['error_msg']
 
     def test_put_seadb_exception_returns_500(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_seadb_api, mock_get_knowledge_base_record_by_pk
     ):
         """Test that SeaDBAPI exception returns 500."""
@@ -559,8 +541,7 @@ class TestKnowledgeBasePut:
         assert 'Internal Server Error' in response.data['error_msg']
 
     def test_put_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid, 
         mock_seadb_api, mock_get_knowledge_base_record_by_pk
     ):
         """Test successful knowledge base record update."""
@@ -578,8 +559,7 @@ class TestKnowledgeBasePut:
         mock_seadb_api.update_rows.assert_called_once()
 
     def test_put_content_as_dict_success(
-        self, api_client, project_uuid, mock_org_context,
-        mock_check_permission_granted,
+        self, api_client, project_uuid,
         mock_seadb_api, mock_get_knowledge_base_record_by_pk
     ):
         """Test that content as dict with 'text' field succeeds on update."""

@@ -28,7 +28,7 @@ def real_project(db):
 
 
 @pytest.fixture
-def auth_user(real_project):
+def project_creator(real_project):
     owner = real_project.creator
     return SimpleNamespace(
         id=1,
@@ -36,6 +36,7 @@ def auth_user(real_project):
         username=owner,
         is_authenticated=True,
         is_active=True,
+        org=SimpleNamespace(org_id=1),
     )
 
 
@@ -82,3 +83,28 @@ def ticket_views_move_record(real_project):
         ],
     }
     return TicketViews.objects.create(project_uuid=project.uuid, details=json.dumps(details))
+
+@pytest.fixture
+def auth_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=2,
+        pk=2,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True)
+    )
+
+@pytest.fixture
+def no_org_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=3,
+        pk=3,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=None
+    )

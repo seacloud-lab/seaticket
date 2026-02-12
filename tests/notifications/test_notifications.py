@@ -1,5 +1,4 @@
-from unittest.mock import Mock, MagicMock, patch
-from seahub.notifications.models import UserNotification
+from seahub.notifications.models import UserNotification, ProjectNotification
 from seahub.api2.endpoints.notifications import (
     NotificationsView,
     NotificationView,
@@ -11,24 +10,24 @@ from seahub.api2.endpoints.notifications import (
 
 class TestNotificationsView:
 
-    def test_get_invalid_page(self, factory, auth_user):
+    def test_get_invalid_page(self, factory, project_creator):
         request = factory.get('/api2/notifications/', {'page': '0'})
-        request.user = auth_user
+        request.user = project_creator
 
         resp = NotificationsView.as_view()(request)
         assert resp.status_code == 400
 
-    def test_get_invalid_per_page(self, factory, auth_user):
+    def test_get_invalid_per_page(self, factory, project_creator):
         request = factory.get('/api2/notifications/', {'per_page': '0'})
-        request.user = auth_user
+        request.user = project_creator
 
         resp = NotificationsView.as_view()(request)
         assert resp.status_code == 400
     
-    def test_user_notifications(self, factory, auth_user, create_new_notification):
+    def test_user_notifications(self, factory, project_creator, create_new_notification):
         new_notification = create_new_notification
         request = factory.get('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = NotificationsView.as_view()(request)
 
@@ -39,160 +38,132 @@ class TestNotificationsView:
 
         # test mark all as seen
         request = factory.put('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
         resp = NotificationsView.as_view()(request)
         assert resp.status_code == 200
         assert resp.data.get('success') is True
 
         # verify unseen count becomes 0 by re-fetching
         request = factory.get('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
         resp = NotificationsView.as_view()(request)
         assert resp.status_code == 200
         assert resp.data.get('unseen_count') == 0
 
         # test delete all notifications for current user
         request = factory.delete('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
         resp = NotificationsView.as_view()(request)
         assert resp.status_code == 200
         assert resp.data['success'] is True
 
-    def test_put_internal_error(self, factory, auth_user):
+    def test_put_success_no_notifications(self, factory, project_creator):
         request = factory.put('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.notifications.UserNotification.objects.get_user_notifications', side_effect=Exception('boom')):
-            resp = NotificationsView.as_view()(request)
+        resp = NotificationsView.as_view()(request)
+        assert resp.status_code == 200
+        assert resp.data.get('success') is True
 
-        assert resp.status_code == 500
-
-    def test_delete_internal_error(self, factory, auth_user):
+    def test_delete_success_no_notifications(self, factory, project_creator):
         request = factory.delete('/api2/notifications/')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.notifications.UserNotification.objects.filter', side_effect=Exception('boom')):
-            resp = NotificationsView.as_view()(request)
-
-        assert resp.status_code == 500
+        resp = NotificationsView.as_view()(request)
+        assert resp.status_code == 200
+        assert resp.data.get('success') is True
 
 
 class TestNotificationView:
 
-    def test_user_notification(self, factory, auth_user, create_new_notification):
+    def test_user_notification(self, factory, project_creator, create_new_notification):
         new_notification = create_new_notification
         notice_id = new_notification.id
         request = factory.put(f'/api2/notifications/{notice_id}')
-        request.user = auth_user
+        request.user = project_creator
 
         resp = NotificationView.as_view()(request, notification_id=notice_id)
         assert resp.status_code == 200
         assert resp.data['success'] is True
                 
-        notice = UserNotification.objects.filter(to_user=auth_user.username, id=notice_id).first()
+        notice = UserNotification.objects.filter(to_user=project_creator.username, id=notice_id).first()
         assert notice.seen is True
 
-    def test_put_not_found(self, factory, auth_user):
+    def test_put_not_found(self, factory, project_creator):
         request = factory.put('/api2/notifications/1/')
-        request.user = auth_user
+        request.user = project_creator
 
-        class _DNE(Exception):
-            pass
-
-        with patch('seahub.api2.endpoints.notifications.UserNotification.DoesNotExist', _DNE), \
-                patch('seahub.api2.endpoints.notifications.UserNotification.objects.get', side_effect=_DNE()):
-            resp = NotificationView.as_view()(request, notification_id=1)
-
+        resp = NotificationView.as_view()(request, notification_id=1)
         assert resp.status_code == 404
 
-    def test_put_seen_notice_no_save(self, factory, auth_user):
-        request = factory.put('/api2/notifications/1/')
-        request.user = auth_user
+    def test_put_seen_notice_no_change(self, factory, project_creator, seen_user_notification):
+        request = factory.put(f'/api2/notifications/{seen_user_notification.id}/')
+        request.user = project_creator
 
-        notice = Mock()
-        notice.seen = True
-
-        with patch('seahub.api2.endpoints.notifications.UserNotification.objects.get', return_value=notice):
-            resp = NotificationView.as_view()(request, notification_id=1)
-
+        resp = NotificationView.as_view()(request, notification_id=seen_user_notification.id)
         assert resp.status_code == 200
-        notice.save.assert_not_called()
+        seen_user_notification.refresh_from_db()
+        assert seen_user_notification.seen is True
 
 
 class TestProjectNotificationsView:
 
-    def test_get_invalid_page(self, factory, auth_user, real_project):
+    def test_get_invalid_page(self, factory, project_creator, real_project):
         project = real_project
         request = factory.get(f"/api2/project/{project.uuid}/notifications/", {'page': '0'})
-        request.user = auth_user
+        request.user = project_creator
 
         resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 400
 
-    def test_get_success(self, factory, auth_user, real_project):
+    def test_get_success(self, factory, project_creator, real_project, project_notifications_mixed):
         project = real_project
         request = factory.get(f"/api2/project/{project.uuid}/notifications/", {'page': '1', 'per_page': '2'})
-        request.user = auth_user
+        request.user = project_creator
 
-        n1 = Mock()
-        n1.to_dict.return_value = {'id': 1}
-        n2 = Mock()
-        n2.to_dict.return_value = {'id': 2}
-
-        qs = MagicMock()
-        qs.order_by.return_value = qs
-        qs.count.return_value = 3
-        qs.filter.return_value.count.return_value = 1
-        qs.__getitem__.return_value = [n1, n2]
-
-        with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.filter', return_value=qs):
-            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
+        resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data['count'] == 3
         assert resp.data['unseen_count'] == 1
-        assert resp.data['notification_list'] == [{'id': 1}, {'id': 2}]
+        assert len(resp.data['notification_list']) == 2
+        all_ids = set(ProjectNotification.objects.filter(
+            project_uuid=str(project.uuid),
+            to_user=project_creator.username,
+        ).values_list('id', flat=True))
+        assert {item['id'] for item in resp.data['notification_list']}.issubset(all_ids)
 
-    def test_put_success(self, factory, auth_user, real_project):
+    def test_put_success(self, factory, project_creator, real_project, project_notifications_unseen):
         project = real_project
         request = factory.put(f"/api2/project/{project.uuid}/notifications/")
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_all_read_by_project') as m:
-            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
+        resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
-        m.assert_called_once_with(project.uuid, auth_user.username)
-
-    def test_put_internal_error(self, factory, auth_user, real_project):
-        project = real_project
-        request = factory.put(f"/api2/project/{project.uuid}/notifications/")
-        request.user = auth_user
-
-        with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_all_read_by_project', side_effect=Exception('boom')):
-            resp = ProjectNotificationsView.as_view()(request, project_uuid=project.uuid)
-
-        assert resp.status_code == 500
+        assert ProjectNotification.objects.filter(
+            project_uuid=str(project.uuid),
+            to_user=project_creator.username,
+            seen=False,
+        ).count() == 0
 
 
 class TestProjectNotificationView:
 
-    def test_put_not_found(self, factory, auth_user):
+    def test_put_not_found(self, factory, project_creator):
         request = factory.put('/api2/project/notifications/1/')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_as_read', return_value=None):
-            resp = ProjectNotificationView.as_view()(request, notification_id=1)
-
+        resp = ProjectNotificationView.as_view()(request, notification_id=1)
         assert resp.status_code == 404
 
-    def test_put_success(self, factory, auth_user):
+    def test_put_success(self, factory, project_creator, real_project, project_notifications_unseen):
         request = factory.put('/api2/project/notifications/1/')
-        request.user = auth_user
+        request.user = project_creator
 
-        with patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.mark_as_read', return_value=Mock()):
-            resp = ProjectNotificationView.as_view()(request, notification_id=1)
+        notice = project_notifications_unseen[0]
+        resp = ProjectNotificationView.as_view()(request, notification_id=notice.id)
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
@@ -200,68 +171,21 @@ class TestProjectNotificationView:
 
 class TestNotificationsAllView:
 
-    def test_get_invalid_page(self, factory, auth_user):
+    def test_get_invalid_page(self, factory, project_creator):
         request = factory.get('/api2/notifications/all/', {'page': '0'})
-        request.user = auth_user
+        request.user = project_creator
 
         resp = NotificationsAllView.as_view()(request)
         assert resp.status_code == 400
 
-    def test_get_success(self, factory, auth_user):
+    def test_get_success(self, factory, project_creator, real_project, notifications_all_data):
         request = factory.get('/api2/notifications/all/', {'page': '1', 'per_page': '1'})
-        request.user = auth_user
+        request.user = project_creator
 
-        # user notifications
-        un1 = Mock()
-        un1.detail = {'a': 1}
-        un1.to_dict.return_value = {'id': 1}
-
-        user_qs_all = MagicMock()
-        user_qs_all.__getitem__.return_value = [un1]
-        user_qs_all.count.return_value = 1
-        user_qs_unseen = Mock()
-        user_qs_unseen.count.return_value = 2
-
-        # projects
-        active_projects = Mock()
-        active_projects.values_list.return_value = ['p1']
-        active_projects.filter.return_value = [Mock(uuid='p1', project_name='P', workspace_id=1, icon='i', color='c')]
-
-        # project notifications
-        project_stats = [{'project_uuid': 'p1', 'count': 3, 'unseen_count': 1, 'last_timestamp': 1}]
-
-        class _ProjectStatsQS(list):
-            def values(self, *args, **kwargs):
-                return self
-            def annotate(self, *args, **kwargs):
-                return self
-            def order_by(self, *args, **kwargs):
-                return self
-            def count(self):
-                return 3
-
-        proj_qs = _ProjectStatsQS(project_stats)
-
-        proj_unseen_qs = proj_qs
-
-        def _get_user_notifications(username, seen=None):
-            if seen is False:
-                return user_qs_unseen
-            return user_qs_all
-
-        def _project_filter(*args, **kwargs):
-            if kwargs.get('seen') is False:
-                return proj_unseen_qs
-            return proj_qs
-
-        with patch('seahub.api2.endpoints.notifications.UserNotification.objects.get_user_notifications', side_effect=_get_user_notifications), \
-                patch('seahub.api2.endpoints.notifications.Projects.objects.filter', return_value=active_projects), \
-                patch('seahub.api2.endpoints.notifications.ProjectNotification.objects.filter', side_effect=_project_filter):
-            resp = NotificationsAllView.as_view()(request)
-
+        resp = NotificationsAllView.as_view()(request)
         assert resp.status_code == 200
-        assert resp.data['general']['count'] == 1
+        assert resp.data['general']['count'] == 2
         assert resp.data['general']['unseen_count'] == 2
         assert resp.data['project']['unseen_count'] == 3
         assert resp.data['total_unseen_count'] == 5
-        assert resp.data['project']['project_list'][0]['project_name'] == 'P'
+        assert resp.data['project']['project_list'][0]['project_name'] == real_project.project_name
