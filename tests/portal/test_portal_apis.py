@@ -283,7 +283,7 @@ class TestPortalKnowledgeBaseRecordsView:
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
 
-        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/")
+        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/")
         request.user = project_creator
 
         resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
@@ -294,7 +294,7 @@ class TestPortalKnowledgeBaseRecordsView:
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=False)
 
-        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/", {'view_id': 'v1'})
+        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/", {'view_id': 'v1'})
         request.user = project_creator
 
         resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
@@ -305,7 +305,7 @@ class TestPortalKnowledgeBaseRecordsView:
         project = real_project
         _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
 
-        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/records/", {'view_id': 'v1', 'start': 'a', 'limit': 'b'})
+        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/", {'view_id': 'v1', 'start': 'a', 'limit': 'b'})
         request.user = project_creator
 
         seadb_api = Mock()
@@ -420,3 +420,10 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
+        project.refresh_from_db()
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        portal_settings = settings_dict.get('portal', {})
+        assert portal_settings.get('allow_anonymous') is True
+        assert portal_settings.get('enable_password_protection') is False
+        assert portal_settings.get('show_knowledge_base') is True
+        assert 'password' not in portal_settings

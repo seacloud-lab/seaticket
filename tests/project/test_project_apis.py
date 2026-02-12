@@ -89,11 +89,10 @@ class TestProjectItemsSearchView:
 
     def test_get_success(self, factory, project_creator):
         query_type = ITEMS_SEARCH_QUERY_TYPES_SUPPORT[0]
-        request = factory.get('/api/v1/project/items-search/', {'query_str': 'x', 'query_type': query_type})
+        query_str = 'proj'
+        request = factory.get('/api/v1/project/items-search/', {'query_str': query_str, 'query_type': query_type})
         request.user = project_creator
-
-        with patch('seahub.project.apis.query_items', return_value=[{'id': 1}]):
-            resp = ProjectItemsSearchView.as_view()(request)
+        resp = ProjectItemsSearchView.as_view()(request)
 
         assert resp.status_code == 200
-        assert resp.data == {'results': [{'id': 1}]}
+        assert isinstance(resp.data['results'], list)

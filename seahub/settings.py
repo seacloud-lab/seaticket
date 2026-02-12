@@ -25,8 +25,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'sea_qa',
         'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': '127.0.0.1',
+        'PASSWORD': 'db_dev',
+        'HOST': 'db',
         'PORT': '3306',
     }
 }
@@ -326,7 +326,7 @@ CONF_DIR = os.environ.get('CONF_PATH', '')
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379',
+        'LOCATION': 'redis://redis:6379',
     },
 }
 REDIS_HOST = 'redis'

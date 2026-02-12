@@ -36,13 +36,12 @@ def test_get_types_project_not_found(factory, project_creator):
     assert resp.status_code == 404
 
 
-def test_get_types_permission_denied(factory, project_creator, real_project):
+def test_get_types_permission_denied(factory, auth_user, real_project):
     project = real_project
     request = factory.get(f"/api/v1/projects/{project.uuid}/ticket-types/")
-    request.user = project_creator
+    request.user = auth_user
 
-    with patch('seahub.tickets.ticket_types.check_project_permission', return_value=False):
-        resp = TicketTypesAPIView.as_view()(request, project_uuid=project.uuid)
+    resp = TicketTypesAPIView.as_view()(request, project_uuid=project.uuid)
 
     assert resp.status_code == 403
 

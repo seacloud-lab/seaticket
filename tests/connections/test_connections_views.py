@@ -341,6 +341,8 @@ class TestConnectionViewsMoveView:
         resp = ConnectionViewsMoveView.as_view()(request, project_uuid=str(project.uuid), connection_id=str(connection.id))
 
         assert resp.status_code == 200
-        nav_ids = {item.get('_id') for item in resp.data['navigation']}
+        nav = resp.data['navigation']
+        nav_ids = [item.get('_id') for item in nav]
         assert source_view.get('_id') in nav_ids
         assert target_view.get('_id') in nav_ids
+        assert nav_ids.index(source_view.get('_id')) < nav_ids.index(target_view.get('_id'))

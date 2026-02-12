@@ -79,6 +79,7 @@ class TestProjectsView:
 
         assert resp.status_code == 201
         assert 'project' in resp.data
+        assert Projects.objects.filter(workspace=workspace, name='new-proj', deleted=False).exists()
 
 
 @pytest.mark.django_db
@@ -130,7 +131,9 @@ class TestProjectView:
         resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 200
-        assert 'project' in resp.data
+        assert resp.data['project']['name'] == 'renamed'
+        project.refresh_from_db()
+        assert project.name == 'renamed'
 
     def test_delete_name_invalid(self, factory, project_creator, real_project):
         project = real_project
@@ -158,6 +161,9 @@ class TestProjectView:
 
         assert resp.status_code == 200
         assert resp.data.get('success') is True
+        project.refresh_from_db()
+        assert project.deleted is True
+        assert project.name.startswith(f'_(deleted_{project.id}) ')
 
 
 @pytest.mark.django_db
@@ -198,6 +204,7 @@ class TestSearchView:
 
         assert resp.status_code == 200
         assert resp.data == {'results': [{'id': 1}]}
+        assert Projects.objects.filter(uuid=project.uuid).exists()
 
 
 @pytest.mark.django_db
@@ -250,3 +257,5 @@ class TestTrashProjectView:
 
         assert resp.status_code == 200
         assert resp.data.get('success') is True
+        project.refresh_from_db()
+        assert project.deleted is False

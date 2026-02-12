@@ -281,6 +281,8 @@ class TestKnowledgeBaseViewsMove:
         resp = api_client.post(url, data, format='json')
 
         assert resp.status_code == 200
-        nav_ids = {item.get('_id') for item in resp.data['navigation']}
+        nav = resp.data['navigation']
+        nav_ids = [item.get('_id') for item in nav]
         assert source_view.get('_id') in nav_ids
         assert target_view.get('_id') in nav_ids
+        assert nav_ids.index(source_view.get('_id')) < nav_ids.index(target_view.get('_id'))

@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 from seahub.tickets.ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsDuplicateView, TicketViewsMoveView
+from tests.knowledge_base.conftest import auth_user
 
 
 def test_post_folder_missing_name(factory, project_creator, real_project):
@@ -28,14 +29,13 @@ def test_post_folder_project_not_found(factory, project_creator, real_project):
     assert resp.status_code == 404
 
 
-def test_post_folder_permission_denied(factory, project_creator, real_project):
+def test_post_folder_permission_denied(factory, auth_user, real_project):
     project = real_project
     url = reverse('api-v1-project-ticket-folders', kwargs={'project_uuid': str(project.uuid)})
     request = factory.post(url, data={'name': 'folder1'})
-    request.user = project_creator
+    request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
-        resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
+    resp = TicketFolders.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
 
@@ -190,14 +190,13 @@ def test_get_views_success(factory, project_creator, real_project, ticket_views_
     assert isinstance(resp.data['views'], list)
 
 
-def test_get_views_permission_denied(factory, project_creator, real_project):
+def test_get_views_permission_denied(factory, auth_user, real_project):
     project = real_project
     url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': str(project.uuid)})
     request = factory.get(url)
-    request.user = project_creator
+    request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
-        resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
+    resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
 
@@ -235,14 +234,13 @@ def test_get_views_internal_server_error(factory, project_creator, real_project)
     assert resp.status_code == 500
 
 
-def test_post_view_permission_denied(factory, project_creator, real_project):
+def test_post_view_permission_denied(factory, auth_user, real_project):
     project = real_project
     url = reverse('api-v1-project-ticket-views', kwargs={'project_uuid': str(project.uuid)})
     request = factory.post(url, data={'name': 'view1'}, format='json')
-    request.user = project_creator
+    request.user = auth_user
 
-    with patch('seahub.tickets.ticket_views.check_project_permission', return_value=False):
-        resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
+    resp = TicketViewsAPI.as_view()(request, project_uuid=str(project.uuid))
 
     assert resp.status_code == 403
 
