@@ -179,6 +179,29 @@ class SelectTypes:
       ]
     }
 
+    ticket_type = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "Bug",
+          "color": "#ffebe9",
+          "text_color": "#000000"
+        },
+        {
+          "id": "0002",
+          "name": "Feature",
+          "color": "#ddf4ff",
+          "text_color": "#000000"
+        },
+        {
+          "id": "0003",
+          "name": "Question",
+          "color": "#fff8c5",
+          "text_color": "#000000"
+        }
+      ]
+    }
+
     issue_type = {
       "options": [
         {
@@ -369,7 +392,7 @@ class TicketsTable(BaseModel):
     ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
-    type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
+    type = MappedColumn('type', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_type)
     tags = MappedColumn('tags', PropertyTypes.LIST, ListTypes.int)
     assignees = MappedColumn('assignees', PropertyTypes.LIST)
     participants = MappedColumn('participants', PropertyTypes.LIST)
