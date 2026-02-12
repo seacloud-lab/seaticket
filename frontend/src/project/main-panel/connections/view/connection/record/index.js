@@ -84,7 +84,7 @@ const Record = ({ projectUuid }) => {
             <IconButton
               className="open-in-new-tab-btn"
               icon="open-in-new-tab"
-              title={gettext('Open in new tab')}
+              title={gettext('Open the original URL in a new tab')}
               onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
             />
           )}
