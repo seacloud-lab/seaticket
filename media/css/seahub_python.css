@@ -547,7 +547,118 @@ input.short-input {
   text-decoration: none;
 }
 
-/* login-panel, password-reset-panel, confirm-password-panel */
+/* login-panel */
+.login-panel-wrapper {
+  width: fit-content;
+  padding: 64px 48px;
+  margin: 0 auto;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--bs-border-secondary-color);
+  background-color: var(--bs-body-bg);
+}
+
+.login-panel-wrapper .login-panel-header .login-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.login-panel-wrapper .login-panel-header .register-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.login-panel-wrapper .login-panel-header .register-link a {
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.login-panel-wrapper .login-panel-header .register-link .login-arrow-right .sea-qa-icon-svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--bs-orange);
+}
+
+.login-panel-wrapper .login-form-wrapper {
+  width: 400px;
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+.login-panel-wrapper .login-form-wrapper .form-item-input {
+  font-size: 14px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0px 16px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  width: 100%;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
+
+.login-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
+  margin-bottom: 0px;
+  padding-right: 32px;
+}
+
+.login-panel-wrapper .login-form-wrapper .ovhd {
+  margin: 8px 0px;
+}
+
+.login-panel-wrapper .login-form-wrapper .form-item-input:focus {
+  border-color: #FF8000;
+}
+
+.login-panel-wrapper .login-form-wrapper .password-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 14px;
+  height: 14px;
+  color: var(--bs-body-secondary-color)
+}
+
+/* login-panel - placeholder */
+.login-panel-wrapper .login-form-wrapper input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+}
+
+.login-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
+  color: #868E96
+}
+
+.login-panel-wrapper .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
+  color: #868E96;
+  opacity: 1; /* Firefox 默认 opacity 较低 */
+}
+
+.login-panel-wrapper .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
+  color: #868E96;
+}
+
+.login-panel-wrapper .login-form-wrapper input::-ms-input-placeholder { /* Microsoft Edge */
+  color: #868E96;
+}
+
+.login-panel-wrapper .login-form-wrapper .login-form-pass-member {
+  margin: 8px 0px 24px;
+  color: var(--bs-body-secondary-color);
+  font-size: 12px;
+  line-height: 22px;
+}
+
+.login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-toggle {
+  margin-right: 8px;
+}
+
+.login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text {
+  user-select: none;
+}
+
+/* password-reset-panel, confirm-password-panel */
 .login-panel-logo {
   display: block;
   margin: 0 auto 30px;

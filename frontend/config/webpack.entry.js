@@ -12,6 +12,7 @@ const entryFiles = {
   exclamationCircleIcon: '/icon-page/exclamation-circle',
   moreIcon: '/icon-page/more',
   downIcon: '/icon-page/down',
+  rememberMeIcon: '/icon-page/remember-me',
 };
 
 const getEntries = (isEnvDevelopment) => {
