@@ -36,7 +36,6 @@ const Tickets = ({
   isLoading = false,
   ...props
 }) => {
-  // const { togglePageSlugId, toggleView, isLoading } = useTicketsPage();
   const { updateAttachments } = useAIChatTools();
   const {
     typesData, createType,
