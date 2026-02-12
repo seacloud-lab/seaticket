@@ -20,7 +20,7 @@ export SEAQA_CONFIG_NAME=seaqa_config.yaml
 
 cat >/tmp/conf/seaqa_config.yaml <<EOF
 global:
-  SEADB_INNER_SERVER_URL: http://172.19.0.2:8888
+  SEADB_SERVER_URL: http://172.19.0.2:8888
   SEAQA_AI_INNER_SERVER_URL: http://127.0.0.1:8887
   SEAQA_INDEXER_INNER_SERVER_URL: http://127.0.0.1:8888
 

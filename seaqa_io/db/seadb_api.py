@@ -2,7 +2,7 @@ import time
 import jwt
 import requests
 
-from seaqa_io.config import JWT_PRIVATE_KEY, SEADB_INNER_SERVER_URL
+from seaqa_io.config import JWT_PRIVATE_KEY, SEADB_SERVER_URL
 from seaqa_io.log import setup_logger
 from seaqa_io.utils import uuid_str_to_36_chars
 from seaqa_io.utils import get_connection_table_name
@@ -22,8 +22,8 @@ def parse_response(response):
 class SeaDBAPI:
     def __init__(self, username='', timeout=30):
         self.timeout = timeout
-        self.secret_key = JWT_PRIVATE_KEY
-        self.server_url = SEADB_INNER_SERVER_URL
+        self.secret_key = SEADB_SERVER_URL
+        self.server_url = SEADB_SERVER_URL
         self.username = username
 
     def gen_headers(self, base_id):
