@@ -20,7 +20,6 @@ const ChatInput = forwardRef(({
   isReply,
   readOnly,
   projectUuid,
-  placeholder = gettext('What problem you want to solve?'),
   clearContext,
   sendMessage,
   resetClearContext,
@@ -214,7 +213,7 @@ const ChatInput = forwardRef(({
               onMouseUp={onMouseUp}
               onPaste={onPaste}
               onChange={onValueChange}
-              placeholder={placeholder}
+              placeholder={gettext('What problem do you want to solve?')}
               tabIndex={-1}
               rows={1}
               disabled={disabled}
