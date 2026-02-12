@@ -38,6 +38,19 @@ const getSeafileOriginalPageUrl = (connection, row, columns) => {
   return originalPageUrl;
 };
 
+const getEmailOriginalPageUrl = (row) => {
+  let details = row.details ? row.details : [];
+  if (details.length === 0) {
+    return '';
+  }
+  const email_id = details[details.length - 1].email_id;
+  const origin_thread_id = details[details.length - 1].origin_thread_id;
+  if (!email_id || ! origin_thread_id) {
+    return '';
+  }
+  return 'https://app.fastmail.com/mail/all/' + origin_thread_id + '.' + email_id;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -54,7 +67,7 @@ export const getOriginalPageUrl = (connection, row, columns) => {
       return getSeafileOriginalPageUrl(connection, row, columns);
     }
     case CONNECTION_TYPE.EMAIL: {
-      return '';
+      return getEmailOriginalPageUrl(row);
     }
     default: {
       return '';
