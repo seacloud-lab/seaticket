@@ -98,7 +98,7 @@ const ResourceDetailsDialog = ({
             <IconButton
               className="open-in-new-tab-btn"
               icon="view-issue"
-              title={gettext('Open the internal network address in new tab')}
+              title={gettext('Open the record in a new tab')}
               onClick={() => window.open(internalNetworkAddress, '_blank', 'noopener,noreferrer')}
             />
           )}
@@ -106,7 +106,7 @@ const ResourceDetailsDialog = ({
             <IconButton
               className="open-in-new-tab-btn"
               icon="open-in-new-tab"
-              title={gettext('Open the source address in new tab')}
+              title={gettext('Open the source address in a new tab')}
               onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
             />
           )}
