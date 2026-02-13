@@ -39,7 +39,7 @@ export const getInternalNetworkAddress = (type, resourceID, { workspaceID, proje
 
 export const getResourceOriginalURL = (type, resource, connections, columns) => {
   if (type === TICKET_TYPE || type === KNOWLEDGE_BASE_TYPE) return '';
-  const connection = connections.find(c => c.id === resource.connection_id);
+  const connection = connections.find(c => (c.id + '') === (resource.connection_id + ''));
   if (!connection) return '';
   return getOriginalPageUrl(connection, resource, columns);
 };
