@@ -524,8 +524,8 @@ class PortalExternalInvitationsView(APIView):
                 invitation.delete()
             except Exception as e:
                 logger.error(e)
-            error_msg = _('Failed to send email. Please check email service configuration or SMTP server status.')
-            return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
             if not ProjectExternalUser.objects.filter(email=email, project_uuid=str(project.uuid)).exists():
