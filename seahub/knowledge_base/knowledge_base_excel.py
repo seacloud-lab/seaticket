@@ -67,15 +67,11 @@ class KnowledgeBaseImportExcelExample(APIView):
     def get(self, request):
         wb = Workbook(write_only=True)
         ws = wb.create_sheet('Knowledge Base')
-        ws.append(['Title', 'Content', 'Creator', 'Created time', 'Last modifier', 'Last modified time'])
+        ws.append(['Title', 'Content'])
         for i in range(5):
             ws.append([
                 f'Sample title {i + 1}',
-                f'This is sample content {i + 1} for knowledge base import demonstration.',
-                'SeaTicket@seafile.com',
-                '2026-01-01 00:00:00',
-                'SeaTicket@seafile.com',
-                '2026-01-01 00:00:00',
+                f'This is sample content {i + 1} for knowledge base import demonstration.'
             ])
 
         output = BytesIO()
