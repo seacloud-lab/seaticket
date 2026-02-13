@@ -373,6 +373,21 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         { key: 'divider' },
         generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
       ].filter(Boolean);
+      children = children.reduce((acc, item, index, array) => {
+        if (item && item.key === 'divider' && index > 0 && array[index - 1] && array[index - 1].key === 'divider') {
+          return acc;
+        }
+        acc.push(item);
+        return acc;
+      }, []);
+      if (children.length > 0) {
+        if (children[0] && children[0].key === 'divider') {
+          children.shift();
+        }
+        if (children.length > 0 && children[children.length - 1] && children[children.length - 1].key === 'divider') {
+          children.pop();
+        }
+      }
     } else if (rows.length > 1) {
       children = [
         generateAIOptions({ rows, columns }),
@@ -464,9 +479,24 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       generateCopyOriginalLinkOption({ row }),
       'Divider',
       generateMarkAsOutdatedOption({ rows: [row], updateLocalRow }),
-    ];
+    ].filter(Boolean);
+    list = list.reduce((acc, item, index, array) => {
+      if (item === 'Divider' && index > 0 && array[index - 1] === 'Divider') {
+        return acc;
+      }
+      acc.push(item);
+      return acc;
+    }, []);
+    if (list.length > 0) {
+      if (list[0] === 'Divider') {
+        list.shift();
+      }
+      if (list.length > 0 && list[list.length - 1] === 'Divider') {
+        list.pop();
+      }
+    }
 
-    return list.filter(Boolean);
+    return list;
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
     generateMarkAsOutdatedOption, generateAIOptions, generateCopyOriginalLinkOption,
