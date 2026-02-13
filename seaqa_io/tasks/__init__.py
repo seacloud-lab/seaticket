@@ -100,8 +100,12 @@ def preview_import_kb_from_excel(project_uuid, file_name, limit=20):
     temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
     file_path = os.path.join(temp_dir, file_name)
 
-    wb = load_workbook(file_path, read_only=True)
-    ws = wb.active
+    try:
+        wb = load_workbook(file_path, read_only=True)
+        ws = wb.active
+    except Exception as e:
+        logger.error('KB import preview error: %s', e)
+        raise Exception('File is not a valid excel file')
 
     headers = []
     rows_iter = ws.iter_rows(min_row=1, max_row=1, values_only=True)

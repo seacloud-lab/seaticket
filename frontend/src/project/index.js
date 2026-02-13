@@ -164,7 +164,7 @@ const Project = () => {
 
 const root = createRoot(document.getElementById('wrapper'));
 root.render(
-  <DataProvider projectUuid={projectUuid}>
+  <DataProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID}>
     <Project />
   </DataProvider>
 );

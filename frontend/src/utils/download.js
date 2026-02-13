@@ -28,3 +28,7 @@ export const downloadContentByA = (content, fileName, callback) => {
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
   downloadBlobByA(blob, fileName, callback);
 };
+
+export const getFileExtension = (fileName) => {
+  return fileName.match(/\.([^.]+)$/)?.[1] || '';
+};
