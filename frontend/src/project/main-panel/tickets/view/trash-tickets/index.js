@@ -9,12 +9,14 @@ import CleanTickets from './clean-tickets';
 import Tickets from '../../components/tickets';
 import { useData } from '@/project/hooks';
 import { TICKET_TABLE_NAME } from '../../constants';
+import { useTicketsPage } from '../../hooks';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { clearViewRows, restoreRows } = useData();
+  const { isLoading, toggleView, togglePageSlugId } = useTicketsPage();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -173,6 +175,9 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         isBuiltInView={true}
+        toggleView={toggleView}
+        isLoading={isLoading}
+        togglePageSlugId={togglePageSlugId}
       />
       <CleanTickets cleanTickets={cleanTickets} />
     </>

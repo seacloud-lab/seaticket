@@ -191,7 +191,7 @@ const Portal = () => {
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceId}>
             {isEditMode && <LeftBar />}
             <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} />
-            <MainPanel activePage={activePage} projectUuid={projectUuid} onPageChange={onPageChange} />
+            <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceId={workspaceId} onPageChange={onPageChange} />
           </DataProvider>
         )}
       </div>

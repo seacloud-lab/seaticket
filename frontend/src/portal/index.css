@@ -1,3 +1,5 @@
+@import url('../project/main-panel/tickets/index.css');
+
 .sea-qa-portal {
   display: flex;
   height: 100vh;

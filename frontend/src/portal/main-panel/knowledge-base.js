@@ -5,8 +5,8 @@ import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
 import KnowledgeBaseDetails from './knowledge-base-details';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
-import { useTags } from '@/project/hooks';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { useData, useTags } from '@/project/hooks';
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -23,16 +23,26 @@ const KnowledgeBase = ({ projectUuid }) => {
   const [viewID, setViewID] = useState('0000');
 
   const { tagsData } = useTags();
+  const { getMetadata } = useData();
 
   const api = useMemo(() => ({
-    getMetadata: (params = {}) => {
-      const { view_id = viewID, start = 0, limit = 100 } = params;
-      return portalAPI.listKBRecords(projectUuid, { view_id, start, limit }).then(res => {
+    getMetadata: (...params) => {
+      return getMetadata(KB_TABLE_NAME, params[0], () => portalAPI.listKBRecords(projectUuid, ...params)).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
-        columns = columns
-          .filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name))
-          .map(c => ({ ...c, ...(KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[c.name] || {}) }));
+        let predefinedConfig = { ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG };
+
+        columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+          const { name } = c;
+          return {
+            ...c,
+            ...predefinedConfig[name],
+          };
+        });
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
         return { data: { rows, columns } };
       });
     },
@@ -59,7 +69,7 @@ const KnowledgeBase = ({ projectUuid }) => {
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, viewID]);
+  }), [projectUuid, viewID, getMetadata]);
 
   const localStorageName = useMemo(() => `sea-qa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
 

@@ -4,7 +4,7 @@ import Tickets from '../../components/tickets';
 import { useTicketsPage } from '../../hooks';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
-  const { viewID } = useTicketsPage();
+  const { viewID, toggleView, isLoading, togglePageSlugId } = useTicketsPage();
 
   const api = useMemo(() => ({
     getMetadata: (...params) => ticketsAPI.listProjectTickets(projectUuid, ...params),
@@ -31,6 +31,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       viewID={viewID}
       toggleBar={toggleBar}
       api={api}
+      toggleView={toggleView}
+      isLoading={isLoading}
+      togglePageSlugId={togglePageSlugId}
     />
   );
 };

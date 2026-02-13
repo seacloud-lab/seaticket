@@ -8,8 +8,10 @@ import LongTextEditorUtilities from '@/utils/long-text';
 import { CenteredLoading, toaster, Option, OptionEditor } from '@/components';
 import { portalAPI } from '../api';
 import { PORTAL_PAGE } from '../constants';
+import { useData } from '@/project/hooks';
 
 import './submit-ticket.css';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 
 const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
@@ -72,6 +74,8 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const ticketRef = useRef(null);
+
+  const { insertRow } = useData();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)
@@ -142,6 +146,7 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
       setTitle('');
       setContent('');
       setType('');
+      insertRow(TICKET_TABLE_NAME);
       onPageChange(PORTAL_PAGE.MY_TICKETS);
     }).catch(error => {
       const errorMessage = error.response?.data?.error_msg || gettext('Failed to submit ticket');

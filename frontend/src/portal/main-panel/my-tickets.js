@@ -1,28 +1,16 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import dayjs from 'dayjs';
-import SeaMetadata, { VIEW_TOOL, DataCacheProvider, useDataCache } from '@/sea-metadata';
+import React, { useCallback, useMemo, useState } from 'react';
+import { VIEW_TOOL } from '@/sea-metadata';
 import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
-import {
-  TICKET_NOT_DISPLAY_COLUMNS, TICKET_COLUMNS_WIDTH_CONFIG,
-  TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_COLUMNS_ORDER_CONFIG,
-} from '@/project/main-panel/tickets/constants';
 import { portalAPI } from '../api';
+import Tickets from '@/project/main-panel/tickets/components/tickets';
 
 const viewTools = [
-  VIEW_TOOL.VIEWS,
-  VIEW_TOOL.SEARCH,
-  VIEW_TOOL.FILTERS,
-  VIEW_TOOL.SORTS,
-  VIEW_TOOL.GROUPBYS,
-  VIEW_TOOL.ROW_HEIGHT,
-  VIEW_TOOL.ORDER_HIDDEN,
+  VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
+  VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
-  const { cachedData, clearCacheData } = useDataCache();
-  const metadataRef = useRef(null);
-  const currentTime = useRef(new Date());
+const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
 
   const myTicketViewsData = useMemo(() => ({
     navigation: [
@@ -30,94 +18,60 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
       { _id: 'closed', type: 'view' },
     ],
     views: [
-      { _id: 'open', name: gettext('Open') },
-      { _id: 'closed', name: gettext('Closed') },
+      {
+        _id: 'open',
+        name: gettext('Open'),
+      }, {
+        _id: 'closed',
+        name: gettext('Closed'),
+      },
     ]
   }), []);
 
   const api = useMemo(() => ({
-    getMetadata: (params) => {
-      const { view_id } = params;
-      if (cachedData && cachedData.view?._id === view_id && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-        return Promise.resolve({
-          data: { rows: cachedData.rows, columns: cachedData.columns }
-        }).then(res => {
-          clearCacheData();
-          return res;
-        });
-      }
-
+    getMetadata: (...params) => {
       const sorts = context.localStorage.getItem('sorts') || [];
       const filters = context.localStorage.getItem('filters') || [];
       const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
       const basic_filters = context.localStorage.getItem('basic_filters') || [];
-
-      return portalAPI.listMyTickets(projectUuid, {
-        view_id,
-        config: { filters, filter_conjunction, basic_filters, sorts }
-      }).then(res => {
-        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-        let columns = res?.data?.columns || [];
-        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
-          const { name } = c;
-          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-          return {
-            ...c,
-            ...predefinedConfig,
-          };
-        });
-        clearCacheData();
-        return { data: { rows, columns } };
-      });
+      return portalAPI.listMyTickets(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts });
     },
 
-    getViews: () => {
-      if (cachedData && cachedData.views && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-        return Promise.resolve({ data: cachedData.views });
-      }
-      return Promise.resolve({ data: myTicketViewsData });
-    },
+    getViews: () => new Promise((resolve, reject) => resolve({ data: myTicketViewsData })),
 
+    // view
     getView: (viewID) => {
-      if (cachedData && cachedData.view?._id === viewID && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-        return Promise.resolve({ data: { view: cachedData.view } });
-      }
-      const view = myTicketViewsData.views.find(v => v._id === viewID) || myTicketViewsData.views[0];
-      return Promise.resolve({
-        data: {
-          view: {
-            ...view,
-            sorts: context.localStorage.getItem('sorts') || [],
-            groupbys: context.localStorage.getItem('groupbys') || [],
-            filters: context.localStorage.getItem('filters') || [],
-            filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'And',
-            basic_filters: context.localStorage.getItem('basic_filters') || [],
-            row_height: context.localStorage.getItem('row_height') || '',
-            hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-            columns_keys: context.localStorage.getItem('columns_keys') || [],
+      return new Promise((resolve, reject) => {
+        const view = myTicketViewsData.views[0];
+        resolve({
+          data: {
+            view: {
+              ...view,
+              sorts: context.localStorage.getItem('sorts') || [],
+              groupbys: context.localStorage.getItem('groupbys') || [],
+              filters: context.localStorage.getItem('filters') || [],
+              filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'And',
+              basic_filters: context.localStorage.getItem('basic_filters') || [],
+              row_height: context.localStorage.getItem('row_height') || '',
+              hidden_columns: context.localStorage.getItem('hidden_columns') || [],
+              columns_keys: context.localStorage.getItem('columns_keys') || [],
+            }
           }
-        }
-      });
-    },
-
-    modifyView: (_viewID, viewData) => {
-      return new Promise((resolve) => {
-        Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
         });
-        resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, cachedData, myTicketViewsData, clearCacheData]);
+    modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
+      Object.keys(viewData).forEach(key => {
+        context.localStorage.setItem(key, viewData[key]);
+      });
+      resolve({ data: { success: true } });
+    }),
 
-  const localStorageName = useMemo(() => `sea-qa-portal-${projectUuid}-my-tickets`, [projectUuid]);
+    // file
+    uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
+  }), [projectUuid, myTicketViewsData]);
 
-  const t = useMemo(() => ({
-    row: gettext('ticket'),
-    rows: gettext('tickets'),
-    Row: gettext('Ticket'),
-    Rows: gettext('Tickets'),
-  }), []);
+  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-my-tickets`, [projectUuid]);
 
   const [viewID, setViewID] = useState('open');
 
@@ -125,42 +79,32 @@ const MyTicketsInner = ({ projectUuid, tagsData, typesData }) => {
     setViewID(newViewID);
   }, []);
 
+  const dataDidMount = useCallback((data) => {
+    if (data.view.basic_filters.length !== 2) {
+      data.view.basic_filters = [
+        { column_key: context.getSetting('typeColumnKey'), filter_predicate: 'is_any_of', filter_term: [] },
+        { column_key: context.getSetting('tagsColumnKey'), filter_predicate: 'has_any_of', filter_term: [] },
+      ];
+    }
+  }, []);
+
   return (
-    <SeaMetadata
-      ref={metadataRef}
+    <Tickets
+      projectUuid={projectUuid}
+      workspaceID={workspaceID}
+      projectName={projectName}
+      permission="r"
       viewID={viewID}
       api={api}
-      t={t}
-      fixedColumnCount={2}
-      localStorageNamePrefix={localStorageName}
-      permission={{ isAdmin: false, canEdit: false }}
-      toggleView={toggleView}
-      settings={{
-        isFilterComputedOnServer: true,
-        isSortComputedOnServer: true,
-        canManageView: false,
-        canInsertRow: false,
-        canDeleteRow: false,
-        canModifyRow: false,
-      }}
+      localStorageNamePrefix={localStorageNamePrefix}
+      settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
+      dataDidMount={dataDidMount}
       viewTools={viewTools}
-      tagsData={tagsData}
-      typesData={typesData}
-      columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
-      columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
+      isBuiltInView={true}
+      toggleView={toggleView}
+      createContextMenuOptions={() => []}
+      createRowsTools={() => []}
     />
-  );
-};
-
-const MyTickets = ({ projectUuid, tagsData, typesData }) => {
-  return (
-    <DataCacheProvider>
-      <MyTicketsInner
-        projectUuid={projectUuid}
-        tagsData={tagsData}
-        typesData={typesData}
-      />
-    </DataCacheProvider>
   );
 };
 
