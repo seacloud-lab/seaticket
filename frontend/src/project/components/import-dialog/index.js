@@ -12,8 +12,10 @@ import { useKnowledgePage } from '@/project/main-panel/knowledge-base/hooks/inde
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
+
 const HOVER_BACKGROUND = 'rgba(237, 113, 9, 0.1)';
 const DEFAULT_BACKGROUND = 'transparent';
+
 const ImportDialog = ({ onToggle, onClickBar }) => {
   const { onRefresh } = useKnowledgePage();
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +50,7 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
       if (!taskId) return;
       onQueryIOStatus(taskId);
     }).catch(err => {
+      setIsLoading(false);
       const errorMsg = Utils.getErrorMsg(err);
       toaster.danger(errorMsg);
     });
