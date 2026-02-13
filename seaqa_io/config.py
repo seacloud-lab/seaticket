@@ -73,6 +73,7 @@ configs = ConfigParser(yaml_file_path, 'seaqa-io')
 
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 SEADB_SERVER_URL = configs.get('SEADB_SERVER_URL', 'http://seadb:8888')
+SEADB_SERVER_ACCESS_TOKEN = configs.get('SEADB_SERVER_ACCESS_TOKEN', '')
 
 SEAQA_IO_WORKERS = configs.get('SEAQA_IO_WORKERS', 3)
 SEAQA_IO_TASK_TIMEOUT = configs.get('SEAQA_IO_TASK_TIMEOUT', 3600)
