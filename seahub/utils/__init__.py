@@ -37,11 +37,8 @@ from seahub.settings import MEDIA_URL, LOGO_PATH, \
     S3_HOST, S3_KEY_ID, S3_SECRET_KEY, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
 from seahub.utils.mq import get_mq
 
-try:
-    from seahub.settings import EMAIL_HOST
-    IS_EMAIL_CONFIGURED = True
-except ImportError:
-    IS_EMAIL_CONFIGURED = False
+_email_host = getattr(seahub.settings, 'EMAIL_HOST', '') or ''
+IS_EMAIL_CONFIGURED = bool(str(_email_host).strip())
 
 logger = logging.getLogger(__name__)
 

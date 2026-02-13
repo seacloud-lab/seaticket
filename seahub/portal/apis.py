@@ -33,7 +33,7 @@ from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.portal.models import PortalExternalInvitation
-from seahub.utils import is_valid_email
+from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED
 from seahub.base.templatetags.seahub_tags import email2nickname
 
 
@@ -497,6 +497,10 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        if not IS_EMAIL_CONFIGURED:
+            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
+            return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
+
         try:
             invitation = PortalExternalInvitation.objects.add(inviter=username, email=email, project_uuid=str(project.uuid))
         except Exception as e:
@@ -516,8 +520,8 @@ class PortalExternalInvitationsView(APIView):
             logger.error(e)
             sent = False
         if not sent:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
+            return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
         try:
             if not ProjectExternalUser.objects.filter(email=email, project_uuid=str(project.uuid)).exists():
