@@ -40,7 +40,9 @@ const UserManagement = ({ projectUuid }) => {
       loadInvites();
       loadUsers();
     }).catch((error) => {
-      const errorMessage = error.response?.data?.error_msg || gettext('Generate failed');
+      const status = error.response?.status;
+      const serverMsg = error.response?.data?.error_msg;
+      const errorMessage = (status === 503 && serverMsg) ? serverMsg : gettext('Generate failed');
       toaster.danger(errorMessage);
     }).finally(() => setSubmitting(false));
   }, [email, projectUuid, loadInvites, loadUsers]);
