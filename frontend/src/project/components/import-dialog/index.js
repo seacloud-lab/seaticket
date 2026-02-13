@@ -20,6 +20,7 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
   const { onRefresh } = useKnowledgePage();
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState([]);
+  const [totalRows, setTotalRows] = useState(0);
   const [previewFileName, setPreviewFileName] = useState('');
   const uploadBoxRef = useRef(null);
 
@@ -29,6 +30,7 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
         if (r?.data?.preview_rows?.length === 0) {
           toaster.warning(gettext('Upload file is empty'));
         } else {
+          setTotalRows(r?.data?.total_rows);
           setPreviewData(r?.data?.preview_rows);
           setPreviewFileName(r?.data?.file_name);
         }
@@ -110,7 +112,10 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
           <div className="upload-file-title">{gettext('Upload file')}</div>
           {previewData.length !== 0 && (
             <div className="preview-file-box">
-              <div className="preview-file-title">{gettext('%s rows are about to be imported into this knowledge base.').replace('%s', previewData.length)}</div>
+              <div className="preview-file-title">
+                {totalRows <= 20 && (gettext('%s rows are about to be imported into this knowledge base.').replace('%s', totalRows))}
+                {totalRows > 20 && (gettext('%s rows are about to be imported into this knowledge base, display the first 20 lines as a preview').replace('%s', totalRows))}
+              </div>
               <table className="sea-qa-preview-table">
                 <thead>
                   <tr>
