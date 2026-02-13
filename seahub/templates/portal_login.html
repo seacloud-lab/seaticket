@@ -1,0 +1,63 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>{{ project_name }} - {% trans "Portal Login" %}</title>
+  <link rel="stylesheet" type="text/css" href="{{ media_url }}css/sea-qa-ui.css" />
+</head>
+<body>
+  <div class="container mt-5" style="max-width: 520px;">
+    <h3 class="mb-3">{{ project_name }} - {% trans "Portal" %}</h3>
+    <div class="card p-3">
+      <label class="mb-1">{% trans "Email" %}</label>
+      <input id="portal-email" type="email" class="form-control" placeholder="{% trans 'Enter email' %}">
+      <div class="d-flex mt-3" style="gap: 8px;">
+        <button id="send-btn" class="btn btn-outline-primary">{% trans "Send code" %}</button>
+        <input id="code" type="text" class="form-control" placeholder="{% trans 'Login code' %}">
+        <button id="verify-btn" class="btn btn-primary">{% trans "Login" %}</button>
+      </div>
+      <div id="msg" class="text-danger mt-2" style="min-height:20px;"></div>
+    </div>
+  </div>
+<script>
+  const projectUuid = "{{ project_uuid }}";
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+  const csrftoken = getCookie('seaqa_csrftoken');
+
+  function showMsg(text, ok) {
+    const el = document.getElementById('msg');
+    el.className = ok ? 'text-success mt-2' : 'text-danger mt-2';
+    el.textContent = text || '';
+  }
+
+  document.getElementById('send-btn').onclick = function () {
+    const email = document.getElementById('portal-email').value.trim();
+    if (!email) { showMsg('{% trans "Email is required" %}'); return; }
+    fetch(`/api/v1/portal/${projectUuid}/external-login/send-code/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({ email })
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
+      .then(() => showMsg('{% trans "Code sent, please check your email" %}', true))
+      .catch(e => showMsg(e.detail || '{% trans "Send failed" %}'));
+  };
+
+  document.getElementById('verify-btn').onclick = function () {
+    const email = document.getElementById('portal-email').value.trim();
+    const code = document.getElementById('code').value.trim();
+    if (!email || !code) { showMsg('{% trans "Email and code are required" %}'); return; }
+    fetch(`/api/v1/portal/${projectUuid}/external-login/verify/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({ email, code })
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
+      .then(() => { window.location.href = `/portal/${projectUuid}/`; })
+      .catch(e => showMsg(e.detail || '{% trans "Verify failed" %}'));
+  };
+</script>
+</body>
+</html>

@@ -88,7 +88,6 @@ def check_same_org_permission(user, workspace):
         return False
     return True
 
-
 def check_project_permission(username, workspace_owner, project=None):
     """Check workspace/project access permission of a user.
     """

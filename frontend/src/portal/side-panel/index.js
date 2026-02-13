@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import { Icon } from '../../components';
-import { gettext } from '@/constants';
+import { gettext, siteRoot } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 
 const BASE_NAV_ITEMS = [
@@ -34,6 +34,26 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             <span className="sea-qa-portal-nav-item-name">{item.name}</span>
           </div>
         ))}
+        {!window.app.pageOptions.isEditMode && isAnonymous && (
+          <div
+            className="sea-qa-portal-nav-item"
+            onClick={() => { window.location.href = siteRoot + `portal/${window.app.pageOptions.projectUuid}/login/`; }}
+            title={gettext('Log in')}
+          >
+            <Icon symbol="external-portal" className="sea-qa-portal-nav-item-icon" />
+            <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
+          </div>
+        )}
+        {!window.app.pageOptions.isEditMode && !!window.app.pageOptions.username && (
+          <div
+            className="sea-qa-portal-nav-item"
+            onClick={() => { window.location.href = siteRoot + 'accounts/logout/'; }}
+            title={gettext('Log out')}
+          >
+            <Icon symbol="logout" className="sea-qa-portal-nav-item-icon" />
+            <span className="sea-qa-portal-nav-item-name">{gettext('Log out')}</span>
+          </div>
+        )}
       </div>
     </div>
   );

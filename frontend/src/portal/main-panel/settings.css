@@ -57,6 +57,18 @@
   height: 100%;
 }
 
+.portal-settings-dialog-main .table th {
+  color: #666666;
+}
+
+.portal-settings-dialog-main .operation-btns {
+  opacity: 0;
+}
+
+.portal-settings-dialog-main tr:hover .operation-btns {
+  opacity: 1;
+}
+
 .portal-settings-content {
   padding: 10px;
 }

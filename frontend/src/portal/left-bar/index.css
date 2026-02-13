@@ -33,7 +33,7 @@
 
 /* Settings Modal - fixed size like seatable-app-universal */
 .portal-settings-dialog {
-  max-width: 600px;
+  max-width: 800px;
   height: calc(100% - 56px);
 }
 

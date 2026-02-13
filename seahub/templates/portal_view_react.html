@@ -43,8 +43,8 @@
         pageOptions: {
             server: '{{ service_url }}',
             csrfToken: "{{ csrf_token }}",
-            name: "{{request.user.username|email2nickname|escapejs}}",
-            username: "{{request.user.username|escapejs}}",
+            name: '{{ username|email2nickname|escapejs }}',
+            username: '{{ username|escapejs }}',
             avatarURL: '{{ avatar_url }}',
             projectName: '{{ project_name|escapejs }}',
             projectUuid: '{{ project_uuid }}',

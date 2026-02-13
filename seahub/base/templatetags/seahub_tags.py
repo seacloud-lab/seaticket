@@ -3,7 +3,6 @@
 import datetime as dt
 from datetime import datetime
 import re
-import time
 
 from django import template
 from django.core.cache import cache
@@ -19,6 +18,7 @@ from seahub.profile.settings import NICKNAME_CACHE_TIMEOUT, NICKNAME_CACHE_PREFI
     CONTACT_CACHE_PREFIX
 from seahub.shortcuts import get_first_object_or_none
 from seahub.utils import normalize_cache_key
+from seahub.portal.models import ProjectExternalUser
 
 register = template.Library()
 
@@ -223,7 +223,12 @@ def email2contact_email(value):
 
     contact_email = Profile.objects.get_contact_email_by_user(value)
     if contact_email is None:
-        cache.set(key, 'None', CONTACT_CACHE_TIMEOUT)
+        project_external_user = ProjectExternalUser.objects.get_contact_email_by_user(value)
+        if project_external_user:
+            contact_email = project_external_user.email
+            cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
+        else:
+            cache.set(key, 'None', CONTACT_CACHE_TIMEOUT)
     else:
         cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
     return contact_email
