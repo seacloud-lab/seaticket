@@ -520,7 +520,11 @@ class PortalExternalInvitationsView(APIView):
             logger.error(e)
             sent = False
         if not sent:
-            error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
+            try:
+                invitation.delete()
+            except Exception as e:
+                logger.error(e)
+            error_msg = _('Failed to send email. Please check email service configuration or SMTP server status.')
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
         try:
