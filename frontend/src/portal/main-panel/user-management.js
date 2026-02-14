@@ -39,8 +39,11 @@ const UserManagement = ({ projectUuid }) => {
       setEmail('');
       loadInvites();
       loadUsers();
-    }).catch(() => {
-      toaster.danger(gettext('Generate failed'));
+    }).catch((error) => {
+      const status = error.response?.status;
+      const serverMsg = error.response?.data?.error_msg;
+      const errorMessage = (status === 503 && serverMsg) ? serverMsg : gettext('Failed to generate invitation link');
+      toaster.danger(errorMessage);
     }).finally(() => setSubmitting(false));
   }, [email, projectUuid, loadInvites, loadUsers]);
 
