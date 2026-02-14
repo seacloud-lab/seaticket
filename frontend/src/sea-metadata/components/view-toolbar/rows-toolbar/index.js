@@ -89,10 +89,10 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyR
           >
             <CustomizeDropdownMoreToggle />
             <CustomizeDropdownMenu fixed={true}>
-              {children.map(item => {
+              {children.map((item, index) => {
                 const { key: childKey, label: childName, callback: childCallback } = item;
                 if (childKey === 'divider') {
-                  return (<DropdownItem key={childKey} divider />);
+                  return (<DropdownItem key={childKey + index} divider />);
                 }
                 if (Array.isArray(item.children) && item.children.length > 0) {
                   return (

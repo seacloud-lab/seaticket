@@ -32,6 +32,7 @@ class Store {
     this.typesData = props?.typesData || {};
     this.columnOrderRules = props?.columnOrderRules || null;
     this.columnWidthRules = props?.columnWidthRules || null;
+    this.notDisplayColumns = props?.notDisplayColumns || [];
     this.mounted = true;
   }
 
@@ -46,6 +47,7 @@ class Store {
     this.dataDidMount = null;
     this.tagsData = {};
     this.typesData = {};
+    this.notDisplayColumns = [];
     this.mounted = false;
   };
 
@@ -77,6 +79,7 @@ class Store {
         columns,
         view,
         columnWidthRules: this.columnWidthRules,
+        notDisplayColumns: this.notDisplayColumns,
         linked_records,
         error_msg: errorMsg,
       });
