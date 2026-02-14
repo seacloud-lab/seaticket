@@ -6,9 +6,9 @@ import ActionsCell from './actions-cell';
 import { getFrozenColumns } from '../../../../../utils/column';
 import { ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
 import { Z_INDEX } from '@/constants/zIndexes';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
-import { isFunction } from '@/utils/type-detection';
 
 class Row extends React.Component {
 
