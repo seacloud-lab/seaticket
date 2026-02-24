@@ -161,7 +161,7 @@ class TestPortalMyTicketsView:
 
         resp = PortalMyTicketsView.as_view()(request, project_uuid=project_uuid)
 
-        assert resp.status_code == 404
+        assert resp.status_code == 403
 
     def test_post_sql_option_invalid(self, factory, project_creator, real_project):
         project = real_project

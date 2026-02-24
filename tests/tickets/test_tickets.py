@@ -73,20 +73,18 @@ class TestTicketsAPIView:
         response = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert response.status_code == 403
 
-    def test_get_success(self, factory, project_creator, real_project):
+    def test_get_success(self, factory, project_creator, real_project, ticket_views_record):
         project = real_project
         request = factory.get(
             f"/api/v1/projects/{project.uuid}/tickets/",
             {'view_id': 'v1', 'start': '0', 'limit': '10'},
         )
         request.user = project_creator
-        with patch('seahub.tickets.tickets.TicketViews.objects.get_view') as get_view_mock, \
-                patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
+        with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.list_tickets_view_records') as list_mock:
-            get_view_mock.return_value = Mock()
             seadb_cls_mock.return_value = Mock()
-            list_mock.return_value = ([{'_pk': 1, 'title': 'test_ticket'}], ['col1'])
-            response = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+            list_mock.return_value = ([{'_pk': 1, 'title': 'test_ticket'}], [])
+            response = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert response.status_code == 200
         assert 'tickets' in response.data
         assert len(response.data['tickets']) == 1
