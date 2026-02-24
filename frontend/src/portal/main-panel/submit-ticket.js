@@ -46,7 +46,7 @@ const PortalTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
       <div className="sea-qa-portal-ticket-settings-item">
         <Label>{gettext('Type')}</Label>
         <div className="ticket-types-formatter" onClick={openEditor} ref={editorRef}>
-          {typeOption ? (<Option option={typeOption} />) : (<div className="tip-default">{gettext('No type')}</div>)}
+          {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>
       {!isReadonly && isShowEditor && (
