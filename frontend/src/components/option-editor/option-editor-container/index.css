@@ -25,6 +25,10 @@
   padding: 12px 0;
 }
 
+.option-editor-container:not(.search-enabled ) {
+  min-height: 150px;
+}
+
 .option-editor-container.selected-value-display.search-enabled {
   padding-top: 0;
 }

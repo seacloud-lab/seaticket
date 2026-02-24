@@ -11,6 +11,8 @@ import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
+const SEARCH_SIZE = 28;
+
 const OptionEditorContainer = forwardRef(({
   id,
   isMultiple = false,
@@ -113,7 +115,7 @@ const OptionEditorContainer = forwardRef(({
             isShowSearchIcon={false}
             autoFocus={true}
             value={searchValue}
-            size={28}
+            size={SEARCH_SIZE}
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
@@ -123,6 +125,7 @@ const OptionEditorContainer = forwardRef(({
       <Options
         options={displayOptions}
         maxHeight={maxHeight - (isSearchEnabled ? 26 : 18)} // 26: padding-top(12/8) + padding-bottom(12/8) + border(2)
+        isSearchEnabled={isSearchEnabled}
         searchValue={searchValue}
         emptyTip={emptyTip}
         value={value}

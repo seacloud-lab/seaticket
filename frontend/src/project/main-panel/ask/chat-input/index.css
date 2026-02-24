@@ -166,3 +166,7 @@
 .sea-qa-ai-model-selector-editor .option-editor-container {
   min-height: fit-content;
 }
+
+.sea-qa-ai-model-selector-editor .option-editor-container .option-editor-content {
+  min-height: fit-content;
+}
