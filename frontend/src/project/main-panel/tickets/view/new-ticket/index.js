@@ -7,7 +7,7 @@ import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
-import { CollaboratorsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TypeSettings, RateSettings, DueDateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -27,6 +27,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
+  const [due_date, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
@@ -82,7 +83,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const data = { title: validTitle, content, type, assignees, tags, priority };
+    const data = { title: validTitle, content, type, assignees, tags, priority, due_date };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
@@ -107,7 +108,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags, priority, insertRow]);
+  }, [title, content, type, assignees, tags, priority, due_date, insertRow]);
 
   useEffect(() => {
     const ticketDom = ticketRef.current;
@@ -206,6 +207,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               onChange={setTags}
             />
             <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} onChange={setType} />
+            <DueDateSettings isReadonly={isSubmitting} value={due_date} onChange={setDueDate} />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>
