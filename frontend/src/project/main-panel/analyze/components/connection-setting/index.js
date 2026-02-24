@@ -89,6 +89,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
             isSearchEnabled={false}
             isMultiple={true}
             optionHeight={32}
+            emptyTip={gettext('No connections available')}
             value={value}
             onChange={onChange}
             onToggle={closeEditor}

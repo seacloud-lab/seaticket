@@ -12,6 +12,7 @@ const Options = ({
   isLoading = false,
   options,
   maxHeight,
+  isSearchEnabled,
   searchValue,
   emptyTip,
   value,
@@ -120,7 +121,7 @@ const Options = ({
         <CenteredLoading style={{ minHeight: '100px' }} />
       )}
       {!isLoading && options.length === 0 && (
-        <Tip searchValue={searchValue} tip={emptyTip} />
+        <Tip isSearchEnabled={isSearchEnabled} searchValue={searchValue} tip={emptyTip} />
       )}
       {!isLoading && options.length > 0 && (
         <>

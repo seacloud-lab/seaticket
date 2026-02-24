@@ -4,12 +4,14 @@ import { mediaUrl, gettext } from '@/constants';
 
 import './index.css';
 
-const Tip = ({ searchValue, tip }) => {
+const Tip = ({ isSearchEnabled, searchValue, tip }) => {
+  const useCustomizeTip = searchValue || !isSearchEnabled;
+
   return (
     <EmptyTip
-      src={`${mediaUrl}img/${searchValue ? 'no-results' : 'start-searching'}.png`}
-      text={searchValue ? tip : gettext('Enter characters to start searching')}
-      className={searchValue ? 'option-editor-no-results-tip' : 'option-editor-start-searching-tip'}
+      src={`${mediaUrl}img/${useCustomizeTip ? 'no-results' : 'start-searching'}.png`}
+      text={useCustomizeTip ? tip : gettext('Enter characters to start searching')}
+      className={useCustomizeTip ? 'option-editor-no-results-tip' : 'option-editor-start-searching-tip'}
     />
   );
 };
