@@ -442,8 +442,8 @@ ENABLE_BIND_PHONE = False
 ALIYUN_SMS_CONFIG = {}
 
 # privacy policy link and service link
-PRIVACY_POLICY_LINK = ''
-TERMS_OF_SERVICE_LINK = ''
+PRIVACY_POLICY_LINK = 'https://your-domain.com/privacy'
+TERMS_OF_SERVICE_LINK = 'https://your-domain.com/terms'
 
 # reject registration org prefix
 REJECT_REGISTRATION_ORG_PREFIX = []

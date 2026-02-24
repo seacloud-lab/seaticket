@@ -395,8 +395,6 @@ input.short-input {
 #lang-context-selector {
   position: absolute;
   top: 23px;
-  border-radius: 3px;
-  box-shadow: 0 0 5px #ccc;
   padding: 0.5rem 0;
   white-space: nowrap;
   width: auto;
@@ -406,29 +404,36 @@ input.short-input {
 }
 
 #lang-context-selector .sf-popover-con {
-  padding: 0;
+  padding: 0 8px;
 }
 
 #lang-context-selector li {
-  padding: 3px 12px;
+  padding: 0px 8px;
   min-height: 32px;
-  line-height: 1.5;
+  line-height: 32px;
 }
 
 #lang-context-selector li:hover {
-  background-color: #20a0ff;
-}
-
-#lang-context-selector li:hover a {
-  color: #fff;
+  background-color: var(--option-bg-color);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 #lang-context-selector a {
   display: block;
-  padding: 1px 5px;
   font-weight: normal;
   text-decoration: none;
   color: #212529;
+}
+
+#lang-context-selector .sea-qa-icon-svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--bs-icon-color);
+}
+
+#lang-context-selector .un-check-mark .sea-qa-icon-svg {
+  display: none;
 }
 
 /* layout */
@@ -550,11 +555,18 @@ input.short-input {
 /* login-panel */
 .login-panel-wrapper {
   width: fit-content;
+  margin: 0 auto;
+}
+
+.login-panel-wrapper .login-panel-content {
+  width: fit-content;
   padding: 64px 48px 48px;
   margin: 0 auto;
   font-weight: 500;
-  border-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   border: 1px solid var(--bs-border-secondary-color);
+  border-bottom: 0px;
   background-color: var(--bs-body-bg);
 }
 
@@ -631,7 +643,7 @@ input.short-input {
 
 .login-panel-wrapper .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
   color: #868E96;
-  opacity: 1; /* Firefox 默认 opacity 较低 */
+  opacity: 1;
 }
 
 .login-panel-wrapper .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
@@ -647,6 +659,13 @@ input.short-input {
   color: var(--bs-body-secondary-color);
   font-size: 12px;
   line-height: 22px;
+}
+
+.login-panel-wrapper .login-form-wrapper > p.error {
+  margin: 0px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #ff0000;
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-toggle {

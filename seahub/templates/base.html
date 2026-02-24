@@ -28,6 +28,7 @@
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
 {% block extra_style %}
     {% render_bundle 'downIcon' 'css' %}
+    {% render_bundle 'checkMarkIcon' 'css' %}
     {% render_bundle 'moreIcon' 'css' %}
 {% endblock %}
 {% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
@@ -84,7 +85,14 @@
                 <div id="lang-context-selector" class="sf-popover hide">
                     <ul class="sf-popover-con">
                         {% for LANG in LANGUAGES %}
-                        <li><a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a></li>
+                        <li class="d-flex align-items-center justify-content-between">
+                          <a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a>
+                          {% if LANG.0 == LANGUAGE_CODE %}
+                          <span class="lang-check-icon-wrapper" aria-hidden="true"></span>
+                          {% else %}
+                          <span class="lang-check-icon-placeholder" aria-hidden="true"></span>
+                          {% endif %}
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -220,6 +228,7 @@ $('.js-close-side-nav').on('click', function() {
 {% block extra_script %}
 {% render_bundle 'downIcon' 'js' %}
 {% render_bundle 'moreIcon' 'js' %}
+{% render_bundle 'checkMarkIcon' 'js' %}
 {% endblock %}
 </body>
 </html>

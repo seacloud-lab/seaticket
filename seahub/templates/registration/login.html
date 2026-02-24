@@ -21,100 +21,101 @@
 
 
 {% block main_content %}
-<div class="login-panel-outer-container mt-6 vh 111">
+<div class="login-panel-outer-container mt-6 vh">
 	<div class="login-panel-wrapper">
-		<div class="login-panel-header d-flex justify-content-between align-items-center">
-			<div class="login-title">{% trans "Account log in" %}</div>
-			{% if enable_signup %}
-			<div class="register-link">
-				<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
-				<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
+		<div class="login-panel-content">
+			<div class="login-panel-header d-flex justify-content-between align-items-center">
+				<div class="login-title">{% trans "Account log in" %}</div>
+				{% if enable_signup %}
+				<div class="register-link">
+					<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
+					<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
+				</div>
+				{% endif %}
 			</div>
-			{% endif %}
-		</div>
-		<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
-			{% if cur_language == "zh-cn" %}
-			<input
-				type="text"
-				name="login"
-				placeholder="{% trans "Email" %}"
-				aria-label="{% trans "Email" %}"
-				title="{% trans "Email" %}"
-				value=""
-				class="input form-item-input"
-			/>
-			{% else %}
-			<input
-				type="text"
-				name="login"
-				placeholder="{% trans "Email" %}"
-				aria-label="{% trans "Email" %}"
-				title="{% trans "Email" %}"
-				value=""
-				class="input form-item-input"
-			/>
-			{% endif %}
-			<div class="position-relative">
+			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
+				{% if cur_language == "zh-cn" %}
 				<input
-					type="password"
-					name="password"
-					placeholder="{% trans "Password" %}"
-					aria-label="{% trans "Password" %}"
-					title="{% trans "Password" %}"
+					type="text"
+					name="login"
+					placeholder="{% trans "Email" %}"
+					aria-label="{% trans "Email" %}"
+					title="{% trans "Email" %}"
 					value=""
 					class="input form-item-input"
-					id="id_password1"
-					autocomplete="off"
 				/>
-				<div class="password-toggle" id="eye-icon-wrapper"></div>
-			</div>
+				{% else %}
+				<input
+					type="text"
+					name="login"
+					placeholder="{% trans "Email" %}"
+					aria-label="{% trans "Email" %}"
+					title="{% trans "Email" %}"
+					value=""
+					class="input form-item-input"
+				/>
+				{% endif %}
+				<div class="position-relative">
+					<input
+						type="password"
+						name="password"
+						placeholder="{% trans "Password" %}"
+						aria-label="{% trans "Password" %}"
+						title="{% trans "Password" %}"
+						value=""
+						class="input form-item-input"
+						id="id_password1"
+						autocomplete="off"
+					/>
+					<div class="password-toggle" id="eye-icon-wrapper"></div>
+				</div>
 
-			{% if form.captcha %}
-			<div class="ovhd">
-				<span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
-				{{ form.captcha }}
-			</div>
+				{% if form.captcha %}
+				<div class="ovhd">
+					<span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
+					{{ form.captcha }}
+				</div>
+				{% endif %}
+
+				<input type="hidden" name="next" value="{% if next %}{{ next|escape }}{% else %}{{ SITE_ROOT }}{% endif %}" />
+				{% if form.errors %}
+				{% if form.captcha.errors %}
+				{{ form.captcha.errors}}
+				{% elif form.errors.freeze_account %}
+				<p class="error">{{ form.errors.freeze_account }}</p>
+				{% elif form.errors.inactive %}
+				<p class="error">{{ form.errors.inactive }}</p>
+				{% elif form.errors.not_found %}
+				<p class="error">{{ form.errors.not_found }}</p>
+				{% elif form.password.errors %}
+				<p class="error">{{ form.password.errors }}</p>
+				{% elif form.errors.disable_pwd_login %}
+				<p class="error">{{ form.errors.disable_pwd_login }}</p>
+				{% else %}
+				<p class="error">{% trans "Incorrect account or password" %}</p>
+				{% endif %}
+				{% else %}
+				<p class="error hide"></p>
+				{% endif %}
+
+				{% if remember_days > 0 %}
+				<label class="login-form-pass-member d-flex align-items-center">
+					<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
+					<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+					<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+				</label>
+				{% endif %}
+
+				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
+			</form>
+
+			{% if enable_sso %}
+				<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
-			<input type="hidden" name="next" value="{% if next %}{{ next|escape }}{% else %}{{ SITE_ROOT }}{% endif %}" />
-			{% if form.errors %}
-			{% if form.captcha.errors %}
-			{{ form.captcha.errors}}
-			{% elif form.errors.freeze_account %}
-			<p class="error">{{ form.errors.freeze_account }}</p>
-			{% elif form.errors.inactive %}
-			<p class="error">{{ form.errors.inactive }}</p>
-			{% elif form.errors.not_found %}
-			<p class="error">{{ form.errors.not_found }}</p>
-			{% elif form.password.errors %}
-			<p class="error">{{ form.password.errors }}</p>
-			{% elif form.errors.disable_pwd_login %}
-			<p class="error">{{ form.errors.disable_pwd_login }}</p>
-			{% else %}
-			<p class="error">{% trans "Incorrect account or password" %}</p>
+			{% if enable_multi_saml %}
+				<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
-			{% else %}
-			<p class="error hide"></p>
-			{% endif %}
-
-			{% if remember_days > 0 %}
-			<label class="login-form-pass-member d-flex align-items-center">
-				<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-				<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
-				<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
-			</label>
-			{% endif %}
-
-			<button type="submit" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
-		</form>
-
-		{% if enable_sso %}
-		<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
-		{% endif %}
-
-		{% if enable_multi_saml %}
-		<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
-		{% endif %}
 
 			{% if enable_sms_login %}
 			<div class="mt-5">
@@ -135,14 +136,15 @@
 			</div>
 			{% endif %}
 
-		<div class="login-panel-bottom-container d-flex align-items-center justify-content-between">
-			{% if email_host %}
-			<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
-			{% endif %}
+			<div class="login-panel-bottom-container d-flex align-items-center justify-content-between">
+				{% if email_host %}
+				<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
+				{% endif %}
+			</div>
 		</div>
+		{% include "police_service_link.html" %}
 	</div>
 </div>
-{% include "police_service_link.html" %}
 {% endblock %}
 
 {% block extra_script %}
