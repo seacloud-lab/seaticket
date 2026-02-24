@@ -30,6 +30,7 @@
 </head>
 {% block extra_style %}
 {% render_bundle 'downIcon' 'css' %}
+{% render_bundle 'checkMarkIcon' 'css' %}
 <style type="text/css">
 html, body, #wrapper {
   height: 100%;
@@ -78,7 +79,14 @@ html, body, #wrapper {
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
             {% for LANG in LANGUAGES %}
-            <li><a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a></li>
+            <li class="d-flex align-items-center justify-content-between">
+              <a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a>
+              {% if LANG.0 == LANGUAGE_CODE %}
+              <span id="check-mark-icon-wrapper"></span>
+              {% else %}
+              <span class="un-check-mark" id="un-check-mark-icon-wrapper"></span>
+              {% endif %}
+            </li>
             {% endfor %}
           </ul>
         </div>
@@ -128,5 +136,6 @@ html, body, #wrapper {
     </script>
     {% block extra_script %}{% endblock %}
     {% render_bundle 'downIcon' 'js' %}
+    {% render_bundle 'checkMarkIcon' 'js' %}
 </body>
 </html>
