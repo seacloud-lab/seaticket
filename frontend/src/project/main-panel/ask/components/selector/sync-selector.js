@@ -29,7 +29,8 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
         onClick={openSelector}
         icon={icon}
         className={className}
-        title={title}
+        tip={title}
+        tipPlacement="top-start"
       >
         {children}
       </SelectorDisplay>

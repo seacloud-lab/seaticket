@@ -33,6 +33,7 @@ const Attachment = ({ value, index, onRemove, openAttachment }) => {
           className="mr-0 ml-4"
           title={gettext('Remove')}
           onClick={handleRemove}
+          placement="top"
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import { UncontrolledTooltip } from 'reactstrap';
 import classnames from 'classnames';
 import IconButton from '../icon-button';
+import Tooltip from '../tooltip';
 
 import './index.css';
 
@@ -15,14 +15,9 @@ const IconTooltip = ({ icon = 'question-circle-filled', tip, className, placemen
         className={classnames('sea-qa-tooltip-icon-btn', { 'no-hover-bg': !hoverBackground }, className)}
         { ...props }
       />
-      <UncontrolledTooltip
-        target={ref}
-        placement={placement}
-        fade={true}
-        className="sea-metadata-tooltip"
-      >
+      <Tooltip target={ref} placement={placement}>
         {tip}
-      </UncontrolledTooltip>
+      </Tooltip>
     </>
   );
 };

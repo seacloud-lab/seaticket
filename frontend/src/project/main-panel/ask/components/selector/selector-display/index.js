@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import classnames from 'classnames';
-import { Icon } from '@/components';
+import { Icon, Tooltip } from '@/components';
 
 import './index.css';
 
@@ -13,7 +13,8 @@ const SelectorDisplay = ({
   border = true,
   displayBgColor = false,
   iconPlacement = 'left',
-  title,
+  tip,
+  tipPlacement,
   onClick,
 }) => {
   const _className = useMemo(() => {
@@ -25,18 +26,24 @@ const SelectorDisplay = ({
   }, [className, highlight, border]);
 
   return (
-    <div
-      className={_className}
-      ref={innerRef}
-      onClick={onClick}
-      title={title}
-    >
-      <div className={classnames('selected-option', `icon-in-${iconPlacement}`)}>
-        {icon && iconPlacement === 'left' && (<Icon symbol={icon} />)}
-        {children && (<div className="selected-option-show">{children}</div>)}
-        {icon && iconPlacement === 'right' && (<Icon symbol={icon} />)}
+    <>
+      <div
+        className={_className}
+        ref={innerRef}
+        onClick={onClick}
+      >
+        <div className={classnames('selected-option', `icon-in-${iconPlacement}`)}>
+          {icon && iconPlacement === 'left' && (<Icon symbol={icon} />)}
+          {children && (<div className="selected-option-show">{children}</div>)}
+          {icon && iconPlacement === 'right' && (<Icon symbol={icon} />)}
+        </div>
       </div>
-    </div>
+      {tip && innerRef && (
+        <Tooltip target={innerRef} placement={tipPlacement}>
+          {tip}
+        </Tooltip>
+      )}
+    </>
   );
 };
 

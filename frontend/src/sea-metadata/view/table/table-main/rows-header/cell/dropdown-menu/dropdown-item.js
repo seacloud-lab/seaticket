@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { UncontrolledTooltip, DropdownItem } from 'reactstrap';
+import { DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
-import Icon from '@/components/icon';
+import { Tooltip, Icon } from '@/components';
 
 const ColumnDropdownItem = ({
   disabled = false,
@@ -50,9 +50,9 @@ const ColumnDropdownItem = ({
         {iconName && <Icon className="sea-metadata-icon" symbol={iconName} />}
         <span className="item-text">{title}</span>
         {isShowToolTip && (
-          <UncontrolledTooltip placement="right" target={target} fade={false} delay={{ show: 0, hide: 0 }} className="sea-metadata-tooltip">
+          <Tooltip placement="right" target={target} delay={{ show: 0, hide: 0 }}>
             {tip}
-          </UncontrolledTooltip>
+          </Tooltip>
         )}
       </DropdownItem>
     </>

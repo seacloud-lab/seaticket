@@ -1,8 +1,7 @@
 import React, { useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { UncontrolledTooltip } from 'reactstrap';
-import Icon from '@/components/icon';
+import { Tooltip, Icon } from '@/components';
 import ResizeColumn from './resize-column';
 import HeaderDropdownMenu from './dropdown-menu';
 import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
@@ -175,9 +174,9 @@ const Cell = ({
         <span className={classnames('', { 'mr-2': !isPriorityColumn })} id={`header-icon-${key}`}>
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
-        <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
+        <Tooltip placement="bottom" target={`header-icon-${key}`} trigger="hover">
           {headerIconTooltip}
-        </UncontrolledTooltip>
+        </Tooltip>
         {!isPriorityColumn && (
           <div className="header-name d-flex">
             <span title={name} className={classnames('header-name-text', { 'double': height === 56 })}>{name}</span>

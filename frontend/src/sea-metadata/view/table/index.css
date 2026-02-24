@@ -187,38 +187,6 @@
   background-color: #f9f9f9;
 }
 
-.sea-metadata-tooltip .tooltip-inner {
-  max-width: 242px;
-  font-weight: lighter;
-  text-align: start;
-  background-color: var(--bs-emphasis-color);
-  color: var(--bs-body-bg);
-}
-
-.sea-metadata-tooltip .bs-tooltip-right .arrow::before,
-.sea-metadata-tooltip .bs-tooltip-auto[x-placement^="right"] .arrow::before {
-  border-right-color: var(--bs-emphasis-color);
-}
-
-.sea-metadata-tooltip .bs-tooltip-top .arrow::before,
-.sea-metadata-tooltip .bs-tooltip-auto[x-placement^="top"] .arrow::before {
-  border-top-color: var(--bs-emphasis-color);
-}
-
-.sea-metadata-tooltip .bs-tooltip-bottom .arrow::before,
-.sea-metadata-tooltip .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
-  border-bottom-color: var(--bs-emphasis-color);
-}
-
-.sea-metadata-tooltip .bs-tooltip-left .arrow::before,
-.sea-metadata-tooltip .bs-tooltip-auto[x-placement^="left"] .arrow::before {
-  border-left-color: var(--bs-emphasis-color);
-}
-
-.sea-metadata-tooltip .bs-tooltip-auto[data-popper-placement^="right"] .arrow::before {
-  border-right-color: var(--bs-emphasis-color);
-}
-
 /* rows count */
 .sea-metadata-result.success .sea-metadata-table-footer {
   height: 32px;
