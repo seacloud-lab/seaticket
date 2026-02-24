@@ -134,6 +134,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const typeOption = CONNECTION_TYPES.find(i => i.type === type);
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
   const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
+  const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
 
   const customSteps = useMemo(() => {
     if (isGithub) {
@@ -170,7 +171,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const step = customSteps[stepIndex];
 
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog">
+    <Modal
+      isOpen={true}
+      toggle={onToggle}
+      autoFocus={false}
+      className="sea-qa-project-connection-dialog"
+      style={{height: (stepIndex === 1 && isEmail) ? 'calc(100% - 56px)' : 'fit-content'}}
+    >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="sea-qa-project-connection-body">
         <StepsNavigation
