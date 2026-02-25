@@ -101,10 +101,6 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       serverData[columnName] = value;
     });
 
-    const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
-    const substateOption = substateOptions[0];
-    serverData[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE] = substateOption?.name;
-
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
       togglePageSlugId(res.data.ticket._pk);
       insertRow(TICKET_TABLE_NAME);

@@ -36,7 +36,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
-    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
+    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
+    get_column_from_columns_by_name
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -211,6 +212,21 @@ class TicketsAPIView(APIView):
         tag_ids = json.loads(tag_ids)
 
         seadb_api = SeaDBAPI(username)
+
+        if not substate:
+            try:
+                base_metadata = seadb_api.get_base_metadata(project_uuid)
+                ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS) if base_metadata else None
+                table_columns = (ticket_meta or {}).get('columns') or []
+                substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
+                substate_options = ((substate_column.get('data') or {}).get('options') or [])
+                for opt in substate_options:
+                    if (opt.get('name') or '').lower() == 'new':
+                        substate = opt.get('name') or ''
+                        break
+            except Exception as e:
+                logger.error(e)
+
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)

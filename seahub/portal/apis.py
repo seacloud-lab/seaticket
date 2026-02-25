@@ -23,7 +23,7 @@ from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket, get_ticket_comments,\
-    convert_ticket_select_column_name_to_option_id, build_linked_record_titles_map_for_keys
+    convert_ticket_select_column_name_to_option_id, build_linked_record_titles_map_for_keys, get_column_from_columns_by_name
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -116,12 +116,27 @@ class PortalTicketsView(APIView):
             ticket_state = 'open'
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
 
+            default_substate = ''
+            try:
+                base_metadata = seadb_api.get_base_metadata(project_uuid)
+                ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS) if base_metadata else None
+                table_columns = (ticket_meta or {}).get('columns') or []
+
+                substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
+                substate_options = ((substate_column.get('data') or {}).get('options') or [])
+                for opt in substate_options:
+                    if (opt.get('name') or '').lower() == 'new':
+                        default_substate = opt.get('name') or ''
+                        break
+            except Exception as e:
+                logger.error(e)
+
             row = {
                 TicketsTable.title.name: title,
                 TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_name if type_name else None,
-                TicketsTable.substate.name: '',
+                TicketsTable.substate.name: default_substate,
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: [],
                 TicketsTable.participants.name: [username],
