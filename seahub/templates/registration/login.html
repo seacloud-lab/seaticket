@@ -36,38 +36,38 @@
 			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
 				{% if cur_language == "zh-cn" %}
 				<input
-					type="text"
-					name="login"
-					placeholder="{% trans "Email" %}"
-					aria-label="{% trans "Email" %}"
-					title="{% trans "Email" %}"
-					value=""
-					class="input form-item-input"
+				  type="text"
+				  name="login"
+				  placeholder="{% trans "Email" %}"
+				  aria-label="{% trans "Email" %}"
+				  title="{% trans "Email" %}"
+				  value=""
+				  class="input form-item-input"
 				/>
 				{% else %}
 				<input
-					type="text"
-					name="login"
-					placeholder="{% trans "Email" %}"
-					aria-label="{% trans "Email" %}"
-					title="{% trans "Email" %}"
-					value=""
-					class="input form-item-input"
+				  type="text"
+				  name="login"
+				  placeholder="{% trans "Email" %}"
+				  aria-label="{% trans "Email" %}"
+				  title="{% trans "Email" %}"
+				  value=""
+				  class="input form-item-input"
 				/>
 				{% endif %}
 				<div class="position-relative">
-					<input
-						type="password"
-						name="password"
-						placeholder="{% trans "Password" %}"
-						aria-label="{% trans "Password" %}"
-						title="{% trans "Password" %}"
-						value=""
-						class="input form-item-input"
-						id="id_password1"
-						autocomplete="off"
-					/>
-					<div class="password-toggle" id="eye-icon-wrapper"></div>
+				  <input
+					  type="password"
+					  name="password"
+					  placeholder="{% trans "Password" %}"
+					  aria-label="{% trans "Password" %}"
+					  title="{% trans "Password" %}"
+					  value=""
+					  class="input form-item-input"
+					  id="id_password1"
+					  autocomplete="off"
+				  />
+				  <div class="password-toggle" id="eye-icon-wrapper"></div>
 				</div>
 
 				{% if form.captcha %}
@@ -119,20 +119,20 @@
 
 			{% if enable_sms_login %}
 			<div class="mt-5">
-					<span class="d-flex align-items-center justify-content-center">
-							<span class="mr-2 login-form-divider-lin"></span>
-							<span style="color: #a6a6a6;">{% trans "Login with" %}</span>
-							<span class="ml-2 login-form-divider-lin"></span>
-					</span>
-					<div class="d-flex justify-content-center">
-							{% if enable_sms_login %}
-							<div class="d-flex justify-content-center mt-4 ml-4">
-									<a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
-											<img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
-									</a>
-							</div>
-							{% endif %}
-					</div>
+			  <span class="d-flex align-items-center justify-content-center">
+				  <span class="mr-2 login-form-divider-lin"></span>
+				  <span style="color: #a6a6a6;">{% trans "Login with" %}</span>
+				  <span class="ml-2 login-form-divider-lin"></span>
+			  </span>
+			  <div class="d-flex justify-content-center">
+				  {% if enable_sms_login %}
+				  <div class="d-flex justify-content-center mt-4 ml-4">
+					  <a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+						  <img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
+					  </a>
+				  </div>
+				  {% endif %}
+			  </div>
 			</div>
 			{% endif %}
 
