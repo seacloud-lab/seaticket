@@ -57,15 +57,15 @@
 				{% endif %}
 				<div class="position-relative">
 				  <input
-						type="password"
-						name="password"
-						placeholder="{% trans "Password" %}"
-						aria-label="{% trans "Password" %}"
-						title="{% trans "Password" %}"
-						value=""
-						class="input form-item-input"
-						id="id_password1"
-						autocomplete="off"
+					  type="password"
+					  name="password"
+					  placeholder="{% trans "Password" %}"
+					  aria-label="{% trans "Password" %}"
+					  title="{% trans "Password" %}"
+					  value=""
+					  class="input form-item-input"
+					  id="id_password1"
+					  autocomplete="off"
 				  />
 				  <div class="password-toggle" id="eye-icon-wrapper"></div>
 				</div>
@@ -110,11 +110,11 @@
 			</form>
 
 			{% if enable_sso %}
-			  <a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_multi_saml %}
-			  <a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_sms_login %}
