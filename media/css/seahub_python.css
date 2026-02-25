@@ -709,6 +709,7 @@ input.short-input {
   color: var(--bs-body-color);
   display: flex;
   gap: 4px;
+  user-select: none;
 }
 
 .login-panel-wrapper .login-panel-bottom-container > :last-child a:hover {

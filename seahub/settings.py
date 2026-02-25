@@ -428,7 +428,7 @@ ENABLE_BRANDING_CSS = False
 SERVE_STATIC = True
 
 # Enable or disable registration on web.
-ENABLE_SIGNUP = True
+ENABLE_SIGNUP = False
 
 USE_PHONE_REGISTRATION_BY_DEFAULT = False
 
@@ -442,8 +442,8 @@ ENABLE_BIND_PHONE = False
 ALIYUN_SMS_CONFIG = {}
 
 # privacy policy link and service link
-PRIVACY_POLICY_LINK = 'https://your-domain.com/privacy'
-TERMS_OF_SERVICE_LINK = 'https://your-domain.com/terms'
+PRIVACY_POLICY_LINK = ''
+TERMS_OF_SERVICE_LINK = ''
 
 # reject registration org prefix
 REJECT_REGISTRATION_ORG_PREFIX = []
