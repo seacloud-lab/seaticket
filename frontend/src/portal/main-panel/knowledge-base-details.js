@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Icon, CustomizeMarkdownViewer, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import { knowledgeBaseAPI } from '@/project/api';
+import { portalAPI } from '../api';
 import { useTagsData } from '@/sea-metadata/hooks';
 import Tag from '@/sea-metadata/components/tag';
 import { Input, Label } from 'reactstrap';
@@ -58,7 +58,7 @@ const KnowledgeBaseDetails = ({ row, onToggle }) => {
         return;
       }
       setIsLoading(true);
-      knowledgeBaseAPI.getRecord(projectUuid, row._id)
+      portalAPI.getKBRecord(projectUuid, row._id)
         .then(res => {
           const rec = res?.data?.record || {};
           const contentText = typeof rec.content === 'string' ? rec.content : (rec.content && rec.content.text) || '';

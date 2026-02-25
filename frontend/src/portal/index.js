@@ -72,7 +72,7 @@ const Portal = () => {
           });
         });
       };
-      APIRef.current.listUserInfo = (projectUuid) => {
+      APIRef.current.listUserInfo = (userIdList) => {
         return new Promise((resolve, reject) => {
           resolve({
             data: { user_list: [] }

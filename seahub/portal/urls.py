@@ -3,9 +3,9 @@ from django.urls import re_path
 
 from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view, portal_external_logout_view
 from .apis import PortalTicketsView, PortalMyTicketsView, PortalTagsView, \
-    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalTicketMetadataView, PortalSettingsView, \
+    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalTicketMetadataView, PortalSettingsView, \
     PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
-    PortalExternalUsersView
+    PortalExternalUsersView, PortalUserListView, PortalRelatedUsersView
 
 
 urlpatterns = [
@@ -29,6 +29,9 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/(?P<knowledge_id>\d+)/$', PortalKnowledgeBaseRecordView.as_view(), name='api-v1-portal-knowledge-base-record'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/user-list/$', PortalUserListView.as_view(), name='api-v1-portal-user-list'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/related-users/$', PortalRelatedUsersView.as_view(), name='api-v1-portal-related-users'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/metadata/$', PortalTicketMetadataView.as_view(), name='api-v1-portal-ticket-metadata'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/(?P<token>[a-f0-9]{32})/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations-detail'),

@@ -128,6 +128,22 @@ class PortalAPI {
     return this.req.get(url);
   }
 
+  getKBRecord(projectUuid, recordId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/' + recordId + '/';
+    return this.req.get(url);
+  }
+
+  listUserInfo(userIdList) {
+    const { projectUuid } = (window.app && window.app.pageOptions) || {};
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/user-list/';
+    return this.req.post(url, { user_id_list: userIdList });
+  }
+
+  listProjectRelatedUsers(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/related-users/';
+    return this.req.get(url);
+  }
+
   getSettings(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
     return this.req.get(url);
