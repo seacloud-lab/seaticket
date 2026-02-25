@@ -888,6 +888,8 @@ class ListOperator(Operator):
         FilterPredicateTypes.HAS_ALL_OF,
         FilterPredicateTypes.IS_EXACTLY,
         FilterPredicateTypes.IS_ANY_OF,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
     ]
 
     def __init__(self, column, filter_item):
