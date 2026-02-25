@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE, TICKET_TABLE_NAME } from '../../constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
 import { CollaboratorsSettings, TypeSettings, RateSettings, DueDateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
@@ -35,7 +35,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { typesData, substatesData } = useMetadata();
+  const { typesData } = useMetadata();
   const { insertRow } = useData();
   const { tagsData, createTag } = useTags();
 
