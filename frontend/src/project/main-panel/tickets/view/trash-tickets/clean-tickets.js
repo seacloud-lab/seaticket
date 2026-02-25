@@ -22,7 +22,7 @@ const CleanTickets = ({ cleanTickets }) => {
   return (
     <CommonOperationConfirmationDialog
       title={gettext('Delete tickets')}
-      message={gettext('Are you sure you want to delete the {placeholder} ?').replace('{placeholder}', `<b>${gettext('Tickets')}</b>`)}
+      message={gettext('Are you sure you want to delete the {placeholder} ?').replace('{placeholder}', `<b>${gettext('tickets')}</b>`)}
       executeOperation={cleanTickets}
       confirmBtnText={gettext('Delete')}
       toggleDialog={closeConfirm}

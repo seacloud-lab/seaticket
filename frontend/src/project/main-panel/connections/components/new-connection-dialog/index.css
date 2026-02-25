@@ -56,3 +56,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.sea-qa-project-connection-dialog .sea-qa-project-connection-body {
+  overflow-y: auto;
+}
