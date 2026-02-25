@@ -90,8 +90,8 @@ const SettingsPanel = ({
           <CustomizeSelect
             className="analyze-settings-select"
             isInModal={true}
-            value={displayColorOption}
-            options={colorOptions}
+            value={displayColorOption.value === '' ? { value: '', label: '' } : displayColorOption}
+            options={displayColorOption.value === '' ? colorOptions.filter(option => option.value !== '') : colorOptions}
             onChange={onColorByChange}
           />
         </FormGroup>
