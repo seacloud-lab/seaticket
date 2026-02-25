@@ -57,23 +57,23 @@
 				{% endif %}
 				<div class="position-relative">
 				  <input
-					  type="password"
-					  name="password"
-					  placeholder="{% trans "Password" %}"
-					  aria-label="{% trans "Password" %}"
-					  title="{% trans "Password" %}"
-					  value=""
-					  class="input form-item-input"
-					  id="id_password1"
-					  autocomplete="off"
+						type="password"
+						name="password"
+						placeholder="{% trans "Password" %}"
+						aria-label="{% trans "Password" %}"
+						title="{% trans "Password" %}"
+						value=""
+						class="input form-item-input"
+						id="id_password1"
+						autocomplete="off"
 				  />
 				  <div class="password-toggle" id="eye-icon-wrapper"></div>
 				</div>
 
 				{% if form.captcha %}
 				<div class="ovhd">
-					<span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
-					{{ form.captcha }}
+				  <span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
+				  {{ form.captcha }}
 				</div>
 				{% endif %}
 
@@ -100,9 +100,9 @@
 
 				{% if remember_days > 0 %}
 				<label class="login-form-pass-member d-flex align-items-center">
-					<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-					<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
-					<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
+				  <span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+				  <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
 				</label>
 				{% endif %}
 
@@ -110,11 +110,11 @@
 			</form>
 
 			{% if enable_sso %}
-				<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			  <a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_multi_saml %}
-				<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			  <a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_sms_login %}
