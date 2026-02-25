@@ -176,7 +176,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       toggle={onToggle}
       autoFocus={false}
       className="sea-qa-project-connection-dialog"
-      style={{height: (stepIndex === 1 && isEmail) ? 'calc(100% - 56px)' : 'fit-content'}}
+      style={{ height: (stepIndex === 1 && isEmail) ? 'calc(100% - 56px)' : 'fit-content' }}
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="sea-qa-project-connection-body">
