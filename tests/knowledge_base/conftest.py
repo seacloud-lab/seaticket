@@ -1,100 +1,113 @@
 # -*- coding: utf-8 -*-
+from uuid import uuid4
+
 import pytest
 from copy import deepcopy
 from unittest.mock import Mock, MagicMock, patch
 from rest_framework.test import APIClient
 from seahub.constants import PERMISSION_READ_WRITE
+from types import SimpleNamespace
+from seahub.project.models import Projects, Workspaces
 
 
 @pytest.fixture
-def api_client():
-    """Create an authenticated API client for testing."""
-    client = APIClient()
-    # Create a mock user
-    mock_user = Mock()
-    mock_user.id = 1
-    mock_user.username = 'test@example.com'
-    mock_user.is_authenticated = True
-    # Force authenticate
-    client.force_authenticate(user=mock_user)
-    return client
-
-
-@pytest.fixture
-def mock_user():
-    """Create a mock user object."""
-    user = Mock()
-    user.id = 1
-    user.username = 'test@example.com'
-    user.is_authenticated = True
-    return user
-
-
-@pytest.fixture
-def project_uuid():
-    """Return a valid project UUID for testing."""
-    return '12345678-1234-1234-1234-123456789abc'
-
-
-@pytest.fixture
-def mock_workspace():
-    """Create a mock workspace object."""
-    workspace = Mock()
-    workspace.owner = 'test@example.com'
-    workspace.org_id = 1
-    return workspace
-
-
-@pytest.fixture
-def mock_project(mock_workspace):
-    """Create a mock project object with workspace."""
-    project = Mock()
-    project.workspace = mock_workspace
-    project.uuid = '12345678-1234-1234-1234-123456789abc'
-    project.name = 'Test Project'
+def real_project(db):
+    owner = 'test@example.com'
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name='Test Project',
+    )
     return project
 
 
 @pytest.fixture
-def mock_org_context():
-    """Mock is_org_context to return True."""
-    with patch('seahub.utils.decorators.is_org_context', return_value=True) as mock:
-        yield mock
+def project_creator(real_project):
+    owner = real_project.creator
+    return SimpleNamespace(
+        id=1,
+        pk=1,
+        username=owner,
+        is_authenticated=True,
+        is_active=True,
+        permissions=SimpleNamespace(can_add_project=lambda: True),
+        org=SimpleNamespace(org_id=1),
+    )
 
 
 @pytest.fixture
-def mock_org_context_false():
-    """Mock is_org_context to return False."""
-    with patch('seahub.utils.decorators.is_org_context', return_value=False) as mock:
-        yield mock
+def auth_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=2,
+        pk=2,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True)
+    )
+
+@pytest.fixture
+def no_org_user():
+    username = f"owner_{uuid4().hex[:6]}@example.com"
+    return SimpleNamespace(
+        id=3,
+        pk=3,
+        username=username,
+        is_authenticated=True,
+        is_active=True,
+        org=None
+    )
 
 
 @pytest.fixture
-def mock_get_project_by_uuid(mock_project):
-    """Mock Projects.objects.get_project_by_uuid to return a mock project."""
-    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=mock_project) as mock:
-        yield mock
+def api_client(project_creator):
+    """Create an authenticated API client for testing."""
+    client = APIClient()
+    client.force_authenticate(user=project_creator)
+    return client
 
 
 @pytest.fixture
-def mock_get_project_by_uuid_none():
-    """Mock Projects.objects.get_project_by_uuid to return None (project not found)."""
-    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=None) as mock:
-        yield mock
+def api_client_other(auth_user):
+    client = APIClient()
+    client.force_authenticate(user=auth_user)
+    return client
 
 
 @pytest.fixture
-def mock_check_permission_granted():
-    """Mock check_project_permission to return permission granted."""
-    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=PERMISSION_READ_WRITE) as mock:
-        yield mock
+def api_client_no_org(no_org_user):
+    client = APIClient()
+    client.force_authenticate(user=no_org_user)
+    return client
 
 
 @pytest.fixture
-def mock_check_permission_denied():
-    """Mock check_project_permission to return None (permission denied)."""
-    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=None) as mock:
-        yield mock
+def project_uuid(real_project):
+    """Return a valid project UUID for testing."""
+    project = real_project
+    return str(project.uuid)
+
+
+@pytest.fixture
+def missing_project_uuid():
+    return '00000000-0000-0000-0000-000000000000'
+
+
+@pytest.fixture
+def mock_workspace(real_project):
+    """Create a mock workspace object."""
+    project = real_project
+    return project.workspace
+
+
+@pytest.fixture
+def mock_project(real_project):
+    """Create a mock project object with workspace."""
+    project = real_project
+    return project
 
 
 @pytest.fixture
@@ -180,48 +193,6 @@ def tag_table_metadata(tag_option):
 
 
 @pytest.fixture
-def mock_org_context_tags():
-    with patch('seahub.utils.decorators.is_org_context', return_value=True) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_org_context_tags_false():
-    with patch('seahub.utils.decorators.is_org_context', return_value=False) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_tags(mock_project):
-    with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
-        return_value=mock_project
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_none_tags():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
-        return_value=None
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_granted_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=True) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_denied_tags():
-    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=None) as mock:
-        yield mock
-
-
-@pytest.fixture
 def mock_seadb_api_tags():
     with patch('seahub.knowledge_base.knowledge_base_tags.SeaDBAPI') as mock_class:
         instance = MagicMock()
@@ -295,157 +266,6 @@ def mock_get_kb_counts():
         yield mock
 
 
-@pytest.fixture
-def mock_get_project_by_uuid_views(mock_project):
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.Projects.objects.get_project_by_uuid',
-        return_value=mock_project
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_none_views():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.Projects.objects.get_project_by_uuid',
-        return_value=None
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_granted_views():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.check_project_permission',
-        return_value=True
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_denied_views():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.check_project_permission',
-        return_value=False
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_views_record():
-    record = Mock()
-    record.views_ids = ['0000']
-    record.folders_views_ids = ['0000']
-    record.details = '{}'
-    return record
-
-
-@pytest.fixture
-def mock_get_record_views(mock_views_record):
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_record',
-        return_value=mock_views_record
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_record_views_none():
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_record',
-        return_value=None
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_list_views():
-    payload = {'views': [{'_id': '0000', 'name': 'All'}]}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.list_views',
-        return_value=payload
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_add_view():
-    new_view = {'_id': '0001', 'name': 'New view'}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.add_view',
-        return_value=new_view
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_view():
-    view = {'_id': '0000', 'name': 'All'}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_view',
-        return_value=view
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_duplicate_view():
-    new_view = {'_id': '0004', 'name': 'Duplicate'}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.duplicate_view',
-        return_value=new_view
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_move_view():
-    navigation = {'navigation': [{'_id': 'nav', 'type': 'view'}]}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.move_view',
-        return_value=navigation
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_excel(mock_project):
-    """Mock Projects.objects.get_project_by_uuid for excel export."""
-    with patch(
-        'seahub.knowledge_base.knowledge_base_excel.Projects.objects.get_project_by_uuid',
-        return_value=mock_project
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_project_by_uuid_none_excel():
-    """Return None when fetching project for excel export."""
-    with patch(
-        'seahub.knowledge_base.knowledge_base_excel.Projects.objects.get_project_by_uuid',
-        return_value=None
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_granted_excel():
-    """Mock permission check to succeed for excel export."""
-    with patch(
-        'seahub.knowledge_base.knowledge_base_excel.check_project_permission',
-        return_value=True
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_check_permission_denied_excel():
-    """Mock permission check to fail for excel export."""
-    with patch(
-        'seahub.knowledge_base.knowledge_base_excel.check_project_permission',
-        return_value=False
-    ) as mock:
-        yield mock
 
 
 @pytest.fixture
@@ -463,17 +283,6 @@ def mock_query_kb_task_status():
     """Mock query_kb_task_status helper."""
     with patch(
         'seahub.knowledge_base.knowledge_base_excel.query_kb_task_status'
-    ) as mock:
-        yield mock
-
-
-@pytest.fixture
-def mock_get_view_excel():
-    """Mock KnowledgeBaseViews.objects.get_view for export."""
-    view = {'_id': '0000', 'name': 'All'}
-    with patch(
-        'seahub.knowledge_base.knowledge_base_excel.KnowledgeBaseViews.objects.get_view',
-        return_value=view
     ) as mock:
         yield mock
 

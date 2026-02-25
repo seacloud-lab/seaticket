@@ -437,7 +437,10 @@ class GithubWebhookView(APIView):
         if not signature:
             return True
 
-        sha_name, signature = signature.split('=')
+        if '=' not in signature:
+            return False
+
+        sha_name, signature = signature.split('=', 1)
         if sha_name != 'sha256':
             return False
 
@@ -505,7 +508,10 @@ class DiscourseWebhookView(APIView):
         if not signature:
             return True
 
-        sha_name, signature = signature.split('=')
+        if '=' not in signature:
+            return False
+
+        sha_name, signature = signature.split('=', 1)
         if sha_name != 'sha256':
             return False
 

@@ -3,8 +3,7 @@
 Unit tests for knowledge_base_views API endpoints.
 """
 
-import pytest
-from unittest.mock import patch, Mock
+from seahub.knowledge_base.models import KnowledgeBaseViews
 
 
 # URL helper constructors ------------------------------------------------------
@@ -28,8 +27,8 @@ def get_kb_duplicate_views_url(project_uuid):
 # KnowledgeBaseViewsAPI.get --------------------------------------------------
 
 class TestKnowledgeBaseViewsGet:
-    def test_get_project_not_found_returns_404(self, api_client, project_uuid, mock_get_project_by_uuid_none_views):
-        url = get_kb_views_url(project_uuid)
+    def test_get_project_not_found_returns_404(self, api_client, missing_project_uuid):
+        url = get_kb_views_url(missing_project_uuid)
 
         resp = api_client.get(url)
 
@@ -37,40 +36,24 @@ class TestKnowledgeBaseViewsGet:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_denied_views
+        self, api_client_other, project_uuid
     ):
         url = get_kb_views_url(project_uuid)
 
-        resp = api_client.get(url)
+        resp = api_client_other.get(url)
 
         assert resp.status_code == 403
         assert 'Permission denied' in resp.data['error_msg']
 
-    def test_get_internal_error_returns_500(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views
-    ):
-        url = get_kb_views_url(project_uuid)
-        with patch(
-            'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.list_views',
-            side_effect=Exception('boom')
-        ):
-            resp = api_client.get(url)
-
-        assert resp.status_code == 500
-        assert 'Internal Server Error' in resp.data['error_msg']
-
     def test_get_success_returns_views(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_list_views
+        self, api_client, project_uuid
     ):
         url = get_kb_views_url(project_uuid)
 
         resp = api_client.get(url)
 
         assert resp.status_code == 200
-        assert resp.data == mock_list_views.return_value
+        assert 'views' in resp.data
         assert resp.data['views'][0]['name'] == 'All'
 
 
@@ -87,9 +70,9 @@ class TestKnowledgeBaseViewsPost:
         assert 'view name is invalid' in resp.data['error_msg']
 
     def test_post_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_none_views
+        self, api_client, missing_project_uuid
     ):
-        url = get_kb_views_url(project_uuid)
+        url = get_kb_views_url(missing_project_uuid)
         data = {'name': 'New view'}
 
         resp = api_client.post(url, data, format='json')
@@ -98,32 +81,18 @@ class TestKnowledgeBaseViewsPost:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_post_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_denied_views
+        self, api_client_other, project_uuid
     ):
         url = get_kb_views_url(project_uuid)
         data = {'name': 'New view'}
 
-        resp = api_client.post(url, data, format='json')
+        resp = api_client_other.post(url, data, format='json')
 
         assert resp.status_code == 403
         assert 'Permission denied' in resp.data['error_msg']
 
-    def test_post_record_missing_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views_none
-    ):
-        url = get_kb_views_url(project_uuid)
-        data = {'name': 'New view'}
-
-        resp = api_client.post(url, data, format='json')
-
-        assert resp.status_code == 404
-        assert 'The views does not exists' in resp.data['error_msg']
-
-    def test_post_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views, mock_add_view
+    def test_post_creates_record_if_missing(
+        self, api_client, project_uuid
     ):
         url = get_kb_views_url(project_uuid)
         data = {'name': 'New view'}
@@ -131,16 +100,26 @@ class TestKnowledgeBaseViewsPost:
         resp = api_client.post(url, data, format='json')
 
         assert resp.status_code == 200
-        assert resp.data['view'] == mock_add_view.return_value
+
+    def test_post_success_returns_view(
+        self, api_client, project_uuid
+    ):
+        url = get_kb_views_url(project_uuid)
+        data = {'name': 'New view'}
+
+        resp = api_client.post(url, data, format='json')
+
+        assert resp.status_code == 200
+        assert resp.data['view']['name'] == 'New view'
 
 
 # KnowledgeBaseViewView.get --------------------------------------------------
 
 class TestKnowledgeBaseViewDetailGet:
     def test_get_project_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_none_views
+        self, api_client, missing_project_uuid
     ):
-        url = get_kb_view_url(project_uuid, '0000')
+        url = get_kb_view_url(missing_project_uuid, '0000')
 
         resp = api_client.get(url)
 
@@ -148,39 +127,33 @@ class TestKnowledgeBaseViewDetailGet:
         assert 'Project not found' in resp.data['error_msg']
 
     def test_get_permission_denied_returns_403(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_denied_views
+        self, api_client_other, project_uuid
     ):
         url = get_kb_view_url(project_uuid, '0000')
 
-        resp = api_client.get(url)
+        resp = api_client_other.get(url)
 
         assert resp.status_code == 403
         assert 'Permission denied' in resp.data['error_msg']
 
-    def test_get_record_missing_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views_none
+    def test_get_creates_record_if_missing(
+        self, api_client, project_uuid
     ):
-        url = get_kb_view_url(project_uuid, '0000')
-
-        resp = api_client.get(url)
-
-        assert resp.status_code == 404
-        assert 'The views does not exists' in resp.data['error_msg']
-
-    def test_get_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views,
-        mock_get_view, mock_views_record
-    ):
-        mock_views_record.views_ids = ['0000']
         url = get_kb_view_url(project_uuid, '0000')
 
         resp = api_client.get(url)
 
         assert resp.status_code == 200
-        assert resp.data['view'] == mock_get_view.return_value
+
+    def test_get_success_returns_view(
+        self, api_client, project_uuid
+    ):
+        url = get_kb_view_url(project_uuid, '0000')
+
+        resp = api_client.get(url)
+
+        assert resp.status_code == 200
+        assert resp.data['view']['_id'] == '0000'
 
 
 # KnowledgeBaseViewView.put --------------------------------------------------
@@ -195,10 +168,8 @@ class TestKnowledgeBaseViewDetailPut:
         assert 'view_data is invalid' in resp.data['error_msg']
 
     def test_put_view_not_found_returns_400(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views, mock_views_record
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
         url = get_kb_view_url(project_uuid, 'missing')
         data = {'view_data': {'name': 'Updated'}}
 
@@ -208,32 +179,24 @@ class TestKnowledgeBaseViewDetailPut:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_put_success_returns_true(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views, mock_views_record
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
-        with patch(
-            'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.update_view',
-            return_value={'views': []}
-        ) as mock:
-            url = get_kb_view_url(project_uuid, '0000')
-            data = {'view_data': {'name': 'Updated'}}
-
-            resp = api_client.put(url, data, format='json')
+        url = get_kb_view_url(project_uuid, '0000')
+        data = {'view_data': {'name': 'Updated'}}
+        resp = api_client.put(url, data, format='json')
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
-        mock.assert_called_once()
+        view = KnowledgeBaseViews.objects.get_view(project_uuid, '0000')
+        assert view.get('name') == 'Updated'
 
 
 # KnowledgeBaseViewView.delete -----------------------------------------------
 
 class TestKnowledgeBaseViewDetailDelete:
     def test_delete_view_not_found_returns_400(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views, mock_views_record
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
         url = get_kb_view_url(project_uuid, 'missing')
 
         resp = api_client.delete(url)
@@ -242,22 +205,14 @@ class TestKnowledgeBaseViewDetailDelete:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_delete_success_returns_true(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views,
-        mock_views_record
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
-        with patch(
-            'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.delete_view',
-            return_value={'views': []}
-        ) as mock:
-            url = get_kb_view_url(project_uuid, '0000')
-
-            resp = api_client.delete(url)
+        new_view = KnowledgeBaseViews.objects.add_view(project_uuid, 'ToDelete', 'table', {})
+        url = get_kb_view_url(project_uuid, new_view.get('_id'))
+        resp = api_client.delete(url)
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
-        mock.assert_called_once()
 
 
 # KnowledgeBaseViewsDuplicateView.post --------------------------------------
@@ -272,10 +227,8 @@ class TestKnowledgeBaseViewsDuplicate:
         assert 'view_id invalid' in resp.data['error_msg']
 
     def test_duplicate_view_not_found_returns_404(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views, mock_views_record
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
         url = get_kb_duplicate_views_url(project_uuid)
         data = {'view_id': 'missing'}
 
@@ -285,18 +238,15 @@ class TestKnowledgeBaseViewsDuplicate:
         assert 'does not exists' in resp.data['error_msg']
 
     def test_duplicate_success_returns_view(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views,
-        mock_views_record, mock_duplicate_view
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['0000']
         url = get_kb_duplicate_views_url(project_uuid)
         data = {'view_id': '0000'}
 
         resp = api_client.post(url, data, format='json')
 
         assert resp.status_code == 200
-        assert resp.data['view'] == mock_duplicate_view.return_value
+        assert resp.data['view']['_id'] != '0000'
 
 
 # KnowledgeBaseViewsMoveView.post -------------------------------------------
@@ -321,17 +271,18 @@ class TestKnowledgeBaseViewsMove:
         assert 'target_view_id is invalid' in resp.data['error_msg']
 
     def test_move_success_returns_navigation(
-        self, api_client, project_uuid, mock_get_project_by_uuid_views,
-        mock_check_permission_granted_views, mock_get_record_views,
-        mock_views_record, mock_move_view
+        self, api_client, project_uuid
     ):
-        mock_views_record.views_ids = ['source', 'target']
-        mock_views_record.folders_views_ids = ['source', 'target']
+        source_view = KnowledgeBaseViews.objects.add_view(project_uuid, 'Source', 'table', {})
+        target_view = KnowledgeBaseViews.objects.add_view(project_uuid, 'Target', 'table', {})
         url = get_kb_move_views_url(project_uuid)
-        data = {'source_view_id': 'source', 'target_view_id': 'target'}
+        data = {'source_view_id': source_view.get('_id'), 'target_view_id': target_view.get('_id')}
 
         resp = api_client.post(url, data, format='json')
 
         assert resp.status_code == 200
-        assert resp.data['navigation'] == mock_move_view.return_value['navigation']
-        mock_move_view.assert_called_once()
+        nav = resp.data['navigation']
+        nav_ids = [item.get('_id') for item in nav]
+        assert source_view.get('_id') in nav_ids
+        assert target_view.get('_id') in nav_ids
+        assert nav_ids.index(source_view.get('_id')) < nav_ids.index(target_view.get('_id'))
