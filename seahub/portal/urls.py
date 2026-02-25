@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view
+from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view, portal_external_logout_view
 from .apis import PortalTicketsView, PortalMyTicketsView, PortalTagsView, \
     PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalTicketMetadataView, PortalSettingsView, \
     PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
@@ -36,6 +36,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/verify/$', PortalExternalLoginVerifyCodeView.as_view(), name='api-v1-portal-external-login-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-users/$', PortalExternalUsersView.as_view(), name='api-v1-portal-external-users'),
     re_path(r'^portal-external/accept/(?P<token>[a-f0-9]{32})/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_invitation_accept_view, name='portal_external_invitation_accept_view'),
+    re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
 
 ]
