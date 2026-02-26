@@ -10,7 +10,6 @@ import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
 import { MetadataProvider } from '../main-panel/tickets/hooks';
 import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
-import { KnowledgePageProvider } from '@/project/main-panel/knowledge-base/hooks/index';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
@@ -595,11 +594,9 @@ export const DataProvider = ({
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
-                  <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
-                    <AnalyzeTaskProvider>
-                      {children}
-                    </AnalyzeTaskProvider>
-                  </KnowledgePageProvider>
+                  <AnalyzeTaskProvider>
+                    {children}
+                  </AnalyzeTaskProvider>
                 </ConnectionsProvider>
               </MetadataProvider>
             </TagsProvider>

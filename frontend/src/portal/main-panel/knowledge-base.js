@@ -7,6 +7,7 @@ import { portalAPI } from '../api';
 import KnowledgeBaseDetails from './knowledge-base-details';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
 import { useData, useTags } from '@/project/hooks';
+import { KnowledgePageProvider } from '@/project/main-panel/knowledge-base/hooks/index';
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -18,7 +19,7 @@ const viewTools = [
   VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const KnowledgeBase = ({ projectUuid }) => {
+const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
   const metadataRef = useRef(null);
   const [viewID, setViewID] = useState('0000');
 
@@ -85,28 +86,30 @@ const KnowledgeBase = ({ projectUuid }) => {
   }, []);
 
   return (
-    <SeaMetadata
-      ref={metadataRef}
-      viewID={viewID}
-      api={api}
-      t={t}
-      localStorageNamePrefix={localStorageName}
-      permission={{ isAdmin: false, canEdit: false }}
-      toggleView={toggleView}
-      settings={{
-        isFilterComputedOnServer: false,
-        isSortComputedOnServer: false,
-        canManageView: false,
-        canInsertRow: false,
-        canDeleteRow: false,
-        canModifyRow: false,
-      }}
-      viewTools={viewTools}
-      tagsData={tagsData}
-      expandRow={(row) => context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row)}
-    >
-      <KnowledgeBaseDetails />
-    </SeaMetadata>
+    <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
+      <SeaMetadata
+        ref={metadataRef}
+        viewID={viewID}
+        api={api}
+        t={t}
+        localStorageNamePrefix={localStorageName}
+        permission={{ isAdmin: false, canEdit: false }}
+        toggleView={toggleView}
+        settings={{
+          isFilterComputedOnServer: false,
+          isSortComputedOnServer: false,
+          canManageView: false,
+          canInsertRow: false,
+          canDeleteRow: false,
+          canModifyRow: false,
+        }}
+        viewTools={viewTools}
+        tagsData={tagsData}
+        expandRow={(row) => context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row)}
+      >
+        <KnowledgeBaseDetails />
+      </SeaMetadata>
+    </KnowledgePageProvider>
   );
 };
 
