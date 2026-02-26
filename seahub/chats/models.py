@@ -161,7 +161,7 @@ class ChatMessages(models.Model):
 
     class Meta:
         db_table = 'chat_messages'
-        indexes = [
+        constraints = [
             models.Index(
                 fields=['session_uuid', 'created_at'],
                 name='idx_session_uuid_created_at'
