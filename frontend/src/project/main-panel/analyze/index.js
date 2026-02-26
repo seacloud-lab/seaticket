@@ -52,15 +52,13 @@ const Analyze = ({ title }) => {
         ...storedSettings,
         colorBy,
         displayMode,
-        startDate,
-        endDate,
         filters
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
       console.error('Failed to save settings to localStorage:', e);
     }
-  }, [colorBy, displayMode, startDate, endDate, filters]);
+  }, [colorBy, displayMode, filters]);
 
   const handleAnalyze = useCallback(() => {
     startAnalysis(selectedConnections.map(c => c.id), startDate, endDate);
@@ -72,6 +70,8 @@ const Analyze = ({ title }) => {
         name: c.name,
         type: c.type
       })),
+      startDate,
+      endDate,
     };
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
   }, [selectedConnections, startDate, endDate, startAnalysis]);
