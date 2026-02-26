@@ -1,13 +1,12 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
-import KnowledgeBaseDetails from './knowledge-base-details';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { useData, useTags } from '@/project/hooks';
 import { KnowledgePageProvider } from '@/project/main-panel/knowledge-base/hooks/index';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -21,7 +20,10 @@ const viewTools = [
 
 const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
   const metadataRef = useRef(null);
+  const allColumns = useRef([]);
   const [viewID, setViewID] = useState('0000');
+  const [currentKB, setCurrentKB] = useState(null);
+  const [isShowKBDetailsDialog, setIsShowKBDetailsDialog] = useState(false);
 
   const { tagsData } = useTags();
   const { getMetadata } = useData();
@@ -44,6 +46,7 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
         if (tagsColumn) {
           context.setSetting('tagsColumnKey', tagsColumn.key);
         }
+        allColumns.current = columns;
         return { data: { rows, columns } };
       });
     },
@@ -85,6 +88,27 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
     setViewID(newViewID);
   }, []);
 
+  const handleExpandRow = useCallback((kb) => {
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+    setIsShowKBDetailsDialog(true);
+  }, []);
+
+  const handleSwitchKB = useCallback((step) => {
+    const KBData = metadataRef.current?.getOrderRows ? metadataRef.current.getOrderRows() : [];
+    const index = KBData.findIndex(r => r._id === currentKB?._id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > KBData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = KBData.length - 1;
+    }
+    const kb = KBData[newIndex];
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+  }, [currentKB]);
+
   return (
     <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
       <SeaMetadata
@@ -105,10 +129,18 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
         }}
         viewTools={viewTools}
         tagsData={tagsData}
-        expandRow={(row) => context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row)}
+        expandRow={handleExpandRow}
       >
-        <KnowledgeBaseDetails />
       </SeaMetadata>
+      {isShowKBDetailsDialog && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={currentKB}
+          columns={allColumns.current}
+          switchResource={handleSwitchKB}
+          onToggle={() => setIsShowKBDetailsDialog(false)}
+        />
+      )}
     </KnowledgePageProvider>
   );
 };
