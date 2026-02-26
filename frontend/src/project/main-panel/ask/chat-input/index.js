@@ -8,7 +8,6 @@ import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE } from '../constants';
-import ResolveType from './resolve-type';
 import ProjectRecordsSelector from './project-records-selector';
 import { useAIChatTools } from '../hooks';
 import AIModelSelector from './ai-model-selector';
@@ -38,7 +37,6 @@ const ChatInput = forwardRef(({
 
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
-    resolveType, updateResolveType, resetResolveType,
   } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
@@ -86,7 +84,6 @@ const ChatInput = forwardRef(({
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
     sendMessage({
-      resolveType,
       message: value,
       attachments,
       model: selectedModel,
@@ -94,7 +91,7 @@ const ChatInput = forwardRef(({
     });
     clearAttachments();
     resetClearContext();
-  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
+  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -180,7 +177,6 @@ const ChatInput = forwardRef(({
   useEffect(() => {
     return () => {
       clearAttachments();
-      resetResolveType();
     };
   }, []);
 
@@ -223,7 +219,6 @@ const ChatInput = forwardRef(({
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
               <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
-              <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>

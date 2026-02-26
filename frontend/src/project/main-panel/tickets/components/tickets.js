@@ -18,7 +18,6 @@ import {
 } from '../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import RelatedIssuesDialog from './related-issues-dialog';
 import CreateKBRecordDialog from './create-kb-record-dialog';
 import { isFunction } from '@/utils/type-detection';
@@ -183,7 +182,7 @@ const Tickets = ({
   }, []);
 
   const chatTicketsByAI = useCallback((tickets) => {
-    updateAttachments(tickets, AI_RESOLVE_TYPE.AGENT);
+    updateAttachments(tickets);
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 

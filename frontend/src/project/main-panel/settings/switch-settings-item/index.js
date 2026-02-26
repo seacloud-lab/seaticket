@@ -1,11 +1,15 @@
 import React, { useCallback, useState } from 'react';
+import classnames from 'classnames';
 import { Switch } from '@/components';
-import { gettext } from '@/constants';
 
 import './index.css';
 
-const DeveloperModeSettings = ({
-  value: oldValue = false,
+const SwitchSettingsItem = ({
+  title,
+  tip,
+  placeholder,
+  className,
+  value: oldValue = true,
   onChange,
 }) => {
   const [value, setValue] = useState(oldValue);
@@ -17,23 +21,23 @@ const DeveloperModeSettings = ({
   }, [value]);
 
   return (
-    <>
-      <div className="developer-mode-settings-header text-truncate">{gettext('Developer mode')}</div>
-      <div className="developer-mode-settings">
+    <div className={classnames('switch-settings-option w-100 pl-4 pr-4', className)}>
+      <div className="switch-settings-option-header text-truncate">{title}</div>
+      <div className="switch-settings-option-body">
         <Switch
           checked={value}
           size="large"
           textPosition="right"
-          className="change-developer-mode-status w-100"
+          className="change-settings-option-status w-100"
           onChange={onValueChange}
-          placeholder={gettext('Developer mode')}
+          placeholder={placeholder}
         />
         <p className="tip-default tip m-0">
-          {gettext('Enable developer mode to show advanced features for development and debugging purposes.')}
+          {tip}
         </p>
       </div>
-    </>
+    </div>
   );
 };
 
-export default DeveloperModeSettings;
+export default SwitchSettingsItem;

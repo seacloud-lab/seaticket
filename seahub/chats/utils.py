@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
-
 import requests
 import jwt
 import uuid
 import time
+from django.core.cache import cache
 from urllib.parse import urljoin
-from seahub.chats.models import ChatMessageThoughtProcess
+from seahub.chats.constants import AI_REPLY_TIMEOUT
+from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages
 from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 from seahub.knowledge_base.knowledge_base_utils import get_whole_knowledge_bases_data
 from seahub.tickets.ticket_utils import get_whole_tickets_data
@@ -17,24 +18,12 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.constants import ConnectionType, ExtraSourceType
+from seahub.utils import mq
 
 logger = logging.getLogger(__name__)
 
-def get_ai_reply(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/get-ai-reply')
-    resp = requests.post(url, json=params, headers=headers, timeout=180)
-    if resp.status_code == 500:
-        raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
-    resp_json = resp.json()
-    return {
-        'ai_reply': resp_json.get('answer', ''),
-        'sources': resp_json.get('sources', []),
-        'thought_process': resp_json.get('thought_process', {})
-    }
-
+def gen_chat_task_id(session_uuid):
+    return f"chat_{session_uuid.replace('-', '')}"
 
 def gen_message_id(session_uuid, max_try=5):
     trying = 0
@@ -49,6 +38,103 @@ def gen_message_id(session_uuid, max_try=5):
         raise Exception(f'Failure to generate message_id')
 
     return new_message_id
+
+def record_message_to_db(ai_result, username, session_uuid, message_id, query, attachments):
+    if 'ai_reply' not in ai_result:
+        ai_result['ai_reply'] = ai_result.get('answer', '')
+    
+    try:
+        del ai_result['answer']
+    except:
+        pass
+
+    try:
+        ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_result.get('thought_process', {}))
+    except Exception as e:
+        logger.warning(f'Failure to record thought process to db: {e}')
+
+    user_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'user', query, attachments=attachments)
+    ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
+
+    ai_result.update({
+        'session_uuid': session_uuid,
+        'user_message_id': user_message.id,
+        'ai_reply_message_id': ai_reply_message.id,
+        'attachments': remove_content_details_in_attachments(attachments)
+    })
+
+    return ai_result
+
+def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query, attachments):
+    has_recorded_result = False
+    try:
+        for line in ai_response.iter_lines():
+            if line:
+                line_str = line.decode('utf-8')
+                if not line_str.startswith('data:'):
+                    line_str = f"data: {line_str}"
+                content = line_str[len('data: '):]
+                # use if - else instead of json.loads() to avoid performance issues
+                if content.startswith('{"results": ') and content.endswith('}'):
+                    results = json.loads(content)['results']
+                    item = f'data: {json.dumps({
+                        "results": record_message_to_db(results, username, session_uuid, message_id, query, attachments)
+                    })}\n\n'
+                    has_recorded_result = True
+                else:
+                    if not line_str.endswith('\n\n'):
+                        line_str += '\n\n'
+                    item = line_str
+                try:
+                    yield item
+                except: # continues to receive data even client interrupts the stream
+                    continue
+    except Exception as e:
+        logger.exception(f'Streaming response is interrupted: {e}')
+        if not has_recorded_result:
+            item = f'data: {json.dumps({
+                "results": record_message_to_db({
+                    "ai_reply": "There is an issue with the AI server or web server (internal server error), please try again later",
+                    "sources": []
+                }, username, session_uuid, message_id, query, attachments)
+            })}\n\n'
+            try:
+                yield item
+            except:
+                pass
+        try:
+            yield 'data: [DONE]\n\n'
+        except:
+            pass
+    cache.delete(chat_task_id_info)
+
+def get_ai_reply(params):
+    payload = {'exp': int(time.time()) + AI_REPLY_TIMEOUT, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/get-ai-reply')
+
+    if params.get('stream', False):
+        resp =  requests.post(
+            url,
+            json=params,
+            headers=headers,
+            stream=True,
+            timeout=AI_REPLY_TIMEOUT # for stream output, the timeout can down to 30
+        )
+        if resp.status_code == 500:
+            raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
+        return resp
+    else:
+        resp = requests.post(url, json=params, headers=headers, timeout=AI_REPLY_TIMEOUT)
+        if resp.status_code == 500:
+            raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
+        resp_json = resp.json()
+        return {
+            'ai_reply': resp_json.get('answer', ''),
+            'sources': resp_json.get('sources', []),
+            'thought_process': resp_json.get('thought_process', {})
+        }
 
 def get_attachments(seadb_api, project_uuid, attachments):
     knowledge_base_ids = []

@@ -9,6 +9,7 @@ class ChatSession {
     this.is_shared = object.is_shared || false;
 
     this.is_replying = object.is_replying || false;
+    this.running_task = object.running_task || false;
     this.problem = object.problem || null;
   }
 }

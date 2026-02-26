@@ -58,10 +58,67 @@ class ChatAPI {
     }
   }
 
-  sendChatMessage(params) {
+  sendChatMessage(params, options) {
     const url = this.server + '/api/v1/ai/chat/';
     return this._sendPostRequest(url, params);
   }
+
+  _handleEventStreamRequest(url, form, options = {}) {
+    let body = form;
+    let headers = { ...options.headers };
+    if (!headers['X-CSRFToken']) {
+      const csrfToken = Cookies.get('seaqa_csrftoken');
+      if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+      }
+    }
+    if (this.token && !headers['Authorization']) {
+      headers['Authorization'] = 'Token ' + this.token;
+    }
+    if (!headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (!form) {
+      return fetch(url, {
+        method: 'GET',
+        headers: headers,
+        credentials: 'include',
+        signal: options.signal,
+      });
+    }
+
+    if (form.getHeaders) {
+      body = form;
+      const formHeaders = form.getHeaders();
+      headers = { ...headers, ...formHeaders };
+    } else if (typeof form === 'object') {
+      body = JSON.stringify(form);
+    }
+    return fetch(url, {
+      method: 'POST',
+      body: body,
+      headers: headers,
+      credentials: 'include',
+      signal: options.signal,
+    });
+  }
+
+  sendChatMessageByStream(params, options = {}) {
+    const url = this.server + '/api/v1/ai/chat/';
+    return this._handleEventStreamRequest(url, params, options);
+  }
+
+  getChatMessage(sessionId) {
+    const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId;
+    return this.req.get(url);
+  }
+
+  getChatMessageByStream(sessionId, streamed_length, options) {
+    const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
+    return this._handleEventStreamRequest(url, undefined, options);
+  }
+
   // chat sessions api
   listChatSessions(projectUuid) {
     const url = this.server + '/api/v1/chat/sessions/?project_uuid=' + projectUuid;

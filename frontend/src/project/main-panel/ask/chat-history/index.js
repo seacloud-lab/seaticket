@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import MessageBox from './message-box';
 import CommonMessage from './common-message';
@@ -10,6 +10,15 @@ import './index.css';
 const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
   const { _id, message, isUserSpeak, type } = chat;
 
+  const chatId = useMemo(() => _id || '', [_id]);
+
+  const showOperations = useMemo(() => {
+    if (isUserSpeak) return false;
+    if (type === CHAT_MESSAGE_TYPE.TIP) return false;
+    if (chatId === 'typing') return false;
+    return true;
+  }, [chatId, isUserSpeak, type]);
+
   if (Object.keys(message).length === 0) return null;
 
   if (!isUserSpeak && message === '<break_context>') {
@@ -20,12 +29,12 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) 
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage
         message={message}
-        chatId={_id || ''}
+        chatId={chatId}
         settings={settings}
         projectUuid={projectUuid}
         projectName={projectName}
         workspaceID={workspaceID}
-        showOperations={!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP)}
+        showOperations={showOperations}
       />
     </MessageBox>
   );

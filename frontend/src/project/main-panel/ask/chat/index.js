@@ -28,8 +28,9 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
   const messageInputRef = useRef(null);
   const currentSessionId = useRef('');
   const newSessionProblem = useRef('');
+  const aiReplyStreamTimer = useRef('');
 
-  const { isShowSessions, sessions, createSession, modifyLocalSession } = useSessions();
+  const { isShowSessions, sessions, createSession, modifyLocalSession, getChatMessage } = useSessions();
   const { togglePageSlugId } = useAskPage();
   const { isShowDocuments, documents } = useDocuments();
 
@@ -39,11 +40,14 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
     return false;
   }, [isShowDocuments, documents, isShowSessions]);
 
-  const readOnly = useMemo(() => false, []);
   const session = useMemo(() => {
     if (sessionId === ASK_PAGE_SLUG_ID.NEW) return null;
     return sessions.find(s => s._id === sessionId);
   }, [sessionId, sessions]);
+
+  const readOnly = useMemo(() => {
+    return session?.running_task || false;
+  }, [session?.running_task]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -62,7 +66,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(({ resolveType, message, attachments, model, clearContext }) => {
+  const sendMessage = useCallback(({ message, attachments, model, clearContext }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -81,7 +85,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model, clearContext });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, attachments, model, clearContext });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -90,7 +94,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, attachments, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, attachments, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
@@ -140,7 +144,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
     }
 
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
-      const messages = res.data.messages.map(item => {
+      const { messages: historyMessages, running_task, running_task_is_stream, user_input, streamed_data, streamed_length } = res.data;
+      let messages = Array.isArray(historyMessages) ? historyMessages.map(item => {
         if (item.role === 'user') {
           let attachments = item?.attachments || [];
           return new ChatMessage({
@@ -179,9 +184,39 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           message: newChatData,
           type: CHAT_MESSAGE_TYPE.GROUP
         });
-      });
+      }) : [];
+
+      if (running_task) {
+        setReply(true);
+        const { message, attachments } = user_input;
+        messages.push(new ChatMessage({
+          message: {
+            [CHAT_MESSAGE_TYPE.TEXT]: message,
+            [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
+          },
+          isUserSpeak: true,
+        }));
+        if (running_task_is_stream) {
+          const newChatData = {
+            [CHAT_MESSAGE_TYPE.AI_REPLY]: streamed_data?.answer || '',
+            [CHAT_MESSAGE_TYPE.SOURCES]: [],
+            [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: 'disabled',
+          };
+          messages.push(new ChatMessage({
+            id: 'typing',
+            message: newChatData,
+            type: CHAT_MESSAGE_TYPE.GROUP
+          }));
+          setReply(false);
+        }
+      }
+
       updateChatHistories(messages);
       setLoading(false);
+
+      if (running_task) {
+        getChatMessage(sessionId, running_task_is_stream || false, streamed_length);
+      }
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -202,10 +237,13 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
   }, [sessionId, session?.problem]);
 
   useEffect(() => {
-    if (loading) return;
-    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error, resolveType }) => {
-      modifyLocalSession(reply_session_id, { is_replying: false });
-      if (reply_session_id !== sessionId) return;
+    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error }, callback) => {
+      modifyLocalSession(reply_session_id, { is_replying: false, running_task: false });
+      if (reply_session_id !== sessionId) {
+        callback && callback(reply_session_id, true);
+        return;
+      }
+      setReply(false);
       let newChatHistories = chatHistories.slice(0);
       if (error) {
         const errorMessage = Utils.getErrorMsg(error);
@@ -214,6 +252,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           type: CHAT_MESSAGE_TYPE.ERROR
         }));
         updateChatHistories(newChatHistories, false);
+        callback && callback(reply_session_id, false);
         return;
       }
       const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
@@ -231,11 +270,227 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
         type: CHAT_MESSAGE_TYPE.GROUP
       }));
       updateChatHistories(newChatHistories, false);
+      callback && callback(reply_session_id, false);
+    });
+    const unsubscribeAIStreamReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_STREAM_REPLY, (reply_session_id, { res, error }, callback) => {
+      modifyLocalSession(reply_session_id, { is_replying: false });
+      if (reply_session_id !== sessionId) {
+        callback && callback(reply_session_id, true);
+        return;
+      }
+      setReply(false);
+      let newChatHistories = chatHistories.slice(0);
+
+      const _onError = (chatHistories, error) => {
+        const errorMessage = error ? Utils.getErrorMsg(error) : gettext('Error');
+        let _newChatHistories = chatHistories.slice(0);
+        _newChatHistories.push(new ChatMessage({
+          message: { [CHAT_MESSAGE_TYPE.TEXT]: errorMessage },
+          type: CHAT_MESSAGE_TYPE.ERROR
+        }));
+        updateChatHistories(_newChatHistories, false);
+        modifyLocalSession(reply_session_id, { running_task: false });
+        callback && callback(reply_session_id);
+      };
+
+      if (error) {
+        _onError(newChatHistories, error);
+        return;
+      }
+
+      if (!res.ok) {
+        _onError(newChatHistories);
+        return;
+      }
+
+      const _updateChatHistories = (chatHistories, _data, _message_id_prefix) => {
+        const _chatHistories = chatHistories.slice(0);
+        const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = _data;
+        const messageIndex = _chatHistories.findIndex(c => c._id === aiReplyMessageId);
+        if (messageIndex > -1) return;
+        let newChatData = {
+          [CHAT_MESSAGE_TYPE.AI_REPLY]: ai_reply,
+          [CHAT_MESSAGE_TYPE.SOURCES]: sources,
+          [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: _data.thought_process,
+        };
+        if (_chatHistories[_chatHistories.length - 1]) {
+          _chatHistories[_chatHistories.length - 1]._id = userMessageId;
+        }
+        _chatHistories.push(new ChatMessage({
+          _id: _message_id_prefix + aiReplyMessageId,
+          message: newChatData,
+          type: CHAT_MESSAGE_TYPE.GROUP
+        }));
+        updateChatHistories(_chatHistories, false);
+      };
+      let fullText = '';
+
+      let _newChatHistories = newChatHistories.slice(0);
+
+      const newChatData = {
+        [CHAT_MESSAGE_TYPE.AI_REPLY]: '',
+        [CHAT_MESSAGE_TYPE.SOURCES]: [],
+        [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: 'disabled',
+      };
+      let chatMessage = new ChatMessage({
+        id: 'typing',
+        message: newChatData,
+        type: CHAT_MESSAGE_TYPE.GROUP
+      });
+      const lastMessage = _newChatHistories[_newChatHistories.length - 1];
+      if (lastMessage && lastMessage?.id === 'typing') {
+        chatMessage = lastMessage;
+        fullText = lastMessage.message[CHAT_MESSAGE_TYPE.AI_REPLY] || '';
+      }
+      _newChatHistories.push(chatMessage);
+
+      const _onMessage = ({ status, answer, results }, { done = false } = {}) => {
+        if (done || results) {
+          if (results) {
+            _newChatHistories = _newChatHistories.slice(0, -1);
+            _updateChatHistories(_newChatHistories, results, 'typing' + results.ai_reply_message_id);
+          }
+          modifyLocalSession(reply_session_id, { running_task: false });
+          callback && callback(reply_session_id);
+          return;
+        }
+
+        if (answer) {
+          fullText += (answer || '');
+          _newChatHistories = _newChatHistories.slice(0);
+          let lastChatMessage = _newChatHistories[_newChatHistories.length - 1];
+          lastChatMessage = {
+            ...lastChatMessage,
+            message: {
+              [CHAT_MESSAGE_TYPE.TEXT]: '',
+              [CHAT_MESSAGE_TYPE.AI_REPLY]: fullText,
+              [CHAT_MESSAGE_TYPE.SOURCES]: [],
+              [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: 'disabled',
+            }
+          };
+          _newChatHistories[_newChatHistories.length - 1] = lastChatMessage;
+          updateChatHistories(_newChatHistories, false);
+        }
+        if (status && status.type !== 'LLM Reasoning') {
+          _newChatHistories = _newChatHistories.slice(0);
+          let lastChatMessage = _newChatHistories[_newChatHistories.length - 1];
+          lastChatMessage = {
+            ...lastChatMessage,
+            message: {
+              [CHAT_MESSAGE_TYPE.TEXT]: status?.type + (status?.detail ? ` (${status?.detail})` : ''),
+              [CHAT_MESSAGE_TYPE.SOURCES]: [],
+              [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: 'disabled',
+            }
+          };
+          _newChatHistories[_newChatHistories.length - 1] = lastChatMessage;
+          updateChatHistories(_newChatHistories, false);
+        }
+      };
+
+      const _processLines = (lines, done = false) => {
+        const messages = [];
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.substring(6).trim();
+
+            if (dataStr === '[DONE]') {
+              return messages;
+            }
+            if (dataStr) {
+              try {
+                const data = JSON.parse(dataStr);
+                messages.push(data);
+                _onMessage(data, { done });
+              } catch (e) {
+                console.warn('Failed to parse JSON from EventStream:', dataStr, e);
+                const rawData = { raw: dataStr };
+                messages.push(rawData);
+                _onMessage(rawData, { done });
+              }
+            }
+          } else if (line.startsWith('event: ')) {
+            const eventName = line.substring(7).trim();
+            _onMessage({ event: eventName }, { done });
+          }
+        }
+        return messages;
+      };
+
+      const _processBuffer = (buffer) => {
+        if (buffer.trim()) {
+          const lines = buffer.split('\n');
+          return _processLines(lines, true);
+        }
+        return [];
+      };
+
+      const _createEventStreamReader = (readableStream) => {
+        if (!readableStream || !readableStream.getReader) {
+          console.error('Invalid readable stream');
+          return null;
+        }
+        const reader = readableStream.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        return {
+          readNext: async () => {
+            try {
+              const { done, value } = await reader.read();
+              if (done) {
+                _processBuffer(buffer);
+                return { done: true };
+              }
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+              const messages = _processLines(lines);
+              return { done: false, messages };
+            } catch (error) {
+              _onError(_newChatHistories.slice(0, -1), error);
+              throw error;
+            }
+          },
+
+          cancel: () => {
+            reader.cancel();
+          },
+
+          [Symbol.asyncIterator]: function () {
+            const self = this;
+            return {
+              next: async () => {
+                const result = await self.readNext();
+                if (result.done) {
+                  return { done: true };
+                }
+                return { done: false, value: result.messages };
+              }
+            };
+          }
+        };
+      };
+
+      const reader = _createEventStreamReader(res.body,);
+
+      const readNext = async () => {
+        const result = await reader.readNext();
+        if (!result.done) {
+          readNext();
+        }
+      };
+      readNext();
     });
     return () => {
       unsubscribeAIReply();
+      unsubscribeAIStreamReply();
     };
-  }, [loading, sessionId, chatHistories, modifyLocalSession]);
+  }, [sessionId, chatHistories, modifyLocalSession]);
+
+  useEffect(() => {
+    aiReplyStreamTimer.current && clearTimeout(aiReplyStreamTimer.current);
+    aiReplyStreamTimer.current = null;
+  }, [sessionId]);
 
   const isEmpty = chatHistories.length === 0 && !loading;
   const _isReply = loading || isReply;

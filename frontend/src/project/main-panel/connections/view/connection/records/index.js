@@ -19,7 +19,6 @@ import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../../hooks';
 import { getOriginalPageUrl, getTableName, generatorRowClassName } from '../../../utils';
-import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
@@ -215,7 +214,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleResolveIssueByAI = useCallback((issues = []) => {
     if (!Array.isArray(issues) || issues.length === 0 || !connectionID) return;
-    updateAttachments(issues, AI_RESOLVE_TYPE.AGENT);
+    updateAttachments(issues);
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateAttachments]);
 

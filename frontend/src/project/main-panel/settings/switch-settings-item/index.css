@@ -1,0 +1,25 @@
+.switch-settings-option-header {
+  border-bottom: 1px solid #eee;
+  font-size: .9375rem;
+  font-weight: 400;
+  margin-bottom: .7rem;
+  padding-bottom: .3rem;
+  padding-top: 14px;
+}
+
+.switch-settings-option-body .change-settings-option-status {
+  margin-bottom: 4px;
+}
+
+.switch-settings-option-body  .change-settings-option-status .custom-switch {
+  padding-left: 0;
+}
+
+.switch-settings-option-body  .change-settings-option-status:not(.disabled) .custom-switch:hover,
+.switch-settings-option-body  .change-settings-option-status:not(.disabled) .custom-switch:hover * {
+  cursor: pointer;
+}
+
+.switch-settings-option-body  .tip {
+  font-size: 12px;
+}
