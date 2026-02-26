@@ -46,7 +46,7 @@ class CustomizeMarkdownViewer extends React.PureComponent {
     });
   };
   render() {
-    const { showTOC, value, beforeRenderCallback, onLinkClick, options, className } = this.props;
+    const { showTOC, value, beforeRenderCallback, onLinkClick, options, className, ...props } = this.props;
     const validClassName = classnames('longtext-preview-container', className);
     if (this.isWindowsWechat) {
       return (
@@ -63,6 +63,7 @@ class CustomizeMarkdownViewer extends React.PureComponent {
           beforeRenderCallback={beforeRenderCallback}
           onLinkClick={onLinkClick}
           options={options}
+          { ...props }
         />
       </div>
     );

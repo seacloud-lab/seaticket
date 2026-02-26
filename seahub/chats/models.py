@@ -73,6 +73,10 @@ class ChatMessageThoughtProcessManager(models.Manager):
         )
         record.save()
         return record
+    
+    def get_thought_process_from_session_uuid_and_message_id(self, session_uuid, message_id):
+        return self.filter(session_uuid=session_uuid, message_id=message_id).first().to_dict()['thought_process']
+
     def get_thought_process_from_session_uuid_and_message_ids(self, session_uuid, message_ids):
         """
         returns a map {message_id: <tool_calls>}
@@ -130,6 +134,10 @@ class ChatMessagesManager(models.Manager):
     def get_messages_by_session(self, session_uuid):
         """Retrieve all messages of the session"""
         return self.filter(session_uuid=session_uuid).order_by('created_at')
+    
+    def get_last_message_by_session(self, session_uuid):
+        """Retrieve the last turn messages of the session"""
+        return self.filter(session_uuid=session_uuid).order_by('-created_at').first()
     
     def clear_context(self, session_uuid, username):
         self.create_message(session_uuid, None, username, 'chat_manager', '<break_context>', False)

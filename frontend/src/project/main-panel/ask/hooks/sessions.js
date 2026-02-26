@@ -11,7 +11,7 @@ import { SESSION_TAB_TYPE } from '../constants';
 
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
+export const SessionsProvider = ({ projectUuid, workspaceID, settings, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
@@ -19,6 +19,8 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(true);
   const localStorageKeyRef = useRef(`sea-qa-${projectUuid}-ask-sessions-display`);
+
+  const sendMessageRequestController = useRef({});
 
   const { togglePageSlugId, pageSlugId } = useAskPage();
 
@@ -66,41 +68,124 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     setIsShowSessions(!isShowSessions);
   }, [isShowSessions]);
 
-  const solveProblem = useCallback(({ sessionId, message: problem, resolveType, attachments, model, clearContext }) => {
+  const solveProblem = useCallback(({ sessionId, message: problem, attachments, model, clearContext }) => {
     let newSessions = sessions.slice(0);
     const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
     let session = newSessions[sessionIdx];
     session.is_replying = true;
+    session.running_task = true;
     session.problem = null;
     newSessions[sessionIdx] = session;
     setSessions(newSessions);
-    chatAPI.sendChatMessage({
+
+    const params = {
       project_uuid: projectUuid,
       query: problem,
       session_uuid: sessionId,
-      resolve_type: resolveType,
       attachments: attachments,
       model: model,
-      clear_context: clearContext
-    }).then(res => {
-      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data, resolveType });
+      clear_context: clearContext,
+      stream: settings?.streaming_response,
+    };
+
+    const currentController = new AbortController();
+
+    const options = {
+      signal: currentController.signal
+    };
+
+    sendMessageRequestController.current = {
+      ...sendMessageRequestController.current,
+      [sessionId]: currentController,
+    };
+
+    const callback = (sessionId, isStop = false) => {
+      const controller = sendMessageRequestController.current[sessionId];
+      if (!controller) return;
+      if (isStop) {
+        controller.abort();
+      }
+      delete sendMessageRequestController.current[sessionId];
+    };
+
+    if (!settings?.streaming_response) {
+      chatAPI.sendChatMessage(params, options).then(res => {
+        eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
+      }).catch(error => {
+        eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
+      });
+      return;
+    }
+
+    chatAPI.sendChatMessageByStream(params, options).then((res) => {
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
     }).catch(error => {
-      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error });
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
     });
-  }, [projectUuid, workspaceID, sessions]);
+  }, [projectUuid, workspaceID, sessions, settings]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
-    let newSessions = sessions.slice(0);
-    const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
-    if (sessionIdx === -1) return;
-    if (Object.keys(update).length === 0) return;
-    let session = newSessions[sessionIdx];
-    Object.keys(update).forEach(key => {
-      session[key] = update[key];
+    setSessions(sessions => {
+      let newSessions = sessions.slice(0);
+      const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
+      if (sessionIdx === -1) return sessions;
+      if (Object.keys(update).length === 0) return sessions;
+      let session = newSessions[sessionIdx];
+      Object.keys(update).forEach(key => {
+        session[key] = update[key];
+      });
+      newSessions[sessionIdx] = session;
+      return newSessions;
     });
-    newSessions[sessionIdx] = session;
-    setSessions(newSessions);
-  }, [sessions]);
+  }, []);
+
+  const markSessionRunningTask = useCallback((sessionId, runningTask) => {
+    setSessions(sessions => {
+      let newSessions = sessions.slice(0);
+      const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
+      if (sessionIdx !== -1) {
+        newSessions[sessionIdx].running_task = runningTask;
+      }
+      return newSessions;
+    });
+  }, []);
+
+  const getChatMessage = useCallback((sessionId, isStream, streamed_length) => {
+    markSessionRunningTask(sessionId, true);
+
+    const currentController = new AbortController();
+    const options = {
+      signal: currentController.signal,
+    };
+
+    sendMessageRequestController.current = {
+      ...sendMessageRequestController.current,
+      [sessionId]: currentController,
+    };
+
+    const callback = (sessionId, isStop = false) => {
+      const controller = sendMessageRequestController.current[sessionId];
+      if (!controller) return;
+      if (isStop) {
+        controller.abort();
+      }
+      delete sendMessageRequestController.current[sessionId];
+    };
+
+    if (isStream) {
+      chatAPI.getChatMessageByStream(sessionId, streamed_length, options).then(res => {
+        eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
+      }).catch(error => {
+        eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
+      });
+      return;
+    }
+    chatAPI.getChatMessage(sessionId, options).then(res => {
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
+    }).catch(error => {
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
+    });
+  }, []);
 
   const loadTeamSessions = useCallback(() => {
     setIsTeamSessionsLoading(true);
@@ -183,6 +268,21 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     };
   }, [sessions, solveProblem]);
 
+  useEffect(() => {
+    return () => {
+      Object.keys(sendMessageRequestController.current).forEach((sessionId) => {
+        const controller = sendMessageRequestController.current[sessionId];
+        if (controller) {
+          try {
+            controller.abort();
+          } catch {
+            //
+          }
+        }
+      });
+    };
+  }, []);
+
   return (
     <SessionsContext.Provider value={{
       sessions,
@@ -203,6 +303,8 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
       loadTeamSessions,
       shareSession,
       unshareSession,
+      getChatMessage,
+      markSessionRunningTask,
     }}>
       {children}
     </SessionsContext.Provider>

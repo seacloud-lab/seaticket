@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
-import json
+import time
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
-
+from django.http import StreamingHttpResponse
+from django.core.cache import cache
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
@@ -14,13 +15,14 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
-from seahub.chats.utils import get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
+from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
+    record_message_to_db, process_stream_ai_reply, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 
 logger = logging.getLogger(__name__)
-
 
 class ChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -236,14 +238,18 @@ class ChatMessagesView(APIView):
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if message.role == 'user':
-                    data['attachments'] = remove_content_details_in_attachments(data['attachments'])
-                elif message.role == 'assistant':
+                if message.role == 'assistant':
                     if thought_process := message_id_thought_process_map.get(message.message_id, {}):
                         data['thought_process'] = thought_process
                 messages_data.append(data)
-
-            return Response({'messages': messages_data})
+            chat_task_info = cache.get(gen_chat_task_id(session_uuid))
+            results = {
+                'messages': messages_data,
+                'running_task': chat_task_info is not None
+            }
+            if results['running_task']:
+                 results['user_input'] = chat_task_info['user_input']
+            return Response(results)
 
         except Exception as e:
             logger.error(e)
@@ -255,6 +261,40 @@ class ChatView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request):
+        session_uuid = request.GET.get('session_uuid')
+        if not session_uuid:
+            error_msg = 'session_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            chat_task_id_info = gen_chat_task_id(session_uuid)
+            while cache.get(chat_task_id_info) is not None:
+                time.sleep(0.1)
+
+            ai_reply = ChatMessages.objects.get_last_message_by_session(session_uuid).to_dict()
+            result = {
+                'ai_reply': ai_reply['content'],
+                'ai_reply_message_id': ai_reply['id'],
+                'sources': ai_reply['sources'],
+                'thought_process': ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(session_uuid, ai_reply['message_id']),
+                'session_uuid': session_uuid
+            }
+
+            return Response(result)
+
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
 
     @require_org_context
     def post(self, request):
@@ -275,11 +315,21 @@ class ChatView(APIView):
         if not isinstance(clear_context, bool):
             error_msg = 'clear_context invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
+        
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        stream = project.to_dict()['settings'].get('streaming_response', True)
+        stream_from_request = request.data.get('stream')
+        if stream_from_request is not None:
+            if isinstance(stream_from_request, str):
+                stream_from_request = stream_from_request.lower() == 'true'
+            if not isinstance(stream_from_request, bool):
+                error_msg = 'Invalid stream'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            stream = stream_from_request
 
         workspace = project.workspace
 
@@ -302,9 +352,6 @@ class ChatView(APIView):
             attachments = []
             logger.warning(f'Failure to get extra contents: {e}')
 
-        resolve_type = request.data.get('resolve_type', 'ask')
-        model = request.data.get('model')
-
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
             session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
@@ -326,6 +373,11 @@ class ChatView(APIView):
             elif clear_context:
                 ChatMessages.objects.clear_context(session_uuid, username)
         
+        chat_task_id_info = gen_chat_task_id(session_uuid)
+        if cache.get(chat_task_id_info) is not None:
+            error_msg = 'There are unfinished tasks in the current session, please try again later.'
+            return api_error(status.HTTP_409_CONFLICT, error_msg)
+
         try:
             message_id = gen_message_id(session.session_uuid)
         except Exception as e:
@@ -354,14 +406,40 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'query': query,
             'attachments': attachments,
-            'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
-            'llm_model': model,
+            'llm_model': request.data.get('model'),
+            'stream': stream,
             'document_connections': document_connections,
             'issue_connections': issue_connections
         }
 
+        task_info = {
+            'user_input': {
+                'message': query,
+                'attachments': remove_content_details_in_attachments(attachments)
+            }
+        }
+
+        cache.set(chat_task_id_info, task_info, AI_REPLY_TIMEOUT)
+
+        if stream:
+            try:
+                return StreamingHttpResponse(
+                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), request.user.username, session_uuid, message_id, query, attachments),
+                    content_type='text/event-stream',
+                    headers={
+                        'Cache-Control': 'no-cache',
+                        'X-Accel-Buffering': 'no'
+                    }
+                )
+            except Exception as e:
+                # the exceptions in process_stream_ai_reply will not be catched in here, so it should be a 500 error
+                logger.exception(f'Failure to make stream: {e}')
+                error_msg = 'Internal server error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        # non-stream response
         try:
             ai_response = get_ai_reply(params)
         except Exception as e:
@@ -371,19 +449,6 @@ class ChatView(APIView):
                 'sources': []
             }
 
-        try:
-            ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_response.get('thought_process', {}))
-        except Exception as e:
-            logger.warning(f'Failure to record thought process to db: {e}')
-
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, attachments=attachments)
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], sources=json.dumps(ai_response['sources']))
-
-        ai_response.update({
-            'session_uuid': session_uuid,
-            'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id,
-            'attachments': remove_content_details_in_attachments(attachments)
-        })
-
-        return Response(ai_response)
+        response = record_message_to_db(ai_response, request.user.username, session_uuid, message_id, query, attachments)
+        cache.delete(chat_task_id_info)
+        return Response(response)

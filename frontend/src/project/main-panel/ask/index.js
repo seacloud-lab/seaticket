@@ -77,7 +77,7 @@ const Ask = ({ title, settings }) => {
 
   return (
     <AskPageProvider workspaceID={workspaceID} projectName={projectName} >
-      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} >
+      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} settings={settings} >
         <DocumentsProvider>
           <Main title={title} settings={settings} />
         </DocumentsProvider>

@@ -195,6 +195,8 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
     const valueCount = value.length;
     if (valueCount === 1 && value[0].type === 'paragraph') {
       setAIMessageType('text');
+    } else {
+      setAIMessageType('rich-text');
     }
     const lastDom = value[valueCount - 1];
     if (lastDom.type === 'paragraph' && lastDom.children.length > 2) {
@@ -231,6 +233,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
           <CustomizeMarkdownViewerComponent
             value={aiReply}
             showTOC={false}
+            isShowLoading={chatId?.startsWith('typing') && chatId === 'typing' ? false : true}
             options={options}
             beforeRenderCallback={beforeAIReplyRenderCallback}
             onDefinitionClick={openConnectionRecord}
