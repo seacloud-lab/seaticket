@@ -404,15 +404,6 @@ class PortalUserListView(APIView):
         return Response({'user_list': user_list})
 
 
-class PortalRelatedUsersView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request, project_uuid):
-        return Response({'user_list': []})
-
-
 class PortalTicketMetadataView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)

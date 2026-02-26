@@ -139,11 +139,6 @@ class PortalAPI {
     return this.req.post(url, { user_id_list: userIdList });
   }
 
-  listProjectRelatedUsers(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/related-users/';
-    return this.req.get(url);
-  }
-
   getSettings(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
     return this.req.get(url);

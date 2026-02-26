@@ -72,6 +72,12 @@ class PortalTicketPermission(BasePermission):
         project_uuid, project, portal_settings = _get_project_and_settings(request, view)
         if not project:
             return False
+        
+        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
+        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+
+        if allow_anonymous and enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
+            return False
 
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):
@@ -79,11 +85,5 @@ class PortalTicketPermission(BasePermission):
 
         if _is_external_member(request, project_uuid):
             return True
-
-        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
-        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-
-        if allow_anonymous and enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
-            return False
 
         return False
