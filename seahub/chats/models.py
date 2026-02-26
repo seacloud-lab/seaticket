@@ -94,11 +94,8 @@ class ChatMessageThoughtProcess(models.Model):
 
     class Meta:
         db_table = 'chat_message_thought_process'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['session_uuid', 'message_id'],
-                name='uniq_session_uuid_message_id'
-            )
+        unique_together = [
+            ['session_uuid', 'message_id']
         ]
 
     def to_dict(self):
@@ -161,15 +158,9 @@ class ChatMessages(models.Model):
 
     class Meta:
         db_table = 'chat_messages'
-        constraints = [
-            models.Index(
-                fields=['session_uuid', 'created_at'],
-                name='idx_session_uuid_created_at'
-            ),
-            models.Index(
-                fields=['session_uuid', 'role', '-created_at', '-as_context'],
-                name='idx_session_uuid_created_at_as_context_role'
-            )
+        indexes = [
+            models.Index(fields=['session_uuid', 'created_at']),
+            models.Index(fields=['session_uuid', 'role', '-created_at', '-as_context'])
         ]
 
     def to_dict(self):
