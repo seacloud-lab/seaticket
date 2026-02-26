@@ -1,11 +1,11 @@
 import InfoCard from './info-card';
 import MultipleTextCard from './multiple-text-card';
 import UsageCard from './usage-card';
-import TokenCostChart from './token-cost-chart';
+import TokenCost from './token-cost';
 
 export {
   InfoCard,
   MultipleTextCard,
   UsageCard,
-  TokenCostChart
+  TokenCost,
 };

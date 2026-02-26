@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
+import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import classnames from 'classnames';
 import { gettext, mediaUrl } from '@/constants';
-import { Loading, EmptyTip, TokenCostChart, ModalHeader } from '@/components';
+import { Loading, EmptyTip, ModalHeader } from '@/components';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
-import { Modal, ModalBody, Label } from 'reactstrap';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
-import Select from 'react-select';
+import CustomizeSelect from '../../customize-select';
+import TokenCost from '../../chart/token-cost';
 
 import './index.css';
+import '@/sea-metadata/components/popover/filter-popover/basic-filters/index.css';
 
 class TokenCostDetailDialog extends Component {
   constructor(props) {
@@ -25,7 +28,6 @@ class TokenCostDetailDialog extends Component {
       data: null,
       condition: { ...this.props.basicCondition }
     };
-
   }
 
   componentDidMount() {
@@ -67,7 +69,7 @@ class TokenCostDetailDialog extends Component {
         const date = dayjs(data.date);
         if (date >= startDate && date <= endDate) {
           newData.push({
-            date: data.date,
+            name: date.format('YYYY-MM-DD'),
             input_tokens: data.total_input_tokens || 0,
             output_tokens: data.total_output_tokens || 0,
             cost: data.total_cost || 0,
@@ -125,9 +127,9 @@ class TokenCostDetailDialog extends Component {
               total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
             };
             if (view === 'user') {
-              record.user = data.user;
+              record.name = data.user;
             } else if (view === 'project') {
-              record.project = data.project;
+              record.name = data.project;
             }
             newData.push(record);
           });
@@ -154,34 +156,27 @@ class TokenCostDetailDialog extends Component {
     }
   };
 
-  updateFilterModels = (selectedModels) => {
-    let newSelectedModels = [];
-    selectedModels.forEach((item) => {
-      newSelectedModels.push(item.value);
-    });
+  updateFilterModels = (newValue) => {
+    let newSelectedModels = this.state.selectedModels.slice(0);
+    if (newSelectedModels.includes(newValue)) {
+      newSelectedModels = newSelectedModels.filter(v => v !== newValue);
+    } else {
+      newSelectedModels = [...newSelectedModels, newValue];
+    }
     this.setState({ selectedModels: newSelectedModels }, () => {
       this.fetchStatistics();
     });
   };
 
-  updateView = (view) => {
-    let newView = view.value;
+  updateView = (newView) => {
     let newCondition = this.props.basicCondition;
-    if (view !== 'daily') {
+    if (newView !== 'daily') {
       newCondition.start_date = this.state.startDate;
       newCondition.end_date = this.state.endDate;
     }
     this.setState({ view: newView, condition: newCondition }, () => {
       this.fetchStatistics();
     });
-  };
-
-  arrayToSelectComponentsObject = (arrayObject) => {
-    let newObject = [];
-    arrayObject.forEach((item) => {
-      newObject.push({ value: item, label: item });
-    });
-    return newObject;
   };
 
   render() {
@@ -191,73 +186,77 @@ class TokenCostDetailDialog extends Component {
       endDate,
       selectedModels,
       data,
+      view,
     } = this.state;
-    const { models, view, availableViews, onCloseDialog } = this.props;
+    const { models, views, onCloseDialog } = this.props;
+
+    const modelsOptions = Array.isArray(models) ? models.map(model => {
+      return {
+        value: model,
+        label: (
+          <div className="select-basic-filter-option">
+            <div className="select-basic-filter-option-checkbox mr-2">
+              <input type="checkbox" checked={selectedModels.includes(model)} readOnly />
+            </div>
+            <div className="select-basic-filter-option-name" title={model} aria-label={model}>{model}</div>
+          </div>
+        )
+      };
+    }) : [];
+
+    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-view-basic-checkbox-select sea-ticket-ai-statistic-condition-select';
 
     return (
       <Modal isOpen={true} toggle={onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
         <ModalHeader toggle={onCloseDialog}>{gettext('Token cost statistics detail')}</ModalHeader>
         <ModalBody className="dialog-content">
-          <div className="filters-section">
-            <div className="filter-row">
-              <div className="filter-item">
-                <Label>{gettext('Date range')}</Label>
-                <div className="date-range-row">
-                  <div className="date-range-item">
-                    <DateAndTimePicker
-                      showHourAndMinute={false}
-                      disabledDate={() => false}
-                      value={startDate}
-                      onChange={(date) => this.onDateChange(date, 'start')}
-                      inputWidth={140}
-                    />
-                  </div>
-                  <Label> - </Label>
-                  <div className="date-range-item">
-                    <DateAndTimePicker
-                      showHourAndMinute={false}
-                      disabledDate={(date) => {
-                        return date <= new Date(startDate);
-                      }}
-                      value={endDate}
-                      onChange={(date) => this.onDateChange(date, 'end')}
-                      inputWidth={140}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {availableViews.length > 1 && (
-            <div className="view-section">
-              <Select
-                value={{ value: view, label: view }}
+          <div className="ai-statistics-filters">
+            {views.length > 1 && (
+              <CustomizeSelect
+                disabled={false}
+                supportMultipleSelect={false}
+                className={classnames(customizeSelectClassName, 'mr-4 highlighted')}
+                value={views.find(v => v.value === view) || views[0]}
+                options={views}
                 onChange={this.updateView}
-                options={this.arrayToSelectComponentsObject(availableViews)}
-                placeholder={gettext('View')}
-                isSearchable={true}
               />
-            </div>
-          )}
-          <div className="models-section">
-            <Select
-              value={this.arrayToSelectComponentsObject(selectedModels)}
+            )}
+            <CustomizeSelect
+              disabled={false}
+              supportMultipleSelect={true}
+              className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedModels.length > 0 })}
+              value={{ label: gettext('Model') }}
+              options={modelsOptions}
               onChange={this.updateFilterModels}
-              options={this.arrayToSelectComponentsObject(models)}
-              placeholder={gettext('Filter_models')}
-              closeMenuOnSelect={false}
-              isSearchable={true}
-              isMulti={true}
             />
+            <div className="sea-ticket-ai-statistic-date-condition">
+              <span className="date-range-title">{gettext('Date range: ')}</span>
+              <span className="date-range-value">
+                <DateAndTimePicker
+                  showHourAndMinute={false}
+                  disabledDate={() => false}
+                  value={startDate}
+                  onChange={(date) => this.onDateChange(date, 'start')}
+                  inputWidth={92}
+                />
+              </span>
+              <span className="date-range-">{'-'}</span>
+              <span className="date-range-value">
+                <DateAndTimePicker
+                  showHourAndMinute={false}
+                  disabledDate={(date) => date <= new Date(startDate)}
+                  value={endDate}
+                  onChange={(date) => this.onDateChange(date, 'end')}
+                  inputWidth={92}
+                />
+              </span>
+            </div>
           </div>
-          <div className="chart-section">
+          <div className="w-100" style={{ height: 'calc(100% - 44px)' }}>
             {isLoading ? (
               <Loading />
             ) : data && data.length > 0 ? (
-              <TokenCostChart
-                data={data}
-                height={400}
-              />
+              <TokenCost data={data} />
             ) : (
               <EmptyTip text={gettext('Empty')} src={`${mediaUrl}img/no-items-tip.png`} />
             )}
@@ -269,7 +268,7 @@ class TokenCostDetailDialog extends Component {
 }
 
 TokenCostDetailDialog.propTypes = {
-  availableViews: PropTypes.array.isRequired,
+  views: PropTypes.array.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
   models: PropTypes.array.isRequired,
   getAIStatisticsDetail: PropTypes.func.isRequired,

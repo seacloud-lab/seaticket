@@ -52,43 +52,9 @@
 
 /* Statistic Tabs */
 .statistic-tabs {
-  display: flex;
-  height: 40px;
   margin-bottom: 24px;
   margin-top: 16px;
   border-bottom: 1px solid var(--bs-border-color);
-}
-
-.statistic-tab-item {
-  margin: 4px 7px;
-  padding: 4px 8px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  font-size: 14px;
-  margin-bottom: 5px;
-  position: relative;
-  min-width: 64px;
-  text-align: center;
-}
-
-.statistic-tab-item:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
-}
-
-.statistic-tab-item.active {
-  color: #ED7109;
-  font-weight: 500;
-}
- 
-.statistic-tab-item.active::before {
-  content: "";
-  height: 2px;
-  width: calc(100% - 16px);
-  background-color: #FF8000;
-  position: absolute;
-  bottom: -8px;
-  left: 8px;
 }
 
 /* Table Styles */
