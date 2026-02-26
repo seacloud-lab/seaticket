@@ -24,7 +24,7 @@ import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
-import { useData } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
 
 import './index.css';
 
@@ -47,6 +47,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRows
   } = useData();
+  const { tagsData, createTag } = useTags();
 
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
 
@@ -147,6 +148,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
             click: (row) => toggleChildrenPageSlugId(row._id),
           };
           columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
+          const tagsColumn = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
+          if (tagsColumn) {
+            context.setSetting('tagsColumnKey', tagsColumn.key);
+          }
           return {
             data: {
               rows,
@@ -596,6 +601,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
         typesData={typesData}
+        tagsData={tagsData}
+        createTag={createTag}
         toggleView={toggleView}
         expandRow={handleExpandRow}
         t={t}

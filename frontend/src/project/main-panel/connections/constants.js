@@ -333,6 +333,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   TOPIC_ID: 'topic_id',
   RESOLVED: 'resolved',
   LINKED_TICKET: 'linked_ticket',
+  TAGS: 'tags',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -475,6 +476,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('unread'),
       type: CellType.CHECKBOX,
       editable: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: {
+      display_name: gettext('Tags'),
+      type: CellType.TAGS,
+      editable: true,
+      modify_data_able: true,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
   }

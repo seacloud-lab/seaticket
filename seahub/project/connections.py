@@ -750,6 +750,10 @@ class ProjectConnectionRecordView(APIView):
             update_row['row']['unread'] = row_data.get('unread')
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
+        if project_connection.type == ConnectionType.EMAIL.value and 'tags' in row_data:
+            update_row['row']['tags'] = row_data.get('tags')
+            update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
         if not update_row['row']:
             return Response({'success': True})
 
@@ -838,6 +842,10 @@ class ProjectConnectionRecordsView(APIView):
             # Support unread field for EMAIL type only
             if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
+                update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
+            if project_connection.type == ConnectionType.EMAIL.value and 'tags' in row_data:
+                update_row['row']['tags'] = row_data.get('tags')
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
             if update_row['row']:
