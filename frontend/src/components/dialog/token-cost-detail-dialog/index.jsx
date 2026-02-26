@@ -85,19 +85,20 @@ class TokenCostDetailDialog extends Component {
   updateDataByDate = () => {
     const { view } = this.state;
 
-    this.setState({ isLoading: true });
-    if (view === 'daily') {
-      this.updateDailyData();
-    } else {
-      let condition = { ...this.props.basicCondition };
-      const { startDate, endDate } = this.state;
-      condition.start_date = startDate;
-      condition.end_date = endDate;
-      this.setState({ condition }, () => {
-        this.fetchStatistics();
-      });
-    }
-    this.setState({ isLoading: false });
+    this.setState({ isLoading: true }, () => {
+      if (view === 'daily') {
+        this.updateDailyData();
+      } else {
+        let condition = { ...this.props.basicCondition };
+        const { startDate, endDate } = this.state;
+        condition.start_date = startDate;
+        condition.end_date = endDate;
+        this.setState({ condition }, () => {
+          this.fetchStatistics();
+        });
+      }
+      this.setState({ isLoading: false });
+    });
   };
 
   fetchStatistics = () => {
