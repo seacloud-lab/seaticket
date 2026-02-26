@@ -30,6 +30,7 @@ const initColumns = [
 const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
+  getTicket,
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 
@@ -121,7 +122,7 @@ const ResourceDetailsDialog = ({
           <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={updateDetails} />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={updateDetails} />
+          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={updateDetails} getTicket={getTicket} />
         )}
       </ModalBody>
     </Modal>

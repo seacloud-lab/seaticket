@@ -60,6 +60,11 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
+  getTicket(projectUuid, ticketNumber) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    return this.req.get(url);
+  }
+
   listMyTickets(projectUuid, { view_id = 'open', start = 0, limit = 1000, config = {} } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/my-tickets/';
     let form = new FormData();

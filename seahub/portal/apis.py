@@ -22,7 +22,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
-from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
+from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket, get_ticket_comments,\
+    convert_ticket_select_column_name_to_option_id, build_linked_record_titles_map_for_keys
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -223,6 +224,55 @@ class PortalMyTicketsView(APIView):
             'tickets': tickets,
             'columns': columns,
         })
+
+
+class PortalTicketView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalTicketPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, ticket_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = getattr(request.user, 'username', '')
+        try:
+            seadb_api = SeaDBAPI(username)
+            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            convert_ticket_select_column_name_to_option_id(metadata, ticket)
+
+            linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+            linked_record_titles = build_linked_record_titles_map_for_keys(
+                seadb_api, project_uuid, linked_connection_records
+            )
+
+            start = 0
+            end = 25
+            ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
+
+            for ticket_comment in ticket_comments:
+                result = {
+                    'number': ticket_comment.get('_pk'),
+                    'content': ticket_comment.get('content'),
+                    'created_time': ticket_comment.get('created_time'),
+                    'modified_time': ticket_comment.get('modified_time'),
+                    'creator': ticket_comment.get('creator'),
+                }
+                if not ticket.get('comments'):
+                    ticket['comments'] = []
+                ticket['comments'].append(result)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'ticket': ticket, 'linked_record_titles': linked_record_titles})
 
 
 class PortalTagsView(APIView):

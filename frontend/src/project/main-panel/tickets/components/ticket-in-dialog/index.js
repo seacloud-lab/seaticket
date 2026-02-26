@@ -15,7 +15,7 @@ import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
-const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
+const TicketInDialog = ({ ticketID, projectUuid, updateTicket, getTicket }) => {
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
@@ -28,7 +28,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
   useEffect(() => {
     setLoading(true);
     setTicket(null);
-    ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
+    getTicket(projectUuid, ticketID).then(res => {
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
       updateTicket(ticket);
