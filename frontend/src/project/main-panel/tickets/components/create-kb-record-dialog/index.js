@@ -6,8 +6,6 @@ import { ticketsAPI, knowledgeBaseAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { useData } from '@/project/hooks';
 import { KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
   const [isLoading, setLoading] = useState(true);
@@ -60,7 +58,6 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
       content: kbContent,
     }).then((res) => {
       markTablesViewExpired([KB_TABLE_NAME]);
-      context.eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
       toaster.success(gettext('Record created'));
       onClose();
     }).catch(error => {
