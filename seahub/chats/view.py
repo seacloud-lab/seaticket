@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import json
-import threading
 import time
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -277,7 +275,6 @@ class ChatView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            time_beg = time.time()
             chat_task_id_info = gen_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
                 time.sleep(0.1)
@@ -426,30 +423,32 @@ class ChatView(APIView):
 
         cache.set(chat_task_id_info, task_info, AI_REPLY_TIMEOUT)
 
-        try:
-            ai_response = get_ai_reply(params)
-            if stream:
+        if stream:
+            try:
                 return StreamingHttpResponse(
-                    process_stream_ai_reply(chat_task_id_info, ai_response, request.user.username, session_uuid, message_id, query, attachments),
+                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), request.user.username, session_uuid, message_id, query, attachments),
                     content_type='text/event-stream',
                     headers={
                         'Cache-Control': 'no-cache',
                         'X-Accel-Buffering': 'no'
                     }
                 )
-            else:
-                response = record_message_to_db(ai_response, request.user.username, session_uuid, message_id, query, attachments)
-                # task info/data should be deleted after saving reply to db
-                cache.delete(chat_task_id_info)
-                return Response(response)
+            except Exception as e:
+                # the exceptions in process_stream_ai_reply will not be catched in here, so it should be a 500 error
+                logger.exception(f'Failure to make stream: {e}')
+                error_msg = 'Internal server error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        # non-stream response
+        try:
+            ai_response = get_ai_reply(params)
         except Exception as e:
             logger.warning(f'AI service error: {e}')
             ai_response = {
                 'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
                 'sources': []
             }
-            response = record_message_to_db(ai_response, request.user.username, session_uuid, message_id, query, attachments)
 
-            # task info/data should be deleted after saving reply to db
-            cache.delete(chat_task_id_info)
-            return Response(response)
+        response = record_message_to_db(ai_response, request.user.username, session_uuid, message_id, query, attachments)
+        cache.delete(chat_task_id_info)
+        return Response(response)

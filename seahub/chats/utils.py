@@ -43,25 +43,22 @@ def record_message_to_db(ai_result, username, session_uuid, message_id, query, a
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
     
-    try:
-        del ai_result['answer']
-    except:
-        pass
+    ai_result.pop('answer', None)
+    ai_result.update({
+        'session_uuid': session_uuid,
+        'attachments': remove_content_details_in_attachments(attachments)
+    })
 
     try:
         ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_result.get('thought_process', {}))
+        user_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'user', query, attachments=attachments)
+        ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
+        ai_result.update({
+            'user_message_id': user_message.id,
+            'ai_reply_message_id': ai_reply_message.id
+        })
     except Exception as e:
-        logger.warning(f'Failure to record thought process to db: {e}')
-
-    user_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'user', query, attachments=attachments)
-    ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
-
-    ai_result.update({
-        'session_uuid': session_uuid,
-        'user_message_id': user_message.id,
-        'ai_reply_message_id': ai_reply_message.id,
-        'attachments': remove_content_details_in_attachments(attachments)
-    })
+        logger.warning(f'Failure to record messages to db: {e}')
 
     return ai_result
 
