@@ -8,7 +8,7 @@ import { gettext, lang } from '@/constants';
 import { useTags } from '@/project/hooks';
 import {
   CollaboratorsSettings, TypeSettings, RateSettings,
-  StateSettings, SubStateSettings,
+  StateSettings, SubStateSettings, DueDateSettings,
 } from '../ticket-settings';
 import Comment from '../comment';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
@@ -60,7 +60,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
 
   const isSmallScreen = containerWidth < 780;
 
-  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
+  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   return (
     <div className={classnames('sea-qa-project-ticket sea-qa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
       <div className="sea-qa-project-ticket-content-wrapper">
@@ -96,6 +96,7 @@ const TicketInDialog = ({ ticketID, projectUuid, updateTicket }) => {
           <StateSettings isReadonly={true} state={state} substate={substate} />
           <SubStateSettings isReadonly={true} state={state} substate={substate} />
           <TypeSettings isReadonly={true} value={type} />
+          <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
       </div>
