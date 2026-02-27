@@ -77,8 +77,6 @@ def portal_view(request, project_uuid, page=None):
                 'project_name': project.name,
                 'media_url': MEDIA_URL,
             })
-        if not has_ticket_access:
-            return render_error(request, _('Permission denied'))
 
     is_anonymous = allow_anonymous and (not has_ticket_access)
 
