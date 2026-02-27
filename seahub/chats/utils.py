@@ -18,7 +18,6 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.constants import ConnectionType, ExtraSourceType
-from seahub.utils import mq
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +63,7 @@ def record_message_to_db(ai_result, username, session_uuid, message_id, query, a
 
 def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query, attachments):
     has_recorded_result = False
+    error_msg = None
     try:
         for line in ai_response.iter_lines():
             if line:
@@ -78,6 +78,12 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                         "results": record_message_to_db(results, username, session_uuid, message_id, query, attachments)
                     })}\n\n'
                     has_recorded_result = True
+                elif content.startswith('[ERROR: ') and content.endswith(']'):
+                    error_msg = content[1:-1]
+                    item = f'data: {json.dumps({
+                        "results": record_message_to_db(error_msg, username, session_uuid, message_id, query, attachments)
+                    })}\n\n'
+                    has_recorded_result = True
                 else:
                     if not line_str.endswith('\n\n'):
                         line_str += '\n\n'
@@ -86,6 +92,8 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                     yield item
                 except: # continues to receive data even client interrupts the stream
                     continue
+                if error_msg:
+                    raise ConnectionError(error_msg)
     except Exception as e:
         logger.exception(f'Streaming response is interrupted: {e}')
         if not has_recorded_result:
