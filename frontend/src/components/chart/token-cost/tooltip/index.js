@@ -35,14 +35,18 @@ const Tooltip = ({
     >
       <div className="sea-ai-tokens-chart-tooltip-header">{data.name}</div>
       {legends.map(l => {
+        if (l.key === 'cost') return null;
         return (
-          <div className="sea-ai-tokens-chart-tooltip-item">
+          <div className="sea-ai-tokens-chart-tooltip-item" key={l.key}>
             {`${l.name}: ${data[l.key]}`}
           </div>
         );
       })}
-      <div className="sea-ai-tokens-chart-tooltip-footer">
+      <div className="sea-ai-tokens-chart-tooltip-item">
         {`${gettext('Total tokens')}: ${data.total_tokens}`}
+      </div>
+      <div className="sea-ai-tokens-chart-tooltip-footer">
+        {`${gettext('Cost')}: ${data.cost}`}
       </div>
     </div>
   );

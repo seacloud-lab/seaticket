@@ -79,8 +79,8 @@ const StatisticList = ({
         ))}
       </FixedWidthTable>
       <Paginator
-        gotoPreviousPage={getPreviousPage}
-        gotoNextPage={getNextPage}
+        goPreviousPage={getPreviousPage}
+        goNextPage={getNextPage}
         currentPage={pageInfo.current_page}
         hasNextPage={pageInfo.has_next_page}
         canResetPerPage={true}

@@ -157,24 +157,54 @@ const TokenCost = ({
     chartData.forEach((d, i) => {
       const x = xScale(d.name) + barOffset;
       const totalTokens = d.input_tokens + d.output_tokens;
+      const group = svg
+        .append('g')
+        .attr('class', 'group')
+        .attr('name', d.name)
+        .on('mouseenter', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          if (d.name === tooltipData.current?.name) return;
+          tooltipData.current = d;
+          setTooltip({
+            display: true,
+            position: {
+              left: event.pageX + 6,
+              top: event.pageY + 6,
+            }
+          });
+        })
+        .on('mousemove', function (event) {
+          setTooltip({
+            display: true,
+            position: {
+              left: event.pageX + 6,
+              top: event.pageY + 6,
+            }
+          });
+        })
+        .on('mouseleave', function (event, d) {
+          event.preventDefault();
+          event.stopPropagation();
+          setTooltip({ display: false, position: { left: 0, top: 0 } });
+          tooltipData.current = null;
+        });
 
       // draw input tokens
-      svg.append('rect')
+      group.append('rect')
         .attr('x', x)
         .attr('y', yLeftScale(d.input_tokens))
         .attr('width', barWidth)
         .attr('height', innerHeight - yLeftScale(d.input_tokens))
-        .attr('fill', inputTokensColor)
-        .attr('opacity', 0.9);
+        .attr('fill', inputTokensColor);
 
       // draw output tokens
-      svg.append('rect')
+      group.append('rect')
         .attr('x', x)
         .attr('y', yLeftScale(totalTokens))
         .attr('width', barWidth)
         .attr('height', yLeftScale(d.input_tokens) - yLeftScale(totalTokens))
-        .attr('fill', outputTokensColor)
-        .attr('opacity', 0.9);
+        .attr('fill', outputTokensColor);
     });
 
     const centerX = (d) => xScale(d.name) + xScale.bandwidth() / 2;
@@ -191,7 +221,12 @@ const TokenCost = ({
       .y(d => d.y)
       .curve(d3.curveLinear);
 
-    svg.append('path')
+    const group = svg
+      .append('g')
+      .attr('class', 'group')
+      .attr('name', 'cost');
+
+    group.append('path')
       .datum(linePoints)
       .attr('fill', 'none')
       .attr('stroke', costColor)
@@ -199,7 +234,7 @@ const TokenCost = ({
       .attr('d', lineGenerator);
 
     // draw cost dot
-    svg.selectAll('.cost-circle')
+    group.selectAll('.cost-circle')
       .data(chartData)
       .join('circle')
       .attr('class', 'cost-circle')
@@ -209,23 +244,29 @@ const TokenCost = ({
       .attr('fill', 'white')
       .attr('stroke', costColor)
       .attr('stroke-width', 2)
-      .attr('pointer-events', 'all')
-      .style('cursor', 'pointer')
-      .on('mouseover', function (event, d) {
+      .on('mouseenter', function (event, d) {
         event.preventDefault();
         event.stopPropagation();
         if (d.name === tooltipData.current?.name) return;
-        console.log('mouseover', d.name);
         tooltipData.current = d;
         setTooltip({
           display: true,
           position: {
-            left: event.pageX + 2,
-            top: event.pageY + 2,
+            left: event.pageX + 6,
+            top: event.pageY + 6,
           }
         });
       })
-      .on('mouseout', function (event, d) {
+      .on('mousemove', function (event) {
+        setTooltip({
+          display: true,
+          position: {
+            left: event.pageX + 6,
+            top: event.pageY + 6,
+          }
+        });
+      })
+      .on('mouseleave', function (event, d) {
         event.preventDefault();
         event.stopPropagation();
         setTooltip({ display: false, position: { left: 0, top: 0 } });
