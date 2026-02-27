@@ -8,7 +8,7 @@ import { CenteredLoading, toaster } from '@/components';
 import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useKnowledgePage } from '../../hooks/knowledge-page';
+import { usePortalKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '@/project/main-panel/tickets/components/upload-files-btn';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useData, useTags } from '@/project/hooks';
@@ -16,9 +16,9 @@ import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const EditKnowledge = ({ editorAPI, projectUuid }) => {
+const PortalEditKnowledge = ({ editorAPI, projectUuid }) => {
   const { tagsData, createTag } = useTags();
-  const { pageSlugId, togglePageSlugId } = useKnowledgePage();
+  const { pageSlugId, togglePageSlugId } = usePortalKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState({ text: '' });
@@ -223,4 +223,4 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
 
 };
 
-export default EditKnowledge;
+export default PortalEditKnowledge;

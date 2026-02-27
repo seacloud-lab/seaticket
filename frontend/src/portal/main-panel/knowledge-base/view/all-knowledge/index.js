@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '@/portal/main-panel/knowledge-base/constants';
 import { useData, useTags } from '@/project/hooks';
-import { useKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
+import { usePortalKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const viewTools = [
@@ -18,8 +18,8 @@ const viewTools = [
   VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
-  const { togglePageSlugId } = useKnowledgePage();
+const PortalAllKnowledge = ({ projectUuid }) => {
+  const { togglePageSlugId } = usePortalKnowledgePage();
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
   const [viewID, setViewID] = useState('0000');
@@ -150,4 +150,4 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
   );
 };
 
-export default KnowledgeBase;
+export default PortalAllKnowledge;

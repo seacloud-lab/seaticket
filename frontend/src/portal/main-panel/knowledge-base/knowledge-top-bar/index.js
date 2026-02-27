@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import TopBar from '@/project/main-panel/top-bar';
-import { useKnowledgePage } from '../hooks/knowledge-page';
+import { usePortalKnowledgePage } from '../hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
@@ -8,8 +8,8 @@ import { RefreshBtn } from '@/project/components';
 
 import './index.css';
 
-const KnowledgeTopBar = () => {
-  const { pageSlugId, togglePageSlugId, onRefresh } = useKnowledgePage();
+const PortalKnowledgeTopBar = () => {
+  const { pageSlugId, togglePageSlugId, onRefresh } = usePortalKnowledgePage();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
@@ -26,7 +26,7 @@ const KnowledgeTopBar = () => {
       <>
         <IconButton
           icon="arrow-down"
-          className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+          className="rotate-icon-90 sea-qa-portal-toggle-knowledge-btn"
           onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
         />
         <span className="text-truncate" title={editTitle}>{editTitle}</span>
@@ -41,4 +41,4 @@ const KnowledgeTopBar = () => {
   );
 };
 
-export default KnowledgeTopBar;
+export default PortalKnowledgeTopBar;

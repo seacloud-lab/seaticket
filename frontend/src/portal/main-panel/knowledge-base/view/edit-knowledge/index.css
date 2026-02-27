@@ -104,3 +104,10 @@
 .sea-qa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {
   padding:  10px 16px !important;
 }
+
+.required-tip {
+  color: #ff1920;
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 6px;
+}

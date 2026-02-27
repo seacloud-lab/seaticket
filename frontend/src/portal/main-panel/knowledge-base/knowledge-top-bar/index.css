@@ -1,4 +1,4 @@
-.sea-qa-project-toggle-knowledge-btn {
+.sea-qa-portal-toggle-knowledge-btn {
   display: inline-flex;
   margin-right: 4px;
   height: 20px;
@@ -6,7 +6,7 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-toggle-knowledge-btn .sea-qa-icon-svg {
+.sea-qa-portal-toggle-knowledge-btn .sea-qa-icon-svg {
   height: 16px !important;
   width: 16px !important;
 }

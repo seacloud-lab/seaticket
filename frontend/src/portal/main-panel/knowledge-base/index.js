@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
 import { server } from '@/constants';
-import KnowledgeTopBar from './knowledge-top-bar';
+import PortalKnowledgeTopBar from './knowledge-top-bar';
 import { knowledgeBaseAPI } from '@/project/api/knowledge-base-api';
 import LongTextEditorUtilities from '@/utils/long-text';
-import AllKnowledge from './view/all-knowledge';
-import EditKnowledge from './view/edit-knowledge';
-import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
+import PortalAllKnowledge from './view/all-knowledge';
+import PortalEditKnowledge from './view/edit-knowledge';
+import { PortalKnowledgePageProvider, usePortalKnowledgePage } from './hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
 
 const Page = () => {
-  const { isLoading, pageSlugId, togglePageSlugId } = useKnowledgePage();
+  const { isLoading, pageSlugId, togglePageSlugId } = usePortalKnowledgePage();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
@@ -24,18 +24,18 @@ const Page = () => {
   if (isLoading) return null;
 
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-    return (<AllKnowledge { ...props } editorAPI={longtextAPI} />);
+    return (<PortalAllKnowledge { ...props } editorAPI={longtextAPI} />);
   }
-  return (<EditKnowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
+  return (<PortalEditKnowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
 };
 
-const KnowledgeBase = () => {
+const PortalKnowledgeBase = () => {
   return (
-    <KnowledgePageProvider projectName={projectName} projectUuid={projectUuid}>
-      <KnowledgeTopBar/>
+    <PortalKnowledgePageProvider projectName={projectName} projectUuid={projectUuid}>
+      <PortalKnowledgeTopBar/>
       <Page/>
-    </KnowledgePageProvider>
+    </PortalKnowledgePageProvider>
   );
 };
 
-export default KnowledgeBase;
+export default PortalKnowledgeBase;

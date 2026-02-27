@@ -3,7 +3,7 @@ import { gettext } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 import SubmitTicket from './submit-ticket';
 import MyTickets from './my-tickets';
-import KnowledgeBase from './knowledge-base/index';
+import PortalKnowledgeBase from './knowledge-base/index';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading } from '@/components';
 
@@ -42,7 +42,7 @@ const MainPanel = ({ activePage, onPageChange, ...props }) => {
           <MyTickets { ...props } />
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
-        return <KnowledgeBase { ...props } />;
+        return <PortalKnowledgeBase { ...props } />;
       default:
         return null;
     }

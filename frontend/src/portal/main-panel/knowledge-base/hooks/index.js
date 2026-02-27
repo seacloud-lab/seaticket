@@ -1,5 +1,5 @@
-import { KnowledgePageProvider, useKnowledgePage } from './knowledge-page';
+import { PortalKnowledgePageProvider, usePortalKnowledgePage } from './knowledge-page';
 
 export {
-  KnowledgePageProvider, useKnowledgePage,
+  PortalKnowledgePageProvider, usePortalKnowledgePage,
 };

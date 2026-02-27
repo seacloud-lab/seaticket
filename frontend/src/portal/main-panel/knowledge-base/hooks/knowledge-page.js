@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
+import context from '@/sea-metadata/context';
+import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { siteRoot } from '@/constants';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
-import { Utils } from '@/utils/utils';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import eventBus from '@/utils/event-bus';
-import { siteRoot } from '@/constants';
 
-const KnowledgePageContext = React.createContext(null);
+const PortalKnowledgePageContext = React.createContext(null);
 
-export const KnowledgePageProvider = ({ projectName, projectUuid, children }) => {
+export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
 
@@ -64,21 +64,21 @@ export const KnowledgePageProvider = ({ projectName, projectUuid, children }) =>
   }, [pageSlugId, resetURL]);
 
   return (
-    <KnowledgePageContext.Provider value={{
+    <PortalKnowledgePageContext.Provider value={{
       pageSlugId,
       isLoading,
       togglePageSlugId,
       onRefresh,
     }}>
       {children}
-    </KnowledgePageContext.Provider>
+    </PortalKnowledgePageContext.Provider>
   );
 };
 
-export const useKnowledgePage = () => {
-  const context = useContext(KnowledgePageContext);
+export const usePortalKnowledgePage = () => {
+  const context = useContext(PortalKnowledgePageContext);
   if (!context) {
-    throw new Error('\'KnowledgePageContext\' is null');
+    throw new Error('\'PortalKnowledgePageContext\' is null');
   }
   return context;
 };

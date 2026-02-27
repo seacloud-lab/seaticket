@@ -60,7 +60,6 @@ export const KNOWLEDGE_NOT_DISPLAY_COLUMNS = [
 export const KNOWLEDGE_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
-  TRASH: 'trash',
 };
 
 export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {
