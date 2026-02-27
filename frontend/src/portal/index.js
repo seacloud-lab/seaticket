@@ -40,6 +40,7 @@ const Portal = () => {
       location.href = `${origin}/portal/${projectUuid}/login/`;
       return;
     }
+    if (isExternalUser && page === PORTAL_PAGE.CHAT) return;
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(page);
     const { origin } = location;
@@ -58,6 +59,8 @@ const Portal = () => {
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
         const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_TICKET || pageKey === PORTAL_PAGE.MY_TICKETS || pageKey === PORTAL_PAGE.CHAT;
         if (isAnonymous && isRestrictedPage) {
+          setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
+        } else if (isExternalUser && pageKey === PORTAL_PAGE.CHAT) {
           setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
         } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
           setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
@@ -195,7 +198,7 @@ const Portal = () => {
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID}>
             {isEditMode && <LeftBar />}
-            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} />
+            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
             <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} onPageChange={onPageChange} />
           </DataProvider>
         )}

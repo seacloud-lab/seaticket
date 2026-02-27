@@ -102,8 +102,8 @@ def portal_view(request, project_uuid, children_id=None):
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
-        'username': username,
         'is_external_user': is_external_user,
+        'username': username,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
