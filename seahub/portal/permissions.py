@@ -47,20 +47,21 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not project:
             return False
 
-        user = getattr(request, 'user', None)
-        if user and getattr(user, 'is_authenticated', False):
-            if check_same_org_permission(user, project.workspace):
-                return True
-
-        if _is_external_member(request, project_uuid):
-            return True
-
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         if allow_anonymous:
             if enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
                 return False
             return True
+
+        if _is_external_member(request, project_uuid):
+            return True
+
+        user = getattr(request, 'user', None)
+        if user and getattr(user, 'is_authenticated', False):
+            if check_same_org_permission(user, project.workspace):
+                return True
+
         return False
 
 
@@ -70,11 +71,11 @@ class PortalTicketPermission(BasePermission):
         if not project:
             return False
 
+        if _is_external_member(request, project_uuid):
+            return True
+
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):
             return check_same_org_permission(user, project.workspace)
-
-        if _is_external_member(request, project_uuid):
-            return True
 
         return False
