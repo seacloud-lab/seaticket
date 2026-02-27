@@ -202,9 +202,11 @@ class TestChatView:
 
     def test_post_get_ai_reply_exception_fallback(self, factory, project_creator, real_project):
         project = real_project
+        project.settings = '{"streaming_response": false}'
+        project.save(update_fields=['settings'])
         request = factory.post(
             '/api/v1/ai/chat/',
-            data={'project_uuid': str(project.uuid), 'query': 'q', 'stream': False},
+            data={'project_uuid': str(project.uuid), 'query': 'q'},
             format='json'
         )
         request.user = project_creator
@@ -222,9 +224,11 @@ class TestChatView:
 
     def test_post_success_maps_connection_name(self, factory, project_creator, real_project, site_connection):
         project = real_project
+        project.settings = '{"streaming_response": false}'
+        project.save(update_fields=['settings'])
         request = factory.post(
             '/api/v1/ai/chat/',
-            data={'project_uuid': str(project.uuid), 'query': 'q', 'stream': False},
+            data={'project_uuid': str(project.uuid), 'query': 'q'},
             format='json'
         )
         request.user = project_creator
