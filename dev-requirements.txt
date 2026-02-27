@@ -4,4 +4,4 @@ fabric3
 raven==5.0.0
 
 pycryptodome
-psd-tools==1.4
+psd-tools==1.12.2
