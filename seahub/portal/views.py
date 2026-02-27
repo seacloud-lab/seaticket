@@ -227,7 +227,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
 
 @login_required
-def portal_edit_view(request, project_uuid, page=None):
+def portal_edit_view(request, project_uuid, page=None, children_id=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))

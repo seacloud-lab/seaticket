@@ -2,10 +2,10 @@ import React, { useMemo, useCallback, useState, useRef } from 'react';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
-import { portalAPI } from '../api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
+import { portalAPI } from '@/portal/api';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '@/portal/main-panel/knowledge-base/constants';
 import { useData, useTags } from '@/project/hooks';
-import { KnowledgePageProvider } from '@/project/main-panel/knowledge-base/hooks/index';
+import { useKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const viewTools = [
@@ -19,6 +19,7 @@ const viewTools = [
 ];
 
 const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
+  const { togglePageSlugId } = useKnowledgePage();
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
   const [viewID, setViewID] = useState('0000');
@@ -34,6 +35,10 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         let predefinedConfig = { ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG };
+        predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE] = {
+          ...predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE],
+          click: (row) => togglePageSlugId(row._id),
+        };
 
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
           const { name } = c;
@@ -110,7 +115,7 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
   }, [currentKB]);
 
   return (
-    <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
+    <>
       <SeaMetadata
         ref={metadataRef}
         viewID={viewID}
@@ -141,7 +146,7 @@ const KnowledgeBase = ({ projectUuid, workspaceID, projectName }) => {
           onToggle={() => setIsShowKBDetailsDialog(false)}
         />
       )}
-    </KnowledgePageProvider>
+    </>
   );
 };
 

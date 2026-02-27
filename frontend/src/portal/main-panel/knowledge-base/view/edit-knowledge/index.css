@@ -1,0 +1,106 @@
+.sea-qa-project-edit-knowledge {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding: 16px;
+  display: flex;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user {
+  width: 44px;
+  overflow: hidden;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user img {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings {
+  flex: 1;
+  padding-top: 4px;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-name {
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings-container {
+  display: flex;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content-settings {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-other-settings {
+  width: 30%;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 0;
+  padding-bottom: 50px;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer .sea-qa-loading-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.sea-qa-project-edit-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: #1991eb;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-settings-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-content-settings {
+  width: 100%;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-other-settings {
+  padding-left: 0;
+  width: 100%;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-other-settings .sea-qa-project-ticket-settings-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-footer {
+  padding-bottom: 16px;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-submit-btns {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 50px;
+}
+
+.sea-qa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {
+  padding:  10px 16px !important;
+}
