@@ -27,7 +27,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       urlPart = '/trash/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, projectName]);
+  }, [workspaceID]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) => {
     if (pageSlugId !== newPageSlugId) {
