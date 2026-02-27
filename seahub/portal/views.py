@@ -71,7 +71,7 @@ def portal_view(request, project_uuid, page=None):
     is_external_user = bool(ext_is_valid and (not is_authenticated_user))
 
     if not allow_anonymous:
-        if not is_logged_in:
+        if not is_logged_in or (not same_org and not ext_is_valid):
             return render(request, 'portal_login.html', {
                 'project_uuid': project_uuid,
                 'project_name': project.name,

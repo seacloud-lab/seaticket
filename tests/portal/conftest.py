@@ -6,9 +6,24 @@ from rest_framework.test import APIRequestFactory
 
 from seahub.project.models import Projects, Workspaces
 
+
+class SessionAPIRequestFactory(APIRequestFactory):
+    def _with_session(self, request):
+        if not hasattr(request, 'session'):
+            request.session = {}
+        return request
+
+    def get(self, *args, **kwargs):
+        request = super().get(*args, **kwargs)
+        return self._with_session(request)
+
+    def post(self, *args, **kwargs):
+        request = super().post(*args, **kwargs)
+        return self._with_session(request)
+
 @pytest.fixture
 def factory():
-    return APIRequestFactory()
+    return SessionAPIRequestFactory()
 
 
 @pytest.fixture
