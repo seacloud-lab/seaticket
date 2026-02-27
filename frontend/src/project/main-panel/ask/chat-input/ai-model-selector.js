@@ -22,7 +22,7 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
         value: model.model,
         default: model.default,
         label: model.label,
-        simple_label: model.model,
+        simple_label: model.label,
         img: LLM_MODEL_ICON[type] || LLM_MODEL_ICON['unknown']
       };
     });
