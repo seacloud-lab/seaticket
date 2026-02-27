@@ -19,6 +19,7 @@ urlpatterns = [
     # portal page (for external users)
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-ticket/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),

@@ -68,8 +68,6 @@ const ResourceDetailsDialog = ({
     setDetails(details);
   }, []);
 
-  console.log('internalNetworkAddress', internalNetworkAddress);
-
   return (
     <Modal className="sea-ticket-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onToggle}>
