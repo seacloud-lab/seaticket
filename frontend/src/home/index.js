@@ -9,11 +9,15 @@ import SidePanel from './side-panel';
 import { Utils } from '../utils/utils';
 import MainPanel from './main-panel';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
+import homeAPI from './api.js';
+import Workspace from './models/workspace.js';
 
 import '../css/layout.css';
 import '../css/side-panel.css';
 import './home.css';
 import '@/css/toolbar.css';
+
+const gettext = window.gettext;
 
 class Home extends React.Component {
 
@@ -24,6 +28,10 @@ class Home extends React.Component {
       isSidePanelClosed: true,
       isUpdateSidePanelGroups: false,
       isOpenGroupExpanded: false,
+      workspaceList: [],
+      groupItems: [],
+      isWorkspaceListLoading: true,
+      errorMsg: null,
     };
     this.isDesktop = Utils.isDesktop();
   }
@@ -83,6 +91,72 @@ class Home extends React.Component {
     this.setState({ isUpdateSidePanelGroups: status });
   };
 
+  loadWorkspaceList = () => {
+    homeAPI.listWorkspaces().then(res => {
+      let workspaceList = res.data.workspace_list.map(item => new Workspace(item));
+      let groupItems = workspaceList.filter(workspace => workspace.type === 'group');
+      this.setState({
+        workspaceList,
+        groupItems,
+        isWorkspaceListLoading: false,
+      });
+      console.log(groupItems);
+    }).catch(error => {
+      this.errorCallbackHandle(error);
+    });
+  };
+
+  errorCallbackHandle = (error) => {
+    if (error.response) {
+      this.setState({
+        errorMsg: gettext('Error')
+      });
+    } else {
+      this.setState({
+        errorMsg: gettext('Please check the network.')
+      });
+    }
+  };
+
+  onDeleteGroup = (groupID) => {
+    let workspaceList = this.state.workspaceList.filter((item) => item.group_id !== groupID);
+    this.setState({ workspaceList: workspaceList });
+    this.updateSidePanelGroups(true, true);
+  };
+
+  onCopyProject = (project) => {
+    let newWorkspaceList = this.state.workspaceList.slice();
+    for (let workspace of newWorkspaceList) {
+      if (project.workspace_id === workspace.id) {
+        workspace.projects.push(project);
+        break;
+      }
+    }
+    this.setState({ workspaceList: newWorkspaceList });
+  };
+
+  onAddProject = (project) => {
+    let newWorkspaceList = this.state.workspaceList.slice();
+    newWorkspaceList = newWorkspaceList.map(item => {
+      if (project.workspace_id === item.id) {
+        item.projects.push(project);
+      }
+      return item;
+    });
+    this.setState({ workspaceList: newWorkspaceList });
+  };
+
+  onDeleteProject = (deletedWorkspaceID, newProjectList) => {
+    let workspaceList = this.state.workspaceList.slice(0);
+    for (let i = 0; i < workspaceList.length; i++) {
+      if (workspaceList[i].id === deletedWorkspaceID) {
+        workspaceList[i].projects = newProjectList;
+        break;
+      }
+    }
+    this.setState({ workspaceList });
+  };
+
   render() {
     let { isSidePanelClosed, currentTab, isOpenGroupExpanded, isUpdateSidePanelGroups } = this.state;
     return (
@@ -101,6 +175,14 @@ class Home extends React.Component {
                 updateSidePanelGroups={this.updateSidePanelGroups}
                 toggleGroupExpanded={this.toggleGroupExpanded}
                 isDesktop={this.isDesktop}
+                workspaceList={this.state.workspaceList}
+                isWorkspaceListLoading={this.state.isWorkspaceListLoading}
+                onDeleteGroup={this.onDeleteGroup}
+                onCopyProject={this.onCopyProject}
+                onAddProject={this.onAddProject}
+                onDeleteProject={this.onDeleteProject}
+                loadWorkspaceList={this.loadWorkspaceList}
+                groupItems={this.state.groupItems}
               />
             )}
             <MainPanel
@@ -108,6 +190,14 @@ class Home extends React.Component {
               currentTab={currentTab}
               onShowSidePanel={this.toggleSidePanel}
               updateSidePanelGroups={this.updateSidePanelGroups}
+              workspaceList={this.state.workspaceList}
+              isWorkspaceListLoading={this.state.isWorkspaceListLoading}
+              loadWorkspaceList={this.loadWorkspaceList}
+              onDeleteGroup={this.onDeleteGroup}
+              onCopyProject={this.onCopyProject}
+              onAddProject={this.onAddProject}
+              onDeleteProject={this.onDeleteProject}
+              errorMsg={this.state.errorMsg}
             />
             <MediaQuery query="(max-width: 767.8px)">
               <Modal isOpen={!isSidePanelClosed} toggle={this.toggleSidePanel} contentClassName="d-none"></Modal>

@@ -59,11 +59,8 @@ class HomeAPI {
     }
   }
 
-  listWorkspaces(detail) {
+  listWorkspaces() {
     let url = this.server + '/api/v1/workspaces/';
-    if (detail !== undefined) {
-      url = url + '?detail=' + detail;
-    }
     return this.req.get(url);
   }
 

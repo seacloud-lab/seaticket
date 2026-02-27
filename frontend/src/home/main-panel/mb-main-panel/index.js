@@ -4,8 +4,6 @@ import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
 import { TabBar } from '../../../components';
 import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
-import homeAPI from '../../api.js';
-import Workspace from '../../models/workspace.js';
 import { gettext, siteRoot } from '../../../constants';
 import MobileMine from '../../mobile/mobile-mine';
 import MobileHeader from '../../mobile/mobile-header';
@@ -17,6 +15,13 @@ const propTypes = {
   searchPlaceholder: PropTypes.string,
   updateSidePanelGroups: PropTypes.func,
   onShowSidePanel: PropTypes.func,
+  workspaceList: PropTypes.array,
+  isWorkspaceListLoading: PropTypes.bool,
+  loadWorkspaceList: PropTypes.func,
+  onDeleteGroup: PropTypes.func,
+  onCopyProject: PropTypes.func,
+  onAddProject: PropTypes.func,
+  onDeleteProject: PropTypes.func,
 };
 
 const BAR_ITEMS = [
@@ -40,80 +45,13 @@ class MobileMainPanel extends React.Component {
     super(props);
     this.state = {
       selectedTab: 'projects',
-      errorMsg: null,
-      workspaceList: [],
-      isWorkspaceListLoading: true,
+      // errorMsg: null,
     };
   }
 
   onSearchedClick = (item) => {
     let url = siteRoot + 'workspace/' + item.workspace_id + '/project/' + item.name + '/';
     location.href = url;
-  };
-
-  loadWorkspaceList = () => {
-    homeAPI.listWorkspaces().then(res => {
-      let workspaceList = res.data.workspace_list.map(item => {
-        return new Workspace(item);
-      });
-      this.setState({
-        workspaceList,
-        isWorkspaceListLoading: false,
-      });
-    }).catch(error => {
-      this.errorCallbackHandle(error);
-    });
-  };
-
-  errorCallbackHandle = (error) => {
-    if (error.response) {
-      this.setState({
-        errorMsg: gettext('Error')
-      });
-    } else {
-      this.setState({
-        errorMsg: gettext('Please check the network.')
-      });
-    }
-  };
-
-  onDeleteGroup = (groupID) => {
-    let workspaceList = this.state.workspaceList.filter((item) => item.group_id !== groupID);
-    this.setState({ workspaceList: workspaceList });
-    this.props.updateSidePanelGroups(true, true);
-  };
-
-  onCopyProject = (project) => {
-    let newWorkspaceList = this.state.workspaceList.slice();
-    for (let workspace of newWorkspaceList) {
-      if (project.workspace_id === workspace.id) {
-        workspace.projects.push(project);
-        break;
-      }
-    }
-    this.setState({ workspaceList: newWorkspaceList });
-  };
-
-  onAddProject = (project) => {
-    let newWorkspaceList = this.state.workspaceList.slice();
-    newWorkspaceList = newWorkspaceList.map(item => {
-      if (project.workspace_id === item.id) {
-        item.projects.push(project);
-      }
-      return item;
-    });
-    this.setState({ workspaceList: newWorkspaceList });
-  };
-
-  onDeleteProject = (deletedWorkspaceID, newProjectList) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].id === deletedWorkspaceID) {
-        workspaceList[i].projects = newProjectList;
-        break;
-      }
-    }
-    this.setState({ workspaceList });
   };
 
   onSelectCurrentTab = (selectedTab) => {
@@ -126,38 +64,38 @@ class MobileMainPanel extends React.Component {
       <Router className="reach-router" role='group'>
         <AllWorkspaces
           path={siteRoot}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
+          loadWorkspaceList={this.props.loadWorkspaceList}
+          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
+          workspaceList={this.props.workspaceList}
+          errorMsg={this.props.errorMsg}
+          onDeleteGroup={this.props.onDeleteGroup}
+          onDeleteProject={this.props.onDeleteProject}
+          onCopyProject={this.props.onCopyProject}
+          onAddProject={this.props.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
         <AllWorkspaces
           path={siteRoot + 'project/'}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
+          loadWorkspaceList={this.props.loadWorkspaceList}
+          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
+          workspaceList={this.props.workspaceList}
+          errorMsg={this.props.errorMsg}
+          onDeleteGroup={this.props.onDeleteGroup}
+          onDeleteProject={this.props.onDeleteProject}
+          onCopyProject={this.props.onCopyProject}
+          onAddProject={this.props.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
         <WorkspaceInMainPanel
           path={siteRoot + 'project/:projectID'}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
+          loadWorkspaceList={this.props.loadWorkspaceList}
+          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
+          workspaceList={this.props.workspaceList}
+          errorMsg={this.props.errorMsg}
+          onDeleteGroup={this.props.onDeleteGroup}
+          onDeleteProject={this.props.onDeleteProject}
+          onCopyProject={this.props.onCopyProject}
+          onAddProject={this.props.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
       </Router>
@@ -211,7 +149,7 @@ class MobileMainPanel extends React.Component {
           searchPlaceholder={this.props.searchPlaceholder}
           onShowSidePanel={this.props.onShowSidePanel}
           onSearchedClick={this.onSearchedClick}
-          loadWorkspaceList={this.loadWorkspaceList}
+          loadWorkspaceList={this.props.loadWorkspaceList}
         />
         {selectedTab === 'mine' && <MobileMine />}
         {this.renderTabBarContent()}

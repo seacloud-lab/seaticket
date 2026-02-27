@@ -42,6 +42,7 @@ class WorkspacesView(APIView):
     def get(self, request):
         """get all workspaces
         """
+        # TODO: remove detail param
         detail = request.GET.get('detail', 'true')
         if detail not in ('true', 'false'):
             error_msg = 'detail invalid'
