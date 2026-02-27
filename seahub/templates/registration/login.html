@@ -82,20 +82,20 @@
 				{% if form.captcha.errors %}
 				{{ form.captcha.errors}}
 				{% elif form.errors.freeze_account %}
-				<p class="error">{{ form.errors.freeze_account }}</p>
+				<p class="error mt-1">{{ form.errors.freeze_account }}</p>
 				{% elif form.errors.inactive %}
-				<p class="error">{{ form.errors.inactive }}</p>
+				<p class="error mt-1">{{ form.errors.inactive }}</p>
 				{% elif form.errors.not_found %}
-				<p class="error">{{ form.errors.not_found }}</p>
+				<p class="error mt-1">{{ form.errors.not_found }}</p>
 				{% elif form.password.errors %}
-				<p class="error">{{ form.password.errors }}</p>
+				<p class="error mt-1">{{ form.password.errors }}</p>
 				{% elif form.errors.disable_pwd_login %}
-				<p class="error">{{ form.errors.disable_pwd_login }}</p>
+				<p class="error mt-1">{{ form.errors.disable_pwd_login }}</p>
 				{% else %}
-				<p class="error">{% trans "Incorrect account or password" %}</p>
+				<p class="error mt-1">{% trans "Incorrect account or password" %}</p>
 				{% endif %}
 				{% else %}
-				<p class="error hide"></p>
+				<p class="error hide mt-1"></p>
 				{% endif %}
 
 				{% if remember_days > 0 %}

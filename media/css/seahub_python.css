@@ -681,6 +681,10 @@ input.short-input {
   height: 40px;
 }
 
+.login-panel-wrapper .login-form-wrapper .btn-block:focus {
+  border-color: var(--bs-primary);
+}
+
 .login-panel-wrapper .btn-sso {
   margin-top: 12px;
   height: 40px;
