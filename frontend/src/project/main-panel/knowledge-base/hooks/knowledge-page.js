@@ -16,13 +16,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
   const [viewID, toggleView] = useState('');
 
-  const isProjectRoute = useCallback(() => {
-    const { pathname } = location;
-    return pathname.includes(`/project/${projectName}/`);
-  }, [projectName]);
-
   const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
-    if (!isProjectRoute()) return;
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}`;
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
@@ -33,7 +27,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       urlPart = '/trash/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, isProjectRoute, projectName]);
+  }, [workspaceID, projectName]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) => {
     if (pageSlugId !== newPageSlugId) {
@@ -51,10 +45,6 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
 
   // init page
   useEffect(() => {
-    if (!isProjectRoute()) {
-      setLoading(false);
-      return;
-    }
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
     const part = `/project/${projectName}/`;
@@ -80,7 +70,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     setChildrenPageSlugId(childrenPageSlugId);
     setPageSlugId(pageSlugId);
     setLoading(false);
-  }, [projectName, isProjectRoute]);
+  }, [projectName]);
 
   useEffect(() => {
     const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, togglePageSlugId);
