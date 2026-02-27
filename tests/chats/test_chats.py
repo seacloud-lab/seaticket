@@ -144,7 +144,7 @@ class TestChatMessagesView:
         assert resp.status_code == 200
         assert len(resp.data['messages']) == 2
         user_msg = next(m for m in resp.data['messages'] if m['role'] == 'user')
-        assert 'content' not in user_msg['attachments'][0]
+        assert user_msg['attachments'][0]['content'] == 'x'
         assert user_msg['attachments'][0]['foo'] == 1
 
         assistant_msg = next(m for m in resp.data['messages'] if m['role'] == 'assistant')
@@ -202,7 +202,11 @@ class TestChatView:
 
     def test_post_get_ai_reply_exception_fallback(self, factory, project_creator, real_project):
         project = real_project
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={'project_uuid': str(project.uuid), 'query': 'q', 'stream': False},
+            format='json'
+        )
         request.user = project_creator
 
         with patch('seahub.chats.view.get_ai_reply', side_effect=Exception('ai down')):
@@ -218,7 +222,11 @@ class TestChatView:
 
     def test_post_success_maps_connection_name(self, factory, project_creator, real_project, site_connection):
         project = real_project
-        request = factory.post('/api/v1/ai/chat/', data={'project_uuid': str(project.uuid), 'query': 'q'}, format='json')
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={'project_uuid': str(project.uuid), 'query': 'q', 'stream': False},
+            format='json'
+        )
         request.user = project_creator
 
         ai_response = {'ai_reply': 'ok', 'sources': [{'connection_id': site_connection.id}]}
