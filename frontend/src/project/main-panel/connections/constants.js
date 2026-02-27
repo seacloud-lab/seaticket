@@ -152,7 +152,7 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('Your the URL of the repository, like https://github.com/haiwen/seafile')
+      tip: gettext('The URL of the repository, like https://github.com/haiwen/seafile')
     }, {
       key: 'access_token',
       name: gettext('Access token'),
