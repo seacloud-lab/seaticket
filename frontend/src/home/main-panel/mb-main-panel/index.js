@@ -11,6 +11,29 @@ import { Icon } from '@/components';
 
 import './index.css';
 
+const ROUTES = {
+  HOME: siteRoot,
+  PROJECTS: `${siteRoot}project/`,
+  PROJECT_DETAIL: `${siteRoot}project/:projectID`
+};
+
+const TAB_BAR_ITEMS = [
+  {
+    key: 'Projects',
+    title: gettext('Projects'),
+    value: 'projects',
+    icon: <Icon symbol="home" className="tab-item" />,
+    selectedIcon: <Icon symbol="home" className="tab-item selected-tab-item" />
+  },
+  {
+    key: 'Mine',
+    title: gettext('Mine'),
+    value: 'mine',
+    icon: <Icon symbol="mine" className="tab-item" />,
+    selectedIcon: <Icon symbol="mine" className="tab-item selected-tab-item" />
+  }
+];
+
 const propTypes = {
   searchPlaceholder: PropTypes.string,
   updateSidePanelGroups: PropTypes.func,
@@ -22,35 +45,19 @@ const propTypes = {
   onCopyProject: PropTypes.func,
   onAddProject: PropTypes.func,
   onDeleteProject: PropTypes.func,
+  errorMsg: PropTypes.string
 };
 
-const BAR_ITEMS = [
-  {
-    key: 'Projects',
-    title: gettext('Projects'),
-    icon: <Icon symbol="home" className="tab-item" />,
-    selectedIcon: <Icon symbol="home" className="tab-item selected-tab-item" />
-  },
-  {
-    key: 'Mine',
-    title: gettext('Mine'),
-    icon: <Icon symbol="mine" className="tab-item" />,
-    selectedIcon: <Icon symbol="mine" className="tab-item selected-tab-item" />
-  }
-];
-
 class MobileMainPanel extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
-      selectedTab: 'projects',
-      // errorMsg: null,
+      selectedTab: 'projects'
     };
   }
 
   onSearchedClick = (item) => {
-    let url = siteRoot + 'workspace/' + item.workspace_id + '/project/' + item.name + '/';
+    const url = `${siteRoot}workspace/${item.workspace_id}/project/${item.name}/`;
     location.href = url;
   };
 
@@ -59,78 +66,45 @@ class MobileMainPanel extends React.Component {
   };
 
   renderMainContent = () => {
-
+    const commonProps = {
+      loadWorkspaceList: this.props.loadWorkspaceList,
+      isWorkspaceListLoading: this.props.isWorkspaceListLoading,
+      workspaceList: this.props.workspaceList,
+      errorMsg: this.props.errorMsg,
+      onDeleteGroup: this.props.onDeleteGroup,
+      onDeleteProject: this.props.onDeleteProject,
+      onCopyProject: this.props.onCopyProject,
+      onAddProject: this.props.onAddProject,
+      updateSidePanelGroups: this.props.updateSidePanelGroups
+    };
     return (
       <Router className="reach-router" role='group'>
-        <AllWorkspaces
-          path={siteRoot}
-          loadWorkspaceList={this.props.loadWorkspaceList}
-          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
-          workspaceList={this.props.workspaceList}
-          errorMsg={this.props.errorMsg}
-          onDeleteGroup={this.props.onDeleteGroup}
-          onDeleteProject={this.props.onDeleteProject}
-          onCopyProject={this.props.onCopyProject}
-          onAddProject={this.props.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
-        <AllWorkspaces
-          path={siteRoot + 'project/'}
-          loadWorkspaceList={this.props.loadWorkspaceList}
-          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
-          workspaceList={this.props.workspaceList}
-          errorMsg={this.props.errorMsg}
-          onDeleteGroup={this.props.onDeleteGroup}
-          onDeleteProject={this.props.onDeleteProject}
-          onCopyProject={this.props.onCopyProject}
-          onAddProject={this.props.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
-        <WorkspaceInMainPanel
-          path={siteRoot + 'project/:projectID'}
-          loadWorkspaceList={this.props.loadWorkspaceList}
-          isWorkspaceListLoading={this.props.isWorkspaceListLoading}
-          workspaceList={this.props.workspaceList}
-          errorMsg={this.props.errorMsg}
-          onDeleteGroup={this.props.onDeleteGroup}
-          onDeleteProject={this.props.onDeleteProject}
-          onCopyProject={this.props.onCopyProject}
-          onAddProject={this.props.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
+        <AllWorkspaces path={ROUTES.HOME} {...commonProps} />
+        <AllWorkspaces path={ROUTES.PROJECTS} {...commonProps} />
+        <WorkspaceInMainPanel path={ROUTES.PROJECT_DETAIL} {...commonProps} />
       </Router>
     );
   };
 
-
-  getTabBarItems = () => {
-    let tabBarItems = BAR_ITEMS.slice(0);
-    return tabBarItems;
-  };
-
   renderTabBarContent = () => {
     const { selectedTab } = this.state;
-    let tabBarItems = this.getTabBarItems();
     return (
       <TabBar
         unselectedTintColor="#999"
         tintColor="#ED7109"
         barTintColor="white"
       >
-        {tabBarItems.map(item => {
-          let innerContent = null;
-          let itemTabValue = item.key.toLocaleLowerCase();
-          if (selectedTab === 'projects' && itemTabValue === 'projects') {
-            innerContent = this.renderMainContent();
-          }
+        {TAB_BAR_ITEMS.map(item => {
+          const shouldRenderContent = selectedTab === 'projects' && item.value === 'projects';
+          const innerContent = shouldRenderContent ? this.renderMainContent() : null;
           return (
             <TabBar.Item
               title={item.title}
               key={item.key}
               icon={item.icon}
               selectedIcon={item.selectedIcon}
-              selected={selectedTab === itemTabValue}
-              onPress={this.onSelectCurrentTab.bind(this, itemTabValue)}
+              selected={selectedTab === item.value}
+              onPress={() => this.onSelectCurrentTab(item.value)}
             >
               {innerContent}
             </TabBar.Item>
@@ -143,7 +117,7 @@ class MobileMainPanel extends React.Component {
   render() {
     const { selectedTab } = this.state;
     return (
-      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' })} >
+      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' })}>
         <MobileHeader
           selectedTab={selectedTab}
           searchPlaceholder={this.props.searchPlaceholder}
