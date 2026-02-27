@@ -15,6 +15,9 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
     : (enableKB
       ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
       : BASE_NAV_ITEMS);
+
+  const { isEditMode, projectUuid, isExternalUser, username } = window.app.pageOptions;
+
   return (
     <div className="sea-qa-portal-side-panel">
       <div className="sea-qa-portal-side-panel-header">
@@ -34,20 +37,20 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             <span className="sea-qa-portal-nav-item-name">{item.name}</span>
           </div>
         ))}
-        {!window.app.pageOptions.isEditMode && isAnonymous && (
+        {!isEditMode && isAnonymous && (
           <div
             className="sea-qa-portal-nav-item"
-            onClick={() => { window.location.href = siteRoot + `portal/${window.app.pageOptions.projectUuid}/login/`; }}
+            onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
             title={gettext('Log in')}
           >
             <Icon symbol="external-portal" className="sea-qa-portal-nav-item-icon" />
             <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
           </div>
         )}
-        {!window.app.pageOptions.isEditMode && !!window.app.pageOptions.username && (
+        {!isEditMode && isExternalUser && !!username && (
           <div
             className="sea-qa-portal-nav-item"
-            onClick={() => { window.location.href = siteRoot + 'accounts/logout/'; }}
+            onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
             title={gettext('Log out')}
           >
             <Icon symbol="logout" className="sea-qa-portal-nav-item-icon" />

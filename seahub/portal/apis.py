@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.utils import api_error
+from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, \
     check_project_admin_permission
@@ -22,7 +22,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import TicketsTable, TagTable
 from seahub.seadb_models.utils import list_my_tickets, list_knowledge_base_records
-from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS
+from seahub.tickets.ticket_utils import check_ticket_creation_interval, TABLE_TICKETS, get_ticket, get_ticket_comments,\
+    convert_ticket_select_column_name_to_option_id, build_linked_record_titles_map_for_keys
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -35,6 +36,7 @@ from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.portal.models import PortalExternalInvitation
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED
 from seahub.base.templatetags.seahub_tags import email2nickname
+from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 
 
 logger = logging.getLogger(__name__)
@@ -224,6 +226,55 @@ class PortalMyTicketsView(APIView):
         })
 
 
+class PortalTicketView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalTicketPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, ticket_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = getattr(request.user, 'username', '')
+        try:
+            seadb_api = SeaDBAPI(username)
+            ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            convert_ticket_select_column_name_to_option_id(metadata, ticket)
+
+            linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+            linked_record_titles = build_linked_record_titles_map_for_keys(
+                seadb_api, project_uuid, linked_connection_records
+            )
+
+            start = 0
+            end = 25
+            ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
+
+            for ticket_comment in ticket_comments:
+                result = {
+                    'number': ticket_comment.get('_pk'),
+                    'content': ticket_comment.get('content'),
+                    'created_time': ticket_comment.get('created_time'),
+                    'modified_time': ticket_comment.get('modified_time'),
+                    'creator': ticket_comment.get('creator'),
+                }
+                if not ticket.get('comments'):
+                    ticket['comments'] = []
+                ticket['comments'].append(result)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'ticket': ticket, 'linked_record_titles': linked_record_titles})
+
+
 class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)
@@ -334,6 +385,73 @@ class PortalKnowledgeBaseRecordsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'records': records, 'columns': columns})
+
+
+class PortalKnowledgeBaseRecordView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalKnowledgeBasePermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, knowledge_id):
+        try:
+            project = request.project
+            project_settings = json.loads(project.settings) if project.settings else {}
+            portal_settings = project_settings.get('portal', {})
+            show_kb = bool(portal_settings.get('show_knowledge_base', False))
+        except Exception:
+            show_kb = False
+        if not show_kb:
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        username = getattr(request.user, 'username', '')
+        try:
+            seadb_api = SeaDBAPI(username)
+            record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not record:
+            error_msg = 'Knowledge base record not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        return Response({'record': record})
+
+
+class PortalUserListView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalTicketPermission | PortalKnowledgeBasePermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, project_uuid):
+        user_id_list = request.data.get('user_id_list')
+        if not isinstance(user_id_list, list):
+            error_msg = 'user_id_list invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        is_authenticated = bool(getattr(request.user, 'is_authenticated', False))
+
+        ext_username = request.session.get('portal_external_username')
+        ext_project_uuid = request.session.get('portal_external_project_uuid')
+        is_external = False
+        if ext_username and ext_project_uuid == project_uuid:
+            is_external = ProjectExternalUser.objects.filter(
+                project_uuid=project_uuid, username=ext_username, activated=True
+            ).exists()
+
+        if not is_authenticated and not is_external:
+            return Response({'user_list': []})
+
+        user_list = []
+        for user_id in user_id_list:
+            if not isinstance(user_id, str):
+                continue
+            user_info = get_user_common_info(user_id, include_contact_email=False)
+            user_list.append(user_info)
+
+        return Response({'user_list': user_list})
 
 
 class PortalTicketMetadataView(APIView):
@@ -616,6 +734,11 @@ class PortalExternalLoginSendCodeView(APIView):
         email = request.data.get('email')
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+
+        if not ProjectExternalUser.objects.filter(email=email, project_uuid=project_uuid).exists():
+            err_resp = {'error_msg': 'Internal Server Error', 'detail': _('External user not found. Please use the invitation link first.')}
+            return Response(err_resp, status=status.HTTP_404_NOT_FOUND)
+
         try:
             code = get_random_code()
             cache_key = f"portal_email_login:{project_uuid}:{email}"

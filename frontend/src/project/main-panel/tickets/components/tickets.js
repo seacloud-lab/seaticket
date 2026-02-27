@@ -36,6 +36,7 @@ const Tickets = ({
   togglePageSlugId = () => {},
   toggleView,
   isLoading = false,
+  getTicket,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
@@ -301,6 +302,7 @@ const Tickets = ({
           columns={allColumns.current}
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
+          getTicket={getTicket}
         />
       )}
       {isShowCreateKBRecordDialog && kbSourceTicket && (

@@ -13,7 +13,7 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous, workspaceId } = window.app.pageOptions;
+const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous, workspaceId, isExternalUser } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
   if (anonymous) return kbEnabled ? PORTAL_PAGE.KNOWLEDGE_BASE : null;
@@ -64,7 +64,7 @@ const Portal = () => {
       }
     }
 
-    if (!isEditMode && isAnonymous) {
+    if (!isEditMode && (isAnonymous || isExternalUser)) {
       APIRef.current.listProjectRelatedUsers = (projectUuid) => {
         return new Promise((resolve, reject) => {
           resolve({
@@ -72,13 +72,15 @@ const Portal = () => {
           });
         });
       };
-      APIRef.current.listUserInfo = (projectUuid) => {
-        return new Promise((resolve, reject) => {
-          resolve({
-            data: { user_list: [] }
+      if (!isExternalUser){
+        APIRef.current.listUserInfo = (userIdList) => {
+          return new Promise((resolve, reject) => {
+            resolve({
+              data: { user_list: [] }
+            });
           });
-        });
-      };
+        };
+      }
     } else {
       delete APIRef.current['listProjectRelatedUsers'];
       delete APIRef.current['listUserInfo'];

@@ -60,6 +60,11 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
+  getTicket(projectUuid, ticketNumber) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    return this.req.get(url);
+  }
+
   listMyTickets(projectUuid, { view_id = 'open', start = 0, limit = 1000, config = {} } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/my-tickets/';
     let form = new FormData();
@@ -126,6 +131,17 @@ class PortalAPI {
   listKBRecords(projectUuid, { view_id, start = 0, limit = 1000 } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/?view_id=' + encodeURIComponent(view_id) + '&start=' + start + '&limit=' + limit;
     return this.req.get(url);
+  }
+
+  getKBRecord(projectUuid, recordId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/' + recordId + '/';
+    return this.req.get(url);
+  }
+
+  listUserInfo(userIdList) {
+    const { projectUuid } = (window.app && window.app.pageOptions) || {};
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/user-list/';
+    return this.req.post(url, { user_id_list: userIdList });
   }
 
   getSettings(projectUuid) {

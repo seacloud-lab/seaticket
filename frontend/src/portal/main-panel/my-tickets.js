@@ -96,6 +96,7 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
       permission="r"
       viewID={viewID}
       api={api}
+      getTicket={(uuid, ticketNumber) => portalAPI.getTicket(uuid, ticketNumber)}
       localStorageNamePrefix={localStorageNamePrefix}
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}
