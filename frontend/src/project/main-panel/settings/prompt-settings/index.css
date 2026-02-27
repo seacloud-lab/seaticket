@@ -1,4 +1,4 @@
-.prompt-settings-header {
+.prompt-settings-option-header {
   border-bottom: 1px solid #eee;
   font-size: .9375rem;
   font-weight: 400;
@@ -7,11 +7,11 @@
   padding-top: 14px;
 }
 
-.prompt-settings .tip {
+.prompt-settings-option-body .tip {
   font-size: 12px;
 }
 
-.prompt-settings .prompt-preview-container {
+.prompt-settings-option-body .prompt-preview-container {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -21,7 +21,7 @@
   border: 1px solid #e9ecef;
 }
 
-.prompt-settings .prompt-preview {
+.prompt-settings-option-body .prompt-preview {
   flex: 1;
   font-size: 14px;
   color: #666;
@@ -29,7 +29,7 @@
   word-break: break-word;
 }
 
-.prompt-settings .edit-prompt-btn {
+.prompt-settings-option-body .edit-prompt-btn {
   flex-shrink: 0;
   min-width: 60px;
 }
