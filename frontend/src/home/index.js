@@ -100,7 +100,6 @@ class Home extends React.Component {
         groupItems,
         isWorkspaceListLoading: false,
       });
-      console.log(groupItems);
     }).catch(error => {
       this.errorCallbackHandle(error);
     });
