@@ -32,6 +32,24 @@ class EmailSeaDBAPI:
             return response['results']
         return []
 
+    def get_latest_reply_target_email(self, connection_id, thread_id):
+        table_name = EmailTable.gen_table_name(connection_id)
+        sql = (
+            f"SELECT email_from, email_to, cc, title, message_id, reply_to_message_id, is_sender "
+            f"FROM `{table_name}` WHERE `thread_id` = {thread_id} "
+            f"ORDER BY {EmailTable.modified_time.name} DESC LIMIT 20"
+        )
+        response = self.seadb_api.query_rows(self.base_id, sql)
+        emails = response.get('results', []) if response else []
+        if not emails:
+            return {}
+
+        for email in emails:
+            if not email.get('is_sender'):
+                return email
+
+        return emails[0]
+
     def get_thread_by_pk(self, connection_id, _pk):
         table_name = ThreadTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"

@@ -5,6 +5,10 @@ import logging
 import json
 import datetime
 import sys
+import smtplib
+import ssl
+from email.message import EmailMessage
+from email.utils import formataddr
 from email.utils import formatdate
 
 from django.utils.translation import gettext as _
@@ -21,10 +25,11 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
-from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename
+from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
+    build_reply_references, extract_email_addresses, normalize_reply_subject
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
@@ -32,6 +37,8 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, init_notion_seadb_table, list_notion_record_details
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
@@ -1054,6 +1061,138 @@ class ProjectConnectionRecordsView(APIView):
     #         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
     #     return Response({'success': True})
+
+
+class ProjectConnectionReplyEmailView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id, record_id):
+        try:
+            record_id = int(record_id)
+        except (TypeError, ValueError):
+            error_msg = 'record_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support replying email.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        content = (request.data.get('content') or '').strip()
+        if not content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        config = decrypt_config(json.loads(project_connection.config))
+        smtp_host = config.get('smtp_host')
+        smtp_port = config.get('smtp_port')
+        smtp_user = config.get('username')
+        smtp_password = config.get('password')
+        sender_email = config.get('sender_email') or smtp_user
+        sender_name = config.get('sender_name')
+
+        if not smtp_host or not smtp_user or not smtp_password or not sender_email:
+            error_msg = 'Email connection config is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            smtp_port = int(smtp_port or 587)
+        except (TypeError, ValueError):
+            error_msg = 'smtp_port invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        email_seadb_api = EmailSeaDBAPI(project_uuid, username=username, seadb_api=seadb_api)
+        thread = email_seadb_api.get_thread_by_pk(connection_id, record_id)
+        if not thread:
+            error_msg = f'record {record_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        thread_emails = email_seadb_api.get_emails_by_thread_id(connection_id, record_id)
+        thread_email_map = {
+            email.get('message_id'): email
+            for email in thread_emails
+            if email.get('message_id')
+        }
+        reply_to_message_id = (request.data.get('reply_to_message_id') or '').strip()
+        if reply_to_message_id:
+            target_email = thread_email_map.get(reply_to_message_id)
+            if not target_email:
+                error_msg = 'reply_to_message_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        else:
+            target_email = email_seadb_api.get_latest_reply_target_email(connection_id, record_id)
+        if not target_email:
+            error_msg = 'No email found in this thread.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        to_text = request.data.get('to') or target_email.get('email_from')
+        to_emails = extract_email_addresses(to_text)
+        if not to_emails:
+            error_msg = 'to invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        cc_text = request.data.get('cc')
+        cc_emails = extract_email_addresses(cc_text)
+
+        subject = request.data.get('subject')
+        if not subject:
+            subject = target_email.get('title') or thread[0].get('title')
+        subject = normalize_reply_subject(subject)
+
+        message = EmailMessage()
+        message['From'] = formataddr((sender_name, sender_email)) if sender_name else sender_email
+        message['To'] = ', '.join(to_emails)
+        if cc_emails:
+            message['Cc'] = ', '.join(cc_emails)
+        message['Subject'] = subject
+
+        target_message_id = target_email.get('message_id')
+        if target_message_id:
+            message['In-Reply-To'] = target_message_id
+
+        references = build_reply_references(target_email, thread_email_map)
+        if references:
+            message['References'] = ' '.join(references)
+
+        message.set_content(content, subtype='plain', charset='utf-8')
+        
+        html_content = request.data.get('html_content')
+        if html_content:
+            message.add_alternative(html_content, subtype='html', charset='utf-8')
+
+        recipients = list(dict.fromkeys(to_emails + cc_emails))
+
+        try:
+            ssl_context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30, context=ssl_context) as smtp_server:
+                smtp_server.login(smtp_user, smtp_password)
+                smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
+        except Exception as e:
+            logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            error_msg = 'Failed to send email.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class ConnectionFileView(APIView):

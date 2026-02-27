@@ -248,9 +248,15 @@ class ConnectionsAPI {
     return this.req.delete(url, { data: { record_ids: recordIDs } });
   }
 
+
   listGitHubRepositories(projectUuid) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/repositories/';
     return this.req.get(url);
+  }
+  
+  replyConnectionEmail(projectUuid, connectionID, recordID, payload) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + recordID + '/reply-email/';
+    return this.req.post(url, payload);
   }
 
 }

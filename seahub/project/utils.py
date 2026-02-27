@@ -2,6 +2,7 @@ import re
 import logging
 import hashlib
 from urllib.parse import quote_plus
+from email.utils import formataddr, getaddresses
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
@@ -395,3 +396,49 @@ def rank_vector_search_results(query_record, results, username, org_id, project_
 
 def convert_cost_to_credit(cost):
     return 100 * cost
+
+# email utils
+def build_reply_references(target_email, thread_email_map):
+    target_message_id = (target_email.get('message_id') or '').strip()
+    if not target_message_id:
+        return []
+
+    reference_ids = []
+    visited = {target_message_id}
+    current_email = target_email
+
+    while True:
+        reply_to_message_id = (current_email.get('reply_to_message_id') or '').strip()
+        if not reply_to_message_id or reply_to_message_id in visited:
+            break
+        visited.add(reply_to_message_id)
+        reference_ids.append(reply_to_message_id)
+
+        parent_email = thread_email_map.get(reply_to_message_id)
+        if not parent_email:
+            break
+        current_email = parent_email
+
+    reference_ids.reverse()
+    reference_ids.append(target_message_id)
+    return reference_ids
+
+def extract_email_addresses(address_text):
+    if not address_text:
+        return []
+
+    address_text = str(address_text).replace(';', ',')
+    addresses = []
+    for _, email in getaddresses([address_text]):
+        email = email.strip()
+        if email and email not in addresses:
+            addresses.append(email)
+    return addresses
+
+def normalize_reply_subject(subject):
+    subject = (subject or '').strip()
+    if not subject:
+        return 'Re:'
+    if subject.lower().startswith('re:'):
+        return subject
+    return f'Re: {subject}'
