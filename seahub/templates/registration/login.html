@@ -5,153 +5,146 @@
 {% block sub_title %}{% trans "Log in" %} - {% endblock %}
 
 {% block private_style %}
-.login-form-pass-member {
-    font-size: 12px;
-}
-
-.login-form-pass-member-text {
-    color: #212529;
-}
 
 .login-form-divider-lin {
     width: 30%;
     border-bottom: 1px solid #a6a6a6;
 }
 
-.login-panel-bottom-split {
-    width: 1px;
-    background: #eb8025;
-    height: 12px;
-}
-
 {% endblock %}
 
 {% block extra_style %}{{block.super}}
 {% render_bundle 'eyeIcon' 'css' %}
+{% render_bundle 'downIcon' 'css' %}
+{% render_bundle 'rememberMeIcon' 'css' %}
 {% endblock %}
 
 
 {% block main_content %}
 <div class="login-panel-outer-container mt-6 vh">
-<div class="login-panel">
-    <h1 class="login-panel-hd">{% trans "Log in" %}</h1>
-    <form action="" method="post" id="login-form">{% csrf_token %}
-        {% if cur_language == "zh-cn" %}
-        <input
-            type="text"
-            name="login"
-            placeholder="{% trans "Email" %}"
-            aria-label="{% trans "Email" %}"
-            title="{% trans "Email" %}"
-            value=""
-            class="input name-input w-100"
-        />
-        <br />
-        {% else %}
-        <input
-            type="text"
-            name="login"
-            placeholder="{% trans "Email" %}"
-            aria-label="{% trans "Email" %}"
-            title="{% trans "Email" %}"
-            value=""
-            class="input name-input w-100"
-        />
-        <br />
-        {% endif %}
-        <div class="position-relative">
-            <input
-                type="password"
-                name="password"
-                placeholder="{% trans "Password" %}"
-                aria-label="{% trans "Password" %}"
-                title="{% trans "Password" %}"
-                value=""
-                class="input passwd-input w-100"
-                id="id_password1"
-                autocomplete="off"
-            />
-            <div class="password-toggle" id="eye-icon-wrapper"></div>
-        </div>
+	<div class="login-panel-wrapper">
+		<div class="login-panel-content">
+			<div class="login-panel-header d-flex justify-content-between align-items-center">
+				<div class="login-title">{% trans "Account log in" %}</div>
+				{% if enable_signup %}
+				<div class="register-link">
+					<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
+					<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
+				</div>
+				{% endif %}
+			</div>
+			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
+				{% if cur_language == "zh-cn" %}
+				<input
+				  type="text"
+				  name="login"
+				  placeholder="{% trans "Email" %}"
+				  aria-label="{% trans "Email" %}"
+				  title="{% trans "Email" %}"
+				  value=""
+				  class="input form-item-input"
+				/>
+				{% else %}
+				<input
+				  type="text"
+				  name="login"
+				  placeholder="{% trans "Email" %}"
+				  aria-label="{% trans "Email" %}"
+				  title="{% trans "Email" %}"
+				  value=""
+				  class="input form-item-input"
+				/>
+				{% endif %}
+				<div class="position-relative">
+				  <input
+				    type="password"
+				    name="password"
+				    placeholder="{% trans "Password" %}"
+				    aria-label="{% trans "Password" %}"
+				    title="{% trans "Password" %}"
+				    value=""
+				    class="input form-item-input"
+				    id="id_password1"
+				    autocomplete="off"
+				  />
+				  <div class="password-toggle" id="eye-icon-wrapper"></div>
+				</div>
 
-        {% if form.captcha %}
-        <div class="ovhd">
-            <span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
-            {{ form.captcha }}
-        </div>
-        {% endif %}
+				{% if form.captcha %}
+				<div class="ovhd">
+				  <span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
+				  {{ form.captcha }}
+				</div>
+				{% endif %}
 
-        <input type="hidden" name="next" value="{% if next %}{{ next|escape }}{% else %}{{ SITE_ROOT }}{% endif %}" />
-        {% if form.errors %}
-        {% if form.captcha.errors %}
-        {{ form.captcha.errors}}
-        {% elif form.errors.freeze_account %}
-        <p class="error">{{ form.errors.freeze_account }}</p>
-        {% elif form.errors.inactive %}
-        <p class="error">{{ form.errors.inactive }}</p>
-        {% elif form.errors.not_found %}
-        <p class="error">{{ form.errors.not_found }}</p>
-        {% elif form.password.errors %}
-        <p class="error">{{ form.password.errors }}</p>
-        {% elif form.errors.disable_pwd_login %}
-        <p class="error">{{ form.errors.disable_pwd_login }}</p>
-        {% else %}
-        <p class="error">{% trans "Incorrect account or password" %}</p>
-        {% endif %}
-        {% else %}
-        <p class="error hide"></p>
-        {% endif %}
+				<input type="hidden" name="next" value="{% if next %}{{ next|escape }}{% else %}{{ SITE_ROOT }}{% endif %}" />
+				{% if form.errors %}
+				{% if form.captcha.errors %}
+				{{ form.captcha.errors}}
+				{% elif form.errors.freeze_account %}
+				<p class="error mt-1">{{ form.errors.freeze_account }}</p>
+				{% elif form.errors.inactive %}
+				<p class="error mt-1">{{ form.errors.inactive }}</p>
+				{% elif form.errors.not_found %}
+				<p class="error mt-1">{{ form.errors.not_found }}</p>
+				{% elif form.password.errors %}
+				<p class="error mt-1">{{ form.password.errors }}</p>
+				{% elif form.errors.disable_pwd_login %}
+				<p class="error mt-1">{{ form.errors.disable_pwd_login }}</p>
+				{% else %}
+				<p class="error mt-1">{% trans "Incorrect account or password" %}</p>
+				{% endif %}
+				{% else %}
+				<p class="error hide mt-1"></p>
+				{% endif %}
 
-        {% if remember_days > 0 %}
-        <label class="remember login-form-pass-member d-flex align-items-center">
-            <input type="checkbox" name="remember_me" class="vam remember-input" checked="checked" />
-            <span class="vam login-form-pass-member-text ml-1">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
-        </label>
-        {% endif %}
+				{% if remember_days > 0 %}
+				<label class="login-form-pass-member d-flex align-items-center">
+				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
+				  <span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+				  <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+				</label>
+				{% endif %}
 
-        <button type="submit" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
-    </form>
+				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
+			</form>
 
-    {% if enable_sso %}
-    <a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
-    {% endif %}
+			{% if enable_sso %}
+			<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			{% endif %}
 
-    {% if enable_multi_saml %}
-    <a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
-    {% endif %}
+			{% if enable_multi_saml %}
+			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			{% endif %}
 
-    {% if enable_sms_login %}
-    <div class="mt-5">
-        <span class="d-flex align-items-center justify-content-center">
-            <span class="mr-2 login-form-divider-lin"></span>
-            <span style="color: #a6a6a6;">{% trans "Login with" %}</span>
-            <span class="ml-2 login-form-divider-lin"></span>
-        </span>
-        <div class="d-flex justify-content-center">
-            {% if enable_sms_login %}
-            <div class="d-flex justify-content-center mt-4 ml-4">
-                <a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
-                    <img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
-                </a>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
+			{% if enable_sms_login %}
+			<div class="mt-5">
+			  <span class="d-flex align-items-center justify-content-center">
+				  <span class="mr-2 login-form-divider-lin"></span>
+				  <span style="color: #a6a6a6;">{% trans "Login with" %}</span>
+				  <span class="ml-2 login-form-divider-lin"></span>
+			  </span>
+			  <div class="d-flex justify-content-center">
+				  {% if enable_sms_login %}
+				  <div class="d-flex justify-content-center mt-4 ml-4">
+					  <a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+						  <img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
+					  </a>
+				  </div>
+				  {% endif %}
+			  </div>
+			</div>
+			{% endif %}
 
-    <div class="login-panel-bottom-container">
-        {% if email_host %}
-        <a href="{{ SITE_ROOT }}accounts/password/reset/" class="normal forgot-passwd px-3">{% trans "Forgot password?" %}</a>
-        <span class="login-panel-bottom-split"></span>
-        {% endif %}
-        {% if enable_signup %}
-        <a href="{{ signup_url }}" class="normal px-3" id="sign-up">{% trans "Signup" %}</a>
-        <span class="login-panel-bottom-split"></span>
-        {% endif %}
-    </div>
+			<div class="login-panel-bottom-container d-flex align-items-center justify-content-between">
+				{% if email_host %}
+				<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
+				{% endif %}
+			</div>
+		</div>
+		{% include "police_service_link.html" %}
+	</div>
 </div>
-</div>
-{% include "police_service_link.html" %}
 {% endblock %}
 
 {% block extra_script %}
@@ -161,7 +154,6 @@ $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
 var currentLanguage = "{{ cur_language }}";
 var $el = $('.login-panel-outer-container');
 $el.removeClass('vh');
-$('#lang').addClass('pl-3');
 
 $(document).ready(function() {
     let currentLang = $('html').attr('lang');
@@ -274,4 +266,6 @@ $(function() {
 </script>
 
 {% render_bundle 'eyeIcon' 'js' %}
+{% render_bundle 'downIcon' 'js' %}
+{% render_bundle 'rememberMeIcon' 'js' %}
 {% endblock %}

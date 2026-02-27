@@ -1,0 +1,18 @@
+.remember-me-toggle {
+  cursor: pointer;
+}
+
+.remember-me-toggle .remember-me-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.remember-me-toggle .remember-me-icon-outline {
+  display: block;
+  color: var(--bs-icon-secondary-color);
+}
+
+.remember-me-toggle .remember-me-icon-checked {
+  display: none;
+  color: var(--bs-primary);
+}
