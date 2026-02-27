@@ -47,13 +47,6 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not project:
             return False
 
-        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
-        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-        if allow_anonymous:
-            if enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
-                return False
-            return True
-
         if _is_external_member(request, project_uuid):
             return True
 
@@ -61,21 +54,32 @@ class PortalKnowledgeBasePermission(BasePermission):
         if user and getattr(user, 'is_authenticated', False):
             if check_same_org_permission(user, project.workspace):
                 return True
+        
+        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
+        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+        if allow_anonymous:
+            if enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
+                return False
+            return True
 
         return False
 
 
 class PortalTicketPermission(BasePermission):
     def has_permission(self, request, view):
-        project_uuid, project, portal_settings = _get_project_and_settings(request, view)
+        project_uuid = getattr(view, 'kwargs', {}).get('project_uuid')
+        if not project_uuid:
+            return None, None, None
+        project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             return False
 
-        if _is_external_member(request, project_uuid):
-            return True
-
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):
-            return check_same_org_permission(user, project.workspace)
+            if check_same_org_permission(user, project.workspace):
+                return True
+
+        if _is_external_member(request, project_uuid):
+            return True
 
         return False
