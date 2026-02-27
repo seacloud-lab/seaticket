@@ -79,7 +79,7 @@ const buildQuoteBlock = (email) => {
   return `<br><p>${gettext('At')} ${time}, "${escapeHtml(sender)}" ${gettext('wrote')}:</p><blockquote id="isReplyContent" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid"><div style="font-family: -apple-system, system-ui; font-size: 14px; color: rgb(0, 0, 0); line-height: 1.43;">${quoteLines}</div></blockquote>`;
 };
 
-const ReplyEmailDialog = ({ projectUuid, connection, recordId, details, onClose }) => {
+const ReplyEmailDialog = ({ projectUuid, connection, recordId, details, onClose, onSuccess }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -151,8 +151,15 @@ const ReplyEmailDialog = ({ projectUuid, connection, recordId, details, onClose 
 
     setSubmitting(true);
     setErrorMessage('');
+    const successPayload = {
+      ...payload,
+      replyTargetEmail: currentReplyTargetEmail,
+    };
     connectionsAPI.replyConnectionEmail(projectUuid, connection.id, recordId, payload).then(() => {
       toaster.success(gettext('Email sent.'));
+      if (onSuccess) {
+        onSuccess(successPayload);
+      }
       onClose();
     }).catch((error) => {
       setErrorMessage(Utils.getErrorMsg(error));

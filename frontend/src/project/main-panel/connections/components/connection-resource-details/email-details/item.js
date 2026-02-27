@@ -30,8 +30,12 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
 
   const detailContent = useMemo(() => {
     const value = isHTMLContent ? HTMLContent : content;
-    // HTML Content contains '```' at begin and end
-    return isHTMLContent ? value.trim().substring(3, value.length - 3) : value;
+    if (!isHTMLContent) return value;
+    let trimmedValue = value.trim();
+    if (trimmedValue.startsWith('```') && trimmedValue.endsWith('```')) {
+      trimmedValue = trimmedValue.substring(3, trimmedValue.length - 3);
+    }
+    return trimmedValue;
   }, [isHTMLContent, content, HTMLContent]);
 
   const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
