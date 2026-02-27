@@ -6,6 +6,7 @@ import MyTickets from './my-tickets';
 import PortalKnowledgeBase from './knowledge-base/index';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading } from '@/components';
+import PortalChat from './chat';
 
 const MainPanel = ({ activePage, onPageChange, ...props }) => {
 
@@ -43,14 +44,17 @@ const MainPanel = ({ activePage, onPageChange, ...props }) => {
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
         return <PortalKnowledgeBase { ...props } />;
+      case PORTAL_PAGE.CHAT:
+        return <PortalChat projectUuid={props.projectUuid} />;
       default:
         return null;
     }
   };
+  const isChat = activePage === PORTAL_PAGE.CHAT;
 
   return (
     <div className="sea-qa-portal-main-panel">
-      {activePage !== PORTAL_PAGE.KNOWLEDGE_BASE && (
+      {activePage !== PORTAL_PAGE.KNOWLEDGE_BASE && !isChat && (
         <div className="sea-qa-portal-top-bar">
           {getTitle()}
         </div>

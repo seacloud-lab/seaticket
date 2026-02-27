@@ -521,6 +521,7 @@ CREATE TABLE `chat_sessions` (
   `session_uuid` VARCHAR(36) NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `session_name` VARCHAR(255) NOT NULL,
+  `is_portal` TINYINT(1) NOT NULL DEFAULT 0,
   `is_shared` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6),

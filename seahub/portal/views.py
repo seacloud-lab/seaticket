@@ -14,7 +14,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL
+from seahub.settings import MEDIA_URL, LLM_MODELS
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -89,6 +89,10 @@ def portal_view(request, project_uuid, children_id=None):
         username = request.user.username if is_authenticated_user else ext_username
     else:
         username = ''
+    valid_llm_models = [
+        llm_model
+        for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
+    ]
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -104,7 +108,8 @@ def portal_view(request, project_uuid, children_id=None):
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'show_kb_in_portal': show_kb_in_portal,
-        }
+        },
+        'llm_models': json.dumps(valid_llm_models),
     }
     if not is_logged_in or (not same_org and not ext_is_valid):
         need_password = False
@@ -269,6 +274,11 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
         if encoded_password:
             request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
 
+    valid_llm_models = [
+        llm_model
+        for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
+    ]
+
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
@@ -281,5 +291,6 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
         },
+        'llm_models': json.dumps(valid_llm_models),
     }
     return render(request, 'portal_view_react.html', return_dict)

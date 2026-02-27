@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
-import { Icon, toaster, Switch, PasswordInput } from '@/components';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Button, FormGroup, Label, Input } from 'reactstrap';
+import { Icon, toaster, Switch, PasswordInput, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import { portalAPI } from '@/portal/api';
+import { portalAPI } from '../api';
+import { SOURCE_TYPE_OPTIONS } from '../constants';
+import { Utils } from '@/utils/utils';
 
 import './settings.css';
 
@@ -21,6 +23,10 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [hasSavedPassword, setHasSavedPassword] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [chatSettings, setChatSettings] = useState({
+    chat_allowed_sources: ['site', 'seafile', 'github_issue', 'discourse_forum'],
+  });
+  const [isSavingChat, setIsSavingChat] = useState(false);
 
   const portalUrl = useMemo(() => {
     const { origin } = window.location;
@@ -40,17 +46,21 @@ const Settings = () => {
         setShowKB(!!kbEnabled);
         window.app.pageOptions.showKBInPortal = !!kbEnabled;
       }
+
+      if (data.chat_allowed_sources) {
+        setChatSettings({ chat_allowed_sources: data.chat_allowed_sources });
+      }
     }).catch(() => {});
   }, []);
 
   const { showKBInPortal } = window.app.pageOptions;
   const [showKB, setShowKB] = useState(showKBInPortal === true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingKB, setIsSavingKB] = useState(false);
 
   const onToggleKB = useCallback(() => {
-    if (isSaving) return;
+    if (isSavingKB) return;
     const next = !showKB;
-    setIsSaving(true);
+    setIsSavingKB(true);
     setShowKB(next);
     const needPwd = allowAnonymous && enablePassword;
     portalAPI.updateSettings(projectUuid, {
@@ -67,8 +77,8 @@ const Settings = () => {
         setShowKB(!next);
         toaster.danger(gettext('Save failed'));
       })
-      .finally(() => setIsSaving(false));
-  }, [showKB, allowAnonymous, enablePassword, isSaving]);
+      .finally(() => setIsSavingKB(false));
+  }, [showKB, allowAnonymous, enablePassword, isSavingKB]);
 
   const onCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(portalUrl).then(() => {
@@ -151,6 +161,34 @@ const Settings = () => {
       toaster.danger(gettext('Save failed'), { duration: 2, hasCloseButton: false });
     });
   }, [allowAnonymous, enablePassword, password, confirmPassword, isEditingPassword, hasSavedPassword, showKB]);
+
+  const handleSourceChange = useCallback((sourceValue, checked) => {
+    setChatSettings(prev => {
+      let newAllowedSources = [...prev.chat_allowed_sources];
+      if (checked) {
+        if (!newAllowedSources.includes(sourceValue)) {
+          newAllowedSources.push(sourceValue);
+        }
+      } else {
+        newAllowedSources = newAllowedSources.filter(s => s !== sourceValue);
+      }
+      return { ...prev, chat_allowed_sources: newAllowedSources };
+    });
+  }, []);
+
+  const onSaveChatSettings = useCallback(() => {
+    setIsSavingChat(true);
+    portalAPI.updateSettings(projectUuid, {
+      chat_allowed_sources: chatSettings.chat_allowed_sources,
+    }).then(() => {
+      toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    }).finally(() => {
+      setIsSavingChat(false);
+    });
+  }, [chatSettings]);
 
   return (
     <>
@@ -265,14 +303,40 @@ const Settings = () => {
           </TabPane>
           <TabPane tabId={SETTING_TABS.DISPLAY}>
             <div className="portal-settings-content">
-              <Switch
-                checked={showKB}
-                disabled={isSaving}
-                onChange={onToggleKB}
-                textPosition="right"
-                placeholder={gettext('Show knowledge base')}
-                className="portal-settings-switch"
-              />
+              <div className="portal-settings-section">
+                <label className="portal-settings-label">{gettext('Display')}</label>
+                <Switch
+                  checked={showKB}
+                  disabled={isSavingKB}
+                  onChange={onToggleKB}
+                  textPosition="right"
+                  placeholder={gettext('Show knowledge base')}
+                  className="portal-settings-switch"
+                />
+              </div>
+              <div className="portal-settings-section">
+                <label className="portal-settings-label">{gettext('Chat source types')}</label>
+                <p className="portal-settings-help-text">
+                  {gettext('Select which data sources can be used for AI responses in the portal.')}
+                </p>
+                <div className="portal-settings-source-list">
+                  {SOURCE_TYPE_OPTIONS.map(option => (
+                    <FormGroup check key={option.value} className="mb-2">
+                      <Input
+                        type="checkbox"
+                        id={`source-${option.value}`}
+                        checked={chatSettings.chat_allowed_sources.includes(option.value)}
+                        onChange={(e) => handleSourceChange(option.value, e.target.checked)}
+                        disabled={isSavingChat}
+                      />
+                      <Label check for={`source-${option.value}`}>
+                        {option.label}
+                      </Label>
+                    </FormGroup>
+                  ))}
+                </div>
+                <button className="btn btn-primary mt-2" onClick={onSaveChatSettings} disabled={isSavingChat}>{gettext('Save')}</button>
+              </div>
             </div>
           </TabPane>
         </TabContent>

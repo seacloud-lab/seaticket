@@ -5,21 +5,22 @@ from django.db import models
 
 
 class ChatSessionsManager(models.Manager):
-    def create_session(self, project_uuid, session_name, username):
+    def create_session(self, project_uuid, session_name, username, is_portal=False):
         """Create a new chat session"""
         session_uuid = str(uuid.uuid4())
         session = self.model(
             project_uuid=project_uuid,
             session_uuid=session_uuid,
             username=username,
-            session_name=session_name
+            session_name=session_name,
+            is_portal=is_portal
         )
         session.save()
         return session
 
-    def get_sessions_by_project(self, project_uuid, username):
+    def get_sessions_by_project(self, project_uuid, username, is_portal=False):
         """Retrieve all chat sessions of the project"""
-        return self.filter(project_uuid=project_uuid, username=username).order_by('-updated_at')
+        return self.filter(project_uuid=project_uuid, username=username, is_portal=is_portal).order_by('-updated_at')
 
     def get_session_by_uuid(self, session_uuid):
         """According to session_uuid to obtain the session"""
@@ -39,6 +40,7 @@ class ChatSessions(models.Model):
     session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=255, db_index=True)
     session_name = models.CharField(max_length=255)
+    is_portal = models.BooleanField(default=False)
     is_shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)

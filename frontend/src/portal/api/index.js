@@ -154,6 +154,37 @@ class PortalAPI {
     return this.req.post(url, settings);
   }
 
+
+  // Portal Chat APIs
+  sendChatMessage(projectUuid, params) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/';
+    return this.req.post(url, params);
+  }
+
+  listChatSessions(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/';
+    return this.req.get(url);
+  }
+
+  createChatSession(projectUuid, sessionName) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/';
+    return this.req.post(url, { session_name: sessionName });
+  }
+
+  modifyChatSession(projectUuid, sessionUuid, update) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/';
+    return this.req.put(url, update);
+  }
+
+  deleteChatSession(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/';
+    return this.req.delete(url);
+  }
+
+  getChatMessages(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/messages/';
+    return this.req.get(url);
+  }
 }
 
 const portalAPI = new PortalAPI();

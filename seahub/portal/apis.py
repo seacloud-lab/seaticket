@@ -541,10 +541,14 @@ class PortalSettingsView(APIView):
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
 
+        chat_allowed_sources = portal_settings.get('chat_allowed_sources',
+            ['site', 'seafile', 'github_issue', 'discourse_forum'])
+
         return Response({
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'show_knowledge_base': show_knowledge_base,
+            'chat_allowed_sources': chat_allowed_sources,
         })
 
     @require_org_context
@@ -587,6 +591,10 @@ class PortalSettingsView(APIView):
         portal_settings['enable_password_protection'] = bool(enable_password_protection)
         if show_knowledge_base is not None:
             portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
+
+        chat_allowed_sources = request.data.get('chat_allowed_sources')
+        if chat_allowed_sources is not None and isinstance(chat_allowed_sources, list):
+            portal_settings['chat_allowed_sources'] = chat_allowed_sources
 
         if enable_password_protection:
             if password:

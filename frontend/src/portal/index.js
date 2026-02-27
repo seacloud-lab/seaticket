@@ -35,7 +35,7 @@ const Portal = () => {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const onPageChange = useCallback((page) => {
-    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS)) {
+    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS || page === PORTAL_PAGE.CHAT)) {
       const { origin } = location;
       location.href = `${origin}/portal/${projectUuid}/login/`;
       return;
@@ -56,8 +56,8 @@ const Portal = () => {
     if (match && match[1]) {
       const pageKey = match[1];
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
-        const isTicketPage = pageKey === PORTAL_PAGE.SUBMIT_TICKET || pageKey === PORTAL_PAGE.MY_TICKETS;
-        if (isAnonymous && isTicketPage) {
+        const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_TICKET || pageKey === PORTAL_PAGE.MY_TICKETS || pageKey === PORTAL_PAGE.CHAT;
+        if (isAnonymous && isRestrictedPage) {
           setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
         } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
           setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
