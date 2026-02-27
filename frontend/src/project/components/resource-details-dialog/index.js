@@ -16,7 +16,7 @@ import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
 
-const { projectName, workspaceID } = window.app.pageOptions;
+const { projectName, workspaceID, workspaceId } = window.app.pageOptions;
 
 const initColumns = [
   { key: 'filename', name: 'filename' },
@@ -57,7 +57,7 @@ const ResourceDetailsDialog = ({
   }, [type, connections, resource, details, columns]);
 
   const internalNetworkAddress = useMemo(() => {
-    return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
+    return getInternalNetworkAddress(type, resource._id, { workspaceID: workspaceID || workspaceId, projectName, connectionID: resource.connection_id });
   }, [type, resource]);
 
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
@@ -67,6 +67,8 @@ const ResourceDetailsDialog = ({
   const updateDetails = useCallback((details) => {
     setDetails(details);
   }, []);
+
+  console.log('internalNetworkAddress', internalNetworkAddress);
 
   return (
     <Modal className="sea-ticket-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
