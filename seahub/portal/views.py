@@ -101,7 +101,7 @@ def portal_view(request, project_uuid, page=None):
             'show_kb_in_portal': show_kb_in_portal,
         }
     }
-    if not is_logged_in:
+    if not is_logged_in or (not same_org and not ext_is_valid):
         need_password = False
         if enable_password_protection and allow_anonymous:
             encoded_password = portal_settings.get('password')
