@@ -156,7 +156,7 @@ const ReplyEmailDialog = ({ projectUuid, connection, recordId, details, onClose,
       replyTargetEmail: currentReplyTargetEmail,
     };
     connectionsAPI.replyConnectionEmail(projectUuid, connection.id, recordId, payload).then(() => {
-      toaster.success(gettext('Email sent.'));
+      toaster.success(gettext('Email sent successfully..'));
       if (onSuccess) {
         onSuccess(successPayload);
       }

@@ -10,6 +10,7 @@ import ssl
 from email.message import EmailMessage
 from email.utils import formataddr
 from email.utils import formatdate
+from email.utils import make_msgid
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -29,7 +30,7 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
-    build_reply_references, extract_email_addresses, normalize_reply_subject
+    build_reply_references, extract_email_addresses
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
@@ -42,7 +43,7 @@ from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
@@ -1157,9 +1158,12 @@ class ProjectConnectionReplyEmailView(APIView):
         subject = request.data.get('subject')
         if not subject:
             subject = target_email.get('title') or thread[0].get('title')
-        subject = normalize_reply_subject(subject)
+        if not subject.lower().startswith('re:'):
+            subject = f'Re: {subject}'
 
         message = EmailMessage()
+        if not message.get('Message-ID'):
+            message['Message-ID'] = make_msgid()
         message['From'] = formataddr((sender_name, sender_email)) if sender_name else sender_email
         message['To'] = ', '.join(to_emails)
         if cc_emails:
@@ -1191,6 +1195,37 @@ class ProjectConnectionReplyEmailView(APIView):
             logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
             error_msg = 'Failed to send email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        try:
+            now = datetime.datetime.now(datetime.UTC).isoformat()
+            email_table_name = EmailTable.gen_table_name(connection_id)
+            thread_table_name = ThreadTable.gen_table_name(connection_id)
+            seadb_api.insert_rows(project_uuid, email_table_name, [{
+                EmailTable.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
+                EmailTable.email_to.name: ', '.join(to_emails),
+                EmailTable.title.name: subject,
+                EmailTable.cc.name: ', '.join(cc_emails) if cc_emails else '',
+                EmailTable.content.name: content,
+                EmailTable.html_content.name: html_content or '',
+                EmailTable.modified_time.name: now,
+                EmailTable.reply_to_message_id.name: reply_to_message_id or target_message_id or '',
+                EmailTable.is_sender.name: True,
+                EmailTable.sync_time.name: now,
+                EmailTable.deleted.name: False,
+                EmailTable.thread_id.name: int(record_id),
+                EmailTable.message_id.name: message.get('Message-ID') or '',
+                EmailTable.origin_thread_id.name: target_email.get('origin_thread_id') or '',
+            }])
+            seadb_api.update_rows(project_uuid, thread_table_name, [{
+                'pk': int(record_id),
+                'row': {
+                    ThreadTable.modified_time.name: now,
+                    ThreadTable.record_modified_time.name: now,
+                    ThreadTable.unread.name: False,
+                }
+            }])
+        except Exception as e:
+            logger.error('reply email seadb update failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 

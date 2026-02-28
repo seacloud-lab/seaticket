@@ -2,7 +2,7 @@ import re
 import logging
 import hashlib
 from urllib.parse import quote_plus
-from email.utils import formataddr, getaddresses
+from email.utils import getaddresses
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
@@ -434,11 +434,3 @@ def extract_email_addresses(address_text):
         if email and email not in addresses:
             addresses.append(email)
     return addresses
-
-def normalize_reply_subject(subject):
-    subject = (subject or '').strip()
-    if not subject:
-        return 'Re:'
-    if subject.lower().startswith('re:'):
-        return subject
-    return f'Re: {subject}'

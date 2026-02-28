@@ -20,7 +20,8 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
     let value = content ? content.replace(hrefReg, '').replace('\n', ' ').substring(0, 150) : '';
-    const isGitLog = email.indexOf('github.com') > -1 || email.indexOf('gitlab') > -1;
+    const emailText = email || '';
+    const isGitLog = emailText.indexOf('github.com') > -1 || emailText.indexOf('gitlab') > -1;
     if (!isGitLog) return value;
     if (value.startsWith(`@${sender}`)) {
       value = value.replace(`@${sender}`, '');
