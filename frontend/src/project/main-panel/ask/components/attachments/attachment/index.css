@@ -11,6 +11,10 @@
   cursor: pointer;
 }
 
+.sea-qa-ai-chat-attachment.sea-qa-ai-chat-attachment-remove-able {
+  padding-right: 6px;
+}
+
 .sea-qa-ai-chat-attachment .sea-qa-project-ai-attachment-icon {
   color: var(--bs-icon-color);
 }
@@ -21,4 +25,22 @@
 
 .sea-qa-ai-chat-attachment .sea-qa-project-ai-attachment-icon.sea-qa-project-ticket-state-circle-dot-icon {
   color: var(--ticket-close-color);
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove-btn {
+  display: flex;
+  margin-left: 10px;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove-btn .sea-qa-icon-svg,
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove-btn:hover .sea-qa-icon-svg {
+  color: var(--bs-icon-color) !important;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove-btn:hover {
+  background-color: var(--option-bg-color);
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove-btn .sea-qa-icon-svg {
+  margin-top: 0;
 }
