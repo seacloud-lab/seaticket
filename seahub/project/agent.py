@@ -196,7 +196,7 @@ class AgentActionConfirmView(APIView):
                 )
             elif tool_name == 'final_answer':
                 # final_answer doesn't need actual execution, just mark as confirmed
-                execution_result = 'Analysis completed.'
+                execution_result = 'Final answer.'
             else:
                 logger.error(f'Unknown tool name: {tool_name}')
                 execution_result = 'Unknown tool name.'
