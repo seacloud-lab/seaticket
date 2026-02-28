@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { ticketsAPI } from '@/project/api';
 import { Ticket as TicketModel } from '../../models';
 import { Utils } from '@/utils/utils';
 import { CenteredError, CenteredLoading } from '@/components';

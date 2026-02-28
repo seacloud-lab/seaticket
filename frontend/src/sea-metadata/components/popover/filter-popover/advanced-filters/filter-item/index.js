@@ -1,11 +1,13 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { UncontrolledTooltip } from 'reactstrap';
-import CustomizeSelect from '@/components/customize-select';
-import SearchInput from '@/components/search-input';
-import Icon from '@/components/icon';
-import IconBtn from '@/components/icon-button';
+import {
+  Tooltip,
+  CustomizeSelect,
+  SearchInput,
+  Icon,
+  IconButton as IconBtn,
+} from '@/components';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
 import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
@@ -578,9 +580,9 @@ class FilterItem extends React.Component {
     return (
       <div className="ml-2" >
         <IconBtn id={`filter-tool-tip-${filterColumn.key}`} icon="exclamation-triangle-filled" iconStyle={{ color: '#FFC92C' }} />
-        <UncontrolledTooltip placement="bottom" target={`filter-tool-tip-${filterColumn.key}`} fade={false} className="sea-metadata-tooltip">
+        <Tooltip placement="bottom" target={`filter-tool-tip-${filterColumn.key}`}>
           {gettext('If there are multiple items in the cell, a random one will be chosen and be compared with the filter value.')}
-        </UncontrolledTooltip>
+        </Tooltip>
       </div>
     );
   };
@@ -594,14 +596,9 @@ class FilterItem extends React.Component {
         <div ref={this.invalidFilterTip}>
           <IconBtn icon="exclamation-triangle-filled" iconStyle={{ color: '#cd201f' }}/>
         </div>
-        <UncontrolledTooltip
-          target={this.invalidFilterTip}
-          placement='bottom'
-          fade={false}
-          className="sea-metadata-tooltip"
-        >
+        <Tooltip target={this.invalidFilterTip} placement="bottom">
           {gettext('Invalid filter')}
-        </UncontrolledTooltip>
+        </Tooltip>
       </div>
     );
   };

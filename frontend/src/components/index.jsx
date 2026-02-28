@@ -58,6 +58,7 @@ import SelectEditor from './select-editor';
 import RadioGroup from './radio-group';
 import ClearIconButton from './clear-icon-button';
 import CustomizeTabs from './customize-tabs';
+import Tooltip from './tooltip';
 
 export {
   FixedWidthTable,
@@ -122,4 +123,5 @@ export {
   RadioGroup,
   ClearIconButton,
   CustomizeTabs,
+  Tooltip,
 };

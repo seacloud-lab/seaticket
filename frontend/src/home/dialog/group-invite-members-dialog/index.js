@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, ModalBody, Label, Input, InputGroup, UncontrolledTooltip } from 'reactstrap';
+import { Button, Modal, ModalBody, Label, Input, InputGroup } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { toaster, ModalHeader, Icon } from '@/components';
+import { toaster, ModalHeader, Icon, Tooltip } from '@/components';
 import { gettext } from '@/constants/config';
 import homeAPI from '../../api';
 import { Utils } from '@/utils/utils';
@@ -91,15 +91,15 @@ class GroupInviteMembersDialog extends React.Component {
                 <Button color="secondary" onClick={this.copyLink} id="copy-link-button">
                   <Icon symbol="copy" />
                 </Button>
-                <UncontrolledTooltip placement="bottom" target="copy-link-button">
+                <Tooltip placement="bottom" target="copy-link-button">
                   {gettext('Copy link')}
-                </UncontrolledTooltip>
+                </Tooltip>
                 <Button color="secondary" onClick={this.deleteLink.bind(this, linkItem.token)} className="delete-link-btn" id="delete-link-button">
                   <Icon symbol="delete" />
                 </Button>
-                <UncontrolledTooltip placement="bottom" target="delete-link-button">
+                <Tooltip placement="bottom" target="delete-link-button">
                   {gettext('Delete link')}
-                </UncontrolledTooltip>
+                </Tooltip>
               </InputGroup>
               <div className="no-link-tip my-4">
                 {gettext('Users in your team can join the group via group invitation link. If the user has not registered yet, you should ask your team admin to add the user first.')}

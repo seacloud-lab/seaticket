@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { IconButton, ClickOutside } from '@/components';
+import { IconButton, ClickOutside, Tooltip } from '@/components';
 import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
@@ -34,6 +34,7 @@ const ChatInput = forwardRef(({
   const rangeRef = useRef(null);
   const previewContentRef = useRef(null);
   const domRef = useRef(null);
+  const sendBtnRef = useRef(null);
 
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
@@ -222,14 +223,19 @@ const ChatInput = forwardRef(({
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>
-              <IconButton
-                disabled={disabled || !value}
-                icon="btn-send"
-                className="sea-qa-ai-ask-icon-btn icon-send-wrapper no-hover-bg"
-                onClick={disabled ? () => {} : onSendMessage}
-                title={gettext('Send')}
-                aria-label={gettext('Send')}
-              />
+              <>
+                <IconButton
+                  disabled={disabled || !value}
+                  ref={sendBtnRef}
+                  icon="btn-send"
+                  className="sea-qa-ai-ask-icon-btn icon-send-wrapper no-hover-bg"
+                  onClick={disabled ? () => {} : onSendMessage}
+                  aria-label={gettext('Send')}
+                />
+                <Tooltip target={sendBtnRef} placement="top">
+                  {gettext('Send')}
+                </Tooltip>
+              </>
             </div>
           </div>
         </div>

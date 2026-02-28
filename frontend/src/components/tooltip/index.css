@@ -1,0 +1,63 @@
+.sea-ticket-tooltip .tooltip.show {
+  opacity: 1;
+}
+
+.sea-ticket-tooltip.top-start .tooltip.show {
+  left: -0.4rem !important;
+}
+
+.sea-ticket-tooltip .tooltip-inner {
+  max-width: 242px;
+  text-align: start;
+  background-color: var(--bs-body-color);
+  color: var(--bs-body-bg);
+  border-radius: 4px;
+  line-height: 20px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .tooltip-inner {
+  padding: 8px 12px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .sea-ticket-tooltip-confirm-text {
+  color: #999;
+  font-size: 14px;
+  line-height: 22px;
+  min-width: 40px;
+  max-width: 100%;
+  text-align: right;
+  cursor: pointer;
+}
+
+.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .sea-ticket-tooltip-confirm-text:hover {
+  color: var(--bs-body-bg);
+}
+
+.sea-ticket-tooltip .bs-tooltip-right .arrow::before,
+.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="right"] .arrow::before {
+  border-right-color: var(--bs-body-color);
+}
+
+.sea-ticket-tooltip .bs-tooltip-top .arrow::before,
+.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="top"] .arrow::before {
+  border-top-color: var(--bs-body-color);
+}
+
+.sea-ticket-tooltip .bs-tooltip-bottom .arrow::before,
+.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+  border-bottom-color: var(--bs-body-color);
+}
+
+.sea-ticket-tooltip .bs-tooltip-left .arrow::before,
+.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="left"] .arrow::before {
+  border-left-color: var(--bs-body-color);
+}
+
+.sea-ticket-tooltip .bs-tooltip-auto[data-popper-placement^="right"] .arrow::before {
+  border-right-color: var(--bs-body-color);
+}
