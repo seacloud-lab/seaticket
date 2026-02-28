@@ -30,6 +30,12 @@ const Settings = ({
         value={settings.developer_mode || false}
         onChange={(value, callback) => modifySettings({ developer_mode: value }, callback)}
       />
+      <LanguageSettings
+        className="mb-4"
+        title={gettext('Language for AI summary')}
+        value={settings.lang || 'en'}
+        onChange={(value, callback) => modifySettings({ lang: value }, callback)}
+      />
 
     </>
   );

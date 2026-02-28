@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import classnames from 'classnames';
 import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 
@@ -12,6 +13,8 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const LanguageSettings = ({
+  title,
+  className,
   value: oldValue = 'en',
   onChange,
 }) => {
@@ -31,9 +34,9 @@ const LanguageSettings = ({
   }, [onChange]);
 
   return (
-    <>
+    <div className={classnames('language-settings-option w-100 pl-4 pr-4', className)}>
       <div className="language-settings-header text-truncate">{gettext('Language for AI summary')}</div>
-      <div className="language-settings">
+      <div className="language-settings-body">
         <CustomizeSelect
           className="language-selector"
           value={selectedOption}
@@ -42,7 +45,7 @@ const LanguageSettings = ({
           onChange={onValueChange}
         />
       </div>
-    </>
+    </div>
   );
 };
 

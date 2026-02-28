@@ -1,3 +1,7 @@
+.language-settings-option {
+  margin-top: 0;
+}
+
 .language-settings-header {
   border-bottom: 1px solid #eee;
   font-size: .9375rem;
@@ -7,7 +11,7 @@
   padding-top: 14px;
 }
 
-.language-settings .language-selector {
+.language-settings-body .language-selector {
   border: 1px solid #ddd;
   font-size: 14px;
   height: 34px;
