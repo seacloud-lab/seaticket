@@ -307,10 +307,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
             idRowUpdates[_id] = { [outdatedColumn.key]: false };
             idOldRowOldData[_id] = { [outdatedColumn.key]: true };
           });
-          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false, {
-            success_callback: () => toaster.success(gettext('Marked as active')),
-            fail_callback: () => toaster.danger(gettext('Failed to mark as active')),
-          });
+          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false);
         },
       });
     }
@@ -329,10 +326,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
             idRowUpdates[_id] = { [outdatedColumn.key]: true };
             idOldRowOldData[_id] = { [outdatedColumn.key]: oldValue };
           });
-          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false, {
-            success_callback: () => toaster.success(gettext('Marked as outdated')),
-            fail_callback: () => toaster.danger(gettext('Failed to mark as outdated')),
-          });
+          modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData, false);
         },
       });
     }
