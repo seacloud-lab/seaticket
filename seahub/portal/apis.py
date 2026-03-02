@@ -38,11 +38,9 @@ from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_ke
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 
+from seahub.tickets.settings import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 
 logger = logging.getLogger(__name__)
-
-PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'TICKET_DEFAULT_SUBSTATE_'
-PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 
 class PortalTicketsView(APIView):
@@ -120,7 +118,7 @@ class PortalTicketsView(APIView):
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
 
             default_substate = ''
-            cache_key = normalize_cache_key(project_uuid, prefix=PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache_key = normalize_cache_key(project_uuid, prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cached_default_substate = cache.get(cache_key, None)
             if cached_default_substate is not None:
                 default_substate = cached_default_substate
@@ -136,7 +134,7 @@ class PortalTicketsView(APIView):
                         if (opt.get('name') or '').lower() == 'new':
                             default_substate = opt.get('name') or ''
                             break
-                    cache.set(cache_key, default_substate, PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT)
+                    cache.set(cache_key, default_substate, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT)
                 except Exception as e:
                     logger.error(e)
 

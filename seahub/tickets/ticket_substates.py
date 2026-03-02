@@ -20,13 +20,10 @@ from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_
     TABLE_TICKETS, get_column_from_columns_by_name, \
     filter_tickets_by_select, add_select_option, batch_delete_select_option, build_linked_record_titles_map
 from seahub.utils.decorators import require_org_context
-
+from seahub.tickets.settings import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX
 
 
 logger = logging.getLogger(__name__)
-
-TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'TICKET_DEFAULT_SUBSTATE_'
-TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 
 class TicketSubstatesAPIView(APIView):

@@ -43,11 +43,10 @@ from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.utils import normalize_cache_key
+from seahub.tickets.settings import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
-TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'TICKET_DEFAULT_SUBSTATE_'
-TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 logger = logging.getLogger(__name__)
 
