@@ -7,7 +7,7 @@ import { NAVIGATION_BASE_PADDING } from '@/constants';
 import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 import ImportDialog from '@/project/components/import-dialog';
 
-const KnowledgeMoreNav = ({ onClick }) => {
+const KnowledgeMoreNav = ({ activeBar, onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);
   const [isShowImportDialog, setIsShowImportDialog] = useState(false);
 
@@ -50,7 +50,7 @@ const KnowledgeMoreNav = ({ onClick }) => {
         </CustomizeDropdownMenu>
       </Dropdown>
       {isShowImportDialog && (
-        <ImportDialog onToggle={() => setIsShowImportDialog(false)} onClickBar={onClick} />
+        <ImportDialog activeBar={activeBar} onToggle={() => setIsShowImportDialog(false)} onClickBar={onClick} />
       )}
     </>
   );
