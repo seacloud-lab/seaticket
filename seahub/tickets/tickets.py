@@ -215,7 +215,7 @@ class TicketsAPIView(APIView):
         seadb_api = SeaDBAPI(username)
 
         default_substate = ''
-        cache_key = normalize_cache_key(project_uuid, prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+        cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
         cached_default_substate = cache.get(cache_key, None)
         if cached_default_substate is not None:
             default_substate = cached_default_substate
