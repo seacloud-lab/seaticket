@@ -87,6 +87,14 @@
   padding: 8px 0px;
 }
 
+.analyze-connection-popover .popover {
+  max-width: 286px;
+}
+
+.analyze-connection-popover .analyze-popover-item {
+  padding: 0 8px;
+}
+
 .analyze-popover-item .analyze-connection-img {
   width: 16px;
   height: 16px;

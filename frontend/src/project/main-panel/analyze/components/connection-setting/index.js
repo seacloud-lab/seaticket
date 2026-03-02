@@ -85,7 +85,6 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
             optionClassName="analyze-popover-item"
             options={option}
             target={popoverRef}
-            checkPlacement="left"
             isSearchEnabled={false}
             isMultiple={true}
             optionHeight={32}
