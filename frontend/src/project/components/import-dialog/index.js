@@ -6,8 +6,11 @@ import { getFileExtension } from '@/utils/download';
 import { ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
-import { BAR_TYPE_CONFIG, BAR_TYPE } from '@/project/constants';
-import { useKnowledgePage } from '@/project/main-panel/knowledge-base/hooks/index';
+import { BAR_TYPE } from '@/project/constants';
+import { useData } from '@/project/hooks';
+import { KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -16,13 +19,14 @@ const { projectUuid } = window.app.pageOptions;
 const HOVER_BACKGROUND = 'rgba(237, 113, 9, 0.1)';
 const DEFAULT_BACKGROUND = 'transparent';
 
-const ImportDialog = ({ onToggle, onClickBar }) => {
-  const { onRefresh } = useKnowledgePage();
+const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [previewData, setPreviewData] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const [previewFileName, setPreviewFileName] = useState('');
   const uploadBoxRef = useRef(null);
+
+  const { markTablesViewExpired } = useData();
 
   const onQueryIOStatus = useCallback((taskId) => {
     knowledgeBaseAPI.queryIOStatus(taskId).then(r => {
@@ -89,14 +93,20 @@ const ImportDialog = ({ onToggle, onClickBar }) => {
     if (!previewFileName) return toaster.warning(gettext('Empty files cannot be imported'));
     knowledgeBaseAPI.commitImportExcel(projectUuid, previewFileName).then(res => {
       toaster.success(gettext('Import successfully'));
-      onClickBar([BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE].key]);
-      onRefresh();
+      markTablesViewExpired([KB_TABLE_NAME], () => {
+        if (activeBar[0] === BAR_TYPE.KNOWLEDGE) {
+          const eventBus = context.eventBus;
+          eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA);
+          return;
+        }
+        onClickBar([BAR_TYPE.KNOWLEDGE]);
+      });
       onToggle();
     }).catch(err => {
       const errorMsg = Utils.getErrorMsg(err);
       toaster.danger(errorMsg);
     });
-  }, [previewFileName]);
+  }, [activeBar, previewFileName, markTablesViewExpired]);
 
   return (
     <Modal isOpen={true} autoFocus={false} className="sea-qa-import-dialog" toggle={onToggle}>
