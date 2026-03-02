@@ -42,10 +42,6 @@ class WorkspacesView(APIView):
     def get(self, request):
         """get all workspaces
         """
-        detail = request.GET.get('detail', 'true')
-        if detail not in ('true', 'false'):
-            error_msg = 'detail invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
         org_id = request.user.org.org_id
@@ -76,7 +72,7 @@ class WorkspacesView(APIView):
 
         try:
             workspaces = Workspaces.objects.filter(owner__in=owner_list)
-            if not workspaces.filter(owner=username).exists() and detail == 'true':
+            if not workspaces.filter(owner=username).exists():
                 workspaces = list(workspaces)
                 workspace = Workspaces.objects.create_workspace(username, org_id)
                 workspaces.extend([workspace])
@@ -84,30 +80,6 @@ class WorkspacesView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        workspace_list = list()
-        if detail == 'false':
-            workspace_list_for_group = []
-            for workspace in workspaces:
-                owner = workspace.owner
-                res = dict(id=workspace.id)
-                if '@seafile_group' in owner:
-                    group_id = int(owner.split('@')[0])
-                    res['name'] = group_id_to_name(group_id)
-                    res['type'] = 'group'
-                    res['group_id'] = group_id
-                    res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
-                    res['is_admin'] = group_id in admin_group_ids
-                    workspace_list_for_group.append(res)
-                else:
-                    res['name'] = 'personal'
-                    res['type'] = 'personal'
-                    workspace_list.append(res)
-
-            workspace_list_for_group = sorted(workspace_list_for_group, key=lambda x: group_id_list.index(x.get('group_id')))
-            workspace_list.extend(workspace_list_for_group)
-
-            return Response({'workspace_list': workspace_list}, status=status.HTTP_200_OK)
 
         try:
             projects = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
@@ -127,7 +99,7 @@ class WorkspacesView(APIView):
                 workspace_id2project_list[project.workspace.id] = [project_info]
             project_info['starred'] = False
 
-
+        workspace_list = list()
         workspace_list_for_group =[]
         for workspace in workspaces:
             owner = workspace.owner

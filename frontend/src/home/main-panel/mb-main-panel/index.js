@@ -4,8 +4,6 @@ import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
 import { TabBar } from '../../../components';
 import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
-import homeAPI from '../../api.js';
-import Workspace from '../../models/workspace.js';
 import { gettext, siteRoot } from '../../../constants';
 import MobileMine from '../../mobile/mobile-mine';
 import MobileHeader from '../../mobile/mobile-header';
@@ -13,107 +11,54 @@ import { Icon } from '@/components';
 
 import './index.css';
 
-const propTypes = {
-  searchPlaceholder: PropTypes.string,
-  updateSidePanelGroups: PropTypes.func,
-  onShowSidePanel: PropTypes.func,
+const ROUTES = {
+  HOME: siteRoot,
+  PROJECTS: `${siteRoot}project/`,
+  PROJECT_DETAIL: `${siteRoot}project/:projectID`
 };
 
-const BAR_ITEMS = [
+const TAB_BAR_ITEMS = [
   {
     key: 'Projects',
     title: gettext('Projects'),
+    value: 'projects',
     icon: <Icon symbol="home" className="tab-item" />,
     selectedIcon: <Icon symbol="home" className="tab-item selected-tab-item" />
   },
   {
     key: 'Mine',
     title: gettext('Mine'),
+    value: 'mine',
     icon: <Icon symbol="mine" className="tab-item" />,
     selectedIcon: <Icon symbol="mine" className="tab-item selected-tab-item" />
   }
 ];
 
-class MobileMainPanel extends React.Component {
+const propTypes = {
+  searchPlaceholder: PropTypes.string,
+  updateSidePanelGroups: PropTypes.func,
+  onShowSidePanel: PropTypes.func,
+  workspaceList: PropTypes.array,
+  isWorkspaceListLoading: PropTypes.bool,
+  loadWorkspaceList: PropTypes.func,
+  onDeleteGroup: PropTypes.func,
+  onCopyProject: PropTypes.func,
+  onAddProject: PropTypes.func,
+  onDeleteProject: PropTypes.func,
+  errorMsg: PropTypes.string
+};
 
+class MobileMainPanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedTab: 'projects',
-      errorMsg: null,
-      workspaceList: [],
-      isWorkspaceListLoading: true,
+      selectedTab: 'projects'
     };
   }
 
   onSearchedClick = (item) => {
-    let url = siteRoot + 'workspace/' + item.workspace_id + '/project/' + item.name + '/';
+    const url = `${siteRoot}workspace/${item.workspace_id}/project/${item.name}/`;
     location.href = url;
-  };
-
-  loadWorkspaceList = () => {
-    homeAPI.listWorkspaces().then(res => {
-      let workspaceList = res.data.workspace_list.map(item => {
-        return new Workspace(item);
-      });
-      this.setState({
-        workspaceList,
-        isWorkspaceListLoading: false,
-      });
-    }).catch(error => {
-      this.errorCallbackHandle(error);
-    });
-  };
-
-  errorCallbackHandle = (error) => {
-    if (error.response) {
-      this.setState({
-        errorMsg: gettext('Error')
-      });
-    } else {
-      this.setState({
-        errorMsg: gettext('Please check the network.')
-      });
-    }
-  };
-
-  onDeleteGroup = (groupID) => {
-    let workspaceList = this.state.workspaceList.filter((item) => item.group_id !== groupID);
-    this.setState({ workspaceList: workspaceList });
-    this.props.updateSidePanelGroups(true, true);
-  };
-
-  onCopyProject = (project) => {
-    let newWorkspaceList = this.state.workspaceList.slice();
-    for (let workspace of newWorkspaceList) {
-      if (project.workspace_id === workspace.id) {
-        workspace.projects.push(project);
-        break;
-      }
-    }
-    this.setState({ workspaceList: newWorkspaceList });
-  };
-
-  onAddProject = (project) => {
-    let newWorkspaceList = this.state.workspaceList.slice();
-    newWorkspaceList = newWorkspaceList.map(item => {
-      if (project.workspace_id === item.id) {
-        item.projects.push(project);
-      }
-      return item;
-    });
-    this.setState({ workspaceList: newWorkspaceList });
-  };
-
-  onDeleteProject = (deletedWorkspaceID, newProjectList) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].id === deletedWorkspaceID) {
-        workspaceList[i].projects = newProjectList;
-        break;
-      }
-    }
-    this.setState({ workspaceList });
   };
 
   onSelectCurrentTab = (selectedTab) => {
@@ -121,78 +66,45 @@ class MobileMainPanel extends React.Component {
   };
 
   renderMainContent = () => {
-
+    const commonProps = {
+      loadWorkspaceList: this.props.loadWorkspaceList,
+      isWorkspaceListLoading: this.props.isWorkspaceListLoading,
+      workspaceList: this.props.workspaceList,
+      errorMsg: this.props.errorMsg,
+      onDeleteGroup: this.props.onDeleteGroup,
+      onDeleteProject: this.props.onDeleteProject,
+      onCopyProject: this.props.onCopyProject,
+      onAddProject: this.props.onAddProject,
+      updateSidePanelGroups: this.props.updateSidePanelGroups
+    };
     return (
       <Router className="reach-router" role='group'>
-        <AllWorkspaces
-          path={siteRoot}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
-        <AllWorkspaces
-          path={siteRoot + 'project/'}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
-        <WorkspaceInMainPanel
-          path={siteRoot + 'project/:projectID'}
-          loadWorkspaceList={this.loadWorkspaceList}
-          isWorkspaceListLoading={this.state.isWorkspaceListLoading}
-          workspaceList={this.state.workspaceList}
-          errorMsg={this.state.errorMsg}
-          onDeleteGroup={this.onDeleteGroup}
-          onDeleteProject={this.onDeleteProject}
-          onCopyProject={this.onCopyProject}
-          onAddProject={this.onAddProject}
-          updateSidePanelGroups={this.props.updateSidePanelGroups}
-        />
+        <AllWorkspaces path={ROUTES.HOME} {...commonProps} />
+        <AllWorkspaces path={ROUTES.PROJECTS} {...commonProps} />
+        <WorkspaceInMainPanel path={ROUTES.PROJECT_DETAIL} {...commonProps} />
       </Router>
     );
   };
 
-
-  getTabBarItems = () => {
-    let tabBarItems = BAR_ITEMS.slice(0);
-    return tabBarItems;
-  };
-
   renderTabBarContent = () => {
     const { selectedTab } = this.state;
-    let tabBarItems = this.getTabBarItems();
     return (
       <TabBar
         unselectedTintColor="#999"
         tintColor="#ED7109"
         barTintColor="white"
       >
-        {tabBarItems.map(item => {
-          let innerContent = null;
-          let itemTabValue = item.key.toLocaleLowerCase();
-          if (selectedTab === 'projects' && itemTabValue === 'projects') {
-            innerContent = this.renderMainContent();
-          }
+        {TAB_BAR_ITEMS.map(item => {
+          const shouldRenderContent = selectedTab === 'projects' && item.value === 'projects';
+          const innerContent = shouldRenderContent ? this.renderMainContent() : null;
           return (
             <TabBar.Item
               title={item.title}
               key={item.key}
               icon={item.icon}
               selectedIcon={item.selectedIcon}
-              selected={selectedTab === itemTabValue}
-              onPress={this.onSelectCurrentTab.bind(this, itemTabValue)}
+              selected={selectedTab === item.value}
+              onPress={() => this.onSelectCurrentTab(item.value)}
             >
               {innerContent}
             </TabBar.Item>
@@ -205,13 +117,13 @@ class MobileMainPanel extends React.Component {
   render() {
     const { selectedTab } = this.state;
     return (
-      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' })} >
+      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' })}>
         <MobileHeader
           selectedTab={selectedTab}
           searchPlaceholder={this.props.searchPlaceholder}
           onShowSidePanel={this.props.onShowSidePanel}
           onSearchedClick={this.onSearchedClick}
-          loadWorkspaceList={this.loadWorkspaceList}
+          loadWorkspaceList={this.props.loadWorkspaceList}
         />
         {selectedTab === 'mine' && <MobileMine />}
         {this.renderTabBarContent()}

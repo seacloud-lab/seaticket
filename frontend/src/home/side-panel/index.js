@@ -36,12 +36,8 @@ class SidePanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isDataLoading: true,
       isExpandedMoreList: this.props.currentTab.includes('more/'),
-      workspaceList: [],
-      groupItems: []
     };
-    this.groupsHeight = 0;
     this.moreHeight = 1 * GROUP_ITEM_HEIGHT; // 1 is data sync
     this.isDesktop = Utils.isDesktop();
     this.sidePanelRef = React.createRef();
@@ -54,7 +50,6 @@ class SidePanel extends React.Component {
   };
 
   componentDidMount() {
-    this.initTableData();
     const sidePanelWidth = parseFloat(localStorage.getItem('home-side-panel-width') || INIT_SIDEBAR_WIDTH);
     eventBus.dispatch('home-side-panel-width', sidePanelWidth);
     this.sidePanelRef.current.style.width = `${sidePanelWidth}px`;
@@ -62,36 +57,10 @@ class SidePanel extends React.Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.isUpdateSidePanelGroups) {
-      this.initTableData();
+      this.props.loadWorkspaceList();
       this.props.updateSidePanelGroups(false);
     }
   }
-
-  async initTableData() {
-    try {
-      let workspaceData = await homeAPI.listWorkspaces(false);
-      let workspaceList = workspaceData.data.workspace_list;
-      this.groupsHeight = workspaceList.length * GROUP_ITEM_HEIGHT + 1;
-      let groupItems = workspaceList.filter(workspace => {
-        return workspace.type === 'group';
-      });
-      this.setState({
-        isDataLoading: false,
-        workspaceList,
-        groupItems
-      });
-    } catch (error) {
-      this.errorCallbackHandle(error);
-    }
-  }
-
-  errorCallbackHandle = (error) => {
-    if (error.response) {
-      toaster.danger(gettext('Error'));
-    } else {
-      toaster.danger(gettext('Please check the network.'));
-    }
-  };
 
   onKeyDown = (e) => {
     e.stopPropagation();
@@ -130,7 +99,7 @@ class SidePanel extends React.Component {
   };
 
   moveGroupItem = (optionSource, optionTarget) => {
-    let groupItems = this.state.groupItems.slice(0);
+    let groupItems = this.props.groupItems.slice(0);
     let isMoveToLast = 'false';
     const sourceGroupId = optionSource.data.group_id;
     let targetGroupId = optionTarget.data.group_id;
@@ -157,10 +126,9 @@ class SidePanel extends React.Component {
   };
 
   renderWorkspaceItems = () => {
-    let { workspaceList, groupItems } = this.state;
-    let personalWorkspace = workspaceList.find(workspace => {
-      return workspace.type === 'personal';
-    });
+    let workspaceList = this.props.workspaceList;
+    let { groupItems } = this.props;
+    let personalWorkspace = workspaceList.find(workspace => workspace.type === 'personal');
     const tabIndex = this.props.isOpenGroupExpanded ? 0 : -1;
 
     return (
@@ -194,9 +162,10 @@ class SidePanel extends React.Component {
   };
 
   render() {
-    let style = { height: this.props.isOpenGroupExpanded ? this.groupsHeight : 0 };
+    const { workspaceList } = this.props;
+    let groupsHeight = (workspaceList.length * GROUP_ITEM_HEIGHT + 1) || 0;
+    let style = { height: this.props.isOpenGroupExpanded ? groupsHeight : 0 };
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
-
     return (
       <DndProvider backend={HTML5Backend}>
         <div
@@ -244,7 +213,7 @@ class SidePanel extends React.Component {
                     role="button"
                     onKeyDown={this.onKeyDown}
                     onClick={this.onListExtended}
-                    icon={this.state.isDataLoading ? '' : 'arrow-down-b'}
+                    icon={this.props.isWorkspaceListLoading ? '' : 'arrow-down-b'}
                     iconClassName="nav-toggle-icon"
                   />
                 </div>
@@ -253,7 +222,7 @@ class SidePanel extends React.Component {
                   style={style}
                   aria-hidden={!this.props.isOpenGroupExpanded}
                 >
-                  {!this.state.isDataLoading && this.renderWorkspaceItems()}
+                  {!this.props.isWorkspaceListLoading && this.renderWorkspaceItems()}
                 </div>
                 <AllInboxNav
                   isOpenGroupExpanded={this.props.isOpenGroupExpanded}
