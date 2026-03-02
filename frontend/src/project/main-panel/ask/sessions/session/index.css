@@ -15,9 +15,13 @@
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
-  /* 64: icon-width(16) + icon-mr(8) + more-width(24) + more-ml(16) */
-  width: calc(100% - 64px);
+  width: calc(100% - 16px); /* 16: icon-width(16) */
   overflow: hidden;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-content {
+  width: calc(100% - 56px); /* 56: icon-width(16) + icon-mr(8) + more-width(24) + more-ml(8) */
+  margin-right: 8px;
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
