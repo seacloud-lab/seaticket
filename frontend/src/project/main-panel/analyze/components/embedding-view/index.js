@@ -337,11 +337,6 @@ const EmbeddingView = ({
   }, [filters, selectedCategories, categoryMappings, colorBy]);
 
   if (!Array.isArray(records)) {
-    // return (
-    //   <div className="analyze-empty-state 111">
-    //     <p className="analyze-empty-text">{gettext('Click Analyze to start')}</p>
-    //   </div>
-    // );
     return (
       <EmptyTip
         src={`${mediaUrl}img/no-analysis.png`}
