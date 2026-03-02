@@ -39,7 +39,7 @@
 }
 
 .sea-qa-project-side-panel .sea-qa-project-side-panel-subtitle {
-  color: #666;
+  color: var(--bs-icon-color);;
   padding: 8px;
   margin-top: 10px;
 }
@@ -49,7 +49,7 @@
 }
 
 .sea-qa-side-panel-more-nav .sea-qa-icon-svg {
-  color: #999;
+  color: var(--bs-icon-color);
 }
 
 .sea-qa-project-side-panel .resize-bar {
