@@ -11,31 +11,43 @@ from seahub.api2.endpoints.project import (
     TrashProjectsView,
     WorkspacesView,
 )
-from seahub.project.models import Projects
+from seahub.project.models import Projects, Workspaces
 
 
 @pytest.mark.django_db
 class TestWorkspacesView:
-
-    def test_get_detail_invalid(self, factory, project_creator):
-        request = factory.get('/api/v1/workspaces/', {'detail': 'x'})
-        request.user = project_creator
-
-        resp = WorkspacesView.as_view()(request)
-
-        assert resp.status_code == 400
-
-    def test_get_detail_false_success(self, factory, project_creator, real_project):
+    def test_get_success(self, factory, project_creator, real_project):
         project = real_project
-        request = factory.get('/api/v1/workspaces/', {'detail': 'false'})
+        request = factory.get('/api/v1/workspaces/')
         request.user = project_creator
 
         resp = WorkspacesView.as_view()(request)
 
         assert resp.status_code == 200
         assert 'workspace_list' in resp.data
-        assert any(w.get('type') == 'personal' for w in resp.data['workspace_list'])
-        assert project.workspace.id in [w.get('id') for w in resp.data['workspace_list']]
+        personal_workspace = next((w for w in resp.data['workspace_list'] if w.get('id') == project.workspace.id), None)
+        assert personal_workspace is not None
+        assert personal_workspace.get('type') == 'personal'
+        assert any(p.get('id') == project.id for p in personal_workspace.get('projects', []))
+
+    def test_get_non_org_context_returns_403(self, factory, no_org_user):
+        request = factory.get('/api/v1/workspaces/')
+        request.user = no_org_user
+
+        resp = WorkspacesView.as_view()(request)
+
+        assert resp.status_code == 403
+
+    def test_get_auto_creates_personal_workspace_when_missing(self, factory, auth_user):
+        request = factory.get('/api/v1/workspaces/')
+        request.user = auth_user
+        assert not Workspaces.objects.filter(owner=auth_user.username).exists()
+
+        resp = WorkspacesView.as_view()(request)
+
+        assert resp.status_code == 200
+        workspace = Workspaces.objects.get(owner=auth_user.username)
+        assert any(w.get('type') == 'personal' and w.get('id') == workspace.id for w in resp.data['workspace_list'])
 
 
 @pytest.mark.django_db
