@@ -6,7 +6,7 @@ import { name, avatarURL, username, gettext, lang } from '@/constants';
 import { CenteredLoading, toaster } from '@/components';
 import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { Utils } from '@/utils/utils';
-import { knowledgeBaseAPI } from '@/project/api';
+import { portalAPI } from '@/portal/api';
 import { usePortalKnowledgePage } from '../../hooks/knowledge-page';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useData, useTags } from '@/project/hooks';
@@ -49,7 +49,7 @@ const PortalEditKnowledge = ({ editorAPI, projectUuid }) => {
     if (lastRecordId.current === pageSlugId) return;
     lastRecordId.current = pageSlugId;
     setLoading(true);
-    knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
+    portalAPI.getKBRecord(projectUuid, pageSlugId).then(res => {
       handleUpdateRowsCacheData(pageSlugId, res?.data.record);
       const { title = '', content = '', tags = [] } = res?.data.record || {};
       setTitle(title);

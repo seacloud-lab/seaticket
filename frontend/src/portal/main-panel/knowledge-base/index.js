@@ -8,7 +8,7 @@ import PortalEditKnowledge from './view/edit-knowledge';
 import { PortalKnowledgePageProvider, usePortalKnowledgePage } from './hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
-const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
+const { projectUuid, permission, workspaceID, projectName, isProjectAdmin, isEditMode } = window.app.pageOptions;
 
 const Page = () => {
   const { isLoading, pageSlugId, togglePageSlugId } = usePortalKnowledgePage();
@@ -31,7 +31,7 @@ const Page = () => {
 
 const PortalKnowledgeBase = () => {
   return (
-    <PortalKnowledgePageProvider projectName={projectName} projectUuid={projectUuid}>
+    <PortalKnowledgePageProvider projectName={projectName} projectUuid={projectUuid} isEditMode={isEditMode}>
       <PortalKnowledgeTopBar/>
       <Page/>
     </PortalKnowledgePageProvider>

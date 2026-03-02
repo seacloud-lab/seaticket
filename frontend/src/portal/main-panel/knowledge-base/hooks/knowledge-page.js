@@ -10,13 +10,14 @@ import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
 
 const PortalKnowledgePageContext = React.createContext(null);
 
-export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children }) => {
+export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children, isEditMode }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
 
   const resetURL = useCallback((pageSlugId) => {
     const { origin } = location;
-    const url = `${origin}${siteRoot}portal-edit/${projectUuid}/${BAR_TYPE.KNOWLEDGE}`;
+    const basePath = isEditMode ? 'portal-edit' : 'portal';
+    const url = `${origin}${siteRoot}${basePath}/${projectUuid}/${BAR_TYPE.KNOWLEDGE}`;
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     history.replaceState(null, null, url + urlPart);
   }, [projectUuid, projectName]);
