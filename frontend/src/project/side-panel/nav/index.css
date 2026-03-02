@@ -24,7 +24,7 @@
 .sea-qa-project-navigation-item .sea-qa-project-navigation-item-icon {
   height: 16px;
   width: 16px;
-  color: #666;
+  color: var(--bs-icon-color);;
   margin-right: 8px;
 }
 
