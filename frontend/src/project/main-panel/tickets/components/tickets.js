@@ -36,7 +36,7 @@ const Tickets = ({
   togglePageSlugId = () => {},
   toggleView,
   isLoading = false,
-  getTicket = (projectUuid, ticketID) => ticketsAPI.getProjectTicket(projectUuid, ticketID),
+  getTicket,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
