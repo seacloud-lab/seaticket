@@ -341,7 +341,7 @@ const EmbeddingView = ({
       <EmptyTip
         src={`${mediaUrl}img/no-analysis.png`}
         title={gettext('No analysis')}
-        text={gettext('Click Analyze to start')}
+        text={gettext('Click analyze to start')}
       />
     );
   }
