@@ -5,7 +5,7 @@ import * as SQL from '@uwdata/mosaic-sql';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import Legend from '../legend';
 import { CenteredError, CenteredLoading, EmptyTip } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { TABLE_SCHEMA, COLOR_BY_FIELDS } from '../../constants';
 
 import './index.css';
@@ -338,9 +338,11 @@ const EmbeddingView = ({
 
   if (!Array.isArray(records)) {
     return (
-      <div className="analyze-empty-state">
-        <p className="analyze-empty-text">{gettext('Click Analyze to start')}</p>
-      </div>
+      <EmptyTip
+        src={`${mediaUrl}img/no-analysis.png`}
+        title={gettext('No analysis')}
+        text={gettext('Click analyze to start')}
+      />
     );
   }
 
