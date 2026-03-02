@@ -11,10 +11,16 @@ import {
 } from '../ticket-settings';
 import Comment from '../comment';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { ticketsAPI } from '@/project/api';
 
 import './index.css';
 
-const TicketInDialog = ({ ticketID, projectUuid, updateTicket, getTicket }) => {
+const TicketInDialog = ({
+  ticketID,
+  projectUuid,
+  updateTicket,
+  getTicket = (projectUuid, ticketID) => ticketsAPI.getProjectTicket(projectUuid, ticketID),
+}) => {
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
