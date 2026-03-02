@@ -4,7 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
-import { BAR_TYPE, EVENT_BUS_TYPE } from './constants';
+import { BAR_TYPE, EVENT_BUS_TYPE, PROJECT_DEFAULT_SETTINGS } from './constants';
 import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
 import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
@@ -143,7 +143,7 @@ const Project = () => {
         settings = {};
       }
     }
-    setSettings(settings);
+    setSettings({ ...PROJECT_DEFAULT_SETTINGS, ...settings });
   }, []);
 
   return (
