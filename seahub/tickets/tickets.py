@@ -26,6 +26,7 @@ from seahub.project.utils import check_project_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
+from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
@@ -43,7 +44,6 @@ from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.utils import normalize_cache_key
-from seahub.tickets.settings import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
