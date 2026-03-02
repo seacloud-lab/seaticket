@@ -515,7 +515,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
               <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
               <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
               <div className="sea-qa-ai-ask-chats-tip-description">
-                {gettext('You can say "Help solving the following issue: <issue description>" to let AI solve the issue by searching knowledge bases.')}
+                {gettext('You can say "Help solve the following issue: <issue description>" to let AI solve the issue by searching knowledge bases.')}
               </div>
             </div>
           )}
