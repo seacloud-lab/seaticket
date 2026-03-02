@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -29,7 +30,6 @@ from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by
     list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import ConnectionType
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
@@ -42,8 +42,12 @@ from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_T
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
+from seahub.utils import normalize_cache_key
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
+
+TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'PORTAL_TICKET_DEFAULT_SUBSTATE_'
+TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 logger = logging.getLogger(__name__)
 
@@ -171,8 +175,6 @@ class TicketsAPIView(APIView):
 
         due_date = request.POST.get('due_date', '')
 
-        substate = request.POST.get('substate', '')
-
         username = request.user.username
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -213,17 +215,25 @@ class TicketsAPIView(APIView):
 
         seadb_api = SeaDBAPI(username)
 
-        if not substate:
+        default_substate = ''
+        cache_key = normalize_cache_key(project_uuid, prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+        cached_default_substate = cache.get(cache_key, None)
+        if cached_default_substate is not None:
+            default_substate = cached_default_substate
+        else:
             try:
                 base_metadata = seadb_api.get_base_metadata(project_uuid)
-                ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS) if base_metadata else None
+                ticket_meta = get_current_table_metadata(base_metadata.get('tables'),
+                                                         TABLE_TICKETS) if base_metadata else None
                 table_columns = (ticket_meta or {}).get('columns') or []
+
                 substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
                 substate_options = ((substate_column.get('data') or {}).get('options') or [])
                 for opt in substate_options:
                     if (opt.get('name') or '').lower() == 'new':
-                        substate = opt.get('name') or ''
+                        default_substate = opt.get('name') or ''
                         break
+                cache.set(cache_key, default_substate, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT)
             except Exception as e:
                 logger.error(e)
 
@@ -261,7 +271,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_name,
-                TicketsTable.substate.name: substate,
+                TicketsTable.substate.name: default_substate,
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],
