@@ -34,12 +34,15 @@ from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.portal.models import PortalExternalInvitation
-from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED
+from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_key
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 
 
 logger = logging.getLogger(__name__)
+
+PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'PORTAL_TICKET_DEFAULT_SUBSTATE_'
+PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 
 class PortalTicketsView(APIView):
@@ -117,19 +120,25 @@ class PortalTicketsView(APIView):
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
 
             default_substate = ''
-            try:
-                base_metadata = seadb_api.get_base_metadata(project_uuid)
-                ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS) if base_metadata else None
-                table_columns = (ticket_meta or {}).get('columns') or []
+            cache_key = normalize_cache_key(project_uuid, prefix=PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cached_default_substate = cache.get(cache_key, None)
+            if cached_default_substate is not None:
+                default_substate = cached_default_substate
+            else:
+                try:
+                    base_metadata = seadb_api.get_base_metadata(project_uuid)
+                    ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS) if base_metadata else None
+                    table_columns = (ticket_meta or {}).get('columns') or []
 
-                substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
-                substate_options = ((substate_column.get('data') or {}).get('options') or [])
-                for opt in substate_options:
-                    if (opt.get('name') or '').lower() == 'new':
-                        default_substate = opt.get('name') or ''
-                        break
-            except Exception as e:
-                logger.error(e)
+                    substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
+                    substate_options = ((substate_column.get('data') or {}).get('options') or [])
+                    for opt in substate_options:
+                        if (opt.get('name') or '').lower() == 'new':
+                            default_substate = opt.get('name') or ''
+                            break
+                    cache.set(cache_key, default_substate, PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT)
+                except Exception as e:
+                    logger.error(e)
 
             row = {
                 TicketsTable.title.name: title,
