@@ -371,7 +371,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           _newChatHistories[_newChatHistories.length - 1] = lastChatMessage;
           updateChatHistories(_newChatHistories, false);
         }
-        if (status && status.type !== 'LLM Reasoning') {
+        if (status && status.type) {
           _newChatHistories = _newChatHistories.slice(0);
           let lastChatMessage = _newChatHistories[_newChatHistories.length - 1];
           lastChatMessage = {
