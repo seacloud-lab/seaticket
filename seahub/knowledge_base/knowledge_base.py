@@ -85,14 +85,6 @@ class KnowledgeBasesAPIView(APIView):
 
         seadb_api = SeaDBAPI(request.user.username)
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
-        if file_urls:
-            try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Upload files failed.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         try:
             row = {
                 KnowledgeBaseTable.title.name: title,
@@ -113,11 +105,33 @@ class KnowledgeBasesAPIView(APIView):
             row.update({'_pk': insert_row_pk})
         except Exception as e:
             logger.error(e)
-            error_msg = 'Internal Server Error'
+            error_msg = 'Internal Server Error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        send_knowledge_base_update_msg(project_uuid)
+        if file_urls:
+            new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'knowledgebase', int(insert_row_pk))
+            updated_content = replace_file_url_in_content(content_text, new_file_urls_dict)
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+            try:
+                seadb_api.update_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [{
+                    'pk': int(insert_row_pk),
+                    'row': {
+                        KnowledgeBaseTable.content.name: updated_content,
+                        KnowledgeBaseTable.last_modifier.name: username,
+                        KnowledgeBaseTable.modified_time.name: now_datetime,
+                    }
+                }])
+                content_text = updated_content
+                row[KnowledgeBaseTable.content.name] = updated_content
+                row[KnowledgeBaseTable.last_modifier.name] = username
+                row[KnowledgeBaseTable.modified_time.name] = now_datetime
+            except Exception as e:
+                logger.error(e)
+                seadb_api.delete_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [int(insert_row_pk)])
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_knowledge_base_update_msg(project_uuid)
         return Response({'row': row}, status=status.HTTP_201_CREATED)
 
     @require_org_context
@@ -288,7 +302,7 @@ class KnowledgeBaseAPIView(APIView):
 
             if len(file_urls) > 0:
                 try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'knowledgebase', int(knowledge_id))
                     content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
                 except Exception as e:
                     logger.error(e)
