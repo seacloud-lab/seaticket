@@ -74,8 +74,8 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
         onClick={() => togglePageSlugId(sessionId)}
       >
         <IconButton icon={icon} className="no-hover-bg mr-2 w-4 h-4" />
-        <div className="sea-qa-ai-ask-session-content mr-4">
-          <div className="sea-qa-ai-ask-session-name text-truncate">
+        <div className="sea-qa-ai-ask-session-content">
+          <div className="sea-qa-ai-ask-session-name text-truncate" title={session.name}>
             {session.name}
           </div>
         </div>
