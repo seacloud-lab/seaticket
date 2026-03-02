@@ -17,7 +17,6 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { useMetadata } from '../../hooks';
 import { useData, useTags } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { validateTitle } from '@/utils/validate';
 
 import './index.css';
 
@@ -83,13 +82,13 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   }, [editorAPI]);
 
   const onSubmit = useCallback(() => {
-    const { isValid, message } = validateTitle(title, ['/']);
-    if (!isValid) {
-      toaster.danger(message);
+    const validTitle = title.trim();
+    if (!validTitle) {
+      toaster.danger(gettext('Title is required'));
       return;
     }
 
-    const data = { title: message, content, type, assignees, tags, priority, due_date };
+    const data = { title: validTitle, content, type, assignees, tags, priority, due_date };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
