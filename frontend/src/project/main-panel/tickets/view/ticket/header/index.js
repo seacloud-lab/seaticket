@@ -30,7 +30,7 @@ const Header = forwardRef(({
   }, [propsTitle]);
 
   const handleModify = useCallback(() => {
-    const { isValid, message } = validateTitle(title);
+    const { isValid, message } = validateTitle(title, ['/']);
     if (!isValid) {
       toaster.danger(message);
       return;
