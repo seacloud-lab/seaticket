@@ -1,12 +1,12 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { gettext } from '@/constants';
-import { portalAPI } from '../api';
-import KnowledgeBaseDetails from './knowledge-base-details';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { portalAPI } from '@/portal/api';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '@/portal/main-panel/knowledge-base/constants';
 import { useData, useTags } from '@/project/hooks';
+import { usePortalKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const viewTools = [
   VIEW_TOOL.VIEWS,
@@ -18,9 +18,13 @@ const viewTools = [
   VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const KnowledgeBase = ({ projectUuid }) => {
+const PortalAllKnowledge = ({ projectUuid }) => {
+  const { togglePageSlugId } = usePortalKnowledgePage();
   const metadataRef = useRef(null);
+  const allColumns = useRef([]);
   const [viewID, setViewID] = useState('0000');
+  const [currentKB, setCurrentKB] = useState(null);
+  const [isShowKBDetailsDialog, setIsShowKBDetailsDialog] = useState(false);
 
   const { tagsData } = useTags();
   const { getMetadata } = useData();
@@ -31,6 +35,10 @@ const KnowledgeBase = ({ projectUuid }) => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         let predefinedConfig = { ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG };
+        predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE] = {
+          ...predefinedConfig[KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE],
+          click: (row) => togglePageSlugId(row._id),
+        };
 
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
           const { name } = c;
@@ -43,6 +51,7 @@ const KnowledgeBase = ({ projectUuid }) => {
         if (tagsColumn) {
           context.setSetting('tagsColumnKey', tagsColumn.key);
         }
+        allColumns.current = columns;
         return { data: { rows, columns } };
       });
     },
@@ -84,30 +93,61 @@ const KnowledgeBase = ({ projectUuid }) => {
     setViewID(newViewID);
   }, []);
 
+  const handleExpandRow = useCallback((kb) => {
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+    setIsShowKBDetailsDialog(true);
+  }, []);
+
+  const handleSwitchKB = useCallback((step) => {
+    const KBData = metadataRef.current?.getOrderRows ? metadataRef.current.getOrderRows() : [];
+    const index = KBData.findIndex(r => r._id === currentKB?._id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > KBData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = KBData.length - 1;
+    }
+    const kb = KBData[newIndex];
+    setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
+  }, [currentKB]);
+
   return (
-    <SeaMetadata
-      ref={metadataRef}
-      viewID={viewID}
-      api={api}
-      t={t}
-      localStorageNamePrefix={localStorageName}
-      permission={{ isAdmin: false, canEdit: false }}
-      toggleView={toggleView}
-      settings={{
-        isFilterComputedOnServer: false,
-        isSortComputedOnServer: false,
-        canManageView: false,
-        canInsertRow: false,
-        canDeleteRow: false,
-        canModifyRow: false,
-      }}
-      viewTools={viewTools}
-      tagsData={tagsData}
-      expandRow={(row) => context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row)}
-    >
-      <KnowledgeBaseDetails />
-    </SeaMetadata>
+    <>
+      <SeaMetadata
+        ref={metadataRef}
+        viewID={viewID}
+        api={api}
+        t={t}
+        localStorageNamePrefix={localStorageName}
+        permission={{ isAdmin: false, canEdit: false }}
+        toggleView={toggleView}
+        settings={{
+          isFilterComputedOnServer: false,
+          isSortComputedOnServer: false,
+          canManageView: false,
+          canInsertRow: false,
+          canDeleteRow: false,
+          canModifyRow: false,
+        }}
+        viewTools={viewTools}
+        tagsData={tagsData}
+        expandRow={handleExpandRow}
+      >
+      </SeaMetadata>
+      {isShowKBDetailsDialog && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={currentKB}
+          columns={allColumns.current}
+          switchResource={handleSwitchKB}
+          onToggle={() => setIsShowKBDetailsDialog(false)}
+        />
+      )}
+    </>
   );
 };
 
-export default KnowledgeBase;
+export default PortalAllKnowledge;

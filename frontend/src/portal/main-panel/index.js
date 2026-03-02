@@ -3,7 +3,7 @@ import { gettext } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 import SubmitTicket from './submit-ticket';
 import MyTickets from './my-tickets';
-import KnowledgeBase from './knowledge-base';
+import PortalKnowledgeBase from './knowledge-base/index';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading } from '@/components';
 
@@ -18,8 +18,6 @@ const MainPanel = ({ activePage, onPageChange, ...props }) => {
         return gettext('Submit ticket');
       case PORTAL_PAGE.MY_TICKETS:
         return gettext('My tickets');
-      case PORTAL_PAGE.KNOWLEDGE_BASE:
-        return gettext('Knowledge base');
       default:
         return '';
     }
@@ -44,7 +42,7 @@ const MainPanel = ({ activePage, onPageChange, ...props }) => {
           <MyTickets { ...props } />
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
-        return <KnowledgeBase { ...props } />;
+        return <PortalKnowledgeBase { ...props } />;
       default:
         return null;
     }
@@ -52,9 +50,11 @@ const MainPanel = ({ activePage, onPageChange, ...props }) => {
 
   return (
     <div className="sea-qa-portal-main-panel">
-      <div className="sea-qa-portal-top-bar">
-        {getTitle()}
-      </div>
+      {activePage !== PORTAL_PAGE.KNOWLEDGE_BASE && (
+        <div className="sea-qa-portal-top-bar">
+          {getTitle()}
+        </div>
+      )}
       <div className="sea-qa-portal-content">
         {renderContent()}
       </div>

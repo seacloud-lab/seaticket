@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useState } from 'react';
 import deepcopy from 'deep-copy';
 import { CollaboratorsProvider } from '@/sea-metadata';
-import { EMPTY_TABLE, BAR_TYPE } from '../constants';
+import { EMPTY_TABLE } from '../constants';
 import { shouldReload } from '../utils';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
 import { ConnectionsProvider } from '../main-panel/connections/hooks';
@@ -10,7 +10,6 @@ import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
 import { MetadataProvider } from '../main-panel/tickets/hooks';
 import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
-import { KnowledgePageProvider } from '@/project/main-panel/knowledge-base/hooks/index';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
@@ -595,17 +594,9 @@ export const DataProvider = ({
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
-                  {(activeBar && (activeBar[0] === BAR_TYPE.KNOWLEDGE || activeBar[0] === BAR_TYPE.KNOWLEDGE_TRASH)) ? (
-                    <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
-                      <AnalyzeTaskProvider>
-                        {children}
-                      </AnalyzeTaskProvider>
-                    </KnowledgePageProvider>
-                  ) : (
-                    <AnalyzeTaskProvider>
-                      {children}
-                    </AnalyzeTaskProvider>
-                  )}
+                  <AnalyzeTaskProvider>
+                    {children}
+                  </AnalyzeTaskProvider>
                 </ConnectionsProvider>
               </MetadataProvider>
             </TagsProvider>
