@@ -30,7 +30,15 @@ export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }
   };
 };
 
-export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues, context }) => {
+export const generatorRowsMoreTool = ({
+  rows,
+  columns,
+  modifyRows,
+  chatTicketsByAI,
+  findRelatedIssues,
+  context,
+  createKnowledgeBaseRecord
+}) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
   const stateColumnOptions = getColumnOptions(stateColumn);
@@ -61,6 +69,14 @@ export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsBy
       label: gettext('Find related issues'),
       key: 'find_related_issues',
       callback: () => findRelatedIssues(rows[0]),
+    });
+  }
+
+  if (rows.length === 1 && createKnowledgeBaseRecord) {
+    children.push({
+      label: gettext('Create knowledge base record'),
+      key: 'create_kb_record',
+      callback: () => createKnowledgeBaseRecord(rows[0]),
     });
   }
 
@@ -124,14 +140,14 @@ export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsBy
   };
 };
 
-export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI, findRelatedIssues, context }) => {
+export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord }) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
     const tool = generatorTicketCopyLinkTool({ ticket: row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues, context });
+  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord });
   tools.push(moreTool);
   return tools;
 };
@@ -349,15 +365,6 @@ export const generatorTicketsContextMenuOptions = ({
     label: gettext('Open ticket'),
     callback: () => togglePageSlugId(row._id),
   });
-  list.push('Divider');
-
-  if (context.canDeleteRow()) {
-    list.push({
-      label: gettext('Delete ticket'),
-      key: 'delete_row',
-      callback: () => deleteRow && deleteRow(row._id)
-    });
-  }
   list.push({
     label: gettext('Copy link'),
     key: 'copy_link',
@@ -368,6 +375,15 @@ export const generatorTicketsContextMenuOptions = ({
       toaster.success(gettext('The ticket link has been copied'));
     }
   });
+  list.push('Divider');
+
+  if (context.canDeleteRow()) {
+    list.push({
+      label: gettext('Delete ticket'),
+      key: 'delete_row',
+      callback: () => deleteRow && deleteRow(row._id)
+    });
+  }
 
   return list;
 };
