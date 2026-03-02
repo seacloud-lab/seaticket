@@ -83,6 +83,11 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
+    if (!validTitle) {
+      toaster.danger(gettext('Title is required'));
+      return;
+    }
+
     const data = { title: validTitle, content, type, assignees, tags, priority, due_date };
     let serverData = {};
     Object.keys(data).forEach(columnName => {

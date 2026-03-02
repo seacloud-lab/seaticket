@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import { IconButton, toaster, Icon, Option } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
-import { validateTitle } from '@/utils/validate';
 import { TICKET_STATE } from '../../../constants';
 
 import './index.css';
@@ -30,16 +29,16 @@ const Header = forwardRef(({
   }, [propsTitle]);
 
   const handleModify = useCallback(() => {
-    const { isValid, message } = validateTitle(title);
-    if (!isValid) {
-      toaster.danger(message);
+    const validTitle = title.trim();
+    if (!validTitle) {
+      toaster.danger(gettext('Title is required'));
       return;
     }
-    if (propsTitle === message) {
+    if (propsTitle === validTitle) {
       setIsRenaming(false);
       return;
     }
-    modifyTitle(message, (error) => {
+    modifyTitle(validTitle, (error) => {
       if (!error) {
         setIsRenaming(false);
       }
