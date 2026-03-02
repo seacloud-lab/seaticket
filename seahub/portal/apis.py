@@ -41,7 +41,7 @@ from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record
 
 logger = logging.getLogger(__name__)
 
-PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'PORTAL_TICKET_DEFAULT_SUBSTATE_'
+PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'TICKET_DEFAULT_SUBSTATE_'
 PORTAL_TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 

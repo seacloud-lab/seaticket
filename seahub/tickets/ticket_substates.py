@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from django.utils.translation import gettext as _
+from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -23,6 +24,9 @@ from seahub.utils.decorators import require_org_context
 
 
 logger = logging.getLogger(__name__)
+
+TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX = 'TICKET_DEFAULT_SUBSTATE_'
+TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 
 
 class TicketSubstatesAPIView(APIView):
@@ -154,6 +158,7 @@ class TicketSubstatesAPIView(APIView):
                     },
                 }
                 seadb_api.update_column(project_uuid, column_data)
+                cache.delete(TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -194,6 +199,7 @@ class TicketSubstatesAPIView(APIView):
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
+            cache.delete(TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -344,6 +350,7 @@ class TicketSubstateAPIView(APIView):
                         },
                     }
                     seadb_api.update_column(project_uuid, column_data)
+                    cache.delete(TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
 
         except Exception as e:
             logger.error(e)
@@ -407,6 +414,7 @@ class TicketSubstateAPIView(APIView):
                         },
                     }
                     seadb_api.update_column(project_uuid, column_data)
+                    cache.delete(TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
