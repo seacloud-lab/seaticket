@@ -112,15 +112,6 @@ class PortalTicketsView(APIView):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
-        if file_urls:
-            try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content = replace_file_url_in_content(content, new_file_urls_dict)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Upload files failed.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
         try:
             ticket_state = 'open'
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
@@ -149,6 +140,28 @@ class PortalTicketsView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             ticket_pk = pks[0]
             row.update({'_pk': ticket_pk})
+
+            if file_urls:
+                try:
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket_pk))
+                    updated_content = replace_file_url_in_content(content, new_file_urls_dict)
+                    if updated_content != content:
+                        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+                            'pk': int(ticket_pk),
+                            'row': {
+                                TicketsTable.content.name: updated_content,
+                            }
+                        }])
+                        row[TicketsTable.content.name] = updated_content
+                except Exception as e:
+                    logger.error(e)
+                    try:
+                        seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
+                    except Exception as e:
+                        logger.error(e)
+                    error_msg = 'Upload files failed.'
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

@@ -274,16 +274,13 @@ class TicketsAPIView(APIView):
                     new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
-                        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
                         seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
                             'pk': int(ticket_pk),
                             'row': {
                                 TicketsTable.content.name: updated_content,
-                                TicketsTable.modified_time.name: now_datetime,
                             }
                         }])
                         row[TicketsTable.content.name] = updated_content
-                        row[TicketsTable.modified_time.name] = now_datetime
                 except Exception as e:
                     logger.error(e)
                     try:
