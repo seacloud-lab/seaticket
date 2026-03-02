@@ -32,6 +32,16 @@
 </style>
 
 {% if privacy_policy_link or terms_of_service_link %}
+<style>
+.login-panel-wrapper .login-panel-content {
+  border-bottom: 0px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+</style>
+{% endif %}
+
+{% if privacy_policy_link or terms_of_service_link %}
   <div class="privacy-policy-link">
 	  {% if privacy_policy_link and terms_of_service_link %}
 		  <a href="{{ privacy_policy_link }}" class="privacy-policy-link-text">{% trans "Privacy policy" %}</a>
