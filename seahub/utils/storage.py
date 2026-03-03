@@ -36,7 +36,7 @@ def upload_file_to_tmp_dir(project_uuid, file):
     return tmp_upload_file_path
 
 
-def upload_files_to_s3(project_uuid, file_urls, username):
+def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id):
     new_file_urls_dict = {}
     for file_url in file_urls:
         if '/upload-file/project/' not in file_url:
@@ -47,17 +47,23 @@ def upload_files_to_s3(project_uuid, file_urls, username):
         if not os.path.exists(tmp_upload_file_path):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
-        s3_file_path = gen_s3_file_path(project_uuid, file_path)
+
+        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
         if check_file_exists_from_s3(s3_file_path):
             logger.warning(s3_file_path + ' already exists.')
             continue
+
         s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata': {'username': username}})
-        new_file_url = file_url.replace('/upload-file/', '/file/')
+
+        new_file_url = f'/file/project/{project_uuid}/{final_file_path}'
         new_file_urls_dict[new_file_url] = file_url
+
         try:
             os.remove(tmp_upload_file_path)
         except Exception as e:
             logger.error(e)
+
     return new_file_urls_dict
 
 
@@ -97,13 +103,35 @@ def delete_file_from_s3(project_uuid, file_path):
     return s3_file_path
 
 
+def _delete_s3_prefix(prefix):
+    continuation_token = None
+    while True:
+        if prefix.startswith('/'):
+            prefix = prefix.lstrip('/')
+        kwargs = {'Bucket': S3_FILE_BUCKET, 'Prefix': prefix}
+        if continuation_token:
+            kwargs['ContinuationToken'] = continuation_token
+        response = s3_client.list_objects_v2(**kwargs)
+        contents = response.get('Contents') or []
+        if contents:
+            objects_to_delete = [{'Key': obj['Key']} for obj in contents]
+            s3_client.delete_objects(Bucket=S3_FILE_BUCKET, Delete={'Objects': objects_to_delete})
+        if response.get('IsTruncated'):
+            continuation_token = response.get('NextContinuationToken')
+            if not continuation_token:
+                break
+        else:
+            break
+
+
+def delete_record_attachments_from_s3(project_uuid, entity_type, record_id):
+    prefix = gen_s3_file_path(project_uuid, f'attachments/{entity_type}/{record_id}/')
+    _delete_s3_prefix(prefix)
+    return prefix
+
+
 def delete_project_dir_from_s3(project_uuid):
     s3_dir_path = gen_s3_file_path(project_uuid, '')
-    response = s3_client.list_objects_v2(Bucket=S3_FILE_BUCKET, Prefix=s3_dir_path)
-    objects_to_delete = []
-    if 'Contents' in response:
-        for obj in response['Contents']:
-            objects_to_delete.append({'Key': obj['Key']})
-        s3_client.delete_objects(Bucket=S3_FILE_BUCKET, Delete={'Objects': objects_to_delete})
-        logger.info(f'Deleted {project_uuid} s3 files.')
+    _delete_s3_prefix(s3_dir_path)
+    logger.info(f'Deleted {project_uuid} s3 files.')
     return s3_dir_path

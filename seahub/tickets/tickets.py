@@ -24,7 +24,7 @@ from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.utils.storage import upload_files_to_s3
+from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
@@ -235,16 +235,6 @@ class TicketsAPIView(APIView):
                 except Exception:
                     error_msg = 'linked_connection_records invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        # upload files
-        if file_urls:
-            try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content = replace_file_url_in_content(content, new_file_urls_dict)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Upload files failed.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
         # main
         try:
             ticket_state = 'open'
@@ -278,6 +268,27 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             ticket_pk = pks[0]
             row.update({'_pk': ticket_pk})
+
+            if file_urls:
+                try:
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket_pk))
+                    updated_content = replace_file_url_in_content(content, new_file_urls_dict)
+                    if updated_content != content:
+                        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+                            'pk': int(ticket_pk),
+                            'row': {
+                                TicketsTable.content.name: updated_content,
+                            }
+                        }])
+                        row[TicketsTable.content.name] = updated_content
+                except Exception as e:
+                    logger.error(e)
+                    try:
+                        seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
+                    except Exception as e:
+                        logger.error(e)
+                    error_msg = 'Upload files failed.'
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
             # sync reverse link to discourse topics
             if linked_connection_records:
@@ -769,7 +780,7 @@ class TicketAPIView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1067,7 +1078,7 @@ class TicketCommentsAPIView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1207,7 +1218,7 @@ class TicketCommentAPIView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'ticket', int(ticket.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1592,6 +1603,9 @@ class TicketTrashAPIView(APIView):
             need_delete_ticket_ids = [ticket['ticket_id'] for ticket in need_delete_tickets]
             if not need_delete_ticket_ids:
                 return Response({'success': True}, status=status.HTTP_200_OK)
+
+            for ticket_id in need_delete_ticket_ids:
+                delete_record_attachments_from_s3(project_uuid, 'ticket', int(ticket_id))
 
             need_update_connection_records = [ticket['linked_connection_records'] for ticket in need_delete_tickets if ticket['linked_connection_records']]
             update_connection_ids = set()
