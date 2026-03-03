@@ -3,7 +3,7 @@ import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { knowledgeBaseAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getFileExtension } from '@/utils/download';
-import { ModalHeader, Icon, toaster, CenteredLoading } from '@/components';
+import { ModalHeader, Icon, toaster, CenteredLoading, Loading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
 import { BAR_TYPE } from '@/project/constants';
@@ -21,6 +21,7 @@ const DEFAULT_BACKGROUND = 'transparent';
 
 const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isFileSelected, setIsFileSelected] = useState(false);
   const [previewData, setPreviewData] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const [previewFileName, setPreviewFileName] = useState('');
@@ -51,6 +52,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
   const onHandleFileUpload = useCallback((file) => {
     if (!file) return;
     setIsLoading(true);
+    setIsFileSelected(true);
     knowledgeBaseAPI.importExcel(projectUuid, file, true).then(res => {
       const taskId = res?.data?.task_id;
       if (!taskId) return;
@@ -90,9 +92,13 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
   }, []);
 
   const handleSubmit = useCallback(() => {
-    if (!previewFileName) return toaster.warning(gettext('Empty files cannot be imported'));
+    if (!previewFileName) {
+      return toaster.warning(gettext('Empty files cannot be imported'));
+    }
+    setIsLoading(true);
     knowledgeBaseAPI.commitImportExcel(projectUuid, previewFileName).then(res => {
-      toaster.success(gettext('Import successfully'));
+      setIsLoading(false);
+      toaster.success(gettext('The records have been imported'));
       markTablesViewExpired([KB_TABLE_NAME], () => {
         if (activeBar[0] === BAR_TYPE.KNOWLEDGE) {
           const eventBus = context.eventBus;
@@ -105,6 +111,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
     }).catch(err => {
       const errorMsg = Utils.getErrorMsg(err);
       toaster.danger(errorMsg);
+      setIsLoading(false);
     });
   }, [activeBar, previewFileName, markTablesViewExpired]);
 
@@ -162,7 +169,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
             >
               <div className="upload-icon-wrapper d-flex flex-column align-items-center">
                 {isLoading ? <CenteredLoading /> : <Icon symbol="upload" />}
-                <span className="upload-prompt-text">{isLoading ? gettext('Loading, please wait...') : gettext('Click or drag the xlsx into the box to upload')}</span>
+                <span className="upload-prompt-text">{isLoading ? gettext('Loading, please wait...') : gettext('Click or drag the .xlsx into the box to upload')}</span>
               </div>
             </div>
           )}
@@ -170,7 +177,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={handleSubmit}>{gettext('Import')}</Button>
+        <Button color="primary" onClick={handleSubmit} disabled={!isFileSelected || isLoading}>{isLoading ? <Loading /> : gettext('Import')}</Button>
       </ModalFooter>
     </Modal>
   );
