@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { isNumber } from '@/utils/type-detection';
 
-const FixedWidthTable = ({ className, columns, theadOptions = {}, children }) => {
+const FixedWidthTable = ({ className, columns: propsColumns, theadOptions = {}, children }) => {
   const [containerWidth, setContainerWidth] = useState(0);
+  const columns = useMemo(() => {
+    return propsColumns.map(c => {
+      if (c.isFixed) return c;
+      if (isNumber(c.width)) return c;
+      if (c.width?.endsWith('%')) return { ...c, width: parseFloat(c.width) / 100 };
+      return c;
+    });
+  }, [propsColumns]);
   const fixedWidth = useMemo(() => columns.reduce((pre, cur) => cur.isFixed ? cur.width + pre : pre, 0), [columns]);
 
   const containerRef = useRef(null);
