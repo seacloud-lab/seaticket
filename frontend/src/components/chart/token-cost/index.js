@@ -22,6 +22,7 @@ const TokenCost = ({
 }) => {
   const [tooltip, setTooltip] = useState({ display: false, position: { left: 0, top: 0 } });
 
+  const [isAnnotationExpanded, setIsAnnotationExpanded] = useState(false);
   const chartRef = useRef(null);
   const ref = useRef(null);
   const tooltipData = useRef(null);
@@ -276,11 +277,17 @@ const TokenCost = ({
 
     const annotationGroup = svg.append('g')
       .attr('class', 'total-annotation')
-      .attr('transform', 'translate(10, 0)');
+      .attr('transform', `translate(${innerWidth - 220}, 0)`)
+      .style('cursor', 'pointer')
+      .on('click', function(event) {
+        event.stopPropagation();
+        setIsAnnotationExpanded(!isAnnotationExpanded);
+      });
 
+    const bgHeight = isAnnotationExpanded ? 85 : 30;
     annotationGroup.append('rect')
       .attr('width', 200)
-      .attr('height', 85)
+      .attr('height', bgHeight)
       .attr('rx', 6)
       .attr('ry', 6)
       .attr('fill', 'white')
@@ -289,40 +296,88 @@ const TokenCost = ({
       .attr('fill-opacity', 0.2)
       .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
-    annotationGroup.append('text')
+    const titleGroup = annotationGroup.append('g')
+      .attr('class', 'annotation-title');
+
+    titleGroup.append('text')
+      .attr('x', 190)
+      .attr('y', 18)
+      .attr('font-size', '14px')
+      .attr('fill', '#666')
+      .attr('text-anchor', 'end')
+      .attr('cursor', 'pointer')
+      .text(isAnnotationExpanded ? '−' : '+');
+
+    titleGroup.append('text')
       .attr('x', 10)
       .attr('y', 20)
       .attr('font-weight', 'bold')
       .attr('font-size', '12px')
       .attr('fill', '#333')
+      .attr('fill-opacity', 0.8)
       .text(gettext('Comprehensive infomation'));
 
-    // Input tokens
-    const inputTokensTotal = modelsUsageStatics.totalInputTokens || 0;
-    annotationGroup.append('text')
-      .attr('x', 10)
-      .attr('y', 40)
-      .attr('font-size', '11px')
-      .attr('fill', inputTokensColor)
-      .text(`${gettext('Input tokens')}: ${inputTokensTotal.toLocaleString()}`);
+    if (isAnnotationExpanded) {
+      // Input tokens
+      const inputTokensTotal = modelsUsageStatics.totalInputTokens || 0;
 
-    // Output tokens
-    const outputTokensTotal = modelsUsageStatics.totalOutputTokens || 0;
-    annotationGroup.append('text')
-      .attr('x', 10)
-      .attr('y', 58)
-      .attr('font-size', '11px')
-      .attr('fill', outputTokensColor)
-      .text(`${gettext('Output tokens')}: ${outputTokensTotal.toLocaleString()}`);
+      annotationGroup.append('rect')
+        .attr('x', 10)
+        .attr('y', 30)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', inputTokensColor)
+        .attr('rx', 2);
 
-    // Cost
-    const costTotal = modelsUsageStatics.totalCost || 0;
-    annotationGroup.append('text')
-      .attr('x', 10)
-      .attr('y', 75)
-      .attr('font-size', '11px')
-      .attr('fill', costColor)
-      .text(`${gettext('Cost')}: ${formatCost(costTotal)}`);
+      annotationGroup.append('text')
+        .attr('x', 26)
+        .attr('y', 40)
+        .attr('font-size', '11px')
+        .attr('fill', '#666')
+        .text(`${gettext('Input tokens')}: ${inputTokensTotal.toLocaleString()}`);
+
+      // Output tokens
+      const outputTokensTotal = modelsUsageStatics.totalOutputTokens || 0;
+      annotationGroup.append('rect')
+        .attr('x', 10)
+        .attr('y', 48)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', outputTokensColor)
+        .attr('rx', 2);
+
+      annotationGroup.append('text')
+        .attr('x', 26)
+        .attr('y', 58)
+        .attr('font-size', '11px')
+        .attr('fill', '#666')
+        .text(`${gettext('Output tokens')}: ${outputTokensTotal.toLocaleString()}`);
+
+      // Cost
+      const costTotal = modelsUsageStatics.totalCost || 0;
+      annotationGroup.append('line')
+        .attr('x1', 10)
+        .attr('y1', 71)
+        .attr('x2', 22)
+        .attr('y2', 71)
+        .attr('stroke', costColor)
+        .attr('stroke-width', 2.5);
+
+      annotationGroup.append('circle')
+        .attr('cx', 16)
+        .attr('cy', 71)
+        .attr('r', 4)
+        .attr('fill', costColor)
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1.5);
+
+      annotationGroup.append('text')
+        .attr('x', 26)
+        .attr('y', 75)
+        .attr('font-size', '11px')
+        .attr('fill', '#666')
+        .text(`${gettext('Cost')}: ${formatCost(costTotal)}`);
+    }
 
     // draw legends
     const legendY = innerHeight + 50;
