@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
 import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { siteRoot, gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { CommonOperationConfirmationDialog } from '@/components';
 import TransferDialog from './transfer-dialog';
 
@@ -106,7 +105,6 @@ class Group extends React.Component {
             <a href={this.renderGroupHref(group)} className="font-weight-normal">{group.groupName}</a>
           </td>
           {this.renderGroupCreator(group)}
-          <td>{`${Utils.bytesToSize(group.size)}`}</td>
           <td>{group.ctime}</td>
           <td className="text-center cursor-pointer">
             {isOperationMenuShow &&

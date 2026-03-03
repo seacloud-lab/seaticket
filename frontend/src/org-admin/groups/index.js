@@ -134,11 +134,10 @@ class Groups extends Component {
           <table>
             <thead>
               <tr>
-                <th width="20%">{gettext('Name')}</th>
-                <th width="30%">{gettext('Owner')}</th>
-                <th width="20%">{gettext('Size')}</th>
-                <th width="20%">{gettext('Created at')}</th>
-                <th width="10%" className="text-center">{gettext('Operations')}</th>
+                <th width="25%">{gettext('Name')}</th>
+                <th width="35%">{gettext('Owner')}</th>
+                <th width="30%">{gettext('Created at')}</th>
+                <th width="10%" className="text-center">{/* Operations */}</th>
               </tr>
             </thead>
             <tbody>
