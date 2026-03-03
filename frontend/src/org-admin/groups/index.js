@@ -137,7 +137,7 @@ class Groups extends Component {
                 <th width="25%">{gettext('Name')}</th>
                 <th width="35%">{gettext('Owner')}</th>
                 <th width="30%">{gettext('Created at')}</th>
-                <th width="10%" className="text-center">{/* Operations */}</th>
+                <th width="10%">{/* Operations */}</th>
               </tr>
             </thead>
             <tbody>
