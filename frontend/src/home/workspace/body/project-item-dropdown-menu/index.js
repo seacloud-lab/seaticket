@@ -22,6 +22,11 @@ class ProjectItemDropdownMenu extends React.Component {
     this.props.onToggle();
   };
 
+  onChangeProjectGroupToggle = () => {
+    this.props.onChangeProjectGroupToggle();
+    this.props.onToggle();
+  };
+
   render() {
     return (
       <CustomizeDropdownMenu
@@ -37,6 +42,10 @@ class ProjectItemDropdownMenu extends React.Component {
           <CustomizeDropdownItem onClick={this.onProjectSettingsToggle}>
             <CustomizeDropdownItem.Icon symbol="rename" />
             <CustomizeDropdownItem.Text>{gettext('Edit name and icon')}</CustomizeDropdownItem.Text>
+          </CustomizeDropdownItem>
+          <CustomizeDropdownItem onClick={this.onChangeProjectGroupToggle}>
+            <CustomizeDropdownItem.Icon symbol="group" />
+            <CustomizeDropdownItem.Text>{gettext('Change group')}</CustomizeDropdownItem.Text>
           </CustomizeDropdownItem>
           <CustomizeDropdownItem onClick={this.onDeleteProjectToggle}>
             <CustomizeDropdownItem.Icon symbol="delete" />
@@ -59,6 +68,7 @@ ProjectItemDropdownMenu.propTypes = {
   target: PropTypes.string.isRequired,
   onToggle: PropTypes.func.isRequired,
   onProjectSettingsToggle: PropTypes.func.isRequired,
+  onChangeProjectGroupToggle: PropTypes.func.isRequired,
   onAPITokenToggle: PropTypes.func,
   onDeleteProjectToggle: PropTypes.func.isRequired,
 };

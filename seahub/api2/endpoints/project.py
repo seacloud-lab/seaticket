@@ -2,7 +2,6 @@
 import logging
 import json
 from datetime import datetime, UTC
-from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
@@ -19,7 +18,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
-    ProjectAPIToken, ProjectConnections
+    ProjectAPIToken
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
@@ -183,7 +182,7 @@ class ProjectsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         if not check_project_limit(workspace, request):
-            error_msg = 'base exceeded.'
+            error_msg = 'Project exceeded.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         # permission check
         username = request.user.username
@@ -227,7 +226,7 @@ class ProjectView(APIView):
 
     @require_org_context
     def put(self, request, workspace_id):
-        """rename a project
+        """update a project
 
         Permission:
         1. owner
@@ -247,7 +246,7 @@ class ProjectView(APIView):
         text_color = request.data.get('text_color')
         icon = request.data.get('icon')
         settings = request.data.get('settings')
-        password = request.data.get('password')
+        target_workspace_id = request.data.get('workspace_id')
 
         # resource check
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
@@ -260,19 +259,46 @@ class ProjectView(APIView):
             error_msg = _(f'Project {project_name} not found.')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if Projects.objects.filter(workspace_id=workspace_id, name=new_project_name).exclude(pk=project.pk).exists():
-            error_msg = _(f'{new_project_name} exists.')
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         # permission check
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        if target_workspace_id is not None and target_workspace_id != workspace.id:
+            try:
+                target_workspace_id = int(target_workspace_id)
+            except (TypeError, ValueError):
+                error_msg = _('workspace_id invalid.')
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            target_workspace = Workspaces.objects.get_workspace_by_id(target_workspace_id)
+            if not target_workspace:
+                error_msg = f'Workspace {target_workspace_id} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if not check_project_admin_permission(username, target_workspace.owner):
+                error_msg = 'Permission denied.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if target_workspace.org_id != request.user.org.org_id:
+                error_msg = 'Permission denied.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if not check_project_limit(target_workspace, request):
+                error_msg = 'Project exceeded.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            target_project_name = new_project_name if new_project_name else project.name
+            if Projects.objects.filter(workspace_id=target_workspace.id, name=target_project_name).exclude(id=project.id).exists():
+                error_msg = _(f'{target_project_name} exists.')
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             if new_project_name:
                 project.name = new_project_name
+            if target_workspace_id:
+                project.workspace_id = target_workspace_id
             if color:
                 project.color = color
             if text_color:
