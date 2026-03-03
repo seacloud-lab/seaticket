@@ -653,12 +653,20 @@ class SysAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  sysAdminGetAIStatisticsDetail(view, models, groupBy, condition) {
+  sysAdminGetAIStatisticsModels(groupBy, condition) {
+    const url = this.server + '/api/v1/admin/statistics/ai/models/';
+    let params = {
+      group_by: groupBy,
+      condition
+    };
+    return this.req.get(url, { params: params });
+  }
+
+  sysAdminGetAIStatisticsDetail(view, models, condition) {
     const url = this.server + '/api/v1/admin/statistics/ai/detail/';
     let params = {
       view,
       models,
-      group_by: groupBy,
       condition
     };
     return this.req.get(url, { params: params });

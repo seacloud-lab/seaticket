@@ -53,7 +53,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
     } else if (groupBy === 'org') {
       condition.org_id = item.org_id;
     }
-    onOpenAIStaticsDetailDialog(groupBy, item.model_list, condition);
+    onOpenAIStaticsDetailDialog(groupBy, condition);
   }, [item, groupBy, onOpenAIStaticsDetailDialog]);
 
   const renderOp = useCallback(() => {

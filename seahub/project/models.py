@@ -936,6 +936,7 @@ class AIUsageStatistics(models.Model):
     project_uuid = models.CharField(max_length=36)
     username = models.CharField(max_length=255)
     org_id = models.IntegerField(null=True)
+    group_id = models.IntegerField(null=True)
     model = models.CharField(max_length=64)
     input_tokens = models.IntegerField(default=0)
     output_tokens = models.IntegerField(default=0)
@@ -946,12 +947,11 @@ class AIUsageStatistics(models.Model):
     class Meta:
         db_table = 'ai_usage_statistics'
         indexes = [
-            # indexes for query statistics data
-            models.Index(fields=['date', 'project_uuid', 'org_id', 'model']),
-            models.Index(fields=['date', 'username', 'org_id', 'model',]),
-
-            # indexes for query usage detail
-            models.Index(fields=['project_uuid', 'model']),
-            models.Index(fields=['username', 'model']),
-            models.Index(fields=['org_id', 'model']),
+            models.Index(fields=['date', 'org_id', 'username', 'cost']),
+            models.Index(fields=['date', 'org_id', 'project_uuid', 'cost']),
+            models.Index(fields=['date', 'org_id', 'group_id', 'cost']),
+            models.Index(fields=['username', 'model', 'date', 'cost']),
+            models.Index(fields=['project_uuid', 'model', 'date', 'cost']),
+            models.Index(fields=['group_id', 'model', 'date', 'cost']),
+            models.Index(fields=['org_id', 'model', 'date', 'cost']),
         ]

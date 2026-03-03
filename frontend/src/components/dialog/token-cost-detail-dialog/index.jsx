@@ -20,12 +20,14 @@ class TokenCostDetailDialog extends Component {
 
     this.state = {
       isLoading: true,
-      view: 'daily',
+      view: 'date',
       startDate: dayjs().subtract(30, 'day'),
       endDate: dayjs(),
+      availableModels: [],
       selectedModels: [], // selected models
       fullData: null,
       data: null,
+      modelsUsageStatics: null,
       condition: { ...this.props.basicCondition }
     };
   }
@@ -36,20 +38,32 @@ class TokenCostDetailDialog extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.basicCondition !== this.props.basicCondition ||
-      prevProps.availableViews !== this.props.availableViews ||
-      prevProps.models !== this.props.models
+      prevProps.availableViews !== this.props.availableViews
     ) {
       this.initializeData();
     }
   }
 
   initializeData = () => {
-    this.setState({ startDate: dayjs().subtract(30, 'day'), endDate: dayjs(), view: 'daily', selectedModels: this.props.models }, () => {
-      this.fetchStatistics();
+    this.props.getAIStatisticsModels(JSON.stringify(this.props.basicCondition)).then(res => {
+      const availableModels = res.data.models;
+      this.setState({
+        startDate: dayjs().subtract(30, 'day'),
+        endDate: dayjs(),
+        view: 'date',
+        availableModels,
+        selectedModels: Object.values(availableModels),
+        modelsUsageStatics: null
+      }, () => {
+        this.fetchStatistics();
+      });
+    }).catch(error => {
+      let errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
     });
   };
 
-  updateDailyData = () => {
+  updateDateData = () => {
     const { fullData, startDate, endDate } = this.state;
     if (!fullData || !fullData.length === 0) {
       this.setState({ data: null, isLoading: false });
@@ -57,6 +71,9 @@ class TokenCostDetailDialog extends Component {
     }
 
     let newData = [];
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalCost = 0;
 
     const dateSorted = fullData.sort((a, b) => {
       const dateA = dayjs(a.date).valueOf();
@@ -75,19 +92,22 @@ class TokenCostDetailDialog extends Component {
             cost: data.total_cost || 0,
             total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
           });
+          totalInputTokens += data.total_input_tokens || 0;
+          totalOutputTokens += data.total_output_tokens || 0;
+          totalCost += data.total_cost || 0;
         }
       }
     });
 
-    this.setState({ data: newData });
+    this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCost } });
   };
 
   updateDataByDate = () => {
     const { view } = this.state;
 
     this.setState({ isLoading: true }, () => {
-      if (view === 'daily') {
-        this.updateDailyData();
+      if (view === 'date') {
+        this.updateDateData();
       } else {
         let condition = { ...this.props.basicCondition };
         const { startDate, endDate } = this.state;
@@ -113,13 +133,16 @@ class TokenCostDetailDialog extends Component {
     this.props.getAIStatisticsDetail(view, JSON.stringify(selectedModels), JSON.stringify(condition)).then(res => {
       const fullData = res.data.results;
       this.setState({ fullData: fullData || null }, () => {
-        if (view === 'daily') {
-          this.updateDailyData();
+        if (view === 'date') {
+          this.updateDateData();
           this.setState({ isLoading: false });
         } else if (!fullData || !fullData.length === 0) {
           this.setState({ data: null, isLoading: false });
         } else {
           let newData = [];
+          let totalInputTokens = 0;
+          let totalOutputTokens = 0;
+          let totalCost = 0;
           fullData.forEach((data) => {
             let record = {
               input_tokens: data.total_input_tokens || 0,
@@ -133,8 +156,11 @@ class TokenCostDetailDialog extends Component {
               record.name = data.project;
             }
             newData.push(record);
+            totalInputTokens += data.total_input_tokens || 0;
+            totalOutputTokens += data.total_output_tokens || 0;
+            totalCost += data.total_cost || 0;
           });
-          this.setState({ data: newData, isLoading: false });
+          this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCost }, isLoading: false });
         }
       });
     }).catch (error => {
@@ -171,7 +197,7 @@ class TokenCostDetailDialog extends Component {
 
   updateView = (newView) => {
     let newCondition = this.props.basicCondition;
-    if (newView !== 'daily') {
+    if (newView !== 'date') {
       newCondition.start_date = this.state.startDate;
       newCondition.end_date = this.state.endDate;
     }
@@ -185,21 +211,23 @@ class TokenCostDetailDialog extends Component {
       isLoading,
       startDate,
       endDate,
+      availableModels,
       selectedModels,
       data,
       view,
+      modelsUsageStatics
     } = this.state;
-    const { models, views, onCloseDialog } = this.props;
+    const { views, onCloseDialog } = this.props;
 
-    const modelsOptions = Array.isArray(models) ? models.map(model => {
+    const modelsOptions = availableModels && typeof availableModels === 'object' ? Object.entries(availableModels).map(([label, value]) => {
       return {
-        value: model,
+        value: value,
         label: (
           <div className="select-basic-filter-option">
             <div className="select-basic-filter-option-checkbox mr-2">
-              <input type="checkbox" checked={selectedModels.includes(model)} readOnly />
+              <input type="checkbox" checked={selectedModels.includes(value)} readOnly />
             </div>
-            <div className="select-basic-filter-option-name" title={model} aria-label={model}>{model}</div>
+            <div className="select-basic-filter-option-name" title={label} aria-label={label}>{label}</div>
           </div>
         )
       };
@@ -226,7 +254,7 @@ class TokenCostDetailDialog extends Component {
               disabled={false}
               supportMultipleSelect={true}
               className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedModels.length > 0 })}
-              value={{ label: gettext('Model') }}
+              value={{ label: `${gettext('Model')} (${selectedModels.length} ${gettext('selected')})` }}
               options={modelsOptions}
               onChange={this.updateFilterModels}
             />
@@ -235,7 +263,7 @@ class TokenCostDetailDialog extends Component {
               <span className="date-range-value">
                 <DateAndTimePicker
                   showHourAndMinute={false}
-                  disabledDate={() => false}
+                  disabledDate={(date) => date > new Date(endDate)}
                   value={startDate}
                   onChange={(date) => this.onDateChange(date, 'start')}
                   inputWidth={92}
@@ -245,7 +273,7 @@ class TokenCostDetailDialog extends Component {
               <span className="date-range-value">
                 <DateAndTimePicker
                   showHourAndMinute={false}
-                  disabledDate={(date) => date <= new Date(startDate)}
+                  disabledDate={(date) => date < new Date(startDate) || date > dayjs()}
                   value={endDate}
                   onChange={(date) => this.onDateChange(date, 'end')}
                   inputWidth={92}
@@ -256,8 +284,11 @@ class TokenCostDetailDialog extends Component {
           <div className="w-100" style={{ height: 'calc(100% - 44px)' }}>
             {isLoading ? (
               <Loading />
-            ) : data && data.length > 0 ? (
-              <TokenCost data={data} />
+            ) : selectedModels.length > 0 && data && data.length > 0 ? (
+              <TokenCost
+                data={data}
+                modelsUsageStatics={modelsUsageStatics}
+              />
             ) : (
               <EmptyTip text={gettext('Empty')} src={`${mediaUrl}img/no-items-tip.png`} />
             )}
@@ -271,7 +302,7 @@ class TokenCostDetailDialog extends Component {
 TokenCostDetailDialog.propTypes = {
   views: PropTypes.array.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
-  models: PropTypes.array.isRequired,
+  getAIStatisticsModels: PropTypes.func.isRequired,
   getAIStatisticsDetail: PropTypes.func.isRequired,
   basicCondition: PropTypes.object.isRequired
 };

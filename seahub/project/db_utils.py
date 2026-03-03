@@ -1,5 +1,7 @@
+import datetime
 from django.db.models import Sum, Aggregate, CharField
 from seahub.project.models import AIUsageStatistics
+from seahub.chats.utils import get_label_from_model_id
 
 class GroupConcat(Aggregate):
     function = 'GROUP_CONCAT'
@@ -14,24 +16,23 @@ class GroupConcat(Aggregate):
             **extra
         )
 
-def query_ai_statistics_data(group_by, date_query={}, org_id=None):
-    model_list_query_set = AIUsageStatistics.objects
-    if org_id:
-        model_list_query_set = model_list_query_set.filter(org_id=org_id)
-    model_list_query_set = model_list_query_set.values(
-        group_by
-    ).annotate(
-        model_list=GroupConcat('model')
-    ).values(
-        group_by,
-        'model_list'
-    )
+def query_ai_statistics_overview(group_by, date_range, org_id=None):
+    date_begin, date_end = date_range
 
+    query_kwargs = {
+        'date__gte': date_begin,
+        'date__lte': date_end,
+    }
     if org_id:
-        date_query['org_id'] = org_id
-    total_cost_query_set = AIUsageStatistics.objects.filter(
-        **date_query
-    ).values(
+        query_kwargs['org_id'] = org_id
+    if group_by == 'group_id':
+        query_kwargs['group_id__gte'] = 0
+    elif group_by == 'org_id':
+        query_kwargs['org_id__gte'] = 0
+    query_set = AIUsageStatistics.objects.filter(**query_kwargs)
+    if group_by == 'username':
+        query_set = query_set.exclude(username='seaqa-indexer')
+    query_set = query_set.values(
         group_by
     ).annotate(
         total_cost=Sum('cost')
@@ -43,21 +44,73 @@ def query_ai_statistics_data(group_by, date_query={}, org_id=None):
         'total_cost'
     )
 
-    # Use useful_group_by_set to avoid performance issues caused by generating map.
-    useful_group_by_set = set([item[group_by] for item in total_cost_query_set])
-    group_by_to_model_list_map = {
-        item[group_by]: list(set(item['model_list'].split(',')))
-        for item in model_list_query_set if item[group_by] in useful_group_by_set
-    }
-    
+    return query_set
 
-    records = []
-    for item in total_cost_query_set:
-        record = {
-            'total_cost': item['total_cost'],
-            'org_id': item['org_id'],
-            'model_list': group_by_to_model_list_map.get(item[group_by], [])
-        }
-        record[group_by] = item[group_by]
-        records.append(record)
-    return records
+def query_ai_statistics_model(group_by, condition):
+    query_kwargs = {}
+    if 'username' in condition:
+        query_kwargs['username'] = condition['username']
+    if 'project_uuid' in condition:
+        query_kwargs['project_uuid'] = condition['project_uuid'].replace('-', '')
+    if 'group_id' in condition:
+        query_kwargs['group_id'] = int(condition['group_id'])
+    if 'org_id' in condition:
+        query_kwargs['org_id'] = int(condition['org_id'])
+    query_set = AIUsageStatistics.objects.filter(
+        **query_kwargs
+    ).values(
+        group_by
+    ).annotate(
+        model_list=GroupConcat('model')
+    ).values(
+        'model_list'
+    )
+
+    model_id_list = []
+    for record in query_set:
+        model_id_list += record['model_list'].split(',')
+    
+    models = {
+        get_label_from_model_id(model_id): model_id
+        for model_id in set(model_id_list)
+    }
+
+    return models
+
+def query_ai_statistics_detail(group_by, condition, model_list):
+    query_kwargs = {}
+    if 'username' in condition:
+        query_kwargs['username'] = condition['username']
+    if 'project_uuid' in condition:
+        query_kwargs['project_uuid'] = condition['project_uuid'].replace('-', '')
+    if 'group_id' in condition:
+        query_kwargs['group_id'] = int(condition['group_id'])
+    if 'org_id' in condition:
+        query_kwargs['org_id'] = int(condition['org_id'])
+    if (start_date := condition.get('start_date')) and (end_date := condition.get('end_date')):
+        query_kwargs['date__gte'] = datetime.datetime.strptime(start_date.split('T')[0], '%Y-%m-%d').date()
+        query_kwargs['date__lte'] = datetime.datetime.strptime(end_date.split('T')[0], '%Y-%m-%d').date()
+
+    query_kwargs = {
+        **query_kwargs,
+        'model__in': model_list,
+    }
+    query_set = AIUsageStatistics.objects.filter(
+        **query_kwargs
+    ).values(
+        group_by
+    ).annotate(
+        total_input_tokens=Sum('input_tokens'),
+        total_output_tokens=Sum('output_tokens'),
+        total_cost=Sum('cost')
+    ).order_by(
+        '-total_cost'
+    ).values(
+        group_by,
+        'org_id',
+        'total_input_tokens',
+        'total_output_tokens',
+        'total_cost'
+    )
+
+    return query_set

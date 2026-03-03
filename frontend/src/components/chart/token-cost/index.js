@@ -12,6 +12,7 @@ const formatCost = (value) => {
 
 const TokenCost = ({
   data = [],
+  modelsUsageStatics = { totalInputTokens: 0, totalOutputTokens: 0, totalCost: 0 },
   legends = [
     { key: 'input_tokens', name: gettext('Input tokens'), color: '#8884d8' },
     { key: 'output_tokens', name: gettext('Output tokens'), color: '#82ca9d' },
@@ -272,6 +273,56 @@ const TokenCost = ({
         setTooltip({ display: false, position: { left: 0, top: 0 } });
         tooltipData.current = null;
       });
+
+    const annotationGroup = svg.append('g')
+      .attr('class', 'total-annotation')
+      .attr('transform', 'translate(10, 0)');
+
+    annotationGroup.append('rect')
+      .attr('width', 200)
+      .attr('height', 85)
+      .attr('rx', 6)
+      .attr('ry', 6)
+      .attr('fill', 'white')
+      .attr('stroke', '#e0e0e0')
+      .attr('stroke-width', 1)
+      .attr('fill-opacity', 0.2)
+      .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+
+    annotationGroup.append('text')
+      .attr('x', 10)
+      .attr('y', 20)
+      .attr('font-weight', 'bold')
+      .attr('font-size', '12px')
+      .attr('fill', '#333')
+      .text(gettext('Comprehensive infomation'));
+
+    // Input tokens
+    const inputTokensTotal = modelsUsageStatics.totalInputTokens || 0;
+    annotationGroup.append('text')
+      .attr('x', 10)
+      .attr('y', 40)
+      .attr('font-size', '11px')
+      .attr('fill', inputTokensColor)
+      .text(`${gettext('Input tokens')}: ${inputTokensTotal.toLocaleString()}`);
+
+    // Output tokens
+    const outputTokensTotal = modelsUsageStatics.totalOutputTokens || 0;
+    annotationGroup.append('text')
+      .attr('x', 10)
+      .attr('y', 58)
+      .attr('font-size', '11px')
+      .attr('fill', outputTokensColor)
+      .text(`${gettext('Output tokens')}: ${outputTokensTotal.toLocaleString()}`);
+
+    // Cost
+    const costTotal = modelsUsageStatics.totalCost || 0;
+    annotationGroup.append('text')
+      .attr('x', 10)
+      .attr('y', 75)
+      .attr('font-size', '11px')
+      .attr('fill', costColor)
+      .text(`${gettext('Cost')}: ${formatCost(costTotal)}`);
 
     // draw legends
     const legendY = innerHeight + 50;

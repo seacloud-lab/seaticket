@@ -566,19 +566,22 @@ CREATE TABLE `ai_usage_statistics` (
   `date` date DEFAULT NULL,
   `project_uuid` varchar(36) NOT NULL,
   `username` varchar(255) DEFAULT NULL,
-  `model` varchar(100) NOT NULL,
+  `group_id` int(11) DEFAULT NULL,
   `org_id` bigint(20) DEFAULT NULL,
+  `model` varchar(100) NOT NULL,
   `input_tokens` int(11) DEFAULT NULL,
   `output_tokens` int(11) DEFAULT NULL,
   `cost` double NOT NULL,
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `date_project_uuid_org_id_model`(`date`, `project_uuid`, `org_id`, `model`),
-  KEY `date_username_org_id_model`(`date`, `username`, `org_id`, `model`),
-  KEY `project_uuid_model`(`project_uuid`, `model`),
-  KEY `username_model`(`username`, `model`),
-  KEY `org_id_model`(`org_id`, `model`)
+  KEY `idx_date_org_user` (`date`, `org_id`, `username`, `cost`),
+  KEY `idx_date_org_proj` (`date`, `org_id`, `project_uuid`, `cost`),
+  KEY `idx_date_org_group` (`date`, `org_id`, `group_id`, `cost`),
+  KEY `idx_username_model_date` (`username`, `model`, `date`, `cost`),
+  KEY `idx_project_model_date` (`project_uuid`, `model`, `date`, `cost`),
+  KEY `idx_group_model_date` (`group_id`, `model`, `date`, `cost`),
+  KEY `idx_org_model_date` (`org_id`, `model`, `date`, `cost`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

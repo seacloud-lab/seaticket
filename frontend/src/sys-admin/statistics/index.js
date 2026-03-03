@@ -53,7 +53,7 @@ class Statistics extends Component {
       },
     ];
     this.statisticsDetailViews = [
-      { value: 'daily', label: gettext('Daily') },
+      { value: 'date', label: gettext('Date') },
     ];
   }
 
@@ -61,33 +61,37 @@ class Statistics extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsDetail = (view, models, condition) => {
+  getAIStatisticsModels = (condition) => {
     const { groupBy } = this.state;
-    return sysAdminAPI.sysAdminGetAIStatisticsDetail(view, models, groupBy, condition);
+    return sysAdminAPI.sysAdminGetAIStatisticsModels(groupBy, condition);
   };
 
-  onOpenAIStaticsDetailDialog = (groupBy, models, condition) => {
+  getAIStatisticsDetail = (view, models, condition) => {
+    return sysAdminAPI.sysAdminGetAIStatisticsDetail(view, models, condition);
+  };
+
+  onOpenAIStaticsDetailDialog = (groupBy, condition) => {
     this.statisticsDetailViews = [
-      { value: 'daily', label: gettext('Daily') },
+      { value: 'date', label: gettext('Date') },
     ];
-    if (groupBy === 'project' || groupBy === 'group' || groupBy === 'org') {
+    if (groupBy === 'project' || groupBy === 'group') {
       this.statisticsDetailViews.push({
         value: 'user', label: gettext('User')
       });
     }
-    if (groupBy === 'user' || groupBy === 'group' || groupBy === 'org') {
+    if (groupBy === 'user' || groupBy === 'group') {
       this.statisticsDetailViews.push({
         value: 'project', label: gettext('Project')
       });
     }
-    this.setState({ statisticsDetailModels: models, isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });
+    this.setState({ isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });
   };
 
   onCloseAIStaticsDetailDialog = () => {
     this.statisticsDetailViews = [
-      { value: 'daily', label: gettext('Daily') },
+      { value: 'date', label: gettext('Date') },
     ];
-    this.setState({ statisticsDetailModels: [], isOpenStatisticsDetailDialog: false, statisticsDetailBasicCondition: {} });
+    this.setState({ isOpenStatisticsDetailDialog: false, statisticsDetailBasicCondition: {} });
   };
 
   getStatisticsByPage = (page) => {
@@ -189,7 +193,7 @@ class Statistics extends Component {
   render() {
     const {
       isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month,
-      isOpenStatisticsDetailDialog, statisticsDetailModels, statisticsDetailBasicCondition,
+      isOpenStatisticsDetailDialog, statisticsDetailBasicCondition,
       hasFreezed,
     } = this.state;
 
@@ -260,8 +264,8 @@ class Statistics extends Component {
             {isOpenStatisticsDetailDialog && (
               <TokenCostDetailDialog
                 views={this.statisticsDetailViews}
-                models={statisticsDetailModels}
                 onCloseDialog={this.onCloseAIStaticsDetailDialog}
+                getAIStatisticsModels={this.getAIStatisticsModels}
                 getAIStatisticsDetail={this.getAIStatisticsDetail}
                 basicCondition={statisticsDetailBasicCondition}
               />

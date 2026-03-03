@@ -47,7 +47,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
     } else if (groupBy === 'group') {
       condition.group_id = item.group_id;
     }
-    onOpenAIStaticsDetailDialog(groupBy, item.model_list, condition);
+    onOpenAIStaticsDetailDialog(groupBy, condition);
   }, [item, groupBy, onOpenAIStaticsDetailDialog]);
 
   const renderOp = useCallback(() => {
