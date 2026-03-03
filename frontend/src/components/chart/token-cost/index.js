@@ -23,6 +23,8 @@ const TokenCost = ({
   const [tooltip, setTooltip] = useState({ display: false, position: { left: 0, top: 0 } });
 
   const [isAnnotationExpanded, setIsAnnotationExpanded] = useState(false);
+  const [hoveredBar, setHoveredBar] = useState(null);
+
   const chartRef = useRef(null);
   const ref = useRef(null);
   const tooltipData = useRef(null);
@@ -155,6 +157,44 @@ const TokenCost = ({
     const barWidth = xScale.bandwidth() * 0.7;
     const barOffset = (xScale.bandwidth() - barWidth) / 2;
 
+    chartData.forEach((d, i) => {
+      const x = xScale(d.name) + barOffset;
+      const highlightAreaWith = (barWidth * 0.2).toFixed(0);
+
+      svg.append('rect')
+        .attr('class', 'highlight-area')
+        .attr('x', x - highlightAreaWith)
+        .attr('y', 0)
+        .attr('width', barWidth + 2 * highlightAreaWith)
+        .attr('height', innerHeight)
+        .attr('fill', '#757575ff')
+        .attr('opacity', hoveredBar === d.name ? 0.15 : 0)
+        .attr('pointer-events', 'none');
+    });
+
+    chartData.forEach((d, i) => {
+      const x = xScale(d.name) + barOffset;
+
+      svg.append('rect')
+        .attr('class', 'hover-layer')
+        .attr('x', x - 5)
+        .attr('y', 0)
+        .attr('width', barWidth + 10)
+        .attr('height', innerHeight)
+        .attr('fill', 'transparent')
+        .attr('cursor', 'default')
+        .on('mouseenter', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setHoveredBar(d.name);
+        })
+        .on('mouseleave', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setHoveredBar(null);
+        });
+    });
+
     // draw tokens
     chartData.forEach((d, i) => {
       const x = xScale(d.name) + barOffset;
@@ -279,7 +319,7 @@ const TokenCost = ({
       .attr('class', 'total-annotation')
       .attr('transform', `translate(${innerWidth - 220}, 0)`)
       .style('cursor', 'pointer')
-      .on('click', function(event) {
+      .on('click', (event) => {
         event.stopPropagation();
         setIsAnnotationExpanded(!isAnnotationExpanded);
       });
