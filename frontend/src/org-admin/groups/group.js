@@ -71,12 +71,7 @@ class Group extends React.Component {
     this.setState({ isTransferDialogShow: !this.state.isTransferDialogShow });
   };
 
-  renderGroupHref = (group) => {
-    return siteRoot + 'org/groups/' + group.id + '/';
-  };
-
   renderGroupCreator = (group) => {
-    let userInfoHref = siteRoot + 'org/users/info/' + group.creatorEmail + '/';
     if (group.creatorName === 'system admin') {
       return (
         <td>{'--'}</td>
@@ -84,7 +79,7 @@ class Group extends React.Component {
     } else {
       return (
         <td>
-          <a href={userInfoHref} className="font-weight-normal">{group.creatorName}</a>
+          <a href={siteRoot + 'org/users/info/' + group.creatorEmail + '/'} className="font-weight-normal">{group.creatorName}</a>
         </td>
       );
     }
@@ -102,7 +97,7 @@ class Group extends React.Component {
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
           <td>
-            <a href={this.renderGroupHref(group)} className="font-weight-normal">{group.groupName}</a>
+            <a href={siteRoot + 'org/groups/' + group.id + '/'} className="font-weight-normal">{group.groupName}</a>
           </td>
           {this.renderGroupCreator(group)}
           <td>{group.ctime}</td>
