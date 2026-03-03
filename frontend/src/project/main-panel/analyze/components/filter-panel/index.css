@@ -1,3 +1,7 @@
+.analyze-filter-panel {
+  height: 40px;
+}
+
 .analyze-add-filter {
   position: relative;
 }
@@ -7,25 +11,23 @@
   align-items: center;
   cursor: pointer;
   gap: 4px;
-  padding: 0px 6px;
-  line-height: 32px;
-  height: 32px;
+  line-height: 24px;
+  height: 24px;
   width: fit-content;
   border-radius: 3px;
+  padding: 0px 4px;
 }
 
 .analyze-add-filter-btn:hover {
-  background-color: var(--bs-hover-bg);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .analyze-add-filter-btn.active {
-  color: var(--bs-orange);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-.analyze-add-filter-btn.disabled {
-  color: #bbb;
-  cursor: not-allowed;
-  background-color: transparent;
+.analyze-add-filter-btn .sea-qa-icon-svg {
+  color: var(--bs-body-secondary-color);
 }
 
 /* Filter panel styles */
@@ -34,7 +36,14 @@
   min-height: fit-content;
 }
 
-.analyze-filter-option-editor .option-editor-container,
+.analyze-filter-option-editor .option-editor-container {
+  min-height: fit-content;
+}
+
 .analyze-filter-option-editor .option-editor-content {
   min-height: fit-content;
+}
+
+.analyze-filter-option-editor .option-editor-option {
+  padding: 0 8px;
 }

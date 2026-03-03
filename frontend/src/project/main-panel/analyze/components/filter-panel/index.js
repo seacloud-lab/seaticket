@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { gettext } from '@/constants';
 import { Icon, OptionEditor } from '@/components';
 import classnames from 'classnames';
@@ -15,32 +15,46 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
   const [isShowPopover, setIsShowPopover] = useState(false);
   const popoverRef = useRef(null);
 
-  const state = useMemo(() => {
+  useEffect(() => {
+    const handleHiddenPopover = (e) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setIsShowPopover(false);
+      }
+    };
+
+    document.addEventListener('click', handleHiddenPopover);
+    return () => document.removeEventListener('click', handleHiddenPopover);
+  }, []);
+
+  const activeState = useMemo(() => {
     return filters.find(item => item.field === 'state');
   }, [filters]);
 
   const stateOptions = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
-    return state.map((state) => {
+    let newState = state;
+    if (!activeState || activeState?.value === '--') {
+      newState = state.filter(state => state !== '--');
+    }
+    return newState.map((state) => {
       return {
         label: STATE_LABELS[state],
         name: state,
         value: state,
       };
     });
-  }, [filterableFieldOptions]);
+  }, [filterableFieldOptions, activeState]);
 
-  const isDisabled = useMemo(() => {
-    const { state = [] } = filterableFieldOptions || {};
-    return state.length === 0 ? true : false;
-  }, [filterableFieldOptions]);
+  const label = useMemo(() => {
+    if (!activeState || activeState?.value === '--') return gettext('Status');
+    return `${gettext('Status')}:${STATE_LABELS[activeState.value]}`;
+  }, [activeState]);
 
   const handleTogglePopover = useCallback(() => {
-    if (isDisabled) return;
     if (!isShowPopover) {
       setIsShowPopover(true);
     }
-  }, [isShowPopover, isDisabled, setIsShowPopover]);
+  }, [isShowPopover, setIsShowPopover]);
 
   const onStateChange = useCallback((value) => {
     handleFilterChange('state', value);
@@ -48,10 +62,10 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
   }, [handleFilterChange, setIsShowPopover]);
 
   return (
-    <div className="analyze-filter-panel">
+    <div className="analyze-filter-panel d-flex align-items-center">
       <div className="analyze-add-filter" ref={popoverRef}>
-        <div className={classnames('analyze-add-filter-btn', { 'active': state, 'disabled': isDisabled })} onClick={handleTogglePopover}>
-          <span>{gettext('Status')}</span>
+        <div className={classnames('analyze-add-filter-btn', { 'active': isShowPopover })} onClick={handleTogglePopover}>
+          <span>{label}</span>
           <Icon symbol="arrow-down" />
         </div>
         {isShowPopover && (
@@ -60,9 +74,9 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
             options={stateOptions}
             target={popoverRef}
             isSearchEnabled={false}
-            value={state ? state.value : ''}
+            value={activeState ? activeState.value : ''}
             onChange={onStateChange}
-            onToggle={() => setIsShowPopover(false)}
+            onToggle={() => {}}
           />
         )}
       </div>

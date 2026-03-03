@@ -3,7 +3,6 @@ import { gettext } from '@/constants';
 import { IconButton, Loading, CustomizeSelect } from '@/components';
 import DateRangeSetting from '../date-range-setting';
 import ConnectionSetting from '../connection-setting';
-import FilterPanel from '../filter-panel';
 import { FormGroup, Label } from 'reactstrap';
 
 import './index.css';
@@ -13,9 +12,6 @@ const SettingsPanel = ({
   onConnectionsChange,
   onRemoveConnection,
   onClose,
-  filters,
-  filterableFieldOptions,
-  handleFilterChange,
   colorBy,
   onColorByChange,
   displayMode,
@@ -65,16 +61,6 @@ const SettingsPanel = ({
             onRemoveConnection={onRemoveConnection}
           />
         </FormGroup>
-        {/* Filter Setting */}
-        <div className="analyze-settings-section">
-          <div className="analyze-settings-label">{gettext('Filters')}</div>
-          <FilterPanel
-            filters={filters}
-            filterableFieldOptions={filterableFieldOptions}
-            handleFilterChange={handleFilterChange}
-          />
-        </div>
-
         {/* Date Range Setting */}
         <FormGroup className="analyze-settings-section">
           <Label>{gettext('Date range')}</Label>
