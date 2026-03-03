@@ -555,7 +555,6 @@ input.short-input {
 /* login-panel */
 .login-panel-wrapper {
   width: fit-content;
-  margin: 0 auto;
 }
 
 .login-panel-wrapper .login-panel-content {
