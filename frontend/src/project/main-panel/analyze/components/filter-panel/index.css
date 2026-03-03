@@ -34,6 +34,7 @@
   min-height: fit-content;
 }
 
+.analyze-filter-option-editor .option-editor-container,
 .analyze-filter-option-editor .option-editor-content {
   min-height: fit-content;
 }
