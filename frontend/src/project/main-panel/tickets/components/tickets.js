@@ -218,7 +218,7 @@ const Tickets = ({
   }, []);
 
   const createRowsTools = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId };
+    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId, createKnowledgeBaseRecord };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -226,7 +226,7 @@ const Tickets = ({
       return customizeCreateRowsTools(params);
     }
     return generatorTicketsRowsTools(params);
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId]);
+  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord]);
 
   const createContextMenuOptions = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId, createKnowledgeBaseRecord };
