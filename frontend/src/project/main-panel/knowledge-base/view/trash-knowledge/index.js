@@ -128,7 +128,11 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
       localStorageNamePrefix={`sea-qa-${projectUuid}-kb-trash`}
       createContextMenuOptions={createContextMenuOptions}
       createRowsTools={createRowsTools}
-      viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
+      toggleView={() => {}}
+      settings={{
+        canManageView: false,
+      }}
+      viewTools={[VIEW_TOOL.VIEWS, VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       isViewComputedOnServer={false}
       tagsData={tagsData}
       t={t}
