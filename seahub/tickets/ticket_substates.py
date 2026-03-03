@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from django.utils.translation import gettext as _
+from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -11,15 +12,15 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
+from seahub.utils import normalize_cache_key
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX
 from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_group_by_column_name, \
     TABLE_TICKETS, get_column_from_columns_by_name, \
     filter_tickets_by_select, add_select_option, batch_delete_select_option, build_linked_record_titles_map
 from seahub.utils.decorators import require_org_context
-
 
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,9 @@ class TicketSubstatesAPIView(APIView):
             substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column_key, name, option_data)
             substate_option_id = substate_option.get('id', '')
 
+            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+
             # update cascade_settings
             cascade_settings = column_data.get('cascade_settings')
             if cascade_settings:
@@ -194,6 +198,8 @@ class TicketSubstatesAPIView(APIView):
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -325,6 +331,9 @@ class TicketSubstateAPIView(APIView):
             column_key = column.get('key')
             update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
 
+            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+
             # update cascade_settings
             if parent_id:
                 cascade_settings = column_data.get('cascade_settings')
@@ -407,6 +416,9 @@ class TicketSubstateAPIView(APIView):
                         },
                     }
                     seadb_api.update_column(project_uuid, column_data)
+
+            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
