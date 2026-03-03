@@ -11,6 +11,7 @@ from seahub.api2.endpoints.project import (
     TrashProjectsView,
     WorkspacesView,
 )
+from seahub.organizations.models import OrgGroup
 from seahub.project.models import Projects, Workspaces
 
 
@@ -146,6 +147,80 @@ class TestProjectView:
         assert resp.data['project']['name'] == 'renamed'
         project.refresh_from_db()
         assert project.name == 'renamed'
+
+    def test_put_move_project_to_target_workspace_success(self, factory, project_creator, real_project):
+        project = real_project
+        target_group = OrgGroup.objects.create_org_group(1, 'target-group', project_creator.username)
+        target_workspace = Workspaces.objects.create(owner=f'{target_group.group_id}@seafile_group', org_id=1)
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'workspace_id': target_workspace.id},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        assert resp.data['project']['workspace_id'] == target_workspace.id
+        project.refresh_from_db()
+        assert project.workspace_id == target_workspace.id
+
+    def test_put_workspace_id_invalid(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'workspace_id': 'bad-id'},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 400
+
+    def test_put_target_workspace_not_found(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'workspace_id': 999999},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 404
+
+    def test_put_target_workspace_permission_denied(self, factory, project_creator, real_project):
+        project = real_project
+        other_username = 'other-admin@example.com'
+        target_group = OrgGroup.objects.create_org_group(1, 'other-group', other_username)
+        target_workspace = Workspaces.objects.create(owner=f'{target_group.group_id}@seafile_group', org_id=1)
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'workspace_id': target_workspace.id},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 403
+
+    def test_put_target_workspace_cross_org_denied(self, factory, project_creator, real_project):
+        project = real_project
+        target_workspace = Workspaces.objects.create(owner='cross-org-owner@example.com', org_id=2)
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'workspace_id': target_workspace.id},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 403
 
     def test_delete_name_invalid(self, factory, project_creator, real_project):
         project = real_project
