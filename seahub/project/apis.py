@@ -14,10 +14,11 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils.decorators import require_org_context
-from seahub.project.models import Projects
+from seahub.project.models import Projects, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_permission, get_project_related_users, \
     query_items
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
+from seahub.project.github_issues_api import GitHubAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -84,3 +85,47 @@ class ProjectItemsSearchView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         return Response({'results': results})
+
+
+class ProjectGithubRepositories(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_installations = ProjectGithubAppInstallation.objects.get_installations_by_project_uuid(project_uuid)
+        if not project_installations:
+            return Response({'repositories': []})
+
+        all_repositories = []
+
+        for installation in project_installations:
+            installation_id = installation.installation_id
+            try:
+                github_api = GitHubAPI(installation_id)
+                repositories = github_api.get_installation_repositories()
+            except Exception as e:
+                logger.warning('get repositories from installation_id %s failed, error: %s', installation_id, e)
+                repositories = []
+
+            for repository in repositories:
+                repository['installation_id'] = installation_id
+
+            all_repositories.extend(repositories)
+
+        return Response({
+            'repositories': all_repositories,
+        })

@@ -18,7 +18,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
+const { server, projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
@@ -168,11 +168,18 @@ const TopBar = ({ title, modifyLocalBar }) => {
     setIsSyncing(false);
   }, [pageSlugId]);
 
+  const currentPath = window.location.pathname + window.location.search;
+  const encodedNext = encodeURIComponent(currentPath);
+  let install_url = server + `/github/install/?next=${encodedNext}` + "&project_uuid=" + projectUuid
+
   return (
-    <BasicTopBar>
+    <div>
+      {isProjectAdmin && <a href={install_url}>安装 APP</a>}
+      <BasicTopBar>
       {renderLeftChildren()}
       {renderRightChildren()}
     </BasicTopBar>
+    </div>
   );
 };
 

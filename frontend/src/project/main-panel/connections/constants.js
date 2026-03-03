@@ -154,8 +154,8 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
       tip: gettext('The URL of the repository, like https://github.com/haiwen/seafile')
     }, {
-      key: 'access_token',
-      name: gettext('Access token'),
+      key: 'installation_id',
+      name: gettext('Installation ID'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true,

@@ -951,3 +951,44 @@ class AIUsageStatistics(models.Model):
             models.Index(fields=['date', 'project_uuid']),
             models.Index(fields=['date', 'group_id', 'org_id'])
         ]
+
+
+class ProjectGithubAppInstallationManager(models.Manager):
+    def get_installations_by_project_uuid(self, project_uuid):
+        return self.filter(project_uuid=project_uuid)
+
+    def get_installation_by_installation_id(self, installation_id):
+        try:
+            return self.get(installation_id=installation_id)
+        except self.model.DoesNotExist:
+            return None
+
+    def get_project_installation(self, project_uuid, installation_id):
+        try:
+            return self.get(project_uuid=project_uuid,installation_id=installation_id)
+        except self.model.DoesNotExist:
+            return None
+
+    def create_app_installation(self, project_uuid, installation_id, username):
+        model = super(ProjectGithubAppInstallationManager, self).\
+            create(project_uuid=project_uuid, installation_id=installation_id, creator=username, modifier=username)
+
+        model.save()
+
+        return model
+
+
+class ProjectGithubAppInstallation(models.Model):
+    project_uuid = models.CharField(max_length=36)
+    installation_id = models.CharField(max_length=100)
+    creator = models.CharField(max_length=255)
+    modifier = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    objects = ProjectGithubAppInstallationManager()
+
+    class Meta:
+        db_table = 'project_github_app_installation'
+        unique_together = [['project_uuid', 'installation_id']]
+

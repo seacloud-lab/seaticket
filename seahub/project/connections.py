@@ -23,7 +23,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
-    ConnectionsViews
+    ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
@@ -34,29 +34,30 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, SeafileTable, WebCrawlTable, ThreadTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
+    SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
-
+from seahub.settings import GITHUB_WEBHOOK_SECRET
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
-
 logger = logging.getLogger(__name__)
+
 
 class ProjectConnectionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid):
         """get project connection records
         """
 
-         # role permission check
+        # role permission check
         try:
             current_page = int(request.GET.get('page', '1'))
             per_page = int(request.GET.get('per_page', '100'))
@@ -83,7 +84,6 @@ class ProjectConnectionsView(APIView):
         records = [record.to_dict() for record in records]
 
         return Response({'records': records}, status=status.HTTP_200_OK)
-
 
     @require_org_context
     def post(self, request, project_uuid):
@@ -163,10 +163,98 @@ class ProjectConnectionsView(APIView):
         return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
 
+class ProjectGithubConnectionsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            config_list = request.POST.get('config_list')
+            config_list = json.loads(config_list)
+        except ValueError:
+            config_list = []
+
+        if not config_list:
+            error_msg = 'config_list invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if len(config_list) >= 10:
+            error_msg = 'The number of selected repo exceeds the limit.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resources check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        records = []
+        for conf in config_list:
+            name = conf.get('name')
+            installation_id = conf.get('installation_id')
+            github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
+
+            if not github_app_installation:
+                error_msg = 'The app has not been installed on the sea-ticket'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            connection_type = ConnectionType.GITHUB_ISSUE
+            repository = conf.get('html_url')
+            config = {
+                'installation_id': installation_id,
+                'repository': repository,
+            }
+
+            enable_create = ProjectConnections.objects.enable_create(project, connection_type, config)
+            if not enable_create:
+                error_msg = 'Name or config is not unique'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            try:
+                record = ProjectConnections.objects.create(request.user.username, project, connection_type, name, config)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            connection_id = record.id
+            seadb_api = SeaDBAPI(request.user.username)
+            try:
+                init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
+            except Exception as e:
+                logger.error(e)
+                record.delete()
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            params = {
+                'connection_id': connection_id,
+                'type': connection_type,
+            }
+            add_connection_sync_task(params)
+
+            records.append(record.to_dict())
+        return Response({'records': records}, status=status.HTTP_201_CREATED)
+
+
 class ProjectConnectionView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid, connection_id):
@@ -239,7 +327,8 @@ class ProjectConnectionView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name, new_config, is_active)
+            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name,
+                                                       new_config, is_active)
         except Exception as e:
             logger.error(f'modify {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
@@ -269,7 +358,6 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-
         try:
             ProjectConnections.objects.filter(project=project, id=connection_id).update(deleted=True)
         except Exception as e:
@@ -279,10 +367,11 @@ class ProjectConnectionView(APIView):
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
+
 class ProjectConnectionSyncView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def post(self, request, project_uuid, connection_id):
@@ -346,8 +435,8 @@ class ProjectConnectionSyncView(APIView):
 
 class ProjectConnectionDetailsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid, connection_id):
@@ -430,12 +519,13 @@ class ProjectConnectionDetailsView(APIView):
             'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
         })
 
+
 class GithubWebhookView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def verify_signature(self, signature, msg, github_secret):
         if not signature:
-            return True
+            return False
 
         if '=' not in signature:
             return False
@@ -448,35 +538,32 @@ class GithubWebhookView(APIView):
         return hmac.compare_digest(mac.hexdigest(), signature)
 
     def post(self, request):
-
-        connection_id = request.query_params.get('connection_id')
-        if not connection_id:
-            error_msg = 'Missing connection_id.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not project_connection.is_active:
-            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
-
+        event = request.headers.get("X-GitHub-Event", "ping")
         msg = request.body
-        config = decrypt_config(json.loads(project_connection.config))
-        secret = config.get('webhook_secret')
         signature = request.headers.get('X-Hub-Signature-256')
 
-        if not self.verify_signature(signature, msg, secret):
+        if not self.verify_signature(signature, msg, GITHUB_WEBHOOK_SECRET):
             error_msg = 'Signature verification failed.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        event = request.headers.get('X-GitHub-Event')
-        if event != 'issues' and event != 'issue_comment':
-            return Response({'success': True}, status=status.HTTP_200_OK)
-
         payload = request.data
         action = payload.get('action')
+        installation_id = payload.get('installation').get('id')
+
+        if not installation_id:
+            error_msg = 'installation_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        github_app_installation = ProjectGithubAppInstallation.objects.get_installation_by_installation_id(installation_id)
+
+        if not github_app_installation:
+            error_msg = 'The app has not been installed on the sea-ticket'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        repository_html_url = payload.get('repository').get('html_url')
+        if not repository_html_url:
+            error_msg = 'repository_html_url invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         if event == 'issues':
             update_data = payload.get('issue')
@@ -488,8 +575,13 @@ class GithubWebhookView(APIView):
             if not update_data and not update_data.get('comment'):
                 error_msg = 'comment_data invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        elif event == 'installation' and action == 'deleted':
+            update_data = {}
+        else:
+            return Response({'success': True}, status=status.HTTP_200_OK)
 
-        params = {'connection_id': connection_id, 'action': action, 'event': event, 'update_data': update_data}
+        params = {'installation_id': installation_id, 'action': action, 'event': event, 'update_data': update_data,
+                  'repository_html_url': repository_html_url}
 
         try:
             update_github_issue_by_webhook(params)
@@ -561,8 +653,8 @@ class DiscourseWebhookView(APIView):
 
 class ProjectConnectionRowDetailView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid, connection_id):
@@ -617,8 +709,8 @@ class ProjectConnectionRowDetailView(APIView):
 
 class ProjectConnectionLogView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid, connection_id):
@@ -647,10 +739,11 @@ class ProjectConnectionLogView(APIView):
             'last_sync_log': last_sync_log,
         })
 
+
 class ProjectConnectionsStatusView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid):
@@ -836,7 +929,8 @@ class ProjectConnectionRecordsView(APIView):
 
             # Support outdated field for all connection types
             if 'outdated' in row_data:
-                update_row['row']['outdated'] = row_data.get('outdated') if row_data.get('outdated') is not None else False
+                update_row['row']['outdated'] = row_data.get('outdated') if row_data.get(
+                    'outdated') is not None else False
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
             # Support unread field for EMAIL type only
@@ -865,7 +959,6 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
-
 
     # def delete(self, request, project_uuid, connection_id):
     #     if not is_org_context(request):
@@ -932,8 +1025,8 @@ class ProjectConnectionRecordsView(APIView):
 
 class ConnectionFileView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
     @require_org_context
     def get(self, request, project_uuid, connection_id, file_path):
