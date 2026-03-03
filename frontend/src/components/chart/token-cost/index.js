@@ -65,12 +65,12 @@ const TokenCost = ({
       .padding(0.2);
 
     // tokens Y
-    const maxTokens = d3.max(chartData, d => d.total_tokens);
+    const maxTokens = d3.max(chartData, d => d.total_tokens) * 1.3;
     const yLeftScale = d3.scaleLinear()
       .domain([0, Math.ceil(maxTokens / 1000) * 1000])
       .range([innerHeight, 0]);
 
-    const maxCost = d3.max(chartData, d => d.cost);
+    const maxCost = d3.max(chartData, d => d.cost) * 1.3;
     let niceMaxCost;
     if (maxCost <= 0.001) {
       niceMaxCost = 0.001;
