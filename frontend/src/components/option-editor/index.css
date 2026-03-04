@@ -1,8 +1,4 @@
 .option-editor-popover .popover {
-  background-color: #fff;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1);
   left: 0;
   min-height: auto;
   position: absolute;
