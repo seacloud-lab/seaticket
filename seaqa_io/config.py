@@ -85,3 +85,7 @@ SEAQA_MYSQL_DB_PORT = configs.get('SEAQA_MYSQL_DB_PORT', 3306)
 SEAQA_MYSQL_DB_USER = configs.get('SEAQA_MYSQL_DB_USER', 'seaqa')
 SEAQA_MYSQL_DB_PASSWORD = configs.get('SEAQA_MYSQL_DB_PASSWORD', '')
 SEAQA_MYSQL_SEAQA_DB_NAME = configs.get('SEAQA_MYSQL_SEAQA_DB_NAME', 'sea_qa')
+
+REDIS_HOST = configs.get('REDIS_HOST', 'redis')
+REDIS_PORT = configs.get('REDIS_PORT', 6379)
+REDIS_PASSWORD = configs.get('REDIS_PASSWORD', '')

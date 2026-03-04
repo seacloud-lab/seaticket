@@ -16,6 +16,7 @@ from seaqa_io.db.seadb_api import SeaDBAPI
 from seaqa_io.log import setup_logger
 from seaqa_io.sql_view import filter_display_columns, view_data_2_sql
 from seaqa_io.utils import uuid_str_to_32_chars
+from seaqa_io.utils.knowledge_base_utils import send_knowledge_base_update_msg
 
 
 logger = setup_logger('seaqa_io', propagate=False)
@@ -217,6 +218,7 @@ def import_kb_from_excel(project_uuid, username, file_name):
 
         if rows_to_insert:
             seadb_api.insert_rows(project_uuid, kb_table_name, rows_to_insert)
+        send_knowledge_base_update_msg(project_uuid)
     except Exception as e:
         logger.error('Import KB error: %s', e)
         raise

@@ -1,7 +1,15 @@
-# -*- coding: utf-8 -*-
 import uuid
+import logging
 
 from seaqa_io.constants import ConnectionType
+from seaqa_io.config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+from seaqa_io.utils.mq import get_mq
+
+
+logger = logging.getLogger(__name__)
+
+
+mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
 
 
 def uuid_str_to_36_chars(project_uuid):
@@ -16,6 +24,7 @@ def uuid_str_to_32_chars(project_uuid):
     if len(project_uuid) == 36:
         return uuid.UUID(project_uuid).hex
     return project_uuid
+
 
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''
