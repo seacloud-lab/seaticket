@@ -5,7 +5,10 @@ import dayjs from '@/utils/dayjs';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
 
-const Tabs = { USERS: 'users', INVITE_LINKS: 'invite_links' };
+const Tabs = {
+  USERS: 'users',
+  INVITE_USERS: 'invite_users',
+};
 
 const UserManagement = ({ projectUuid }) => {
   const [activeTab, setActiveTab] = useState(Tabs.USERS);
@@ -70,8 +73,8 @@ const UserManagement = ({ projectUuid }) => {
             </NavLink>
           </NavItem>
           <NavItem>
-            <NavLink className={activeTab === Tabs.INVITE_LINKS ? 'active' : ''} onClick={() => setActiveTab(Tabs.INVITE_LINKS)}>
-              {gettext('Invitation links')}
+            <NavLink className={activeTab === Tabs.INVITE_USERS ? 'active' : ''} onClick={() => setActiveTab(Tabs.INVITE_USERS)}>
+              {gettext('Invite users')}
             </NavLink>
           </NavItem>
         </Nav>
@@ -117,22 +120,21 @@ const UserManagement = ({ projectUuid }) => {
             }
           </div>
         )}
-        {activeTab === Tabs.INVITE_LINKS && (
+        {activeTab === Tabs.INVITE_USERS && (
           <div className="p-3 w-100">
             <div className="mb-3">
-              <Label for="email" className="mr-2">{gettext('Email')}</Label>
               <FormGroup className="d-flex">
                 <Input
                   name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={gettext('Enter email')}
+                  placeholder={gettext('Enter email to invite an external user to your portal')}
                   className="mr-2"
-                  style={{ maxWidth: 'calc(100% - 100px)' }}
+                  style={{ maxWidth: 'calc(100% - 70px)' }}
                 />
                 <Button color="primary" disabled={isSubmitting || !email} onClick={createLink} className={isSubmitting ? 'btn-loading' : ''}>
-                  {gettext('Generate')}
+                  {gettext('Invite')}
                 </Button>
               </FormGroup>
             </div>
@@ -171,7 +173,7 @@ const UserManagement = ({ projectUuid }) => {
             }
             {list.length === 0 &&
             <div className="h-100">
-              <EmptyTip text={gettext('No invitation links')} />
+              <EmptyTip text={gettext('No pending invitations')} />
             </div>
             }
           </div>
