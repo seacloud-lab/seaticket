@@ -286,6 +286,11 @@
   background-color: unset;
 }
 
+.sea-metadata-filters-list .option-group .option-editor-no-results-tip {
+  padding: 0 8px;
+  min-width: 140px;
+}
+
 .sea-metadata-filters-list .sea-qa-customize-select .selected-option-show .remove-container {
   display: none;
 }

@@ -101,7 +101,6 @@ const TagsEditor = forwardRef(({
       <OptionEditorContainer
         ref={optionEditorContainerRef}
         isMultiple={true}
-        optionHeight="fit-content"
         placeholder={gettext('Search tags')}
         emptyTip={gettext('No available tags')}
         value={Array.isArray(value) ? value.map(v => String(v)) : []}

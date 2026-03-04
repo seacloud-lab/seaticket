@@ -46,6 +46,7 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
       supportMultipleSelect={true}
       className={classnames('sea-metadata-basic-filters-select sea-metadata-table-view-basic-checkbox-select mr-4', { 'highlighted': value.length > 0 })}
       value={displayValue}
+      noOptionsPlaceholder={gettext('No available types')}
       options={options}
       onChange={onChange}
     />
