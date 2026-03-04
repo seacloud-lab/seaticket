@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 const Tooltip = ({
   data,
   position: initPosition,
-  legends,
+  legends
 }) => {
   const [position, setPosition] = useState(initPosition);
 

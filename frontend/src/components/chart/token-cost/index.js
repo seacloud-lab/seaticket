@@ -187,11 +187,22 @@ const TokenCost = ({
           event.preventDefault();
           event.stopPropagation();
           setHoveredBar(d.name);
+          if (d.name === tooltipData.current?.name) return;
+          tooltipData.current = d;
+          setTooltip({
+            display: true,
+            position: {
+              left: event.pageX + 6,
+              top: event.pageY + 6,
+            }
+          });
         })
         .on('mouseleave', (event) => {
           event.preventDefault();
           event.stopPropagation();
           setHoveredBar(null);
+          setTooltip({ display: false, position: { left: 0, top: 0 } });
+          tooltipData.current = null;
         });
     });
 
@@ -206,6 +217,7 @@ const TokenCost = ({
         .on('mouseenter', function (event) {
           event.preventDefault();
           event.stopPropagation();
+          setHoveredBar(d.name);
           if (d.name === tooltipData.current?.name) return;
           tooltipData.current = d;
           setTooltip({
@@ -228,6 +240,7 @@ const TokenCost = ({
         .on('mouseleave', function (event, d) {
           event.preventDefault();
           event.stopPropagation();
+          setHoveredBar(null);
           setTooltip({ display: false, position: { left: 0, top: 0 } });
           tooltipData.current = null;
         });
@@ -289,6 +302,7 @@ const TokenCost = ({
       .on('mouseenter', function (event, d) {
         event.preventDefault();
         event.stopPropagation();
+        setHoveredBar(d.name);
         if (d.name === tooltipData.current?.name) return;
         tooltipData.current = d;
         setTooltip({
@@ -311,6 +325,7 @@ const TokenCost = ({
       .on('mouseleave', function (event, d) {
         event.preventDefault();
         event.stopPropagation();
+        setHoveredBar(null);
         setTooltip({ display: false, position: { left: 0, top: 0 } });
         tooltipData.current = null;
       });

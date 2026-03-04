@@ -23,12 +23,11 @@ class TokenCostDetailDialog extends Component {
       view: 'date',
       startDate: dayjs().subtract(30, 'day'),
       endDate: dayjs(),
-      availableModels: [],
+      availableModels: {},
       selectedModels: [], // selected models
       fullData: null,
       data: null,
       modelsUsageStatics: null,
-      condition: { ...this.props.basicCondition }
     };
   }
 
@@ -45,21 +44,15 @@ class TokenCostDetailDialog extends Component {
   }
 
   initializeData = () => {
-    this.props.getAIStatisticsModels(JSON.stringify(this.props.basicCondition)).then(res => {
-      const availableModels = res.data.models;
-      this.setState({
-        startDate: dayjs().subtract(30, 'day'),
-        endDate: dayjs(),
-        view: 'date',
-        availableModels,
-        selectedModels: Object.values(availableModels),
-        modelsUsageStatics: null
-      }, () => {
-        this.fetchStatistics();
-      });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
+    this.setState({
+      startDate: dayjs().subtract(30, 'day'),
+      endDate: dayjs(),
+      view: 'date',
+      availableModels: {},
+      selectedModels: [],
+      modelsUsageStatics: null
+    }, () => {
+      this.fetchStatistics();
     });
   };
 
@@ -109,13 +102,7 @@ class TokenCostDetailDialog extends Component {
       if (view === 'date') {
         this.updateDateData();
       } else {
-        let condition = { ...this.props.basicCondition };
-        const { startDate, endDate } = this.state;
-        condition.start_date = startDate;
-        condition.end_date = endDate;
-        this.setState({ condition }, () => {
-          this.fetchStatistics();
-        });
+        this.fetchStatistics();
       }
       this.setState({ isLoading: false });
     });
@@ -123,14 +110,10 @@ class TokenCostDetailDialog extends Component {
 
   fetchStatistics = () => {
     this.setState({ isLoading: true });
-    const { view, selectedModels, condition } = this.state;
+    const { condition } = this.props;
+    const { view, startDate, endDate } = this.state;
 
-    if (!selectedModels || selectedModels.length === 0) {
-      this.setState({ fullData: null, date: null, isLoading: false });
-      return;
-    }
-
-    this.props.getAIStatisticsDetail(view, JSON.stringify(selectedModels), JSON.stringify(condition)).then(res => {
+    this.props.getAIStatisticsDetail(view, startDate, endDate, JSON.stringify(condition)).then(res => {
       const fullData = res.data.results;
       this.setState({ fullData: fullData || null }, () => {
         if (view === 'date') {
@@ -196,12 +179,7 @@ class TokenCostDetailDialog extends Component {
   };
 
   updateView = (newView) => {
-    let newCondition = this.props.basicCondition;
-    if (newView !== 'date') {
-      newCondition.start_date = this.state.startDate;
-      newCondition.end_date = this.state.endDate;
-    }
-    this.setState({ view: newView, condition: newCondition }, () => {
+    this.setState({ view: newView }, () => {
       this.fetchStatistics();
     });
   };
@@ -250,20 +228,22 @@ class TokenCostDetailDialog extends Component {
                 onChange={this.updateView}
               />
             )}
-            <CustomizeSelect
-              disabled={false}
-              supportMultipleSelect={true}
-              className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedModels.length > 0 })}
-              value={{ label: `${gettext('Model')} (${selectedModels.length} ${gettext('selected')})` }}
-              options={modelsOptions}
-              onChange={this.updateFilterModels}
-            />
+            {false &&
+              <CustomizeSelect
+                disabled={false}
+                supportMultipleSelect={true}
+                className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedModels.length > 0 })}
+                value={{ label: `${gettext('Model')} (${selectedModels.length} ${gettext('selected')})` }}
+                options={modelsOptions}
+                onChange={this.updateFilterModels}
+              />
+            }
             <div className="sea-ticket-ai-statistic-date-condition">
               <span className="date-range-title">{gettext('Date range: ')}</span>
               <span className="date-range-value">
                 <DateAndTimePicker
                   showHourAndMinute={false}
-                  disabledDate={(date) => date > new Date(endDate)}
+                  disabledDate={(date) => date > new Date(endDate) || date < dayjs().subtract(90, 'day')}
                   value={startDate}
                   onChange={(date) => this.onDateChange(date, 'start')}
                   inputWidth={92}
@@ -284,7 +264,7 @@ class TokenCostDetailDialog extends Component {
           <div className="w-100" style={{ height: 'calc(100% - 44px)' }}>
             {isLoading ? (
               <Loading />
-            ) : selectedModels.length > 0 && data && data.length > 0 ? (
+            ) : data && data.length > 0 ? (
               <TokenCost
                 data={data}
                 modelsUsageStatics={modelsUsageStatics}
@@ -302,9 +282,8 @@ class TokenCostDetailDialog extends Component {
 TokenCostDetailDialog.propTypes = {
   views: PropTypes.array.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
-  getAIStatisticsModels: PropTypes.func.isRequired,
   getAIStatisticsDetail: PropTypes.func.isRequired,
-  basicCondition: PropTypes.object.isRequired
+  condition: PropTypes.object.isRequired
 };
 
 export default TokenCostDetailDialog;

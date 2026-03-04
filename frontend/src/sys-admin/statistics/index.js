@@ -61,13 +61,8 @@ class Statistics extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsModels = (condition) => {
-    const { groupBy } = this.state;
-    return sysAdminAPI.sysAdminGetAIStatisticsModels(groupBy, condition);
-  };
-
-  getAIStatisticsDetail = (view, models, condition) => {
-    return sysAdminAPI.sysAdminGetAIStatisticsDetail(view, models, condition);
+  getAIStatisticsDetail = (view, startDate, endDate, condition) => {
+    return sysAdminAPI.sysAdminGetAIStatisticsDetail(view, startDate, endDate, condition);
   };
 
   onOpenAIStaticsDetailDialog = (groupBy, condition) => {
@@ -84,14 +79,14 @@ class Statistics extends Component {
         value: 'project', label: gettext('Project')
       });
     }
-    this.setState({ isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });
+    this.setState({ isOpenStatisticsDetailDialog: true, condition });
   };
 
   onCloseAIStaticsDetailDialog = () => {
     this.statisticsDetailViews = [
       { value: 'date', label: gettext('Date') },
     ];
-    this.setState({ isOpenStatisticsDetailDialog: false, statisticsDetailBasicCondition: {} });
+    this.setState({ isOpenStatisticsDetailDialog: false, condition: {} });
   };
 
   getStatisticsByPage = (page) => {
@@ -193,7 +188,7 @@ class Statistics extends Component {
   render() {
     const {
       isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month,
-      isOpenStatisticsDetailDialog, statisticsDetailBasicCondition,
+      isOpenStatisticsDetailDialog, condition,
       hasFreezed,
     } = this.state;
 
@@ -265,9 +260,8 @@ class Statistics extends Component {
               <TokenCostDetailDialog
                 views={this.statisticsDetailViews}
                 onCloseDialog={this.onCloseAIStaticsDetailDialog}
-                getAIStatisticsModels={this.getAIStatisticsModels}
                 getAIStatisticsDetail={this.getAIStatisticsDetail}
-                basicCondition={statisticsDetailBasicCondition}
+                condition={condition}
               />
             )}
           </div>

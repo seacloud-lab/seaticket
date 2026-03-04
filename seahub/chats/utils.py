@@ -9,7 +9,7 @@ from django.core.cache import cache
 from urllib.parse import urljoin
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages
-from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL, LLM_MODELS
+from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 from seahub.knowledge_base.knowledge_base_utils import get_whole_knowledge_bases_data
 from seahub.tickets.ticket_utils import get_whole_tickets_data
 from seahub.seadb_models.site_seadb_api import SiteSeaDBAPI
@@ -214,9 +214,3 @@ def remove_content_details_in_attachments(attachments):
         attachment.pop('emails', None)
     
     return attachments
-
-def get_label_from_model_id(model_id):
-    for model in LLM_MODELS:
-        if model['model'] == model_id:
-            return model.get('label', model_id)
-    return model_id

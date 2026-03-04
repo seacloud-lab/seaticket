@@ -33,7 +33,7 @@ class StatisticsAI extends Component {
       groupBy: 'user',
       queryDate: 'date',
       isOpenStatisticsDetailDialog: false,
-      statisticsDetailBasicCondition: {},
+      condition: {},
       hasFreezed: false,
     };
     this.initPage = 1;
@@ -56,13 +56,8 @@ class StatisticsAI extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsModels = (condition) => {
-    const { groupBy } = this.state;
-    return orgAdminAPI.orgAdminGetAIStatisticsModels(orgID, groupBy, condition);
-  };
-
-  getAIStatisticsDetail = (view, models, condition) => {
-    return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, view, models, condition);
+  getAIStatisticsDetail = (view, startDate, endDate, condition) => {
+    return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, view, startDate, endDate, condition);
   };
 
   onOpenAIStaticsDetailDialog = (groupBy, condition) => {
@@ -79,14 +74,14 @@ class StatisticsAI extends Component {
         value: 'user', label: gettext('User')
       });
     }
-    this.setState({ isOpenStatisticsDetailDialog: true, statisticsDetailBasicCondition: condition });
+    this.setState({ isOpenStatisticsDetailDialog: true, condition });
   };
 
   onCloseAIStaticsDetailDialog = () => {
     this.statisticsDetailViews = [
       { value: 'date', label: gettext('Date') },
     ];
-    this.setState({ isOpenStatisticsDetailDialog: false, statisticsDetailBasicCondition: {} });
+    this.setState({ isOpenStatisticsDetailDialog: false, condition: {} });
   };
 
   getStatisticsByPage = (page) => {
@@ -187,7 +182,7 @@ class StatisticsAI extends Component {
   render() {
     const {
       isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month, hasFreezed,
-      isOpenStatisticsDetailDialog, statisticsDetailBasicCondition,
+      isOpenStatisticsDetailDialog, condition,
     } = this.state;
     return (
       <Fragment>
@@ -256,9 +251,8 @@ class StatisticsAI extends Component {
               <TokenCostDetailDialog
                 views={this.statisticsDetailViews}
                 onCloseDialog={this.onCloseAIStaticsDetailDialog}
-                getAIStatisticsModels={this.getAIStatisticsModels}
                 getAIStatisticsDetail={this.getAIStatisticsDetail}
-                basicCondition={statisticsDetailBasicCondition}
+                condition={condition}
               />
             )}
           </div>

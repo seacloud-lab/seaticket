@@ -15,7 +15,7 @@ from seahub.api2.utils import api_error
 from seahub.api2.permissions import IsOrgAdminUser
 from seahub.profile.models import Profile
 from seahub.group.models import Group
-from seahub.project.db_utils import query_ai_statistics_overview, query_ai_statistics_model, query_ai_statistics_detail
+from seahub.project.db_utils import query_ai_statistics_overview, query_ai_statistics_detail
 from seahub.project.models import Projects, Workspaces
 from seahub.group.utils import group_id_to_name
 from seahub.base.templatetags.seahub_tags import email2nickname
@@ -178,38 +178,6 @@ class OrgAdminAIStatisticsView(APIView):
 
         return Response({'results': results, 'count': total_count})
 
-class OrgAdminAIStatisticsModelsView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsOrgAdminUser,)
-
-    def get(self, request, org_id):
-        org_id = int(org_id)
-        if not request.user.org or request.user.org.org_id != org_id:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-        
-        group_by = request.GET.get('group_by')
-        if group_by not in ('user', 'project', 'group'):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be "user" or "project" or "group"')
-        elif group_by == 'user':
-            group_by = 'username'
-        elif group_by == 'project':
-            group_by = 'project_uuid'
-        elif group_by == 'group':
-            group_by = 'group_id'
-        
-        condition = request.GET.get('condition')
-        if isinstance(condition, str):
-            try:
-                condition = json.loads(condition)
-            except:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'condition invalid. Must be an object')
-        if not isinstance(condition, dict):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'condition invalid. Must be an object')
-        elif not condition:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'condition must cannot be empty')
-        
-        return Response({'models': query_ai_statistics_model(group_by, condition)})
 
 class OrgAdminAIStatisticsDetailView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -241,18 +209,14 @@ class OrgAdminAIStatisticsDetailView(APIView):
         elif not condition:
             return api_error(status.HTTP_400_BAD_REQUEST, 'condition must cannot be empty')
         
-        models = request.GET.get('models')
-        if isinstance(models, str):
-            try:
-                models = json.loads(models)
-            except:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'models invalid. Must be a list')
-        if not isinstance(models, list):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'models invalid. Must be a list')
-        elif not models:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'models must cannot be empty')
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        if not start_date or not end_date:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'range of date must be provided')
+        start_date = datetime.datetime.strptime(start_date.split('T')[0], '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date.split('T')[0], '%Y-%m-%d').date()
         
-        query_set = query_ai_statistics_detail(group_by, condition, models)
+        query_set = query_ai_statistics_detail(group_by, [start_date, end_date], condition)
 
         if view == 'date':
             results = list(query_set)
