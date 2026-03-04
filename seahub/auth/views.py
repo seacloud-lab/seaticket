@@ -203,11 +203,7 @@ def login(request, template_name='registration/login.html',
 
     if getattr(settings, 'ENABLE_SIGNUP', False):
         if multi_tenancy:
-            org_account_only = getattr(settings, 'FORCE_ORG_REGISTER', False)
-            if org_account_only:
-                signup_url = reverse('org_register')
-            else:
-                signup_url = reverse('choose_register')
+            signup_url = reverse('org_register')
         else:
             signup_url = reverse('registration_register')
     else:
