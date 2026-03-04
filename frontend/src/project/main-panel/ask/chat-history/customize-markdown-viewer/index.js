@@ -66,9 +66,9 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
     });
     let mdFiles = [];
     if (value) {
-      const mdRegex = /<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
+      const mdRegex = /<seaqa-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
       value = value
-        .replace(mdRegex, (match, fileName, content) => {
+        .replace(mdRegex, (match, quotationType, fileName, content) => {
           const urlObject = new URL(`file:///sea-ticket/${fileName}?t=${chatId}`);
           const url = urlObject.href;
           mdFiles.push({
