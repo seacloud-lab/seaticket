@@ -183,7 +183,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # In order to overide command `createsuperuser`, base app *must* before auth app.
+    # In order to override command `createsuperuser`, base app *must* before auth app.
     # ref: https://docs.djangoproject.com/en/1.11/howto/custom-management-commands/#overriding-commands
     'seahub.base',
     'django.contrib.auth',
@@ -372,7 +372,7 @@ ACTIVATE_AFTER_REGISTRATION = True
 # This option will be ignored if ``ACTIVATE_AFTER_REGISTRATION`` set to ``True``.
 REGISTRATION_SEND_MAIL = False
 
-# Whether or not send notify email to sytem admins when user registered or
+# Whether or not send notify email to system admins when user registered or
 # first login through Shibboleth.
 NOTIFY_ADMIN_AFTER_REGISTRATION = False
 
@@ -423,7 +423,7 @@ BRANDING_CSS = ''
 # used in 6.3+, enable setting custom css via admin web interface
 ENABLE_BRANDING_CSS = False
 
-# Using Django to server static file. Set to `False` if deployed behide a web
+# Using Django to server static file. Set to `False` if deployed behind a web
 # server.
 SERVE_STATIC = True
 
@@ -519,7 +519,7 @@ FREEZE_USER_ON_LOGIN_FAILED = False # deactivate user account when login attempt
 # Age of cookie, in seconds (default: 1 day).
 SESSION_COOKIE_AGE = 24 * 60 * 60
 
-# Days of remembered login info (deafult: 7 days)
+# Days of remembered login info (default: 7 days)
 LOGIN_REMEMBER_DAYS = 7
 
 # Need to check user agreement before logging in and registering(Domestic cloud services)
@@ -764,7 +764,7 @@ if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default
         try:
             isinstance(REDIS_PORT, int) or int(REDIS_PORT.split('/', 1)[0])
         except:
-            raise ValueError(f"Invalid radis port: {REDIS_PORT}")
+            raise ValueError(f"Invalid redis port: {REDIS_PORT}")
         REDIS_PASSWORD = configs.get('REDIS_PASSWORD', REDIS_PASSWORD)
 
         CACHES['default']['LOCATION'] = f'redis://{(REDIS_PASSWORD + "@") if REDIS_PASSWORD else ""}{REDIS_HOST}:{REDIS_PORT}'

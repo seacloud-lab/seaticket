@@ -8,7 +8,7 @@ from django.views.decorators.cache import cache_page
 # The value returned by get_version() must change when translations change.
 # @cache_page(86400, key_prefix='js18n')
 
-# == Clien side cache ==
+# == Client side cache ==
 # last_modified_date = timezone.now()
 # @last_modified(lambda req, **kw: last_modified_date)
 

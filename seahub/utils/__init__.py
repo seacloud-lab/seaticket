@@ -71,7 +71,7 @@ CLUSTER_MODE = is_cluster_mode()
 
 def render_permission_error(request, msg=None, extra_ctx=None):
     """
-    Return permisson error page.
+    Return permission error page.
 
     """
     ctx = {}
@@ -115,7 +115,7 @@ def gen_token(max_length=5):
     return uuid.uuid4().hex[:max_length]
 
 def normalize_cache_key(value, prefix=None, token=None, max_length=200):
-    """Returns a cache key consisten of ``value`` and ``prefix`` and ``token``. Cache key
+    """Returns a cache key consistence of ``value`` and ``prefix`` and ``token``. Cache key
     must not include control characters or whitespace.
     """
     key = value if prefix is None else prefix + value
@@ -472,7 +472,7 @@ def get_system_admins():
 
 def get_file_type_and_ext(filename):
     """
-    Return file type and extension if the file can be previewd online,
+    Return file type and extension if the file can be preview online,
     otherwise, return unknown type.
     """
     fileExt = os.path.splitext(filename)[1][1:].lower()

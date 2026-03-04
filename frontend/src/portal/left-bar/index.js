@@ -67,7 +67,7 @@ const LeftBar = () => {
       )}
       {isShowInvite && (
         <Modal isOpen={true} toggle={closeInvite} className="portal-settings-dialog">
-          <CustomModalHeader toggle={closeInvite}>{gettext('User and role management')}</CustomModalHeader>
+          <CustomModalHeader toggle={closeInvite}>{gettext('External users management')}</CustomModalHeader>
           <ModalBody>
             <UserManagement projectUuid={window.app.pageOptions.projectUuid} />
           </ModalBody>
