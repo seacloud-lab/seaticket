@@ -248,7 +248,7 @@ class ProjectView(APIView):
         settings = request.data.get('settings')
         target_workspace_id = request.data.get('workspace_id')
 
-        # resource check
+         # resource check
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
             error_msg = f'Workspace {workspace_id} not found.'
@@ -259,7 +259,7 @@ class ProjectView(APIView):
             error_msg = _(f'Project {project_name} not found.')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if Projects.objects.filter(workspace_id=workspace_id, name=new_project_name).exclude(pk=project.pk).exists():
+        if new_project_name and Projects.objects.filter(workspace_id=workspace_id, name=new_project_name).exclude(pk=project.pk).exists():
             error_msg = _(f'{new_project_name} exists.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -269,34 +269,35 @@ class ProjectView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if target_workspace_id is not None and target_workspace_id != workspace.id:
+        if target_workspace_id is not None:
             try:
                 target_workspace_id = int(target_workspace_id)
             except (TypeError, ValueError):
-                error_msg = _('workspace_id invalid.')
+                error_msg = 'workspace_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            target_workspace = Workspaces.objects.get_workspace_by_id(target_workspace_id)
-            if not target_workspace:
-                error_msg = f'Workspace {target_workspace_id} not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            if target_workspace_id != workspace.id:
+                target_workspace = Workspaces.objects.get_workspace_by_id(target_workspace_id)
+                if not target_workspace:
+                    error_msg = f'Workspace {target_workspace_id} not found.'
+                    return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if target_workspace.org_id != request.user.org.org_id:
-                error_msg = 'Permission denied.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+                if target_workspace.org_id != request.user.org.org_id:
+                    error_msg = 'Permission denied.'
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-            if not check_project_admin_permission(username, target_workspace.owner):
-                error_msg = 'Permission denied.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+                if not check_project_admin_permission(username, target_workspace.owner):
+                    error_msg = 'Permission denied.'
+                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-            if not check_project_limit(target_workspace, request):
-                error_msg = 'Project exceeded.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                if not check_project_limit(target_workspace, request):
+                    error_msg = 'Project exceeded.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            target_project_name = new_project_name if new_project_name else project.name
-            if Projects.objects.filter(workspace_id=target_workspace.id, name=target_project_name).exclude(id=project.id).exists():
-                error_msg = _(f'{target_project_name} exists.')
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                target_project_name = new_project_name if new_project_name else project.name
+                if Projects.objects.filter(workspace_id=target_workspace.id, name=target_project_name).exists():
+                    error_msg = _(f'{target_project_name} exists.')
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
             if new_project_name:
