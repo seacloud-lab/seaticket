@@ -143,11 +143,6 @@ def is_valid_username(username):
     return is_valid_email(username)
 
 
-def is_ldap_user(user):
-    """Check whether user is a LDAP user.
-    """
-    return user.source == 'LDAP' or user.source == 'LDAPImport'
-
 def get_no_duplicate_obj_name(obj_name, exist_obj_names):
 
     def no_duplicate(obj_name):

@@ -12,7 +12,7 @@ from seahub.auth.tokens import default_token_generator
 from seahub.options.models import UserOptions
 from seahub.profile.models import Profile
 from seahub.utils import IS_EMAIL_CONFIGURED, send_html_email, \
-    is_ldap_user, is_user_password_strong, get_site_name
+    is_user_password_strong, get_site_name
 from seahub.auth.utils import get_virtual_id_by_email
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils.password import is_password_strength_valid, get_password_strength_requirements
@@ -89,7 +89,7 @@ class AuthenticationForm(forms.Form):
                 else:
                     self.errors['inactive'] = _("This account is inactive.")
                     raise forms.ValidationError(_("This account is inactive."))
-            
+
             enable_sso = settings.ENABLE_SAML or settings.ENABLE_OAUTH
             disable_pwd_login = enable_sso and settings.DISABLE_SSO_USER_PWD_LOGIN
             saml_provider_identifier = getattr(settings, 'SAML_PROVIDER_IDENTIFIER', 'saml')
@@ -143,9 +143,6 @@ class PasswordResetForm(forms.Form):
             self.users_cache.profile = Profile.objects.get_profile_by_user(vid)
         except User.DoesNotExist:
             raise forms.ValidationError(_("That e-mail address doesn't have an associated user account. Are you sure you've registered?"))
-
-        if is_ldap_user(self.users_cache):
-            raise forms.ValidationError(_("Can not reset password, please contact LDAP admin."))
 
         return email
 
