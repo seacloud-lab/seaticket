@@ -745,6 +745,10 @@ input.short-input {
   color: var(--bs-orange);
 }
 
+.multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
+  color: var(--bs-orange) !important;
+}
+
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
   color: var(--bs-body-secondary-color);
@@ -850,6 +854,10 @@ input.short-input {
   color: var(--bs-orange);
 }
 
+.password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
+  color: var(--bs-orange) !important;
+}
+
 .password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
   color: var(--bs-body-secondary-color);
@@ -945,6 +953,10 @@ input.short-input {
   color: var(--bs-orange);
 }
 
+.org-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
+  color: var(--bs-orange) !important;
+}
+
 .org-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
   color: var(--bs-body-secondary-color);
@@ -1038,6 +1050,10 @@ input.short-input {
 
 .individual-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
   color: var(--bs-orange);
+}
+
+.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
+  color: var(--bs-orange) !important;
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
