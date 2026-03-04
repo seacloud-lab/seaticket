@@ -116,7 +116,7 @@ const TagsSettings = ({
         {selectedTags.length > 0 ? (
           <>
             {selectedTags.map(tag => (
-              <Tag tag={tag} key={tag._id} className="mr-0 mt-1 mb-1">
+              <Tag tag={tag} key={tag._id} className="mt-1 mb-1">
                 <RemoveBtn callback={(event) => handleRemove(event, tag)} />
               </Tag>
             ))}
