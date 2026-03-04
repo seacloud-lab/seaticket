@@ -521,7 +521,6 @@ CREATE TABLE `chat_sessions` (
   `session_uuid` VARCHAR(36) NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `session_name` VARCHAR(255) NOT NULL,
-  `is_portal` TINYINT(1) NOT NULL DEFAULT 0,
   `is_shared` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6),
@@ -689,6 +688,33 @@ CREATE TABLE `project_external_users` (
   UNIQUE KEY `project_external_project_uuid_users_email_uniq` (`project_uuid`,`email`),
   KEY `project_external_users_email_idx` (`email`),
   KEY `project_external_username_idx` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `portal_chat_sessions` (
+  `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` VARCHAR(36) NOT NULL,
+  `session_uuid` VARCHAR(36) NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
+  `session_name` VARCHAR(255) NOT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_portal_session_uuid` (`session_uuid`),
+  KEY `idx_portal_chat_project_uuid` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `portal_chat_messages` (
+  `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
+  `session_uuid` VARCHAR(36) NOT NULL,
+  `message_id` VARCHAR(4) DEFAULT NULL,
+  `username` VARCHAR(255) NOT NULL,
+  `role` VARCHAR(20) NOT NULL,
+  `content` LONGTEXT,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6),
+  `as_context` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `idx_portal_chat_msg_session_created` (`session_uuid`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

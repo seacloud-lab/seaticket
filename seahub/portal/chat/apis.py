@@ -1,3 +1,4 @@
+import uuid
 import logging
 import json
 
@@ -12,10 +13,10 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_same_org_permission, check_ai_limit, delete_sessions
+from seahub.project.utils import check_same_org_permission, check_ai_limit, delete_portal_sessions
 from seahub.utils.decorators import require_org_context
-from seahub.chats.models import ChatSessions, ChatMessages
-from seahub.chats.utils import get_ai_reply, gen_message_id
+from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.chats.utils import get_ai_reply
 
 logger = logging.getLogger(__name__)
 
@@ -51,12 +52,27 @@ def check_portal_permission(user, project):
 
 
 def get_session_or_error(session_uuid, username):
-    session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+    session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
     if not session:
         return None, api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
-    if session.username != username or not session.is_portal:
+    if session.username != username:
         return None, api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
     return session, None
+
+
+def gen_portal_message_id(session_uuid, max_try=5):
+    trying = 0
+    new_message_id = ''
+    while not new_message_id and trying < max_try:
+        try_message_id = uuid.uuid4().hex[:4]
+        if not PortalChatMessages.objects.filter(session_uuid=session_uuid, message_id=try_message_id).exists():
+            new_message_id = try_message_id
+        trying += 1
+
+    if trying == max_try:
+        raise Exception('Failure to generate message_id')
+
+    return new_message_id
 
 
 class PortalChatSessionsView(APIView):
@@ -75,7 +91,7 @@ class PortalChatSessionsView(APIView):
             return error
 
         try:
-            sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username, is_portal=True)
+            sessions = PortalChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
             sessions_data = [session.to_dict() for session in sessions]
             return Response({'sessions': sessions_data})
         except Exception as e:
@@ -98,11 +114,10 @@ class PortalChatSessionsView(APIView):
             return error
 
         try:
-            session = ChatSessions.objects.create_session(
+            session = PortalChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
                 username=request.user.username,
-                is_portal=True
             )
             return Response({'session': session.to_dict()}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -158,7 +173,7 @@ class PortalChatSessionView(APIView):
             return error
 
         try:
-            delete_sessions([session_uuid])
+            delete_portal_sessions([session_uuid])
             return Response({'success': True})
         except Exception as e:
             logger.error(e)
@@ -187,7 +202,7 @@ class PortalChatMessagesView(APIView):
             return error
 
         try:
-            messages = ChatMessages.objects.get_messages_by_session(session_uuid)
+            messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
             messages_data = [message.to_dict() for message in messages]
             return Response({'messages': messages_data})
         except Exception as e:
@@ -232,7 +247,7 @@ class PortalChatView(APIView):
             return error
 
         if clear_context:
-            ChatMessages.objects.clear_context(session_uuid, username)
+            PortalChatMessages.objects.clear_context(session_uuid, username)
 
         # Check AI quota
         org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
@@ -242,7 +257,7 @@ class PortalChatView(APIView):
         model = request.data.get('model')
 
         try:
-            message_id = gen_message_id(session.session_uuid)
+            message_id = gen_portal_message_id(session.session_uuid)
         except Exception as e:
             logger.exception(f'Failure to generate message id: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
@@ -283,10 +298,10 @@ class PortalChatView(APIView):
             }
 
         # Save messages
-        user_message = ChatMessages.objects.create_message(
+        user_message = PortalChatMessages.objects.create_message(
             session.session_uuid, message_id, username, 'user', query
         )
-        ai_reply_message = ChatMessages.objects.create_message(
+        ai_reply_message = PortalChatMessages.objects.create_message(
             session.session_uuid, message_id, username, 'assistant',
             ai_response['ai_reply']
         )

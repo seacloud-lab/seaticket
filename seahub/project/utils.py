@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     AIUsageStatistics, AIUsageStatistics, Workspaces
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
+from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
@@ -191,6 +192,14 @@ def delete_sessions(session_uuids):
         logger.error('delete sessions error: %s', e)
 
 
+def delete_portal_sessions(session_uuids):
+    try:
+        PortalChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
+        PortalChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
+    except Exception as e:
+        logger.error('delete portal sessions error: %s', e)
+
+
 def delete_project(project):
     project_uuid = str(project.uuid)
     try:
@@ -200,6 +209,8 @@ def delete_project(project):
         ProjectNotification.objects.filter(project_uuid=project_uuid).delete()
         session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
         delete_sessions(session_uuids)
+        portal_session_uuids = PortalChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
+        delete_portal_sessions(portal_session_uuids)
         seadb_api = SeaDBAPI()
         seadb_api.delete_base(project_uuid)
     except Exception as e:
