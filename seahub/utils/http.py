@@ -22,7 +22,7 @@ class _HTTPException(Exception):
 class BadRequestException(_HTTPException):
     pass
 
-class RequestForbbiddenException(_HTTPException):
+class RequestForbiddenException(_HTTPException):
     pass
 
 JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
@@ -33,7 +33,7 @@ def json_response(func):
             result = func(*a, **kw)
         except BadRequestException as e:
             return HttpResponseBadRequest(e.message)
-        except RequestForbbiddenException as e:
+        except RequestForbiddenException as e:
             return HttpResponseForbidden(e.messages)
         if isinstance(result, HttpResponse):
             return result
