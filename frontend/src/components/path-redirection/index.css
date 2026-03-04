@@ -1,0 +1,27 @@
+.sea-ticket-paths-redirection {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  width: fit-content;
+  height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-ticket-paths-redirection .sea-ticket-paths-redirection-name {
+  cursor: default;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.sea-ticket-paths-redirection .sea-ticket-paths-redirection-name.redirection:hover {
+  color: var(--bs-orange);
+  cursor: pointer;
+}
+
+.sea-ticket-paths-redirection .sea-ticket-paths-redirection-icon,
+.sea-ticket-paths-redirection .sea-ticket-paths-redirection-icon .sea-qa-icon-svg-arrow-down {
+  height: 14px !important;
+  width: 14px !important;
+}

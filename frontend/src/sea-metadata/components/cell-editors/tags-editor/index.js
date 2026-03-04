@@ -68,12 +68,6 @@ const TagsEditor = forwardRef(({
     setValue(validValue);
   }, [tagsData, value]);
 
-  const handleDeselect = useCallback((tagId) => {
-    const newValue = value.filter(v => v !== tagId);
-    optionEditorContainerRef.current?.setValue(newValue);
-    setValue(newValue);
-  }, [value]);
-
   useEffect(() => {
     if (editorRef.current) {
       const { bottom, right } = editorRef.current.getBoundingClientRect();
@@ -109,21 +103,25 @@ const TagsEditor = forwardRef(({
         isMultiple={true}
         optionHeight="fit-content"
         placeholder={gettext('Search tags')}
-        emptyTip={gettext('No tags available')}
+        emptyTip={gettext('No available tags')}
         value={Array.isArray(value) ? value.map(v => String(v)) : []}
         options={options}
         onChange={handleChange}
         onCreate={context.canModify() ? handleCreateTag : null}
         onPressTab={onPressTab}
       >
-        {Array.isArray(value) && value.map(v => {
-          const tag = getRowById(tagsData, v);
-          return (
-            <Tag tag={tag} key={v} className="mr-0">
-              <RemoveBtn callback={() => handleDeselect(v)} />
-            </Tag>
-          );
-        })}
+        {({ value: selectedTagIds, onChange }) => {
+          if (!Array.isArray(selectedTagIds) || selectedTagIds.length === 0) return null;
+          return selectedTagIds.map(tagId => {
+            const tag = getRowById(tagsData, tagId);
+            if (!tag) return null;
+            return (
+              <Tag tag={tag} key={tagId} className="mr-0">
+                <RemoveBtn callback={() => onChange(tagId)} />
+              </Tag>
+            );
+          });
+        }}
       </OptionEditorContainer>
     </div>
   );

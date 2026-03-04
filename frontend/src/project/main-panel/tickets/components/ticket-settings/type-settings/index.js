@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, OptionEditor } from '@/components';
+import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
@@ -68,8 +67,10 @@ const TypeSettings = ({
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{gettext('Type')}</Label>
-        <div className="ticket-types-formatter" onClick={openEditor} ref={editorRef}>
+        <CustomizeLabel icon="single-select">
+          {gettext('Type')}
+        </CustomizeLabel>
+        <div className={classnames('ticket-types-formatter', { 'valid': typeOption })} onClick={openEditor} ref={editorRef}>
           {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>

@@ -1,18 +1,21 @@
 .collaborator {
   display: inline-flex;
   align-items: center;
-  margin-right: 10px;
+  margin-right: 8px;
   padding: 0 8px 0 2px;
   height: 20px;
   font-size: 13px;
   border-radius: 10px;
   background: #eaeaea;
+  max-width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .collaborator .collaborator-avatar,
 .collaborator .collaborator-name {
   height: 20px;
-  line-height: 18px;
+  line-height: 20px;
 }
 
 .collaborator .collaborator-avatar {
@@ -24,7 +27,11 @@
 }
 
 .collaborator .collaborator-name {
-  margin-left: 5px;
+  margin-left: 4px;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .collaborator .collaborator-avatar img {

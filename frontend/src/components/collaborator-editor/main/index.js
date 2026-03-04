@@ -7,8 +7,10 @@ import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
 import { isFunction } from '@utils/type-detection';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
+import { gettext, mediaUrl } from '@/constants';
 
 import './index.css';
+import { EmptyTip } from '@/components';
 
 const Main = forwardRef(({
   id,
@@ -16,7 +18,7 @@ const Main = forwardRef(({
   isSearchEnabled = true,
   isMultiple = true,
   placeholder,
-  emptyTip,
+  emptyTip = gettext('No results'),
   value: propsValue = [],
   collaborators = [],
   maxHeight = 200,
@@ -201,12 +203,12 @@ const Main = forwardRef(({
         </div>
       )}
       <div
-        className={classnames('collaborator-editor-content', { 'empty': displayCollaborators.length === 0 })}
+        className={classnames('collaborator-editor-content', { 'search-enabled': isSearchEnabled })}
         style={{ maxHeight }}
         ref={displayCollaboratorsRef}
       >
         {displayCollaborators.length === 0 ? (
-          <div className="tip-default">{emptyTip}</div>
+          <EmptyTip text={emptyTip} src={`${mediaUrl}img/no-results.png`} className="collaborator-editor-no-results-tip" />
         ) : (
           <>
             {displayCollaborators.map((c, i) => {
@@ -220,7 +222,7 @@ const Main = forwardRef(({
                   onMouseLeave={() => onMenuMouseLeave(i)}
                 >
                   <Collaborator collaborator={c} />
-                  <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
+                  <IconButton icon={isSelected ? 'check-mark-option' : ''} className="option-editor-option-check-btn no-hover-bg ml-3" />
                 </div>
               );
             })}

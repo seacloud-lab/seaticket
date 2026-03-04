@@ -1,7 +1,7 @@
 .sea-metadata-tags-selector-popover {
   min-width: 200px;
   padding: 0;
-  min-height: 160px;
+  min-height: 100px;
   overflow: hidden;
   opacity: 1;
   background: var(--bs-body-bg);
@@ -9,6 +9,10 @@
   border-radius: 4px;
   box-shadow: 0px 2px 10px 0 #dedede;
   position: absolute;
+}
+
+.sea-qa-tags-selector-popover.option-editor-popover .option-editor-container {
+  min-height: 100px;
 }
 
 .sea-qa-tags-selector-popover.option-editor-popover .option-editor-content .option-editor-option {

@@ -1,5 +1,5 @@
 .option-editor-content {
-  min-height: 100px;
+  min-height: fit-content;
   max-height: 200px;
   overflow: auto;
   padding: 0 12px;
@@ -11,6 +11,7 @@
   padding: 0 10px;
   border-top: 1px solid #dedede;
   color: var(--bs-body-color);
+  margin-top: 8px;
 }
 
 .option-editor-add-search-result .sea-qa-icon-svg {

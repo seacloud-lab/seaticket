@@ -1,0 +1,22 @@
+.sea-ticket-priority-editor-popover .popover {
+  min-height: 100px;
+  width: 200px;
+  max-width: 200px;
+}
+
+.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-container {
+  min-height: fit-content;
+  width: 100%;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-name-hotkey {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  flex: 1;
+  gap: 8px;
+}

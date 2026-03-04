@@ -8,6 +8,10 @@
   border-radius: 3px;
 }
 
+.collaborators-formatter.valid {
+  padding: 5px 0;
+}
+
 .collaborators-formatter .collaborator {
   margin-bottom: 4px;
   margin-top: 4px;

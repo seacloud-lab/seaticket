@@ -1,14 +1,14 @@
 .collaborator-editor-popover .popover {
-  background-color: #fff;
-  border: 1px solid #0028641f;
-  border-radius: 3px;
-  box-shadow: 0 0 5px #ccc;
-  left: 0;
-  min-height: 160px;
   position: absolute;
+  left: 0;
+  min-height: 100px;
   width: 300px;
   max-width: 300px;
   z-index: 9999;
+  background: var(--bs-body-bg);
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1);
 }
 
 .collaborator-editor-popover .popover .popover-inner {

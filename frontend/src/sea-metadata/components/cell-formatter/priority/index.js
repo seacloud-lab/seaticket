@@ -15,7 +15,7 @@ const PriorityFormatter = ({ value, className, showName = false, children: empty
         <Icon className="sea-metadata-icon" symbol={priority.icon} title={priority.name}/>
       )}
       {showName && (
-        <span>{priority.name}</span>
+        <span className="ml-2">{priority.name}</span>
       )}
     </div>
   );

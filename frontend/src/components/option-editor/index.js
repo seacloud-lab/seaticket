@@ -20,6 +20,7 @@ const OptionsEditor = ({
   className,
   options = [],
   optionHeight,
+  modifiers,
   onChange,
   onToggle,
   onCreate,
@@ -39,6 +40,7 @@ const OptionsEditor = ({
       target={target}
       className={classnames('option-editor-popover', className)}
       placement={placement}
+      modifiers={modifiers}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
     >

@@ -106,7 +106,7 @@ const OptionEditorContainer = forwardRef(({
     >
       {children && (
         <div className="option-editor-selected-value-wrapper">
-          {children}
+          {typeof children === 'function' ? children({ value, onChange: toggleOption }) : children}
         </div>
       )}
       {isSearchEnabled && (
@@ -123,6 +123,7 @@ const OptionEditorContainer = forwardRef(({
         </div>
       )}
       <Options
+        hasAvailableOptions={options.length > 0}
         options={displayOptions}
         maxHeight={maxHeight - (isSearchEnabled ? 26 : 18)} // 26: padding-top(12/8) + padding-bottom(12/8) + border(2)
         isSearchEnabled={isSearchEnabled}
@@ -134,7 +135,7 @@ const OptionEditorContainer = forwardRef(({
         optionClassName={optionClassName}
         onToggleOption={toggleOption}
         onPressTab={onPressTab}
-        onChange={onChange}
+        onToggle={onToggle}
       />
       {showCreateBtn && (
         <CustomizeAddTool
