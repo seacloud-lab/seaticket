@@ -509,7 +509,7 @@ class AgentRunsTable(BaseModel):
     status = MappedColumn('status', PropertyTypes.TEXT)              # pending / running / completed / failed
     started_at = MappedColumn('started_at', PropertyTypes.DATETIME)
     finished_at = MappedColumn('finished_at', PropertyTypes.DATETIME)
-    tickets_processed = MappedColumn('tickets_processed', PropertyTypes.INT)
+    items_processed = MappedColumn('items_processed', PropertyTypes.INT)
     error_message = MappedColumn('error_message', PropertyTypes.TEXT)
 
     @classmethod
@@ -518,15 +518,22 @@ class AgentRunsTable(BaseModel):
 
 
 class AgentActionsTable(BaseModel):
-    """Agent generated actions"""
+    """Agent generated actions.
+
+    source_type values: 'ticket' | 'github_issue' | 'discourse_topic' | 'email_thread'
+    source_id format:
+      - ticket: str(ticket._pk)
+      - others: '{connection_id}_{record_id}'
+    """
     run_id = MappedColumn('run_id', PropertyTypes.INT)               # references agent_runs._pk
-    ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)         # references tickets._pk
-    ticket_title = MappedColumn('ticket_title', PropertyTypes.TEXT)
-    action_type = MappedColumn('action_type', PropertyTypes.TEXT)     # analysis / tool_call / suggestion
-    tool_name = MappedColumn('tool_name', PropertyTypes.TEXT)         # notify_assignee / add_comment etc.
-    content = MappedColumn('content', PropertyTypes.TEXT)             # analysis content or suggestion text
-    result = MappedColumn('result', PropertyTypes.TEXT)               # tool execution result
-    status = MappedColumn('status', PropertyTypes.TEXT)               # pending / confirmed / cancelled / executed / completed
+    source_type = MappedColumn('source_type', PropertyTypes.TEXT)    # ticket / github_issue / discourse_topic / email_thread
+    source_id = MappedColumn('source_id', PropertyTypes.TEXT)        # ticket _pk or '{connection_id}_{record_id}'
+    source_title = MappedColumn('source_title', PropertyTypes.TEXT)  # human-readable title of the source record
+    action_type = MappedColumn('action_type', PropertyTypes.TEXT)    # analysis / tool_call / suggestion
+    tool_name = MappedColumn('tool_name', PropertyTypes.TEXT)        # notify_assignee / add_comment / suggest_create_ticket etc.
+    content = MappedColumn('content', PropertyTypes.TEXT)            # analysis content or suggestion text
+    result = MappedColumn('result', PropertyTypes.TEXT)              # tool execution result
+    status = MappedColumn('status', PropertyTypes.TEXT)              # pending / confirmed / cancelled / executed / completed
     suggestion_text = MappedColumn('suggestion_text', PropertyTypes.TEXT)
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     executed_at = MappedColumn('executed_at', PropertyTypes.DATETIME)

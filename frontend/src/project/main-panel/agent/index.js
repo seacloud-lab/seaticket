@@ -25,11 +25,10 @@ const Agent = ({ title }) => {
   const [isExecuting, setIsExecuting] = React.useState(false);
 
   const handleConfirmAction = useCallback((actionId) => {
-    // Find the run that contains this action
     for (const run of runLogs) {
-      const tickets = run.tickets || [];
-      for (const ticket of tickets) {
-        const actions = ticket.actions || [];
+      const items = run.items || [];
+      for (const item of items) {
+        const actions = item.actions || [];
         const action = actions.find(a => a.id === actionId);
         if (action) {
           return agentAPI.confirmAgentAction(projectUuid, run.id, actionId).then(() => {
@@ -60,11 +59,10 @@ const Agent = ({ title }) => {
   }, [refresh]);
 
   const handleCancelAction = useCallback((actionId) => {
-    // Find the run that contains this action
     for (const run of runLogs) {
-      const tickets = run.tickets || [];
-      for (const ticket of tickets) {
-        const actions = ticket.actions || [];
+      const items = run.items || [];
+      for (const item of items) {
+        const actions = item.actions || [];
         const action = actions.find(a => a.id === actionId);
         if (action) {
           return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then(() => {
@@ -127,7 +125,7 @@ const Agent = ({ title }) => {
         <SwitchSettingsItem
           title={gettext('Agent')}
           placeholder={gettext('Enable Agent')}
-          tip={gettext('Enable agent to automatically analyze and process tickets.')}
+          tip={gettext('Enable agent to automatically analyze and process tickets, github issues, etc.')}
           className="mb-4"
           value={settings.agent?.enabled}
           onChange={(value, callback) => updateSettings({ enabled: value }, callback)}

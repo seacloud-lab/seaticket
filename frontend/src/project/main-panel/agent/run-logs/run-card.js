@@ -6,6 +6,13 @@ import { BAR_TYPE } from '@/project/constants';
 
 const { workspaceID, projectName } = window.app.pageOptions;
 
+const SOURCE_TYPE = {
+  TICKET: 'ticket',
+  GITHUB_ISSUE: 'github_issue',
+  DISCOURSE_TOPIC: 'discourse_topic',
+  EMAIL_THREAD: 'email_thread',
+};
+
 const formatDateTime = (dateStr) => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -15,6 +22,90 @@ const formatDateTime = (dateStr) => {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+const ItemHeader = ({ item }) => {
+  const { source_type, source_id, source_title } = item;
+
+  if (source_type === SOURCE_TYPE.TICKET) {
+    return (
+      <div className="ticket-header">
+        <span className="ticket-icon">📋</span>
+        <span className="ticket-title">
+          <a
+            href={`${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${source_id}/`}
+            onClick={(event) => event.stopPropagation()}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {gettext('Ticket')} #{source_id}: {source_title}
+          </a>
+        </span>
+      </div>
+    );
+  }
+
+  const connectionIdParts = typeof source_id === 'string' ? source_id.split('_') : [];
+  const connectionId = connectionIdParts[0];
+  const recordId = connectionIdParts[1];
+  const href = connectionId && recordId
+    ? `${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}/${connectionId}/records/${recordId}/`
+    : '';
+
+  if (source_type === SOURCE_TYPE.GITHUB_ISSUE) {
+    return (
+      <div className="ticket-header">
+        <span className="ticket-icon">🐙</span>
+        <span className="ticket-title">
+          {href ? (
+            <a
+              href={href}
+              onClick={(event) => event.stopPropagation()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {gettext('GitHub Issue')} #{source_id}: {source_title}
+            </a>
+          ) : (
+            <>
+              {gettext('GitHub Issue')} #{source_id}: {source_title}
+            </>
+          )}
+        </span>
+      </div>
+    );
+  }
+
+  if (source_type === SOURCE_TYPE.DISCOURSE_TOPIC) {
+    return (
+      <div className="ticket-header">
+        <span className="ticket-icon">💬</span>
+        <span className="ticket-title">
+          {gettext('Forum Topic')} #{source_id}: {source_title}
+        </span>
+      </div>
+    );
+  }
+
+  if (source_type === SOURCE_TYPE.EMAIL_THREAD) {
+    return (
+      <div className="ticket-header">
+        <span className="ticket-icon">✉️</span>
+        <span className="ticket-title">
+          {gettext('Email Thread')} #{source_id}: {source_title}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ticket-header">
+      <span className="ticket-icon">•</span>
+      <span className="ticket-title">
+        {gettext(source_type)} #{source_id}: {source_title}
+      </span>
+    </div>
+  );
 };
 
 const RunCard = ({
@@ -29,7 +120,7 @@ const RunCard = ({
     setIsExpanded(prev => !prev);
   }, []);
 
-  const { id, started_at, tickets = [], actions = [] } = run;
+  const { id, started_at, items = [], actions = [] } = run;
 
   return (
     <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
@@ -48,23 +139,11 @@ const RunCard = ({
 
       {isExpanded && (
         <div className="run-card-body">
-          {tickets.map((ticket, index) => (
-            <div key={ticket.id || index} className="run-ticket-section">
-              <div className="ticket-header">
-                <span className="ticket-icon">📋</span>
-                <span className="ticket-title">
-                  <a
-                    href={`${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket.id}/`}
-                    onClick={(event) => event.stopPropagation()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Ticket #{ticket.id}: {ticket.title}
-                  </a>
-                </span>
-              </div>
+          {items.map((item, index) => (
+            <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
+              <ItemHeader item={item} />
               <div className="ticket-actions">
-                {(ticket.actions || []).map((action, actionIndex) => (
+                {(item.actions || []).map((action, actionIndex) => (
                   <ActionItem
                     key={action.id || actionIndex}
                     action={action}
@@ -78,8 +157,8 @@ const RunCard = ({
             </div>
           ))}
 
-          {/* If no tickets but has actions directly */}
-          {tickets.length === 0 && actions.length > 0 && (
+          {/* Fallback: if no items but has top-level direct actions */}
+          {items.length === 0 && actions.length > 0 && (
             <div className="run-actions-direct">
               {actions.map((action, actionIndex) => (
                 <ActionItem

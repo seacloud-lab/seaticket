@@ -16,6 +16,14 @@ const ACTION_TYPE = {
   SUMMARY: 'summary',
 };
 
+// Tool names that carry a user-editable content payload
+const SUGGESTION_TOOL_NAMES = new Set([
+  'notify_assignee',
+  'add_comment',
+  'suggest_resolution',
+  'suggest_create_ticket',
+]);
+
 const ActionItem = ({
   action,
   runId,
@@ -51,8 +59,11 @@ const ActionItem = ({
         return <span className="action-icon">🤔</span>;
       case ACTION_TYPE.TOOL_CALL:
         return <span className="action-icon">🔧</span>;
-      case ACTION_TYPE.SUGGESTION:
+      case ACTION_TYPE.SUGGESTION: {
+        if (tool_name === 'suggest_resolution') return <span className="action-icon">💡</span>;
+        if (tool_name === 'suggest_create_ticket') return <span className="action-icon">📋</span>;
         return <span className="action-icon">📝</span>;
+      }
       case ACTION_TYPE.SUMMARY:
         return <span className="action-icon">✍️</span>;
       default:
@@ -91,16 +102,19 @@ const ActionItem = ({
             )}
           </div>
         );
-      case ACTION_TYPE.SUGGESTION:
+      case ACTION_TYPE.SUGGESTION: {
+        const hasEditableContent = SUGGESTION_TOOL_NAMES.has(tool_name);
         return (
           <div className="action-content">
             <span className="action-label">{gettext('Suggestion')}:</span>
             <span className="action-text">{suggestion_text}</span>
             {status === ACTION_STATUS.PENDING && (
               <div className="action-buttons">
-                <button className="action-btn view-btn" onClick={handleViewContent}>
-                  [{gettext('View content')}]
-                </button>
+                {hasEditableContent && (
+                  <button className="action-btn view-btn" onClick={handleViewContent}>
+                    [{gettext('View content')}]
+                  </button>
+                )}
                 <button className="action-btn confirm-btn" onClick={handleConfirm}>
                   [{gettext('Confirm')}]
                 </button>
@@ -117,6 +131,7 @@ const ActionItem = ({
             )}
           </div>
         );
+      }
       case ACTION_TYPE.SUMMARY:
         return (
           <div className="action-content">

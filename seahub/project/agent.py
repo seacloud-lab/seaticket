@@ -15,11 +15,17 @@ from seahub.utils.ai_client import (
     get_agent_run_detail,
     list_agent_runs,
     trigger_agent,
+    convert_record_to_ticket as ai_convert_record_to_ticket,
 )
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.models import Projects
+from seahub.project.models import Projects, ProjectConnections
 from seahub.tickets.ticket_utils import get_ticket
-from seahub.seadb_models.models import AgentActionsTable, TicketCommentsTable, TicketsTable
+from seahub.seadb_models.models import (
+    AgentActionsTable,
+    GithubIssuesTable,
+    TicketCommentsTable,
+    TicketsTable,
+)
 from seahub.utils.decorators import require_org_context
 from seahub.project.utils import check_project_permission
 from seahub.notifications.signal_handler import (
@@ -163,7 +169,7 @@ class AgentActionConfirmView(APIView):
         username = request.user.username
         try:
             seadb_api = SeaDBAPI(username)
-            
+
             # 1. Get action details from SeaDB
             sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
@@ -177,29 +183,27 @@ class AgentActionConfirmView(APIView):
             # 2. Verify the action belongs to the specific run
             if action['run_id'] != int(run_id):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action does not belong to the specified run.')
-            
+
             if action['status'] != 'pending':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action is not pending.')
 
             tool_name = action['tool_name']
-            ticket_id = action['ticket_id']
+            source_type = action.get('source_type', 'ticket')
+            source_id = action.get('source_id', '')
             content = action['content']
 
-            # 3. Execute the actual operation based on tool_name
-            if tool_name == 'notify_assignee':
-                execution_result = self._execute_notify_assignee(
-                    seadb_api, project,project_uuid, ticket_id, content, username
+            # 3. Dispatch to the appropriate handler based on source_type and tool_name
+            if source_type == 'ticket':
+                execution_result = self._execute_ticket_action(
+                    seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
-            elif tool_name == 'add_comment':
-                execution_result = self._execute_add_comment(
-                    seadb_api, project, project_uuid, ticket_id, content, username
+            elif source_type == 'github_issue':
+                execution_result = self._execute_github_issue_action(
+                    seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
-            elif tool_name == 'final_answer':
-                # final_answer doesn't need actual execution, just mark as confirmed
-                execution_result = 'Final answer.'
             else:
-                logger.error(f'Unknown tool name: {tool_name}')
-                execution_result = 'Unknown tool name.'
+                logger.warning(f'Unknown source_type {source_type!r} for action {action_id}')
+                execution_result = f'Unsupported source_type: {source_type}'
 
             # 4. Update action status in SeaDB
             now = datetime.now(timezone.utc).isoformat()
@@ -223,6 +227,135 @@ class AgentActionConfirmView(APIView):
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+        """Dispatch ticket-source actions to the appropriate handler."""
+        try:
+            ticket_id = int(source_id)
+        except (ValueError, TypeError):
+            logger.error(f'Invalid ticket source_id: {source_id!r}')
+            return f'Invalid ticket source_id: {source_id}'
+
+        if tool_name == 'notify_assignee':
+            return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, content, username)
+        elif tool_name == 'add_comment':
+            return self._execute_add_comment(seadb_api, project, project_uuid, ticket_id, content, username)
+        elif tool_name == 'final_answer':
+            return 'Final answer acknowledged.'
+        else:
+            logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
+            return f'Unknown tool_name: {tool_name}'
+
+    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+        """Dispatch GitHub issue actions to the appropriate handler."""
+        if tool_name == 'suggest_resolution':
+            return self._execute_github_suggest_resolution(source_id, content)
+        elif tool_name == 'suggest_create_ticket':
+            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
+        elif tool_name == 'final_answer':
+            return 'Final answer acknowledged.'
+        else:
+            logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
+            return f'Unknown tool_name: {tool_name}'
+
+    def _execute_github_suggest_resolution(self, source_id, resolution_content):
+        """Confirm a resolution suggestion for a GitHub issue.
+
+        Currently records the confirmation. Future enhancement: post as a GitHub comment
+        via the GitHub API.
+        """
+        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:200]}'
+
+    def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+        """Create an internal ticket from a GitHub issue.
+
+        Steps:
+        1. Parse connection_id and record_id from source_id.
+        2. Fetch the GitHub issue from SeaDB to build record_detail.
+        3. Call the AI service to generate ticket title and content.
+        4. Insert the ticket into SeaDB.
+        5. Update the GitHub issue's linked_ticket field.
+        """
+        try:
+            connection_id_str, record_id_str = source_id.split('_', 1)
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except (ValueError, AttributeError) as e:
+            logger.error(f'Cannot parse github_issue source_id {source_id!r}: {e}')
+            return f'Invalid source_id format: {source_id}'
+
+        # Fetch issue from SeaDB
+        issues_table = GithubIssuesTable.gen_table_name(connection_id)
+        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        result = seadb_api.query_rows(project_uuid, sql)
+        issues = result.get('results', [])
+        if not issues:
+            return f'GitHub issue {source_id} not found in SeaDB.'
+        issue = issues[0]
+
+        title = issue.get('title', '')
+        body_content = (issue.get('content') or '').strip()
+
+        record_detail = (
+            f"**GitHub Issue Information:**\n"
+            f"Title: {title}\n"
+            f"Body: {body_content[:3000]}"
+        )
+
+        # Call AI service to generate ticket title and content
+        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
+        params = {
+            'username': username,
+            'record_detail': record_detail,
+            'project_uuid': project_uuid,
+            'org_id': org_id,
+        }
+        try:
+            ai_title, ai_content = ai_convert_record_to_ticket(params)
+        except Exception as e:
+            logger.error(f'AI service error when creating ticket from github issue {source_id}: {e}')
+            return f'AI service error: {e}'
+
+        ticket_title = ai_title or title
+        ticket_content = ai_content or ''
+
+        # Insert ticket into SeaDB
+        now = datetime.now(timezone.utc).isoformat()
+        ticket_row = {
+            TicketsTable.title.name: ticket_title,
+            TicketsTable.content.name: ticket_content,
+            TicketsTable.state.name: 'open',
+            TicketsTable.priority.name: 0,
+            TicketsTable.creator.name: username,
+            TicketsTable.created_time.name: now,
+            TicketsTable.modified_time.name: now,
+            TicketsTable.deleted.name: False,
+            TicketsTable.linked_connection_records.name: [source_id],
+        }
+        try:
+            insert_result = seadb_api.insert_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_row])
+            pks = insert_result.get('pks', [])
+            if not pks:
+                raise RuntimeError('insert_rows returned no PKs')
+            ticket_pk = pks[0]
+        except Exception as e:
+            logger.error(f'Failed to insert ticket for github issue {source_id}: {e}')
+            return f'Failed to create ticket: {e}'
+
+        # Update linked_ticket on the GitHub issue
+        try:
+            seadb_api.update_rows(
+                project_uuid,
+                issues_table,
+                [{'pk': record_id, 'row': {'linked_ticket': ticket_pk}}],
+            )
+        except Exception as e:
+            logger.warning(
+                f'Ticket {ticket_pk} created but failed to update linked_ticket on issue {source_id}: {e}'
+            )
+
+        logger.info(f'Created ticket #{ticket_pk} from GitHub issue {source_id}')
+        return f'Ticket #{ticket_pk} created from GitHub issue {source_id}.'
 
     def _execute_notify_assignee(self, seadb_api, project, project_uuid, ticket_id, message, operator):
         """
