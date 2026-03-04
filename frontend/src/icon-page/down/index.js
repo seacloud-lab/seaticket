@@ -6,7 +6,7 @@ const root = createRoot(document.getElementById('down-icon-wrapper'));
 
 root.render(
   <>
-    <Icon symbol="arrow-down" />
+    <Icon symbol="arrow-down-b" />
   </>
 );
 
@@ -14,6 +14,6 @@ const rightdownIcon = createRoot(document.getElementById('right-down-icon-wrappe
 
 rightdownIcon.render(
   <>
-    <Icon symbol="arrow-down" />
+    <Icon symbol="arrow-down-b" />
   </>
 );

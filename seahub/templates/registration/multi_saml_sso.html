@@ -17,13 +17,13 @@
 			</div>
 			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
 				<input
-					type="text"
-					name="login"
-					placeholder="{% trans "Email" %}"
-					aria-label="{% trans "Email" %}"
-					title="{% trans "Email" %}"
-					value=""
-					class="input name-input w-100 form-item-input"
+				  type="text"
+				  name="login"
+				  placeholder="{% trans "Email" %}"
+				  aria-label="{% trans "Email" %}"
+				  title="{% trans "Email" %}"
+				  value=""
+				  class="input name-input w-100 form-item-input"
 				/>
 				<input type="hidden" name="next" value="{% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}" />
 
@@ -35,9 +35,9 @@
 
 				{% if remember_days > 0 %}
 				<label class="login-form-pass-member d-flex align-items-center">
-					<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-					<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
-					<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
+				  <span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+				  <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
 				</label>
 				{% endif %}
 

@@ -651,6 +651,10 @@ input.short-input {
   font-weight: normal;
 }
 
+.login-panel-wrapper .login-panel-bottom-container .forgot-passwd:hover {
+  color: var(--bs-orange);
+}
+
 .login-panel-wrapper .login-panel-bottom-container > :last-child {
   margin-left: auto !important;
 }
@@ -672,9 +676,7 @@ input.short-input {
 }
 
 .login-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  width: 12px !important;
-  height: 12px !important;
-  color: inherit;
+  color: var(--bs-body-secondary-color);
   margin-top: -2px;
 }
 
@@ -745,6 +747,7 @@ input.short-input {
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
+  color: var(--bs-body-secondary-color);
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container > div {
@@ -792,6 +795,7 @@ input.short-input {
   line-height: 22px;
   font-size: 14px;
   color: var(--bs-body-secondary-color);
+  text-align: center;
 }
 
 .password-reset-panel-wrapper .login-form-wrapper {
@@ -848,6 +852,7 @@ input.short-input {
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
+  color: var(--bs-body-secondary-color);
 }
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container > div {
@@ -942,6 +947,7 @@ input.short-input {
 
 .org-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
+  color: var(--bs-body-secondary-color);
 }
 
 .org-register-panel-wrapper .login-panel-bottom-container > div {
@@ -1036,6 +1042,7 @@ input.short-input {
 
 .individual-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
+  color: var(--bs-body-secondary-color);
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container > div {
