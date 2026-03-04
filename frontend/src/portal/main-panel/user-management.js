@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Nav, NavItem, NavLink, Button, Input, Label, FormGroup } from 'reactstrap';
+import { Nav, NavItem, NavLink, Button, Input, FormGroup } from 'reactstrap';
 import { EmptyTip, toaster, IconButton } from '@/components';
 import dayjs from '@/utils/dayjs';
 import { gettext } from '@/constants';
