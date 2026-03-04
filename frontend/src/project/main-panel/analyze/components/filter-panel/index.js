@@ -77,6 +77,14 @@ const FilterPanel = ({ filters, filterableFieldOptions, handleFilterChange }) =>
             value={activeState ? activeState.value : ''}
             onChange={onStateChange}
             onToggle={() => {}}
+            modifiers={[
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 4],
+                }
+              }
+            ]}
           />
         )}
       </div>

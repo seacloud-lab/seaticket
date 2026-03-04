@@ -173,11 +173,13 @@ const Analyze = ({ title }) => {
       </TopBar>
       <div className="sea-qa-project-analyze">
         <div className="analyze-main-content">
-          <FilterPanel
-            filters={filters}
-            filterableFieldOptions={filterableFieldOptions}
-            handleFilterChange={handleFilterChange}
-          />
+          {records && records.length > 0 && (
+            <FilterPanel
+              filters={filters}
+              filterableFieldOptions={filterableFieldOptions}
+              handleFilterChange={handleFilterChange}
+            />
+          )}
           {renderContent()}
         </div>
         {isSettingsOpen && (
