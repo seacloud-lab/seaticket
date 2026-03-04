@@ -4,7 +4,7 @@ import hashlib
 from urllib.parse import quote_plus
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    StatsAIByTeam, StatsAIByOwner, Workspaces
+    AIUsageStatistics, AIUsageStatistics, Workspaces
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
@@ -24,7 +24,7 @@ from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.notifications.models import ProjectNotification
-from seahub.utils import normalize_cache_key
+from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
@@ -243,6 +243,7 @@ def url_to_filename(url):
     # Add .json extension
     return filename + '.json'
 
+
 def get_ai_credit_by_org_id(org_id):
     role = ORG_DEFAULT
     os = OrgSettings.objects.filter(org_id=org_id).first()
@@ -257,12 +258,12 @@ def get_ai_credit_by_org_id(org_id):
     return ai_credit
 
 
-def get_ai_credit_by_owner_id(owner_id):
-    if '@seafile_group' in owner_id:
+def get_ai_credit_by_username(username):
+    if '@seafile_group' in username:
         return -1
 
     try:
-        user_role = UserRole.objects.get_user_role(owner_id)
+        user_role = UserRole.objects.get_user_role(username)
         role = user_role.role
     except UserRole.DoesNotExist:
         role = DEFAULT_USER
@@ -272,18 +273,26 @@ def get_ai_credit_by_owner_id(owner_id):
 
 
 def get_ai_cost_by_org_id(org_id):
-    month = django_timezone.now().replace(day=1)
-    cost = StatsAIByTeam.objects.filter(org_id=org_id, month=month).aggregate(
-        total_cost=Coalesce(Sum('cost'), Value(0.0))
-    )['total_cost']
+    cache_key = f'ai_cost_org_{org_id}'
+    cost = cache.get(cache_key)
+    if not cost:
+        cost = AIUsageStatistics.objects.filter(date__range=get_month_date_range(), org_id=org_id).aggregate(
+            total_cost=Coalesce(Sum('cost'), Value(0.0))
+        )['total_cost']
+        cache_timeout = 600 # update / 10 min
+        cache.set(cache_key, cost, cache_timeout)
     return cost
 
 
-def get_ai_cost_by_owner_id(owner_id):
-    month = django_timezone.now().replace(day=1)
-    cost = StatsAIByOwner.objects.filter(owner_id=owner_id, month=month).aggregate(
-        total_cost=Coalesce(Sum('cost'), Value(0.0))
-    )['total_cost']
+def get_ai_cost_by_username(username):
+    cache_key = f'ai_cost_user_{username}'
+    cost = cache.get(cache_key)
+    if not cost:
+        cost = AIUsageStatistics.objects.filter(date__range=get_month_date_range(), username=username).aggregate(
+            total_cost=Coalesce(Sum('cost'), Value(0.0))
+        )['total_cost']
+        cache_timeout = 600 # update / 10 min
+        cache.set(cache_key, cost, cache_timeout)
     return cost
 
 
@@ -296,10 +305,10 @@ def check_ai_limit(username, org_id):
         cost = get_ai_cost_by_org_id(org_id)
     else:
         # Personal user
-        credit = get_ai_credit_by_owner_id(username)
+        credit = get_ai_credit_by_username(username)
         if credit == -1:
             return False
-        cost = get_ai_cost_by_owner_id(username)
+        cost = get_ai_cost_by_username(username)
 
     is_exceed = cost >= credit
     return is_exceed

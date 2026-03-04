@@ -298,6 +298,17 @@ class OrgAdminAPI {
     return this.req.get(url, { params: params });
   }
 
+  orgAdminGetAIStatisticsDetail(orgID, view, startDate, endDate, condition) {
+    const url = this.server + '/api/v1/org/' + orgID + '/admin/statistics/ai/detail/';
+    let params = {
+      view,
+      start_date: startDate.format('YYYY-MM-DD'),
+      end_date: endDate.format('YYYY-MM-DD'),
+      condition
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const orgAdminAPI = new OrgAdminAPI();

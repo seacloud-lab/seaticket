@@ -99,7 +99,7 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
         if not has_recorded_result:
             item = f'data: {json.dumps({
                 "results": record_message_to_db({
-                    "ai_reply": "There is an issue with the AI server or web server (internal server error), please try again later",
+                    "ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later",
                     "sources": []
                 }, username, session_uuid, message_id, query, attachments)
             })}\n\n'
@@ -209,19 +209,8 @@ def get_attachments(seadb_api, project_uuid, attachments):
 
 def remove_content_details_in_attachments(attachments):
     for attachment in attachments:
-        try:
-            del attachment['content']
-        except:
-            pass
-
-        try:
-            del attachment['comments']
-        except:
-            pass
-
-        try:
-            del attachment['emails']
-        except:
-            pass
+        attachment.pop('content', None)
+        attachment.pop('comments', None)
+        attachment.pop('emails', None)
     
     return attachments

@@ -637,16 +637,34 @@ class SysAdminServiceApi {
   }
 
   // AI statistics
-  sysAdminGetAIStatistics(date, groupBy, page, perPage) {
+  sysAdminGetAIStatistics(date, month, groupBy, page, perPage) {
     const url = this.server + '/api/v1/admin/statistics/ai/';
     let params = {
-      date: date,
       group_by: groupBy,
       page: page,
       per_page: perPage
     };
+    if (date) {
+      params.date = date;
+    }
+    if (month) {
+      params.month = month;
+    }
     return this.req.get(url, { params: params });
   }
+
+
+  sysAdminGetAIStatisticsDetail(view, startDate, endDate, condition) {
+    const url = this.server + '/api/v1/admin/statistics/ai/detail/';
+    let params = {
+      view,
+      start_date: startDate.format('YYYY-MM-DD'),
+      end_date: endDate.format('YYYY-MM-DD'),
+      condition
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const sysAdminAPI = new SysAdminServiceApi();

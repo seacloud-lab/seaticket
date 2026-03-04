@@ -1,0 +1,170 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Dropdown } from 'reactstrap';
+import { Link } from '@gatsbyjs/reach-router';
+import { gettext, siteRoot } from '@/constants';
+import {
+  CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem,
+} from '@/components';
+
+const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStaticsDetailDialog }) => {
+  const [highlight, setHighlight] = useState(false);
+  const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
+
+  const getOrgURL = useCallback((orgID) => {
+    return `${siteRoot}sys/organizations/${orgID}/info/`;
+  }, []);
+
+  const getGroupURL = useCallback((groupID) => {
+    return `${siteRoot}sys/groups/${groupID}/members/`;
+  }, []);
+
+  const getOwnerURL = useCallback((owner) => {
+    if (!owner) return '';
+    if (owner.indexOf('@seafile_group') !== -1) {
+      return getGroupURL(owner.split('@')[0]);
+    } else {
+      return `${siteRoot}sys/users/${encodeURIComponent(owner)}/`;
+    }
+  }, [getGroupURL]);
+
+  const onMouseEnter = useCallback(() => {
+    if (hasFreezed) return;
+    setHighlight(true);
+  }, [hasFreezed]);
+
+  const onMouseLeave = useCallback(() => {
+    if (hasFreezed) return;
+    if (isMoreMenuShow) return;
+    setHighlight(false);
+  }, [hasFreezed, isMoreMenuShow]);
+
+  const toggleMoreMenu = useCallback(() => {
+    setIsMoreMenuShow(!isMoreMenuShow);
+  }, [isMoreMenuShow]);
+
+  const handleOpenAIStaticsDetailDialog = useCallback(() => {
+    let condition = {};
+    if (groupBy === 'user') {
+      condition.username = item.username;
+    } else if (groupBy === 'project') {
+      condition.project_uuid = item.project_uuid;
+    } else if (groupBy === 'group') {
+      condition.group_id = item.group_id;
+    } else if (groupBy === 'org') {
+      condition.org_id = item.org_id;
+    }
+    onOpenAIStaticsDetailDialog(groupBy, condition);
+  }, [item, groupBy, onOpenAIStaticsDetailDialog]);
+
+  const renderOp = useCallback(() => {
+    return (
+      <>
+        {highlight && (
+          <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-flex">
+            <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} className="ml-0" />
+            <CustomizeDropdownMenu className="position-fixed">
+              <CustomizeDropdownItem onClick={handleOpenAIStaticsDetailDialog}>{gettext('Details')}</CustomizeDropdownItem>
+            </CustomizeDropdownMenu>
+          </Dropdown>
+        )}
+      </>
+    );
+  }, [highlight, isMoreMenuShow, isMoreMenuShow, toggleMoreMenu, handleOpenAIStaticsDetailDialog]);
+
+  useEffect(() => {
+    updateFreezed && updateFreezed(isMoreMenuShow);
+    if (!isMoreMenuShow) {
+      setHighlight(false);
+    }
+  }, [isMoreMenuShow, updateFreezed]);
+
+  return (
+    <tr
+      className={highlight ? 'tr-highlight' : ''}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {groupBy === 'user' && (
+        <>
+          <td>
+            <Link to={getOwnerURL(item.username)}>
+              {item.nickname}
+            </Link>
+          </td>
+          <td>
+            {item.org_name && item.org_id > 0 && (
+              <Link to={getOrgURL(item.org_id)}>{item.org_name}</Link>
+            )}
+            {item.org_id === -1 && '-'}
+            {item.org_id !== -1 && !item.org_name && item.org_id}
+          </td>
+          <td>{item.total_cost}</td>
+          <td>{renderOp()}</td>
+        </>
+      )}
+      {groupBy === 'project' && (
+        <>
+          <td>{item.project_name || item.project_uuid}</td>
+          <td>
+            {(item.nickname || item.group_name) && item.group_name ? (
+              <div>
+                <Link to={getOwnerURL(item.owner)}>{item.group_name}</Link>
+                {' '}
+                {'(' + gettext('group') + ')'}
+              </div>
+            ) : (
+              <Link to={getOwnerURL(item.owner)}>
+                {item.group_name ? item.group_name : item.nickname}
+              </Link>
+            )}
+            {!(item.nickname || item.group_name) && item.owner}
+          </td>
+          <td>
+            {item.org_name && item.org_id > 0 && (
+              <Link to={getOrgURL(item.org_id)}>{item.org_name}</Link>
+            )}
+            {item.org_id === -1 && '-'}
+            {item.org_id !== -1 && !item.org_name && item.org_id}
+          </td>
+          <td>{item.total_cost}</td>
+          <td>{renderOp()}</td>
+        </>
+      )}
+      {groupBy === 'group' && (
+        <>
+          <td>
+            <Link to={getGroupURL(item.group_id)}>
+              {item.group_name}
+            </Link>
+          </td>
+          <td><Link to={getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
+          <td>
+            {item.org_name && item.org_id > 0 && (
+              <Link to={getOrgURL(item.org_id)}>{item.org_name}</Link>
+            )}
+            {item.org_id === -1 && '-'}
+            {item.org_id !== -1 && !item.org_name && item.org_id}
+          </td>
+          <td>{item.total_cost}</td>
+          <td>{renderOp()}</td>
+        </>
+      )}
+      {groupBy === 'org' && (
+        <>
+          <td>
+            {item.org_name && item.org_id > 0 && (
+              <Link to={getOrgURL(item.org_id)}>{item.org_name}</Link>
+            )}
+            {item.org_id === -1 && '-'}
+            {item.org_id !== -1 && !item.org_name && item.org_id}
+          </td>
+          <td><Link to={getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
+          <td>{item.total_cost}</td>
+          <td>{renderOp()}</td>
+        </>
+      )}
+    </tr>
+  );
+};
+
+export default StatisticItem;

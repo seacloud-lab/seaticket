@@ -11,6 +11,7 @@
     "classnames": "^2.3.2",
     "copy-to-clipboard": "3.3.1",
     "dayjs": "1.10.7",
+    "d3": "~7.9.0",
     "deep-copy": "^1.4.2",
     "embedding-atlas": "^0.15.0",
     "i18next": "^25.2.1",

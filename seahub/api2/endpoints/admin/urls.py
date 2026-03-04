@@ -18,7 +18,7 @@ from .projects import AdminProjects, AdminProject, AdminTrashProjectsView, Admin
 from .group_projects import AdminGroupProjects, AdminGroupProject
 from .group_members import AdminGroupMembers, AdminGroupMember
 from .org_projects import OrgProjects
-from .statistics import AdminAIStatisticsView
+from .statistics import AdminAIStatisticsView, AdminAIStatisticsDetailView
 
 urlpatterns = [
     ## admin::sysinfo
@@ -75,4 +75,5 @@ urlpatterns = [
 
     ## admin::ai-statistics
     re_path(r'^statistics/ai/$', AdminAIStatisticsView.as_view(), name='api-v1-admin-ai-statistics'),
+    re_path(r'^statistics/ai/detail/$', AdminAIStatisticsDetailView.as_view(), name='api-v1-admin-ai-statistics-detail'),
 ]

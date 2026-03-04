@@ -1,189 +1,19 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { Link } from '@gatsbyjs/reach-router';
-import { CenteredLoading, EmptyTip } from '@/components';
-import { gettext, siteRoot, orgID, mediaUrl } from '@/constants';
+import { gettext, orgID } from '@/constants';
 import { Utils } from '@/utils/utils';
-import toaster from '@/components/toaster';
 import orgAdminAPI from '../api';
 import MainPanelTopbar from '../main-panel/top-bar';
-import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
 import MonthPicker from '../../project/main-panel/search/month-picker';
+import { TokenCostDetailDialog } from '@/components/dialog';
+import { CustomizeTabs, toaster } from '@/components';
+import StatisticList from './statistic-list';
 
 import '@/css/statistics.css';
-
-class Item extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      highlight: false
-    };
-  }
-
-  handleMouseEnter = () => {
-    this.setState({ highlight: true });
-  };
-
-  handleMouseLeave = () => {
-    this.setState({ highlight: false });
-  };
-
-  getOwnerURL = (owner) => {
-    if (!owner) return '';
-    if (owner.indexOf('@seafile_group') !== -1) {
-      return `${siteRoot}org/groups/${owner.split('@')[0]}/`;
-    } else {
-      return `${siteRoot}org/users/info/${encodeURIComponent(owner)}/`;
-    }
-  };
-
-  render() {
-    const { item, groupBy } = this.props;
-    const { highlight } = this.state;
-
-    return (
-      <tr
-        className={highlight ? 'tr-highlight' : ''}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
-      >
-        {groupBy === 'owner' && (
-          <>
-            <td>
-              {(item.nickname || item.group_name) && (
-                <Link to={this.getOwnerURL(item.owner)}>
-                  {item.group_name ? item.group_name : item.nickname}
-                </Link>
-              )}
-              {!(item.nickname || item.group_name) && item.owner}
-            </td>
-            <td>{item.total_cost}</td>
-          </>
-        )}
-        {groupBy === 'project' && (
-          <>
-            <td>{item.project_name || item.project_uuid}</td>
-            <td>
-              {(item.nickname || item.group_name) && (
-                <Link to={this.getOwnerURL(item.owner)}>
-                  {item.group_name ? item.group_name : item.nickname}
-                </Link>
-              )}
-              {!(item.nickname || item.group_name) && item.owner}
-            </td>
-            <td>{item.total_cost}</td>
-          </>
-        )}
-        {groupBy === 'workspace' && (
-          <>
-            <td>
-              <Link to={this.getOwnerURL(item.owner)}>
-                {item.workspace_name}
-              </Link>
-            </td>
-            <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
-            <td>{item.total_cost}</td>
-          </>
-        )}
-      </tr>
-    );
-  }
-}
-
-Item.propTypes = {
-  item: PropTypes.object.isRequired,
-  groupBy: PropTypes.string.isRequired
-};
-
-class Content extends Component {
-  getPreviousPage = () => {
-    this.props.getStatisticsByPage(this.props.pageInfo.current_page - 1);
-  };
-
-  getNextPage = () => {
-    this.props.getStatisticsByPage(this.props.pageInfo.current_page + 1);
-  };
-
-  render() {
-    const { loading, errorMsg, items, pageInfo, groupBy, curPerPage, resetPerPage } = this.props;
-
-    if (loading) {
-      return <CenteredLoading />;
-    }
-
-    if (errorMsg) {
-      return <p className="error text-center">{errorMsg}</p>;
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="h-100">
-          <EmptyTip
-            src={`${mediaUrl}img/no-items-tip.png`}
-            title={gettext('No items')}
-          />
-        </div>
-      );
-    }
-    return (
-      <Fragment>
-        <table className="table table-hover table-vcenter">
-          <thead>
-            {groupBy === 'owner' && (
-              <tr>
-                <th>{`${gettext('User')}`}</th>
-                <th>{gettext('Cost')}</th>
-              </tr>
-            )}
-            {groupBy === 'project' && (
-              <tr>
-                <th width="40%">{gettext('Project')}</th>
-                <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
-                <th width="25%">{gettext('Cost')}</th>
-              </tr>
-            )}
-            {groupBy === 'workspace' && (
-              <tr>
-                <th>{gettext('Workspace')}</th>
-                <th>{gettext('Creator')}</th>
-                <th>{gettext('Cost')}</th>
-              </tr>
-            )}
-          </thead>
-          <tbody>
-            {items.map((item, index) => (
-              <Item key={index} item={item} groupBy={groupBy} />
-            ))}
-          </tbody>
-        </table>
-        <Paginator
-          gotoPreviousPage={this.getPreviousPage}
-          gotoNextPage={this.getNextPage}
-          currentPage={pageInfo.current_page}
-          hasNextPage={pageInfo.has_next_page}
-          canResetPerPage={true}
-          curPerPage={curPerPage}
-          resetPerPage={resetPerPage}
-        />
-      </Fragment>
-    );
-  }
-}
-
-Content.propTypes = {
-  loading: PropTypes.bool.isRequired,
-  errorMsg: PropTypes.string,
-  items: PropTypes.array.isRequired,
-  curPerPage: PropTypes.number.isRequired,
-  pageInfo: PropTypes.object.isRequired,
-  getStatisticsByPage: PropTypes.func.isRequired,
-  resetPerPage: PropTypes.func.isRequired,
-  groupBy: PropTypes.string.isRequired
-};
 
 class StatisticsAI extends Component {
   constructor(props) {
@@ -200,8 +30,11 @@ class StatisticsAI extends Component {
         has_next_page: false
       },
       results: [],
-      groupBy: 'owner',
-      queryDate: 'date'
+      groupBy: 'project',
+      queryDate: 'date',
+      isOpenStatisticsDetailDialog: false,
+      condition: {},
+      hasFreezed: false,
     };
     this.initPage = 1;
     this.dateTabList = [
@@ -214,11 +47,42 @@ class StatisticsAI extends Component {
         value: 'month'
       },
     ];
+    this.statisticsDetailViews = [
+      { value: 'date', label: gettext('Date') },
+    ];
   }
 
   componentDidMount() {
     this.getStatisticsByPage(this.state.currentPage);
   }
+
+  getAIStatisticsDetail = (view, startDate, endDate, condition) => {
+    return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, view, startDate, endDate, condition);
+  };
+
+  onOpenAIStaticsDetailDialog = (groupBy, condition) => {
+    this.statisticsDetailViews = [
+      { value: 'date', label: gettext('Date') },
+    ];
+    if (groupBy === 'user' || groupBy === 'group') {
+      this.statisticsDetailViews.push({
+        value: 'project', label: gettext('Project')
+      });
+    }
+    if (groupBy === 'project' || groupBy === 'group') {
+      this.statisticsDetailViews.push({
+        value: 'user', label: gettext('User')
+      });
+    }
+    this.setState({ isOpenStatisticsDetailDialog: true, condition });
+  };
+
+  onCloseAIStaticsDetailDialog = () => {
+    this.statisticsDetailViews = [
+      { value: 'date', label: gettext('Date') },
+    ];
+    this.setState({ isOpenStatisticsDetailDialog: false, condition: {} });
+  };
 
   getStatisticsByPage = (page) => {
     const { perPage, date, month, groupBy, queryDate } = this.state;
@@ -254,7 +118,8 @@ class StatisticsAI extends Component {
       this.setState({
         date: date,
         currentPage: this.initPage,
-        results: []
+        results: [],
+        hasFreezed: false,
       }, () => {
         this.getStatisticsByPage(this.initPage);
       });
@@ -266,6 +131,7 @@ class StatisticsAI extends Component {
       this.setState({
         month: month,
         currentPage: this.initPage,
+        hasFreezed: false,
         results: []
       }, () => {
         this.getStatisticsByPage(this.initPage);
@@ -276,20 +142,20 @@ class StatisticsAI extends Component {
   resetPerPage = (newPerPage) => {
     this.setState({
       perPage: newPerPage,
-      currentPage: this.initPage
+      currentPage: this.initPage,
+      hasFreezed: false,
     }, () => {
       this.getStatisticsByPage(this.initPage);
     });
   };
 
   changeTabActive = (groupBy) => {
-    if (groupBy === this.state.groupBy) {
-      return;
-    }
+    if (groupBy === this.state.groupBy) return;
     const newState = {
       groupBy: groupBy,
       currentPage: this.initPage,
-      results: []
+      hasFreezed: false,
+      results: [],
     };
     this.setState(newState, () => {
       this.getStatisticsByPage(this.initPage);
@@ -298,20 +164,26 @@ class StatisticsAI extends Component {
 
   changeQueryDateTab = (index) => {
     const queryDate = this.dateTabList[index].value;
-    if (queryDate === this.state.queryDate) {
-      return;
-    }
+    if (queryDate === this.state.queryDate) return;
     this.setState({
       queryDate: queryDate,
       currentPage: this.initPage,
+      hasFreezed: false,
       results: []
     }, () => {
       this.getStatisticsByPage(this.initPage);
     });
   };
 
+  updateFreezed = (hasFreezed) => {
+    this.setState({ hasFreezed });
+  };
+
   render() {
-    const { isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month } = this.state;
+    const {
+      isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month, hasFreezed,
+      isOpenStatisticsDetailDialog, condition,
+    } = this.state;
     return (
       <Fragment>
         <MainPanelTopbar />
@@ -319,26 +191,16 @@ class StatisticsAI extends Component {
           <div className="cur-view-container">
             <StatisticNav currentItem="ai" />
             <div className="cur-view-content">
-              <div className="statistic-tabs">
-                <div
-                  className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('owner')}
-                >
-                  {gettext('Users')}
-                </div>
-                <div
-                  className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('project')}
-                >
-                  {gettext('Project')}
-                </div>
-                <div
-                  className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
-                  onClick={() => this.changeTabActive('workspace')}
-                >
-                  {gettext('Workspace')}
-                </div>
-              </div>
+              <CustomizeTabs
+                className="statistic-tabs"
+                value={groupBy}
+                tabs={[
+                  { value: 'project', label: gettext('Projects') },
+                  { value: 'user', label: gettext('Users') },
+                  { value: 'group', label: gettext('Groups') },
+                ]}
+                onChange={this.changeTabActive}
+              />
               <div className="d-flex mb-4">
                 <CapsuleTabs
                   tabs={this.dateTabList}
@@ -371,7 +233,7 @@ class StatisticsAI extends Component {
                   )}
                 </div>
               </div>
-              <Content
+              <StatisticList
                 loading={isLoading}
                 errorMsg={errorMsg}
                 items={results}
@@ -380,8 +242,19 @@ class StatisticsAI extends Component {
                 getStatisticsByPage={this.getStatisticsByPage}
                 resetPerPage={this.resetPerPage}
                 groupBy={groupBy}
+                hasFreezed={hasFreezed}
+                updateFreezed={this.updateFreezed}
+                onOpenAIStaticsDetailDialog={this.onOpenAIStaticsDetailDialog}
               />
             </div>
+            {isOpenStatisticsDetailDialog && (
+              <TokenCostDetailDialog
+                views={this.statisticsDetailViews}
+                onCloseDialog={this.onCloseAIStaticsDetailDialog}
+                getAIStatisticsDetail={this.getAIStatisticsDetail}
+                condition={condition}
+              />
+            )}
           </div>
         </div>
       </Fragment>

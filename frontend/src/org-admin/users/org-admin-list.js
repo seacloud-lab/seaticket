@@ -14,11 +14,11 @@ class OrgAdminList extends React.Component {
       isItemFreezed: false,
     };
     this.columns = [
-      { key: 'name', name: gettext('Name'), width: '30%' },
-      { key: 'status', name: gettext('Status'), width: '15%' },
-      { key: 'create_at_last_login', name: gettext('Create at / Last login'), width: '20%' },
-      { key: 'placeholder', name: '', width: '30%' },
-      { key: 'op', width: '5%' },
+      { key: 'name', name: gettext('Name'), width: 0.3 },
+      { key: 'status', name: gettext('Status'), width: 0.15 },
+      { key: 'create_at_last_login', name: gettext('Create at / Last login'), width: 0.2 },
+      { key: 'placeholder', name: '', width: 0.3 },
+      { key: 'op', name: '', width: 44, isFixed: true },
     ];
   }
 
