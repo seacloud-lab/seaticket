@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import PriorityItem from './priority-item';
-import classnames from 'classnames';
-import CustomizePopover from '@/components/customize-popover';
-import { PRIORITIES } from '../../../constants/column';
+import { PriorityEditor, PriorityIconBtn } from '@/components';
+import { PRIORITIES, PRIORITY_MAP } from '../../../constants/column';
 
 import './index.css';
 
-const PriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
+const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
   const [value, setValue] = useState(oldValue || 0);
   const [isOpen, setIsOpen] = useState(false);
+
+  const ref = useRef(null);
 
   useEffect(() => {
     setValue(oldValue || 0);
@@ -51,43 +51,27 @@ const PriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected
 
   return (
     <>
-      <div className="sea-metadata-priority-editor d-flex" onClick={() => setIsOpen(!isOpen)} id={`priority-editor-${column.key}-${row._id}`}>
-        <PriorityItem value={value} readOnly={true} />
+      <div className="sea-metadata-priority-editor d-flex w-100 h-100" onClick={() => setIsOpen(!isOpen)} ref={ref}>
+        <PriorityIconBtn priority={PRIORITY_MAP[value + '']} />
       </div>
       {isOpen && (
-        <CustomizePopover
-          target={`priority-editor-${column.key}-${row._id}`}
-          className={classnames('sea-metadata-priority-editor-popover-container')}
-          hidePopover={() => setIsOpen(false)}
-          hidePopoverWithEsc={() => setIsOpen(false)}
-          modifiers={[
-            { name: 'preventOverflow', options: { boundary: document.body } },
-            { name: 'offset', options: { offset: [-6, 8] } }
-          ]}
-        >
-          <div className="sea-metadata-priority-editor-popover">
-            {PRIORITIES.map((item, index) => (
-              <PriorityItem
-                key={index}
-                value={item.value}
-                hotKey={item.hotKey}
-                onClick={onChangeValue}
-                readOnly={false}
-                isSelected={item.value === value}
-              />
-            ))}
-          </div>
-        </CustomizePopover>
+        <PriorityEditor
+          target={ref}
+          priorities={PRIORITIES}
+          value={value}
+          onChange={onChangeValue}
+          onClose={() => setIsOpen(false)}
+        />
       )}
     </>
   );
 };
 
-PriorityEditor.propTypes = {
+SeaMetadataPriorityEditor.propTypes = {
   isCellSelected: PropTypes.bool,
   column: PropTypes.object,
   value: PropTypes.number,
   onChange: PropTypes.func,
 };
 
-export default PriorityEditor;
+export default SeaMetadataPriorityEditor;

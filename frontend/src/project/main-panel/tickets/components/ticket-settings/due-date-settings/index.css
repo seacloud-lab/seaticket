@@ -9,6 +9,10 @@
   cursor: pointer;
 }
 
-.ticket-due-date-formatter .due-date-input-wrapper {
-  width: 120px;
+.ticket-due-date-formatter .ticket-due-date-content {
+  height: 24px;
+}
+
+.ticket-due-date-formatter .ticket-due-date-content .ticket-due-date-value {
+  line-height: 24px;
 }

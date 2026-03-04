@@ -1,16 +1,15 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import {
   Tooltip,
   CustomizeSelect,
   SearchInput,
   Icon,
   IconButton as IconBtn,
+  IconButton,
 } from '@/components';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
-import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { gettext } from '@/constants';
 import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getTagsOptions } from '../../../../../utils/column';
@@ -24,7 +23,6 @@ import {
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
-import CustomizePopover from '@/components/customize-popover';
 import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import Tag from '@/sea-metadata/components/tag';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -55,7 +53,6 @@ class FilterItem extends React.Component {
     super(props);
     this.state = {
       filterTerm: props.filter.filter_term,
-      isPriorityFilterOpen: false,
     };
     this.filterPredicateOptions = null;
     this.filterTermModifierOptions = null;
@@ -84,8 +81,7 @@ class FilterItem extends React.Component {
       nextProps.filterColumn !== currentProps.filterColumn ||
       nextProps.filterConjunction !== currentProps.filterConjunction ||
       nextProps.conjunctionOptions !== currentProps.conjunctionOptions ||
-      nextProps.filterColumnOptions !== currentProps.filterColumnOptions ||
-      nextState.isPriorityFilterOpen !== this.state.isPriorityFilterOpen
+      nextProps.filterColumnOptions !== currentProps.filterColumnOptions
     );
     return shouldUpdated;
   }
@@ -249,9 +245,8 @@ class FilterItem extends React.Component {
     }
   };
 
-  onChangePriority = (index) => {
-    this.onFilterTermChanged(index);
-    this.onPriorityFilterClose();
+  onChangePriority = (value) => {
+    this.onFilterTermChanged(value);
   };
 
   getInputComponent = (type) => {
@@ -395,18 +390,10 @@ class FilterItem extends React.Component {
         placeholder={gettext('Select tag(s)')}
         searchable={true}
         searchPlaceholder={gettext('Search tag')}
-        noOptionsPlaceholder={gettext('No tags available')}
+        noOptionsPlaceholder={gettext('No available tags')}
         supportMultipleSelect={isSupportMultipleSelect}
       />
     );
-  };
-
-  onPriorityFilterOpen = () => {
-    this.setState({ isPriorityFilterOpen: true });
-  };
-
-  onPriorityFilterClose = () => {
-    this.setState({ isPriorityFilterOpen: false });
   };
 
   renderFilterTerm = (filterColumn) => {
@@ -495,7 +482,7 @@ class FilterItem extends React.Component {
         return (
           <CustomizeSelect
             disabled={readOnly}
-            className=" sea-metadata-selector-single-select"
+            className="sea-metadata-selector-single-select"
             value={selectedOptionDom}
             options={dataOptions || []}
             onChange={this.onSelectSingle}
@@ -530,33 +517,34 @@ class FilterItem extends React.Component {
         return this.renderTagsOption(filter_term, readOnly);
       }
       case CellType.PRIORITY: {
-        return (
-          <div>
-            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onPriorityFilterOpen} id={`priority-editor-${filterColumn.key}`} >
-              <PriorityFormatter value={Number(filter_term)} showName={true} className={readOnly ? '' : 'cursor-pointer'} />
-            </div>
-            {this.state.isPriorityFilterOpen && (
-              <CustomizePopover
-                target={`priority-editor-${filterColumn.key}`}
-                className={classnames('sea-metadata-priority-editor-popover-container')}
-                hidePopover={this.onPriorityFilterClose}
-                hidePopoverWithEsc={this.onPriorityFilterClose}
-              >
-                <div className="sea-metadata-priority-editor-popover">
-                  {PRIORITIES.map((item, index) => (
-                    <PriorityItem
-                      key={index}
-                      value={item.value}
-                      hotKey={item.hotKey}
-                      onClick={this.onChangePriority}
-                      readOnly={false}
-                      isSelected={item.value === Number(filter_term)}
-                    />
-                  ))}
+        const options = PRIORITIES.map(priority => {
+          const isSelected = Number(filter_term) === priority.value;
+          return {
+            value: priority.value,
+            label: (
+              <>
+                <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="option-editor-option-check-btn no-hover-bg mr-3" />
+                <div className="option-editor-option-content">
+                  {priority.icon && (<IconButton icon={priority.icon} size={16} className="no-hover-bg option-editor-option-icon mr-2 ml-0" />)}
+                  <div className="sea-ticket-priority-editor-option-name-hotkey">
+                    <div className="sea-ticket-priority-editor-option-name">{priority.name}</div>
+                    <div className="sea-ticket-priority-editor-option-hotkey">{priority.hotKey}</div>
+                  </div>
                 </div>
-              </CustomizePopover>
-            )}
-          </div>
+              </>
+            )
+          };
+        });
+
+        return (
+          <CustomizeSelect
+            disabled={readOnly}
+            className="sea-metadata-selector-priority"
+            value={{ label: <PriorityFormatter value={Number(filter_term)} showName={true} className={readOnly ? '' : 'cursor-pointer'} /> }}
+            options={options || []}
+            onChange={this.onChangePriority}
+            isInModal={this.props.isInModal}
+          />
         );
       }
       default: {

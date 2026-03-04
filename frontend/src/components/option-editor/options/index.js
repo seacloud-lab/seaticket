@@ -10,6 +10,7 @@ import './index.css';
 
 const Options = ({
   isLoading = false,
+  hasAvailableOptions = false,
   options,
   maxHeight,
   isSearchEnabled,
@@ -21,7 +22,7 @@ const Options = ({
   optionClassName,
   onToggleOption,
   onPressTab,
-  onChange,
+  onToggle,
 }) => {
   const maxItemNum = useMemo(() => isNumber(optionHeight) ? Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1 : 30, [maxHeight, optionHeight]);
 
@@ -80,8 +81,8 @@ const Options = ({
   const onEsc = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    onChange && onChange();
-  }, [onChange]);
+    onToggle && onToggle();
+  }, [onToggle]);
 
   const onHotKey = useCallback((event) => {
     if (isEnter(event)) {
@@ -121,7 +122,7 @@ const Options = ({
         <CenteredLoading style={{ minHeight: '100px' }} />
       )}
       {!isLoading && options.length === 0 && (
-        <Tip isSearchEnabled={isSearchEnabled} searchValue={searchValue} tip={emptyTip} />
+        <Tip isSearchEnabled={isSearchEnabled} hasAvailableOptions={hasAvailableOptions} searchValue={searchValue} tip={emptyTip} />
       )}
       {!isLoading && options.length > 0 && (
         <>

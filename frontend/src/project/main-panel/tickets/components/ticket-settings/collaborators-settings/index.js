@@ -1,8 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Collaborator, AsyncCollaborator, CollaboratorEditor } from '@/components';
+import { Collaborator, AsyncCollaborator, CollaboratorEditor, CustomizeLabel } from '@/components';
 import { useCollaborators } from '@/sea-metadata';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isA } from '@/utils/hotkey';
@@ -65,8 +64,14 @@ const CollaboratorsSettings = ({
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{title}</Label>
-        <div className="collaborators-formatter" onClick={openAssigneesEditor} ref={assigneesRef}>
+        <CustomizeLabel icon="group">
+          {title}
+        </CustomizeLabel>
+        <div
+          className={classnames('collaborators-formatter', { 'valid': value.length > 0 })}
+          onClick={openAssigneesEditor}
+          ref={assigneesRef}
+        >
           {value.length > 0 ? value.map(assignee => {
             if (!assignee) return null;
             return (

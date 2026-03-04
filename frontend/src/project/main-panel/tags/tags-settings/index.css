@@ -8,8 +8,6 @@
   border-radius: 3px;
 }
 
-.tags-formatter .sea-qa-tag {
-  margin-bottom: 4px;
-  margin-top: 4px;
-  margin-right: 10px;
+.tags-formatter.valid {
+  padding: 5px 0;
 }

@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Icon } from '@/components';
-import CustomizePopover from '@/components/customize-popover';
-import PriorityItem from '@/sea-metadata/components/cell-editors/priority-editor/priority-item';
+import { Icon, PriorityEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { isEsc, isEnter, isP, isUpArrow, isDownArrow } from '@/utils/hotkey';
@@ -86,8 +83,10 @@ const RateSettings = ({
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{gettext('Priority')}</Label>
-        <div className="ticket-rate-formatter" id="ticket-rate-formatter" onClick={openEditor} ref={editorRef}>
+        <CustomizeLabel icon="flag">
+          {gettext('Priority')}
+        </CustomizeLabel>
+        <div className="ticket-rate-formatter" onClick={openEditor} ref={editorRef}>
           <div className={classnames('d-flex align-items-center', { 'tip-default': !rateOption.value })}>
             {rateOption.value ? (<Icon className="mr-1" symbol={rateOption.icon} title={rateOption.name}/>) : '' }
             {gettext(rateOption.name)}
@@ -95,30 +94,13 @@ const RateSettings = ({
         </div>
       </div>
       {!isReadonly && isShowEditor && (
-        <CustomizePopover
-          target={'ticket-rate-formatter'}
-          className={classnames('sea-metadata-priority-editor-popover-container')}
-          hidePopover={closeEditor}
-          hidePopoverWithEsc={closeEditor}
-          modifiers={[
-            { name: 'preventOverflow', options: { boundary: document.body } },
-            { name: 'offset', options: { offset: [-6, 8] } }
-          ]}
-        >
-          <div className="sea-metadata-priority-editor-popover" id="priority-editor-popover">
-            {PRIORITIES.map((item, index) => (
-              <PriorityItem
-                key={index}
-                value={item.value}
-                hotKey={item.hotKey}
-                onClick={onChangeValue}
-                readOnly={false}
-                isSelected={item.value === value}
-                isActive={highlightIndex === index}
-              />
-            ))}
-          </div>
-        </CustomizePopover>
+        <PriorityEditor
+          target={editorRef}
+          priorities={PRIORITIES}
+          value={value}
+          onChange={onChangeValue}
+          onClose={closeEditor}
+        />
       )}
     </>
   );

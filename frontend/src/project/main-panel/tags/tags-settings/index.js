@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Option from '@/project/components/option';
-import { OptionEditor } from '@/components';
+import Tag from '@/sea-metadata/components/tag';
+import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
+import { CustomizePopover, CustomizeLabel } from '@/components';
+import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
-import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
 import TagOption from '@/components/tag-option';
@@ -13,9 +14,8 @@ import TagOption from '@/components/tag-option';
 import './index.css';
 
 const TagsSettings = ({
-  id,
   isReadonly,
-  value = [],
+  value,
   className = 'mb-4',
   isLoading = false,
   tagsData,
@@ -25,16 +25,18 @@ const TagsSettings = ({
   const [isShowEditor, setIsShowEditor] = useState(false);
 
   const editorRef = useRef(null);
+  const optionEditorContainerRef = useRef(null);
 
-  const tagOptions = useMemo(() => {
+  const options = useMemo(() => {
     if (isLoading) return [];
-    return tagsData && tagsData.rows ? tagsData.rows.map(tag => {
+    if (!tagsData?.rows) return [];
+    return tagsData.rows.map(tag => {
       return {
         ...tag,
         value: tag._id,
         label: <TagOption tag={tag} />,
       };
-    }) : [];
+    });
   }, [tagsData, isLoading]);
 
   const openEditor = useCallback((event) => {
@@ -45,8 +47,16 @@ const TagsSettings = ({
   }, [isReadonly]);
 
   const closeEditor = useCallback(() => {
+    let newValue = optionEditorContainerRef.current.getValue();
+    if (isCellValueChanged(value, newValue)) {
+      if (newValue.length > 0) {
+        const tags = getRowsByIds(tagsData, newValue);
+        newValue = tags.map(tag => Number(tag._id));
+      }
+      onChange(newValue);
+    }
     setIsShowEditor(false);
-  }, []);
+  }, [value, onChange]);
 
   const handleCreateTag = useCallback((name) => {
     const random = Math.floor(Math.random() * (SELECT_OPTION_COLORS.length - 1));
@@ -62,16 +72,17 @@ const TagsSettings = ({
     });
   }, [createTag]);
 
-  const handleChange = useCallback((newValue) => {
-    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
-    if (!isCellValueChanged(_newValue, value)) return;
-    let validValue = newValue;
-    if (Array.isArray(newValue) && newValue.length > 0) {
+  const handleRemove = useCallback((event, tag) => {
+    if (isShowEditor) return;
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    let newValue = value.filter(i => i !== Number(tag._id));
+    if (newValue.length > 0) {
       const tags = getRowsByIds(tagsData, newValue);
-      validValue = tags.map(tag => Number(tag._id));
+      newValue = tags.map(tag => Number(tag._id));
     }
-    onChange(validValue);
-  }, [value, tagsData, onChange]);
+    onChange(newValue);
+  }, [isShowEditor, value, tagsData, onChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover('tags-editor-popover')) return;
@@ -94,32 +105,57 @@ const TagsSettings = ({
 
   return (
     <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-      <Label>{gettext('Tags')}</Label>
-      <div className="tags-formatter" onClick={openEditor} ref={editorRef}>
+      <CustomizeLabel icon="tag-filled">
+        {gettext('Tags')}
+      </CustomizeLabel>
+      <div
+        className={classnames('tags-formatter', { 'valid': selectedTags.length > 0 })}
+        onClick={openEditor}
+        ref={editorRef}
+      >
         {selectedTags.length > 0 ? (
           <>
-            {selectedTags.map(tag => (<Option key={tag._id} option={tag} />))}
+            {selectedTags.map(tag => (
+              <Tag tag={tag} key={tag._id} className="mr-0 mt-1 mb-1">
+                <RemoveBtn callback={(event) => handleRemove(event, tag)} />
+              </Tag>
+            ))}
           </>
         ) : (
           <div className="tip-default">{gettext('No tags')}</div>
         )}
       </div>
       {isShowEditor && (
-        <OptionEditor
-          id={id}
+        <CustomizePopover
           target={editorRef}
-          isLoading={isLoading}
-          isMultiple={true}
-          className="sea-qa-tags-selector-popover hide-description"
-          placeholder={gettext('Search tags')}
-          emptyTip={gettext('No tags')}
-          value={Array.isArray(value) ? value.map(v => v + '') : value}
-          options={tagOptions}
-          optionHeight={36}
-          onToggle={closeEditor}
-          onChange={handleChange}
-          onCreate={handleCreateTag}
-        />
+          className="option-editor-popover sea-qa-tags-selector-popover hide-description"
+          hidePopover={closeEditor}
+          hidePopoverWithEsc={closeEditor}
+        >
+          <OptionEditorContainer
+            ref={optionEditorContainerRef}
+            isMultiple={true}
+            optionHeight="fit-content"
+            placeholder={gettext('Search tags')}
+            emptyTip={gettext('No available tags')}
+            value={Array.isArray(value) ? value.map(v => String(v)) : []}
+            options={options}
+            onCreate={handleCreateTag}
+          >
+            {({ value: selectedTagIds, onChange }) => {
+              if (!Array.isArray(selectedTagIds) || selectedTagIds.length === 0) return null;
+              return selectedTagIds.map(tagId => {
+                const tag = getRowById(tagsData, tagId);
+                if (!tag) return null;
+                return (
+                  <Tag tag={tag} key={tagId} className="mr-0">
+                    <RemoveBtn callback={() => onChange(tagId)} />
+                  </Tag>
+                );
+              });
+            }}
+          </OptionEditorContainer>
+        </CustomizePopover>
       )}
     </div>
   );

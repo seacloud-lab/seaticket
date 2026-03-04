@@ -59,6 +59,10 @@ import RadioGroup from './radio-group';
 import ClearIconButton from './clear-icon-button';
 import CustomizeTabs from './customize-tabs';
 import Tooltip from './tooltip';
+import PriorityEditor, { PriorityIconBtn } from './priority-editor';
+import PathRedirection from './path-redirection';
+import CustomizeLabel from './customize-label';
+import { IconTextBtn } from './btn';
 
 export {
   FixedWidthTable,
@@ -124,4 +128,9 @@ export {
   ClearIconButton,
   CustomizeTabs,
   Tooltip,
+  PriorityEditor,
+  PriorityIconBtn,
+  PathRedirection,
+  CustomizeLabel,
+  IconTextBtn,
 };

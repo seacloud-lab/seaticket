@@ -44,7 +44,7 @@ class FilterPopover extends Component {
   }
 
   componentDidMount() {
-    this.dtablePopoverRef && this.dtablePopoverRef.click();
+    this.popoverRef && this.popoverRef.click();
     document.addEventListener('click', this.hideDTablePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
@@ -82,8 +82,7 @@ class FilterPopover extends Component {
   };
 
   hideDTablePopover = (e) => {
-    if (getEventClassName(e) === 'sea-metadata-priority-item') return;
-    if (this.dtablePopoverRef && !getEventClassName(e).includes('popover') && !this.dtablePopoverRef.contains(e.target)) {
+    if (this.popoverRef && !getEventClassName(e).includes('popover') && !this.popoverRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
       this.onClosePopover();
@@ -156,7 +155,7 @@ class FilterPopover extends Component {
         boundariesElement={document.body}
       >
         {({ update: scheduleUpdate }) => (
-          <div ref={ref => this.dtablePopoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName}>
+          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName}>
             {isValidBasicFilters && (
               <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
             )}

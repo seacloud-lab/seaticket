@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, OptionEditor } from '@/components';
+import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { TICKET_STATE_OPTIONS } from '../../../constants';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
@@ -93,8 +92,10 @@ const StateSettings = ({
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{gettext('State')}</Label>
-        <div className="ticket-state-formatter" onClick={openEditor} ref={editorRef}>
+        <CustomizeLabel icon="single-select">
+          {gettext('State')}
+        </CustomizeLabel>
+        <div className={classnames('ticket-state-formatter', { 'valid': stateOption })} onClick={openEditor} ref={editorRef}>
           {stateOption && (<Option option={stateOption} />)}
         </div>
       </div>

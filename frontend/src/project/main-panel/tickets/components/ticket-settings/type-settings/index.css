@@ -9,6 +9,10 @@
   cursor: pointer;
 }
 
+.ticket-types-formatter.valid {
+  padding: 5px 0 ;
+}
+
 .ticket-types-formatter .option {
   margin-bottom: 4px;
   margin-top: 4px;

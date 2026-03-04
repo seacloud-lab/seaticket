@@ -9,6 +9,10 @@
   cursor: pointer;
 }
 
+.ticket-state-formatter.valid {
+  padding: 5px 0;
+}
+
 .ticket-state-formatter .sea-qa-ui-option {
   margin-bottom: 4px;
   margin-top: 4px;

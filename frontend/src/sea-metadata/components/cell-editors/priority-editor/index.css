@@ -1,56 +1,6 @@
-.sea-metadata-priority-editor-popover-container .popover {
-  width: 200px;
-}
-
 .sea-metadata-priority-editor {
   height: 20px;
   width: 100%;
   align-items: center;
   cursor: pointer;
-}
-
-.sea-metadata-priority-item {
-  cursor: pointer;
-  height: 32px;
-  padding-left: 14px;
-  padding-right: 12px;
-  white-space: nowrap;
-  display: flex;
-  flex: 0 0 100%;
-  -webkit-box-flex: 0;
-  -webkit-box-align: center;
-  align-items: center;
-  text-overflow: ellipsis;
-  min-width: min-content;
-  justify-content: space-between;
-}
-
-.sea-metadata-priority-item > * {
-  pointer-events: none;
-}
-
-.sea-metadata-priority-item-readonly {
-  padding: 0;
-}
-
-.sea-metadata-priority-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sea-metadata-priority-item.active {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sea-metadata-priority-item-readonly:hover {
-  background-color: transparent;
-}
-
-.sea-metadata-priority-item-left,
-.sea-metadata-priority-item-right {
-  display: flex;
-  align-items: center;
-}
-
-.sea-metadata-priority-item .sea-qa-icon-svg {
-  font-size: 16px;
 }
