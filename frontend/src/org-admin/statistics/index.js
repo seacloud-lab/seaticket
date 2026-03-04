@@ -30,7 +30,7 @@ class StatisticsAI extends Component {
         has_next_page: false
       },
       results: [],
-      groupBy: 'user',
+      groupBy: 'project',
       queryDate: 'date',
       isOpenStatisticsDetailDialog: false,
       condition: {},
@@ -195,8 +195,8 @@ class StatisticsAI extends Component {
                 className="statistic-tabs"
                 value={groupBy}
                 tabs={[
-                  { value: 'user', label: gettext('Users') },
                   { value: 'project', label: gettext('Projects') },
+                  { value: 'user', label: gettext('Users') },
                   { value: 'group', label: gettext('Groups') },
                 ]}
                 onChange={this.changeTabActive}

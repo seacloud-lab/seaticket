@@ -113,7 +113,7 @@ class OrgAdminAIStatisticsView(APIView):
             project = projects_dict.get(project_uuid)
             result = {
                 'project_uuid': project_uuid,
-                'total_cost': round(item['total_cost'], 8),
+                'total_cost': round(item['total_cost'], 2),
                 'project_name': project.name if project else None
             }
             if project:
@@ -142,7 +142,7 @@ class OrgAdminAIStatisticsView(APIView):
         for item in stats:
             username = item['username']
             results.append({
-                'total_cost': round(item['total_cost'], 8),
+                'total_cost': round(item['total_cost'], 2),
                 'username': username,
                 'nickname': profiles_dict.get(username, email2nickname(username)),
             })
@@ -173,7 +173,7 @@ class OrgAdminAIStatisticsView(APIView):
                 'group_name': group_id_to_name_map.get(item['group_id'], ''),
                 'creator': creator,
                 'creator_name': profiles_dict.get(creator, email2nickname(creator)),
-                'total_cost': round(item['total_cost'], 8)
+                'total_cost': round(item['total_cost'], 2)
             })
 
         return Response({'results': results, 'count': total_count})
@@ -219,7 +219,10 @@ class OrgAdminAIStatisticsDetailView(APIView):
         query_set = query_ai_statistics_detail(group_by, [start_date, end_date], condition)
 
         if view == 'date':
-            results = list(query_set)
+            results = []
+            for item in query_set:
+                item['total_cost'] = round(item['total_cost'], 2)
+                results.append(item)
         elif view == 'user':
             query_set = query_set[:30]
             usernames = [item['username'] for item in query_set if item['username'] != 'seaqa-indexer']
@@ -231,7 +234,7 @@ class OrgAdminAIStatisticsDetailView(APIView):
                     nickname = profiles_dict.get(item['username'], email2nickname(item['username']))
                 results.append({
                     'user': nickname,
-                    'total_cost': item['total_cost'],
+                    'total_cost': round(item['total_cost'], 2),
                     'total_input_tokens': item['total_input_tokens'],
                     'total_output_tokens': item['total_output_tokens']
                 })
@@ -247,7 +250,7 @@ class OrgAdminAIStatisticsDetailView(APIView):
             results = [
                 {
                     'project': project_uuid_name_map.get(item['project_uuid'], '<Unknow project>'),
-                    'total_cost': item['total_cost'],
+                    'total_cost': round(item['total_cost'], 2),
                     'total_input_tokens': item['total_input_tokens'],
                     'total_output_tokens': item['total_output_tokens']
                 }
