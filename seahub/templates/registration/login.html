@@ -26,12 +26,16 @@
 		<div class="login-panel-content">
 			<div class="login-panel-header d-flex justify-content-between align-items-center">
 				<div class="login-title">{% trans "Account log in" %}</div>
-				{% if enable_signup %}
+				<!-- {% if enable_signup %}
 				<div class="register-link">
 					<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
 					<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
 				</div>
-				{% endif %}
+				{% endif %} -->
+				<div class="register-link">
+					<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
+					<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
+				</div>
 			</div>
 			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
 				{% if cur_language == "zh-cn" %}
@@ -137,9 +141,10 @@
 			{% endif %}
 
 			<div class="login-panel-bottom-container d-flex align-items-center justify-content-between">
-				{% if email_host %}
+				<!-- {% if email_host %}
 				<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
-				{% endif %}
+				{% endif %} -->
+				<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
 			</div>
 		</div>
 		{% include "police_service_link.html" %}
