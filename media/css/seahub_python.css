@@ -974,12 +974,12 @@ input.short-input {
   line-height: 28px;
 }
 
-.org-register-panel-wrapper .login-form-wrapper {
+.individual-register-panel-wrapper .login-form-wrapper {
   width: 400px;
   margin-top: 32px;
 }
 
-.org-register-panel-wrapper .login-form-wrapper .form-item-input {
+.individual-register-panel-wrapper .login-form-wrapper .form-item-input {
   font-size: 14px;
   height: 40px;
   line-height: 40px;
@@ -990,37 +990,37 @@ input.short-input {
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
-.org-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
+.individual-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
   border-color: #FF8000;
 }
 
-.org-register-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
+.individual-register-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
   padding-right: 32px;
 }
 
-.org-register-panel-wrapper .login-form-wrapper > input:last-of-type {
+.individual-register-panel-wrapper .login-form-wrapper > input:last-of-type {
   margin-bottom: 0px !important;
 }
 
-.org-register-panel-wrapper .login-form-wrapper li {
+.individual-register-panel-wrapper .login-form-wrapper li {
   margin-top: -8px;
   font-size: 12px;
   line-height: 20px;
   color: #ff0000;
 }
 
-.org-register-panel-wrapper .login-form-wrapper .btn-block {
+.individual-register-panel-wrapper .login-form-wrapper .btn-block {
   margin-top: 24px;
   height: 40px;
 }
 
-.org-register-panel-wrapper .login-panel-bottom-container {
+.individual-register-panel-wrapper .login-panel-bottom-container {
   margin-top: 24px;
   height: 22px;
   line-height: 22px;
 }
 
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a {
+.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a {
   font-size: 14px !important;
   color: var(--bs-body-color);
   display: flex;
@@ -1030,24 +1030,25 @@ input.short-input {
   width: fit-content;
 }
 
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
+.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
   color: var(--bs-orange);
 }
 
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
+.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
   margin-top: -2px;
 }
 
-.org-register-panel-wrapper .login-panel-bottom-container > div {
+.individual-register-panel-wrapper .login-panel-bottom-container > div {
   display: flex;
   justify-content: center;
 }
 
-/* login-panel, multi-saml-sso-panel, password-reset-panel, org-register-panel, --input style */
+/* login-panel, multi-saml-sso-panel, password-reset-panel, org-register-panel, individual-register-panel, --input style */
 .login-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .password-reset-panel-wrapper .login-form-wrapper input:-webkit-autofill,
-.org-register-panel-wrapper .login-form-wrapper input:-webkit-autofill {
+.org-register-panel-wrapper .login-form-wrapper input:-webkit-autofill, 
+.individual-register-panel-wrapper .login-form-wrapper input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px white inset !important;
   box-shadow: 0 0 0 1000px white inset !important;
 }
@@ -1055,14 +1056,16 @@ input.short-input {
 .login-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
-.org-register-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
+.org-register-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
+.individual-register-panel .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
   color: #868E96
 }
 
 .login-panel-wrapper .login-form-wrapper input::-moz-placeholder,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-moz-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-moz-placeholder,
-.org-register-panel-wrapper .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
+.org-register-panel-wrapper .login-form-wrapper input::-moz-placeholder,
+.individual-register-panel .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
   color: #868E96;
   opacity: 1;
 }
@@ -1070,20 +1073,23 @@ input.short-input {
 .login-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
-.org-register-panel-wrapper .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
+.org-register-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
+.individual-register-panel .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
   color: #868E96;
 }
 
 .login-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
-.org-register-panel-wrapper .login-form-wrapper input::-ms-input-placeholder { /* Microsoft Edge */
+.org-register-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
+.individual-register-panel .login-form-wrapper input::-ms-input-placeholder { /* Microsoft Edge */
   color: #868E96;
 }
 
-/* login-panel, multi-saml-sso-panel, --p style */
+/* login-panel, multi-saml-sso-panel, individual-register-panel --p style */
 .login-panel-wrapper .login-form-wrapper > p.error,
-.multi-saml-sso-panel-wrapper .login-form-wrapper > p.error {
+.multi-saml-sso-panel-wrapper .login-form-wrapper > p.error,
+.individual-register-panel-wrapper .login-form-wrapper > p.error {
   margin: 0px;
   font-size: 12px;
   line-height: 20px;

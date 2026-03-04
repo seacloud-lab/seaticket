@@ -428,7 +428,7 @@ ENABLE_BRANDING_CSS = False
 SERVE_STATIC = True
 
 # Enable or disable registration on web.
-ENABLE_SIGNUP = True
+ENABLE_SIGNUP = False
 
 USE_PHONE_REGISTRATION_BY_DEFAULT = False
 
