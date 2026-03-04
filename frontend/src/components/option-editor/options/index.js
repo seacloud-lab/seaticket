@@ -115,7 +115,7 @@ const Options = ({
   return (
     <div
       className={classnames('option-editor-content', { 'empty': options.length === 0 })}
-      style={{ maxHeight }}
+      style={{ maxHeight, minHeight: isNumber(optionHeight) ? optionHeight : 20 }}
       ref={optionsRef}
     >
       {isLoading && (

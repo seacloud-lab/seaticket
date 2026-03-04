@@ -15,10 +15,13 @@
   min-height: 100px;
 }
 
-.sea-qa-tags-selector-popover.option-editor-popover .option-editor-content .option-editor-option {
+.sea-qa-tags-selector-popover.option-editor-popover:not(.hide-description) .option-editor-content .option-editor-option {
   height: fit-content;
-  align-items: flex-start;
   padding: 8px 10px;
+}
+
+.sea-qa-tags-selector-popover.option-editor-popover .option-editor-content .option-editor-option {
+  align-items: flex-start;
   gap: 8px;
 }
 

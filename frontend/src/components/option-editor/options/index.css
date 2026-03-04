@@ -1,5 +1,4 @@
 .option-editor-content {
-  min-height: fit-content;
   max-height: 200px;
   overflow: auto;
   padding: 0 12px;

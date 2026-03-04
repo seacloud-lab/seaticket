@@ -7,7 +7,7 @@ import { gettext, KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
 import toaster from '../../toaster';
 import Options from '../options';
-import { isFunction } from '@/utils/type-detection';
+import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -25,7 +25,7 @@ const OptionEditorContainer = forwardRef(({
   value: propsValue = '',
   options = [],
   maxHeight = 240,
-  optionHeight = 30,
+  optionHeight = 32,
   children,
   onChange,
   onToggle,
@@ -94,6 +94,10 @@ const OptionEditorContainer = forwardRef(({
   }), [value]);
 
   const showCreateBtn = isFunction(onCreate) && searchValue.trim() && !options.find(o => o.name === searchValue.trim());
+  let validMaxHeight = maxHeight - (isSearchEnabled ? 26 : 18); // 26: padding-top(12/8) + padding-bottom(12/8) + border(2)
+  if (displayOptions.length > 0) {
+    validMaxHeight = Math.min(validMaxHeight, displayOptions.length * (isNumber(optionHeight) ? optionHeight : 32));
+  }
 
   return (
     <div
@@ -125,7 +129,7 @@ const OptionEditorContainer = forwardRef(({
       <Options
         hasAvailableOptions={options.length > 0}
         options={displayOptions}
-        maxHeight={maxHeight - (isSearchEnabled ? 26 : 18)} // 26: padding-top(12/8) + padding-bottom(12/8) + border(2)
+        maxHeight={validMaxHeight}
         isSearchEnabled={isSearchEnabled}
         searchValue={searchValue}
         emptyTip={emptyTip}
