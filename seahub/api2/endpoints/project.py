@@ -259,6 +259,10 @@ class ProjectView(APIView):
             error_msg = _(f'Project {project_name} not found.')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if Projects.objects.filter(workspace_id=workspace_id, name=new_project_name).exclude(pk=project.pk).exists():
+            error_msg = _(f'{new_project_name} exists.')
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         # permission check
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
@@ -277,11 +281,11 @@ class ProjectView(APIView):
                 error_msg = f'Workspace {target_workspace_id} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not check_project_admin_permission(username, target_workspace.owner):
+            if target_workspace.org_id != request.user.org.org_id:
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-            if target_workspace.org_id != request.user.org.org_id:
+            if not check_project_admin_permission(username, target_workspace.owner):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 

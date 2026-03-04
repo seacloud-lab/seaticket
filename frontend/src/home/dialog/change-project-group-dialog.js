@@ -33,9 +33,11 @@ class ChangeProjectGroupDialog extends React.Component {
   }
 
   loadTargetWorkspaces = () => {
+    const currentWorkspaceID = String(this.props.currentWorkspace.id);
     homeAPI.listWorkspaces(false).then((res) => {
       const workspaces = (res.data.workspace_list || [])
         .filter(workspace => workspace.type === 'personal' || workspace.is_admin)
+        .filter(workspace => String(workspace.id) !== currentWorkspaceID)
         .map(workspace => ({
           value: String(workspace.id),
           label: workspace.name,
