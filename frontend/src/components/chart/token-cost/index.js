@@ -4,8 +4,8 @@ import { gettext } from '@/constants';
 import Tooltip from './tooltip';
 
 const formatCost = (value) => {
-  if (value === 0) return '0';
-  const withDecimals = value.toFixed(6);
+  if (value === 0) return '0.00';
+  const withDecimals = value.toFixed(2);
   const trimmed = withDecimals.replace(/\.?0+$/, '');
   return trimmed;
 };

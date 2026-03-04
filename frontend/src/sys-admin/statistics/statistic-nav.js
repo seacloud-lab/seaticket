@@ -13,7 +13,7 @@ class StatisticNav extends React.Component {
   constructor(props) {
     super(props);
     this.navItems = [
-      { name: 'ai', urlPart: 'statistics', text: gettext('AI') },
+      { name: 'ai', urlPart: 'statistics', text: gettext('AI usage') },
     ];
   }
 
