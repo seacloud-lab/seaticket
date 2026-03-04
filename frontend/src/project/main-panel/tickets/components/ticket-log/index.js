@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
-import { Icon } from '@/components';
+import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { PRIORITY_MAP } from '@/sea-metadata/constants/column/priority';
@@ -11,17 +11,17 @@ import './index.css';
 
 const ACTIVITY_ICONS = {
   title_changed: 'rename',
-  state_changed: 'flag',
-  substate_changed: 'flag',
-  type_changed: 'tag-filled',
-  tags_added: 'tag-filled',
-  tags_removed: 'tag-filled',
-  assignees_added: 'user',
-  assignees_removed: 'user',
-  priority_changed: 'star',
+  state_changed: 'dot-circle-stroked',
+  substate_changed: 'dot-circle-stroked',
+  type_changed: 'dot-circle-stroked',
+  tags_added: 'tag-stroked',
+  tags_removed: 'tag-stroked',
+  assignees_added: 'group-stroked',
+  assignees_removed: 'group-stroked',
+  priority_changed: 'flag-stroked',
 };
 
-const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) => {
+const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
   const [creator, setCreator] = useState({});
   const [assigneeNames, setAssigneeNames] = useState({ old: [], new: [] });
   const { getCollaborator, queryUser } = useCollaborators();
@@ -175,20 +175,20 @@ const Activity = ({ activity, isSmallScreen = false, nextIsComment = false }) =>
   const iconSymbol = ACTIVITY_ICONS[activity.activity_type] || 'info';
 
   return (
-    <div className={classnames('sea-qa-project-ticket-activity', { 'small': isSmallScreen, 'next-is-comment': nextIsComment && !isSmallScreen })}>
-      <div className="sea-qa-project-ticket-activity-icon">
-        <Icon symbol={iconSymbol} />
+    <div className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}>
+      <div className="sea-ticket-log-type-container">
+        <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
       </div>
-      <div className="sea-qa-project-ticket-activity-content">
+      <div className="sea-ticket-log-content">
         {creator.avatar_url && (
-          <img className="sea-qa-project-ticket-activity-avatar" src={creator.avatar_url} alt={creator.name} />
+          <img className="sea-ticket-log-avatar" src={creator.avatar_url} alt={creator.name} />
         )}
-        <span className="sea-qa-project-ticket-activity-creator">{creator.name}</span>
+        <span className="sea-ticket-log-creator">{creator.name}</span>
         {renderActivityMessage()}
-        <span className="sea-qa-project-ticket-activity-time">{dayjs(activity.created_time).fromNow()}</span>
+        <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
       </div>
     </div>
   );
 };
 
-export default Activity;
+export default TicketLog;

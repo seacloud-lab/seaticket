@@ -78,6 +78,7 @@
   width: 100%;
   max-width: 100%;
   min-height: 100%;
+  background-color: #FDFDFD;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-comment.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-comment-container {
@@ -93,6 +94,7 @@
   height: 40px;
   line-height: 32px;
   padding-left: 0;
+  background-color: transparent;
 }
 
 /* small */
