@@ -46,7 +46,7 @@ const Tooltip = ({
         {`${gettext('Total tokens')}: ${data.total_tokens}`}
       </div>
       <div className="sea-ai-tokens-chart-tooltip-footer">
-        {`${gettext('Cost')}: ${data.cost}`}
+        {`${gettext('Cost')}: ${data.cost.toFixed(2)}`}
       </div>
     </div>
   );

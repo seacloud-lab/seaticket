@@ -17,8 +17,8 @@ const StatisticList = ({
     if (groupBy === 'user') {
       return [
         { key: 'user', name: gettext('User'), width: 0.4 },
-        { key: 'organization', name: gettext('Team'), width: 0.4 },
-        { key: 'cost', name: gettext('Cost'), width: 0.2 },
+        { key: 'team', name: gettext('Team'), width: 0.4 },
+        { key: 'credit_used', name: gettext('Credit used'), width: 0.2 },
         { key: 'op', width: 44, isFixed: true },
       ];
     }
@@ -27,7 +27,7 @@ const StatisticList = ({
         { key: 'project', name: gettext('Project'), width: 0.4 },
         { key: 'owner', name: gettext('Owner'), width: 0.2 },
         { key: 'organization', name: gettext('Team'), width: 0.2 },
-        { key: 'cost', name: gettext('Cost'), width: 0.2 },
+        { key: 'credit_used', name: gettext('Credit used'), width: 0.2 },
         { key: 'op', width: 44, isFixed: true },
       ];
     }
@@ -36,14 +36,14 @@ const StatisticList = ({
         { key: 'group', name: gettext('Group'), width: 0.4 },
         { key: 'owner', name: gettext('Owner'), width: 0.2 },
         { key: 'organization', name: gettext('Team'), width: 0.2 },
-        { key: 'cost', name: gettext('Cost'), width: 0.2 },
+        { key: 'credit_used', name: gettext('Credit used'), width: 0.2 },
         { key: 'op', width: 44, isFixed: true },
       ];
     }
     return [
       { key: 'organization', name: gettext('Team'), width: 0.4 },
       { key: 'owner', name: gettext('Owner'), width: 0.4 },
-      { key: 'cost', name: gettext('Cost'), width: 0.2 },
+      { key: 'credit_used', name: gettext('Credit used'), width: 0.2 },
       { key: 'op', width: 44, isFixed: true },
     ];
   }, [groupBy]);
