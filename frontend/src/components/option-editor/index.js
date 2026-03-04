@@ -32,7 +32,7 @@ const OptionsEditor = ({
       const value = optionEditorContainerRef.current.getValue();
       onChange(value);
     }
-    onToggle();
+    onToggle && onToggle();
   }, [isMultiple, onChange, onToggle]);
 
   return (

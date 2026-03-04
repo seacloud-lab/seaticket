@@ -99,7 +99,7 @@ const RateSettings = ({
           priorities={PRIORITIES}
           value={value}
           onChange={onChangeValue}
-          onClose={closeEditor}
+          onToggle={closeEditor}
         />
       )}
     </>

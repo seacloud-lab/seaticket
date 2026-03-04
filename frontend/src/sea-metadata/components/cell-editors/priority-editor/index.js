@@ -60,7 +60,7 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
           priorities={PRIORITIES}
           value={value}
           onChange={onChangeValue}
-          onClose={() => setIsOpen(false)}
+          onToggle={() => setIsOpen(false)}
         />
       )}
     </>
