@@ -81,6 +81,13 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
       aiReplyForCopy = value;
     }
 
+    if (value && chatId === 'typing') {
+      const referenceXRegex = /<reference_(\d+)>/g;
+      value = value.replace(referenceXRegex, () => {
+        return '';
+      });
+    }
+
     if (value && Array.isArray(sources) && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
