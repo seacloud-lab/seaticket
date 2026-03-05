@@ -2,9 +2,9 @@ import React, { useCallback, useState } from 'react';
 import TopBar from '../../top-bar';
 import { useKnowledgePage } from '../hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
-import { IconButton } from '@/components';
+import { IconButton, IconTextBtn } from '@/components';
 import { gettext } from '@/constants';
-import { AddButton, RefreshBtn } from '@/project/components';
+import { RefreshBtn } from '@/project/components';
 
 import './index.css';
 
@@ -67,7 +67,7 @@ const KnowledgeTopBar = ({ title }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" />
+        <IconTextBtn onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="knowledge-base" />
       );
     }
 
