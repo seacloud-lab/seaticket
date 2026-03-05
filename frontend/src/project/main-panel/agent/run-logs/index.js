@@ -90,7 +90,7 @@ const RunLogs = ({
         <div className="view-content-modal-overlay" onClick={closeViewContentModal}>
           <div className="view-content-modal" onClick={e => e.stopPropagation()}>
             <div className="view-content-modal-header">
-              <span>{gettext('Content preview')}</span>
+              <span>{gettext('Edit content')}</span>
             </div>
             <div className="view-content-modal-body">
               <textarea

@@ -53,6 +53,11 @@ const ActionItem = ({
     onViewContent && onViewContent(action, runId);
   }, [action, runId, onViewContent]);
 
+  // Don't render SUMMARY type action
+  if (type === ACTION_TYPE.SUMMARY) {
+    return null;
+  }
+
   const renderIcon = () => {
     switch (type) {
       case ACTION_TYPE.ANALYSIS:
@@ -62,10 +67,8 @@ const ActionItem = ({
       case ACTION_TYPE.SUGGESTION: {
         if (tool_name === 'suggest_resolution') return <span className="action-icon">💡</span>;
         if (tool_name === 'suggest_create_ticket') return <span className="action-icon">📋</span>;
-        return <span className="action-icon">📝</span>;
+        return <span className="action-icon">💡</span>;
       }
-      case ACTION_TYPE.SUMMARY:
-        return <span className="action-icon">✍️</span>;
       default:
         return <span className="action-icon">•</span>;
     }
@@ -112,14 +115,14 @@ const ActionItem = ({
               <div className="action-buttons">
                 {hasEditableContent && (
                   <button className="action-btn view-btn" onClick={handleViewContent}>
-                    [{gettext('View content')}]
+                    {gettext('✍️ Edit content')}
                   </button>
                 )}
                 <button className="action-btn confirm-btn" onClick={handleConfirm}>
-                  [{gettext('Confirm')}]
+                  {gettext('👍 Approve')}
                 </button>
                 <button className="action-btn cancel-btn" onClick={handleCancel}>
-                  [{gettext('Cancel')}]
+                  {gettext('❌ Discard')}
                 </button>
               </div>
             )}
@@ -132,13 +135,6 @@ const ActionItem = ({
           </div>
         );
       }
-      case ACTION_TYPE.SUMMARY:
-        return (
-          <div className="action-content">
-            <span className="action-label">{gettext('Summary')}:</span>
-            <span className="action-text">{content}</span>
-          </div>
-        );
       default:
         return <div className="action-content">{content}</div>;
     }
