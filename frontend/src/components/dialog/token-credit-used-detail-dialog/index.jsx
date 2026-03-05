@@ -4,23 +4,23 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
 import { gettext, mediaUrl } from '@/constants';
-import { Loading, EmptyTip, ModalHeader } from '@/components';
+import { Loading, EmptyTip, ModalHeader, IconButton } from '@/components';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
 import CustomizeSelect from '../../customize-select';
-import TokenCost from '../../chart/token-cost';
+import TokenCreditUsed from '../../chart/token-credit-used';
 
 import './index.css';
 import '@/sea-metadata/components/popover/filter-popover/basic-filters/index.css';
 
-class TokenCostDetailDialog extends Component {
+class TokenCreditUsedDetailDialog extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       isLoading: true,
-      view: 'date',
+      groupBy: 'date',
       startDate: dayjs().subtract(30, 'day'),
       endDate: dayjs(),
       availableModels: {},
@@ -47,7 +47,7 @@ class TokenCostDetailDialog extends Component {
     this.setState({
       startDate: dayjs().subtract(30, 'day'),
       endDate: dayjs(),
-      view: 'date',
+      groupBy: 'date',
       availableModels: {},
       selectedModels: [],
       modelsUsageStatics: null
@@ -66,7 +66,7 @@ class TokenCostDetailDialog extends Component {
     let newData = [];
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
-    let totalCost = 0;
+    let totalCreditUsed = 0;
 
     const dateSorted = fullData.sort((a, b) => {
       const dateA = dayjs(a.date).valueOf();
@@ -82,24 +82,24 @@ class TokenCostDetailDialog extends Component {
             name: date.format('YYYY-MM-DD'),
             input_tokens: data.total_input_tokens || 0,
             output_tokens: data.total_output_tokens || 0,
-            cost: data.total_cost || 0,
+            credit_used: data.total_credit_used || 0,
             total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
           });
           totalInputTokens += data.total_input_tokens || 0;
           totalOutputTokens += data.total_output_tokens || 0;
-          totalCost += data.total_cost || 0;
+          totalCreditUsed += data.total_credit_used || 0;
         }
       }
     });
 
-    this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCost } });
+    this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCreditUsed } });
   };
 
   updateDataByDate = () => {
-    const { view } = this.state;
+    const { groupBy } = this.state;
 
     this.setState({ isLoading: true }, () => {
-      if (view === 'date') {
+      if (groupBy === 'date') {
         this.updateDateData();
       } else {
         this.fetchStatistics();
@@ -111,12 +111,12 @@ class TokenCostDetailDialog extends Component {
   fetchStatistics = () => {
     this.setState({ isLoading: true });
     const { condition } = this.props;
-    const { view, startDate, endDate } = this.state;
+    const { groupBy, startDate, endDate } = this.state;
 
-    this.props.getAIStatisticsDetail(view, startDate, endDate, JSON.stringify(condition)).then(res => {
+    this.props.getAIStatisticsDetail(groupBy, startDate, endDate, JSON.stringify(condition)).then(res => {
       const fullData = res.data.results;
       this.setState({ fullData: fullData || null }, () => {
-        if (view === 'date') {
+        if (groupBy === 'date') {
           this.updateDateData();
           this.setState({ isLoading: false });
         } else if (!fullData || !fullData.length === 0) {
@@ -125,25 +125,25 @@ class TokenCostDetailDialog extends Component {
           let newData = [];
           let totalInputTokens = 0;
           let totalOutputTokens = 0;
-          let totalCost = 0;
+          let totalCreditUsed = 0;
           fullData.forEach((data) => {
             let record = {
               input_tokens: data.total_input_tokens || 0,
               output_tokens: data.total_output_tokens || 0,
-              cost: data.total_cost || 0,
+              credit_used: data.total_credit_used || 0,
               total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
             };
-            if (view === 'user') {
+            if (groupBy === 'user') {
               record.name = data.user;
-            } else if (view === 'project') {
+            } else if (groupBy === 'project') {
               record.name = data.project;
             }
             newData.push(record);
             totalInputTokens += data.total_input_tokens || 0;
             totalOutputTokens += data.total_output_tokens || 0;
-            totalCost += data.total_cost || 0;
+            totalCreditUsed += data.total_credit_used || 0;
           });
-          this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCost }, isLoading: false });
+          this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCreditUsed }, isLoading: false });
         }
       });
     }).catch (error => {
@@ -179,7 +179,7 @@ class TokenCostDetailDialog extends Component {
   };
 
   updateView = (newView) => {
-    this.setState({ view: newView }, () => {
+    this.setState({ groupBy: newView }, () => {
       this.fetchStatistics();
     });
   };
@@ -192,10 +192,21 @@ class TokenCostDetailDialog extends Component {
       availableModels,
       selectedModels,
       data,
-      view,
+      groupBy,
       modelsUsageStatics
     } = this.state;
-    const { views, onCloseDialog } = this.props;
+    const { groups, onCloseDialog } = this.props;
+    const groupByOptions = groups.map(v => {
+      return {
+        ...v,
+        label: (
+          <div className="d-flex align-items-center">
+            <div className="flex-1 text-truncate">{v.label}</div>
+            <IconButton className="no-hover-bg ml-3" icon={v.value === groupBy ? 'check-mark-option' : '' } size={14} />
+          </div>
+        )
+      };
+    });
 
     const modelsOptions = availableModels && typeof availableModels === 'object' ? Object.entries(availableModels).map(([label, value]) => {
       return {
@@ -211,20 +222,20 @@ class TokenCostDetailDialog extends Component {
       };
     }) : [];
 
-    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-view-basic-checkbox-select sea-ticket-ai-statistic-condition-select';
+    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select sea-ticket-ai-statistic-condition-select';
 
     return (
       <Modal isOpen={true} toggle={onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
-        <ModalHeader toggle={onCloseDialog}>{gettext('Token cost statistics detail')}</ModalHeader>
+        <ModalHeader toggle={onCloseDialog}>{gettext('Credit used detail')}</ModalHeader>
         <ModalBody className="dialog-content">
           <div className="ai-statistics-filters">
-            {views.length > 1 && (
+            {groups.length > 1 && (
               <CustomizeSelect
                 disabled={false}
                 supportMultipleSelect={false}
-                className={classnames(customizeSelectClassName, 'mr-4 highlighted')}
-                value={views.find(v => v.value === view) || views[0]}
-                options={views}
+                className={classnames(customizeSelectClassName, 'mr-4')}
+                value={{ label: gettext('Group by') }}
+                options={groupByOptions}
                 onChange={this.updateView}
               />
             )}
@@ -265,7 +276,7 @@ class TokenCostDetailDialog extends Component {
             {isLoading ? (
               <Loading />
             ) : data && data.length > 0 ? (
-              <TokenCost
+              <TokenCreditUsed
                 data={data}
                 modelsUsageStatics={modelsUsageStatics}
               />
@@ -279,11 +290,11 @@ class TokenCostDetailDialog extends Component {
   }
 }
 
-TokenCostDetailDialog.propTypes = {
-  views: PropTypes.array.isRequired,
+TokenCreditUsedDetailDialog.propTypes = {
+  groups: PropTypes.array.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
   getAIStatisticsDetail: PropTypes.func.isRequired,
   condition: PropTypes.object.isRequired
 };
 
-export default TokenCostDetailDialog;
+export default TokenCreditUsedDetailDialog;

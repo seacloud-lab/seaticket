@@ -10,7 +10,7 @@ import StatisticNav from './statistic-nav';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
 import MonthPicker from '../../project/main-panel/search/month-picker';
-import { TokenCostDetailDialog } from '@/components/dialog';
+import { TokenCreditUsedDetailDialog } from '@/components/dialog';
 import StatisticList from './statistic-list';
 
 import '@/css/statistics.css';
@@ -52,7 +52,7 @@ class Statistics extends Component {
         value: 'month'
       },
     ];
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
   }
@@ -61,29 +61,29 @@ class Statistics extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsDetail = (view, startDate, endDate, condition) => {
-    return sysAdminAPI.sysAdminGetAIStatisticsDetail(view, startDate, endDate, condition);
+  getAIStatisticsDetail = (groupBy, startDate, endDate, condition) => {
+    return sysAdminAPI.sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition);
   };
 
   onOpenAIStaticsDetailDialog = (groupBy, condition) => {
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
-    if (groupBy === 'project' || groupBy === 'group') {
-      this.statisticsDetailViews.push({
-        value: 'user', label: gettext('User')
+    if (groupBy === 'user' || groupBy === 'group') {
+      this.statisticsDetailGroups.push({
+        value: 'project', label: gettext('Project')
       });
     }
-    if (groupBy === 'user' || groupBy === 'group') {
-      this.statisticsDetailViews.push({
-        value: 'project', label: gettext('Project')
+    if (groupBy === 'group') {
+      this.statisticsDetailGroups.push({
+        value: 'user', label: gettext('User')
       });
     }
     this.setState({ isOpenStatisticsDetailDialog: true, condition });
   };
 
   onCloseAIStaticsDetailDialog = () => {
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
     this.setState({ isOpenStatisticsDetailDialog: false, condition: {} });
@@ -257,8 +257,8 @@ class Statistics extends Component {
               />
             </div>
             {isOpenStatisticsDetailDialog && (
-              <TokenCostDetailDialog
-                views={this.statisticsDetailViews}
+              <TokenCreditUsedDetailDialog
+                groups={this.statisticsDetailGroups}
                 onCloseDialog={this.onCloseAIStaticsDetailDialog}
                 getAIStatisticsDetail={this.getAIStatisticsDetail}
                 condition={condition}

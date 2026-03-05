@@ -77,14 +77,14 @@
   display: flex;
 }
 
-.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox {
+.sea-metadata-table-group-by-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox,
-.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox input {
+.sea-metadata-table-group-by-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox,
+.sea-metadata-table-group-by-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox input {
   cursor: inherit;
 }
 

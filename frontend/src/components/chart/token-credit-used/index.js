@@ -3,20 +3,20 @@ import * as d3 from 'd3';
 import { gettext } from '@/constants';
 import Tooltip from './tooltip';
 
-const formatCost = (value) => {
-  if (value === 0) return '0.00';
-  const withDecimals = value.toFixed(2);
+const formatCreditUsed = (value) => {
+  if (value === 0) return '0';
+  const withDecimals = value.toFixed(0);
   const trimmed = withDecimals.replace(/\.?0+$/, '');
   return trimmed;
 };
 
-const TokenCost = ({
+const TokenCreditUsed = ({
   data = [],
-  modelsUsageStatics = { totalInputTokens: 0, totalOutputTokens: 0, totalCost: 0 },
+  modelsUsageStatics = { totalInputTokens: 0, totalOutputTokens: 0, totalCreditUsed: 0 },
   legends = [
     { key: 'input_tokens', name: gettext('Input tokens'), color: '#8884d8' },
     { key: 'output_tokens', name: gettext('Output tokens'), color: '#82ca9d' },
-    { key: 'cost', name: gettext('Cost'), color: '#ff7300' },
+    { key: 'credit_used', name: gettext('Credit used'), color: '#ff7300' },
   ],
   margin = { top: 60, right: 100, left: 80, bottom: 100 },
 }) => {
@@ -42,7 +42,7 @@ const TokenCost = ({
 
     const inputTokensColor = legends.find(l => l.key === 'input_tokens')?.color;
     const outputTokensColor = legends.find(l => l.key === 'output_tokens')?.color;
-    const costColor = legends.find(l => l.key === 'cost')?.color;
+    const creditUsedColor = legends.find(l => l.key === 'credit_used')?.color;
 
     // init svg
     const svg = d3.select(chartRef.current)
@@ -56,8 +56,8 @@ const TokenCost = ({
       name: d.name,
       input_tokens: Number(d.input_tokens) || 0,
       output_tokens: Number(d.output_tokens) || 0,
-      cost: Number(d.cost) || 0,
       total_tokens: Number(d.total_tokens) || 0,
+      credit_used: Number(d.credit_used) || 0,
     }));
 
     // X
@@ -72,32 +72,32 @@ const TokenCost = ({
       .domain([0, Math.ceil(maxTokens / 1000) * 1000])
       .range([innerHeight, 0]);
 
-    const maxCost = d3.max(chartData, d => d.cost) * 1.3;
-    let niceMaxCost;
-    if (maxCost <= 0.001) {
-      niceMaxCost = 0.001;
-    } else if (maxCost <= 0.002) {
-      niceMaxCost = 0.002;
-    } else if (maxCost <= 0.005) {
-      niceMaxCost = 0.005;
-    } else if (maxCost <= 0.01) {
-      niceMaxCost = 0.01;
-    } else if (maxCost <= 0.02) {
-      niceMaxCost = 0.02;
-    } else if (maxCost <= 0.05) {
-      niceMaxCost = 0.05;
-    } else if (maxCost <= 0.1) {
-      niceMaxCost = 0.1;
-    } else if (maxCost <= 0.2) {
-      niceMaxCost = 0.2;
-    } else if (maxCost <= 0.5) {
-      niceMaxCost = 0.5;
+    const maxCreditUsed = d3.max(chartData, d => d.credit_used) * 1.3;
+    let niceMaxCreditUsed;
+    if (maxCreditUsed <= 0.001) {
+      niceMaxCreditUsed = 0.001;
+    } else if (maxCreditUsed <= 0.002) {
+      niceMaxCreditUsed = 0.002;
+    } else if (maxCreditUsed <= 0.005) {
+      niceMaxCreditUsed = 0.005;
+    } else if (maxCreditUsed <= 0.01) {
+      niceMaxCreditUsed = 0.01;
+    } else if (maxCreditUsed <= 0.02) {
+      niceMaxCreditUsed = 0.02;
+    } else if (maxCreditUsed <= 0.05) {
+      niceMaxCreditUsed = 0.05;
+    } else if (maxCreditUsed <= 0.1) {
+      niceMaxCreditUsed = 0.1;
+    } else if (maxCreditUsed <= 0.2) {
+      niceMaxCreditUsed = 0.2;
+    } else if (maxCreditUsed <= 0.5) {
+      niceMaxCreditUsed = 0.5;
     } else {
-      niceMaxCost = Math.ceil(maxCost * 2) / 2;
+      niceMaxCreditUsed = Math.ceil(maxCreditUsed * 2) / 2;
     }
 
     const yRightScale = d3.scaleLinear()
-      .domain([0, niceMaxCost])
+      .domain([0, niceMaxCreditUsed])
       .range([innerHeight, 0]);
 
     // draw tokens axis
@@ -118,17 +118,17 @@ const TokenCost = ({
       .style('fill', '#666')
       .text(gettext('Tokens'));
 
-    // draw cost axis
+    // draw creditUsed axis
     svg.append('g')
       .attr('class', 'axis axis-right')
       .attr('transform', `translate(${innerWidth}, 0)`)
       .call(d3.axisRight(yRightScale)
-        .tickFormat(d => formatCost(d))
+        .tickFormat(d => formatCreditUsed(d))
         .ticks(5)
       )
       .style('font-size', '11px');
 
-    // draw cost axis name
+    // draw creditUsed axis name
     svg.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('x', -innerHeight / 2)
@@ -136,14 +136,26 @@ const TokenCost = ({
       .attr('text-anchor', 'middle')
       .style('font-size', '12px')
       .style('fill', '#666')
-      .text(gettext('Cost'));
+      .text(gettext('Credit used'));
 
     // draw x(name)
+    const xAxis = d3.axisBottom(xScale);
+    if (chartData.length > 10) {
+      const step = Math.ceil(chartData.length / 10);
+      const tickValues = chartData
+        .map((d, i) => i % step === 0 ? d.name : null)
+        .filter(v => v !== null);
+      xAxis.tickValues(tickValues);
+    }
+
     svg.append('g')
       .attr('class', 'axis axis-x')
       .attr('transform', `translate(0, ${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .style('font-size', '11px');
+      .call(xAxis)
+      .style('font-size', '11px')
+      .selectAll('text')
+      .attr('transform', 'rotate(15)')
+      .style('text-anchor', 'start');
 
     // draw x label
     svg.append('text')
@@ -264,13 +276,13 @@ const TokenCost = ({
 
     const centerX = (d) => xScale(d.name) + xScale.bandwidth() / 2;
 
-    // init cost
+    // init creditUsed
     const linePoints = chartData.map(d => ({
       x: centerX(d),
-      y: yRightScale(d.cost)
+      y: yRightScale(d.credit_used)
     }));
 
-    // draw cost
+    // draw creditUsed
     const lineGenerator = d3.line()
       .x(d => d.x)
       .y(d => d.y)
@@ -279,25 +291,25 @@ const TokenCost = ({
     const group = svg
       .append('g')
       .attr('class', 'group')
-      .attr('name', 'cost');
+      .attr('name', 'creditUsed');
 
     group.append('path')
       .datum(linePoints)
       .attr('fill', 'none')
-      .attr('stroke', costColor)
+      .attr('stroke', creditUsedColor)
       .attr('stroke-width', 2.5)
       .attr('d', lineGenerator);
 
-    // draw cost dot
-    group.selectAll('.cost-circle')
+    // draw creditUsed dot
+    group.selectAll('.creditUsed-circle')
       .data(chartData)
       .join('circle')
-      .attr('class', 'cost-circle')
+      .attr('class', 'creditUsed-circle')
       .attr('cx', d => centerX(d))
-      .attr('cy', d => yRightScale(d.cost))
+      .attr('cy', d => yRightScale(d.credit_used))
       .attr('r', 4)
       .attr('fill', 'white')
-      .attr('stroke', costColor)
+      .attr('stroke', creditUsedColor)
       .attr('stroke-width', 2)
       .on('mouseenter', function (event, d) {
         event.preventDefault();
@@ -348,7 +360,6 @@ const TokenCost = ({
       .attr('fill', 'white')
       .attr('stroke', '#e0e0e0')
       .attr('stroke-width', 1)
-      .attr('fill-opacity', 0.2)
       .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
     const titleGroup = annotationGroup.append('g')
@@ -408,21 +419,21 @@ const TokenCost = ({
         .attr('fill', '#666')
         .text(`${gettext('Output tokens')}: ${outputTokensTotal.toLocaleString()}`);
 
-      // Cost
-      const costTotal = modelsUsageStatics.totalCost || 0;
+      // CreditUsed
+      const creditUsedTotal = modelsUsageStatics.totalCreditUsed || 0;
       annotationGroup.append('line')
         .attr('x1', 10)
         .attr('y1', 71)
         .attr('x2', 22)
         .attr('y2', 71)
-        .attr('stroke', costColor)
+        .attr('stroke', creditUsedColor)
         .attr('stroke-width', 2.5);
 
       annotationGroup.append('circle')
         .attr('cx', 16)
         .attr('cy', 71)
         .attr('r', 4)
-        .attr('fill', costColor)
+        .attr('fill', creditUsedColor)
         .attr('stroke', 'white')
         .attr('stroke-width', 1.5);
 
@@ -431,7 +442,7 @@ const TokenCost = ({
         .attr('y', 75)
         .attr('font-size', '11px')
         .attr('fill', '#666')
-        .text(`${gettext('Cost')}: ${formatCost(costTotal)}`);
+        .text(`${gettext('Credit used')}: ${formatCreditUsed(creditUsedTotal)}`);
     }
 
     // draw legends
@@ -445,7 +456,7 @@ const TokenCost = ({
       const legendItem = svg.append('g')
         .attr('transform', `translate(${legendStartX + i * (legendItemWidth + legendSpacing)}, ${legendY})`);
 
-      if (item.key === 'cost') {
+      if (item.key === 'creditUsed') {
         legendItem.append('line')
           .attr('x1', 0)
           .attr('y1', 9)
@@ -477,7 +488,7 @@ const TokenCost = ({
         .text(item.name);
     });
 
-  }, [data, legends, margin]);
+  }, [data, legends, margin, isAnnotationExpanded, hoveredBar, modelsUsageStatics]);
 
   return (
     <div className="sea-ai-tokens-chart w-100 h-100 d-flex align-items-center justify-content-center" ref={ref}>
@@ -489,4 +500,4 @@ const TokenCost = ({
   );
 };
 
-export default TokenCost;
+export default TokenCreditUsed;

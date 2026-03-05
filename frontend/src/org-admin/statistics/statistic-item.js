@@ -85,7 +85,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
               {item.nickname}
             </Link>
           </td>
-          <td>{item.total_cost.toFixed(2)}</td>
+          <td>{item.total_credit_used.toFixed(0)}</td>
           <td>{renderOp()}</td>
         </>
       )}
@@ -105,7 +105,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
             )}
             {!(item.nickname || item.group_name) && item.owner}
           </td>
-          <td>{item.total_cost.toFixed(2)}</td>
+          <td>{item.total_credit_used.toFixed(0)}</td>
           <td>{renderOp()}</td>
         </>
       )}
@@ -117,7 +117,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
             </Link>
           </td>
           <td><Link to={getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
-          <td>{item.total_cost.toFixed(2)}</td>
+          <td>{item.total_credit_used.toFixed(0)}</td>
           <td>{renderOp()}</td>
         </>
       )}

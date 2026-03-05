@@ -9,7 +9,7 @@ import StatisticNav from './statistic-nav';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
 import MonthPicker from '../../project/main-panel/search/month-picker';
-import { TokenCostDetailDialog } from '@/components/dialog';
+import { TokenCreditUsedDetailDialog } from '@/components/dialog';
 import { CustomizeTabs, toaster } from '@/components';
 import StatisticList from './statistic-list';
 
@@ -47,7 +47,7 @@ class StatisticsAI extends Component {
         value: 'month'
       },
     ];
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
   }
@@ -56,21 +56,21 @@ class StatisticsAI extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsDetail = (view, startDate, endDate, condition) => {
-    return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, view, startDate, endDate, condition);
+  getAIStatisticsDetail = (groupBy, startDate, endDate, condition) => {
+    return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, groupBy, startDate, endDate, condition);
   };
 
   onOpenAIStaticsDetailDialog = (groupBy, condition) => {
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
     if (groupBy === 'user' || groupBy === 'group') {
-      this.statisticsDetailViews.push({
+      this.statisticsDetailGroups.push({
         value: 'project', label: gettext('Project')
       });
     }
-    if (groupBy === 'project' || groupBy === 'group') {
-      this.statisticsDetailViews.push({
+    if (groupBy === 'group') {
+      this.statisticsDetailGroups.push({
         value: 'user', label: gettext('User')
       });
     }
@@ -78,7 +78,7 @@ class StatisticsAI extends Component {
   };
 
   onCloseAIStaticsDetailDialog = () => {
-    this.statisticsDetailViews = [
+    this.statisticsDetailGroups = [
       { value: 'date', label: gettext('Date') },
     ];
     this.setState({ isOpenStatisticsDetailDialog: false, condition: {} });
@@ -248,8 +248,8 @@ class StatisticsAI extends Component {
               />
             </div>
             {isOpenStatisticsDetailDialog && (
-              <TokenCostDetailDialog
-                views={this.statisticsDetailViews}
+              <TokenCreditUsedDetailDialog
+                groups={this.statisticsDetailGroups}
                 onCloseDialog={this.onCloseAIStaticsDetailDialog}
                 getAIStatisticsDetail={this.getAIStatisticsDetail}
                 condition={condition}

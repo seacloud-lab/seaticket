@@ -109,7 +109,7 @@ class Account extends Component {
           apiCallsLimit: resp.data.api_calls_limit,
           apiCallsUsageRate: resp.data.api_calls_usage_rate,
           aiCredit: resp.data.ai_credit,
-          aiCost: resp.data.ai_cost,
+          aiCreditUsed: resp.data.ai_credit_used,
           aiUsageRate: resp.data.ai_usage_rate
         });
       }).catch(error => {
@@ -218,7 +218,7 @@ class Account extends Component {
                 <div className="account-info-card">
                   <p className='account-info-card-title'>{gettext('AI credit used')}</p>
                   <p>
-                    <span className='account-info-card-used'>{this.state.aiCost || 0}</span>
+                    <span className='account-info-card-used'>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
                     <span className='account-info-card-total'> / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</span>
                   </p>
                 </div>
