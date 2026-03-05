@@ -436,6 +436,28 @@ input.short-input {
   display: none;
 }
 
+#lang-context {
+  font-size: 14px !important;
+  color: var(--bs-body-color);
+  display: flex;
+  gap: 4px;
+  user-select: none;
+  padding: 8px;
+  line-height: 22px;
+  height: 30px;
+  align-items: center;
+  border-radius: 4px;
+}
+
+#lang-context:hover {
+  background-color: rgba(0, 0, 0, 0.04)
+}
+
+#lang-context .sea-qa-icon-svg {
+  color: var(--bs-body-secondary-color);
+  margin-top: -2px;
+}
+
 /* layout */
 #header {
   background: #f4f4f7;
@@ -563,7 +585,7 @@ input.short-input {
 
 .login-panel-wrapper .login-panel-content {
   width: fit-content;
-  padding: 64px 48px 48px;
+  padding: 64px 48px 40px;
   margin: 0 auto;
   font-weight: 500;
   border-radius: 8px;
@@ -575,23 +597,6 @@ input.short-input {
   font-size: 24px;
   font-weight: 500;
   line-height: 28px;
-}
-
-.login-panel-wrapper .login-panel-header .register-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.login-panel-wrapper .login-panel-header .register-link a {
-  font-weight: 500;
-  line-height: 28px;
-}
-
-.login-panel-wrapper .login-panel-header .register-link .login-arrow-right .sea-qa-icon-svg {
-  width: 12px;
-  height: 12px;
-  fill: var(--bs-orange);
 }
 
 .login-panel-wrapper .login-form-wrapper {
@@ -623,6 +628,12 @@ input.short-input {
   border-color: #FF8000;
 }
 
+.login-panel-wrapper .forgot-passwd {
+  font-size: 14px;
+  color: var(--bs-orange);
+  font-weight: normal;
+}
+
 .login-panel-wrapper .login-form-wrapper .password-toggle {
   position: absolute;
   top: 12px;
@@ -639,45 +650,27 @@ input.short-input {
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
-.login-panel-wrapper .login-panel-bottom-container {
-  margin-top: 24px;
-  height: 22px;
+.login-panel-wrapper .register-link {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.login-panel-wrapper .register-link a {
+  font-weight: 400;
   line-height: 22px;
-}
-
-.login-panel-wrapper .login-panel-bottom-container .forgot-passwd {
   font-size: 14px;
-  color: var(--bs-body-color);
-  font-weight: normal;
 }
 
-.login-panel-wrapper .login-panel-bottom-container .forgot-passwd:hover {
-  color: var(--bs-orange);
+.login-panel-wrapper .login-panel-bottom-panel-layout {
+  margin-top: 12px;
+  height: 30px;
 }
 
 .login-panel-wrapper .login-panel-bottom-container > :last-child {
   margin-left: auto !important;
-}
-
-.login-panel-wrapper .login-panel-bottom-container > :last-child a {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
-  display: flex;
-  gap: 4px;
-  user-select: none;
-}
-
-.login-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
-  color: var(--bs-orange);
-}
-
-.login-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
-  color: var(--bs-orange) !important;
-}
-
-.login-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  color: var(--bs-body-secondary-color);
-  margin-top: -2px;
 }
 
 /* multi-saml-sso-panel */
@@ -691,7 +684,7 @@ input.short-input {
 
 .multi-saml-sso-panel-wrapper .multi-saml-sso-panel-content {
   width: fit-content;
-  padding: 64px 48px 48px;
+  padding: 64px 48px 64px;
   margin: 0 auto;
   font-weight: 500;
   border-radius: 8px;
@@ -726,37 +719,15 @@ input.short-input {
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container {
-  margin-top: 24px;
-  height: 22px;
-  line-height: 22px;
-}
-
-.multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
+  margin-top: 12px;
   display: flex;
-  gap: 4px;
-  user-select: none;
   justify-content: center;
-  width: fit-content;
-}
-
-.multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
-  color: var(--bs-orange);
-}
-
-.multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
-  color: var(--bs-orange) !important;
-}
-
-.multi-saml-sso-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  margin-top: -2px;
-  color: var(--bs-body-secondary-color);
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container > div {
   display: flex;
   justify-content: center;
+  width: fit-content;
 }
 
 /* password-reset-panel */
@@ -770,7 +741,7 @@ input.short-input {
 
 .password-reset-panel-wrapper .password-reset-panel-content {
   width: fit-content;
-  padding: 64px 48px 48px;
+  padding: 64px 48px 64px;
   margin: 0 auto;
   font-weight: 500;
   border-radius: 8px;
@@ -835,37 +806,15 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container {
-  margin-top: 24px;
-  height: 22px;
-  line-height: 22px;
-}
-
-.password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
+  margin-top: 12px;
   display: flex;
-  gap: 4px;
-  user-select: none;
   justify-content: center;
-  width: fit-content;
-}
-
-.password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a:hover {
-  color: var(--bs-orange);
-}
-
-.password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
-  color: var(--bs-orange) !important;
-}
-
-.password-reset-panel-wrapper .password-reset-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  margin-top: -2px;
-  color: var(--bs-body-secondary-color);
 }
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container > div {
   display: flex;
   justify-content: center;
+  width: fit-content;
 }
 
 /* org-register-panel */
@@ -879,7 +828,7 @@ input.short-input {
 
 .org-register-panel-wrapper .org-register-panel-content {
   width: fit-content;
-  padding: 64px 48px 48px;
+  padding: 64px 48px 64px;
   margin: 0 auto;
   font-weight: 500;
   border-radius: 8px;
@@ -934,37 +883,15 @@ input.short-input {
 }
 
 .org-register-panel-wrapper .login-panel-bottom-container {
-  margin-top: 24px;
-  height: 22px;
-  line-height: 22px;
-}
-
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
+  margin-top: 12px;
   display: flex;
-  gap: 4px;
-  user-select: none;
   justify-content: center;
-  width: fit-content;
-}
-
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
-  color: var(--bs-orange);
-}
-
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
-  color: var(--bs-orange) !important;
-}
-
-.org-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  margin-top: -2px;
-  color: var(--bs-body-secondary-color);
 }
 
 .org-register-panel-wrapper .login-panel-bottom-container > div {
   display: flex;
   justify-content: center;
+  width: fit-content;
 }
 
 /* individual-register-panel */
@@ -978,7 +905,7 @@ input.short-input {
 
 .individual-register-panel-wrapper .individual-register-panel-content {
   width: fit-content;
-  padding: 64px 48px 48px;
+  padding: 64px 48px 64px;
   margin: 0 auto;
   font-weight: 500;
   border-radius: 8px;
@@ -1033,37 +960,15 @@ input.short-input {
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container {
-  margin-top: 24px;
-  height: 22px;
-  line-height: 22px;
-}
-
-.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
+  margin-top: 12px;
   display: flex;
-  gap: 4px;
-  user-select: none;
   justify-content: center;
-  width: fit-content;
-}
-
-.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover {
-  color: var(--bs-orange);
-}
-
-.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a:hover .sea-qa-icon-svg {
-  color: var(--bs-orange) !important;
-}
-
-.individual-register-panel-wrapper .login-panel-bottom-container > :last-child a .sea-qa-icon-svg {
-  margin-top: -2px;
-  color: var(--bs-body-secondary-color);
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container > div {
   display: flex;
   justify-content: center;
+  width: fit-content;
 }
 
 /* login-panel, multi-saml-sso-panel, password-reset-panel, org-register-panel, individual-register-panel, --input style */
@@ -1122,10 +1027,11 @@ input.short-input {
 /* login-panel, multi-saml-sso-panel, --login-form-pass-member style */
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member {
-  margin: 8px 0px 24px;
+  margin: 12px 0px 32px;
   color: var(--bs-body-secondary-color);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 22px;
+  font-weight: 400;
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-toggle,
@@ -1147,7 +1053,9 @@ input.short-input {
 
 .login-panel-wrapper .login-form-wrapper .btn-block:focus,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .btn-block:focus,
-.password-reset-panel-wrapper .login-form-wrapper .btn-block:focus {
+.password-reset-panel-wrapper .login-form-wrapper .btn-block:focus,
+.individual-register-panel-wrapper .login-form-wrapper .btn-block:focus,
+.org-register-panel-wrapper .login-form-wrapper .btn-block:focus {
   border-color: var(--bs-primary);
 }
 

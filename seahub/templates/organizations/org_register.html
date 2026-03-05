@@ -43,10 +43,10 @@
 				{% endif %}
 				<button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
 			</form>
-			<div class="login-panel-bottom-container">
-				{# language will be shown here #}
-			</div>
 			{% endif %}
+		</div>
+		<div class="login-panel-bottom-container">
+			{# language will be shown here #}
 		</div>
 	</div>
 </div>
@@ -84,13 +84,13 @@ $('#lang-context').on('click', function() {
     var langSelectorTop;
     var langSelectorHeight = $('#lang-context-selector').outerHeight();
     if (langSelectorHeight > langTop) {
-        langSelectorTop = '-' + (langTop - 5) + 'px';
+        langSelectorTop = '-' + (langTop - 4) + 'px';
     } else {
         langSelectorTop = '-' + (langSelectorHeight + 4) + 'px';
     }
     $('#lang-context-selector').css({
         'top': langSelectorTop,
-        'right': 0
+        'left': 0
     });
     $('#lang-context-selector .sf-popover-con').css({
         'max-height': $('#lang').offset().top - 10

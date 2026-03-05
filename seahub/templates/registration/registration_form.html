@@ -23,7 +23,7 @@
 			<p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
 			{% else %}
 			<form class="login-form-wrapper" action="" method="post" id="signup-form">{% csrf_token %}
-				{% if form.name.field.required %}
+			  {% if form.name.field.required %}
 				{{ form.name }} {{ form.name.errors }}
 				{% endif %}
 
@@ -50,11 +50,10 @@
 				{% endif %}
 				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
 			</form>
-
-			<div class="login-panel-bottom-container">
-				{# language will be shown here #}
-			</div>
 			{% endif %}
+		</div>
+    <div class="login-panel-bottom-container">
+		  {# language will be shown here #}
 		</div>
 	</div>
 </div>
@@ -93,7 +92,7 @@ $('#lang-context').on('click', function() {
     }
     $('#lang-context-selector').css({
         'top': langSelectorTop,
-        'right': 0
+        'left': 0
     });
     $('#lang-context-selector .sf-popover-con').css({
         'max-height': $('#lang').offset().top - 10
