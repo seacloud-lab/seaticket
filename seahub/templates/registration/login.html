@@ -59,7 +59,7 @@
 				    value=""
 				    class="input form-item-input"
 				    id="id_password1"
-				    autocomplete="off"
+				    autocomplete="new-password"
 				  />
 				  <div class="password-toggle" id="eye-icon-wrapper"></div>
 				</div>
@@ -99,10 +99,9 @@
 						<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
 						<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
 					</div>
-					<!-- {% if email_host %}
+					{% if email_host %}
 					<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password?" %}</a>
-					{% endif %} -->
-					<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password?" %}</a>
+					{% endif %}
 				</label>
 				{% endif %}
 
@@ -117,14 +116,11 @@
 			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
-			<!-- {% if enable_signup %}
+			{% if enable_signup %}
 			<div class="register-link">
 				<a href="{{ signup_url }}" id="sign-up">{% trans "Sign up" %}</a>
 			</div>
-			{% endif %} -->
-			<div class="register-link">
-				<a href="{{ signup_url }}" id="sign-up">{% trans "Sign up" %}</a>
-			</div>
+			{% endif %}
 
 			{% if enable_sms_login %}
 			<div class="mt-5">
