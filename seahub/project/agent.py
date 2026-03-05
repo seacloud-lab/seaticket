@@ -264,7 +264,7 @@ class AgentActionConfirmView(APIView):
         Currently records the confirmation. Future enhancement: post as a GitHub comment
         via the GitHub API.
         """
-        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:200]}'
+        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:500]}'
 
     def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
         """Create an internal ticket from a GitHub issue.
