@@ -144,7 +144,7 @@ const OptionEditorContainer = forwardRef(({
       />
       {showCreateBtn && (
         <CustomizeAddTool
-          className="option-editor-add-search-result"
+          className={classnames('option-editor-add-search-result', { 'mt-2': displayOptions.length === 0 })}
           name={`${addToolText} ${searchValue.trim()}`}
           callBack={handleCreate}
         />

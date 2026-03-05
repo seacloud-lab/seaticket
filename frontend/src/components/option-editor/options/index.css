@@ -5,12 +5,11 @@
 }
 
 .option-editor-add-search-result {
-  height: 30px;
+  height: 38px;
   overflow: hidden;
   padding: 0 10px;
   border-top: 1px solid #dedede;
   color: var(--bs-body-color);
-  margin-top: 8px;
 }
 
 .option-editor-add-search-result .sea-qa-icon-svg {
