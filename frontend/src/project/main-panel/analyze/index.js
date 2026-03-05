@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { gettext } from '@/constants';
-import { IconButton, CenteredLoading, CenteredError } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
+import { IconButton, CenteredLoading, CenteredError, EmptyTip } from '@/components';
 import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import EmbeddingView from './components/embedding-view';
@@ -142,9 +142,11 @@ const Analyze = ({ title }) => {
 
     if (!records && selectedConnections.length === 0) {
       return (
-        <div className="analyze-empty-state">
-          <p className="analyze-empty-text">{gettext('Select connections to analyze')}</p>
-        </div>
+        <EmptyTip
+          src={`${mediaUrl}img/no-analysis.png`}
+          title={gettext('No analysis')}
+          text={gettext('Select connections to analyze')}
+        />
       );
     }
 
