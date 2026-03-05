@@ -39,4 +39,5 @@
 /* check check-placement left */
 .option-editor-option.check-placement-left {
   justify-content: flex-start;
+  padding: 0 8px;
 }

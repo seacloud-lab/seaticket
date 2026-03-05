@@ -102,7 +102,9 @@ const StateSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id="state-editor-popover"
+          className="popover-radius-4 sea-ticket-settings-popover"
           target={editorRef}
+          sameWidthWithTarget={240}
           isMultiple={false}
           isSearchEnabled={false}
           value={`${state}__${substate}`}

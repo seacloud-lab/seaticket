@@ -80,9 +80,10 @@ const SubStateSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id="substate-editor-popover"
+          className="popover-radius-4 sea-ticket-settings-popover"
           target={editorRef}
+          sameWidthWithTarget={240}
           isMultiple={false}
-          isSearchEnabled={false}
           value={substate}
           options={options}
           onChange={onStateChange}

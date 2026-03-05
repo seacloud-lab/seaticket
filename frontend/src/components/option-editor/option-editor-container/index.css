@@ -5,8 +5,7 @@
 
 .option-editor-popover .option-editor-selected-value-wrapper {
   background-color: var(--bs-body-secondary-bg);
-  border-bottom: 1px solid var(--bs-border-color);
-  border-radius: 3px 3px 0 0;
+  border-radius: 4px 4px 0 0;
   line-height: 1;
   max-height: 150px;
   min-height: 28px;
@@ -14,7 +13,7 @@
   padding: 8px 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
 }
 
 .option-editor-popover .option-editor-search-wrapper {
@@ -23,6 +22,10 @@
 
 .option-editor-container.search-enabled {
   padding: 12px 0;
+}
+
+.option-editor-container.search-enabled.small-size-option .option-editor-option {
+  padding: 0 8px;
 }
 
 .option-editor-container.selected-value-display.search-enabled {
@@ -35,6 +38,10 @@
 
 .option-editor-container.selected-value-display.search-enabled .option-editor-search-wrapper {
   padding-top: 12px;
+}
+
+.option-editor-container.selected-value-display.search-enabled.small-size-option .option-editor-search-wrapper {
+  padding-top: 8px;
 }
 
 .option-editor-container:not(.search-enabled) .option-editor-content {

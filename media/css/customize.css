@@ -322,3 +322,7 @@ body {
   border-radius: 8px !important;
   box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1) !important;
 }
+
+.popover-radius-4 .popover {
+  border-radius: 4px !important;
+}

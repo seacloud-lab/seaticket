@@ -106,6 +106,7 @@ const OptionEditorContainer = forwardRef(({
         'search-enabled': isSearchEnabled,
         'selected-value-display': children,
         'add-search-result-enabled': isSearchEnabled && showCreateBtn,
+        'small-size-option': SEARCH_SIZE <= 30
       })}
     >
       {children && (

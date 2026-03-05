@@ -37,14 +37,15 @@ const PriorityEditor = ({
   return (
     <OptionsEditor
       target={target}
-      className={classnames('sea-ticket-priority-editor-popover', className)}
+      className={classnames('sea-ticket-priority-editor-popover popover-radius-4', className)}
       onToggle={onToggle}
       value={value}
       isSearchEnabled={false}
       checkPlacement="left"
       options={options}
       modifiers={modifiers}
-      onChange={onChange}
+      sameWidthWithTarget={240}
+      onChange={(newValue) => onChange(newValue || 0)}
     />
   );
 };

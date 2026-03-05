@@ -77,7 +77,9 @@ const TypeSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id={id}
+          className="popover-radius-4 sea-ticket-settings-popover"
           target={editorRef}
+          sameWidthWithTarget={240}
           isMultiple={false}
           value={value}
           placeholder={gettext('Search type')}

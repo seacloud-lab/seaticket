@@ -13,3 +13,7 @@
 .ticket-rate-formatter .sea-qa-icon-svg-priority-01 {
   fill: #ff8000;
 }
+
+.sea-ticket-priority-settings-popover .popover {
+  margin-left: 6px;
+}

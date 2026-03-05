@@ -134,3 +134,20 @@
   justify-content: flex-end;
   margin-left: 0 !important;
 }
+
+.sea-qa-project-ticket-settings-item .tip-default {
+  font-size: 14px;
+  line-height: 26px;
+}
+
+.sea-qa-project-ticket .sea-ticket-customize-label {
+  height: 22px;
+}
+
+.sea-ticket-settings-popover .popover.bs-popover-auto[data-popper-placement^=top] {
+  margin-bottom: -9px;
+}
+
+.sea-ticket-settings-popover  .popover.bs-popover-auto[data-popper-placement^=bottom] {
+  top: -4px !important;
+}

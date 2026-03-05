@@ -81,7 +81,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         </div>
         {isShowEditor && (
           <ClickOutside onClickOutside={closeEditor}>
-            <div className="sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description">
+            <div className="sea-metadata-tags-selector-popover popover sea-qa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description">
               <OptionEditorContainer
                 ref={optionEditorContainerRef}
                 isMultiple={true}

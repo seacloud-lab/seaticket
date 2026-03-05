@@ -96,12 +96,29 @@ class SearchInput extends Component {
   };
 
   render() {
-    const { placeholder, autoFocus, className, inputClassName, onKeyDown, disabled, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
+    const {
+      placeholder, autoFocus, className, inputClassName, disabled, style,
+      isShowSearchIcon = true, size = 38, isShowClearIcon = false,
+      onClear, onKeyDown,
+    } = this.props;
     const { searchValue } = this.state;
+
+    const isSmallSize = size <= 30;
+    let paddingLeft = size - 2;
+    if (!isShowSearchIcon) {
+      paddingLeft = isSmallSize ? 8 : 12;
+    }
+    let paddingRight = 8;
+    if (isShowClearIcon && isFunction(onClear)) {
+      paddingRight = 30;
+    }
 
     return (
       <div
-        className={classnames('sea-qa-search-input-wrapper', className, { 'display-search-icon': isShowSearchIcon, 'display-clear-icon': isFunction(onClear) })}
+        className={classnames('sea-qa-search-input-wrapper', className, {
+          'display-search-icon': isShowSearchIcon,
+          'display-clear-icon': isFunction(onClear)
+        })}
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
@@ -111,7 +128,7 @@ class SearchInput extends Component {
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control sea-qa-search-input', inputClassName, { 'small': size <= 30 })}
+          className={classnames('form-control sea-qa-search-input', inputClassName, { 'small-size': isSmallSize })}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -119,7 +136,7 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={{ height: size, paddingLeft: isShowSearchIcon ? size - 2 : 12, paddingRight: 30 }}
+          style={{ height: size, paddingLeft: paddingLeft, paddingRight: paddingRight }}
           name="search-input"
           autoComplete="off"
         />

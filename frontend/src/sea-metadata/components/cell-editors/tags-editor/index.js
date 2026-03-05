@@ -94,7 +94,7 @@ const TagsEditor = forwardRef(({
 
   return (
     <div
-      className={classnames('sea-metadata-tags-selector-popover sea-qa-tags-selector-popover option-editor-popover', { 'hide-description': true })}
+      className={classnames('sea-metadata-tags-selector-popover popover sea-qa-tags-selector-popover option-editor-popover', { 'hide-description': true })}
       style={style}
       ref={editorRef}
     >
