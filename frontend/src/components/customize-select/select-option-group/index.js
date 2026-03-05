@@ -208,7 +208,7 @@ class OptionGroup extends Component {
                 onChange={this.onChangeSearch}
                 autoFocus={true}
                 isShowSearchIcon={false}
-                size={28}
+                size={30}
                 ref={this.searchInputRef}
               />
             </div>

@@ -94,12 +94,3 @@
   justify-content: flex-start;
   flex: 1;
 }
-
-.sea-metadata-selector-priority .sea-ticket-priority-editor-option-name-hotkey {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  overflow: hidden;
-  flex: 1;
-  gap: 8px;
-}
