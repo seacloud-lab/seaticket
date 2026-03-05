@@ -20,3 +20,16 @@
   flex: 1;
   gap: 8px;
 }
+
+.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-hotkey {
+  color: var(--bs-icon-color);
+  flex-shrink: 0;
+  margin-left: 12px;
+}

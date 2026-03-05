@@ -1,16 +1,4 @@
 .sea-metadata-tag .sea-metadata-tag-remove {
-  width: 14px;
-  height: 14px;
   margin: 0 -2px 0 2px;
   cursor: pointer;
-}
-
-.sea-metadata-tag .sea-metadata-tag-remove .sea-qa-icon-svg {
-  color: #909090;
-  height: 10px;
-  width: 10px;
-}
-
-.sea-metadata-tag .sea-metadata-tag-remove:hover .sea-qa-icon-svg {
-  color: #666666;
 }

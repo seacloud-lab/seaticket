@@ -11,7 +11,7 @@ import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
-const SEARCH_SIZE = 28;
+const SEARCH_SIZE = 30;
 
 const OptionEditorContainer = forwardRef(({
   id,
