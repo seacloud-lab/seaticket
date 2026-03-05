@@ -39,7 +39,7 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
     <CustomizeSelect
       disabled={readOnly}
       supportMultipleSelect={true}
-      className={classnames('sea-metadata-basic-filters-select sea-metadata-table-view-basic-checkbox-select mr-4', { 'highlighted': value.length > 0 })}
+      className={classnames('sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select mr-4', { 'highlighted': value.length > 0 })}
       value={displayValue}
       options={options}
       onChange={onChange}

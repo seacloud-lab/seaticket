@@ -654,10 +654,10 @@ class SysAdminServiceApi {
   }
 
 
-  sysAdminGetAIStatisticsDetail(view, startDate, endDate, condition) {
+  sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition) {
     const url = this.server + '/api/v1/admin/statistics/ai/detail/';
     let params = {
-      view,
+      group_by: groupBy,
       start_date: startDate.format('YYYY-MM-DD'),
       end_date: endDate.format('YYYY-MM-DD'),
       condition

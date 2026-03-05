@@ -408,3 +408,6 @@ def rank_search_results(query, results, username, org_id, project_uuid):
             seen_keys.add(ranked_id)
 
     return ranked_results
+
+def convert_cost_to_credit(cost):
+    return 100 * cost

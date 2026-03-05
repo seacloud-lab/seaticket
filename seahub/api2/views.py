@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
 from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
-    get_ai_credit_by_username, get_ai_cost_by_username
+    get_ai_credit_by_username, get_ai_cost_by_username, convert_cost_to_credit
 
 
 logger = logging.getLogger(__name__)
@@ -163,16 +163,16 @@ class AccountInfo(APIView):
         if getattr(settings, 'SEAQA_AI_INNER_SERVER_URL', ''):
             if is_org_context(request):
                 org_id = request.user.org.org_id
-                info['ai_credit'] = get_ai_credit_by_org_id(org_id)
-                info['ai_cost'] = round(get_ai_cost_by_org_id(org_id), 2)
+                info['ai_credit'] = convert_cost_to_credit(get_ai_credit_by_org_id(org_id))
+                info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
             else:
-                info['ai_credit'] = get_ai_credit_by_username(request.user.username)
-                info['ai_cost'] = round(get_ai_cost_by_username(request.user.username), 2)
+                info['ai_credit'] = convert_cost_to_credit(get_ai_credit_by_username(request.user.username))
+                info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_username(request.user.username))
 
             if info['ai_credit'] <= 0:
                 info['ai_usage_rate'] = '0%'
             else:
-                info['ai_usage_rate'] = str(info['ai_cost'] / info['ai_credit'] * 100) + '%'
+                info['ai_usage_rate'] = str(info['ai_credit_used'] / info['ai_credit'] * 100) + '%'
 
         return info
 

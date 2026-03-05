@@ -90,7 +90,7 @@ class AdminAIStatisticsView(APIView):
                     'nickname': profiles_dict.get(username, email2nickname(username)),
                     'org_id': org_id,
                     'org_name': org_dict.get(org_id, ''),
-                    'total_cost': round(item['total_cost'], 2)
+                    'total_credit_used': item['total_credit_used']
                 })
 
             return Response({'results': results, 'count': total_count})
@@ -135,7 +135,7 @@ class AdminAIStatisticsView(APIView):
                 project = projects_dict.get(project_uuid)
                 result = {
                     'project_uuid': project_uuid,
-                    'total_cost': round(item['total_cost'], 2),
+                    'total_credit_used': item['total_credit_used'],
                     'project_name': project.name if project else None
                 }
                 if project:
@@ -181,7 +181,7 @@ class AdminAIStatisticsView(APIView):
                     'group_name': group_id_to_name_map.get(item['group_id'], ''),
                     'creator': creator,
                     'creator_name': profiles_dict.get(creator, email2nickname(creator)),
-                    'total_cost': round(item['total_cost'], 2),
+                    'total_credit_used': item['total_credit_used'],
                     'org_id': item['org_id'],
                     'org_name': org_dict.get(item['org_id'], '')
                 })
@@ -217,7 +217,7 @@ class AdminAIStatisticsView(APIView):
                     'org_name': org.org_name if org else '',
                     'creator': creator,
                     'creator_name': profiles_dict.get(creator, email2nickname(creator)),
-                    'total_cost': round(item['total_cost'], 2)
+                    'total_credit_used': item['total_credit_used']
                 })
 
             return Response({'results': results, 'count': total_count})
@@ -239,14 +239,13 @@ class AdminAIStatisticsDetailView(APIView):
         elif not condition:
             return api_error(status.HTTP_400_BAD_REQUEST, 'condition must cannot be empty')
 
-        view = request.GET.get('view')
-        group_by = view
-        if view == 'project':
+        group_by = request.GET.get('group_by')
+        if group_by == 'project':
             group_by = 'project_uuid'
-        elif view == 'user':
+        elif group_by == 'user':
             group_by = 'username'
-        elif view != 'date':
-            return api_error(status.HTTP_400_BAD_REQUEST, 'view invalid. Must be sub-group_by of "project" or "group" or "org" or "date"')
+        elif group_by != 'date':
+            return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be sub-group_by of "project" or "group" or "org" or "date"')
         
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
@@ -257,12 +256,12 @@ class AdminAIStatisticsDetailView(APIView):
 
         query_set = query_ai_statistics_detail(group_by, [start_date, end_date], condition)
 
-        if view == 'date':
+        if group_by == 'date':
             results = []
             for item in query_set:
-                item['total_cost'] = round(item['total_cost'], 2)
+                item['total_credit_used'] = item['total_credit_used']
                 results.append(item)
-        elif view == 'user':
+        elif group_by == 'username':
             query_set = query_set[:30]
             usernames = [item['username'] for item in query_set if item['username'] != 'seaqa-indexer']
             profiles_dict = {}
@@ -276,12 +275,12 @@ class AdminAIStatisticsDetailView(APIView):
                     nickname = profiles_dict.get(item['username'], email2nickname(item['username']))
                 results.append({
                     'user': nickname,
-                    'total_cost': round(item['total_cost'], 2),
+                    'total_credit_used': item['total_credit_used'],
                     'total_input_tokens': item['total_input_tokens'],
                     'total_output_tokens': item['total_output_tokens']
                 })
             results.reverse()
-        elif view == 'project':
+        elif group_by == 'project_uuid':
             query_set = query_set[:30]
             project_uuids = [item['project_uuid'] for item in query_set]
             projects = Projects.objects.filter(uuid__in=project_uuids)
@@ -292,7 +291,7 @@ class AdminAIStatisticsDetailView(APIView):
             results = [
                 {
                     'project': project_uuid_name_map.get(item['project_uuid'], '<Unknow project>'),
-                    'total_cost': round(item['total_cost'], 2),
+                    'total_credit_used': item['total_credit_used'],
                     'total_input_tokens': item['total_input_tokens'],
                     'total_output_tokens': item['total_output_tokens']
                 }
