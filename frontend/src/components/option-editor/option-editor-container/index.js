@@ -106,6 +106,7 @@ const OptionEditorContainer = forwardRef(({
         'search-enabled': isSearchEnabled,
         'selected-value-display': children,
         'add-search-result-enabled': isSearchEnabled && showCreateBtn,
+        'small-size-option': SEARCH_SIZE <= 30
       })}
     >
       {children && (
@@ -143,7 +144,7 @@ const OptionEditorContainer = forwardRef(({
       />
       {showCreateBtn && (
         <CustomizeAddTool
-          className="option-editor-add-search-result"
+          className={classnames('option-editor-add-search-result', { 'mt-2': displayOptions.length === 0 })}
           name={`${addToolText} ${searchValue.trim()}`}
           callBack={handleCreate}
         />

@@ -3,6 +3,7 @@ import { Popover } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { Utils } from '@/utils/utils';
 import { getEventClassName } from '@/utils/dom';
+import { generatorModifiers } from './utils';
 
 class CustomizePopover extends React.Component {
 
@@ -51,7 +52,7 @@ class CustomizePopover extends React.Component {
   };
 
   render() {
-    const { target, innerClassName, className, hideArrow = true, modifiers, placement = 'bottom-start' } = this.props;
+    const { target, innerClassName, className, hideArrow = true, placement = 'bottom-start' } = this.props;
     return (
       <Popover
         placement={placement}
@@ -61,7 +62,7 @@ class CustomizePopover extends React.Component {
         hideArrow={hideArrow}
         innerClassName={innerClassName}
         className={className}
-        modifiers={modifiers}
+        modifiers={generatorModifiers(this.props)}
       >
         <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick}>
           {this.props.children}

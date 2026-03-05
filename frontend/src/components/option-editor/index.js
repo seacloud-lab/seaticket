@@ -10,6 +10,7 @@ const OptionsEditor = ({
   target,
   isMultiple = false,
   isSearchEnabled = true,
+  sameWidthWithTarget = false,
   checkPlacement = 'right',
   optionClassName = '',
   contentClassName = '',
@@ -41,6 +42,7 @@ const OptionsEditor = ({
       className={classnames('option-editor-popover', className)}
       placement={placement}
       modifiers={modifiers}
+      sameWidthWithTarget={sameWidthWithTarget}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
     >

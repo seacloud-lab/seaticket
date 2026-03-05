@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import classnames from 'classnames';
 import CustomizePopover from '../customize-popover';
 import Main from './main';
 import { areArraysEqual } from '../../utils/array-utils';
@@ -8,9 +9,11 @@ import './index.css';
 const CollaboratorEditor = ({
   id,
   target,
+  className,
   isShowDeleteArea = true,
   isSearchEnabled = true,
   isMultiple = true,
+  sameWidthWithTarget = false,
   placeholder,
   emptyTip,
   value = [],
@@ -33,9 +36,10 @@ const CollaboratorEditor = ({
   return (
     <CustomizePopover
       target={target}
-      className="collaborator-editor-popover"
+      className={classnames('collaborator-editor-popover popover-radius-4', className)}
       hidePopover={handleSubmit}
       hidePopoverWithEsc={handleSubmit}
+      sameWidthWithTarget={sameWidthWithTarget}
     >
       <Main
         ref={mainRef}

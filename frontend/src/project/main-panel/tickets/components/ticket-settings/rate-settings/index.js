@@ -98,6 +98,8 @@ const RateSettings = ({
           target={editorRef}
           priorities={PRIORITIES}
           value={value}
+          className="sea-ticket-settings-popover sea-ticket-priority-settings-popover"
+          sameWidthWithTarget={240}
           onChange={onChangeValue}
           onToggle={closeEditor}
         />

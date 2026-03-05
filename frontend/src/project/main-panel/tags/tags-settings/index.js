@@ -116,7 +116,7 @@ const TagsSettings = ({
         {selectedTags.length > 0 ? (
           <>
             {selectedTags.map(tag => (
-              <Tag tag={tag} key={tag._id} className="mt-1 mb-1">
+              <Tag tag={tag} key={tag._id} className="mr-0">
                 <RemoveBtn callback={(event) => handleRemove(event, tag)} />
               </Tag>
             ))}
@@ -128,7 +128,8 @@ const TagsSettings = ({
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover sea-qa-tags-selector-popover hide-description"
+          className="option-editor-popover sea-qa-tags-selector-popover sea-ticket-settings-popover popover-radius-4 hide-description"
+          sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
         >
@@ -148,7 +149,7 @@ const TagsSettings = ({
                 const tag = getRowById(tagsData, tagId);
                 if (!tag) return null;
                 return (
-                  <Tag tag={tag} key={tagId} className="mr-0">
+                  <Tag tag={tag} key={tagId} className="m-0">
                     <RemoveBtn callback={() => onChange(tagId)} />
                   </Tag>
                 );

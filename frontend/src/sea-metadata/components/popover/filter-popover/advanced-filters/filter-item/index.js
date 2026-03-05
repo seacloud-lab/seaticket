@@ -523,7 +523,7 @@ class FilterItem extends React.Component {
             value: priority.value,
             label: (
               <>
-                <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="option-editor-option-check-btn no-hover-bg mr-3" />
+                <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="option-editor-option-check-btn no-hover-bg mr-2" />
                 <div className="option-editor-option-content">
                   {priority.icon && (<IconButton icon={priority.icon} size={16} className="no-hover-bg option-editor-option-icon mr-2 ml-0" />)}
                   <div className="sea-ticket-priority-editor-option-name-hotkey">
