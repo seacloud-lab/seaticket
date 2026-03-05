@@ -14,6 +14,11 @@
   cursor: pointer;
 }
 
+.sf-slate-viewer-container ol + .sea-ai-chat-customize-definition:first-of-type,
+.sf-slate-viewer-container ul + .sea-ai-chat-customize-definition:first-of-type {
+  margin-top: .8em;
+}
+
 .sea-ai-chat-customize-definition:hover {
   background-color: #f0f0f0;
 }

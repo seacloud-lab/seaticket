@@ -303,7 +303,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
         return;
       }
 
-      const _updateChatHistories = (chatHistories, _data, _message_id_prefix) => {
+      const _updateChatHistories = (chatHistories, _data, _message_id_prefix = '') => {
         const _chatHistories = chatHistories.slice(0);
         const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = _data;
         const messageIndex = _chatHistories.findIndex(c => c._id === aiReplyMessageId);
@@ -345,15 +345,6 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
       _newChatHistories.push(chatMessage);
 
       const _onMessage = ({ status, answer, results }, { done = false } = {}) => {
-        if (done || results) {
-          if (results) {
-            _newChatHistories = _newChatHistories.slice(0, -1);
-            _updateChatHistories(_newChatHistories, results, 'typing' + results.ai_reply_message_id);
-          }
-          modifyLocalSession(reply_session_id, { running_task: false });
-          callback && callback(reply_session_id);
-          return;
-        }
 
         if (answer) {
           fullText += (answer || '');
@@ -371,6 +362,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           _newChatHistories[_newChatHistories.length - 1] = lastChatMessage;
           updateChatHistories(_newChatHistories, false);
         }
+
         if (status && status.type) {
           _newChatHistories = _newChatHistories.slice(0);
           let lastChatMessage = _newChatHistories[_newChatHistories.length - 1];
@@ -384,6 +376,16 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           };
           _newChatHistories[_newChatHistories.length - 1] = lastChatMessage;
           updateChatHistories(_newChatHistories, false);
+        }
+
+        if (results) {
+          _newChatHistories = _newChatHistories.slice(0, -1);
+          _updateChatHistories(_newChatHistories, results);
+        }
+
+        if (done) {
+          modifyLocalSession(reply_session_id, { running_task: false });
+          callback && callback(reply_session_id);
         }
       };
 
@@ -404,9 +406,9 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
                 _onMessage(data, { done });
               } catch (e) {
                 console.warn('Failed to parse JSON from EventStream:', dataStr, e);
-                const rawData = { raw: dataStr };
-                messages.push(rawData);
-                _onMessage(rawData, { done });
+                const data = { raw: dataStr };
+                messages.push(data);
+                _onMessage(data, { done });
               }
             }
           } else if (line.startsWith('event: ')) {
@@ -522,7 +524,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
           {!loading && chatHistories.map((chat, chatIndex) => {
             return (
               <ChatHistory
-                key={`chat-${chatIndex}`}
+                key={`chat-${chatIndex}-${chat._id || ''}`}
                 chat={chat}
                 settings={settings}
                 projectUuid={projectUuid}
