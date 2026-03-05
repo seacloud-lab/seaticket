@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
 import { gettext, mediaUrl } from '@/constants';
-import { Loading, EmptyTip, ModalHeader } from '@/components';
+import { Loading, EmptyTip, ModalHeader, IconButton } from '@/components';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
@@ -196,6 +196,17 @@ class TokenCostDetailDialog extends Component {
       modelsUsageStatics
     } = this.state;
     const { views, onCloseDialog } = this.props;
+    const viewsOptions = views.map(v => {
+      return {
+        ...v,
+        label: (
+          <div className="d-flex align-items-center">
+            <div className="flex-1 text-truncate">{v.label}</div>
+            <IconButton className="no-hover-bg ml-3" icon={v.value === view ? 'check-mark-option' : '' } size={14} />
+          </div>
+        )
+      };
+    });
 
     const modelsOptions = availableModels && typeof availableModels === 'object' ? Object.entries(availableModels).map(([label, value]) => {
       return {
@@ -222,9 +233,9 @@ class TokenCostDetailDialog extends Component {
               <CustomizeSelect
                 disabled={false}
                 supportMultipleSelect={false}
-                className={classnames(customizeSelectClassName, 'mr-4 highlighted')}
-                value={views.find(v => v.value === view) || views[0]}
-                options={views}
+                className={classnames(customizeSelectClassName, 'mr-4')}
+                value={{ label: gettext('Group by') }}
+                options={viewsOptions}
                 onChange={this.updateView}
               />
             )}

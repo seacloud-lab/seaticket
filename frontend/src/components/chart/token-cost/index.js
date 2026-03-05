@@ -139,11 +139,23 @@ const TokenCost = ({
       .text(gettext('Cost'));
 
     // draw x(name)
+    const xAxis = d3.axisBottom(xScale);
+    if (chartData.length > 10) {
+      const step = Math.ceil(chartData.length / 10);
+      const tickValues = chartData
+        .map((d, i) => i % step === 0 ? d.name : null)
+        .filter(v => v !== null);
+      xAxis.tickValues(tickValues);
+    }
+
     svg.append('g')
       .attr('class', 'axis axis-x')
       .attr('transform', `translate(0, ${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .style('font-size', '11px');
+      .call(xAxis)
+      .style('font-size', '11px')
+      .selectAll('text')
+      .attr('transform', 'rotate(15)')
+      .style('text-anchor', 'start');
 
     // draw x label
     svg.append('text')
@@ -348,7 +360,6 @@ const TokenCost = ({
       .attr('fill', 'white')
       .attr('stroke', '#e0e0e0')
       .attr('stroke-width', 1)
-      .attr('fill-opacity', 0.2)
       .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
     const titleGroup = annotationGroup.append('g')
@@ -477,7 +488,7 @@ const TokenCost = ({
         .text(item.name);
     });
 
-  }, [data, legends, margin]);
+  }, [data, legends, margin, isAnnotationExpanded, hoveredBar, modelsUsageStatics]);
 
   return (
     <div className="sea-ai-tokens-chart w-100 h-100 d-flex align-items-center justify-content-center" ref={ref}>
