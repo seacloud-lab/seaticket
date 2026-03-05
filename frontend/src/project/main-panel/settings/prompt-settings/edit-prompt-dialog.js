@@ -29,7 +29,7 @@ const EditPromptDialog = ({
           rows={10}
           value={value}
           onChange={handleInputChange}
-          placeholder={gettext('Enter your custom prompt here...')}
+          placeholder={gettext('Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here...')}
           maxLength={4000}
         />
       </ModalBody>
