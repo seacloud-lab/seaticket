@@ -801,7 +801,7 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 24px;
+  margin-top: 16px;
   height: 40px;
 }
 
@@ -875,6 +875,11 @@ input.short-input {
   font-size: 12px;
   line-height: 20px;
   color: #ff0000;
+}
+
+.org-register-panel-wrapper .login-form-wrapper > ul:last-of-type li {
+  background-color: blue;
+  margin-top: 4px
 }
 
 .org-register-panel-wrapper .login-form-wrapper .btn-block {
