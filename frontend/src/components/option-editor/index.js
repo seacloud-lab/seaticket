@@ -19,7 +19,6 @@ const OptionsEditor = ({
   emptyTip,
   value,
   className,
-  modifiers,
   options = [],
   optionHeight,
   modifiers,
@@ -46,7 +45,6 @@ const OptionsEditor = ({
       sameWidthWithTarget={sameWidthWithTarget}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
-      modifiers={modifiers}
     >
       <OptionEditorContainer
         id={id}
