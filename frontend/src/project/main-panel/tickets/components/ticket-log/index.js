@@ -65,6 +65,21 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     return option?.name || value;
   }, [statesData, substatesData, typesData]);
 
+  const getStateSubstateFieldKeys = useCallback((log) => {
+    const defaultKeys = { stateKey: 'state', substateKey: 'substate' };
+    const fieldName = log?.field_name;
+    if (typeof fieldName === 'string' && fieldName.includes('_')) {
+      const separatorIndex = fieldName.indexOf('_');
+      if (separatorIndex > 0 && separatorIndex < fieldName.length - 1) {
+        return {
+          stateKey: fieldName.slice(0, separatorIndex),
+          substateKey: fieldName.slice(separatorIndex + 1),
+        };
+      }
+    }
+    return defaultKeys;
+  }, []);
+
   // Convert assignee IDs to names
   useEffect(() => {
     const { activity_type, old_value, new_value } = activity;
@@ -121,16 +136,17 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
 
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value } = activity;
+    const { stateKey, substateKey } = getStateSubstateFieldKeys(activity);
     const stateOldValue = getSingleSelectDisplayValue('state', old_value);
     const stateNewValue = getSingleSelectDisplayValue('state', new_value);
     const substateOldValue = getSingleSelectDisplayValue('substate', old_value);
     const substateNewValue = getSingleSelectDisplayValue('substate', new_value);
     const typeOldValue = getSingleSelectDisplayValue('type', old_value);
     const typeNewValue = getSingleSelectDisplayValue('type', new_value);
-    const oldStateDisplay = getSingleSelectDisplayValue('state', old_value?.state);
-    const oldSubstateDisplay = getSingleSelectDisplayValue('substate', old_value?.substate);
-    const newStateDisplay = getSingleSelectDisplayValue('state', new_value?.state);
-    const newSubstateDisplay = getSingleSelectDisplayValue('substate', new_value?.substate);
+    const oldStateDisplay = getSingleSelectDisplayValue('state', old_value?.[stateKey] ?? old_value?.state);
+    const oldSubstateDisplay = getSingleSelectDisplayValue('substate', old_value?.[substateKey] ?? old_value?.substate);
+    const newStateDisplay = getSingleSelectDisplayValue('state', new_value?.[stateKey] ?? new_value?.state);
+    const newSubstateDisplay = getSingleSelectDisplayValue('substate', new_value?.[substateKey] ?? new_value?.substate);
     const oldStateWithSubstate = `${oldStateDisplay || gettext('None')} - ${oldSubstateDisplay || gettext('None')}`;
     const newStateWithSubstate = `${newStateDisplay || gettext('None')} - ${newSubstateDisplay || gettext('None')}`;
 
@@ -203,7 +219,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity, assigneeNames, getTagNames, getSingleSelectDisplayValue]);
+  }, [activity, assigneeNames, getTagNames, getSingleSelectDisplayValue, getStateSubstateFieldKeys]);
 
   const iconSymbol = ACTIVITY_ICONS[activity.activity_type] || 'info';
 

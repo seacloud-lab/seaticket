@@ -873,25 +873,29 @@ class TicketAPIView(APIView):
                 for activity in new_activities:
                     field_name = activity.get('field_name')
                     if field_name == 'state_substate':
+                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                        state_key = (state_column or {}).get('key') or TicketsTable.state.name
+                        substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
                         old_value = activity.get('old_value') or {}
                         new_value = activity.get('new_value') or {}
                         if isinstance(old_value, dict):
                             activity['old_value'] = {
-                                'state': get_option_id_by_name(
+                                state_key: get_option_id_by_name(
                                     metadata, TicketsTable.state.name, old_value.get('state'),
                                     case_insensitive=True
                                 ),
-                                'substate': get_option_id_by_name(
+                                substate_key: get_option_id_by_name(
                                     metadata, TicketsTable.substate.name, old_value.get('substate')
                                 )
                             }
                         if isinstance(new_value, dict):
                             activity['new_value'] = {
-                                'state': get_option_id_by_name(
+                                state_key: get_option_id_by_name(
                                     metadata, TicketsTable.state.name, new_value.get('state'),
                                     case_insensitive=True
                                 ),
-                                'substate': get_option_id_by_name(
+                                substate_key: get_option_id_by_name(
                                     metadata, TicketsTable.substate.name, new_value.get('substate')
                                 )
                             }
@@ -1449,23 +1453,27 @@ class TicketActivitiesAPIView(APIView):
             new_value = detail.get('new_value')
 
             if field_name == 'state_substate':
+                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                state_key = (state_column or {}).get('key') or TicketsTable.state.name
+                substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
                 if isinstance(old_value, dict):
                     old_value = {
-                        'state': get_option_id_by_name(
+                        state_key: get_option_id_by_name(
                             metadata, TicketsTable.state.name, old_value.get('state'),
                             case_insensitive=True
                         ),
-                        'substate': get_option_id_by_name(
+                        substate_key: get_option_id_by_name(
                             metadata, TicketsTable.substate.name, old_value.get('substate')
                         )
                     }
                 if isinstance(new_value, dict):
                     new_value = {
-                        'state': get_option_id_by_name(
+                        state_key: get_option_id_by_name(
                             metadata, TicketsTable.state.name, new_value.get('state'),
                             case_insensitive=True
                         ),
-                        'substate': get_option_id_by_name(
+                        substate_key: get_option_id_by_name(
                             metadata, TicketsTable.substate.name, new_value.get('substate')
                         )
                     }
