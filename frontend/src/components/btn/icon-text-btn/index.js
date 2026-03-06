@@ -17,7 +17,7 @@ const IconTextBtn = ({
       aria-label={text}
       { ...props }
     >
-      <Icon symbol={icon} className="mr-2" />
+      {icon && (<Icon symbol={icon} className="mr-2" />)}
       <span>{text}</span>
     </div>
   );

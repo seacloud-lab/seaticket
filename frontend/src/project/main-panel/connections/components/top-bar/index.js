@@ -6,7 +6,7 @@ import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_SYNC_STATUS } from '../../constants';
-import { IconButton, toaster, CenteredLoading } from '@/components';
+import { IconButton, toaster, CenteredLoading, IconTextBtn } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
@@ -137,7 +137,15 @@ const TopBar = ({ title, modifyLocalBar }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="plus" />);
+      const currentPath = window.location.pathname + window.location.search;
+      const installGitHubAppURL = `${server}/github/install/?next=${encodeURIComponent(currentPath)}&project_uuid=${projectUuid}`;
+
+      return (
+        <>
+          {isProjectAdmin && (<IconTextBtn text={gettext('Install GitHub app')} onClick={() => location.href = installGitHubAppURL} />)}
+          <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
+        </>
+      );
     }
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
     return (
@@ -168,18 +176,11 @@ const TopBar = ({ title, modifyLocalBar }) => {
     setIsSyncing(false);
   }, [pageSlugId]);
 
-  const currentPath = window.location.pathname + window.location.search;
-  const encodedNext = encodeURIComponent(currentPath);
-  let install_url = server + `/github/install/?next=${encodedNext}` + "&project_uuid=" + projectUuid
-
   return (
-    <div>
-      {isProjectAdmin && <a href={install_url}>安装 APP</a>}
-      <BasicTopBar>
+    <BasicTopBar>
       {renderLeftChildren()}
       {renderRightChildren()}
     </BasicTopBar>
-    </div>
   );
 };
 

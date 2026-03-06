@@ -61,7 +61,7 @@ CONNECTION_FIELDS = {
         ConnectionField('password', True, False).to_dict(),
     ],
     ConnectionType.GITHUB_ISSUE.value: [
-        ConnectionField('repository', True, False).to_dict(),
+        ConnectionField('html_url', True, False).to_dict(),
         ConnectionField('installation_id', True, False).to_dict(),
         # ConnectionField('webhook_secret', False, False).to_dict(),
     ],

@@ -231,19 +231,19 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       {children}
       {isShowRecordDialog && (
         <>
-          {activeConnectionRef.current ?
+          {activeConnectionRef.current ? (
             <ModifyConnectionDialog
               record={activeConnectionRef.current}
               onToggle={closeConnectionDialog}
               onSubmit={modifyConnection}
             />
-            :
+          ) : (
             <NewConnectionDialog
               onToggle={closeConnectionDialog}
               onSubmit={createConnection}
               modifyConnection={modifyConnection}
             />
-          }
+          )}
         </>
       )}
       {isShowConfirmDialog && (
