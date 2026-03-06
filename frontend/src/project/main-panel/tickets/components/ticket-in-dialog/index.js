@@ -7,7 +7,7 @@ import { gettext, lang } from '@/constants';
 import { useTags } from '@/project/hooks';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings,
+  StateSettings, SubStateSettings, DueDateSettings, LinkSettings
 } from '../ticket-settings';
 import Comment from '../comment';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
@@ -25,6 +25,7 @@ const TicketInDialog = ({
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [linkedRecords, setLinkedRecords] = useState({});
 
   const { tagsData } = useTags();
 
@@ -37,6 +38,7 @@ const TicketInDialog = ({
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
       updateTicket(ticket);
+      setLinkedRecords(res.data?.linked_record_titles || {});
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrorMessage(errorMessage);
@@ -65,7 +67,7 @@ const TicketInDialog = ({
 
   const isSmallScreen = containerWidth < 780;
 
-  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
+  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
   return (
     <div className={classnames('sea-qa-project-ticket sea-qa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
       <div className="sea-qa-project-ticket-content-wrapper">
@@ -103,6 +105,7 @@ const TicketInDialog = ({
           <TypeSettings isReadonly={true} value={type} />
           <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
+          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>
     </div>

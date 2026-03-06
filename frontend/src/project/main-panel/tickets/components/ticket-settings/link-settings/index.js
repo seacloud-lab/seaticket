@@ -5,7 +5,7 @@ import { CustomizeLabel } from '@/components';
 
 import './index.css';
 
-const LinkSettings = ({ isReadonly, value, className = 'mb-4', onChange, linkedRecords }) => {
+const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const validValue = useMemo(() => {
     return value.map(v => ({ key: v, title: linkedRecords[v] }));
@@ -16,9 +16,9 @@ const LinkSettings = ({ isReadonly, value, className = 'mb-4', onChange, linkedR
       <CustomizeLabel icon="link">
         {gettext('Linked ticket')}
       </CustomizeLabel>
-      <div className="link-settings-content flex items-center">
+      <div className="link-settings-content">
         {validValue.map(({ key, title }) => (
-          <div className="link-item" key={key} onClick={onChange}>
+          <div className="link-item" key={key}>
             <span className="link-item-name" title={title}>{title}</span>
           </div>
         ))}

@@ -514,7 +514,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
-          <LinkSettings isReadonly={true} value={linked_connection_records} linkedRecords={linkedRecords} onChange={() => {}} />
+          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (
