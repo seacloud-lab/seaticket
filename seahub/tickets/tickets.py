@@ -872,22 +872,44 @@ class TicketAPIView(APIView):
                 )
                 for activity in new_activities:
                     field_name = activity.get('field_name')
-                    if field_name not in (
+                    if field_name == 'state_substate':
+                        old_value = activity.get('old_value') or {}
+                        new_value = activity.get('new_value') or {}
+                        if isinstance(old_value, dict):
+                            activity['old_value'] = {
+                                'state': get_option_id_by_name(
+                                    metadata, TicketsTable.state.name, old_value.get('state'),
+                                    case_insensitive=True
+                                ),
+                                'substate': get_option_id_by_name(
+                                    metadata, TicketsTable.substate.name, old_value.get('substate')
+                                )
+                            }
+                        if isinstance(new_value, dict):
+                            activity['new_value'] = {
+                                'state': get_option_id_by_name(
+                                    metadata, TicketsTable.state.name, new_value.get('state'),
+                                    case_insensitive=True
+                                ),
+                                'substate': get_option_id_by_name(
+                                    metadata, TicketsTable.substate.name, new_value.get('substate')
+                                )
+                            }
+                    elif field_name in (
                         TicketsTable.state.name,
                         TicketsTable.substate.name,
                         TicketsTable.type.name,
                     ):
-                        continue
-                    # keep storage as option name; only return ids for frontend consistency
-                    case_insensitive = field_name == TicketsTable.state.name
-                    activity['old_value'] = get_option_id_by_name(
-                        metadata, field_name, activity.get('old_value'),
-                        case_insensitive=case_insensitive
-                    )
-                    activity['new_value'] = get_option_id_by_name(
-                        metadata, field_name, activity.get('new_value'),
-                        case_insensitive=case_insensitive
-                    )
+                        # keep storage as option name; only return ids for frontend consistency
+                        case_insensitive = field_name == TicketsTable.state.name
+                        activity['old_value'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('old_value'),
+                            case_insensitive=case_insensitive
+                        )
+                        activity['new_value'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('new_value'),
+                            case_insensitive=case_insensitive
+                        )
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -1414,9 +1436,31 @@ class TicketActivitiesAPIView(APIView):
             old_value = detail.get('old_value')
             new_value = detail.get('new_value')
 
-            if field_name in (TicketsTable.state.name, TicketsTable.substate.name, TicketsTable.type.name):
-                old_value = get_option_id_by_name(metadata, field_name, old_value)
-                new_value = get_option_id_by_name(metadata, field_name, new_value)
+            if field_name == 'state_substate':
+                if isinstance(old_value, dict):
+                    old_value = {
+                        'state': get_option_id_by_name(
+                            metadata, TicketsTable.state.name, old_value.get('state'),
+                            case_insensitive=True
+                        ),
+                        'substate': get_option_id_by_name(
+                            metadata, TicketsTable.substate.name, old_value.get('substate')
+                        )
+                    }
+                if isinstance(new_value, dict):
+                    new_value = {
+                        'state': get_option_id_by_name(
+                            metadata, TicketsTable.state.name, new_value.get('state'),
+                            case_insensitive=True
+                        ),
+                        'substate': get_option_id_by_name(
+                            metadata, TicketsTable.substate.name, new_value.get('substate')
+                        )
+                    }
+            elif field_name in (TicketsTable.state.name, TicketsTable.substate.name, TicketsTable.type.name):
+                case_insensitive = field_name == TicketsTable.state.name
+                old_value = get_option_id_by_name(metadata, field_name, old_value, case_insensitive=case_insensitive)
+                new_value = get_option_id_by_name(metadata, field_name, new_value, case_insensitive=case_insensitive)
             elif field_name == TicketsTable.tags.name:
                 if isinstance(old_value, list):
                     old_value = [

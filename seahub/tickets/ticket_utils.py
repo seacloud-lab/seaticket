@@ -512,13 +512,23 @@ def compare_ticket_changes(old_ticket, new_data):
     if 'title' in new_data and new_data['title'] != old_ticket.get('title'):
         changes.append(('title_changed', 'title', old_ticket.get('title'), new_data['title']))
 
-    # state changed
-    if 'state' in new_data and new_data['state'] != old_ticket.get('state'):
-        changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
+    state_changed = 'state' in new_data and new_data['state'] != old_ticket.get('state')
+    substate_changed = 'substate' in new_data and new_data['substate'] != old_ticket.get('substate')
+    if state_changed and substate_changed:
+        changes.append((
+            'state_substate_changed',
+            'state_substate',
+            {'state': old_ticket.get('state'), 'substate': old_ticket.get('substate')},
+            {'state': new_data.get('state'), 'substate': new_data.get('substate')}
+        ))
+    else:
+        # state changed
+        if state_changed:
+            changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
 
-    # substate changed
-    if 'substate' in new_data and new_data['substate'] != old_ticket.get('substate'):
-        changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
+        # substate changed
+        if substate_changed:
+            changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
 
     # type changed
     if 'type' in new_data and new_data['type'] != old_ticket.get('type'):

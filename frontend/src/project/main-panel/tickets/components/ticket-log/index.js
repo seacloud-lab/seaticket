@@ -13,6 +13,7 @@ const ACTIVITY_ICONS = {
   title_changed: 'rename',
   state_changed: 'dot-circle-stroked',
   substate_changed: 'dot-circle-stroked',
+  state_substate_changed: 'dot-circle-stroked',
   type_changed: 'dot-circle-stroked',
   tags_added: 'tag-stroked',
   tags_removed: 'tag-stroked',
@@ -126,6 +127,12 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     const substateNewValue = getSingleSelectDisplayValue('substate', new_value);
     const typeOldValue = getSingleSelectDisplayValue('type', old_value);
     const typeNewValue = getSingleSelectDisplayValue('type', new_value);
+    const oldStateDisplay = getSingleSelectDisplayValue('state', old_value?.state);
+    const oldSubstateDisplay = getSingleSelectDisplayValue('substate', old_value?.substate);
+    const newStateDisplay = getSingleSelectDisplayValue('state', new_value?.state);
+    const newSubstateDisplay = getSingleSelectDisplayValue('substate', new_value?.substate);
+    const oldStateWithSubstate = `${oldStateDisplay || gettext('None')} - ${oldSubstateDisplay || gettext('None')}`;
+    const newStateWithSubstate = `${newStateDisplay || gettext('None')} - ${newSubstateDisplay || gettext('None')}`;
 
     switch (activity_type) {
       case 'title_changed':
@@ -144,6 +151,12 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return (
           <span>
             {gettext('changed the substate from')} <del className="activity-old-value">{substateOldValue || gettext('None')}</del> {gettext('to')} <strong className="activity-new-value">{substateNewValue || gettext('None')}</strong>
+          </span>
+        );
+      case 'state_substate_changed':
+        return (
+          <span>
+            {gettext('changed the state from')} <del className="activity-old-value">{oldStateWithSubstate}</del> {gettext('to')} <strong className="activity-new-value">{newStateWithSubstate}</strong>
           </span>
         );
       case 'type_changed':
