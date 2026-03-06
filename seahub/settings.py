@@ -854,4 +854,3 @@ SERVER_EMAIL = configs.get('SERVER_EMAIL', EMAIL_HOST_USER)
 SECRET_KEY = configs.get('SECRET_KEY', SECRET_KEY)
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY is required in configs")
-
