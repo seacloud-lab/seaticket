@@ -853,7 +853,6 @@ class TicketAPIView(APIView):
                     'row': update_row
                 }
             ]
-            print(f"DEBUG: update_rows: {update_rows}")
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
             if is_update_linked_connection_records and ticket_link_diff:
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
@@ -951,6 +950,7 @@ class TicketAPIView(APIView):
         for activity in new_activities:
             activity.pop('field_name', None)
             activity['type_description'] = activity.pop('activity_type', None)
+            activity['type'] = activity['type_description'].split('_')[-1]
 
         return Response({'success': True, 'activities': new_activities})
 
@@ -1512,6 +1512,7 @@ class TicketActivitiesAPIView(APIView):
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
                 'type_description': a.get('activity_type'),
+                'type': a.get('activity_type').split('_')[-1],
                 'field_key': field_key,
                 'old_value': old_value,
                 'new_value': new_value,
