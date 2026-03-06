@@ -3,11 +3,6 @@
 {% load render_bundle from webpack_loader %}
 {% block sub_title %}{% trans "Signup" %} - {% endblock %}
 
-{% block extra_style %}{{block.super}}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css" />
-{% endblock %}
-
 {% block private_style %}
 {% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
