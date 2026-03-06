@@ -553,32 +553,6 @@ def compare_ticket_changes(old_ticket, new_data):
     return changes
 
 
-def _split_activity_values(old_value, new_value):
-    """Convert old/new values into semantic remove/add payload."""
-    if isinstance(old_value, dict) and isinstance(new_value, dict):
-        removed = {}
-        added = {}
-        for k in set(old_value.keys()) | set(new_value.keys()):
-            old_item = old_value.get(k)
-            new_item = new_value.get(k)
-            if old_item == new_item:
-                continue
-            if old_item is not None:
-                removed[k] = old_item
-            if new_item is not None:
-                added[k] = new_item
-        return removed, added
-
-    if isinstance(old_value, list) and isinstance(new_value, list):
-        new_set = set(new_value)
-        old_set = set(old_value)
-        removed = [v for v in old_value if v not in new_set]
-        added = [v for v in new_value if v not in old_set]
-        return removed, added
-
-    return old_value, new_value
-
-
 def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, changes):
     if not changes:
         return []
@@ -586,11 +560,10 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
     rows = []
     now = datetime.now(timezone.utc).isoformat()
     for activity_type, field_name, old_value, new_value in changes:
-        removed, added = _split_activity_values(old_value, new_value)
         detail = json.dumps({
             'field_name': field_name,
-            'remove': removed,
-            'add': added,
+            'old_value': old_value,
+            'new_value': new_value,
         })
         rows.append({
             'ticket_id': ticket_id,
@@ -609,14 +582,13 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
     # Build activity list with the returned pks
     activities = []
     for i, (activity_type, field_name, old_value, new_value) in enumerate(changes):
-        removed, added = _split_activity_values(old_value, new_value)
         activity = {
             'id': pks[i] if i < len(pks) else None,
             'ticket_id': ticket_id,
             'activity_type': activity_type,
             'field_name': field_name,
-            'remove': removed,
-            'add': added,
+            'old_value': old_value,
+            'new_value': new_value,
             'creator': creator,
             'created_time': now,
         }
