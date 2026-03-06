@@ -49,7 +49,6 @@ urlpatterns = [
     re_path(r'^image-view/(?P<filename>.*)$', image_view, name='image_view'),
     re_path(r'^custom-css/$', custom_css_view, name='custom_css'),
     re_path(r'^i18n/$', i18n, name='i18n'),
-    re_path(r'^choose_register/$', choose_register, name="choose_register"),
     re_path(r'^server-info/$', ServerInfoView.as_view(), name="server_info"),
 
     ### React ###

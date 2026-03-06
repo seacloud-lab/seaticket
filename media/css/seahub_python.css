@@ -1145,24 +1145,6 @@ input.short-input {
   margin-bottom: 12px;
 }
 
-.login-panel .login-panel-register-type {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem 2rem;
-  border: 2px solid #E0E4EC;
-  border-radius: 4px;
-  flex: 1;
-  cursor: pointer;
-  background: #fff;
-  font-weight: 500;
-}
-
-.login-panel .login-panel-register-type:hover {
-  border-color: #ED7109;
-}
-
 #pwd_strength {
   margin: -15px 0 20px;
 }
