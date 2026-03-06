@@ -231,6 +231,28 @@ def get_column_from_columns_by_name(columns, column_name):
     return None
 
 
+def get_option_id_by_name(columns, column_name, option_name, case_insensitive=False):
+    """Look up the option id for a given option name in a select column.
+
+    Returns the option id if found, otherwise returns option_name as-is.
+    """
+    if not columns or not option_name:
+        return option_name
+    column = get_column_from_columns_by_name(columns, column_name)
+    if not column:
+        return option_name
+    options = (column.get('data') or {}).get('options') or []
+    for opt in options:
+        name = opt.get('name') or ''
+        target = option_name
+        if case_insensitive:
+            name = name.lower()
+            target = target.lower()
+        if name == target:
+            return opt.get('id', option_name)
+    return option_name
+
+
 def add_select_option(seadb_api, project_uuid, table_id, column_key, option_name, option_data):
     """Add an option to a select-like column; option_data is dict stored in option_data."""
     new_option_data = {

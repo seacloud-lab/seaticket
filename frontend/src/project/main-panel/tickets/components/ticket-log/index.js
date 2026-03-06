@@ -5,7 +5,7 @@ import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { PRIORITY_MAP } from '@/sea-metadata/constants/column/priority';
-import { useTags } from '@/project/hooks';
+import { useMetadata, useTags } from '@/project/hooks';
 
 import './index.css';
 
@@ -25,6 +25,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
   const [creator, setCreator] = useState({});
   const [assigneeNames, setAssigneeNames] = useState({ old: [], new: [] });
   const { getCollaborator, queryUser } = useCollaborators();
+  const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
 
   useEffect(() => {
@@ -49,6 +50,19 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     });
     return names.join(', ');
   }, [tagsData]);
+
+  const getSingleSelectDisplayValue = useCallback((fieldName, value) => {
+    if (value === null || value === undefined || value === '') return value;
+
+    let optionData = null;
+    if (fieldName === 'state') optionData = statesData;
+    if (fieldName === 'substate') optionData = substatesData;
+    if (fieldName === 'type') optionData = typesData;
+    if (!optionData) return value;
+
+    const option = optionData?.id_row_map?.[String(value)];
+    return option?.name || value;
+  }, [statesData, substatesData, typesData]);
 
   // Convert assignee IDs to names
   useEffect(() => {
@@ -106,6 +120,12 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
 
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value } = activity;
+    const stateOldValue = getSingleSelectDisplayValue('state', old_value);
+    const stateNewValue = getSingleSelectDisplayValue('state', new_value);
+    const substateOldValue = getSingleSelectDisplayValue('substate', old_value);
+    const substateNewValue = getSingleSelectDisplayValue('substate', new_value);
+    const typeOldValue = getSingleSelectDisplayValue('type', old_value);
+    const typeNewValue = getSingleSelectDisplayValue('type', new_value);
 
     switch (activity_type) {
       case 'title_changed':
@@ -117,21 +137,21 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       case 'state_changed':
         return (
           <span>
-            {gettext('changed the state from')} <del className="activity-old-value">{old_value}</del> {gettext('to')} <strong className="activity-new-value">{new_value}</strong>
+            {gettext('changed the state from')} <del className="activity-old-value">{stateOldValue}</del> {gettext('to')} <strong className="activity-new-value">{stateNewValue}</strong>
           </span>
         );
       case 'substate_changed':
         return (
           <span>
-            {gettext('changed the substate from')} <del className="activity-old-value">{old_value || gettext('None')}</del> {gettext('to')} <strong className="activity-new-value">{new_value || gettext('None')}</strong>
+            {gettext('changed the substate from')} <del className="activity-old-value">{substateOldValue || gettext('None')}</del> {gettext('to')} <strong className="activity-new-value">{substateNewValue || gettext('None')}</strong>
           </span>
         );
       case 'type_changed':
         return (
           <span>
-            {old_value
-              ? <>{gettext('changed the type from')} <del className="activity-old-value">{old_value}</del> {gettext('to')} <strong className="activity-new-value">{new_value || gettext('None')}</strong></>
-              : <>{gettext('set the type to')} <strong className="activity-new-value">{new_value}</strong></>
+            {typeOldValue
+              ? <>{gettext('changed the type from')} <del className="activity-old-value">{typeOldValue}</del> {gettext('to')} <strong className="activity-new-value">{typeNewValue || gettext('None')}</strong></>
+              : <>{gettext('set the type to')} <strong className="activity-new-value">{typeNewValue}</strong></>
             }
           </span>
         );
@@ -170,7 +190,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity, assigneeNames, getTagNames]);
+  }, [activity, assigneeNames, getTagNames, getSingleSelectDisplayValue]);
 
   const iconSymbol = ACTIVITY_ICONS[activity.activity_type] || 'info';
 
