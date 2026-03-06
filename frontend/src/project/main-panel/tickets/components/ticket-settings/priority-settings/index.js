@@ -89,7 +89,7 @@ const PrioritySettings = ({
         <div className="ticket-rate-formatter" onClick={openEditor} ref={editorRef}>
           <div className={classnames('d-flex align-items-center', { 'tip-default': !option.value })}>
             {option.value ? (<Icon className="mr-1" symbol={option.icon} title={option.name}/>) : '' }
-            {gettext(option.name)}
+            {option.name}
           </div>
         </div>
       </div>

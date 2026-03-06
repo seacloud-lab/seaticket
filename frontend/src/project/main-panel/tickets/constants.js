@@ -116,6 +116,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.PRIORITY]: {
     type: CellType.PRIORITY,
     display_name: gettext('Priority'),
+    op_name: gettext('priority'),
     editable: true,
     is_width_fixed: true,
     frozen: true,
@@ -124,6 +125,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: {
     type: CellType.TEXT,
     display_name: gettext('Title'),
+    op_name: gettext('title'),
     editable: false,
     is_name_column: true,
     frozen: true,
@@ -132,6 +134,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.STATE]: {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('State'),
+    op_name: gettext('state'),
     editable: true,
     is_required: true,
     data: {
@@ -141,6 +144,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE]: {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('Substate'),
+    op_name: gettext('substate'),
     editable: true,
     is_predefined: false,
     modify_data_able: true,
@@ -148,12 +152,14 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.TYPE]: {
     type: CellType.TYPE,
     display_name: gettext('Type'),
+    op_name: gettext('type'),
     editable: true,
     modify_data_able: true,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.CONTENT]: {
     type: CellType.LONG_TEXT,
     display_name: gettext('Content'),
+    op_name: gettext('content'),
     editable: true,
     is_required: true,
   },
@@ -172,11 +178,13 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Assignees'),
+    op_name: gettext('assignees'),
     editable: true,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.TAGS]: {
     type: CellType.TAGS,
     display_name: gettext('Tags'),
+    op_name: gettext('tags'),
     editable: true,
     modify_data_able: true,
   },
@@ -213,6 +221,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE]: {
     type: CellType.DATE,
     display_name: gettext('Due date'),
+    op_name: gettext('due_date'),
     editable: true,
     modify_data_able: true,
   },

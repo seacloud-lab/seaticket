@@ -1,227 +1,299 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
-import { IconButton } from '@/components';
+import { IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
-import { PRIORITY_MAP } from '@/sea-metadata/constants/column/priority';
+import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
+import ModifyTip from './modify-tip';
+import AddTip from './add-tip';
+import RemoveTip from './remove-tip';
+import Tag from '@/sea-metadata/components/tag';
+import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const ACTIVITY_ICONS = {
-  title_changed: 'rename',
-  state_changed: 'dot-circle-stroked',
-  substate_changed: 'dot-circle-stroked',
-  state_substate_changed: 'dot-circle-stroked',
-  type_changed: 'dot-circle-stroked',
-  tags_added: 'tag-stroked',
-  tags_removed: 'tag-stroked',
-  assignees_added: 'group-stroked',
-  assignees_removed: 'group-stroked',
-  priority_changed: 'flag-stroked',
+const LOG_TYPE = {
+  PRIORITY_CHANGED: 'priority_changed',
+  TITLE_CHANGED: 'title_changed',
+  STATE_CHANGED: 'state_changed',
+  SUBSTATE_CHANGED: 'substate_changed',
+  STATE_SUBSTATE_CHANGED: 'state_substate_changed',
+  TYPE_CHANGED: 'type_changed',
+
+  TAGS_ADDED: 'tags_added',
+  TAGS_REMOVED: 'tags_removed',
+  TAGS_CHANGED: 'tags_changed',
+
+  ASSIGNEES_ADDED: 'assignees_added',
+  ASSIGNEES_REMOVED: 'assignees_removed',
+  ASSIGNEES_CHANGED: 'assignees_changed',
+};
+
+const LOG_ICONS = {
+  [LOG_TYPE.PRIORITY_CHANGED]: 'flag-stroked',
+  [LOG_TYPE.TITLE_CHANGED]: 'rename',
+  [LOG_TYPE.STATE_CHANGED]: 'dot-circle-stroked',
+  [LOG_TYPE.SUBSTATE_CHANGED]: 'dot-circle-stroked',
+  [LOG_TYPE.STATE_SUBSTATE_CHANGED]: 'dot-circle-stroked',
+  [LOG_TYPE.TYPE_CHANGED]: 'dot-circle-stroked',
+
+  [LOG_TYPE.TAGS_ADDED]: 'tag-stroked',
+  [LOG_TYPE.TAGS_REMOVED]: 'tag-stroked',
+  [LOG_TYPE.TAGS_CHANGED]: 'tag-stroked',
+
+  [LOG_TYPE.ASSIGNEES_ADDED]: 'group-stroked',
+  [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
+  [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
+};
+
+const diff = (newValue, oldValue) => {
+  const removed = oldValue.filter(item => !newValue.includes(item));
+  const added = newValue.filter(item => !oldValue.includes(item));
+  return { removed, added };
 };
 
 const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
-  const [creator, setCreator] = useState({});
-  const [assigneeNames, setAssigneeNames] = useState({ old: [], new: [] });
-  const { getCollaborator, queryUser } = useCollaborators();
+  const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
 
-  useEffect(() => {
-    const collaborator = getCollaborator(activity.creator);
-    if (collaborator) {
-      setCreator(collaborator);
-      return;
-    }
-    queryUser(activity.creator, (userMap) => {
-      const user = userMap[activity.creator];
-      setCreator(user || { name: activity.creator, avatar_url: '' });
-    });
-  }, [activity.creator, getCollaborator, queryUser]);
-
-  // Convert tag IDs to names
-  const getTagNames = useCallback((tagIds) => {
-    if (!tagIds) return '';
-    const ids = Array.isArray(tagIds) ? tagIds : [tagIds];
-    const names = ids.map(id => {
-      const tag = tagsData?.id_row_map?.[String(id)];
-      return tag?.name || id;
-    });
-    return names.join(', ');
-  }, [tagsData]);
-
-  const getSingleSelectDisplayValue = useCallback((fieldName, value) => {
-    if (value === null || value === undefined || value === '') return value;
-
-    let optionData = null;
-    if (fieldName === 'state') optionData = statesData;
-    if (fieldName === 'substate') optionData = substatesData;
-    if (fieldName === 'type') optionData = typesData;
-    if (!optionData) return value;
-
-    const option = optionData?.id_row_map?.[String(value)];
-    return option?.name || value;
-  }, [statesData, substatesData, typesData]);
-
-  const getStateSubstateFieldKeys = useCallback((log) => {
-    const defaultKeys = { stateKey: 'state', substateKey: 'substate' };
-    const fieldName = log?.field_name;
-    if (typeof fieldName === 'string' && fieldName.includes('_')) {
-      const separatorIndex = fieldName.indexOf('_');
-      if (separatorIndex > 0 && separatorIndex < fieldName.length - 1) {
-        return {
-          stateKey: fieldName.slice(0, separatorIndex),
-          substateKey: fieldName.slice(separatorIndex + 1),
-        };
-      }
-    }
-    return defaultKeys;
-  }, []);
-
-  // Convert assignee IDs to names
-  useEffect(() => {
-    const { activity_type, old_value, new_value } = activity;
-
-    if (activity_type !== 'assignees_added' && activity_type !== 'assignees_removed') {
-      return;
-    }
-
-    const convertAssignees = async (assigneeIds, isOldValue) => {
-      if (!Array.isArray(assigneeIds)) {
-        assigneeIds = [assigneeIds];
-      }
-
-      const names = [];
-      const usersToQuery = [];
-
-      // First try to get from cache
-      for (const assigneeId of assigneeIds) {
-        const collaborator = getCollaborator(assigneeId);
-        if (collaborator) {
-          names.push(collaborator.name);
-        } else {
-          usersToQuery.push(assigneeId);
-        }
-      }
-
-      // Query users not in cache
-      if (usersToQuery.length > 0) {
-        queryUser(usersToQuery, (userMap) => {
-          const queriedNames = usersToQuery.map(id => {
-            const user = userMap[id];
-            return user ? user.name : id;
-          });
-
-          setAssigneeNames(prev => ({
-            ...prev,
-            [isOldValue ? 'old' : 'new']: [...names, ...queriedNames]
-          }));
-        });
-      } else {
-        setAssigneeNames(prev => ({
-          ...prev,
-          [isOldValue ? 'old' : 'new']: names
-        }));
-      }
-    };
-
-    if (activity_type === 'assignees_added' && new_value) {
-      convertAssignees(new_value, false);
-    } else if (activity_type === 'assignees_removed' && old_value) {
-      convertAssignees(old_value, true);
-    }
-  }, [activity, getCollaborator, queryUser]);
-
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value } = activity;
-    const { stateKey, substateKey } = getStateSubstateFieldKeys(activity);
-    const stateOldValue = getSingleSelectDisplayValue('state', old_value);
-    const stateNewValue = getSingleSelectDisplayValue('state', new_value);
-    const substateOldValue = getSingleSelectDisplayValue('substate', old_value);
-    const substateNewValue = getSingleSelectDisplayValue('substate', new_value);
-    const typeOldValue = getSingleSelectDisplayValue('type', old_value);
-    const typeNewValue = getSingleSelectDisplayValue('type', new_value);
-    const oldStateDisplay = getSingleSelectDisplayValue('state', old_value?.[stateKey] ?? old_value?.state);
-    const oldSubstateDisplay = getSingleSelectDisplayValue('substate', old_value?.[substateKey] ?? old_value?.substate);
-    const newStateDisplay = getSingleSelectDisplayValue('state', new_value?.[stateKey] ?? new_value?.state);
-    const newSubstateDisplay = getSingleSelectDisplayValue('substate', new_value?.[substateKey] ?? new_value?.substate);
-    const oldStateWithSubstate = `${oldStateDisplay || gettext('None')} - ${oldSubstateDisplay || gettext('None')}`;
-    const newStateWithSubstate = `${newStateDisplay || gettext('None')} - ${newSubstateDisplay || gettext('None')}`;
+    const asyncCollaboratorProps = {
+      className: 'mr-0',
+      collaborators,
+      collaboratorsCache,
+      updateCollaboratorsCache,
+      api: queryUser,
+    };
 
     switch (activity_type) {
-      case 'title_changed':
+      case LOG_TYPE.PRIORITY_CHANGED: {
+        const oldValueOption = PRIORITY_MAP[old_value + ''] || PRIORITY_MAP['0'];
+        const newValueOption = PRIORITY_MAP[new_value + ''] || PRIORITY_MAP['0'];
         return (
-          <span>
-            {gettext('changed the title from')} <del className="activity-old-value">{old_value}</del> {gettext('to')} <strong className="activity-new-value">{new_value}</strong>
-          </span>
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
+            oldValue={(
+              <Option
+                option={{ name: oldValueOption.name, color: oldValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: oldValueOption.icon_color ? '#fff' : '#212529' }}
+                className="sea-ticket-log-removed"
+              />
+            )}
+            newValue={(
+              <Option option={{ name: newValueOption.name, color: newValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: newValueOption.icon_color ? '#fff' : '#212529' }} />
+            )}
+          />
         );
-      case 'state_changed':
+      }
+      case LOG_TYPE.TITLE_CHANGED: {
         return (
-          <span>
-            {gettext('changed the state from')} <del className="activity-old-value">{stateOldValue}</del> {gettext('to')} <strong className="activity-new-value">{stateNewValue}</strong>
-          </span>
-        );
-      case 'substate_changed':
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TITLE].op_name}
+            oldValue={(<span className="sea-ticket-log-removed">{old_value}</span>)}
+            newValue={new_value}
+          />);
+      }
+      case LOG_TYPE.STATE_CHANGED: {
+        const oldValueOption = getRowById(statesData, old_value + '');
+        const newValueOption = getRowById(statesData, new_value + '');
+
         return (
-          <span>
-            {gettext('changed the substate from')} <del className="activity-old-value">{substateOldValue || gettext('None')}</del> {gettext('to')} <strong className="activity-new-value">{substateNewValue || gettext('None')}</strong>
-          </span>
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name}
+            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
+            newValue={(<Option option={newValueOption} />)}
+          />
         );
-      case 'state_substate_changed':
+      }
+      case LOG_TYPE.SUBSTATE_CHANGED: {
+        const oldValueOption = getRowById(substatesData, old_value + '');
+        const newValueOption = getRowById(substatesData, new_value + '');
+
         return (
-          <span>
-            {gettext('changed the state from')} <del className="activity-old-value">{oldStateWithSubstate}</del> {gettext('to')} <strong className="activity-new-value">{newStateWithSubstate}</strong>
-          </span>
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name}
+            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
+            newValue={(<Option option={newValueOption} />)}
+          />
         );
-      case 'type_changed':
+      }
+      case LOG_TYPE.TYPE_CHANGED: {
+        const oldValueOption = getRowById(typesData, old_value + '');
+        const newValueOption = getRowById(typesData, new_value + '');
+
+        if (!old_value) {
+          return (<AddTip name={gettext('added the type')} value={(<Option option={newValueOption} />)}/>);
+        }
+
         return (
-          <span>
-            {typeOldValue
-              ? <>{gettext('changed the type from')} <del className="activity-old-value">{typeOldValue}</del> {gettext('to')} <strong className="activity-new-value">{typeNewValue || gettext('None')}</strong></>
-              : <>{gettext('set the type to')} <strong className="activity-new-value">{typeNewValue}</strong></>
-            }
-          </span>
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
+            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
+            newValue={(<Option option={newValueOption} />)}
+          />
         );
-      case 'tags_added':
+      }
+      case LOG_TYPE.STATE_SUBSTATE_CHANGED: {
+        const { field_key } = activity;
+        const [state_key, substate_key] = field_key.split('_');
+        const stateOldValue = old_value[state_key];
+        const stateNewValue = new_value[state_key];
+        const substateOldValue = old_value[substate_key];
+        const substateNewValue = new_value[substate_key];
+
+        const stateOldValueOption = getRowById(statesData, stateOldValue + '');
+        const stateNewValueOption = getRowById(statesData, stateNewValue + '');
+        const substateOldValueOption = getRowById(substatesData, substateOldValue + '');
+        const substateNewValueOption = getRowById(substatesData, substateNewValue + '');
+
         return (
-          <span>
-            {gettext('added tags:')} <strong className="activity-new-value">{getTagNames(new_value)}</strong>
-          </span>
+          <ModifyTip
+            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
+            oldValue={(
+              <>
+                <Option option={stateOldValueOption} className="sea-ticket-log-removed" />
+                {' - '}
+                <Option option={substateOldValueOption} className="sea-ticket-log-removed" />
+              </>
+            )}
+            newValue={(
+              <>
+                <Option option={stateNewValueOption} />
+                {' - '}
+                <Option option={substateNewValueOption} />
+              </>
+            )}
+          />
         );
-      case 'tags_removed':
+      }
+
+      // assignees
+      case LOG_TYPE.ASSIGNEES_ADDED: {
         return (
-          <span>
-            {gettext('removed tags:')} <del className="activity-old-value">{getTagNames(old_value)}</del>
-          </span>
+          <AddTip
+            name={gettext('assigned')}
+            value={(
+              <>
+                {new_value.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } />))}
+              </>
+            )}
+          />
         );
-      case 'assignees_added':
+      }
+      case LOG_TYPE.ASSIGNEES_REMOVED: {
         return (
-          <span>
-            {gettext('assigned')} <strong className="activity-new-value">{assigneeNames.new.length > 0 ? assigneeNames.new.join(', ') : (Array.isArray(new_value) ? new_value.join(', ') : new_value)}</strong>
-          </span>
+          <RemoveTip
+            name={gettext('unassigned')}
+            value={(
+              <>
+                {old_value.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 sea-ticket-log-removed"/>))}
+              </>
+            )}
+          />
         );
-      case 'assignees_removed':
+      }
+      case LOG_TYPE.ASSIGNEES_CHANGED: {
+        const { added, removed } = diff(new_value || [], old_value || []);
         return (
-          <span>
-            {gettext('unassigned')} <del className="activity-old-value">{assigneeNames.old.length > 0 ? assigneeNames.old.join(', ') : (Array.isArray(old_value) ? old_value.join(', ') : old_value)}</del>
-          </span>
+          <>
+            {removed.length > 0 && (
+              <RemoveTip
+                name={gettext('unassigned')}
+                value={(
+                  <>
+                    {removed.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 sea-ticket-log-removed"/>))}
+                  </>
+                )}
+              />
+            )}
+            {added.length > 0 && removed.length > 0 && (<>{gettext('and')}{' '}</>)}
+            {added.length > 0 && (
+              <AddTip
+                name={gettext('assigned')}
+                value={(
+                  <>
+                    {added.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } />))}
+                  </>
+                )}
+              />
+            )}
+          </>
         );
-      case 'priority_changed':
-        const oldPriority = PRIORITY_MAP[String(old_value || 0)]?.name || old_value || 0;
-        const newPriority = PRIORITY_MAP[String(new_value || 0)]?.name || new_value || 0;
+      }
+
+      // tags
+      case LOG_TYPE.TAGS_ADDED: {
         return (
-          <span>
-            {gettext('changed the priority from')} <del className="activity-old-value">{oldPriority}</del> {gettext('to')} <strong className="activity-new-value">{newPriority}</strong>
-          </span>
+          <AddTip
+            name={gettext('added tags')}
+            value={(
+              <>
+                {new_value.map(tagID => {
+                  const tag = getRowById(tagsData, tagID + '');
+                  if (!tagID) return null;
+                  return (<Tag tag={tag} key={tagID} className="mr-0" />);
+                })}
+              </>
+            )}
+          />
         );
+      }
+      case LOG_TYPE.TAGS_REMOVED: {
+        return (
+          <RemoveTip
+            name={gettext('removed tags')}
+            value={(
+              <>
+                {new_value.map(tagID => {
+                  const tag = getRowById(tagsData, tagID + '');
+                  if (!tagID) return null;
+                  return (<Tag tag={tag} key={tagID} className="mr-0 sea-ticket-log-removed" />);
+                })}
+              </>
+            )}
+          />
+        );
+      }
+      case LOG_TYPE.TAGS_CHANGED: {
+        const { added, removed } = diff(new_value || [], old_value || []);
+        const addedTags = added.map(t => getRowById(tagsData, t + '')).filter(Boolean);
+        const removedTags = removed.map(t => getRowById(tagsData, t + '')).filter(Boolean);
+        return (
+          <>
+            {removedTags.length > 0 && (
+              <RemoveTip
+                name={gettext('removed tags')}
+                value={(
+                  <>
+                    {removedTags.map(tag => (<Tag tag={tag} key={tag._id} className="mr-0 sea-ticket-log-removed" />))}
+                  </>
+                )}
+              />
+            )}
+            {addedTags.length > 0 && removed.length > 0 && (<>{gettext('and')}{' '}</>)}
+            {addedTags.length > 0 && (
+              <AddTip
+                name={gettext('added tags')}
+                value={(
+                  <>
+                    {addedTags.map(tag => (<Tag tag={tag} key={tag._id} className="mr-0" />))}
+                  </>
+                )}
+              />
+            )}
+          </>
+        );
+      }
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity, assigneeNames, getTagNames, getSingleSelectDisplayValue, getStateSubstateFieldKeys]);
+  }, [activity]);
 
-  const iconSymbol = ACTIVITY_ICONS[activity.activity_type] || 'info';
+  const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
 
   return (
     <div className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}>
@@ -229,10 +301,14 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
       </div>
       <div className="sea-ticket-log-content">
-        {creator.avatar_url && (
-          <img className="sea-ticket-log-avatar" src={creator.avatar_url} alt={creator.name} />
-        )}
-        <span className="sea-ticket-log-creator">{creator.name}</span>
+        <AsyncCollaborator
+          value={activity.creator}
+          className="sea-ticket-log-creator"
+          collaborators={collaborators}
+          collaboratorsCache={collaboratorsCache}
+          updateCollaboratorsCache={updateCollaboratorsCache}
+          api={queryUser}
+        />
         {renderActivityMessage()}
         <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
       </div>

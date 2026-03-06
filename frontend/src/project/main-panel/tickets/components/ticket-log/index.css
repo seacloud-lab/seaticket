@@ -13,7 +13,7 @@
   left: 20px;
   top: 28px;
   width: 1px;
-  height: 12px;
+  bottom: -16px;
   background-color: var(--bs-border-secondary-color);
 }
 
@@ -30,6 +30,7 @@
   width: 40px;
   display: flex;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sea-ticket-log.small .sea-ticket-log-type-container {
@@ -55,46 +56,31 @@
   padding-top: 2px;
   gap: 4px;
   font-size: 13px;
-  color: #57606a;
+  color: var(--bs-body-secondary-color);
   line-height: 1.5;
 }
 
-.sea-ticket-log-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  margin-right: 4px;
+.sea-ticket-log-creator {
+  background: unset;
+  padding: 0;
+  font-weight: 600;
+  color: var(--bs-body-color);
 }
 
-.sea-ticket-log-creator {
-  font-weight: 600;
-  color: #24292f;
-  margin-right: 4px;
+.sea-ticket-log-creator .collaborator-avatar img {
+  height: 20px;
+  width: 20px;
 }
 
 .sea-ticket-log-time {
-  color: #8c959f;
   font-size: 12px;
   margin-left: 8px;
 }
 
-.sea-ticket-log .activity-old-value {
-  color: #cf222e;
-  text-decoration: line-through;
+.sea-ticket-log .collaborator {
+  max-width: 240px;
 }
 
-.sea-ticket-log .activity-new-value {
-  color: #1a7f37;
-  font-weight: 500;
-}
-
-/* When the next element is a Comment, extend the timeline to the Comment's avatar top position */
-.sea-ticket-log.next-is-comment::after {
-  content: '';
-  position: absolute;
-  left: -2px;
-  bottom: -8px;
-  width: 2px;
-  height: 8px;
-  background-color: #e1e4e8;
+.sea-ticket-log-removed {
+  opacity: .65;
 }
