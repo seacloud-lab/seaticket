@@ -18,6 +18,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 20px;
 }
 
 .sea-metadata-tag-color {
