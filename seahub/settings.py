@@ -748,6 +748,9 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
         except:
             raise ValueError(f"Invalid database port: {DATABASES['default']['PORT']}")
 
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS']['charset'] = 'utf8mb4'
+
 ## For cache
 if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default'].get('BACKEND'):
     redis_cache = 'RedisCache' in CACHES['default'].get('BACKEND')
