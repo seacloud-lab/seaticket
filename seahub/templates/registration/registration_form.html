@@ -3,56 +3,54 @@
 {% load render_bundle from webpack_loader %}
 {% block sub_title %}{% trans "Signup" %} - {% endblock %}
 
-{% block extra_style %}{{block.super}}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}bootstrap/bootstrap.min.css" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}bootstrap/bootstrap.popover.min.css" />
-{% endblock %}
-
 {% block private_style %}
 {% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block main_content %}
-<div class="login-panel-outer-container mt-6">
-    <div class="login-panel">
-        <h1 class="login-panel-hd">{% trans "Signup" %}</h1>
-        {% if request.user.is_authenticated %}
-        <p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
-        {% else %}
-        <form action="" method="post" id="signup-form">{% csrf_token %}
-            {% if form.name.field.required %}
-            {{ form.name }} {{ form.name.errors }}
-            {% endif %}
+<div class="login-panel-outer-container">
+	<div class="individual-register-panel-wrapper">
+		<div class="individual-register-panel-content">
+			<div class="individual-register-panel-header d-flex justify-content-center align-items-center">
+				<div class="individual-register-title">{% trans "Sign up" %}</div>
+			</div>
+			{% if request.user.is_authenticated %}
+			<p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
+			{% else %}
+			<form class="login-form-wrapper" action="" method="post" id="signup-form">{% csrf_token %}
+			  {% if form.name.field.required %}
+				{{ form.name }} {{ form.name.errors }}
+				{% endif %}
 
-            {{ form.email }}            {{ form.email.errors }}
-            <div class="position-relative">
-                {{ form.password1 }}        {{ form.password1.errors }}
-                <div class="password-toggle" id="eye-icon-wrapper"></div>
-            </div>
-            {{ form.password2 }}        {{ form.password2.errors }}
+				{{ form.email }}            {{ form.email.errors }}
+				<div class="position-relative">
+						{{ form.password1 }}        {{ form.password1.errors }}
+						<div class="password-toggle" id="eye-icon-wrapper"></div>
+				</div>
+				{{ form.password2 }}        {{ form.password2.errors }}
 
-            {% if form.telephone.field.required %}
-            <label for="id_telephone">{% trans "Telephone" %}</label>
-            {{ form.telephone }}        {{ form.telephone.errors }}
-            {% endif %}
+				{% if form.telephone.field.required %}
+				<label for="id_telephone">{% trans "Telephone" %}</label>
+				{{ form.telephone }}        {{ form.telephone.errors }}
+				{% endif %}
 
-            {% if form.note.field.required %}
-            <label for="id_note">{% trans "Note" %}</label>
-            {{ form.note }}             {{ form.note.errors }}
-            {% endif %}
+				{% if form.note.field.required %}
+				<label for="id_note">{% trans "Note" %}</label>
+				{{ form.note }}             {{ form.note.errors }}
+				{% endif %}
 
-            <p class="error hide"></p>
-            {% if cn_force_check_user_agreement %}
-            {% include "registration/user_terms_check.html" %}
-            {% endif %}
-            <button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
-        </form>
-
-        <div class="login-panel-bottom-container">
-            {# language will be shown here #}
-        </div>
-        {% endif %}
-    </div>
+				<p class="error hide mt-1"></p>
+				{% if cn_force_check_user_agreement %}
+				{% include "registration/user_terms_check.html" %}
+				{% endif %}
+				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
+			</form>
+			{% endif %}
+		</div>
+    <div class="login-panel-bottom-container">
+		  {# language will be shown here #}
+		</div>
+	</div>
 </div>
 {% endblock %}
 
@@ -60,6 +58,8 @@
 <script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.popover.min.js"></script>
 <script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript">
+	
+$('#signup-form input').addClass('form-item-input');
 $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
 
 $("body").on('click', '.password-toggle', function(){
@@ -79,15 +79,15 @@ $("body").on('click', '.password-toggle', function(){
 $('#lang-context').on('click', function() {
     var langTop = $('#lang').offset().top;
     var langSelectorTop;
-    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    var langSelectorHeight = $('#lang-context-selector').outerHeight();
     if (langSelectorHeight > langTop) {
-        langSelectorTop = '-' + (langTop - 5) + 'px';
+        langSelectorTop = '-' + (langTop - 4) + 'px';
     } else {
-        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+        langSelectorTop = '-' + (langSelectorHeight + 4) + 'px';
     }
     $('#lang-context-selector').css({
         'top': langSelectorTop,
-        'right': 0
+        'left': 0
     });
     $('#lang-context-selector .sf-popover-con').css({
         'max-height': $('#lang').offset().top - 10

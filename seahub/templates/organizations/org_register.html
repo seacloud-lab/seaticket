@@ -8,43 +8,47 @@
 {% endblock %}
 
 {% block main_content %}
-<div class="login-panel-outer-container mt-6">
-    <div class="login-panel">
-        <h1 class="login-panel-hd">{% trans "Signup" %}</h1>
-        {% if request.user.is_authenticated %}
-        <p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
-        {% else %}
-        <form action="" method="post" id="signup-form">{% csrf_token %}
-            <input id="org_name" type="text" name="org_name"  placeholder="{% trans "Team name" %}" value="{{ form.org_name.value|default_if_none:"" }}" class="input" />
-            {{ form.org_name.errors }}
+<div class="login-panel-outer-container">
+  <div class="org-register-panel-wrapper">
+    <div class="org-register-panel-content">
+      <div class="org-register-panel-header d-flex justify-content-center align-items-center">
+        <div class="org-register-title">{% trans "Sign up" %}</div>
+      </div>
+      {% if request.user.is_authenticated %}
+      <p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
+      {% else %}
+      <form class="login-form-wrapper" action="" method="post" id="signup-form">{% csrf_token %}
+        <input id="org_name" type="text" name="org_name"  placeholder="{% trans "Team name" %}" value="{{ form.org_name.value|default_if_none:"" }}" class="input form-item-input" />
+        {{ form.org_name.errors }}
 
-            {% if form.name.field.required %}
-            <input id="name" type="text" placeholder="{% trans "Admin name" %}" name="name" maxlength="255" value="{{ form.name.value|default_if_none:"" }}" class="input" />
-            {{ form.name.errors }}
-            {% endif %}
-
-            <input id="email" type="text" name="email" placeholder="{% trans "Admin email" %}" maxlength="255" value="{{ form.email.value|default_if_none:"" }}" class="input" />
-            {{ form.email.errors }}
-
-            <div class="position-relative">
-                <input id="password1" type="password" placeholder="{% trans "Password" %}" name="password1" value="" class="input" />
-                {{ form.password1.errors }}
-                <div class="password-toggle" id="eye-icon-wrapper"></div>
-            </div>
-            <input id="password2" type="password" placeholder="{% trans "Confirm password" %}" name="password2" value="" class="input" />
-            {{ form.password2.errors }}
-
-            {{ form.non_field_errors }}
-            {% if cn_force_check_user_agreement %}
-            {% include "registration/user_terms_check.html" %}
-            {% endif %}
-            <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
-        </form>
-        <div class="login-panel-bottom-container">
-            {# language will be shown here #}
-        </div>
+        {% if form.name.field.required %}
+        <input id="name" type="text" placeholder="{% trans "Admin name" %}" name="name" maxlength="255" value="{{ form.name.value|default_if_none:"" }}" class="input form-item-input" />
+        {{ form.name.errors }}
         {% endif %}
+
+        <input id="email" type="text" name="email" placeholder="{% trans "Admin email" %}" maxlength="255" value="{{ form.email.value|default_if_none:"" }}" class="input form-item-input" />
+        {{ form.email.errors }}
+
+        <div class="position-relative">
+          <input id="password1" type="password" placeholder="{% trans "Password" %}" name="password1" value="" class="input form-item-input" />
+          {{ form.password1.errors }}
+          <div class="password-toggle" id="eye-icon-wrapper"></div>
+        </div>
+        <input id="password2" type="password" placeholder="{% trans "Confirm password" %}" name="password2" value="" class="input form-item-input" />
+        {{ form.password2.errors }}
+
+        {{ form.non_field_errors }}
+        {% if cn_force_check_user_agreement %}
+        {% include "registration/user_terms_check.html" %}
+        {% endif %}
+        <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
+      </form>
+      {% endif %}
     </div>
+    <div class="login-panel-bottom-container">
+      {# language will be shown here #}
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -78,15 +82,15 @@ $("body").on('click', '.password-toggle', function(){
 $('#lang-context').on('click', function() {
     var langTop = $('#lang').offset().top;
     var langSelectorTop;
-    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    var langSelectorHeight = $('#lang-context-selector').outerHeight();
     if (langSelectorHeight > langTop) {
-        langSelectorTop = '-' + (langTop - 5) + 'px';
+        langSelectorTop = '-' + (langTop - 4) + 'px';
     } else {
-        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+        langSelectorTop = '-' + (langSelectorHeight + 4) + 'px';
     }
     $('#lang-context-selector').css({
         'top': langSelectorTop,
-        'right': 0
+        'left': 0
     });
     $('#lang-context-selector .sf-popover-con').css({
         'max-height': $('#lang').offset().top - 10

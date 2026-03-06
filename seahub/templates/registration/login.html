@@ -21,17 +21,11 @@
 
 
 {% block main_content %}
-<div class="login-panel-outer-container mt-6 vh">
+<div class="login-panel-outer-container vh">
 	<div class="login-panel-wrapper">
 		<div class="login-panel-content">
-			<div class="login-panel-header d-flex justify-content-between align-items-center">
-				<div class="login-title">{% trans "Account log in" %}</div>
-				{% if enable_signup %}
-				<div class="register-link">
-					<a href="{{ signup_url }}" id="sign-up">{% trans "Go to register" %}</a>
-					<span class="login-arrow-right rotate-icon-270" id="right-down-icon-wrapper"></span>
-				</div>
-				{% endif %}
+			<div class="login-panel-header d-flex justify-content-center align-items-center">
+				<div class="login-title">{% trans "Log in" %}</div>
 			</div>
 			<form class="login-form-wrapper" action="" method="post" id="login-form">{% csrf_token %}
 				{% if cur_language == "zh-cn" %}
@@ -65,7 +59,7 @@
 				    value=""
 				    class="input form-item-input"
 				    id="id_password1"
-				    autocomplete="off"
+				    autocomplete="new-password"
 				  />
 				  <div class="password-toggle" id="eye-icon-wrapper"></div>
 				</div>
@@ -99,10 +93,15 @@
 				{% endif %}
 
 				{% if remember_days > 0 %}
-				<label class="login-form-pass-member d-flex align-items-center">
-				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-				  <span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
-				  <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+				<label class="login-form-pass-member d-flex align-items-center justify-content-between">
+					<div class="d-flex align-items-center">
+						<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
+						<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+						<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+					</div>
+					{% if email_host %}
+					<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password?" %}</a>
+					{% endif %}
 				</label>
 				{% endif %}
 
@@ -115,6 +114,12 @@
 
 			{% if enable_multi_saml %}
 			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			{% endif %}
+
+			{% if enable_signup %}
+			<div class="register-link">
+				<a href="{{ signup_url }}" id="sign-up">{% trans "Sign up" %}</a>
+			</div>
 			{% endif %}
 
 			{% if enable_sms_login %}
@@ -135,14 +140,11 @@
 			  </div>
 			</div>
 			{% endif %}
-
-			<div class="login-panel-bottom-container d-flex align-items-center justify-content-between">
-				{% if email_host %}
-				<a href="{{ SITE_ROOT }}accounts/password/reset/" class="forgot-passwd">{% trans "Forgot password" %}</a>
-				{% endif %}
-			</div>
 		</div>
-		{% include "police_service_link.html" %}
+		<div class="login-panel-bottom-panel-layout d-flex align-items-center justify-content-center">
+			<div class="login-panel-bottom-container d-flex align-items-center"></div>
+			{% include "police_service_link.html" %}
+		</div>
 	</div>
 </div>
 {% endblock %}
@@ -181,22 +183,30 @@ $(document).ready(function() {
 $('#lang-context').on('click', function() {
     var langTop = $('#lang').offset().top;
     var langSelectorTop;
-    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    var langSelectorHeight = $('#lang-context-selector').outerHeight();
     if (langSelectorHeight > langTop) {
-        langSelectorTop = '-' + (langTop - 5) + 'px';
+        langSelectorTop = '-' + (langTop - 4) + 'px';
     } else {
-        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+        langSelectorTop = '-' + (langSelectorHeight + 4) + 'px';
     }
     $('#lang-context-selector').css({
         'top': langSelectorTop,
-        'right': 0
+        'left': 0
     });
     $('#lang-context-selector .sf-popover-con').css({
         'max-height': $('#lang').offset().top - 10
     });
 });
 
-$('[name="login"]').trigger('focus');
+const isAutofocus = sessionStorage.getItem('isAutofocus')
+if (!isAutofocus) {
+	$('[name="login"]').trigger('focus');
+} else if (isAutofocus === 'true') {
+	$('[name="login"]').trigger('focus');
+	sessionStorage.setItem('isAutofocus', 'true');
+} else if (isAutofocus === 'false') {
+	sessionStorage.setItem('isAutofocus', 'true');
+}
 
 function setCaptchaInputWidth() {
     $('#id_captcha_1').outerWidth($('.input').outerWidth() - $('.captcha').width() - $('#refresh-captcha').outerWidth(true) - 10);
@@ -242,6 +252,7 @@ $('#login-form').on('submit', function(){
         $('.error').removeClass('hide').html("{% trans "Password cannot be blank" %}");
         return false;
     }
+		sessionStorage.setItem('isAutofocus', 'false');
 });
 
 {% if enable_sso %}
