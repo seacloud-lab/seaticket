@@ -61,6 +61,11 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
           });
           return `[${fileName}](${url})`;
         });
+      // Replace seaqa-kb-entry tags with friendly text (handles both streaming and stored messages)
+      const kbEntryRegex = /<seaqa-kb-entry\s+title="([^"]*)"\s*>[\s\S]*?<\/seaqa-kb-entry>/g;
+      value = value.replace(kbEntryRegex, (match, title) => {
+        return '**' + title + '**';
+      });
       aiReplyForCopy = value;
     }
 
