@@ -910,6 +910,17 @@ class TicketAPIView(APIView):
                             metadata, field_name, activity.get('new_value'),
                             case_insensitive=case_insensitive
                         )
+                    if field_name == 'state_substate':
+                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                        state_key = (state_column or {}).get('key')
+                        substate_key = (substate_column or {}).get('key')
+                        if state_key and substate_key:
+                            activity['field_name'] = f'{state_key}_{substate_key}'
+                    else:
+                        column = get_column_from_columns_by_name(metadata, field_name)
+                        if column and column.get('key'):
+                            activity['field_name'] = column.get('key')
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -1433,6 +1444,7 @@ class TicketActivitiesAPIView(APIView):
         for a in activities:
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             field_name = detail.get('field_name', '')
+            field_id = field_name
             old_value = detail.get('old_value')
             new_value = detail.get('new_value')
 
@@ -1472,11 +1484,22 @@ class TicketActivitiesAPIView(APIView):
                         get_option_id_by_name(metadata, TicketsTable.tags.name, v)
                         for v in new_value
                     ]
+            if field_name == 'state_substate':
+                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                state_key = (state_column or {}).get('key')
+                substate_key = (substate_column or {}).get('key')
+                if state_key and substate_key:
+                    field_id = f'{state_key}_{substate_key}'
+            else:
+                column = get_column_from_columns_by_name(metadata, field_name)
+                if column and column.get('key'):
+                    field_id = column.get('key')
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
                 'activity_type': a.get('activity_type'),
-                'field_name': field_name,
+                'field_name': field_id,
                 'old_value': old_value,
                 'new_value': new_value,
                 'creator': a.get('creator'),
