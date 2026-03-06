@@ -3,6 +3,7 @@ import TopBar from '../top-bar';
 import SwitchSettingsItem from './switch-settings-item';
 import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
+import PromptSettings from './prompt-settings';
 
 const Settings = ({
   title,
@@ -15,6 +16,11 @@ const Settings = ({
       <TopBar title={title}>
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
+      <PromptSettings
+        value={settings.prompt}
+        onChange={(value, callback) => modifySettings({ prompt: value }, callback)}
+        className="mb-4"
+      />
       <SwitchSettingsItem
         title={gettext('Chat')}
         placeholder={gettext('Streaming response')}

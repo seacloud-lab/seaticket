@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
+import json
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -401,6 +402,15 @@ class ChatView(APIView):
                     'id': connection.pk
                 })
 
+        # Read project-level custom prompt from settings
+        project_prompt = ''
+        if project.settings:
+            try:
+                project_settings = json.loads(project.settings)
+                project_prompt = project_settings.get('prompt', '')
+            except json.JSONDecodeError:
+                pass
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
@@ -411,7 +421,8 @@ class ChatView(APIView):
             'llm_model': request.data.get('model'),
             'stream': stream,
             'document_connections': document_connections,
-            'issue_connections': issue_connections
+            'issue_connections': issue_connections,
+            'project_prompt': project_prompt
         }
 
         task_info = {
