@@ -15,7 +15,7 @@ import {
 import { Utils } from '@/utils/utils';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings,
+  StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
 import Activity from '../../components/activity';
@@ -42,6 +42,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
+  const [linkedRecords, setLinkedRecords] = useState({});
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { modifyLocalRow, getTableByName } = useData();
@@ -320,6 +321,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       const ticket = new TicketModel(res.data.ticket);
       setLoadError(res.data?.error_msg || '');
       setTicket(ticket);
+      setLinkedRecords(res.data?.linked_record_titles || {});
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -393,7 +395,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -512,6 +514,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
+          <LinkSettings isReadonly={true} value={linked_connection_records} linkedRecords={linkedRecords} onChange={() => {}} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (
