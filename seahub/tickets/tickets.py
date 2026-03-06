@@ -920,11 +920,11 @@ class TicketAPIView(APIView):
                         state_key = (state_column or {}).get('key')
                         substate_key = (substate_column or {}).get('key')
                         if state_key and substate_key:
-                            activity['field_name'] = f'{state_key}_{substate_key}'
+                            activity['field_key'] = f'{state_key}_{substate_key}'
                     else:
                         column = get_column_from_columns_by_name(metadata, field_name)
                         if column and column.get('key'):
-                            activity['field_name'] = column.get('key')
+                            activity['field_key'] = column.get('key')
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -1498,16 +1498,16 @@ class TicketActivitiesAPIView(APIView):
                 state_key = (state_column or {}).get('key')
                 substate_key = (substate_column or {}).get('key')
                 if state_key and substate_key:
-                    field_id = f'{state_key}_{substate_key}'
+                    field_key = f'{state_key}_{substate_key}'
             else:
                 column = get_column_from_columns_by_name(metadata, field_name)
                 if column and column.get('key'):
-                    field_id = column.get('key')
+                    field_key = column.get('key')
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
                 'activity_type': a.get('activity_type'),
-                'field_name': field_id,
+                'field_key': field_key,
                 'old_value': old_value,
                 'new_value': new_value,
                 'creator': a.get('creator'),
