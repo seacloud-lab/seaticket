@@ -27,6 +27,14 @@
 </style>
 
 {% if privacy_policy_link or terms_of_service_link %}
+<style>
+.login-panel-wrapper .login-panel-bottom-panel-layout {
+  justify-content: space-between !important;
+}
+</style>
+{% endif %}
+
+{% if privacy_policy_link or terms_of_service_link %}
   <div class="privacy-policy-link">
 	  {% if privacy_policy_link and terms_of_service_link %}
 		  <a href="{{ privacy_policy_link }}" class="privacy-policy-link-text">{% trans "Privacy" %}</a>
