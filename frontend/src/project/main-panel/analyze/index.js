@@ -4,6 +4,7 @@ import { IconButton, CenteredLoading, CenteredError, EmptyTip } from '@/componen
 import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import EmbeddingView from './components/embedding-view';
+import FilterPanel from '../analyze/components/filter-panel';
 import { useAnalyzeTask } from './hooks/analyze-task';
 
 import './index.css';
@@ -42,7 +43,6 @@ const Analyze = ({ title }) => {
     setDisplayMode(storedSettings.displayMode || 'points');
     setStartDate(storedSettings.startDate || null);
     setEndDate(storedSettings.endDate || null);
-    setFilters(storedSettings.filters || []);
   }, []);
 
   useEffect(() => {
@@ -173,6 +173,13 @@ const Analyze = ({ title }) => {
       </TopBar>
       <div className="sea-qa-project-analyze">
         <div className="analyze-main-content">
+          {records && records.length > 0 && (
+            <FilterPanel
+              filters={filters}
+              filterableFieldOptions={filterableFieldOptions}
+              handleFilterChange={handleFilterChange}
+            />
+          )}
           {renderContent()}
         </div>
         {isSettingsOpen && (
