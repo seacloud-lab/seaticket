@@ -876,26 +876,26 @@ class TicketAPIView(APIView):
                         substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
                         state_key = (state_column or {}).get('key') or TicketsTable.state.name
                         substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
-                        old_value = activity.get('old_value') or {}
-                        new_value = activity.get('new_value') or {}
-                        if isinstance(old_value, dict):
-                            activity['old_value'] = {
+                        removed = activity.get('remove') or {}
+                        added = activity.get('add') or {}
+                        if isinstance(removed, dict):
+                            activity['remove'] = {
                                 state_key: get_option_id_by_name(
-                                    metadata, TicketsTable.state.name, old_value.get('state'),
+                                    metadata, TicketsTable.state.name, removed.get('state'),
                                     case_insensitive=True
                                 ),
                                 substate_key: get_option_id_by_name(
-                                    metadata, TicketsTable.substate.name, old_value.get('substate')
+                                    metadata, TicketsTable.substate.name, removed.get('substate')
                                 )
                             }
-                        if isinstance(new_value, dict):
-                            activity['new_value'] = {
+                        if isinstance(added, dict):
+                            activity['add'] = {
                                 state_key: get_option_id_by_name(
-                                    metadata, TicketsTable.state.name, new_value.get('state'),
+                                    metadata, TicketsTable.state.name, added.get('state'),
                                     case_insensitive=True
                                 ),
                                 substate_key: get_option_id_by_name(
-                                    metadata, TicketsTable.substate.name, new_value.get('substate')
+                                    metadata, TicketsTable.substate.name, added.get('substate')
                                 )
                             }
                     elif field_name in (
@@ -905,12 +905,12 @@ class TicketAPIView(APIView):
                     ):
                         # keep storage as option name; only return ids for frontend consistency
                         case_insensitive = field_name == TicketsTable.state.name
-                        activity['old_value'] = get_option_id_by_name(
-                            metadata, field_name, activity.get('old_value'),
+                        activity['remove'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('remove'),
                             case_insensitive=case_insensitive
                         )
-                        activity['new_value'] = get_option_id_by_name(
-                            metadata, field_name, activity.get('new_value'),
+                        activity['add'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('add'),
                             case_insensitive=case_insensitive
                         )
                     if field_name == 'state_substate':
@@ -946,7 +946,7 @@ class TicketAPIView(APIView):
 
         send_ticket_update_msg(project_uuid)
 
-        # Rename activity_type to type_description for frontend
+        # Rename activity_type to type for frontend
         for activity in new_activities:
             activity.pop('field_name', None)
             activity['type'] = activity.pop('activity_type', None)
@@ -1453,48 +1453,54 @@ class TicketActivitiesAPIView(APIView):
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             field_name = detail.get('field_name', '')
             field_id = field_name
-            old_value = detail.get('old_value')
-            new_value = detail.get('new_value')
+            removed = detail.get('remove')
+            added = detail.get('add')
+
+            # Backward compatibility for historical activities stored as old_value/new_value.
+            if 'remove' not in detail and 'old_value' in detail:
+                removed = detail.get('old_value')
+            if 'add' not in detail and 'new_value' in detail:
+                added = detail.get('new_value')
 
             if field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
                 substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
                 state_key = (state_column or {}).get('key') or TicketsTable.state.name
                 substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
-                if isinstance(old_value, dict):
-                    old_value = {
+                if isinstance(removed, dict):
+                    removed = {
                         state_key: get_option_id_by_name(
-                            metadata, TicketsTable.state.name, old_value.get('state'),
+                            metadata, TicketsTable.state.name, removed.get('state'),
                             case_insensitive=True
                         ),
                         substate_key: get_option_id_by_name(
-                            metadata, TicketsTable.substate.name, old_value.get('substate')
+                            metadata, TicketsTable.substate.name, removed.get('substate')
                         )
                     }
-                if isinstance(new_value, dict):
-                    new_value = {
+                if isinstance(added, dict):
+                    added = {
                         state_key: get_option_id_by_name(
-                            metadata, TicketsTable.state.name, new_value.get('state'),
+                            metadata, TicketsTable.state.name, added.get('state'),
                             case_insensitive=True
                         ),
                         substate_key: get_option_id_by_name(
-                            metadata, TicketsTable.substate.name, new_value.get('substate')
+                            metadata, TicketsTable.substate.name, added.get('substate')
                         )
                     }
             elif field_name in (TicketsTable.state.name, TicketsTable.substate.name, TicketsTable.type.name):
                 case_insensitive = field_name == TicketsTable.state.name
-                old_value = get_option_id_by_name(metadata, field_name, old_value, case_insensitive=case_insensitive)
-                new_value = get_option_id_by_name(metadata, field_name, new_value, case_insensitive=case_insensitive)
+                removed = get_option_id_by_name(metadata, field_name, removed, case_insensitive=case_insensitive)
+                added = get_option_id_by_name(metadata, field_name, added, case_insensitive=case_insensitive)
             elif field_name == TicketsTable.tags.name:
-                if isinstance(old_value, list):
-                    old_value = [
+                if isinstance(removed, list):
+                    removed = [
                         get_option_id_by_name(metadata, TicketsTable.tags.name, v)
-                        for v in old_value
+                        for v in removed
                     ]
-                if isinstance(new_value, list):
-                    new_value = [
+                if isinstance(added, list):
+                    added = [
                         get_option_id_by_name(metadata, TicketsTable.tags.name, v)
-                        for v in new_value
+                        for v in added
                     ]
             if field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
@@ -1512,8 +1518,8 @@ class TicketActivitiesAPIView(APIView):
                 'ticket_id': a.get('ticket_id'),
                 'type': a.get('activity_type'),
                 'field_key': field_key,
-                'old_value': old_value,
-                'new_value': new_value,
+                'remove': removed,
+                'add': added,
                 'creator': a.get('creator'),
                 'created_time': a.get('created_time'),
             })
