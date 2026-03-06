@@ -90,9 +90,6 @@ def update_user_profile(username, nickname, contact_email, org_id, id_in_org, us
     if id_in_org:
         IdInOrgTuple.objects.add_or_update(username, id_in_org, org_id)
 
-    # update user's role
-    if user_role:
-        User.objects.update_role(username, user_role)
 
 
 def metadata(request, org_id=None):

@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
-from seahub.constants import ORG_DEFAULT
+from seahub.constants import TEAM_FREE
 
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
@@ -35,7 +35,7 @@ class OrgAdminInfo(APIView):
 
         # space quota
         org_role = OrgSettings.objects.filter(org_id=org_id).first()
-        org_role = org_role.role if org_role else ORG_DEFAULT
+        org_role = org_role.role if org_role else TEAM_FREE
 
         # member quota
         if ORG_MEMBER_QUOTA_ENABLED:

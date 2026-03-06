@@ -11,7 +11,7 @@ from django.utils import translation
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from seahub.constants import DEFAULT_ADMIN
+from seahub.constants import DEFAULT_ADMIN, DEFAULT_USER
 from seahub.profile.models import Profile
 from seahub.role_permissions.models import AdminRole
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role, \
@@ -25,7 +25,6 @@ from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM,
     SASL_AUTHC_ID_ATTR
 from seahub.auth.models import EmailUser
 from seahub.organizations.models import Organization
-from seahub.role_permissions.models import UserRole
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -172,16 +171,6 @@ class UserManager(object):
     
         return self.get(email=virtual_id)
 
-    def update_role(self, email, role):
-        """
-        If user has a role, update it; or create a role for user.
-        """
-        try:
-            UserRole.objects.update_user_role(email, role)
-        except UserRole.DoesNotExist:
-            UserRole.objects.add_user_role(email, role)
-        return self.get(email=email)
-
     def create_superuser(self, email, password):
         u = self.create_user(email, password, is_staff=True, is_active=True)
         Profile.objects.add_or_update(username=u.username, nickname='admin')
@@ -214,14 +203,9 @@ class UserManager(object):
         if not emailuser:
             raise User.DoesNotExist('User matching query does not exits.')
 
-        from seahub.organizations.models import Organization
-        from seahub.role_permissions.models import UserRole
-        org = Organization.objects.get_org_by_username(email)
+        from seahub.organizations.models import Organization, OrgSettings
 
-        try:
-            user_role = UserRole.objects.get_user_role(email)
-        except UserRole.DoesNotExist:
-            user_role = None
+        org = Organization.objects.get_org_by_username(email)
 
         user = User(emailuser.email)
         user.id = emailuser.id
@@ -230,9 +214,12 @@ class UserManager(object):
         user.is_active = emailuser.is_active
         user.ctime = emailuser.ctime
         user.org = org
-        # user.source = emailuser.source
-        user.role = user_role
         user.reference_id = emailuser.reference_id
+
+        if org:
+            user.role = OrgSettings.objects.get_role_by_org(org)
+        else:
+            user.role = DEFAULT_USER
 
         if user.is_staff:
             try:
@@ -773,8 +760,6 @@ class CustomLDAPBackend(object):
                 logger.error(f'update ldap user failed {e}')
                 return
 
-        if user_role:
-            User.objects.update_role(username, user_role)
         return user
 
 

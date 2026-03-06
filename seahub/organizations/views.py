@@ -19,7 +19,7 @@ from django.views.decorators.csrf import csrf_protect
 from seahub.auth import login, REDIRECT_FIELD_NAME
 from seahub.auth.decorators import login_required, login_required_ajax
 from seahub.base.accounts import User
-from seahub.constants import ORG_DEFAULT
+from seahub.constants import TEAM_FREE
 from seahub.group.views import remove_group_common
 from seahub.utils import get_service_url, render_error, check_slide_captcha_verified_time
 from seahub.utils.auth import get_login_bg_image_path
@@ -247,7 +247,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             create_org(org_name, url_prefix, new_user.username)
             new_org = get_org_by_url_prefix(url_prefix)
             org_created.send(sender=None, org=new_org)
-            OrgSettings.objects.add_or_update(new_org, ORG_DEFAULT)
+            OrgSettings.objects.add_or_update(new_org, TEAM_FREE)
 
             # record the org's register IP to dtable_web.log
             remote_address = request.META.get('REMOTE_ADDR', '')
@@ -457,7 +457,7 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 create_org(org_name, url_prefix, new_user.username)
                 new_org = get_org_by_url_prefix(url_prefix)
                 org_created.send(sender=None, org=new_org)
-                OrgSettings.objects.add_or_update(new_org, ORG_DEFAULT)
+                OrgSettings.objects.add_or_update(new_org, TEAM_FREE)
 
                 # record the org's register IP to dtable_web.log
                 remote_address = request.META.get('REMOTE_ADDR', '')

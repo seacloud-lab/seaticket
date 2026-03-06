@@ -43,16 +43,9 @@ def update_log_perm_audit_type(event):
 
 
 def transfer_user_to_org(username, org_id):
-    from seahub.base.accounts import User
-    from seahub.constants import DEFAULT_USER
     try:
-        # transfer user to org
         Organization.objects.add_org_user(org_id, username, int(False))
 
-        # reset role
-        User.objects.update_role(username, DEFAULT_USER)
-
-        # transfer workspace to org
         workspace = Workspaces.objects.get_workspace_by_owner(username)
         if workspace:
             workspace.org_id = org_id

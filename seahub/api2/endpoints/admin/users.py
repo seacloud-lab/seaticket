@@ -34,7 +34,6 @@ from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils.user_permissions import get_user_role
-from seahub.role_permissions.utils import get_available_roles
 from seahub.role_permissions.models import AdminRole
 from seahub.constants import DEFAULT_ADMIN
 from seahub.utils.licenseparse import user_number_over_limit
@@ -66,11 +65,7 @@ def get_virtual_id_by_email(email):
     else:
         return profile_obj.user
 
-def create_user_info(request, email, role, nickname, contact_email, quota_total_mb):
-    # update additional user info
-
-    if role:
-        User.objects.update_role(email, role)
+def create_user_info(request, email, nickname, contact_email):
 
     if nickname is not None:
         Profile.objects.add_or_update(email, nickname)
@@ -83,7 +78,7 @@ def create_user_info(request, email, role, nickname, contact_email, quota_total_
         cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
 
 
-def update_user_info(request, user, password, is_active, is_staff, role,
+def update_user_info(request, user, password, is_active, is_staff,
                      nickname, login_id, contact_email, institution_name,
                      id_in_org, unit, phone, monthly_api_call_limit_per_user):
 
@@ -108,10 +103,6 @@ def update_user_info(request, user, password, is_active, is_staff, role,
 
     # update user
     user.save()
-
-    # update additional user info
-    if role:
-        User.objects.update_role(email, role)
 
     if nickname is not None:
         Profile.objects.add_or_update(email, nickname)
@@ -267,10 +258,7 @@ class AdminUsers(APIView):
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(username)
             info['last_login'] = last_login_obj.last_login if last_login_obj else ''
-            if not info.get('org_id'):
-                info['role'] = get_user_role(user)
-            else:
-                info['role'] = None
+            info['role'] = get_user_role(user)
             if getattr(settings, 'MULTI_INSTITUTION', False):
                 info['institution'] = profile.institution if profile else ''
 
@@ -311,14 +299,6 @@ class AdminUsers(APIView):
             error_msg = 'is_active invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # additional user info check
-        role = request.data.get("role", None)
-        if role:
-            available_roles = get_available_roles()
-            if role not in available_roles:
-                error_msg = 'role must be in %s.' % str(available_roles)
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         name = request.data.get("name", None)
         if name:
             if len(name) > 64:
@@ -349,9 +329,8 @@ class AdminUsers(APIView):
         # create user
         try:
             user_obj = User.objects.create_user(email, password, is_staff, is_active)
-            create_user_info(request, email=user_obj.username, role=role,
-                             nickname=name, contact_email=None,
-                             quota_total_mb=quota_total_mb)
+            create_user_info(request, email=user_obj.username,
+                             nickname=name, contact_email=None)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -442,14 +421,6 @@ class AdminUser(APIView):
                     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             except ValueError:
                 error_msg = 'is_active invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # additional user info check
-        role = request.data.get("role", None)
-        if role:
-            available_roles = get_available_roles()
-            if role not in available_roles:
-                error_msg = 'role must be in %s.' % str(available_roles)
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         name = request.data.get("name", None)
@@ -547,7 +518,7 @@ class AdminUser(APIView):
 
         try:
             update_user_info(request, user=user_obj, password=password, is_active=is_active, is_staff=is_staff,
-                             role=role, nickname=name, login_id=login_id, contact_email=contact_email,
+                             nickname=name, login_id=login_id, contact_email=contact_email,
                              institution_name=institution, id_in_org=id_in_org, unit=unit, phone=phone,
                              monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
         except Exception as e:

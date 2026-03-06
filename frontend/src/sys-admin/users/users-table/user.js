@@ -209,13 +209,7 @@ const User = ({
                     closeShowDropdownIcon={onMouseLeave}
                   />
                 ) : (!user.org_id ? (
-                  <ActiveStatusEditor
-                    isShowDropdownIcon={highlight}
-                    currentOption={roleOption}
-                    menuOptions={roleOptions}
-                    onChangeOption={(v) => onModify(email, 'role', v)}
-                    closeShowDropdownIcon={onMouseLeave}
-                  />
+                  roleOption.name || '--'
                 ) : (
                   <>
                     {'--'}

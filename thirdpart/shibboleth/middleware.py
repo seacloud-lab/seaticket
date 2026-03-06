@@ -87,7 +87,6 @@ class ShibbolethRemoteUserMiddleware(RemoteUserMiddleware):
             user.save()
             # call make profile.
             self.make_profile(user, shib_meta)
-            user_role = self.update_user_role(user, shib_meta)
 
             #setup session.
             self.setup_session(request)
@@ -177,17 +176,6 @@ class ShibbolethRemoteUserMiddleware(RemoteUserMiddleware):
                     return od[k]
 
         return None
-
-    def update_user_role(self, user, shib_meta):
-        affiliation = shib_meta.get('affiliation', '')
-        if not affiliation:
-            return
-
-        for e in affiliation.split(';'):
-            role = self._get_role_by_affiliation(e)
-            if role:
-                User.objects.update_role(user.email, role)
-                return role
 
     def setup_session(self, request):
         """

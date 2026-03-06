@@ -2,8 +2,9 @@
 import logging
 
 from django.conf import settings
-from seahub.constants import DEFAULT_USER, GUEST_USER, \
-    DEFAULT_ADMIN, SYSTEM_ADMIN, DAILY_ADMIN, AUDIT_ADMIN, ORG_DEFAULT
+from seahub.constants import DEFAULT_USER, DEFAULT_ADMIN, SYSTEM_ADMIN, \
+    DAILY_ADMIN, AUDIT_ADMIN, TEAM_FREE, TEAM_START, TEAM_PRO, \
+        TEAM_BUSINESS, TEAM_ENTERPRISE
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -44,27 +45,39 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
     DEFAULT_USER: {
         'can_add_project': True,
         'can_add_group': True,
-        'can_use_global_address_book': True,
-        'can_invite_guest': False,
-        'can_generate_external_link': True,
-        'can_use_advanced_permissions': True,
-        'can_use_advanced_customization': True,
-        'can_use_automation_rules': True,
+        'can_use_saml': False,
         'monthly_api_call_limit_per_user': -1,
-        'ai_credit_per_user': -1
     },
-    GUEST_USER: {
-        'can_add_project': False,
-        'can_add_group': False,
-        'can_use_global_address_book': False,
-    },
-    ORG_DEFAULT: {
+    TEAM_FREE: {
         'can_add_project': True,
         'can_add_group': True,
-        'can_use_advanced_customization': False,
+        'can_use_saml': False,
+        'monthly_api_call_limit_per_user': -1,
+    },
+    TEAM_START: {
+        'can_add_project': True,
+        'can_add_group': True,
+        'can_use_saml': False,
+        'monthly_api_call_limit_per_user': -1,
+    },
+    TEAM_PRO: {
+        'can_add_project': True,
+        'can_add_group': True,
+        'can_use_saml': False,
+        'monthly_api_call_limit_per_user': -1,
+    },
+    TEAM_BUSINESS: {
+        'can_add_project': True,
+        'can_add_group': True,
         'can_use_saml': True,
-        'monthly_api_call_limit_per_user': -1
-    }
+        'monthly_api_call_limit_per_user': -1,
+    },
+    TEAM_ENTERPRISE: {
+        'can_add_project': True,
+        'can_add_group': True,
+        'can_use_saml': True,
+        'monthly_api_call_limit_per_user': -1,
+    },
 }
 
 try:

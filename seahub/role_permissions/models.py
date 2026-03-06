@@ -40,13 +40,6 @@ class UserRoleManager(models.Manager):
         user_role.save(using=self._db)
         return role
 
-    def update_user_role(self, username, role):
-        """ Update admin role.
-        """
-        user_role = self.get(email=username)
-        user_role.role = role
-        user_role.save(using=self._db)
-        return user_role
 
     def get_user_role(self, username):
         """ Get user role of a user.

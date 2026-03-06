@@ -219,11 +219,6 @@ def oauth_callback(request):
         logger.error(e)
         return render_error(request, _('Error, please contact administrator: contact_email must be unique and might already be in use.'))
 
-    # assign user role
-    user_role = oauth_user_info.get('user_role', '')
-    if user_role:
-        User.objects.update_role(username, user_role)
-
     # assign id_in_org
     id_in_org = oauth_user_info.get('id_in_org', '')
     org_id = -1
