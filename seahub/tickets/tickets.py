@@ -949,8 +949,7 @@ class TicketAPIView(APIView):
         # Rename activity_type to type_description for frontend
         for activity in new_activities:
             activity.pop('field_name', None)
-            activity['type_description'] = activity.pop('activity_type', None)
-            activity['type'] = activity['type_description'].split('_')[-1]
+            activity['type'] = activity.pop('activity_type', None)
 
         return Response({'success': True, 'activities': new_activities})
 
@@ -1511,8 +1510,7 @@ class TicketActivitiesAPIView(APIView):
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
-                'type_description': a.get('activity_type'),
-                'type': a.get('activity_type').split('_')[-1],
+                'type': a.get('activity_type'),
                 'field_key': field_key,
                 'old_value': old_value,
                 'new_value': new_value,
