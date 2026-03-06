@@ -103,6 +103,7 @@ class KnowledgeBaseIOStatus(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         if not resp.ok:
             return api_error(resp.status_code, error_msg)
+
         return Response(resp_json)
 
 
