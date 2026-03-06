@@ -4,7 +4,7 @@ import json
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
+from seahub.portal.permissions import PortalChatPermission
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -13,8 +13,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_same_org_permission, check_ai_limit, delete_portal_sessions
-from seahub.utils.decorators import require_org_context
+from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import get_ai_reply
 
@@ -45,12 +44,6 @@ def get_project_or_error(project_uuid):
     return project, None
 
 
-def check_portal_permission(user, project):
-    if not check_same_org_permission(user, project.workspace):
-        return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-    return None
-
-
 def get_session_or_error(session_uuid, username):
     session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
     if not session:
@@ -77,16 +70,11 @@ def gen_portal_message_id(session_uuid, max_try=5):
 
 class PortalChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid):
         project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        error = check_portal_permission(request.user, project)
         if error:
             return error
 
@@ -98,7 +86,6 @@ class PortalChatSessionsView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-    @require_org_context
     def post(self, request, project_uuid):
         """Create a new portal chat session"""
         session_name = request.data.get('session_name', '')
@@ -106,10 +93,6 @@ class PortalChatSessionsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
 
         project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        error = check_portal_permission(request.user, project)
         if error:
             return error
 
@@ -127,10 +110,9 @@ class PortalChatSessionsView(APIView):
 
 class PortalChatSessionView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def put(self, request, project_uuid, session_uuid):
         """Modify portal chat session"""
         session_name = request.data.get('session_name', '')
@@ -138,10 +120,6 @@ class PortalChatSessionView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
 
         project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        error = check_portal_permission(request.user, project)
         if error:
             return error
 
@@ -157,14 +135,9 @@ class PortalChatSessionView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-    @require_org_context
     def delete(self, request, project_uuid, session_uuid):
         """Delete portal chat session"""
         project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        error = check_portal_permission(request.user, project)
         if error:
             return error
 
@@ -183,17 +156,12 @@ class PortalChatSessionView(APIView):
 class PortalChatMessagesView(APIView):
     """Portal Chat Messages API - Get message history"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def get(self, request, project_uuid, session_uuid):
         """Retrieve the message list of the portal chat session"""
         project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        error = check_portal_permission(request.user, project)
         if error:
             return error
 
@@ -213,10 +181,9 @@ class PortalChatMessagesView(APIView):
 class PortalChatView(APIView):
     """Portal Chat API - Send message and get AI reply"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context
     def post(self, request, project_uuid):
         """Send message and get AI reply"""
         query = request.data.get('query')
@@ -237,10 +204,6 @@ class PortalChatView(APIView):
         if error:
             return error
 
-        error = check_portal_permission(request.user, project)
-        if error:
-            return error
-
         username = request.user.username
         session, error = get_session_or_error(session_uuid, username)
         if error:
@@ -250,7 +213,7 @@ class PortalChatView(APIView):
             PortalChatMessages.objects.clear_context(session_uuid, username)
 
         # Check AI quota
-        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
         if check_ai_limit(username, org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 

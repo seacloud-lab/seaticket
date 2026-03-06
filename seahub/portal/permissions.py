@@ -88,3 +88,19 @@ class PortalTicketPermission(BasePermission):
             return True
 
         return False
+
+
+class PortalChatPermission(BasePermission):
+    def has_permission(self, request, view):
+        project_uuid, project, _ = _get_project_and_settings(request, view)
+        if not project:
+            return False
+
+        user = getattr(request, 'user', None)
+        if user and getattr(user, 'is_authenticated', False):
+            return check_same_org_permission(user, project.workspace)
+
+        if _is_external_member(request, project_uuid):
+            return True
+
+        return False

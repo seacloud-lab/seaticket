@@ -54,7 +54,7 @@
             needPassword: {% if need_password %}true{% else %}false{% endif %},
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
-            llmModels: {{ llm_models|safe }},
+            llmModels: {{ llm_models|default:"[]"|safe }},
         }
      };
 </script>
