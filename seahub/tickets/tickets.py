@@ -947,6 +947,11 @@ class TicketAPIView(APIView):
 
         send_ticket_update_msg(project_uuid)
 
+        # Rename activity_type to type_description for frontend
+        for activity in new_activities:
+            activity.pop('field_name', None)
+            activity['type_description'] = activity.pop('activity_type', None)
+
         return Response({'success': True, 'activities': new_activities})
 
     @require_org_context
@@ -1506,7 +1511,7 @@ class TicketActivitiesAPIView(APIView):
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
-                'activity_type': a.get('activity_type'),
+                'type_description': a.get('activity_type'),
                 'field_key': field_key,
                 'old_value': old_value,
                 'new_value': new_value,
