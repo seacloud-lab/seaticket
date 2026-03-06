@@ -811,8 +811,6 @@ msgstr "确定"
 msgid "No"
 msgstr "取消"
 
-#: seahub/templates/choose_register.html:3
-#: seahub/templates/choose_register.html:8
 #: seahub/templates/organizations/org_register.html:4
 #: seahub/templates/organizations/org_register.html:13
 #: seahub/templates/organizations/sms_org_register.html:4

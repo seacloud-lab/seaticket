@@ -19,9 +19,8 @@ from seahub.auth import login as auth_login
 from seahub.auth import get_backends
 from seahub.base.accounts import User
 from seahub.profile.models import Profile
-from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
-from seahub.settings import AVATAR_FILE_STORAGE, USE_PHONE_REGISTRATION_BY_DEFAULT
+from seahub.settings import AVATAR_FILE_STORAGE
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -33,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 def is_registered_user(email):
     """
-    Check whether user is registerd.
+    Check whether user is registered.
 
     """
     try:
@@ -124,28 +123,6 @@ def custom_css_view(request):
     file_content = CUSTOM_CSS
     response = HttpResponse(content=file_content, content_type='text/css')
     return response
-
-
-def choose_register(request):
-    """
-    Choose register
-    """
-    source = request.GET.get('source', None)
-    invitation_token = request.GET.get('invitation_token', None)
-
-    login_bg_image_path = get_login_bg_image_path()
-    response = render(request, 'choose_register.html', {
-        'login_bg_image_path': login_bg_image_path,
-        'use_phone_registration_by_default': USE_PHONE_REGISTRATION_BY_DEFAULT,
-    })
-
-    if source:
-        response.set_cookie('REGISTRATION_SOURCE', source)
-    if invitation_token:
-        response.set_cookie('INVITATION_TOKEN', invitation_token)
-
-    return response
-
 
 @login_required
 def seaqa_fake_view(request, **kwargs):
