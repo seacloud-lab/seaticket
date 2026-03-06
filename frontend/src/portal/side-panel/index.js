@@ -24,7 +24,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
         <div className="sea-qa-portal-side-panel-icon">
           <i className="project-icon icon-color-white icon-club-members"></i>
         </div>
-        <h3>support portal</h3>
+        <h3>{gettext('Support portal')}</h3>
       </div>
       <div className="sea-qa-portal-navigation">
         {navItems.map(item => (
@@ -43,7 +43,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
             title={gettext('Log in')}
           >
-            <Icon symbol="external-portal" className="sea-qa-portal-nav-item-icon" />
+            <Icon symbol="support-portal" className="sea-qa-portal-nav-item-icon" />
             <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
           </div>
         )}

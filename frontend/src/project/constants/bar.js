@@ -8,7 +8,7 @@ export const BAR_TYPE = {
   TRASH: 'tickets/trash',
   CONNECTION: 'connections',
   SETTINGS: 'settings',
-  EXTERNAL_PORTAL: 'external-portal',
+  SUPPORT_PORTAL: 'support-portal',
   INBOX: 'inbox',
   KNOWLEDGE: 'knowledge-base',
   KNOWLEDGE_TRASH: 'knowledge/trash',
@@ -39,10 +39,10 @@ export const BAR_TYPE_CONFIG = {
     name: gettext('Settings'),
     icon: 'set-up'
   },
-  [BAR_TYPE.EXTERNAL_PORTAL]: {
-    key: BAR_TYPE.EXTERNAL_PORTAL,
-    name: gettext('External portal'),
-    icon: 'external-portal'
+  [BAR_TYPE.SUPPORT_PORTAL]: {
+    key: BAR_TYPE.SUPPORT_PORTAL,
+    name: gettext('Support portal'),
+    icon: 'support-portal'
   },
   [BAR_TYPE.ANALYZE]: {
     key: BAR_TYPE.ANALYZE,

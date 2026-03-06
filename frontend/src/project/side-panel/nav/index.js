@@ -14,7 +14,7 @@ const Nav = ({ nav, level, activeBar, onClick }) => {
   const isActive = activeBar[0] === key;
 
   const handleClick = useCallback(() => {
-    if (key === BAR_TYPE.EXTERNAL_PORTAL) {
+    if (key === BAR_TYPE.SUPPORT_PORTAL) {
       const { origin } = window.location;
       const url = `${origin}${siteRoot}${isProjectAdmin ? 'portal-edit' : 'portal'}/${projectUuid}/`;
       window.open(url);
