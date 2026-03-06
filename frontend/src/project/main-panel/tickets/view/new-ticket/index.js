@@ -7,7 +7,7 @@ import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
-import { CollaboratorsSettings, TypeSettings, RateSettings, DueDateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TypeSettings, PrioritySettings, DueDateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -197,7 +197,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </div>
           </div>
           <div className="sea-qa-project-ticket-other-settings">
-            <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
+            <PrioritySettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
             <CollaboratorsSettings id="assignees-editor-popover" isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
             <TagsSettings
               id="tags-editor-popover"

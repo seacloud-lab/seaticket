@@ -14,7 +14,7 @@ import {
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
-  CollaboratorsSettings, TypeSettings, RateSettings,
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
@@ -497,7 +497,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
+          <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings
             id="tags-editor-popover"

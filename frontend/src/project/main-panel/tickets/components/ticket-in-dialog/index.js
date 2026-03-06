@@ -6,7 +6,7 @@ import { CenteredError, CenteredLoading } from '@/components';
 import { gettext, lang } from '@/constants';
 import { useTags } from '@/project/hooks';
 import {
-  CollaboratorsSettings, TypeSettings, RateSettings,
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../ticket-settings';
 import Comment from '../comment';
@@ -90,7 +90,7 @@ const TicketInDialog = ({
           })}
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <RateSettings isReadonly={true} value={priority} />
+          <PrioritySettings isReadonly={true} value={priority} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Assignees')} value={assignees} />
           <TagsSettings
             id="tags-editor-popover"

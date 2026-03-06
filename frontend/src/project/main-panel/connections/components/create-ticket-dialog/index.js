@@ -4,7 +4,7 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { ticketsAPI, connectionsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
-import { CollaboratorsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
+import { CollaboratorsSettings, TypeSettings, PrioritySettings } from '../../../tickets/components/ticket-settings';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { useData, useMetadata, useTags } from '@/project/hooks';
@@ -146,7 +146,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
               </Form>
             </div>
             <div className="sea-qa-create-ticket-dialog-other-settings">
-              <RateSettings isReadonly={isLoading} value={priority} onChange={setPriority} />
+              <PrioritySettings isReadonly={isLoading} value={priority} onChange={setPriority} />
               <CollaboratorsSettings isReadonly={isLoading} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
               <TagsSettings
                 isReadonly={isLoading}

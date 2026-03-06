@@ -7,7 +7,7 @@ export { default as TicketInDialog } from './ticket-in-dialog';
 export {
   CollaboratorsSettings,
   TypeSettings,
-  RateSettings,
+  PrioritySettings,
   StateSettings,
   SubStateSettings,
 } from './ticket-settings';

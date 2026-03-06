@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Collaborator from './collaborator';
 import { isValidEmail } from '@/utils/validate';
 
-const AsyncCollaborator = ({ value, mediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
+const AsyncCollaborator = ({ className, value, mediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
   const [collaborator, setCollaborator] = useState(null);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ const AsyncCollaborator = ({ value, mediaUrl, api, collaborators, collaboratorsC
   if (!collaborator) return null;
 
   return (
-    <Collaborator collaborator={collaborator}>
+    <Collaborator collaborator={collaborator} className={className}>
       {children}
     </Collaborator>
   );

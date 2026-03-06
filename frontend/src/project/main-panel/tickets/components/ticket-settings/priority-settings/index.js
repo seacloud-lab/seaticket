@@ -8,7 +8,7 @@ import { isEsc, isEnter, isP, isUpArrow, isDownArrow } from '@/utils/hotkey';
 
 import './index.css';
 
-const RateSettings = ({
+const PrioritySettings = ({
   isReadonly,
   value,
   className = 'mb-4',
@@ -78,7 +78,7 @@ const RateSettings = ({
     };
   }, [onHotKey]);
 
-  const rateOption = PRIORITIES.find(o => o.value === value);
+  const option = PRIORITIES.find(o => o.value === value);
 
   return (
     <>
@@ -87,9 +87,9 @@ const RateSettings = ({
           {gettext('Priority')}
         </CustomizeLabel>
         <div className="ticket-rate-formatter" onClick={openEditor} ref={editorRef}>
-          <div className={classnames('d-flex align-items-center', { 'tip-default': !rateOption.value })}>
-            {rateOption.value ? (<Icon className="mr-1" symbol={rateOption.icon} title={rateOption.name}/>) : '' }
-            {gettext(rateOption.name)}
+          <div className={classnames('d-flex align-items-center', { 'tip-default': !option.value })}>
+            {option.value ? (<Icon className="mr-1" symbol={option.icon} title={option.name}/>) : '' }
+            {gettext(option.name)}
           </div>
         </div>
       </div>
@@ -108,4 +108,4 @@ const RateSettings = ({
   );
 };
 
-export default RateSettings;
+export default PrioritySettings;
