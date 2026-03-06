@@ -111,7 +111,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'y7=z$9*0+^@sdbbcibd9&e9&z-mu087!ee=efsjvbrs2wfbkr%'
+SECRET_KEY = ''
 
 ENABLE_REMOTE_USER_AUTHENTICATION = False
 
@@ -852,3 +852,6 @@ DEFAULT_FROM_EMAIL = configs.get('DEFAULT_FROM_EMAIL', DEFAULT_FROM_EMAIL)
 SERVER_EMAIL = configs.get('SERVER_EMAIL', EMAIL_HOST_USER)
 
 SECRET_KEY = configs.get('SECRET_KEY', SECRET_KEY)
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY is required in configs")
+
