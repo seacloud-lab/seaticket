@@ -21,6 +21,7 @@ const Agent = ({ title }) => {
     hasMore,
     loadMore,
     refresh,
+    updateRunLog,
   } = useAgentRunLogs();
   const [isExecuting, setIsExecuting] = React.useState(false);
 
@@ -32,7 +33,7 @@ const Agent = ({ title }) => {
         const action = actions.find(a => a.id === actionId);
         if (action) {
           return agentAPI.confirmAgentAction(projectUuid, run.id, actionId).then(() => {
-            refresh();
+            updateRunLog(run.id);
           });
         }
       }
@@ -41,22 +42,22 @@ const Agent = ({ title }) => {
       const directAction = directActions.find(a => a.id === actionId);
       if (directAction) {
         return agentAPI.confirmAgentAction(projectUuid, run.id, actionId).then(() => {
-          refresh();
+          updateRunLog(run.id);
         });
       }
     }
-  }, [runLogs, refresh]);
+  }, [runLogs, updateRunLog]);
 
   const handleUpdateContent = useCallback((runId, actionId, content) => {
     return agentAPI.updateAgentAction(projectUuid, runId, actionId, { content }).then(() => {
       toaster.success(gettext('Content updated'));
-      refresh();
+      updateRunLog(runId);
     }).catch(err => {
       console.error('Failed to update action content:', err);
       toaster.danger(gettext('Failed to update content'));
       throw err;
     });
-  }, [refresh]);
+  }, [updateRunLog]);
 
   const handleCancelAction = useCallback((actionId) => {
     for (const run of runLogs) {
@@ -66,7 +67,7 @@ const Agent = ({ title }) => {
         const action = actions.find(a => a.id === actionId);
         if (action) {
           return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then(() => {
-            refresh();
+            updateRunLog(run.id);
           });
         }
       }
@@ -75,11 +76,11 @@ const Agent = ({ title }) => {
       const directAction = directActions.find(a => a.id === actionId);
       if (directAction) {
         return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then(() => {
-          refresh();
+          updateRunLog(run.id);
         });
       }
     }
-  }, [runLogs, refresh]);
+  }, [runLogs, updateRunLog]);
 
   const handleExecuteNow = useCallback(() => {
     setIsExecuting(true);

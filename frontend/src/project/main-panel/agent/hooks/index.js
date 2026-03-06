@@ -97,12 +97,21 @@ export const useAgentRunLogs = () => {
     loadRunLogs(1);
   }, [loadRunLogs]);
 
+  const updateRunLog = useCallback((runId) => {
+    return agentAPI.getAgentRunDetails(projectUuid, runId).then(res => {
+      setRunLogs(prev => prev.map(run => run.id === runId ? res.data : run));
+    }).catch(err => {
+      console.error('Failed to refresh run log:', err);
+    });
+  }, []);
+
   return {
     runLogs,
     isLoading,
     hasMore,
     loadMore,
     refresh,
+    updateRunLog,
   };
 };
 
