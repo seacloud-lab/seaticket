@@ -542,23 +542,13 @@ def compare_ticket_changes(old_ticket, new_data):
     if 'tags' in new_data:
         old_tags = set(old_ticket.get('tags') or [])
         new_tags = set(new_data['tags'] or [])
-        added = new_tags - old_tags
-        removed = old_tags - new_tags
-        if added:
-            changes.append(('tags_added', 'tags', None, list(added)))
-        if removed:
-            changes.append(('tags_removed', 'tags', list(removed), None))
+        changes.append(('tags_changed', 'tags', list(old_tags), list(new_tags)))
 
     # assignees changed
     if 'assignees' in new_data:
         old_assignees = set(old_ticket.get('assignees') or [])
         new_assignees = set(new_data['assignees'] or [])
-        added = new_assignees - old_assignees
-        removed = old_assignees - new_assignees
-        if added:
-            changes.append(('assignees_added', 'assignees', None, list(added)))
-        if removed:
-            changes.append(('assignees_removed', 'assignees', list(removed), None))
+        changes.append(('assignees_changed', 'assignees', list(old_assignees), list(new_assignees)))
 
     return changes
 
