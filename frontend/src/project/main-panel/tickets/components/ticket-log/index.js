@@ -6,9 +6,9 @@ import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
-import ModifyTip from './modify-tip';
-import AddTip from './add-tip';
-import RemoveTip from './remove-tip';
+import ModifyLog from './modify-log';
+import AddLog from './add-log';
+import RemoveLog from './remove-log';
 import Tag from '@/sea-metadata/components/tag';
 import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -74,68 +74,75 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       case LOG_TYPE.PRIORITY_CHANGED: {
         const oldValueOption = PRIORITY_MAP[old_value + ''] || PRIORITY_MAP['0'];
         const newValueOption = PRIORITY_MAP[new_value + ''] || PRIORITY_MAP['0'];
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
-            oldValue={(
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name,
+            oldValue: (
               <Option
                 option={{ name: oldValueOption.name, color: oldValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: oldValueOption.icon_color ? '#fff' : '#212529' }}
                 className="sea-ticket-log-removed"
               />
-            )}
-            newValue={(
+            ),
+            newValue: (
               <Option option={{ name: newValueOption.name, color: newValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: newValueOption.icon_color ? '#fff' : '#212529' }} />
-            )}
-          />
-        );
+            ),
+          }
+        ];
+        return (<ModifyLog modifies={modifies} />);
       }
       case LOG_TYPE.TITLE_CHANGED: {
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TITLE].op_name}
-            oldValue={(<span className="sea-ticket-log-removed">{old_value}</span>)}
-            newValue={new_value}
-          />);
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TITLE].op_name,
+            oldValue: (<span className="sea-ticket-log-removed">{old_value}</span>),
+            newValue: new_value,
+          }
+        ];
+        return (<ModifyLog modifies={modifies} />);
       }
       case LOG_TYPE.STATE_CHANGED: {
         const oldValueOption = getRowById(statesData, old_value + '');
         const newValueOption = getRowById(statesData, new_value + '');
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name,
+            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            newValue: (<Option option={newValueOption} />),
+          }
+        ];
 
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name}
-            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
-            newValue={(<Option option={newValueOption} />)}
-          />
-        );
+        return (<ModifyLog modifies={modifies}/>);
       }
       case LOG_TYPE.SUBSTATE_CHANGED: {
         const oldValueOption = getRowById(substatesData, old_value + '');
         const newValueOption = getRowById(substatesData, new_value + '');
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name,
+            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            newValue: (<Option option={newValueOption} />),
+          }
+        ];
 
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name}
-            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
-            newValue={(<Option option={newValueOption} />)}
-          />
-        );
+        return (<ModifyLog modifies={modifies}/>);
       }
       case LOG_TYPE.TYPE_CHANGED: {
         const oldValueOption = getRowById(typesData, old_value + '');
         const newValueOption = getRowById(typesData, new_value + '');
 
         if (!old_value) {
-          return (<AddTip name={gettext('added the type')} value={(<Option option={newValueOption} />)}/>);
+          return (<AddLog name={gettext('added the type')} value={(<Option option={newValueOption} />)}/>);
         }
 
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
-            oldValue={(<Option option={oldValueOption} className="sea-ticket-log-removed" />)}
-            newValue={(<Option option={newValueOption} />)}
-          />
-        );
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name,
+            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            newValue: (<Option option={newValueOption} />),
+          }
+        ];
+
+        return (<ModifyLog modifies={modifies} />);
       }
       case LOG_TYPE.STATE_SUBSTATE_CHANGED: {
         const { field_key } = activity;
@@ -150,31 +157,25 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const substateOldValueOption = getRowById(substatesData, substateOldValue + '');
         const substateNewValueOption = getRowById(substatesData, substateNewValue + '');
 
-        return (
-          <ModifyTip
-            name={TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name}
-            oldValue={(
-              <>
-                <Option option={stateOldValueOption} className="sea-ticket-log-removed" />
-                {' - '}
-                <Option option={substateOldValueOption} className="sea-ticket-log-removed" />
-              </>
-            )}
-            newValue={(
-              <>
-                <Option option={stateNewValueOption} />
-                {' - '}
-                <Option option={substateNewValueOption} />
-              </>
-            )}
-          />
-        );
+        const modifies = [
+          {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name,
+            oldValue: (<Option option={stateOldValueOption} className="sea-ticket-log-removed" />),
+            newValue: (<Option option={stateNewValueOption} />),
+          }, {
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name,
+            oldValue: (<Option option={substateOldValueOption} className="sea-ticket-log-removed" />),
+            newValue: (<Option option={substateNewValueOption} />),
+          }
+        ];
+
+        return (<ModifyLog modifies={modifies} />);
       }
 
       // assignees
       case LOG_TYPE.ASSIGNEES_ADDED: {
         return (
-          <AddTip
+          <AddLog
             name={gettext('assigned')}
             value={(
               <>
@@ -186,7 +187,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       }
       case LOG_TYPE.ASSIGNEES_REMOVED: {
         return (
-          <RemoveTip
+          <RemoveLog
             name={gettext('unassigned')}
             value={(
               <>
@@ -201,7 +202,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return (
           <>
             {removed.length > 0 && (
-              <RemoveTip
+              <RemoveLog
                 name={gettext('unassigned')}
                 value={(
                   <>
@@ -212,7 +213,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
             )}
             {added.length > 0 && removed.length > 0 && (<>{gettext('and')}{' '}</>)}
             {added.length > 0 && (
-              <AddTip
+              <AddLog
                 name={gettext('assigned')}
                 value={(
                   <>
@@ -228,7 +229,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       // tags
       case LOG_TYPE.TAGS_ADDED: {
         return (
-          <AddTip
+          <AddLog
             name={gettext('added tags')}
             value={(
               <>
@@ -244,7 +245,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       }
       case LOG_TYPE.TAGS_REMOVED: {
         return (
-          <RemoveTip
+          <RemoveLog
             name={gettext('removed tags')}
             value={(
               <>
@@ -265,7 +266,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return (
           <>
             {removedTags.length > 0 && (
-              <RemoveTip
+              <RemoveLog
                 name={gettext('removed tags')}
                 value={(
                   <>
@@ -276,7 +277,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
             )}
             {addedTags.length > 0 && removed.length > 0 && (<>{gettext('and')}{' '}</>)}
             {addedTags.length > 0 && (
-              <AddTip
+              <AddLog
                 name={gettext('added tags')}
                 value={(
                   <>

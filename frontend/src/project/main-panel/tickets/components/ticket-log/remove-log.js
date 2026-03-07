@@ -1,13 +1,13 @@
 import React from 'react';
 import { gettext } from '@/constants';
 
-const AddTip = ({ name, value }) => {
+const RemoveLog = ({ name, value }) => {
   return (
     <>
-      {name || gettext('added')}
+      {name || gettext('removed')}
       {value}
     </>
   );
 };
 
-export default AddTip;
+export default RemoveLog;
