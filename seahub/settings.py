@@ -860,8 +860,8 @@ GITHUB_WEBHOOK_SECRET = configs.get('GITHUB_WEBHOOK_SECRET')
 GITHUB_APP_ID = configs.get('GITHUB_APP_ID')
 GITHUB_PRIVATE_KEY_PATH = configs.get('GITHUB_PRIVATE_KEY_PATH', '')
 
-if not GITHUB_PRIVATE_KEY_PATH:
-    raise RuntimeError('GITHUB_PRIVATE_KEY_PATH configured error.')
-
-with open(GITHUB_PRIVATE_KEY_PATH, "r") as f:
-    GITHUB_PRIVATE_KEY = f.read()
+try:
+    with open(GITHUB_PRIVATE_KEY_PATH, "r") as f:
+        GITHUB_PRIVATE_KEY = f.read()
+except:
+    GITHUB_PRIVATE_KEY = ''

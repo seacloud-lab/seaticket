@@ -115,7 +115,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     if (isGithub) {
       const repository = _config.repository.repository;
       delete _config['repository'];
-      _config['html_url'] = repository['html_url'];
+      _config['repository'] = repository['html_url'];
       _config['installation_id'] = repository['installation_id'];
     }
 

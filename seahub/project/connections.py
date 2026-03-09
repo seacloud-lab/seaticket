@@ -546,6 +546,9 @@ class GithubWebhookView(APIView):
             error_msg = 'Signature verification failed.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        if event == 'ping':
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
         payload = request.data
         action = payload.get('action')
         installation_id = payload.get('installation').get('id')
@@ -558,7 +561,7 @@ class GithubWebhookView(APIView):
 
         if not github_app_installation:
             error_msg = 'The app has not been installed on the sea-ticket'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         repository_html_url = payload.get('repository').get('html_url')
         if not repository_html_url:

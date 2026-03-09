@@ -18,7 +18,7 @@ from seahub.project.connections import (
     ConnectionFileView,
 )
 from seahub.utils.storage import FileNotFound
-from tests.knowledge_base.conftest import project_creator
+from seahub.settings import GITHUB_WEBHOOK_SECRET
 
 
 
@@ -532,15 +532,9 @@ class TestGithubWebhookView:
     def _signature(self, secret, body):
         return 'sha256=' + hmac.new(secret.encode(), msg=body, digestmod=hashlib.sha256).hexdigest()
 
-    def test_post_missing_connection_id(self, factory):
-        request = factory.post('/webhook/github', data={}, format='json')
-        resp = GithubWebhookView.as_view()(request)
-        assert resp.status_code == 400
-
     def test_post_signature_verification_failed(self, factory, connection_factory):
-        connection = connection_factory(connection_type='github_issue', config={'webhook_secret': 's'})
         request = factory.post(
-            f'/webhook/github?connection_id={connection.id}',
+            f'/webhook/github/',
             data={},
             format='json',
             HTTP_X_HUB_SIGNATURE_256='sha256=bad',
@@ -550,30 +544,34 @@ class TestGithubWebhookView:
         assert resp.status_code == 403
 
     def test_post_ignore_event(self, factory, connection_factory):
-        connection = connection_factory(connection_type='github_issue', config={'webhook_secret': 's'})
+        payload = {'installation': {'id': 12345}, 'repository': {'html_url': 'https://github.com/xxx/xxx'}}
         request = factory.post(
-            f'/webhook/github?connection_id={connection.id}',
-            data={},
+            f'/webhook/github/',
+            data=payload,
             format='json',
             HTTP_X_GITHUB_EVENT='ping',
             HTTP_X_HUB_SIGNATURE_256='sha256=ok',
         )
-        request.META['HTTP_X_HUB_SIGNATURE_256'] = self._signature('s', request.body)
+        request.META['HTTP_X_HUB_SIGNATURE_256'] = self._signature(GITHUB_WEBHOOK_SECRET, request.body)
         resp = GithubWebhookView.as_view()(request)
         assert resp.status_code == 200
 
     def test_post_success_calls_update(self, factory, connection_factory):
-        connection = connection_factory(connection_type='github_issue', config={'webhook_secret': 's'})
-        payload = {'action': 'opened', 'issue': {'id': 1}}
+        payload = {'action': 'opened', 'issue': {'id': 1}, 'installation': {'id': 12345}, 'repository': {'html_url': 'https://github.com/xxx/xxx'}}
         request = factory.post(
-            f'/webhook/github?connection_id={connection.id}',
+            f'/webhook/github/',
             data=payload,
             format='json',
             HTTP_X_GITHUB_EVENT='issues',
             HTTP_X_HUB_SIGNATURE_256='sha256=ok',
         )
-        request.META['HTTP_X_HUB_SIGNATURE_256'] = self._signature('s', request.body)
-        with patch('seahub.project.connections.update_github_issue_by_webhook') as update_mock:
+        record = Mock()
+        record.id = 11
+        record.to_dict.return_value = {'id': 11, 'config': {"html_url": "https://github.com/xxx/xxx", "installation_id": "123456"}}
+
+        request.META['HTTP_X_HUB_SIGNATURE_256'] = self._signature(GITHUB_WEBHOOK_SECRET, request.body)
+        with patch('seahub.project.connections.ProjectGithubAppInstallation.objects.get_installation_by_installation_id', return_value=record),\
+                patch('seahub.project.connections.update_github_issue_by_webhook') as update_mock:
             resp = GithubWebhookView.as_view()(request)
         assert resp.status_code == 200
         update_mock.assert_called_once()
