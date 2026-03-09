@@ -3,14 +3,14 @@
 import os
 import sys
 import logging
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.utils.translation import gettext as _
 
 from seahub import auth
 from seahub.auth.models import SocialAuthUser
 from seahub.profile.models import Profile
-from seahub.utils import render_error, uuid_str_to_32_chars
-from seahub.project.models import IdInOrgTuple, BoundThirdPartyAccounts, _encrypt_detail
+from seahub.utils import render_error
+from seahub.project.models import IdInOrgTuple
 from seahub.base.accounts import User
 import seahub.settings as settings
 from seahub.api2.utils import get_api_token

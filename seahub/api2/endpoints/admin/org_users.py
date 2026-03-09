@@ -11,7 +11,6 @@ from rest_framework import status
 from seahub.project.models import Workspaces
 from seahub.organizations.views import is_org_staff
 from seahub.utils import is_valid_email
-from seahub.utils.licenseparse import user_number_over_limit
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.base.models import UserLastLogin
 from seahub.base.accounts import User
@@ -321,9 +320,6 @@ class AdminOrgUser(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             if active == 'true':
-                if user_number_over_limit():
-                    error_msg = 'The number of users exceeds the limit.'
-                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
                 if not user.is_active and ORG_MEMBER_QUOTA_ENABLED:
                     from seahub.organizations.models import OrgMemberQuota
                     org_members_quota = OrgMemberQuota.objects.get_quota(org_id)

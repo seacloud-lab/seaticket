@@ -30,7 +30,6 @@ from seahub.auth.decorators import login_required
 from seahub.auth.models import SocialAuthUser
 from seahub.profile.models import Profile
 from seahub.project.models import IdInOrgTuple
-from seahub.utils.licenseparse import user_number_over_limit
 from seahub.organizations.utils import can_org_use_saml
 from seahub.settings import LOGIN_REDIRECT_URL, LOGIN_REMEMBER_DAYS
 from seahub.saml.signals import saml_sso_failed
@@ -359,16 +358,6 @@ def acs(request, org_id=None):
                                            'You can connect both accounts from the personal settings of your local account.'))
         username = None
         is_new_user = True
-
-        # check user number limit by license
-        if user_number_over_limit():
-            logger.error('The number of users exceeds the license limit.')
-            # send error msg to admin
-            error_msg = 'The number of users exceeds the license limit.'
-            admins = User.objects.get_superusers()
-            for admin in admins:
-                saml_sso_failed.send(sender=None, to_user=admin.email, error_msg=error_msg)
-            return render_error(request, _('The number of users exceeds the limit.'))
 
         # check user number limit by org member quota
         if org:

@@ -4,23 +4,22 @@ import os
 import sys
 import logging
 import uuid
-from datetime import datetime
 
 from django.core.mail import send_mail
 from django.utils import translation
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from seahub.constants import DEFAULT_ADMIN, DEFAULT_USER
+from seahub.constants import DEFAULT_ADMIN, TEAM_FREE
 from seahub.profile.models import Profile
 from seahub.role_permissions.models import AdminRole
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role, \
         get_enabled_admin_role_permissions_by_role
 from seahub.utils import get_site_name, \
-    clear_token, get_system_admins, IS_EMAIL_CONFIGURED
+    clear_token, get_system_admins
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
-from seahub.auth.models import SocialAuthUser, UserQuota
+from seahub.auth.models import SocialAuthUser
 from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, \
     SASL_AUTHC_ID_ATTR
 from seahub.auth.models import EmailUser
@@ -219,7 +218,7 @@ class UserManager(object):
         if org:
             user.role = OrgSettings.objects.get_role_by_org(org)
         else:
-            user.role = DEFAULT_USER
+            user.role = TEAM_FREE
 
         if user.is_staff:
             try:
@@ -273,14 +272,14 @@ class UserPermissions(object):
     def can_connect_with_desktop_clients(self):
         return self._get_perm_by_roles('can_connect_with_desktop_clients')
 
-    def can_invite_guest(self):
-        return self._get_perm_by_roles('can_invite_guest')
-
     def can_use_advanced_permissions(self):
         return self._get_perm_by_roles('can_use_advanced_permissions')
 
     def can_use_advanced_customization(self):
         return self._get_perm_by_roles('can_use_advanced_customization')
+    
+    def can_use_saml(self):
+        return self._get_perm_by_roles('can_use_saml')
 
 class AdminPermissions(object):
     def __init__(self, user):

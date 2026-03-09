@@ -15,7 +15,6 @@ from seahub.api2.utils import api_error
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.api2.permissions import IsOrgAdminUser
 from seahub.organizations.settings import ENABLE_ORG_LOGO
-from seahub.utils.user_permissions import get_user_role
 
 logger = logging.getLogger(__name__)
 

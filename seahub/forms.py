@@ -4,7 +4,6 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from seahub.base.accounts import User
-from seahub.utils.licenseparse import user_number_over_limit
 from seahub.role_permissions.utils import get_available_roles
 
 class AddUserForm(forms.Form):
@@ -20,9 +19,6 @@ class AddUserForm(forms.Form):
     password2 = forms.CharField(widget=forms.PasswordInput())
 
     def clean_email(self):
-        if user_number_over_limit():
-            raise forms.ValidationError(_("The number of users exceeds the limit."))
-
         email = self.cleaned_data['email']
         try:
             user = User.objects.get(email=email)

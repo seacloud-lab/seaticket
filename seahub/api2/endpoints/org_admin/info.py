@@ -1,7 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 
-import requests
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,7 +12,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 
-from seahub.organizations.models import OrgMemberQuota, OrgSettings, OrgQuota, Organization, OrgUser
+from seahub.organizations.models import OrgMemberQuota, OrgSettings, Organization
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
 

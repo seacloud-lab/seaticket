@@ -19,7 +19,6 @@ from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.profile.models import Profile
 from seahub.utils import is_valid_username
-from seahub.utils.licenseparse import user_number_over_limit
 
 
 logger = logging.getLogger(__name__)
@@ -224,10 +223,6 @@ class Account(APIView):
             serializer = AccountSerializer(data=copy)
             if not serializer.is_valid():
                 return api_error(status.HTTP_400_BAD_REQUEST, serializer.errors)
-
-            if user_number_over_limit():
-                error_msg = _("The number of users exceeds the limit.")
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
             try:
                 user = User.objects.create_user(serializer.data['email'],

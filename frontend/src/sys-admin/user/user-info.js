@@ -67,10 +67,6 @@ class Content extends Component {
     this.toggleDialog('', '');
   };
 
-  updateAPICallsLimitPerUser = (value) => {
-    this.props.updateUser('monthly_api_call_limit_per_user', value);
-  };
-
   showEditIcon = (action) => {
     return (
       <IconButton

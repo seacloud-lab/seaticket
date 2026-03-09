@@ -27,7 +27,7 @@ from seahub.notifications.models import ProjectNotification
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
-from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE, DEFAULT_USER
+from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType
 
@@ -267,7 +267,7 @@ def get_ai_credit_by_username(username):
         user = User.objects.get(email=username)
         role = get_user_role(user)
     except User.DoesNotExist:
-        role = DEFAULT_USER
+        role = TEAM_FREE
 
     ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
     return ai_credit

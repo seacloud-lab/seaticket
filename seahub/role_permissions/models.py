@@ -32,19 +32,7 @@ class AdminRole(models.Model):
 
 
 class UserRoleManager(models.Manager):
-
-    def add_user_role(self, username, role):
-        """ Add user role.
-        """
-        user_role = self.model(email=username, role=role)
-        user_role.save(using=self._db)
-        return role
-
-
-    def get_user_role(self, username):
-        """ Get user role of a user.
-        """
-        return super(UserRoleManager, self).get(email=username)
+    pass
 
 
 class UserRole(models.Model):

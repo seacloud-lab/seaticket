@@ -1,11 +1,6 @@
-import requests
 import logging
 from rest_framework import status
-from django.core.cache import cache
-from django.urls import reverse
-
 from seahub.api2.utils import api_error
-from seahub.utils import gen_token, get_site_scheme_and_netloc
 from seahub.project.models import Workspaces
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role

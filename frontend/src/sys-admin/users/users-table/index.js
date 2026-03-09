@@ -149,7 +149,6 @@ const UsersTable = forwardRef(({
   }, [users, onModify]);
 
   const handleAdminRole = useCallback((userEmail, role) => {
-    console.log(userEmail, role, '----role')
     updateAdminRole(userEmail, role).then(res => {
       let newUsers = users.slice(0);
       const userIndex = newUsers.findIndex(u => u.email === userEmail);
