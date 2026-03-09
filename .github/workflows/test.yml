@@ -72,7 +72,7 @@ jobs:
         run: |
           cat > /tmp/seaqa_config.yaml <<'EOF'
           global:
-            SEAQA_WEB_SECRET_KEY: "test-secret-key"
+            SECRET_KEY: "6j)&*03yrz(%tam!amw@57ofxl$#e%wya9znt=$ktr2pgc!qfp"
             JWT_PRIVATE_KEY: "qwertyuiop"
             LLM_MODELS: []
           seaqa-web: {}
