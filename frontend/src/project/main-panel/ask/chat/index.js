@@ -397,6 +397,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
             const dataStr = line.substring(6).trim();
 
             if (dataStr === '[DONE]') {
+              _onMessage({}, { done: true });
               return messages;
             }
             if (dataStr) {
