@@ -52,7 +52,6 @@ const ResourceDetailsDialog = ({
   }, [resource, details, columns]);
 
   const url = useMemo(() => {
-    if (resource.url) return resource.url;
     return getResourceOriginalURL(type, { ...details, ...resource }, connections, columns);
   }, [type, connections, resource, details, columns]);
 
