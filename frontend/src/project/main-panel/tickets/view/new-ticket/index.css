@@ -23,6 +23,7 @@
 .sea-qa-project-new-ticket .sea-qa-project-ticket-settings {
   flex: 1;
   padding-top: 4px;
+  overflow-x: hidden;
 }
 
 .sea-qa-project-new-ticket .sea-qa-project-ticket-name {
