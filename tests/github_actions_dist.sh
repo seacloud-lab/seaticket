@@ -26,6 +26,7 @@ global:
 
 seaqa-web:
   SEAQA_EVENTS_INNER_SERVER_URL: http://127.0.0.1:6001
+  SECRET_KEY: 6j)&*03yrz(%tam!amw@57ofxl$#e%wya9znt=$ktr2pgc!qfp
 
 EOF
 
