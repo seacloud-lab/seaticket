@@ -689,3 +689,18 @@ CREATE TABLE `project_external_users` (
   KEY `project_external_users_email_idx` (`email`),
   KEY `project_external_username_idx` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `project_github_app_installation`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(36) NOT NULL,
+  `installation_id` varchar(255) NOT NULL,
+  `creator` varchar(255) NOT NULL,
+  `modifier` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `github_app_project_uuid_installation_id_0b8289a8_uniq`(`project_uuid`, `installation_id`),
+  KEY `projects_created_at_e6716f4b`(`created_at`),
+  KEY `updated_at_h3g4o9u6_key`(`updated_at`)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

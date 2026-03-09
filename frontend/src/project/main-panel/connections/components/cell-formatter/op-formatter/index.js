@@ -6,7 +6,7 @@ import { CONNECTION_TYPE } from '../../../constants';
 
 import './index.css';
 
-const WEBHOOK_SUPPORTED_TYPES = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM];
+const WEBHOOK_SUPPORTED_TYPES = [CONNECTION_TYPE.DISCOURSE_FORUM];
 
 const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onConfigureWebhook, row, handleStatusActive, column }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -9,10 +9,11 @@ import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
+import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const { server } = window.app.pageOptions;
+const { server, projectUuid } = window.app.pageOptions;
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
@@ -32,6 +33,30 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
     return c.is_custom;
   }), [columns]);
+
+  const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
+  const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
+  const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
+
+  const customSteps = useMemo(() => {
+    if (isGithub) {
+      return [
+        STEPS[0], // TYPE
+        STEPS[1], // CONFIG
+        // STEPS[2] // GITHUB
+      ];
+    }
+    if (isDiscourse) {
+      return [
+        STEPS[0], // TYPE
+        STEPS[1], // CONFIG
+        // STEPS[3] // DISCOURSE
+      ];
+    }
+    return STEPS.slice(0, 2);
+  }, [isGithub, isDiscourse]);
+
+  const step = useMemo(() => customSteps[stepIndex], [customSteps, stepIndex]);
 
   const initializeConfig = useCallback((newType) => {
     const fields = CONNECTION_FIELDS[newType] || [];
@@ -85,7 +110,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
-    onSubmit({ type, name: name.trim(), config }, () => {
+    let _config = { ...config };
+
+    if (isGithub) {
+      const repository = _config.repository.repository;
+      delete _config['repository'];
+      _config['repository'] = repository['html_url'];
+      _config['installation_id'] = repository['installation_id'];
+    }
+
+    onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
@@ -131,29 +165,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     );
   }, [name, type, config, onSubmit, onToggle]);
 
-  const typeOption = CONNECTION_TYPES.find(i => i.type === type);
-  const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
-  const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
-  const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
-
-  const customSteps = useMemo(() => {
-    if (isGithub) {
-      return [
-        STEPS[0], // TYPE
-        STEPS[1], // CONFIG
-        // STEPS[2] // GITHUB
-      ];
-    }
-    if (isDiscourse) {
-      return [
-        STEPS[0], // TYPE
-        STEPS[1], // CONFIG
-        // STEPS[3] // DISCOURSE
-      ];
-    }
-    return STEPS.slice(0, 2);
-  }, [isGithub, isDiscourse]);
-
   // eslint-disable-next-line no-unused-vars
   const handleSubmitDiscourse = useCallback(() => {
     setSubmitting(true);
@@ -168,7 +179,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     );
   }, [name, type, config, onSubmit, stepIndex]);
 
-  const step = customSteps[stepIndex];
+  const listGitHubRepositories = useCallback(() => {
+    return connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
+      const { repositories } = res.data;
+      return {
+        data: {
+          options: repositories.map(r => ({ value: r.id, repository: r, label: r.name, name: r.name })),
+        }
+      };
+    });
+  }, []);
+
+  const typeOption = CONNECTION_TYPES.find(i => i.type === type);
 
   return (
     <Modal
@@ -223,8 +245,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                   </Row>
                 );
               }
+              let api = null;
+              let row = { ...config };
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
+                api = listGitHubRepositories;
+                if (row[key]) {
+                  row[key] = row[key].value;
+                }
+              }
               return ((
-                <ConnectionConfigEditor column={c} key={key} row={config} readonly={isSubmitting} onChange={onConfigChange} />
+                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
               ));
             })}
           </div>
@@ -260,7 +290,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
           {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
           {/* {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>} */}
-          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}disabled={isSubmitting || !isValid || !name} >{gettext('Submit')}</Button>}
         </ModalFooter>
       )}
       {isDiscourse && (

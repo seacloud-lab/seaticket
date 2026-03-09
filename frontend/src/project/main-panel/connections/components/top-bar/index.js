@@ -6,7 +6,7 @@ import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_SYNC_STATUS } from '../../constants';
-import { IconButton, toaster, CenteredLoading } from '@/components';
+import { IconButton, toaster, CenteredLoading, IconTextBtn } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
@@ -18,7 +18,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
+const { server, projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
@@ -137,7 +137,15 @@ const TopBar = ({ title, modifyLocalBar }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="plus" />);
+      const currentPath = window.location.pathname + window.location.search;
+      const installGitHubAppURL = `${server}/github/install/?next=${encodeURIComponent(currentPath)}&project_uuid=${projectUuid}`;
+
+      return (
+        <>
+          {isProjectAdmin && (<IconTextBtn text={gettext('Install GitHub app')} onClick={() => location.href = installGitHubAppURL} />)}
+          <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
+        </>
+      );
     }
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
     return (

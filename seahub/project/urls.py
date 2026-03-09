@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import project_view
+from .views import project_view, github_install, github_installation_setup
 
-from .apis import ProjectRelatedUsersView, ProjectItemsSearchView
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
@@ -36,6 +36,10 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tags/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tags/(?P<children_id>[-0-9a-zA-Z]{4})/$', project_view, name='project_view'),
+
+    re_path(r'^github/install/$', github_install, name='project_github_install'),
+    re_path(r'^github/installation-setup/$', github_installation_setup, name='project_github_installation_setup'),
+
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
     # user: related users
@@ -52,8 +56,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v1-connection-row-details-by-token'),
 
     #sync data
-    re_path(r'webhook/github', GithubWebhookView.as_view(), name='github_webhook'),
-    re_path(r'webhook/discourse', DiscourseWebhookView.as_view(), name='discourse_webhook'),
+    re_path(r'^webhook/github/$', GithubWebhookView.as_view(), name='github_webhook'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/repositories/$', ProjectGithubRepositories.as_view(), name='api-v1-project-github-repositories'),
+    re_path(r'^webhook/discourse/$', DiscourseWebhookView.as_view(), name='discourse_webhook'),
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),

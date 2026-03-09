@@ -34,6 +34,7 @@ export const CONNECTION_FIELD_TYPE = {
   NUMBER: 'number',
   SYNC_STATUS: 'sync_status',
   SELECT: 'select',
+  SYNC_SELECT: 'sync_select',
   GROUP: 'group'
 };
 
@@ -148,18 +149,19 @@ export const CONNECTION_FIELDS = {
     }, {
       key: 'repository',
       name: gettext('Repository'),
-      type: CONNECTION_FIELD_TYPE.URL,
+      placeholder: gettext('Select a repository'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      can_edit_multiple_times: false,
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('The URL of the repository, like https://github.com/haiwen/seafile')
-    }, {
-      key: 'access_token',
-      name: gettext('Access token'),
-      type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
-      is_custom: true,
-      tip: gettext('Your personal access token in GitHub Developer Settings')
+    // }, {
+    //   key: 'installation_id',
+    //   name: gettext('Installation ID'),
+    //   type: CONNECTION_FIELD_TYPE.PASSWORD,
+    //   is_required: true,
+    //   is_custom: true,
+    //   tip: gettext('Your personal access token in GitHub Developer Settings')
     // }, {
     //   key: 'webhook_secret',
     //   name: gettext('Webhook secret (optional)'),

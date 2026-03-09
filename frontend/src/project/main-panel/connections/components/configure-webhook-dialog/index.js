@@ -17,9 +17,6 @@ const ConfigureWebhookDialog = ({ record, onSubmit, onToggle }) => {
 
   const defaultConnectionUrl = useMemo(() => {
     if (!record) return '';
-    if (record.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      return `${server}/webhook/github/?connection_id=${record.id}`;
-    }
     if (record.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return `${server}/webhook/discourse/?connection_id=${record.id}`;
     }

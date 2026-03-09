@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
+import base64
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects
+from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL, LLM_MODELS
+from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 
@@ -54,7 +55,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     permission = check_project_permission(request.user.username, workspace.owner)
     if not permission:
         return render_error(request, _('Permission denied'))
-    
+
     valid_llm_models = [
         llm_model
         for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
@@ -76,3 +77,60 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     }
     return render(request, 'project_view_react.html', return_dict)
 
+
+def github_install(request):
+    return_to = request.GET.get('next') or '/'
+    project_uuid = request.GET.get('project_uuid', '')
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    state = base64.b64encode((return_to + '&' + project_uuid).encode()).decode()
+    install_url = f"https://github.com/apps/{GITHUB_APP_NAME}/installations/new?state={state}"
+    return redirect(install_url)
+
+
+def github_installation_setup(request):
+    state = request.GET.get('state')
+    installation_id = request.GET.get('installation_id')
+    setup_action = request.GET.get('setup_action')
+
+    project_uuid = ''
+    if state:
+        try:
+            return_url, project_uuid = base64.b64decode(state).decode().split('&')
+        except Exception:
+            return_url = '/'
+    else:
+        return_url = '/'
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
+
+    if github_app_installation:
+        return render_error(request, _('The app has not been installed on the sea-ticket'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    username = request.user.username
+    ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
+
+    return redirect(return_url)
