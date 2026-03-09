@@ -16,6 +16,7 @@ import WorkspaceHeader from './workspace-header';
 import WorkspaceContainer from './body/workspace-container';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
+import ChangeProjectGroupDialog from '../dialog/change-project-group-dialog';
 import ProjectAPITokenDialog from '../../components/dialog/project-api-token-dialog';
 import eventBus from '@/utils/event-bus';
 
@@ -64,6 +65,7 @@ class Workspace extends React.Component {
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
       isShowAPITokenDialog: false,
+      isShowChangeProjectGroupDialog: false,
       isParsing: false,
       projectItemWidth: PROJECT_ITEM_DEFAULT_WIDTH,
       numberOfItemsPerRow: 1,
@@ -204,6 +206,14 @@ class Workspace extends React.Component {
     this.setState({
       isShowAPITokenDialog: !this.state.isShowAPITokenDialog,
       currentProject: project
+    });
+    this.onUnfreezedItem();
+  };
+
+  onChangeProjectGroupToggle = (project) => {
+    this.setState({
+      isShowChangeProjectGroupDialog: !this.state.isShowChangeProjectGroupDialog,
+      currentProject: project || null,
     });
     this.onUnfreezedItem();
   };
@@ -472,6 +482,7 @@ class Workspace extends React.Component {
             createBlankProject={this.createBlankProject}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onDeleteProjectToggle={this.onDeleteProjectToggle}
+            onChangeProjectGroupToggle={this.onChangeProjectGroupToggle}
             onAPITokenToggle={this.onAPITokenToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onFreezedItem={this.onFreezedItem}
@@ -509,6 +520,14 @@ class Workspace extends React.Component {
             projectUuid={this.state.currentProject.uuid}
             projectName={this.state.currentProject.name}
             toggle={this.onAPITokenToggle}
+          />
+        )}
+        {this.state.isShowChangeProjectGroupDialog && this.state.currentProject && (
+          <ChangeProjectGroupDialog
+            currentProject={this.state.currentProject}
+            currentWorkspace={workspace}
+            toggleDialog={this.onChangeProjectGroupToggle}
+            loadWorkspaceList={this.props.loadWorkspaceList}
           />
         )}
         {this.state.isShowRenameTableDialog &&

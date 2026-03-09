@@ -98,6 +98,9 @@ class HomeAPI {
     if (updates.icon) {
       form.append('icon', updates.icon);
     }
+    if (updates.workspace_id !== undefined && updates.workspace_id !== null) {
+      form.append('workspace_id', updates.workspace_id);
+    }
     return this.req.put(url, form);
   }
 
