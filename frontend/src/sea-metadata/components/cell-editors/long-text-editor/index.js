@@ -8,6 +8,9 @@ import { LONG_TEXT_EXCEED_LIMIT_MESSAGE, LONG_TEXT_EXCEED_LIMIT_SUGGEST } from '
 import i18n from '@/_i18n/i18n-seafile-editor';
 import context from '@/sea-metadata/context';
 import LongTextEditorUtilities from '@/utils/long-text';
+import { downloadFile } from '@/utils/download';
+
+const { projectUuid } = window.app.pageOptions;
 
 class LongTextEditor extends React.PureComponent {
 
@@ -88,6 +91,14 @@ class LongTextEditor extends React.PureComponent {
     this.props.onCommitCancel();
   };
 
+  onLinkClick = (link) => {
+    if (link.includes(`/project/${projectUuid}/`)) {
+      downloadFile(link);
+      return;
+    }
+    window.open(link, '_blank');
+  };
+
   render() {
     const { column, readOnly } = this.props;
     return (
@@ -106,6 +117,7 @@ class LongTextEditor extends React.PureComponent {
           onSaveEditorValue={this.onSaveEditorValue}
           onEditorValueChanged={this.onEditorValueChanged}
           onCloseEditorDialog={this.onCloseEditorDialog}
+          onLinkClick={this.onLinkClick}
         />
       </I18nextProvider>
     );
