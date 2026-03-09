@@ -116,11 +116,6 @@ def github_installation_setup(request):
     if not project_uuid:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
 
-    github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
-
-    if github_app_installation:
-        return render_error(request, _('The app has not been installed on the sea-ticket'))
-
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
@@ -131,6 +126,8 @@ def github_installation_setup(request):
         return render_error(request, _('Permission denied.'))
 
     username = request.user.username
-    ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
+    github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
+    if not github_app_installation:
+        ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
 
     return redirect(return_url)
