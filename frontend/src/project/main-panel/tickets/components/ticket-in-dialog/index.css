@@ -3,3 +3,7 @@
 .sea-qa-project-ticket.sea-qa-project-ticket-in-dialog {
   height: 100%;
 }
+
+.sea-qa-project-ticket.sea-qa-project-ticket-in-dialog .sea-qa-project-ticket-comment::after {
+  display: none;
+}

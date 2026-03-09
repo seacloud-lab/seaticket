@@ -10,6 +10,7 @@ export const PRIORITY_MAP = {
   '4': {
     name: gettext('Urgent'),
     icon: 'priority-01',
+    icon_color: '#ff8000',
     hotKey: '1',
     value: 4,
   },

@@ -1,18 +1,18 @@
 .sea-qa-project-ticket .sea-qa-project-ticket-header {
   width: 100%;
   display: flex;
-  height: 96px;
-  padding: 16px 0;
+  height: 86px;
+  padding: 16px 0 12px;
   flex-shrink: 0;
   flex-direction: column;
-  border-bottom: 1px solid #ddd;
-  gap: 12px;
+  border-bottom: 1px solid #eee;
+  gap: 8px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper {
   width: 100%;
   display: flex;
-  height: 30px;
+  height: 28px;
   align-items: center;
   flex-shrink: 0;
 }
@@ -43,17 +43,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 24px;
-  line-height: 1.2;
+  font-size: 18px;
+  line-height: 24px;
   font-weight: 500;
-  margin-right: 2px;
+  margin-right: 8px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-number {
   display: inline-block;
   color: #666;
-  font-size: 22px;
-  line-height: 1.2;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {

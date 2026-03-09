@@ -15,7 +15,6 @@ import './index.css';
 const Comment = ({
   isSmallScreen = false,
   isShowStatus = false,
-  showTimeline = false,
   readonly = true,
   comment,
   projectUuid,
@@ -177,7 +176,7 @@ const Comment = ({
   if (isEditComment) {
     return (
       <>
-        <div className={classnames('sea-qa-project-ticket-comment editing', className, { 'small': isSmallScreen, 'with-timeline': showTimeline && !isSmallScreen })} ref={commentRef}>
+        <div className={classnames('sea-qa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
           {!isSmallScreen && renderAvatar()}
           <div className="sea-qa-project-ticket-comment-container">
             <div className="sea-qa-project-ticket-comment-op">
@@ -262,7 +261,7 @@ const Comment = ({
   }
 
   return (
-    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen, 'with-timeline': showTimeline && !isSmallScreen })} ref={commentRef}>
+    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
       <div className="sea-qa-project-ticket-comment-container">
         <div className="sea-qa-project-ticket-comment-op">

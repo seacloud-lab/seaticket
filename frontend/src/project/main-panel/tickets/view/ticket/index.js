@@ -17,13 +17,10 @@ import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../../components/ticket-settings';
-import Comment from '../../components/comment';
-import Activity from '../../components/activity';
+import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
 import StatusToggleButton from './status-toggle-btn';
-import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
 import { useData, useTags, useMetadata } from '@/project/hooks';
@@ -371,13 +368,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     if (!ticket) return [];
     const { comments = [] } = ticket;
     const items = [
-      ...comments.map(c => ({ ...c, itemType: 'comment' })),
-      ...activities.map(a => ({ ...a, itemType: 'activity' }))
+      ...comments.map(c => ({ ...c, type: 'comment' })),
+      ...activities.map(a => ({ ...a, type: 'log' }))
     ];
     // use original time for sorting: comments use _created_time, activities use created_time
     return items.sort((a, b) => {
-      const timeA = a.itemType === 'comment' ? a._created_time : a.created_time;
-      const timeB = b.itemType === 'comment' ? b._created_time : b.created_time;
+      const timeA = a.type === 'comment' ? a._created_time : a.created_time;
+      const timeB = b.type === 'comment' ? b._created_time : b.created_time;
       return new Date(timeA) - new Date(timeB);
     });
   }, [ticket, activities]);
@@ -430,23 +427,21 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             isSmallScreen={isSmallScreen}
             comment={ticket}
             isShowStatus={true}
-            showTimeline={timeline.length > 0}
+            className={classnames({ 'd-none-after': timeline.length === 0 })}
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
             onModify={onContentChange}
           />
           {timeline.map((item, index) => {
-            const hasNextItem = index < timeline.length - 1;
-            const nextItem = hasNextItem ? timeline[index + 1] : null;
-            const nextIsComment = nextItem?.itemType === 'comment';
-            if (item.itemType === 'activity') {
+            const className = classnames({ 'd-none-after': index === (timeline.length - 1) });
+            if (item.type === 'log') {
               return (
-                <Activity
-                  key={`activity-${item.id}`}
-                  activity={item}
+                <TicketLog
+                  key={`ticket-log-${item.id}`}
+                  log={item}
+                  className={className}
                   isSmallScreen={isSmallScreen}
-                  nextIsComment={nextIsComment}
                 />
               );
             }
@@ -454,9 +449,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               <Comment
                 key={`comment-${item.id}`}
                 isSmallScreen={isSmallScreen}
-                showTimeline={hasNextItem}
                 readonly={!(item.creator === user.email || isAdmin)}
                 comment={item}
+                className={className}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
                 onDelete={(comment) => deleteComment(id, comment.id)}
@@ -464,7 +459,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }} onSubmitComment={onSubmitComment}>
+          <Comment className="sea-qa-project-ticket-add-comment d-none-after mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }} onSubmitComment={onSubmitComment}>
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}

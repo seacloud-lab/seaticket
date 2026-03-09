@@ -1,0 +1,86 @@
+.sea-ticket-log {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+  margin-top: 4px;
+  position: relative;
+}
+
+.sea-ticket-log:not(.d-none-after)::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 28px;
+  width: 1px;
+  bottom: -16px;
+  background-color: var(--bs-border-secondary-color);
+}
+
+.sea-ticket-log.small {
+  padding-left: 16px;
+}
+
+.sea-ticket-log.small:not(.d-none-after)::after {
+  left: 28px;
+  top: 28px;
+}
+
+.sea-ticket-log .sea-ticket-log-type-container {
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sea-ticket-log.small .sea-ticket-log-type-container {
+  width: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.sea-ticket-log .sea-ticket-log-btn {
+  background-color: #f7f7f5;
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 50%;
+}
+
+.sea-ticket-log.small .sea-ticket-log-icon {
+  display: none;
+}
+
+.sea-ticket-log .sea-ticket-log-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 2px;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--bs-body-secondary-color);
+  line-height: 1.5;
+}
+
+.sea-ticket-log-creator {
+  background: unset;
+  padding: 0;
+  font-weight: 600;
+  color: var(--bs-body-color);
+}
+
+.sea-ticket-log-creator .collaborator-avatar img {
+  height: 20px;
+  width: 20px;
+}
+
+.sea-ticket-log-time {
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.sea-ticket-log .collaborator {
+  max-width: 240px;
+}
+
+.sea-ticket-log-removed {
+  opacity: .65;
+}

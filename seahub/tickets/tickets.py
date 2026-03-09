@@ -38,7 +38,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    get_column_from_columns_by_name
+    get_column_from_columns_by_name, get_option_id_by_name
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -869,6 +869,61 @@ class TicketAPIView(APIView):
                 new_activities = record_ticket_activities(
                     seadb_api, project_uuid, ticket.get('_pk'), username, changes
                 )
+                for activity in new_activities:
+                    field_name = activity.get('field_name')
+                    if field_name == 'state_substate':
+                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                        state_key = (state_column or {}).get('key') or TicketsTable.state.name
+                        substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
+                        old_value = activity.get('old_value') or {}
+                        new_value = activity.get('new_value') or {}
+                        if isinstance(old_value, dict):
+                            activity['old_value'] = {
+                                state_key: get_option_id_by_name(
+                                    metadata, TicketsTable.state.name, old_value.get('state'),
+                                    case_insensitive=True
+                                ),
+                                substate_key: get_option_id_by_name(
+                                    metadata, TicketsTable.substate.name, old_value.get('substate')
+                                )
+                            }
+                        if isinstance(new_value, dict):
+                            activity['new_value'] = {
+                                state_key: get_option_id_by_name(
+                                    metadata, TicketsTable.state.name, new_value.get('state'),
+                                    case_insensitive=True
+                                ),
+                                substate_key: get_option_id_by_name(
+                                    metadata, TicketsTable.substate.name, new_value.get('substate')
+                                )
+                            }
+                    elif field_name in (
+                        TicketsTable.state.name,
+                        TicketsTable.substate.name,
+                        TicketsTable.type.name,
+                    ):
+                        # keep storage as option name; only return ids for frontend consistency
+                        case_insensitive = field_name == TicketsTable.state.name
+                        activity['old_value'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('old_value'),
+                            case_insensitive=case_insensitive
+                        )
+                        activity['new_value'] = get_option_id_by_name(
+                            metadata, field_name, activity.get('new_value'),
+                            case_insensitive=case_insensitive
+                        )
+                    if field_name == 'state_substate':
+                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                        state_key = (state_column or {}).get('key')
+                        substate_key = (substate_column or {}).get('key')
+                        if state_key and substate_key:
+                            activity['field_key'] = f'{state_key}_{substate_key}'
+                    else:
+                        column = get_column_from_columns_by_name(metadata, field_name)
+                        if column and column.get('key'):
+                            activity['field_key'] = column.get('key')
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -890,6 +945,10 @@ class TicketAPIView(APIView):
                 )
 
         send_ticket_update_msg(project_uuid)
+
+        # Rename activity_type to type_description for frontend
+        for activity in new_activities:
+            activity.pop('field_name', None)
 
         return Response({'success': True, 'activities': new_activities})
 
@@ -1377,6 +1436,10 @@ class TicketActivitiesAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
+            ticket, metadata = get_ticket(seadb_api, project_uuid, int(ticket_id))
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             activities = get_ticket_activities(
                 seadb_api, project_uuid, int(ticket_id), start, per_page
             )
@@ -1387,13 +1450,69 @@ class TicketActivitiesAPIView(APIView):
         activities_list = []
         for a in activities:
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
+            field_name = detail.get('field_name', '')
+            field_id = field_name
+            old_value = detail.get('old_value')
+            new_value = detail.get('new_value')
+
+            if field_name == 'state_substate':
+                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                state_key = (state_column or {}).get('key') or TicketsTable.state.name
+                substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
+                if isinstance(old_value, dict):
+                    old_value = {
+                        state_key: get_option_id_by_name(
+                            metadata, TicketsTable.state.name, old_value.get('state'),
+                            case_insensitive=True
+                        ),
+                        substate_key: get_option_id_by_name(
+                            metadata, TicketsTable.substate.name, old_value.get('substate')
+                        )
+                    }
+                if isinstance(new_value, dict):
+                    new_value = {
+                        state_key: get_option_id_by_name(
+                            metadata, TicketsTable.state.name, new_value.get('state'),
+                            case_insensitive=True
+                        ),
+                        substate_key: get_option_id_by_name(
+                            metadata, TicketsTable.substate.name, new_value.get('substate')
+                        )
+                    }
+            elif field_name in (TicketsTable.state.name, TicketsTable.substate.name, TicketsTable.type.name):
+                case_insensitive = field_name == TicketsTable.state.name
+                old_value = get_option_id_by_name(metadata, field_name, old_value, case_insensitive=case_insensitive)
+                new_value = get_option_id_by_name(metadata, field_name, new_value, case_insensitive=case_insensitive)
+            elif field_name == TicketsTable.tags.name:
+                if isinstance(old_value, list):
+                    old_value = [
+                        get_option_id_by_name(metadata, TicketsTable.tags.name, v)
+                        for v in old_value
+                    ]
+                if isinstance(new_value, list):
+                    new_value = [
+                        get_option_id_by_name(metadata, TicketsTable.tags.name, v)
+                        for v in new_value
+                    ]
+            if field_name == 'state_substate':
+                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                state_key = (state_column or {}).get('key')
+                substate_key = (substate_column or {}).get('key')
+                if state_key and substate_key:
+                    field_key = f'{state_key}_{substate_key}'
+            else:
+                column = get_column_from_columns_by_name(metadata, field_name)
+                if column and column.get('key'):
+                    field_key = column.get('key')
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
                 'activity_type': a.get('activity_type'),
-                'field_name': detail.get('field_name', ''),
-                'old_value': detail.get('old_value'),
-                'new_value': detail.get('new_value'),
+                'field_key': field_key,
+                'old_value': old_value,
+                'new_value': new_value,
                 'creator': a.get('creator'),
                 'created_time': a.get('created_time'),
             })

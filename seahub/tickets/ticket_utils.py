@@ -231,6 +231,28 @@ def get_column_from_columns_by_name(columns, column_name):
     return None
 
 
+def get_option_id_by_name(columns, column_name, option_name, case_insensitive=False):
+    """Look up the option id for a given option name in a select column.
+
+    Returns the option id if found, otherwise returns option_name as-is.
+    """
+    if not columns or not option_name:
+        return option_name
+    column = get_column_from_columns_by_name(columns, column_name)
+    if not column:
+        return option_name
+    options = (column.get('data') or {}).get('options') or []
+    for opt in options:
+        name = opt.get('name') or ''
+        target = option_name
+        if case_insensitive:
+            name = name.lower()
+            target = target.lower()
+        if name == target:
+            return opt.get('id', option_name)
+    return option_name
+
+
 def add_select_option(seadb_api, project_uuid, table_id, column_key, option_name, option_data):
     """Add an option to a select-like column; option_data is dict stored in option_data."""
     new_option_data = {
@@ -490,13 +512,23 @@ def compare_ticket_changes(old_ticket, new_data):
     if 'title' in new_data and new_data['title'] != old_ticket.get('title'):
         changes.append(('title_changed', 'title', old_ticket.get('title'), new_data['title']))
 
-    # state changed
-    if 'state' in new_data and new_data['state'] != old_ticket.get('state'):
-        changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
+    state_changed = 'state' in new_data and new_data['state'] != old_ticket.get('state')
+    substate_changed = 'substate' in new_data and new_data['substate'] != old_ticket.get('substate')
+    if state_changed and substate_changed:
+        changes.append((
+            'state_substate_changed',
+            'state_substate',
+            {'state': old_ticket.get('state'), 'substate': old_ticket.get('substate')},
+            {'state': new_data.get('state'), 'substate': new_data.get('substate')}
+        ))
+    else:
+        # state changed
+        if state_changed:
+            changes.append(('state_changed', 'state', old_ticket.get('state'), new_data['state']))
 
-    # substate changed
-    if 'substate' in new_data and new_data['substate'] != old_ticket.get('substate'):
-        changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
+        # substate changed
+        if substate_changed:
+            changes.append(('substate_changed', 'substate', old_ticket.get('substate'), new_data['substate']))
 
     # type changed
     if 'type' in new_data and new_data['type'] != old_ticket.get('type'):
@@ -510,23 +542,13 @@ def compare_ticket_changes(old_ticket, new_data):
     if 'tags' in new_data:
         old_tags = set(old_ticket.get('tags') or [])
         new_tags = set(new_data['tags'] or [])
-        added = new_tags - old_tags
-        removed = old_tags - new_tags
-        if added:
-            changes.append(('tags_added', 'tags', None, list(added)))
-        if removed:
-            changes.append(('tags_removed', 'tags', list(removed), None))
+        changes.append(('tags_changed', 'tags', list(old_tags), list(new_tags)))
 
     # assignees changed
     if 'assignees' in new_data:
         old_assignees = set(old_ticket.get('assignees') or [])
         new_assignees = set(new_data['assignees'] or [])
-        added = new_assignees - old_assignees
-        removed = old_assignees - new_assignees
-        if added:
-            changes.append(('assignees_added', 'assignees', None, list(added)))
-        if removed:
-            changes.append(('assignees_removed', 'assignees', list(removed), None))
+        changes.append(('assignees_changed', 'assignees', list(old_assignees), list(new_assignees)))
 
     return changes
 
