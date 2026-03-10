@@ -12,8 +12,6 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.ai_client import (
-    get_agent_run_detail,
-    list_agent_runs,
     trigger_agent,
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
@@ -22,6 +20,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.models import (
     AgentActionsTable,
+    AgentRunsTable,
     GithubIssuesTable,
     TicketCommentsTable,
     TicketsTable,
@@ -35,6 +34,145 @@ from seahub.notifications.signal_handler import (
 from seahub.tickets.signals import agent_notify_assignees, ticket_commented
 
 logger = logging.getLogger(__name__)
+
+
+def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
+    offset = (page - 1) * per_page
+    
+    try:
+        runs_sql = (
+            f"SELECT * FROM `{AgentRunsTable.gen_table_name()}` "
+            f"ORDER BY `started_at` DESC "
+            f"LIMIT {offset}, {per_page + 1}"
+        )
+        runs_result = seadb_api.query_rows(project_uuid, runs_sql)
+        runs = runs_result.get('results', [])
+        
+        has_more = len(runs) > per_page
+        if has_more:
+            runs = runs[:per_page]
+        
+        # batch fetch all actions
+        run_ids = [r['_pk'] for r in runs]
+        actions_by_run = {}
+        if run_ids:
+            run_ids_str = ','.join(str(r) for r in run_ids)
+            actions_sql = (
+                f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` "
+                f"WHERE `run_id` IN ({run_ids_str}) "
+                f"ORDER BY `run_id` DESC, `created_at` ASC"
+            )
+            actions_result = seadb_api.query_rows(project_uuid, actions_sql)
+            all_actions = actions_result.get('results', [])
+            
+            # group actions by run_id
+            for action in all_actions:
+                run_id = action.get('run_id')
+                if run_id not in actions_by_run:
+                    actions_by_run[run_id] = []
+                actions_by_run[run_id].append(action)
+        
+        # build the return runs list
+        enriched_runs = []
+        for run in runs:
+            run_pk = run['_pk']
+            actions = actions_by_run.get(run_pk, [])
+            
+            # group actions by (source_type, source_id)
+            # so that each source record is only displayed once, regardless of how many actions it has generated
+            items_map = {}
+            for action in actions:
+                source_type = action.get('source_type', '')
+                source_id = action.get('source_id', '')
+                key = (source_type, source_id)
+                if key not in items_map:
+                    items_map[key] = {
+                        'source_type': source_type,
+                        'source_id': source_id,
+                        'source_title': action.get('source_title', ''),
+                        'actions': [],
+                    }
+                items_map[key]['actions'].append({
+                    'id': action['_pk'],
+                    'type': action.get('action_type', ''),
+                    'tool_name': action.get('tool_name', ''),
+                    'content': action.get('content', ''),
+                    'result': action.get('result', ''),
+                    'status': action.get('status', ''),
+                    'suggestion_text': action.get('suggestion_text', ''),
+                    'created_at': action.get('created_at', ''),
+                    'executed_at': action.get('executed_at', ''),
+                })
+            
+            enriched_runs.append({
+                'id': run_pk,
+                'status': run.get('status', ''),
+                'started_at': run.get('started_at', ''),
+                'finished_at': run.get('finished_at', ''),
+                'items_processed': run.get('items_processed', 0),
+                'error_message': run.get('error_message', ''),
+                'items': list(items_map.values()),
+            })
+        
+        return {'runs': enriched_runs, 'has_more': has_more}
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+
+def get_agent_run_detail(seadb_api, project_uuid, run_id):
+    try:
+        run_sql = f"SELECT * FROM `{AgentRunsTable.gen_table_name()}` WHERE `_pk` = {run_id}"
+        run_result = seadb_api.query_rows(project_uuid, run_sql)
+        runs = run_result.get('results', [])
+        if not runs:
+            raise ValueError('Run not found.')
+        run = runs[0]
+        
+        actions_sql = (
+            f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` "
+            f"WHERE `run_id` = {run_id} "
+            f"ORDER BY `created_at` ASC"
+        )
+        actions_result = seadb_api.query_rows(project_uuid, actions_sql)
+        actions = actions_result.get('results', [])
+        
+        items_map = {}
+        for action in actions:
+            source_type = action.get('source_type', '')
+            source_id = action.get('source_id', '')
+            key = (source_type, source_id)
+            if key not in items_map:
+                items_map[key] = {
+                    'source_type': source_type,
+                    'source_id': source_id,
+                    'source_title': action.get('source_title', ''),
+                    'actions': [],
+                }
+            items_map[key]['actions'].append({
+                'id': action['_pk'],
+                'type': action.get('action_type', ''),
+                'tool_name': action.get('tool_name', ''),
+                'content': action.get('content', ''),
+                'result': action.get('result', ''),
+                'status': action.get('status', ''),
+                'suggestion_text': action.get('suggestion_text', ''),
+                'created_at': action.get('created_at', ''),
+                'executed_at': action.get('executed_at', ''),
+            })
+        
+        return {
+            'id': run['_pk'],
+            'status': run.get('status', ''),
+            'started_at': run.get('started_at', ''),
+            'finished_at': run.get('finished_at', ''),
+            'items_processed': run.get('items_processed', 0),
+            'error_message': run.get('error_message', ''),
+            'items': list(items_map.values()),
+        }
+    except Exception as e:
+        logger.exception(e)
+        raise
 
 
 class AgentExecuteView(APIView):
@@ -97,7 +235,8 @@ class AgentRunsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            result = list_agent_runs(project_uuid, page, per_page)
+            seadb_api = SeaDBAPI(username)
+            result = list_agent_runs(seadb_api, project_uuid, page, per_page)
         except Exception as e:
             logger.error(f'Error listing agent runs: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -129,7 +268,11 @@ class AgentRunDetailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            result = get_agent_run_detail(project_uuid, run_id)
+            seadb_api = SeaDBAPI(username)
+            result = get_agent_run_detail(seadb_api, project_uuid, run_id)
+        except ValueError as e:
+            logger.error(f'Error getting agent run detail: {e}')
+            return api_error(status.HTTP_404_NOT_FOUND, str(e))
         except Exception as e:
             logger.error(f'Error getting agent run detail: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
