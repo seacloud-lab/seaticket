@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import dayjs from 'dayjs';
@@ -19,12 +19,23 @@ dayjs.extend(weekOfYear);
 
 const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) => {
   const calendarContainerRef = useRef(null);
+  const [open, setOpen] = useState(false);
   const formatValue = value ? dayjs(value) : null;
+
+  const getCalendarContainer = useCallback(() => {
+    return calendarContainerRef.current;
+  }, []);
 
   const onDueDateChange = useCallback((value) => {
     const newValue = value ? dayjs(value).format('YYYY-MM-DD') : '';
     onChange(newValue);
+    setOpen(true);
   }, [onChange]);
+
+  const onOpenChange = useCallback((nextOpen) => {
+    if (isReadonly) return;
+    setOpen(nextOpen);
+  }, [isReadonly]);
 
   const locale = useMemo(() => {
     return translateCalendar();
@@ -37,11 +48,13 @@ const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) =>
       </CustomizeLabel>
       <div className="ticket-due-date-formatter">
         <DatePicker
-          getCalendarContainer={calendarContainerRef.current}
+          getCalendarContainer={getCalendarContainer}
           calendar={<Calendar format='YYYY-MM-DD' locale={locale} className="sea-ticket-calendar"/>}
           disabled={isReadonly}
           value={formatValue}
           onChange={onDueDateChange}
+          onOpenChange={onOpenChange}
+          open={open}
         >
           {
             ({ value }) => {
@@ -55,7 +68,7 @@ const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) =>
                       {dayjs(value).format('YYYY-MM-DD')}
                     </div>
                   )}
-                  <div ref={calendarContainerRef.current}/>
+                  <div ref={calendarContainerRef} />
                 </div>
               );
             }
