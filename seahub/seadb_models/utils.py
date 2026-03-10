@@ -684,12 +684,9 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     extra_query_names = set(CONNECTION_MUST_RETURN_COLUMNS.get(connection_type, []))
     display_all_columns = []
     extra_query_columns = []
-    outdatedColumn = None
 
     for column in columns:
         name = column['name']
-        if name == 'outdated':
-            outdatedColumn = column
         if name in display_names:
             display_all_columns.append(column)
         elif name in extra_query_names:
@@ -697,9 +694,6 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
 
     all_columns = display_all_columns + extra_query_columns
     view_copy = view.copy()
-
-    if outdatedColumn:
-        view_copy['sorts'] = [{ 'column_key': outdatedColumn['key'], 'sort_type': 'up'  }] + view_copy['sorts']
 
     try:
         sql = view_data_2_sql(table_name, all_columns, view_copy, username, start, limit)

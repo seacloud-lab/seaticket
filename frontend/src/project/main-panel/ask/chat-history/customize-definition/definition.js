@@ -36,7 +36,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
     >
       <div className="sea-ai-chat-customize-definition-simple-info">
         <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
-        <div className="sea-ai-chat-customize-definition-title-score">
+        <div className="sea-ai-chat-customize-definition-title-content">
           <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
         </div>
         <div className="sea-ai-chat-customize-definition-avatar">

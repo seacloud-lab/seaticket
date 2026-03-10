@@ -45,7 +45,7 @@
   flex-shrink: 0;
 }
 
-.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-title-score {
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-title-content {
   flex: 1;
   overflow: hidden;
   display: inline-flex;
