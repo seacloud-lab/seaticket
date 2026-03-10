@@ -1,5 +1,6 @@
 import { useCallback, useState, useMemo } from 'react';
-import { Modal, ModalBody } from 'reactstrap';
+import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
+import { CustomizeDropdownMenu } from '@/components';
 import { ModalHeader, IconTooltip, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -31,10 +32,12 @@ const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
   getTicket,
+  createMoreOptions,
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 
   const [details, setDetails] = useState(null);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const { connections } = useConnections();
 
@@ -112,6 +115,29 @@ const ResourceDetailsDialog = ({
             />
           )}
         </div>
+        {createMoreOptions && (
+          <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+            <DropdownToggle tag="span">
+              <IconButton
+                className="more-btn"
+                icon="more"
+                title={gettext('More')}
+              />
+            </DropdownToggle>
+            <CustomizeDropdownMenu>
+              {createMoreOptions(resource).map((option, index) => {
+                if (option === 'Divider') {
+                  return <DropdownItem key={index} divider />;
+                }
+                return (
+                  <DropdownItem key={option.key || index} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
+                    {option.label}
+                  </DropdownItem>
+                );
+              })}
+            </CustomizeDropdownMenu>
+          </Dropdown>
+        )}
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (

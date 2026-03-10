@@ -239,6 +239,28 @@ const Tickets = ({
     return generatorTicketsContextMenuOptions(params);
   }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord]);
 
+  const createMoreOptions = useCallback((resource) => {
+    const row = resource;
+    return generatorTicketsContextMenuOptions({
+      isGroupView: false,
+      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
+      table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
+      rowMetrics: { idSelectedRowMap: {} },
+      deleteRow: (rowId) => metadataAPI.deleteRow(rowId),
+      hideMenu: () => {},
+      rowGetterByIndex: () => row,
+      selectNone: () => {},
+      context,
+      chatTicketsByAI,
+      togglePageSlugId,
+      workspaceID,
+      projectName,
+      permission,
+      findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
+      createKnowledgeBaseRecord,
+    });
+  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI]);
+
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
     const index = ticketsData.findIndex(r => r._id === currentTicket._id);
@@ -303,6 +325,7 @@ const Tickets = ({
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
           getTicket={getTicket}
+          createMoreOptions={createMoreOptions}
         />
       )}
       {isShowCreateKBRecordDialog && kbSourceTicket && (

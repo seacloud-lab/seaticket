@@ -11,7 +11,16 @@
 }
 
 .sea-ticket-resource-details-dialog .modal-content .modal-header .modal-title {
-  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.sea-ticket-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .sea-qa-icon-btn {
+  height: 28px;
+  width: 28px;
+  margin-right: -16px;
 }
 
 .sea-ticket-resource-details-dialog .modal-content .modal-header .sea-qa-modal-close.close {
