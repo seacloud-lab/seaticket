@@ -433,38 +433,41 @@ module.exports = function (webpackEnv) {
                 {
                   loader: require.resolve('@svgr/webpack'),
                   options: {
-                    prettier: true,
-                    svgo: false,
+                    prettier: false,
+                    svgo: true,
                     svgoConfig: {
-                      plugins: [{ removeViewBox: false }],
+                      plugins: [
+                        {
+                          name: 'preset-default',
+                          params: {
+                            overrides: {
+                              removeViewBox: false,
+                            },
+                          },
+                        },
+                        { name: 'removeTitle' },
+                        { name: 'removeXMLNS' },
+                        { name: 'removeStyleElement' },
+                        { name: 'cleanupIds' },
+                        { name: 'inlineStyles' },
+                        { name: 'removeXMLProcInst' },
+                        {
+                          name: 'removeAttrs',
+                          params: {
+                            attrs: [
+                              'fill',
+                              'fill-rule',
+                              'clip-rule',
+                              'stroke',
+                            ],
+                          }
+                        },
+                      ],
                     },
                     titleProp: true,
                     ref: true,
                   },
                 },
-                { loader: 'svgo-loader',
-                  options: {
-                    plugins: [
-                      'removeTitle',
-                      'removeXMLNS',
-                      'removeStyleElement',
-                      'cleanupIDs',
-                      'inlineStyles',
-                      'removeXMLProcInst',
-                      {
-                        name: 'removeAttrs',
-                        params: {
-                          attrs: [
-                            'fill',
-                            'fill-rule',
-                            'clip-rule',
-                            'stroke',
-                          ],
-                        }
-                      },
-                    ]
-                  }
-                }
               ],
             },
             {
