@@ -526,11 +526,12 @@ class AgentActionCancelView(APIView):
     def post(self, request, project_uuid, run_id, action_id):
         username = request.user.username
 
-        # Verify project exists
-        try:
-            project = Projects.objects.get(uuid=project_uuid, deleted=False)
-        except Projects.DoesNotExist:
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not check_project_permission(username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
             seadb_api = SeaDBAPI(username)
@@ -632,7 +633,7 @@ class AgentSettingsView(APIView):
         model = request.data.get('model')
         notify_before_due_hours = request.data.get('notify_before_due_hours')
         run_interval_hours = request.data.get('run_interval_hours')
-        
+
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
             if not project:
