@@ -213,7 +213,7 @@ const ViewItem = ({
               {context.getSetting('enableExportAndImportXlsx', false) && (
                 <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
                   <Icon symbol="export-xlsx" />
-                  {gettext('Export XLSX')}
+                  {gettext('Export view to XLSX')}
                 </button>
               )}
             </div>
