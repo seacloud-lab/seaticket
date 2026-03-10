@@ -36,6 +36,34 @@ from seahub.tickets.signals import agent_notify_assignees, ticket_commented
 logger = logging.getLogger(__name__)
 
 
+def _build_items_map_from_actions(actions):
+    """build the items map from actions"""
+    items_map = {}
+    for action in actions:
+        source_type = action.get('source_type', '')
+        source_id = action.get('source_id', '')
+        key = (source_type, source_id)
+        if key not in items_map:
+            items_map[key] = {
+                'source_type': source_type,
+                'source_id': source_id,
+                'source_title': action.get('source_title', ''),
+                'actions': [],
+            }
+        items_map[key]['actions'].append({
+            'id': action['_pk'],
+            'type': action.get('action_type', ''),
+            'tool_name': action.get('tool_name', ''),
+            'content': action.get('content', ''),
+            'result': action.get('result', ''),
+            'status': action.get('status', ''),
+            'suggestion_text': action.get('suggestion_text', ''),
+            'created_at': action.get('created_at', ''),
+            'executed_at': action.get('executed_at', ''),
+        })
+    return items_map
+
+
 def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
     offset = (page - 1) * per_page
     
@@ -77,32 +105,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         for run in runs:
             run_pk = run['_pk']
             actions = actions_by_run.get(run_pk, [])
-            
-            # group actions by (source_type, source_id)
-            # so that each source record is only displayed once, regardless of how many actions it has generated
-            items_map = {}
-            for action in actions:
-                source_type = action.get('source_type', '')
-                source_id = action.get('source_id', '')
-                key = (source_type, source_id)
-                if key not in items_map:
-                    items_map[key] = {
-                        'source_type': source_type,
-                        'source_id': source_id,
-                        'source_title': action.get('source_title', ''),
-                        'actions': [],
-                    }
-                items_map[key]['actions'].append({
-                    'id': action['_pk'],
-                    'type': action.get('action_type', ''),
-                    'tool_name': action.get('tool_name', ''),
-                    'content': action.get('content', ''),
-                    'result': action.get('result', ''),
-                    'status': action.get('status', ''),
-                    'suggestion_text': action.get('suggestion_text', ''),
-                    'created_at': action.get('created_at', ''),
-                    'executed_at': action.get('executed_at', ''),
-                })
+            items_map = _build_items_map_from_actions(actions)
             
             enriched_runs.append({
                 'id': run_pk,
@@ -136,30 +139,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
         )
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
-        
-        items_map = {}
-        for action in actions:
-            source_type = action.get('source_type', '')
-            source_id = action.get('source_id', '')
-            key = (source_type, source_id)
-            if key not in items_map:
-                items_map[key] = {
-                    'source_type': source_type,
-                    'source_id': source_id,
-                    'source_title': action.get('source_title', ''),
-                    'actions': [],
-                }
-            items_map[key]['actions'].append({
-                'id': action['_pk'],
-                'type': action.get('action_type', ''),
-                'tool_name': action.get('tool_name', ''),
-                'content': action.get('content', ''),
-                'result': action.get('result', ''),
-                'status': action.get('status', ''),
-                'suggestion_text': action.get('suggestion_text', ''),
-                'created_at': action.get('created_at', ''),
-                'executed_at': action.get('executed_at', ''),
-            })
+        items_map = _build_items_map_from_actions(actions)
         
         return {
             'id': run['_pk'],
