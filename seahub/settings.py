@@ -111,7 +111,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = "y7=z$9*0+^@sdbbcibd9&e9&z-mu087!ee=efsjvbrs2wfbkr%"
+SECRET_KEY = ''
 
 ENABLE_REMOTE_USER_AUTHENTICATION = False
 
