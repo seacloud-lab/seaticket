@@ -54,7 +54,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             iconClassName: 'ai-status',
             iconType: 'ai-processing',
           };
-        } else if (status === 'vector-index' && record.type === CONNECTION_TYPE.SITE) {
+        } else if (status === 'vector-index' && (record.type === CONNECTION_TYPE.SITE || record.type === CONNECTION_TYPE.SEAFILE)) {
           return {
             title: gettext('Last vector indexed status'),
             time: record.content_vector_indexed_at,
