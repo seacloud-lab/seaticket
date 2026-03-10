@@ -1,7 +1,7 @@
 import logging
 import json
-from datetime import datetime, timezone
 
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -206,7 +206,7 @@ class AgentActionConfirmView(APIView):
                 execution_result = f'Unsupported source_type: {source_type}'
 
             # 4. Update action status in SeaDB
-            now = datetime.now(timezone.utc).isoformat()
+            now = timezone.now().isoformat()
             update_data = [{
                 'pk': int(action_id),
                 'row': {
@@ -305,7 +305,7 @@ class AgentActionConfirmView(APIView):
         # Call AI service to generate ticket title and content
         org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
         params = {
-            'username': username,
+            'username': 'agent',
             'record_detail': record_detail,
             'project_uuid': project_uuid,
             'org_id': org_id,
@@ -320,7 +320,7 @@ class AgentActionConfirmView(APIView):
         ticket_content = ai_content or ''
 
         # Insert ticket into SeaDB
-        now = datetime.now(timezone.utc).isoformat()
+        now = timezone.now().isoformat()
         ticket_row = {
             TicketsTable.title.name: ticket_title,
             TicketsTable.content.name: ticket_content,
@@ -396,7 +396,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
             return f'Ticket #{ticket_id} not found'
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = timezone.now().isoformat()
 
         row = {
             TicketCommentsTable.ticket_id.name: ticket_id,
@@ -552,7 +552,7 @@ class AgentActionCancelView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action is not pending.')
 
             # Update action status to cancelled
-            now = datetime.now(timezone.utc).isoformat()
+            now = timezone.now().isoformat()
             update_data = [{
                 'pk': int(action_id),
                 'row': {
