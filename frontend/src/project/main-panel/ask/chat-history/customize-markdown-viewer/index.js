@@ -7,12 +7,8 @@ import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
 import CustomizeLink from '../customize-link';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { getNumberDisplayString } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
 import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
-import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
-import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
-import { useConnections } from '@/project/main-panel/connections/hooks';
 
 import './index.css';
 
@@ -23,8 +19,6 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
   const [resource, setResource] = useState(null);
   const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
 
-  const { connections } = useConnections();
-
   const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
     if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
@@ -33,18 +27,9 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
-      const { type, ai_summary, score, connection_id, _id, title } = source;
+      const { type, ai_summary, connection_id, _id, title } = source;
       const url = getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
       const urlObject = new URL(url);
-      let category_name = '';
-      if (type === TICKET_TYPE) {
-        category_name = gettext('Tickets');
-      } else if (type === KNOWLEDGE_BASE_TYPE) {
-        category_name = gettext('Knowledge base');
-      } else {
-        const connection = connections.find(c => c.id === connection_id);
-        category_name = connection?.name || gettext('Deleted connection');
-      }
 
       return {
         key: `${type}_${connection_id || ''}_${_id}`,
@@ -53,11 +38,9 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
         icon: getResourceIconURL(type),
         url: urlObject.href,
         connection_id,
-        category_name,
         title: title.replaceAll('"', '\''),
         content: ai_summary,
         mtime: source?.bumped_at || source?.mtime || source?.updated_at || source?.modified_time || '',
-        score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
         filename: source.filename,
         path: source.path,
         slug: source.slug,
@@ -165,7 +148,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
       sources,
       mdFiles,
     };
-  }, [message, projectName, workspaceID, chatId, connections]);
+  }, [message, projectName, workspaceID, chatId]);
 
   const handleConnectionRecord = useCallback((record) => {
     setResource(record);
