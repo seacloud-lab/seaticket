@@ -55,7 +55,7 @@ def rank_related_issues(params):
 
 def trigger_agent(project_uuid):
     headers = _build_headers()
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/agent/trigger/')
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/trigger-agent')
     data = {'project_uuid': project_uuid}
     resp = requests.post(url, json=data, headers=headers, timeout=300)
     if resp.status_code != 200:
