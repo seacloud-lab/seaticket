@@ -5,14 +5,19 @@ from django.dispatch import receiver
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.group.models import Group
 from seahub.group.signals import add_user_to_group
-from seahub.tickets.signals import ticket_assignees_added, ticket_commented
+from seahub.tickets.signals import agent_notify_assignees, ticket_assignees_added, ticket_commented
 from seahub.invitations.signals import org_member_invite_accepted
-from seahub.notifications.utils import ticket_assignee_added_msg_to_json, ticket_comment_msg_to_json
+from seahub.notifications.utils import (
+    agent_notify_assignee_msg_to_json,
+    ticket_assignee_added_msg_to_json,
+    ticket_comment_msg_to_json,
+)
 from seahub.notifications.models import ProjectNotification, UserNotification
 
 logger = logging.getLogger(__name__)
 
 MSG_TYPE_TICKET_ASSIGNEE_ADDED = 'ticket_assignee_added'
+MSG_TYPE_AGENT_NOTIFY_ASSIGNEE = 'agent_notify_assignee'
 MSG_TYPE_TICKET_COMMENTED = 'ticket_commented'
 MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group'
 MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted'
@@ -98,6 +103,44 @@ def add_ticket_assignees_added_project_msg_cb(sender, **kwargs):
     try:
         detail = ticket_assignee_added_msg_to_json(
             ticket_id, ticket_title, from_user_id,
+            workspace_id=workspace_id, project_name=project_name
+        )
+        ProjectNotification.objects.bulk_create([
+            ProjectNotification(
+                project_uuid=project_uuid,
+                to_user=to_user,
+                msg_type=msg_type,
+                detail=detail,
+            )
+            for to_user in need_send_notification_users
+        ])
+    except Exception as e:
+        logger.error(e)
+
+
+@receiver(agent_notify_assignees)
+def add_agent_notify_assignees_project_msg_cb(sender, **kwargs):
+    project_uuid = kwargs.get('project_uuid', None)
+    assignees = kwargs.get('assignees', None) or []
+    msg_type = kwargs.get('msg_type', None)
+    from_user_id = kwargs.get('from_user_id', None)
+    workspace_id = kwargs.get('workspace_id', None)
+    project_name = kwargs.get('project_name', None)
+    ticket_id = kwargs.get('ticket_id', None)
+    ticket_title = kwargs.get('ticket_title', None)
+    message = kwargs.get('message', None)
+
+    if any([not project_uuid, not msg_type, not from_user_id,
+            not ticket_title, not ticket_id]):
+        logger.warning("Invalid agent notify assignees signal kwargs: %s", kwargs)
+        return
+    need_send_notification_users = set(assignees) - set([from_user_id])
+    if not need_send_notification_users:
+        return
+
+    try:
+        detail = agent_notify_assignee_msg_to_json(
+            ticket_id, ticket_title, from_user_id, message=message,
             workspace_id=workspace_id, project_name=project_name
         )
         ProjectNotification.objects.bulk_create([

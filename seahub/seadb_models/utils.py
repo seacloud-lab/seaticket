@@ -6,7 +6,7 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGenerato
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable
 
 logger = logging.getLogger(__name__)
 
@@ -536,6 +536,45 @@ def init_tag_seadb_table(seadb_api, project_uuid):
             ]
         )
 
+def init_agent_seadb_table(seadb_api, project_uuid):
+    """Initialize SeaDB tables for Agent runs and actions"""
+    # Create agent_runs table
+    res = seadb_api.create_table(project_uuid, AgentRunsTable.gen_table_name())
+    runs_table_id = res['table_id']
+    for column in AgentRunsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, runs_table_id, mapped_column)
+
+    # Create agent_runs index
+    seadb_api.create_column_index(
+        project_uuid,
+        runs_table_id,
+        [AgentRunsTable.started_at.name],
+    )
+
+    # Create agent_actions table
+    res = seadb_api.create_table(project_uuid, AgentActionsTable.gen_table_name())
+    actions_table_id = res['table_id']
+    for column in AgentActionsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, actions_table_id, mapped_column)
+
+    # Create agent_actions index
+    seadb_api.create_column_index(
+        project_uuid,
+        actions_table_id,
+        [AgentActionsTable.run_id.name, AgentActionsTable.created_at.name],
+    )
 
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''

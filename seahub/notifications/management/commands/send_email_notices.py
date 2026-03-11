@@ -13,7 +13,12 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from seahub.avatar.templatetags.avatar_tags import avatar
-from seahub.notifications.signal_handler import MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED
+from seahub.notifications.signal_handler import (
+    MSG_TYPE_ADD_USER_TO_GROUP,
+    MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
+    MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+    MSG_TYPE_TICKET_COMMENTED,
+)
 from seahub.notifications.models import UserNotification, ProjectNotification
 from seahub.utils import send_html_email, get_site_scheme_and_netloc, IS_EMAIL_CONFIGURED
 from seahub.avatar.util import get_default_avatar_url
@@ -189,6 +194,40 @@ class Command(BaseCommand):
             return '%s <br /> comment: %s' % (base_msg, comment_display)
         return base_msg
 
+    def _format_agent_notify_assignee_msg(self, notice):
+        d = json.loads(notice.detail) if notice.detail else {}
+
+        ticket_id = d.get('ticket_id')
+        ticket_title = d.get('ticket_title') or ''
+        from_user_name = d.get('from_user_name') or ''
+        workspace_id = d.get('workspace_id')
+        project_name = d.get('project_name') or ''
+        message = d.get('message') or ''
+
+        ticket_url = ''
+        if ticket_id is not None and workspace_id is not None and project_name:
+            ticket_url = '%s/workspace/%s/project/%s/tickets/%s/' % (
+                get_site_scheme_and_netloc(), workspace_id, project_name, ticket_id)
+
+        user_display = escape(from_user_name)
+        title_display = escape(ticket_title)
+        message_display = escape(message)
+
+        if ticket_url:
+            base_msg = _('%(user)s sent you a reminder on ticket <a href="%(ticket_url)s">%(title)s</a>.') % {
+                'user': user_display,
+                'ticket_url': ticket_url,
+                'title': title_display,
+            }
+        else:
+            base_msg = _('%(user)s sent you a reminder on ticket %(title)s.') % {
+                'user': user_display,
+                'title': title_display,
+            }
+        if message_display:
+            return '%s <br /> message: %s' % (base_msg, message_display)
+        return base_msg
+
     def format_notice_item(self, notice):
         msg = ''
         avatar_src = self.get_default_avatar_src()
@@ -211,6 +250,8 @@ class Command(BaseCommand):
                 msg = self._format_ticket_assignee_added_msg(notice)
             elif notice.msg_type == MSG_TYPE_TICKET_COMMENTED:
                 msg = self._format_ticket_commented_msg(notice)
+            elif notice.msg_type == MSG_TYPE_AGENT_NOTIFY_ASSIGNEE:
+                msg = self._format_agent_notify_assignee_msg(notice)
             else:
                 msg = escape(str(notice.detail or ''))
 

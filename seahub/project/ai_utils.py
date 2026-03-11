@@ -86,6 +86,7 @@ def process_connection_result(result, conn, record, ai_summary):
         processed_result['title'] = record.get('title', '')
         processed_result['issue_number'] = issue_number
         processed_result['state'] = record.get('state', '')
+        processed_result['state_reason'] = record.get('state_reason', '')
         processed_result['labels'] = record.get('labels')
         processed_result['modified_time'] = record.get('modified_time', '')
 
