@@ -10,15 +10,12 @@ const BASE_NAV_ITEMS = [
   { key: PORTAL_PAGE.MY_TICKETS, name: gettext('My tickets'), icon: 'my-tickets' },
 ];
 
-const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous, isExternalUser }) => {
-  const baseItems = isExternalUser
-    ? BASE_NAV_ITEMS.filter(item => item.key !== PORTAL_PAGE.CHAT)
-    : BASE_NAV_ITEMS;
+const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const navItems = isAnonymous
     ? (enableKB ? [{ key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }] : [])
     : (enableKB
-      ? [...baseItems, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
-      : baseItems);
+      ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
+      : BASE_NAV_ITEMS);
 
   const { isEditMode, projectUuid, isExternalUser, username } = window.app.pageOptions;
 
