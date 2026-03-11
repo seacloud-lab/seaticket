@@ -27,7 +27,7 @@
 }
 
 .sea-ticket-log .sea-ticket-log-type-container {
-  width: 40px;
+  width: 32px;
   display: flex;
   justify-content: center;
   flex-shrink: 0;
@@ -65,11 +65,6 @@
   padding: 0;
   font-weight: 600;
   color: var(--bs-body-color);
-}
-
-.sea-ticket-log-creator .collaborator-avatar img {
-  height: 20px;
-  width: 20px;
 }
 
 .sea-ticket-log-time {
