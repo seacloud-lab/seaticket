@@ -10,7 +10,7 @@
 .sea-ticket-log:not(.d-none-after)::after {
   content: '';
   position: absolute;
-  left: 20px;
+  left: 16px;
   top: 28px;
   width: 1px;
   bottom: -16px;

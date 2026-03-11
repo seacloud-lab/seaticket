@@ -14,7 +14,7 @@
 .sea-qa-project-ticket-comment:not(.d-none-after)::after {
   content: '';
   position: absolute;
-  left: 20px;
+  left: 16px;
   top: 44px;
   width: 1px;
   bottom: -20px;
