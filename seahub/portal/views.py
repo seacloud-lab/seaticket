@@ -27,12 +27,14 @@ def _get_portal_settings(project):
     except Exception:
         project_settings = {}
     portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
     return {
         'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
         'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
         'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
         'password': portal_settings.get('password'),
+        'streaming_response': streaming_response,
     }
 
 
@@ -57,6 +59,7 @@ def portal_view(request, project_uuid, children_id=None):
     enable_password_protection = portal_settings['enable_password_protection']
     show_kb_in_portal = portal_settings['show_kb_in_portal']
     enable_portal = portal_settings['enable_portal']
+    streaming_response = portal_settings['streaming_response']
     
     if not enable_portal:
         return render_error(request, _('Portal is not enabled'))
@@ -108,6 +111,7 @@ def portal_view(request, project_uuid, children_id=None):
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'show_kb_in_portal': show_kb_in_portal,
+            'streaming_response': streaming_response,
         },
         'llm_models': json.dumps(valid_llm_models),
     }
@@ -261,6 +265,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
             project_settings = {}
     
     portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -290,6 +295,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
         'is_external_user': False,
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
+            'streaming_response': streaming_response
         },
         'llm_models': json.dumps(valid_llm_models),
     }
