@@ -4,6 +4,7 @@ import PrioritySettings from './priority-settings';
 import StateSettings from './state-settings';
 import SubStateSettings from './substate-settings';
 import DueDateSettings from './due-date-settings';
+import LinkSettings from './link-settings';
 
 export {
   CollaboratorsSettings,
@@ -12,4 +13,5 @@ export {
   StateSettings,
   SubStateSettings,
   DueDateSettings,
+  LinkSettings,
 };

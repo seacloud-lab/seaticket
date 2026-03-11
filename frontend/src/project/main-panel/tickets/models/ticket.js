@@ -59,6 +59,8 @@ class Ticket {
 
     this.modified_time = object.modified_time || '';
 
+    this.linked_connection_records = object.linked_connection_records || [];
+
     // format date
     if (this.created_time) {
       this.created_time = dayjs(this.created_time).fromNow();
