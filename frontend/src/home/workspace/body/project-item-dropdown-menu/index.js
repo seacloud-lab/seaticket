@@ -44,7 +44,7 @@ class ProjectItemDropdownMenu extends React.Component {
             <CustomizeDropdownItem.Text>{gettext('Edit name and icon')}</CustomizeDropdownItem.Text>
           </CustomizeDropdownItem>
           <CustomizeDropdownItem onClick={this.onChangeProjectGroupToggle}>
-            <CustomizeDropdownItem.Icon symbol="group" />
+            <CustomizeDropdownItem.Icon symbol="group-stroked" />
             <CustomizeDropdownItem.Text>{gettext('Change group')}</CustomizeDropdownItem.Text>
           </CustomizeDropdownItem>
           <CustomizeDropdownItem onClick={this.onDeleteProjectToggle}>
