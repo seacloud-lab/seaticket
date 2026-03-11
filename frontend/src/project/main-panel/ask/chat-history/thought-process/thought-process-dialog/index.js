@@ -208,10 +208,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                 return `${argumentKey}: ${argumentValue}`;
               })
             }];
-            if (tool_calls?.[0]?.execution_details) {
+            if (tool_calls?.[0]?.execution_detail) {
               executionInfo.push({
                 name: gettext('Execution_details'),
-                children: Object.entries(tool_calls?.[0]?.execution_details || {}).map(([detailKey, detailValue]) => {
+                children: Object.entries(tool_calls?.[0]?.execution_detail || {}).map(([detailKey, detailValue]) => {
                   return `${gettext(detailKey)}: ${detailValue}`;
                 })
               });
@@ -245,10 +245,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                     return `${argumentKey}: ${argumentValue}`;
                   })
                 }];
-                if (too_call.execution_details) {
+                if (too_call.execution_detail) {
                   SubstepExecutionInfo.push({
                     name: gettext('Execution_details'),
-                    children: Object.entries(too_call.execution_details || {}).map(([detailKey, detailValue]) => {
+                    children: Object.entries(too_call.execution_detail || {}).map(([detailKey, detailValue]) => {
                       return `${gettext(detailKey)}: ${detailValue}`;
                     })
                   });
