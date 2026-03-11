@@ -42,11 +42,11 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   }, [isOpen]);
 
   const handleShare = useCallback(() => {
-    shareSession(session._id);
+    shareSession && shareSession(session._id);
   }, [shareSession, session._id]);
 
   const handleUnshare = useCallback(() => {
-    unshareSession(session._id);
+    unshareSession && unshareSession(session._id);
   }, [unshareSession, session._id]);
 
   const { _id: sessionId } = session;
@@ -88,15 +88,23 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
                 <CustomizeDropdownItem.Text>{gettext('Rename')}</CustomizeDropdownItem.Text>
               </CustomizeDropdownItem>
               {session.is_shared ? (
-                <CustomizeDropdownItem onClick={handleUnshare}>
-                  <CustomizeDropdownItem.Icon symbol="unshare" />
-                  <CustomizeDropdownItem.Text>{gettext('Unshare within team')}</CustomizeDropdownItem.Text>
-                </CustomizeDropdownItem>
+                <>
+                  {unshareSession && (
+                    <CustomizeDropdownItem onClick={handleUnshare}>
+                      <CustomizeDropdownItem.Icon symbol="unshare" />
+                      <CustomizeDropdownItem.Text>{gettext('Unshare within team')}</CustomizeDropdownItem.Text>
+                    </CustomizeDropdownItem>
+                  )}
+                </>
               ) : (
-                <CustomizeDropdownItem onClick={handleShare}>
-                  <CustomizeDropdownItem.Icon symbol="share" />
-                  <CustomizeDropdownItem.Text>{gettext('Share within team')}</CustomizeDropdownItem.Text>
-                </CustomizeDropdownItem>
+                <>
+                  {shareSession && (
+                    <CustomizeDropdownItem onClick={handleShare}>
+                      <CustomizeDropdownItem.Icon symbol="share" />
+                      <CustomizeDropdownItem.Text>{gettext('Share within team')}</CustomizeDropdownItem.Text>
+                    </CustomizeDropdownItem>
+                  )}
+                </>
               )}
               <CustomizeDropdownItem onClick={openDelete}>
                 <CustomizeDropdownItem.Icon symbol="delete" />

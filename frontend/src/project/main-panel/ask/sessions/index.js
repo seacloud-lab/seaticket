@@ -35,7 +35,7 @@ const Sessions = ({ sessionId, permission }) => {
 
   useEffect(() => {
     if (activeTab === SESSION_TAB_TYPE.TEAM) {
-      loadTeamSessions();
+      loadTeamSessions && loadTeamSessions();
     }
   }, [activeTab, loadTeamSessions]);
 
@@ -45,12 +45,14 @@ const Sessions = ({ sessionId, permission }) => {
         <div>{gettext('Histories')}</div>
         <IconButton icon="close" onClick={closeShowSessions} title={gettext('Close')} aria-label={gettext('Close')} />
       </div>
-      <CustomizeTabs
-        className="sea-qa-ai-ask-sessions-tabs"
-        value={activeTab}
-        tabs={TABS}
-        onChange={setActiveTab}
-      />
+      {loadTeamSessions && (
+        <CustomizeTabs
+          className="sea-qa-ai-ask-sessions-tabs"
+          value={activeTab}
+          tabs={TABS}
+          onChange={setActiveTab}
+        />
+      )}
       <div className="sea-qa-ai-ask-sessions-body">
         {isTeamTab && isTeamSessionsLoading && (
           <CenteredLoading />

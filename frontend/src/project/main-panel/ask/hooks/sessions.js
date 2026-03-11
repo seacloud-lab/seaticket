@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { chatAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ChatSession } from '../models';
@@ -8,10 +7,9 @@ import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../constants';
 import { SESSION_TAB_TYPE } from '../constants';
-
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, workspaceID, settings, children }) => {
+export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
@@ -25,16 +23,16 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
   const { togglePageSlugId, pageSlugId } = useAskPage();
 
   const createSession = useCallback((name) => {
-    return chatAPI.createChatSession(projectUuid, name).then(res => {
+    return api.createChatSession(projectUuid, name).then(res => {
       const session = new ChatSession(res.data.session);
       const newSessions = [session, ...sessions];
       setSessions(newSessions);
       return session;
     });
-  }, [projectUuid, sessions]);
+  }, [projectUuid, sessions, api]);
 
   const modifySession = useCallback((sessionId, { name }) => {
-    return chatAPI.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
+    return api.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       let session = newSessions[sessionIdx];
@@ -42,10 +40,10 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       newSessions[sessionIdx] = session;
       setSessions(newSessions);
     });
-  }, [projectUuid, sessions]);
+  }, [projectUuid, sessions, api]);
 
   const deleteSession = useCallback((sessionId) => {
-    return chatAPI.deleteChatSession(projectUuid, sessionId).then(res => {
+    return api.deleteChatSession(projectUuid, sessionId).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       newSessions.splice(sessionIdx, 1);
@@ -54,7 +52,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       }
       setSessions(newSessions);
     });
-  }, [projectUuid, sessions, pageSlugId, togglePageSlugId]);
+  }, [projectUuid, sessions, pageSlugId, togglePageSlugId, api]);
 
   const openShowSessions = useCallback(() => {
     setIsShowSessions(true);
@@ -109,7 +107,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
     };
 
     if (!settings?.streaming_response) {
-      chatAPI.sendChatMessage(params, options).then(res => {
+      api.sendChatMessage(params, options).then(res => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
       }).catch(error => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
@@ -117,12 +115,12 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       return;
     }
 
-    chatAPI.sendChatMessageByStream(params, options).then((res) => {
+    api.sendChatMessageByStream(params, options).then((res) => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
     });
-  }, [projectUuid, workspaceID, sessions, settings]);
+  }, [projectUuid, workspaceID, sessions, settings, api]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     setSessions(sessions => {
@@ -173,23 +171,23 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
     };
 
     if (isStream) {
-      chatAPI.getChatMessageByStream(sessionId, streamed_length, options).then(res => {
+      api.getChatMessageByStream(sessionId, streamed_length, options).then(res => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
       }).catch(error => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
       });
       return;
     }
-    chatAPI.getChatMessage(sessionId, options).then(res => {
+    api.getChatMessage(sessionId, options).then(res => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
     });
-  }, []);
+  }, [api]);
 
   const loadTeamSessions = useCallback(() => {
     setIsTeamSessionsLoading(true);
-    chatAPI.listTeamSharedSessions(projectUuid).then(res => {
+    api.listTeamSharedSessions(projectUuid).then(res => {
       let teamSessionsList = res.data.sessions;
       if (Array.isArray(teamSessionsList) && teamSessionsList.length > 0) {
         teamSessionsList = teamSessionsList.map(session => new ChatSession(session));
@@ -204,10 +202,10 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
     }).finally(() => {
       setIsTeamSessionsLoading(false);
     });
-  }, [projectUuid]);
+  }, [projectUuid, api]);
 
   const shareSession = useCallback((sessionId) => {
-    return chatAPI.shareChatSession(projectUuid, sessionId, true).then(res => {
+    return api.shareChatSession(projectUuid, sessionId, true).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       if (sessionIdx !== -1) {
@@ -219,10 +217,10 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [projectUuid, sessions]);
+  }, [projectUuid, sessions, api]);
 
   const unshareSession = useCallback((sessionId) => {
-    return chatAPI.shareChatSession(projectUuid, sessionId, false).then(res => {
+    return api.shareChatSession(projectUuid, sessionId, false).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       if (sessionIdx !== -1) {
@@ -234,13 +232,13 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [projectUuid, sessions]);
+  }, [projectUuid, sessions, api]);
 
   useEffect(() => {
     setLoading(true);
     const isShowSessions = localStorage.getItem(localStorageKeyRef.current) || 'true';
     setIsShowSessions(isShowSessions === 'true' ? true : false);
-    chatAPI.listChatSessions(projectUuid).then(res => {
+    api.listChatSessions(projectUuid).then(res => {
       let sessions = res.data.sessions;
       if (Array.isArray(sessions) && sessions.length > 0) {
         sessions = sessions.map(session => new ChatSession(session));
@@ -300,9 +298,9 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, children 
       toggleIsShowSessions,
       solveProblem,
       modifyLocalSession,
-      loadTeamSessions,
-      shareSession,
-      unshareSession,
+      loadTeamSessions: api.listTeamSharedSessions ? loadTeamSessions : null,
+      shareSession: api.shareChatSession ? shareSession : null,
+      unshareSession: api.shareChatSession ? unshareSession : null,
       getChatMessage,
       markSessionRunningTask,
     }}>

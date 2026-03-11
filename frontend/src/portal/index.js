@@ -13,7 +13,10 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const { projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName, isAnonymous, workspaceId, isExternalUser } = window.app.pageOptions;
+const {
+  projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
+  isAnonymous, workspaceID, isExternalUser,
+} = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
   if (anonymous) return kbEnabled ? PORTAL_PAGE.KNOWLEDGE_BASE : null;
@@ -190,10 +193,10 @@ const Portal = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceId}>
+          <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID}>
             {isEditMode && <LeftBar />}
             <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} />
-            <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceId={workspaceId} onPageChange={onPageChange} />
+            <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} onPageChange={onPageChange} />
           </DataProvider>
         )}
       </div>
