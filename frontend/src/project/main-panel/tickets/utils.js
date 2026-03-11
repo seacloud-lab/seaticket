@@ -364,6 +364,7 @@ export const generatorTicketsContextMenuOptions = ({
   list.push({
     label: gettext('Open ticket'),
     callback: () => togglePageSlugId(row._id),
+    key: 'open_ticket',
   });
   list.push({
     label: gettext('Copy link'),

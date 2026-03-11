@@ -12,6 +12,7 @@ import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
+import toaster from '@/components/toaster';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
@@ -37,6 +38,7 @@ const Tickets = ({
   toggleView,
   isLoading = false,
   getTicket,
+  onRefresh,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
@@ -246,16 +248,18 @@ const Tickets = ({
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
       rowMetrics: { idSelectedRowMap: {} },
-      deleteRow: (rowId) => metadataAPI.deleteRow(rowId),
-      hideMenu: () => {},
+      deleteRow: (rowId) => {
+        metadataAPI.deleteRow(rowId);
+        setIsShowTicketDetailsDialog(false);
+        toaster.success(context.translate('{Row} deleted'));
+        onRefresh();
+      },
       rowGetterByIndex: () => row,
-      selectNone: () => {},
       context,
       chatTicketsByAI,
       togglePageSlugId,
       workspaceID,
       projectName,
-      permission,
       findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
       createKnowledgeBaseRecord,
     });
