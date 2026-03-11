@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Button, Label } from 'reactstrap';
 import { Icon, toaster, Switch, PasswordInput, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
@@ -190,7 +190,7 @@ const Settings = () => {
                   <Icon symbol="copy" />
                 </Button>
               </div>
-              <div style={{ marginTop: 16 }}>
+              <div className="mt-4">
                 <Switch
                   checked={allowAnonymous}
                   onChange={onToggleAnonymous}
@@ -200,7 +200,7 @@ const Settings = () => {
                 />
               </div>
               {allowAnonymous && (
-                <div style={{ marginTop: 8 }}>
+                <div className="mt-2">
                   <Switch
                     checked={enablePassword}
                     onChange={onTogglePassword}
@@ -214,10 +214,10 @@ const Settings = () => {
                 <>
                   {!isEditingPassword && hasSavedPassword && (
                     <>
-                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                      <label className="portal-settings-label mt-2">
                         {gettext('Password (at least 8 characters)')}
                       </label>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <div className="d-flex gap-2 align-items-center">
                         <PasswordInput
                           value={'********'}
                           onChange={() => {}}
@@ -226,13 +226,15 @@ const Settings = () => {
                           enableCheckStrength={false}
                           placeholder={gettext('Enter password')}
                         />
-                        <IconButton icon="rename" className="btn btn-outline-secondary p-0" onClick={onEditPassword} />
+                        <Button color="outline-primary" onClick={onEditPassword} title={gettext('Replace password')}>
+                          <Icon symbol="rename" />
+                        </Button>
                       </div>
                     </>
                   )}
                   {(isEditingPassword || !hasSavedPassword) && (
                     <>
-                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                      <label className="portal-settings-label mt-2">
                         {gettext('Password (at least 8 characters)')}
                       </label>
                       <PasswordInput
@@ -242,7 +244,7 @@ const Settings = () => {
                         enableCheckStrength={false}
                         placeholder={gettext('Enter password')}
                       />
-                      <label className="portal-settings-label" style={{ marginTop: 8 }}>
+                      <label className="portal-settings-label mt-2">
                         {gettext('Confirm password')}
                       </label>
                       <PasswordInput
@@ -256,23 +258,21 @@ const Settings = () => {
                   )}
                 </>
               )}
-              <div style={{ marginTop: 16 }}>
+              <div className="mt-4">
                 <button className="btn btn-primary" onClick={onSaveSettings}>{gettext('Save')}</button>
               </div>
             </div>
           </TabPane>
           <TabPane tabId={SETTING_TABS.DISPLAY}>
             <div className="portal-settings-content">
-              <div className="portal-settings-label">
-                <Switch
-                  checked={showKB}
-                  disabled={isSaving}
-                  onChange={onToggleKB}
-                  textPosition="right"
-                  placeholder={gettext('Show knowledge base')}
-                  className="portal-settings-switch"
-                />
-              </div>
+              <Switch
+                checked={showKB}
+                disabled={isSaving}
+                onChange={onToggleKB}
+                textPosition="right"
+                placeholder={gettext('Show knowledge base')}
+                className="portal-settings-switch"
+              />
             </div>
           </TabPane>
         </TabContent>

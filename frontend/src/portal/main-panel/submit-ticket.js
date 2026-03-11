@@ -142,7 +142,7 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
     };
 
     portalAPI.createTicket(projectUuid, data).then(() => {
-      toaster.success(gettext('Ticket submitted successfully'));
+      toaster.success(gettext('Ticket has been submitted'));
       setTitle('');
       setContent('');
       setType('');
