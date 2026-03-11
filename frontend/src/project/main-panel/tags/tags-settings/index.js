@@ -15,7 +15,7 @@ import './index.css';
 
 const TagsSettings = ({
   isReadonly,
-  value,
+  value: defaultValue,
   className = 'mb-4',
   isLoading = false,
   tagsData,
@@ -23,6 +23,8 @@ const TagsSettings = ({
   onChange,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
+
+  const value = useMemo(() => Array.isArray(defaultValue) ? defaultValue.map(v => String(v)) : [], [defaultValue]);
 
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
@@ -139,7 +141,7 @@ const TagsSettings = ({
             optionHeight="fit-content"
             placeholder={gettext('Search tags')}
             emptyTip={gettext('No available tags')}
-            value={Array.isArray(value) ? value.map(v => String(v)) : []}
+            value={value}
             options={options}
             onCreate={handleCreateTag}
           >
