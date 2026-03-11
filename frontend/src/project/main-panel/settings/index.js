@@ -42,8 +42,8 @@ const Settings = ({
         placeholder={gettext('Support portal')}
         tip={gettext('Enable support portal')}
         className="mb-4"
-        value={settings.enable_portal || false}
-        onChange={(value, callback) => modifySettings({ enable_portal: value }, callback)}
+        value={settings.portal?.enable_portal || false}
+        onChange={(value, callback) => modifySettings({ portal: Object.assign({}, settings.portal, { 'enable_portal': value }) }, callback)}
       />
       <LanguageSettings
         className="mb-4"
