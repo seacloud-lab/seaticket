@@ -2,6 +2,8 @@ import uuid
 import logging
 import json
 
+from django.core.cache import cache
+from django.http import StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
@@ -16,6 +18,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import get_ai_reply
+from seahub.chats.constants import AI_REPLY_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +69,69 @@ def gen_portal_message_id(session_uuid, max_try=5):
         raise Exception('Failure to generate message_id')
 
     return new_message_id
+
+
+def gen_portal_chat_task_id(session_uuid):
+    return f"portal_chat_{session_uuid.replace('-', '')}"
+
+
+def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query):
+    has_recorded_result = False
+    try:
+        for line in ai_response.iter_lines():
+            if line:
+                line_str = line.decode('utf-8')
+                if not line_str.startswith('data:'):
+                    line_str = f"data: {line_str}"
+                content = line_str[len('data: '):]
+                if content.startswith('{"results": ') and content.endswith('}'):
+                    results = json.loads(content)['results']
+                    ai_reply = results.get('ai_reply', results.get('answer', ''))
+                    user_message = PortalChatMessages.objects.create_message(
+                        session_uuid, message_id, username, 'user', query
+                    )
+                    ai_reply_message = PortalChatMessages.objects.create_message(
+                        session_uuid, message_id, username, 'assistant', ai_reply
+                    )
+                    results['user_message_id'] = user_message.id
+                    results['ai_reply_message_id'] = ai_reply_message.id
+                    results['session_uuid'] = session_uuid
+                    has_recorded_result = True
+                    item = f'data: {json.dumps({"results": results})}\n\n'
+                else:
+                    if not line_str.endswith('\n\n'):
+                        line_str += '\n\n'
+                    item = line_str
+                try:
+                    yield item
+                except:
+                    continue
+    except Exception as e:
+        logger.exception(f'Portal streaming response is interrupted: {e}')
+        if not has_recorded_result:
+            fallback_reply = 'There is an issue with the AI server or web server (internal server error), please try again later'
+            user_message = PortalChatMessages.objects.create_message(
+                session_uuid, message_id, username, 'user', query
+            )
+            ai_reply_message = PortalChatMessages.objects.create_message(
+                session_uuid, message_id, username, 'assistant', fallback_reply
+            )
+            results = {
+                'ai_reply': fallback_reply,
+                'user_message_id': user_message.id,
+                'ai_reply_message_id': ai_reply_message.id,
+                'session_uuid': session_uuid,
+            }
+            item = f'data: {json.dumps({"results": results})}\n\n'
+            try:
+                yield item
+            except:
+                pass
+        try:
+            yield 'data: [DONE]\n\n'
+        except:
+            pass
+    cache.delete(chat_task_id_info)
 
 
 class PortalChatSessionsView(APIView):
@@ -172,7 +238,14 @@ class PortalChatMessagesView(APIView):
         try:
             messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
             messages_data = [message.to_dict() for message in messages]
-            return Response({'messages': messages_data})
+            chat_task_info = cache.get(gen_portal_chat_task_id(session_uuid))
+            results = {
+                'messages': messages_data,
+                'running_task': chat_task_info is not None,
+            }
+            if results['running_task']:
+                results['user_input'] = chat_task_info['user_input']
+            return Response(results)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -203,6 +276,15 @@ class PortalChatView(APIView):
         project, error = get_project_or_error(project_uuid)
         if error:
             return error
+
+        stream = project.to_dict()['settings'].get('streaming_response', True)
+        stream_from_request = request.data.get('stream')
+        if stream_from_request is not None:
+            if isinstance(stream_from_request, str):
+                stream_from_request = stream_from_request.lower() == 'true'
+            if not isinstance(stream_from_request, bool):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid stream')
+            stream = stream_from_request
 
         username = request.user.username
         session, error = get_session_or_error(session_uuid, username)
@@ -238,6 +320,10 @@ class PortalChatView(APIView):
             else:
                 issue_connections.append({'type': connection.type, 'id': connection.pk})
 
+        chat_task_id_info = gen_portal_chat_task_id(session.session_uuid)
+        if cache.get(chat_task_id_info) is not None:
+            return api_error(status.HTTP_409_CONFLICT, 'There are unfinished tasks in the current session, please try again later.')
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
@@ -249,8 +335,30 @@ class PortalChatView(APIView):
             'llm_model': model,
             'document_connections': document_connections,
             'issue_connections': issue_connections,
-            'is_external_portal': True
+            'is_external_portal': True,
+            'stream': stream,
         }
+
+        task_info = {
+            'user_input': {
+                'message': query,
+            }
+        }
+        cache.set(chat_task_id_info, task_info, AI_REPLY_TIMEOUT)
+
+        if stream:
+            try:
+                return StreamingHttpResponse(
+                    process_portal_stream_ai_reply(chat_task_id_info, get_ai_reply(params), username, session.session_uuid, message_id, query),
+                    content_type='text/event-stream',
+                    headers={
+                        'Cache-Control': 'no-cache',
+                        'X-Accel-Buffering': 'no'
+                    }
+                )
+            except Exception as e:
+                logger.exception(f'Failure to make portal stream: {e}')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
         try:
             ai_response = get_ai_reply(params)
@@ -268,6 +376,8 @@ class PortalChatView(APIView):
             session.session_uuid, message_id, username, 'assistant',
             ai_response['ai_reply']
         )
+
+        cache.delete(chat_task_id_info)
 
         return Response({
             'ai_reply': ai_response['ai_reply'],
