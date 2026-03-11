@@ -639,6 +639,8 @@ class PortalExternalInvitationsView(APIView):
         if not email:
             error_msg = 'Email not provided.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not is_valid_email(email):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
