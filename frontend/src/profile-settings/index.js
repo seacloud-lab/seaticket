@@ -36,6 +36,7 @@ const {
   enableConvertToTeamAccount,
   enableSAML,
   enableMultiSAML,
+  canUseSAML,
 } = window.app.pageOptions;
 
 class ProfileSettings extends React.Component {
@@ -94,7 +95,7 @@ class ProfileSettings extends React.Component {
         icon: 'password'
       },
       {
-        show: ((enableMultiSAML && isOrgContext)) && !this.isWorkWX,
+        show: ((enableMultiSAML && isOrgContext && canUseSAML)) && !this.isWorkWX,
         href: '#social-auth',
         text: gettext('Social login'),
         icon: 'social-login'
@@ -249,7 +250,7 @@ class ProfileSettings extends React.Component {
                 <LanguageSetting />
                 <EmailNotice />
                 {twoFactorAuthEnabled && <TwoFactorAuthentication />}
-                {(enableSAML || (enableMultiSAML && isOrgContext)) && !this.isWorkWX && <SocialLogin />}
+                {(enableSAML || (enableMultiSAML && isOrgContext && canUseSAML)) && !this.isWorkWX && <SocialLogin />}
                 {(enableConvertToTeamAccount && !isOrgContext) && <UserConvertToTeam />}
                 {enableDeleteAccount && !this.isWorkWX && <DeleteAccount />}
                 <div id="logged-in-sessions" className="setting-item">

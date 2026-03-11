@@ -1,7 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import seahub.settings as settings
-# Default user have common operations, like creating group and library.
-DEFAULT_USER = 'default'
 
 # Team (org) roles — users inherit their team's role
 TEAM_FREE = 'free'

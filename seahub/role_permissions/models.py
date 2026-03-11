@@ -29,18 +29,3 @@ class AdminRole(models.Model):
     role = models.CharField(max_length=255)
 
     objects = AdminRoleManager()
-
-
-class UserRoleManager(models.Manager):
-    pass
-
-
-class UserRole(models.Model):
-    email = models.EmailField(unique=True, db_index=True)
-    role = models.CharField(max_length=255)
-    is_manual_set = models.IntegerField()
-
-    objects = UserRoleManager()
-
-    class Meta:
-        db_table = 'user_role'

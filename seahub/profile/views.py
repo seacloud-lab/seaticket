@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 
 from seahub.organizations.models import OrgAdminSettings
+from seahub.organizations.utils import can_org_use_saml
 from .models import Profile
 from seahub.auth.decorators import login_required
 from seahub.utils import is_org_context, is_valid_username
@@ -42,6 +43,7 @@ def edit_profile(request):
     Show and edit user profile.
     """
     username = request.user.username
+    org_in_context = is_org_context(request)
 
     if settings.ENABLE_WEBDAV_SECRET:
         decoded = UserOptions.objects.get_webdav_decoded_secret(username)
@@ -59,12 +61,15 @@ def edit_profile(request):
     saml_connected = False
     enable_multi_saml = False
     org_saml_connected = False
+    can_use_saml = False
 
     if ENABLE_SAML:
         enable_saml = True
         saml_connected = SocialAuthUser.objects.filter(
             username=request.user.username, provider=SAML_PROVIDER_IDENTIFIER).exists()
-    if ENABLE_MULTI_SAML and is_org_context(request):
+    if org_in_context:
+        can_use_saml = can_org_use_saml(request.user.org)
+    if ENABLE_MULTI_SAML and org_in_context and can_use_saml:
         enable_multi_saml = True
         org_saml_connected = SocialAuthUser.objects.filter(
             username=request.user.username, provider=SAML_PROVIDER_IDENTIFIER).exists()
@@ -90,8 +95,8 @@ def edit_profile(request):
     resp_dict = {
             'two_factor_auth_enabled': has_two_factor_auth(),
             'ENABLE_WEBDAV_SECRET': settings.ENABLE_WEBDAV_SECRET,
-            'ENABLE_DELETE_ACCOUNT': False if is_org_context(request) else ENABLE_DELETE_ACCOUNT,
-            'ENABLE_CONVERT_TO_TEAM_ACCOUNT': False if is_org_context(request) else ENABLE_CONVERT_TO_TEAM_ACCOUNT,
+            'ENABLE_DELETE_ACCOUNT': False if org_in_context else ENABLE_DELETE_ACCOUNT,
+            'ENABLE_CONVERT_TO_TEAM_ACCOUNT': False if org_in_context else ENABLE_CONVERT_TO_TEAM_ACCOUNT,
             'ENABLE_UPDATE_USER_INFO': ENABLE_UPDATE_USER_INFO,
             'webdav_passwd': webdav_passwd,
             'project_updates_email_interval': project_updates_email_interval,
@@ -105,6 +110,7 @@ def edit_profile(request):
             'enable_saml': enable_saml,
             'saml_connected': saml_connected,
             'enable_multi_saml': enable_multi_saml,
+            'can_use_saml': can_use_saml,
             'org_saml_connected': org_saml_connected,
             'org_id': org_id,
             'can_update_password': can_update_password,

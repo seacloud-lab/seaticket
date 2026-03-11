@@ -1,7 +1,5 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-import datetime
 import logging
-import jwt
 
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
@@ -9,11 +7,10 @@ from rest_framework.exceptions import APIException
 
 from seahub.auth.models import AnonymousUser
 from seahub.base.accounts import User
-from seahub.api2.models import Token, TokenV2
-from seahub.constants import DEFAULT_USER
+from seahub.api2.models import Token
 from seahub.profile.settings import ROLE_CACHE_PREFIX, ROLE_CACHE_TIMEOUT
 from seahub.project.models import ProjectAPIToken
-from seahub.utils import within_time_range, normalize_cache_key
+from seahub.utils import normalize_cache_key
 from seahub.utils.auth import AUTHORIZATION_PREFIX
 from django.core.cache import cache
 from seahub.organizations.models import Organization
@@ -58,7 +55,7 @@ class TokenAuthentication(BaseAuthentication):
         role = cache.get(role_cache_key, None)
         if role:
             return role
-        if not user.role or user.role == DEFAULT_USER:
+        if not user.role:
             from seahub.organizations.models import OrgSettings
             role = OrgSettings.objects.get_role_by_org(user.org)
             cache.set(role_cache_key, role, ROLE_CACHE_TIMEOUT)

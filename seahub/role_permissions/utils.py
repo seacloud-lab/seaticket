@@ -3,7 +3,7 @@ import logging
 
 from .settings import ENABLED_ROLE_PERMISSIONS, ENABLED_ADMIN_ROLE_PERMISSIONS
 
-from seahub.constants import DEFAULT_USER, DEFAULT_ADMIN
+from seahub.constants import TEAM_FREE, DEFAULT_ADMIN
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +16,11 @@ def get_enabled_role_permissions_by_role(role):
     """Get permissions dict(perm_name: bool) of a role.
     """
     if not role:
-        role = DEFAULT_USER
+        role = TEAM_FREE
 
     if role not in list(ENABLED_ROLE_PERMISSIONS.keys()):
-        logger.warn('%s is not a valid role, use default role.' % role)
-        role = DEFAULT_USER
+        logger.warning('%s is not a valid role, use default role.' % role)
+        role = TEAM_FREE
 
     return ENABLED_ROLE_PERMISSIONS[role]
 
@@ -37,7 +37,7 @@ def get_enabled_admin_role_permissions_by_role(role):
         role = DEFAULT_ADMIN
 
     if role not in list(ENABLED_ADMIN_ROLE_PERMISSIONS.keys()):
-        logger.warn('%s is not a valid admin role, use default admin role.' % role)
+        logger.warning('%s is not a valid admin role, use default admin role.' % role)
         role = DEFAULT_ADMIN
 
     return ENABLED_ADMIN_ROLE_PERMISSIONS[role]

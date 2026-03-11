@@ -46,8 +46,6 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'can_use_saml': False,
         'ai_credit_per_user': -1,
-        'can_use_global_address_book': True,
-        'can_use_advanced_permissions': True,
         'can_use_advanced_customization': True,
     },
     TEAM_START: {
@@ -55,8 +53,6 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'can_use_saml': False,
         'ai_credit_per_user': -1,
-        'can_use_global_address_book': True,
-        'can_use_advanced_permissions': True,
         'can_use_advanced_customization': True,
     },
     TEAM_PRO: {
@@ -64,8 +60,6 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'can_use_saml': False,
         'ai_credit_per_user': -1,
-        'can_use_global_address_book': True,
-        'can_use_advanced_permissions': True,
         'can_use_advanced_customization': True,
     },
     TEAM_BUSINESS: {
@@ -73,8 +67,6 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'can_use_saml': True,
         'ai_credit_per_user': -1,
-        'can_use_global_address_book': True,
-        'can_use_advanced_permissions': True,
         'can_use_advanced_customization': True,
     },
     TEAM_ENTERPRISE: {
@@ -82,8 +74,6 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'can_use_saml': True,
         'ai_credit_per_user': -1,
-        'can_use_global_address_book': True,
-        'can_use_advanced_permissions': True,
         'can_use_advanced_customization': True,
     },
 }
