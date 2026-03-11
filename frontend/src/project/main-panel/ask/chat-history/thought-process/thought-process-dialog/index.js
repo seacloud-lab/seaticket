@@ -210,7 +210,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
             }];
             if (tool_calls?.[0]?.execution_detail) {
               executionInfo.push({
-                name: gettext('Execution_details'),
+                name: gettext('Execution detail'),
                 children: Object.entries(tool_calls?.[0]?.execution_detail || {}).map(([detailKey, detailValue]) => {
                   return `${gettext(detailKey)}: ${detailValue}`;
                 })
@@ -247,7 +247,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                 }];
                 if (too_call.execution_detail) {
                   SubstepExecutionInfo.push({
-                    name: gettext('Execution_details'),
+                    name: gettext('Execution detail'),
                     children: Object.entries(too_call.execution_detail || {}).map(([detailKey, detailValue]) => {
                       return `${gettext(detailKey)}: ${detailValue}`;
                     })
