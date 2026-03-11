@@ -133,6 +133,10 @@ class PortalChatMessagesManager(models.Manager):
     def get_messages_by_session(self, session_uuid):
         return self.filter(session_uuid=session_uuid).order_by('created_at')
 
+    def get_last_message_by_session(self, session_uuid):
+        """Retrieve the last message of the session"""
+        return self.filter(session_uuid=session_uuid).order_by('-created_at').first()
+
     def clear_context(self, session_uuid, username):
         self.create_message(session_uuid, None, username, 'chat_manager', '<break_context>', False)
         records = self.filter(session_uuid=session_uuid)

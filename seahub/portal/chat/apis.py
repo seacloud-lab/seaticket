@@ -1,6 +1,7 @@
 import uuid
 import logging
 import json
+import time
 
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
@@ -75,8 +76,35 @@ def gen_portal_chat_task_id(session_uuid):
     return f"portal_chat_{session_uuid.replace('-', '')}"
 
 
+def record_portal_message_to_db(ai_result, username, session_uuid, message_id, query):
+    if 'ai_reply' not in ai_result:
+        ai_result['ai_reply'] = ai_result.get('answer', '')
+
+    ai_result.pop('answer', None)
+    ai_result.update({
+        'session_uuid': session_uuid,
+    })
+
+    try:
+        user_message = PortalChatMessages.objects.create_message(
+            session_uuid, message_id, username, 'user', query
+        )
+        ai_reply_message = PortalChatMessages.objects.create_message(
+            session_uuid, message_id, username, 'assistant', ai_result['ai_reply']
+        )
+        ai_result.update({
+            'user_message_id': user_message.id,
+            'ai_reply_message_id': ai_reply_message.id
+        })
+    except Exception as e:
+        logger.warning(f'Failure to record portal messages to db: {e}')
+
+    return ai_result
+
+
 def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query):
     has_recorded_result = False
+    error_msg = None
     try:
         for line in ai_response.iter_lines():
             if line:
@@ -84,45 +112,29 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, ses
                 if not line_str.startswith('data:'):
                     line_str = f"data: {line_str}"
                 content = line_str[len('data: '):]
+                # use if - else instead of json.loads() to avoid performance issues
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
-                    ai_reply = results.get('ai_reply', results.get('answer', ''))
-                    user_message = PortalChatMessages.objects.create_message(
-                        session_uuid, message_id, username, 'user', query
-                    )
-                    ai_reply_message = PortalChatMessages.objects.create_message(
-                        session_uuid, message_id, username, 'assistant', ai_reply
-                    )
-                    results['user_message_id'] = user_message.id
-                    results['ai_reply_message_id'] = ai_reply_message.id
-                    results['session_uuid'] = session_uuid
+                    item = f'data: {json.dumps({"results": record_portal_message_to_db(results, username, session_uuid, message_id, query)})}\n\n'
                     has_recorded_result = True
-                    item = f'data: {json.dumps({"results": results})}\n\n'
+                elif content.startswith('[ERROR: ') and content.endswith(']'):
+                    error_msg = content[1:-1]
+                    item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": error_msg, "sources": []}, username, session_uuid, message_id, query)})}\n\n'
+                    has_recorded_result = True
                 else:
                     if not line_str.endswith('\n\n'):
                         line_str += '\n\n'
                     item = line_str
                 try:
                     yield item
-                except:
+                except:  # continues to receive data even client interrupts the stream
                     continue
+                if error_msg:
+                    raise ConnectionError(error_msg)
     except Exception as e:
         logger.exception(f'Portal streaming response is interrupted: {e}')
         if not has_recorded_result:
-            fallback_reply = 'There is an issue with the AI server or web server (internal server error), please try again later'
-            user_message = PortalChatMessages.objects.create_message(
-                session_uuid, message_id, username, 'user', query
-            )
-            ai_reply_message = PortalChatMessages.objects.create_message(
-                session_uuid, message_id, username, 'assistant', fallback_reply
-            )
-            results = {
-                'ai_reply': fallback_reply,
-                'user_message_id': user_message.id,
-                'ai_reply_message_id': ai_reply_message.id,
-                'session_uuid': session_uuid,
-            }
-            item = f'data: {json.dumps({"results": results})}\n\n'
+            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later", "sources": []}, username, session_uuid, message_id, query)})}\n\n'
             try:
                 yield item
             except:
@@ -256,6 +268,40 @@ class PortalChatView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        session_uuid = request.GET.get('session_uuid')
+        if not session_uuid:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'session_uuid parameter is required.')
+
+        project, error = get_project_or_error(project_uuid)
+        if error:
+            return error
+
+        try:
+            session, error = get_session_or_error(session_uuid, request.user.username)
+            if error:
+                return error
+
+            chat_task_id_info = gen_portal_chat_task_id(session_uuid)
+            while cache.get(chat_task_id_info) is not None:
+                time.sleep(0.1)
+
+            last_message = PortalChatMessages.objects.get_last_message_by_session(session_uuid)
+            if not last_message:
+                return api_error(status.HTTP_404_NOT_FOUND, 'No messages found.')
+
+            result = {
+                'ai_reply': last_message.content,
+                'ai_reply_message_id': last_message.id,
+                'session_uuid': session_uuid,
+            }
+
+            return Response(result)
+
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
     def post(self, request, project_uuid):
         """Send message and get AI reply"""
