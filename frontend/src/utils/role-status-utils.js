@@ -18,10 +18,16 @@ const translateRole = (role) => {
       return gettext('Admin');
     case 'Member':
       return gettext('Member');
-    case 'default':
-      return gettext('Default');
-    case 'guest':
-      return gettext('Guest');
+    case 'free':
+      return gettext('Free');
+    case 'start':
+      return gettext('Start');
+    case 'pro':
+      return gettext('Pro');
+    case 'business':
+      return gettext('Business');
+    case 'enterprise':
+      return gettext('Enterprise');
     case 'default_admin':
       return gettext('Default admin');
     case 'system_admin':

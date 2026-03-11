@@ -27,7 +27,7 @@ class SysAdminAddUserDialog extends React.Component {
       passwordAgain: '',
       email: '',
       name: '',
-      role: 'default',
+      role: 'free',
       isSubmitBtnActive: false,
     };
   }
@@ -116,10 +116,16 @@ class SysAdminAddUserDialog extends React.Component {
 
   translateRoles = (role) => {
     switch (role) {
-      case 'default':
-        return gettext('Default');
-      case 'guest':
-        return gettext('Guest');
+      case 'free':
+        return gettext('Free');
+      case 'start':
+        return gettext('Start');
+      case 'pro':
+        return gettext('Pro');
+      case 'business':
+        return gettext('Business');
+      case 'enterprise':
+        return gettext('Enterprise');
       default:
         return role;
     }
@@ -128,7 +134,6 @@ class SysAdminAddUserDialog extends React.Component {
   render() {
     const { dialogTitle, showRole, availableRoles } = this.props;
     const { errorMsg, isShowPassword, email, name, role, password, passwordAgain, isSubmitBtnActive } = this.state;
-
     return (
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}>{dialogTitle || gettext('Add member')}</ModalHeader>
