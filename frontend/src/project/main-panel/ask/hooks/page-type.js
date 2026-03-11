@@ -1,21 +1,14 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
+import { EVENT_BUS_TYPE } from '../../../constants';
 import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
-import { siteRoot } from '@/constants';
+import { isFunction } from '@/utils/type-detection';
 
 const AskPageContext = React.createContext(null);
 
-export const AskPageProvider = ({ workspaceID, projectName, children }) => {
+export const AskPageProvider = ({ getInitialPageSlugId, resetURL, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(ASK_PAGE_SLUG_ID.NEW);
-
-  const resetURL = useCallback((pageSlugId) => {
-    const { origin } = location;
-    let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
-    let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
-    history.replaceState(null, null, url + urlPart);
-  }, [workspaceID]);
 
   const togglePageSlugId = useCallback((pageSlugId) => {
     setPageSlugId(pageSlugId);
@@ -23,16 +16,12 @@ export const AskPageProvider = ({ workspaceID, projectName, children }) => {
 
   // init page
   useEffect(() => {
-    const { pathname } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const part = `/project/${projectName}/`;
-    const projectNameIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectNameIndex + part.length);
-    const params = paramsString.split('/');
-    const [, pageIdFromURL = ''] = params;
-    setPageSlugId(pageIdFromURL || ASK_PAGE_SLUG_ID.NEW);
+    if (isFunction(getInitialPageSlugId)) {
+      const pageSlugId = getInitialPageSlugId();
+      setPageSlugId(pageSlugId);
+    }
     setLoading(false);
-  }, [projectName]);
+  }, [getInitialPageSlugId]);
 
   useEffect(() => {
     const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.ASK_PAGE, togglePageSlugId);

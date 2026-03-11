@@ -5,7 +5,6 @@ import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import ChatInput from '../chat-input';
-import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
 import { Thinking } from '../components';
 import { Utils } from '@/utils/utils';
@@ -16,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, api }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -30,7 +29,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
   const newSessionProblem = useRef('');
   const aiReplyStreamTimer = useRef('');
 
-  const { isShowSessions, sessions, createSession, modifyLocalSession, getChatMessage } = useSessions();
+  const { isShowSessions, sessions, teamSessions, createSession, modifyLocalSession, getChatMessage } = useSessions();
   const { togglePageSlugId } = useAskPage();
   const { isShowDocuments, documents } = useDocuments();
 
@@ -42,8 +41,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
 
   const session = useMemo(() => {
     if (sessionId === ASK_PAGE_SLUG_ID.NEW) return null;
-    return sessions.find(s => s._id === sessionId);
-  }, [sessionId, sessions]);
+    return sessions.find(s => s._id === sessionId) || teamSessions.find(s => s._id === sessionId);
+  }, [sessionId, sessions, teamSessions]);
 
   const readOnly = useMemo(() => {
     return session?.running_task || false;
@@ -143,7 +142,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID }) =>
       return;
     }
 
-    chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
+    api.getChatMessages(projectUuid, sessionId).then(res => {
       const { messages: historyMessages, running_task, running_task_is_stream, user_input, streamed_data, streamed_length } = res.data;
       let messages = Array.isArray(historyMessages) ? historyMessages.map(item => {
         if (item.role === 'user') {

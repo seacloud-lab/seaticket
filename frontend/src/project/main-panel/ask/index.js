@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
 import TopBar from '../top-bar';
 import Sessions from './sessions';
 import Chat from './chat';
 import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from './hooks';
-import { PERMISSION_TYPES, gettext } from '@/constants';
+import { PERMISSION_TYPES, gettext, siteRoot } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
 import { useConnections } from '../connections/hooks';
 import Documents from './documents';
+import { chatAPI } from '@/project/api';
+import { BAR_TYPE } from '../../constants';
 
 import './index.css';
 
@@ -57,6 +59,7 @@ const Main = ({ title, settings }) => {
                 projectUuid={projectUuid}
                 projectName={projectName}
                 settings={settings}
+                api={chatAPI}
               />
               <Documents />
             </div>
@@ -71,13 +74,31 @@ const Main = ({ title, settings }) => {
 const Ask = ({ title, settings }) => {
   const { reloadConnections } = useConnections();
 
+  const resetURL = useCallback((pageSlugId) => {
+    const { origin } = location;
+    let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
+    let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
+    history.replaceState(null, null, url + urlPart);
+  }, [workspaceID]);
+
+  const getInitialPageSlugId = useCallback(() => {
+    const { pathname } = location;
+    const decodePathname = decodeURIComponent(pathname);
+    const part = `/project/${projectName}/`;
+    const projectNameIndex = decodePathname.indexOf(part);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length);
+    const params = paramsString.split('/');
+    const [, pageIdFromURL = ''] = params;
+    return pageIdFromURL || ASK_PAGE_SLUG_ID.NEW;
+  }, [projectName]);
+
   useEffect(() => {
     reloadConnections();
   }, []);
 
   return (
-    <AskPageProvider workspaceID={workspaceID} projectName={projectName} >
-      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} settings={settings} >
+    <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
+      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} settings={settings} api={chatAPI} >
         <DocumentsProvider>
           <Main title={title} settings={settings} />
         </DocumentsProvider>
