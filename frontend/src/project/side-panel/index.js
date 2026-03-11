@@ -15,7 +15,7 @@ import './index.css';
 const INIT_SIDEBAR_WIDTH = 300;
 const { isProjectAdmin } = window.app.pageOptions;
 
-const SidePanel = ({ activeBar, toggleBar }) => {
+const SidePanel = ({ activeBar, toggleBar, settings }) => {
   const ref = useRef(null);
 
   const onResize = useCallback((width) => {
@@ -44,7 +44,9 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />
+            {settings?.portal?.enable_portal &&
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
+            }
             {isProjectAdmin &&
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }

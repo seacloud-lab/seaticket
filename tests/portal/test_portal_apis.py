@@ -15,9 +15,11 @@ from seahub.portal.apis import (
 )
 
 
-def _set_portal_settings(project, *, allow_anonymous=False, enable_password_protection=False, show_knowledge_base=False, password=None):
+def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
+                         enable_password_protection=False, show_knowledge_base=False, password=None):
     settings_dict = json.loads(project.settings) if project.settings else {}
     portal = settings_dict.get('portal', {})
+    portal['enable_portal'] = bool(enable_portal)
     portal['allow_anonymous'] = bool(allow_anonymous)
     portal['enable_password_protection'] = bool(enable_password_protection)
     portal['show_knowledge_base'] = bool(show_knowledge_base)

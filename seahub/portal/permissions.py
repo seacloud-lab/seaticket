@@ -47,6 +47,10 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not project:
             return False
 
+        enable_portal = portal_settings.get('enable_portal', False)
+        if not enable_portal:
+            return False
+            
         if _is_external_member(request, project_uuid):
             return True
 
@@ -67,11 +71,12 @@ class PortalKnowledgeBasePermission(BasePermission):
 
 class PortalTicketPermission(BasePermission):
     def has_permission(self, request, view):
-        project_uuid = getattr(view, 'kwargs', {}).get('project_uuid')
-        if not project_uuid:
-            return None, None, None
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project_uuid, project, portal_settings = _get_project_and_settings(request, view)
         if not project:
+            return False
+
+        enable_portal = portal_settings.get('enable_portal', False)
+        if not enable_portal:
             return False
 
         user = getattr(request, 'user', None)

@@ -28,6 +28,7 @@ def _get_portal_settings(project):
         project_settings = {}
     portal_settings = project_settings.get('portal', {})
     return {
+        'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
         'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
         'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
@@ -55,6 +56,10 @@ def portal_view(request, project_uuid, children_id=None):
     allow_anonymous = portal_settings['allow_anonymous']
     enable_password_protection = portal_settings['enable_password_protection']
     show_kb_in_portal = portal_settings['show_kb_in_portal']
+    enable_portal = portal_settings['enable_portal']
+    
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
 
     ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
     is_authenticated_user = bool(getattr(request, 'user', None) and request.user.is_authenticated)
@@ -146,9 +151,14 @@ def portal_anonymous_validate(request, project_uuid):
         project_settings = json.loads(project.settings) if project.settings else {}
     except Exception:
         project_settings = {}
+
     portal_settings = project_settings.get('portal', {})
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+    enable_portal = bool(portal_settings.get('enable_portal', False))
+    
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
 
     # Only meaningful when anonymous and password protection is on
     if not (allow_anonymous and enable_password_protection):
@@ -244,10 +254,15 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
             project_settings = json.loads(project.settings)
         except Exception:
             project_settings = {}
+    
     portal_settings = project_settings.get('portal', {})
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+    enable_portal = bool(portal_settings.get('enable_portal', False))
+    
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
 
     if allow_anonymous and enable_password_protection:
         encoded_password = portal_settings.get('password')

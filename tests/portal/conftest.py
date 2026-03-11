@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from uuid import uuid4
+import json
 
 import pytest
 from rest_framework.test import APIRequestFactory
@@ -35,6 +36,8 @@ def real_project(db):
         workspace=workspace,
         name=f"proj-{uuid4().hex[:6]}",
     )
+    project.settings = json.dumps({'portal': {'enable_portal': True}})
+    project.save(update_fields=['settings'])
     return project
 
 
