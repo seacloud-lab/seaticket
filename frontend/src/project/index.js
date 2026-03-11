@@ -153,7 +153,7 @@ const Project = () => {
           <CenteredLoading />
         ) : (
           <>
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+            <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
             <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
           </>
         )}

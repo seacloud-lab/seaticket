@@ -34,7 +34,16 @@ const Settings = ({
         placeholder={gettext('Developer mode')}
         tip={gettext('Enable developer mode to show advanced features for development and debugging purposes.')}
         value={settings.developer_mode || false}
+        className="mb-4"
         onChange={(value, callback) => modifySettings({ developer_mode: value }, callback)}
+      />
+      <SwitchSettingsItem
+        title={gettext('Support portal')}
+        placeholder={gettext('Support portal')}
+        tip={gettext('Enable support portal')}
+        className="mb-4"
+        value={settings.enable_portal || false}
+        onChange={(value, callback) => modifySettings({ enable_portal: value }, callback)}
       />
       <LanguageSettings
         className="mb-4"
@@ -42,7 +51,6 @@ const Settings = ({
         value={settings.lang || 'en'}
         onChange={(value, callback) => modifySettings({ lang: value }, callback)}
       />
-
     </>
   );
 };

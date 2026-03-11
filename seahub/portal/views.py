@@ -50,6 +50,15 @@ def portal_view(request, project_uuid, children_id=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
+    try:
+        project_settings = getattr(project, 'settings', '{}') or '{}'
+        project_settings_dict = json.loads(project_settings) if project_settings else {}
+    except:
+        project_settings_dict = {}
+    enable_portal = bool(project_settings_dict.get('enable_portal', False))
+
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
 
     portal_settings = _get_portal_settings(project)
     allow_anonymous = portal_settings['allow_anonymous']
@@ -146,6 +155,12 @@ def portal_anonymous_validate(request, project_uuid):
         project_settings = json.loads(project.settings) if project.settings else {}
     except Exception:
         project_settings = {}
+    
+    enable_portal = bool(project_settings.get('enable_portal', False))
+    
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
+
     portal_settings = project_settings.get('portal', {})
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -244,6 +259,12 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
             project_settings = json.loads(project.settings)
         except Exception:
             project_settings = {}
+            
+    enable_portal = bool(project_settings.get('enable_portal', False))
+
+    if not enable_portal:
+        return render_error(request, _('Portal is not enabled'))
+    
     portal_settings = project_settings.get('portal', {})
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))

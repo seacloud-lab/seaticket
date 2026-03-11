@@ -45,4 +45,4 @@ const DefaultMoreNav = ({ onClick }) => {
   );
 };
 
-export default DefaultMoreNav ;
+export default DefaultMoreNav;
