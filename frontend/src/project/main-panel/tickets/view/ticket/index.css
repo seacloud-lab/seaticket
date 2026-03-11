@@ -109,6 +109,7 @@
 
 .sea-qa-project-ticket.small .sea-qa-project-ticket-content-wrapper .sea-qa-project-ticket-other-settings {
   width: 100%;
+  padding-left: 0;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-footer {
@@ -152,12 +153,4 @@
 
 .sea-ticket-settings-popover .popover.bs-popover-auto[data-popper-placement^=bottom] {
   top: -4px !important;
-}
-
-.sea-qa-project-ticket-add-comment.ticket-last-op-log {
-  margin-top: 16px;
-}
-
-.sea-qa-project-ticket-add-comment.ticket-last-op-comment {
-  margin-top: 12px;
 }
