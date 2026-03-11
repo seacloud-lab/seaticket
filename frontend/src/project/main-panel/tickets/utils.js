@@ -223,6 +223,7 @@ export const generatorTicketsContextMenuOptions = ({
   permission,
   findRelatedIssues,
   createKnowledgeBaseRecord,
+  canDeleteRow
 }) => {
   let list = [];
 
@@ -378,7 +379,7 @@ export const generatorTicketsContextMenuOptions = ({
   });
   list.push('Divider');
 
-  if (context.canDeleteRow()) {
+  if (canDeleteRow || context.canDeleteRow()) {
     list.push({
       label: gettext('Delete ticket'),
       key: 'delete_row',

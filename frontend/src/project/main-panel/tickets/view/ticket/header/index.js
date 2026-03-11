@@ -110,7 +110,6 @@ const Header = forwardRef(({
               </DropdownToggle>
               <CustomizeDropdownMenu>
                 {createMoreOptions().map((option, index) => {
-                  console.log('option', option);
                   if (option === 'Divider') {
                     return <DropdownItem key={index} divider />;
                   }

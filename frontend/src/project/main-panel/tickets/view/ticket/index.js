@@ -5,9 +5,8 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
+import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
-import context from '@/sea-metadata/context';
 import { generatorTicketsContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { isShiftSlash } from '@/utils/hotkey';
@@ -32,7 +31,10 @@ import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
-const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID, toggleBar }) => {
+const Ticket = ({
+  editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
+  toggleBar, onRefresh, togglePageSlugId
+}) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
@@ -159,21 +161,26 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin, project
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
     const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, columns: [] };
-    const row = table.id_row_map[ticket.id] || ticket;
+    const row = ticket;
     return generatorTicketsContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row.id]: row }, columns: table.columns || [] },
       rowMetrics: { idSelectedRowMap: {} },
-      deleteRow: (rowId) => deleteRow(TICKET_TABLE_NAME, rowId, () => ticketsAPI.deleteProjectTicket(projectUuid, rowId)),
+      canDeleteRow: true,
+      deleteRow: (_) => {
+        deleteRow(TICKET_TABLE_NAME, _, () => ticketsAPI.deleteProjectTicket(projectUuid, row.id));
+        toaster.success(gettext('Ticket deleted'));
+        togglePageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+        onRefresh();
+      },
       rowGetterByIndex: () => row,
-      context,
       chatTicketsByAI,
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
     }).filter(item => item.key !== 'open_ticket');
-  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, context, projectUuid, workspaceID, projectName]);
+  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName]);
 
   const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
