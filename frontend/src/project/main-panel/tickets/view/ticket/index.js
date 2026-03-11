@@ -21,6 +21,8 @@ import {
 } from '../../components/ticket-settings';
 import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
 import StatusToggleButton from './status-toggle-btn';
+import RelatedIssuesDialog from '../../components/related-issues-dialog';
+import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -45,6 +47,9 @@ const Ticket = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
+  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
+  const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
+  const [kbSourceTicket, setKbSourceTicket] = useState(null);
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { modifyLocalRow, getTableByName, deleteRow } = useData();
@@ -158,6 +163,21 @@ const Ticket = ({
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 
+  const findRelatedIssues = useCallback((row) => {
+    if (!row) return;
+    setIsShowRelatedIssuesDialog(true);
+  }, []);
+
+  const createKnowledgeBaseRecord = useCallback((row) => {
+    if (!row) return;
+    setKbSourceTicket({
+      _id: row._id || row.id,
+      title: row.title || '',
+      content: (typeof row.content === 'object' ? (row.content?.text || row.content?.preview || '') : (row.content || '')),
+    });
+    setIsShowCreateKBRecordDialog(true);
+  }, []);
+
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
     const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, columns: [] };
@@ -179,8 +199,10 @@ const Ticket = ({
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
+      findRelatedIssues,
+      createKnowledgeBaseRecord,
     }).filter(item => item.key !== 'open_ticket');
-  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName]);
+  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName, findRelatedIssues, createKnowledgeBaseRecord]);
 
   const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
@@ -550,6 +572,25 @@ const Ticket = ({
       </div>
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
+      )}
+      {isShowRelatedIssuesDialog && (
+        <RelatedIssuesDialog
+          projectUuid={projectUuid}
+          ticketId={ticket._id || ticket.id}
+          workspaceID={workspaceID}
+          projectName={projectName}
+          onClose={() => setIsShowRelatedIssuesDialog(false)}
+        />
+      )}
+      {isShowCreateKBRecordDialog && kbSourceTicket && (
+        <CreateKBRecordDialog
+          projectUuid={projectUuid}
+          ticket={kbSourceTicket}
+          onClose={() => {
+            setIsShowCreateKBRecordDialog(false);
+            setKbSourceTicket(null);
+          }}
+        />
       )}
     </div>
   );

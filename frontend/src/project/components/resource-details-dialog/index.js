@@ -130,7 +130,7 @@ const ResourceDetailsDialog = ({
                   return <DropdownItem key={index} divider />;
                 }
                 return (
-                  <DropdownItem key={option.key || index} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
+                  <DropdownItem key={option.key} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
                     {option.label}
                   </DropdownItem>
                 );
