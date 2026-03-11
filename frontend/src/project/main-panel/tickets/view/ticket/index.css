@@ -72,7 +72,7 @@
 }
 
 .sea-qa-project-ticket .sf-slate-viewer-scroll-container .article {
-  padding: 10px 16px !important;
+  padding: 10px 16px 24px 16px !important;
   border: unset;
   height: auto;
   width: 100%;
@@ -150,6 +150,14 @@
   margin-bottom: -9px;
 }
 
-.sea-ticket-settings-popover  .popover.bs-popover-auto[data-popper-placement^=bottom] {
+.sea-ticket-settings-popover .popover.bs-popover-auto[data-popper-placement^=bottom] {
   top: -4px !important;
+}
+
+.sea-qa-project-ticket-add-comment.ticket-last-op-log {
+  margin-top: 16px;
+}
+
+.sea-qa-project-ticket-add-comment.ticket-last-op-comment {
+  margin-top: 12px;
 }

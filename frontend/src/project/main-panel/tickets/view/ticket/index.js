@@ -397,6 +397,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 904;
+  const lastOpType = timeline.length > 0 ? timeline[timeline.length - 1].type : 'comment';
 
   return (
     <div
@@ -459,7 +460,12 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Comment className="sea-qa-project-ticket-add-comment d-none-after mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }} onSubmitComment={onSubmitComment}>
+          <Comment
+            className={classnames('sea-qa-project-ticket-add-comment d-none-after mb-0', { 'mt-4': lastOpType === 'log', 'mt-3': lastOpType === 'comment' })}
+            isSmallScreen={isSmallScreen}
+            comment={{ creator: username }}
+            onSubmitComment={onSubmitComment}
+          >
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}

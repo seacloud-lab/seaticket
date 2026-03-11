@@ -94,7 +94,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TITLE].op_name,
-            oldValue: (<span className="sea-ticket-log-removed">{old_value}</span>),
+            oldValue: (<del className="sea-ticket-log-removed">{old_value}</del>),
             newValue: new_value,
           }
         ];
