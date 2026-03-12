@@ -189,30 +189,36 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           }
           const tool_calls = action.tool_calls;
           if (tool_calls?.length === 1) {
+            let executionInfo = [{
+              name: gettext('Arguments'),
+              children: tool_calls?.[0].name === 'generate_markdown' || tool_calls?.[0].name === 'create_knowledge_base_entry' ? [
+                {
+                  name: gettext('File name'),
+                  value: tool_calls?.[0]?.arguments.file_name,
+                }, {
+                  name: gettext('Content'),
+                  children: [
+                    {
+                      value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
+                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                    }
+                  ]
+                },
+              ] : Object.entries(tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
+                return `${argumentKey}: ${argumentValue}`;
+              })
+            }];
+            if (tool_calls?.[0]?.execution_detail) {
+              executionInfo.push({
+                name: gettext('Execution detail'),
+                children: Object.entries(tool_calls?.[0]?.execution_detail || {}).map(([detailKey, detailValue]) => {
+                  return `${gettext(detailKey)}: ${detailValue}`;
+                })
+              });
+            }
             return {
               name: `${gettext('Step')} ${stepNumber + 1}: ${tool_calls?.[0].name}`,
-              children: [
-                {
-                  name: gettext('Arguments'),
-                  children: tool_calls?.[0].name === 'generate_markdown' ? [
-                    {
-                      name: gettext('File name'),
-                      value: tool_calls?.[0]?.arguments.file_name,
-                    }, {
-                      name: gettext('Content'),
-                      children: [
-                        {
-                          value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-                        }
-                      ]
-                    },
-                  ] : Object.entries(tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
-                    return `${argumentKey}: ${argumentValue}`;
-                  })
-                },
-                ...otherInfos
-              ],
+              children: [...executionInfo, ...otherInfos],
             };
           }
           let stepChildren = [];
@@ -220,11 +226,36 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
             stepChildren.push({
               name: gettext('Substep'),
               children: action.tool_calls.map((too_call, toolIndex) => {
-                return {
-                  name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
-                  children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue]) => {
+                let SubstepExecutionInfo = [{
+                  name: gettext('Arguments'),
+                  children: too_call.name === 'generate_markdown' || too_call.name === 'create_knowledge_base_entry' ? [
+                    {
+                      name: gettext('File name'),
+                      value: too_call.arguments.file_name,
+                    }, {
+                      name: gettext('Content'),
+                      children: [
+                        {
+                          value: too_call.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
+                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                        }
+                      ]
+                    },
+                  ] : Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue]) => {
                     return `${argumentKey}: ${argumentValue}`;
                   })
+                }];
+                if (too_call.execution_detail) {
+                  SubstepExecutionInfo.push({
+                    name: gettext('Execution detail'),
+                    children: Object.entries(too_call.execution_detail || {}).map(([detailKey, detailValue]) => {
+                      return `${gettext(detailKey)}: ${detailValue}`;
+                    })
+                  });
+                }
+                return {
+                  name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
+                  children: SubstepExecutionInfo
                 };
               })
             });

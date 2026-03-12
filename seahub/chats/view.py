@@ -13,7 +13,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
-from seahub.project.models import Projects, ProjectConnections
+from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.constants import AI_REPLY_TIMEOUT
@@ -386,22 +386,6 @@ class ChatView(APIView):
             error_msg = 'Internal server error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        connections = ProjectConnections.objects.filter(project=project, deleted=False, is_active=True)
-        document_connections = []
-        issue_connections = []
-        for connection in connections:
-            if connection.type in ('seafile', 'site'):
-                document_connections.append({
-                    'type': connection.type,
-                    'id': connection.pk
-                })
-
-            else:
-                issue_connections.append({
-                    'type': connection.type,
-                    'id': connection.pk
-                })
-
         # Read project-level custom prompt from settings
         project_prompt = ''
         if project.settings:
@@ -420,8 +404,6 @@ class ChatView(APIView):
             'org_id': org_id,
             'llm_model': request.data.get('model'),
             'stream': stream,
-            'document_connections': document_connections,
-            'issue_connections': issue_connections,
             'project_prompt': project_prompt
         }
 
@@ -448,6 +430,7 @@ class ChatView(APIView):
                 # the exceptions in process_stream_ai_reply will not be catched in here, so it should be a 500 error
                 logger.exception(f'Failure to make stream: {e}')
                 error_msg = 'Internal server error'
+                cache.delete(chat_task_id_info)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         
         # non-stream response

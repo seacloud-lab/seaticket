@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 import json
+import re
 import requests
 import jwt
 import uuid
@@ -18,8 +20,53 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.constants import ConnectionType, ExtraSourceType
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.seadb_models.models import KnowledgeBaseTable
+from seahub.knowledge_base.knowledge_base_utils import send_knowledge_base_update_msg
+from seahub.chats.models import ChatSessions
 
 logger = logging.getLogger(__name__)
+
+_KB_ENTRY_REGEX = re.compile(r'<seaqa-kb-entry\s+title="([^"]*)"\s*>([\s\S]*?)</seaqa-kb-entry>')
+
+def parse_and_create_kb_entries(ai_reply, project_uuid, username):
+    """Parse seaqa-kb-entry tags from AI reply and automatically create KB records."""
+
+    created_entries = []
+    new_ai_reply = ai_reply
+    seadb_api = SeaDBAPI(username)
+    now = datetime.datetime.now(datetime.UTC).isoformat()
+
+    for match in _KB_ENTRY_REGEX.finditer(ai_reply):
+        full_tag, title, content = match.group(0), match.group(1), match.group(2)
+        try:
+            content = content.strip()
+            row = {
+                KnowledgeBaseTable.title.name: title,
+                KnowledgeBaseTable.content.name: content,
+                KnowledgeBaseTable.tags.name: [],
+                KnowledgeBaseTable.creator.name: username,
+                KnowledgeBaseTable.created_time.name: now,
+                KnowledgeBaseTable.last_modifier.name: username,
+                KnowledgeBaseTable.modified_time.name: now,
+                KnowledgeBaseTable.deleted.name: False,
+            }
+            res = seadb_api.insert_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [row])
+            pk = res.get('pks', [None])[0]
+            if pk:
+                created_entries.append({'_pk': pk, 'title': title})
+                new_ai_reply = new_ai_reply.replace(full_tag, f'**{title}**', 1)
+        except Exception as e:
+            logger.warning(f'Failed to create KB entry "{title}": {e}')
+
+    if created_entries:
+        try:
+            send_knowledge_base_update_msg(project_uuid)
+        except Exception as e:
+            logger.warning(f'Failed to send KB update message: {e}')
+
+    return new_ai_reply, created_entries
+
 
 def gen_chat_task_id(session_uuid):
     return f"chat_{session_uuid.replace('-', '')}"
@@ -41,7 +88,19 @@ def gen_message_id(session_uuid, max_try=5):
 def record_message_to_db(ai_result, username, session_uuid, message_id, query, attachments):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
-    
+
+    # Parse seaqa-kb-entry tags and auto-create KB records
+    if ai_result.get('ai_reply'):
+        session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+        project_uuid = session.project_uuid if session else None
+        if project_uuid:
+            new_reply, created_entries = parse_and_create_kb_entries(
+                ai_result['ai_reply'], project_uuid, username
+            )
+            ai_result['ai_reply'] = new_reply
+            if created_entries:
+                ai_result['created_kb_entries'] = created_entries
+
     ai_result.pop('answer', None)
     ai_result.update({
         'session_uuid': session_uuid,
