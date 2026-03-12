@@ -7,7 +7,7 @@ import HTMLContentWrapper from './html-content';
 
 import './index.css';
 
-const Item = ({ isExpand, detail, assetURLPrefix }) => {
+const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
 
   const ref = useRef(null);
@@ -120,7 +120,7 @@ const Item = ({ isExpand, detail, assetURLPrefix }) => {
       </div>
       <div className="email-body" ref={ref}>
         {isHTMLContent ? (
-          <HTMLContentWrapper assetURLPrefix={assetURLPrefix} value={detailContent} className="email-content-detail" />
+          <HTMLContentWrapper projectUuid={projectUuid} connection_id={connection_id} detail={detail} value={detailContent} className="email-content-detail" />
         ) : (
           <CustomizeMarkdownViewer value={detailContent} />
         )}

@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { isValidUrl } from '@/utils/validate';
+import { generatorConnectionAssetURLPrefix } from '../../../utils';
 
 const HTMLContent = ({
-  assetURLPrefix = '',
+  projectUuid,
+  connection_id,
   className,
   value,
+  detail
 }) => {
   const ref = useRef(null);
+  const assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, connection_id);
 
   useEffect(() => {
     const handleImgSrc = () => {
@@ -16,7 +20,7 @@ const HTMLContent = ({
         const originalSrc = img.getAttribute('src');
         if (originalSrc && !img.hasAttribute('sea-data-processed') && !isValidUrl(originalSrc)) {
           img.setAttribute('sea-data-processed', 'true');
-          const newSrc = `${assetURLPrefix}${originalSrc}`;
+          const newSrc = `${assetURLPrefix}${detail._pk}/${originalSrc}`;
           img.removeAttribute('src');
           setTimeout(() => {
             img.setAttribute('src', newSrc);
@@ -39,8 +43,31 @@ const HTMLContent = ({
   }, []);
 
   return (
-    <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} />
+    <div>
+      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} />
+      <ul>
+        {detail.attachments && detail.attachments.map((filename, index) => {
+          let url = `${assetURLPrefix}${detail._pk}/${filename}`;
+          const file_name = filename.indexOf('_') === -1 ? filename : filename.slice(filename.indexOf('_') + 1);
+          return (
+            <li key={`download-${index}-${filename}`}>
+              <a
+                href={url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="download-link"
+              >
+                {file_name}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+    </div>
   );
+
 };
 
 export default HTMLContent;
