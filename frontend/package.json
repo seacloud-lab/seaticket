@@ -160,7 +160,6 @@
     "webpack-bundle-tracker": "1.7.0",
     "webpack-dev-server": "^5.2.3",
     "webpack-manifest-plugin": "^4.0.2",
-    "workbox-webpack-plugin": "^7.4.0",
     "worker-loader": "^3.0.8"
   }
 }
