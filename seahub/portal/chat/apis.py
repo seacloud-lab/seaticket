@@ -355,16 +355,6 @@ class PortalChatView(APIView):
 
         portal_settings = get_portal_settings(project)
         allowed_sources = portal_settings['chat_allowed_sources']
-        connections = ProjectConnections.objects.filter(project=project, deleted=False, is_active=True)
-        document_connections = []
-        issue_connections = []
-        for connection in connections:
-            if connection.type not in allowed_sources:
-                continue
-            if connection.type in ('seafile', 'site'):
-                document_connections.append({'type': connection.type, 'id': connection.pk})
-            else:
-                issue_connections.append({'type': connection.type, 'id': connection.pk})
 
         chat_task_id_info = gen_portal_chat_task_id(session.session_uuid)
         if cache.get(chat_task_id_info) is not None:
@@ -379,8 +369,7 @@ class PortalChatView(APIView):
             'username': username,
             'org_id': org_id,
             'llm_model': model,
-            'document_connections': document_connections,
-            'issue_connections': issue_connections,
+            'allowed_sources': allowed_sources,
             'is_external_portal': True,
             'stream': stream,
         }
