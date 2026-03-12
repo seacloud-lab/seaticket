@@ -12,7 +12,7 @@ from seahub.profile.settings import ROLE_CACHE_PREFIX
 from seahub.utils import normalize_cache_key
 from .settings import ORG_MEMBER_QUOTA_DEFAULT
 from seahub.api2.utils import to_python_boolean
-from seahub.constants import ORG_DEFAULT
+from seahub.constants import TEAM_FREE
 from seahub.role_permissions.utils import get_available_roles, get_enabled_role_permissions_by_role
 from django.core.cache import cache
 from seahub.group.models import Group, GroupUser
@@ -60,31 +60,31 @@ class OrgSettingsManager(models.Manager):
         try:
             role = self.get(org_id=org_id).role
         except OrgSettings.DoesNotExist:
-            return ORG_DEFAULT
+            return TEAM_FREE
         else:
             if not role:
-                return ORG_DEFAULT
+                return TEAM_FREE
 
             if role in get_available_roles():
                 return role
             else:
                 logger.warning('Role %s is not valid' % role)
-                return ORG_DEFAULT
+                return TEAM_FREE
 
     def get_role_by_org_id(self, org_id):
         try:
             role = self.get(org_id=org_id).role
         except OrgSettings.DoesNotExist:
-            return ORG_DEFAULT
+            return TEAM_FREE
         else:
             if not role:
-                return ORG_DEFAULT
+                return TEAM_FREE
 
             if role in get_available_roles():
                 return role
             else:
                 logger.warning('Role %s is not valid' % role)
-                return ORG_DEFAULT
+                return TEAM_FREE
 
     def add_or_update(self, org, role=None):
         org_id = org.org_id
@@ -248,7 +248,7 @@ class OrgQuotaManager(models.Manager):
             if oq.monthly_api_call_limit_per_user is not None and oq.monthly_api_call_limit_per_user > 0:
                 return oq.monthly_api_call_limit_per_user
 
-        role = ORG_DEFAULT
+        role = TEAM_FREE
         os = OrgSettings.objects.filter(org_id=org_id).first()
         if os and os.role:
             role = os.role
@@ -266,7 +266,7 @@ class OrgQuotaManager(models.Manager):
             if oq.monthly_api_call_limit_per_user is not None and oq.monthly_api_call_limit_per_user > 0:
                 return oq.monthly_api_call_limit_per_user * max_user
 
-        role = ORG_DEFAULT
+        role = TEAM_FREE
         os = OrgSettings.objects.filter(org_id=org_id).first()
         if os and os.role:
             role = os.role
@@ -293,11 +293,11 @@ class OrgQuotaManager(models.Manager):
         # query roles
         queryset = list(OrgSettings.objects.filter(org_id__in=org_ids))
         for item in queryset:
-            roles_dict[item.org_id] = item.role or ORG_DEFAULT
+            roles_dict[item.org_id] = item.role or TEAM_FREE
         for org_id in org_ids:
             if org_id in roles_dict:
                 continue
-            roles_dict[org_id] = ORG_DEFAULT
+            roles_dict[org_id] = TEAM_FREE
 
         # query limits not in db
         for org_id in org_ids:

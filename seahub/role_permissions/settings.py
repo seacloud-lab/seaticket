@@ -2,8 +2,8 @@
 import logging
 
 from django.conf import settings
-from seahub.constants import DEFAULT_USER, GUEST_USER, \
-    DEFAULT_ADMIN, SYSTEM_ADMIN, DAILY_ADMIN, AUDIT_ADMIN, ORG_DEFAULT
+from seahub.constants import DEFAULT_ADMIN, SYSTEM_ADMIN, DAILY_ADMIN, AUDIT_ADMIN,\
+    TEAM_FREE, TEAM_START, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -41,30 +41,41 @@ def merge_roles(default, custom, fallback_role):
 
 
 DEFAULT_ENABLED_ROLE_PERMISSIONS = {
-    DEFAULT_USER: {
+    TEAM_FREE: {
         'can_add_project': True,
         'can_add_group': True,
-        'can_use_global_address_book': True,
-        'can_invite_guest': False,
-        'can_generate_external_link': True,
-        'can_use_advanced_permissions': True,
+        'can_use_saml': False,
+        'ai_credit_per_user': -1,
         'can_use_advanced_customization': True,
-        'can_use_automation_rules': True,
-        'monthly_api_call_limit_per_user': -1,
-        'ai_credit_per_user': -1
     },
-    GUEST_USER: {
-        'can_add_project': False,
-        'can_add_group': False,
-        'can_use_global_address_book': False,
-    },
-    ORG_DEFAULT: {
+    TEAM_START: {
         'can_add_project': True,
         'can_add_group': True,
-        'can_use_advanced_customization': False,
+        'can_use_saml': False,
+        'ai_credit_per_user': -1,
+        'can_use_advanced_customization': True,
+    },
+    TEAM_PRO: {
+        'can_add_project': True,
+        'can_add_group': True,
+        'can_use_saml': False,
+        'ai_credit_per_user': -1,
+        'can_use_advanced_customization': True,
+    },
+    TEAM_BUSINESS: {
+        'can_add_project': True,
+        'can_add_group': True,
         'can_use_saml': True,
-        'monthly_api_call_limit_per_user': -1
-    }
+        'ai_credit_per_user': -1,
+        'can_use_advanced_customization': True,
+    },
+    TEAM_ENTERPRISE: {
+        'can_add_project': True,
+        'can_add_group': True,
+        'can_use_saml': True,
+        'ai_credit_per_user': -1,
+        'can_use_advanced_customization': True,
+    },
 }
 
 try:
@@ -75,7 +86,7 @@ except AttributeError:
 ENABLED_ROLE_PERMISSIONS = merge_roles(
     DEFAULT_ENABLED_ROLE_PERMISSIONS,
     custom_role_permissions,
-    fallback_role=DEFAULT_USER
+    fallback_role=TEAM_FREE
 )
 
 # role permission for administraror

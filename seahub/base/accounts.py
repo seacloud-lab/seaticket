@@ -4,28 +4,26 @@ import os
 import sys
 import logging
 import uuid
-from datetime import datetime
 
 from django.core.mail import send_mail
 from django.utils import translation
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-from seahub.constants import DEFAULT_ADMIN
+from seahub.constants import DEFAULT_ADMIN, TEAM_FREE
 from seahub.profile.models import Profile
 from seahub.role_permissions.models import AdminRole
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role, \
         get_enabled_admin_role_permissions_by_role
 from seahub.utils import get_site_name, \
-    clear_token, get_system_admins, IS_EMAIL_CONFIGURED
+    clear_token, get_system_admins
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
-from seahub.auth.models import SocialAuthUser, UserQuota
+from seahub.auth.models import SocialAuthUser
 from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, \
     SASL_AUTHC_ID_ATTR
 from seahub.auth.models import EmailUser
 from seahub.organizations.models import Organization
-from seahub.role_permissions.models import UserRole
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -172,16 +170,6 @@ class UserManager(object):
     
         return self.get(email=virtual_id)
 
-    def update_role(self, email, role):
-        """
-        If user has a role, update it; or create a role for user.
-        """
-        try:
-            UserRole.objects.update_user_role(email, role)
-        except UserRole.DoesNotExist:
-            UserRole.objects.add_user_role(email, role)
-        return self.get(email=email)
-
     def create_superuser(self, email, password):
         u = self.create_user(email, password, is_staff=True, is_active=True)
         Profile.objects.add_or_update(username=u.username, nickname='admin')
@@ -214,14 +202,9 @@ class UserManager(object):
         if not emailuser:
             raise User.DoesNotExist('User matching query does not exits.')
 
-        from seahub.organizations.models import Organization
-        from seahub.role_permissions.models import UserRole
-        org = Organization.objects.get_org_by_username(email)
+        from seahub.organizations.models import Organization, OrgSettings
 
-        try:
-            user_role = UserRole.objects.get_user_role(email)
-        except UserRole.DoesNotExist:
-            user_role = None
+        org = Organization.objects.get_org_by_username(email)
 
         user = User(emailuser.email)
         user.id = emailuser.id
@@ -230,9 +213,12 @@ class UserManager(object):
         user.is_active = emailuser.is_active
         user.ctime = emailuser.ctime
         user.org = org
-        # user.source = emailuser.source
-        user.role = user_role
         user.reference_id = emailuser.reference_id
+
+        if org:
+            user.role = OrgSettings.objects.get_role_by_org(org)
+        else:
+            user.role = TEAM_FREE
 
         if user.is_staff:
             try:
@@ -286,14 +272,14 @@ class UserPermissions(object):
     def can_connect_with_desktop_clients(self):
         return self._get_perm_by_roles('can_connect_with_desktop_clients')
 
-    def can_invite_guest(self):
-        return self._get_perm_by_roles('can_invite_guest')
-
     def can_use_advanced_permissions(self):
         return self._get_perm_by_roles('can_use_advanced_permissions')
 
     def can_use_advanced_customization(self):
         return self._get_perm_by_roles('can_use_advanced_customization')
+    
+    def can_use_saml(self):
+        return self._get_perm_by_roles('can_use_saml')
 
 class AdminPermissions(object):
     def __init__(self, user):
@@ -773,8 +759,6 @@ class CustomLDAPBackend(object):
                 logger.error(f'update ldap user failed {e}')
                 return
 
-        if user_role:
-            User.objects.update_role(username, user_role)
         return user
 
 

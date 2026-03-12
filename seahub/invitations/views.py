@@ -6,16 +6,13 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 from seahub.auth import login as auth_login, authenticate
-from seahub.auth import get_backends
 from seahub.base.accounts import User
-from seahub.constants import GUEST_USER
 from seahub.invitations.models import Invitation, InvitationLinks
 from seahub.invitations.signals import org_member_invite_accepted
 from seahub.settings import SITE_ROOT, NOTIFY_ADMIN_AFTER_REGISTRATION
 from seahub.registration.models import notify_admins_on_register_complete
 from seahub.utils import render_error
-from seahub.utils.licenseparse import user_number_over_limit
-from seahub.organizations.models import Organization, OrgUser
+from seahub.organizations.models import Organization
 from seahub.project.models import Workspaces
 
 

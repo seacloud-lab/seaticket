@@ -9,6 +9,7 @@ const {
   enableSAML,
   samlConnected,
   enableMultiSAML,
+  canUseSAML,
   orgSamlConnected,
   socialNextPage
 } = window.app.pageOptions;
@@ -43,13 +44,13 @@ class SocialLogin extends React.Component {
 
   render() {
     const disconnectUrl = this.disconnectUrlMap[this.state.disconnectType];
-    let samlConnectUrl = (enableMultiSAML && isOrgContext) ? `${siteRoot}org/custom/${orgID}/saml/connect/?next=${encodeURIComponent(socialNextPage)}` : `${siteRoot}saml/connect/?next=${encodeURIComponent(socialNextPage)}`;
+    let samlConnectUrl = (enableMultiSAML && isOrgContext && canUseSAML) ? `${siteRoot}org/custom/${orgID}/saml/connect/?next=${encodeURIComponent(socialNextPage)}` : `${siteRoot}saml/connect/?next=${encodeURIComponent(socialNextPage)}`;
 
     return (
       <Fragment>
         <div className="setting-item" id="social-auth">
           <h3 className="setting-item-heading">{gettext('SSO')}</h3>
-          {(enableSAML || (enableMultiSAML && isOrgContext)) && (
+          {(enableSAML || (enableMultiSAML && isOrgContext && canUseSAML)) && (
             <div className="mb-4">
               <p className="mb-2">{'SAML'}</p>
               {(samlConnected || orgSamlConnected) ?

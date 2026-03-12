@@ -9,7 +9,7 @@ from rest_framework import status
 
 from django.utils.crypto import get_random_string
 
-from seahub.constants import ORG_DEFAULT
+from seahub.constants import TEAM_FREE
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.utils import is_valid_email
 from seahub.base.accounts import User
@@ -287,7 +287,7 @@ class AdminOrganizations(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        OrgSettings.objects.add_or_update(org, ORG_DEFAULT)
+        OrgSettings.objects.add_or_update(org, TEAM_FREE)
         try:
             org_info = get_org_info(org)
         except Exception as e:

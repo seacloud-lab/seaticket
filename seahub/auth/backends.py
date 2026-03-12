@@ -8,8 +8,6 @@ from seahub.base.accounts import User, AuthBackend
 from seahub.profile.models import Profile
 from seahub.registration.models import notify_admins_on_activate_request, \
         notify_admins_on_register_complete
-from seahub.role_permissions.models import UserRole
-
 logger = logging.getLogger(__name__)
 
 
@@ -184,7 +182,6 @@ class SeafileRemoteUserBackend(AuthBackend):
         user_info = self.parse_user_info(request, user)
 
         self.update_user_profile(user_info)
-        self.update_user_role(user_info)
 
     def parse_user_info(self, request, user):
         """ Pull the mapped user info from the http headers.
@@ -232,23 +229,6 @@ class SeafileRemoteUserBackend(AuthBackend):
             profile.contact_email = contact_email
 
         profile.save()
-
-    # TODO, need test
-    def update_user_role(self, user_info):
-        """ Specific for Shibboleth
-        """
-
-        affiliation = user_info.get('affiliation', '')
-        if not affiliation:
-            return
-
-        for e in affiliation.split(';'):
-            role = self._get_role_by_affiliation(e)
-            if not role:
-                continue
-
-            # update user role
-            UserRole.objects.update_user_role(user_info['email'], role)
 
 
     def _get_role_by_affiliation(self, affiliation):

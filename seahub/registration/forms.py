@@ -8,10 +8,9 @@ from django.contrib.auth.models import User
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from seahub.utils.licenseparse import user_number_over_limit
 from seahub.utils import is_user_password_strong
 from seahub.profile.models import Profile
-from seahub.utils.password import is_password_strength_valid, get_password_strength_requirements
+from seahub.utils.password import get_password_strength_requirements
 from seahub.settings import USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
     USER_STRONG_PASSWORD_REQUIRED
 
@@ -62,9 +61,6 @@ class RegistrationForm(forms.Form):
         return False if prog.match(email) is None else True
 
     def clean_email(self):
-        if user_number_over_limit():
-            raise forms.ValidationError(_("The number of users exceeds the limit."))
-
         email = self.cleaned_data['email']
         if not self.allow_register(email):
             raise forms.ValidationError(_("Enter a valid email address."))

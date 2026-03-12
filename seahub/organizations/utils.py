@@ -1,11 +1,6 @@
-import requests
 import logging
 from rest_framework import status
-from django.core.cache import cache
-from django.urls import reverse
-
 from seahub.api2.utils import api_error
-from seahub.utils import gen_token, get_site_scheme_and_netloc
 from seahub.project.models import Workspaces
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
@@ -43,16 +38,9 @@ def update_log_perm_audit_type(event):
 
 
 def transfer_user_to_org(username, org_id):
-    from seahub.base.accounts import User
-    from seahub.constants import DEFAULT_USER
     try:
-        # transfer user to org
         Organization.objects.add_org_user(org_id, username, int(False))
 
-        # reset role
-        User.objects.update_role(username, DEFAULT_USER)
-
-        # transfer workspace to org
         workspace = Workspaces.objects.get_workspace_by_owner(username)
         if workspace:
             workspace.org_id = org_id

@@ -1,19 +1,18 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 
-import requests
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
-from seahub.constants import ORG_DEFAULT
+from seahub.constants import TEAM_FREE
 
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 
-from seahub.organizations.models import OrgMemberQuota, OrgSettings, OrgQuota, Organization, OrgUser
+from seahub.organizations.models import OrgMemberQuota, OrgSettings, Organization
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
 
@@ -35,7 +34,7 @@ class OrgAdminInfo(APIView):
 
         # space quota
         org_role = OrgSettings.objects.filter(org_id=org_id).first()
-        org_role = org_role.role if org_role else ORG_DEFAULT
+        org_role = org_role.role if org_role else TEAM_FREE
 
         # member quota
         if ORG_MEMBER_QUOTA_ENABLED:

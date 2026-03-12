@@ -15,7 +15,7 @@ from django.core.cache import cache
 
 from seahub.organizations.models import OrgSettings, OrgMemberQuota
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
-from seahub.role_permissions.models import UserRole
+from seahub.utils.user_permissions import get_user_role
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -27,7 +27,7 @@ from seahub.notifications.models import ProjectNotification
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
-from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
+from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType
 
@@ -245,7 +245,7 @@ def url_to_filename(url):
 
 
 def get_ai_credit_by_org_id(org_id):
-    role = ORG_DEFAULT
+    role = TEAM_FREE
     os = OrgSettings.objects.filter(org_id=org_id).first()
     if os:
         role = os.role
@@ -262,11 +262,12 @@ def get_ai_credit_by_username(username):
     if '@seafile_group' in username:
         return -1
 
+    from seahub.base.accounts import User
     try:
-        user_role = UserRole.objects.get_user_role(username)
-        role = user_role.role
-    except UserRole.DoesNotExist:
-        role = DEFAULT_USER
+        user = User.objects.get(email=username)
+        role = get_user_role(user)
+    except User.DoesNotExist:
+        role = TEAM_FREE
 
     ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
     return ai_credit

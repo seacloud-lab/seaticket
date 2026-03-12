@@ -11,7 +11,7 @@ from django.utils.deprecation import MiddlewareMixin
 
 from seahub.api2.utils import to_python_boolean
 from seahub.auth.models import AnonymousUser
-from seahub.constants import DEFAULT_ADMIN, DEFAULT_USER
+from seahub.constants import DEFAULT_ADMIN
 from seahub.profile.models import Profile
 from seahub.organizations.models import Organization
 
@@ -38,9 +38,8 @@ class BaseMiddleware(MiddlewareMixin):
                 org = Organization.objects.raw(sql, (username,))
                 if org:
                     request.user.org = org[0]
-                    if not request.user.role or request.user.role == DEFAULT_USER:
-                        from seahub.organizations.models import OrgSettings
-                        request.user.role = OrgSettings.objects.get_role_by_org(request.user.org)
+                    from seahub.organizations.models import OrgSettings
+                    request.user.role = OrgSettings.objects.get_role_by_org(request.user.org)
             lang = Profile.objects.get_user_language(request.user.username)
         else:
             # request cookies

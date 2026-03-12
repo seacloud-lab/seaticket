@@ -34,10 +34,8 @@ from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils.user_permissions import get_user_role
-from seahub.role_permissions.utils import get_available_roles
 from seahub.role_permissions.models import AdminRole
 from seahub.constants import DEFAULT_ADMIN
-from seahub.utils.licenseparse import user_number_over_limit
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_ACTIVATE, USER_DEACTIVATE
 from seahub.options.models import UserOptions
@@ -66,11 +64,7 @@ def get_virtual_id_by_email(email):
     else:
         return profile_obj.user
 
-def create_user_info(request, email, role, nickname, contact_email, quota_total_mb):
-    # update additional user info
-
-    if role:
-        User.objects.update_role(email, role)
+def create_user_info(request, email, nickname, contact_email):
 
     if nickname is not None:
         Profile.objects.add_or_update(email, nickname)
@@ -83,9 +77,9 @@ def create_user_info(request, email, role, nickname, contact_email, quota_total_
         cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
 
 
-def update_user_info(request, user, password, is_active, is_staff, role,
+def update_user_info(request, user, password, is_active, is_staff,
                      nickname, login_id, contact_email, institution_name,
-                     id_in_org, unit, phone, monthly_api_call_limit_per_user):
+                     id_in_org, unit, phone):
 
     email = user.username
 
@@ -108,10 +102,6 @@ def update_user_info(request, user, password, is_active, is_staff, role,
 
     # update user
     user.save()
-
-    # update additional user info
-    if role:
-        User.objects.update_role(email, role)
 
     if nickname is not None:
         Profile.objects.add_or_update(email, nickname)
@@ -142,11 +132,6 @@ def update_user_info(request, user, password, is_active, is_staff, role,
 
     if id_in_org:
         IdInOrgTuple.objects.add_or_update(virtual_id=email, id_in_org=id_in_org, org_id=org_id)
-
-    if org_id == -1 and (monthly_api_call_limit_per_user is not None):
-        uq = UserQuota.objects.get_or_create(user.username)
-        uq.monthly_api_call_limit_per_user = monthly_api_call_limit_per_user if monthly_api_call_limit_per_user is not None else uq.monthly_api_call_limit_per_user
-        uq.save()
 
 
 def get_user_info(email):
@@ -267,10 +252,7 @@ class AdminUsers(APIView):
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(username)
             info['last_login'] = last_login_obj.last_login if last_login_obj else ''
-            if not info.get('org_id'):
-                info['role'] = get_user_role(user)
-            else:
-                info['role'] = None
+            info['role'] = get_user_role(user)
             if getattr(settings, 'MULTI_INSTITUTION', False):
                 info['institution'] = profile.institution if profile else ''
 
@@ -286,10 +268,6 @@ class AdminUsers(APIView):
         # permission check
         if not request.user.admin_permissions.can_manage_user():
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        if user_number_over_limit():
-            error_msg = _("The number of users exceeds the limit.")
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         email = request.data.get('email', None)
         if not email or not is_valid_username(email):
@@ -310,14 +288,6 @@ class AdminUsers(APIView):
         except ValueError:
             error_msg = 'is_active invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # additional user info check
-        role = request.data.get("role", None)
-        if role:
-            available_roles = get_available_roles()
-            if role not in available_roles:
-                error_msg = 'role must be in %s.' % str(available_roles)
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         name = request.data.get("name", None)
         if name:
@@ -349,9 +319,8 @@ class AdminUsers(APIView):
         # create user
         try:
             user_obj = User.objects.create_user(email, password, is_staff, is_active)
-            create_user_info(request, email=user_obj.username, role=role,
-                             nickname=name, contact_email=None,
-                             quota_total_mb=quota_total_mb)
+            create_user_info(request, email=user_obj.username,
+                             nickname=name, contact_email=None)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -437,19 +406,8 @@ class AdminUser(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
                 is_active = to_python_boolean(is_active)
-                if is_active and user_number_over_limit():
-                    error_msg = _("The number of users exceeds the limit.")
-                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             except ValueError:
                 error_msg = 'is_active invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # additional user info check
-        role = request.data.get("role", None)
-        if role:
-            available_roles = get_available_roles()
-            if role not in available_roles:
-                error_msg = 'role must be in %s.' % str(available_roles)
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         name = request.data.get("name", None)
@@ -513,18 +471,6 @@ class AdminUser(APIView):
 
         institution = request.data.get("institution", None)
 
-        # api calls limit per user
-        monthly_api_call_limit_per_user = request.data.get('monthly_api_call_limit_per_user')
-        if monthly_api_call_limit_per_user:
-            try:
-                monthly_api_call_limit_per_user = int(monthly_api_call_limit_per_user)
-            except:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if monthly_api_call_limit_per_user < 0:
-                error_msg = "Limit of API calls is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         # query user info
         try:
             user_obj = User.objects.get(email=email)
@@ -547,9 +493,8 @@ class AdminUser(APIView):
 
         try:
             update_user_info(request, user=user_obj, password=password, is_active=is_active, is_staff=is_staff,
-                             role=role, nickname=name, login_id=login_id, contact_email=contact_email,
-                             institution_name=institution, id_in_org=id_in_org, unit=unit, phone=phone,
-                             monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
+                             nickname=name, login_id=login_id, contact_email=contact_email,
+                             institution_name=institution, id_in_org=id_in_org, unit=unit, phone=phone)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

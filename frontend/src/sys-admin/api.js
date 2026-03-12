@@ -171,9 +171,6 @@ class SysAdminServiceApi {
     if (orgInfo.smsMessageLimitPerMonth) {
       formData.append('sms_message_limit_per_month', orgInfo.smsMessageLimitPerMonth);
     }
-    if (orgInfo.monthlyAPICallLimitPerUser) {
-      formData.append('monthly_api_call_limit_per_user', orgInfo.monthlyAPICallLimitPerUser);
-    }
     return this.req.put(url, formData);
   }
 
@@ -324,9 +321,6 @@ class SysAdminServiceApi {
         break;
       case 'unit':
         formData.append('unit', value);
-        break;
-      case 'monthly_api_call_limit_per_user':
-        formData.append('monthly_api_call_limit_per_user', value);
         break;
       default:
         break;

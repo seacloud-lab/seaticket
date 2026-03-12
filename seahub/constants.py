@@ -1,18 +1,14 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import seahub.settings as settings
-# Default user have common operations, like creating group and library.
-DEFAULT_USER = 'default'
 
-# Guest user have limited operations, can not create group and library.
-GUEST_USER = 'guest'
+# Team (org) roles — users inherit their team's role
+TEAM_FREE = 'free'
+TEAM_START = 'start'
+TEAM_PRO = 'pro'
+TEAM_BUSINESS = 'business'
+TEAM_ENTERPRISE = 'enterprise'
 
-# Default org member
-ORG_DEFAULT = 'org_default'
-
-# Plus
-USER_PLUS = 'user_plus'
-ORG_PLUS = 'org_plus'
-ORG_ENTERPRISE = 'org_enterprise'
+TEAM_ROLES = [TEAM_FREE, TEAM_START, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE]
 
 # Repo status
 REPO_STATUS_NORMAL = 'normal'
