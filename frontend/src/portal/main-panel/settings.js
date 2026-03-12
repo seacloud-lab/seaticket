@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Nav, NavItem, NavLink, TabContent, TabPane, Button, Label } from 'reactstrap';
-import { Icon, toaster, Switch, PasswordInput, IconButton } from '@/components';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
+import { Icon, toaster, Switch, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 
