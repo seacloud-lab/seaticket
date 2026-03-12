@@ -118,11 +118,7 @@ const ResourceDetailsDialog = ({
         {createMoreOptions && (
           <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
             <DropdownToggle tag="span">
-              <IconButton
-                className="more-btn"
-                icon="more"
-                title={gettext('More')}
-              />
+              <IconButton className="more-btn" icon="more" title={gettext('More')}/>
             </DropdownToggle>
             <CustomizeDropdownMenu>
               {createMoreOptions(resource).map((option, index) => {

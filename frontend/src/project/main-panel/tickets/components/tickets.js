@@ -281,6 +281,12 @@ const Tickets = ({
     setCurrentTicket({ ...ticket, type: TICKET_TYPE });
   }, [currentTicket, metadataRef]);
 
+  const onCloseRelatedIssuesDialog = useCallback(() => {
+    setIsShowRelatedIssuesDialog(false);
+    if (isShowTicketDetailsDialog) return;
+    setCurrentTicket(null);
+  }, [isShowTicketDetailsDialog]);
+
   if (isLoading) return (<CenteredLoading />);
 
   return (
@@ -318,7 +324,7 @@ const Tickets = ({
           ticketId={currentTicket._id}
           workspaceID={workspaceID}
           projectName={projectName}
-          onClose={() => { setIsShowRelatedIssuesDialog(false); setCurrentTicket(null); }}
+          onClose={onCloseRelatedIssuesDialog}
         />
       )}
       {isShowTicketDetailsDialog && (

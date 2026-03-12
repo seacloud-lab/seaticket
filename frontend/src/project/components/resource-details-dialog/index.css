@@ -17,6 +17,10 @@
   flex: 1;
 }
 
+.sea-ticket-resource-details-dialog .modal-content .modal-header .modal-title .text-truncate {
+  max-width: 400px;
+}
+
 .sea-ticket-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .sea-qa-icon-btn {
   height: 28px;
   width: 28px;
