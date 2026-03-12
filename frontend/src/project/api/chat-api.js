@@ -109,12 +109,12 @@ class ChatAPI {
     return this._handleEventStreamRequest(url, params, options);
   }
 
-  getChatMessage(sessionId) {
+  getChatMessage(projectUuid, sessionId) {
     const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId;
     return this.req.get(url);
   }
 
-  getChatMessageByStream(sessionId, streamed_length, options) {
+  getChatMessageByStream(projectUuid, sessionId, streamed_length, options) {
     const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
     return this._handleEventStreamRequest(url, undefined, options);
   }

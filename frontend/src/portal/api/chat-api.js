@@ -121,14 +121,12 @@ class ChatAPI {
     return this.req.get(url);
   }
 
-  getChatMessage(sessionId) {
-    const { projectUuid } = (window.app && window.app.pageOptions) || {};
+  getChatMessage(projectUuid, sessionId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId;
     return this.req.get(url);
   }
 
-  getChatMessageByStream(sessionId, streamed_length, options) {
-    const { projectUuid } = (window.app && window.app.pageOptions) || {};
+  getChatMessageByStream(projectUuid, sessionId, streamed_length, options) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
     return this._handleEventStreamRequest(url, undefined, options);
   }

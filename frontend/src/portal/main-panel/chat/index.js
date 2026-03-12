@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
 import TopBar from '@/project/main-panel/top-bar';
 import Sessions from '@/project/main-panel/ask/sessions';
 import Chat from '@/project/main-panel/ask/chat';
 import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from '@/project/main-panel/ask/hooks';
-import { gettext } from '@/constants';
+import { gettext, siteRoot } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from '@/project/main-panel/ask/constants';
 import Documents from '@/project/main-panel/ask/documents';
 import { chatAPI } from '@/portal/api/chat-api';
@@ -73,15 +73,17 @@ const Main = ({ title, settings }) => {
 };
 
 const Ask = ({ title = gettext('Chat') }) => {
-  const settings = {
-    streaming_response: streamingResponse,
-  };
+  const settings = useMemo(() => {
+    return {
+      streaming_response: streamingResponse,
+    };
+  }, []);
 
   const resetURL = useCallback((pageSlugId) => {
-    // const { origin } = location;
-    // let url = `${origin}${siteRoot}${isEditMode ? 'portal-edit' : 'portal'}/${projectUuid}/chat/`;
-    // let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
-    // history.replaceState(null, null, url + urlPart);
+    const { origin } = location;
+    let url = `${origin}${siteRoot}${isEditMode ? 'portal-edit' : 'portal'}/${projectUuid}/chat/`;
+    let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
+    history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
   const getInitialPageSlugId = useCallback(() => {
@@ -97,7 +99,13 @@ const Ask = ({ title = gettext('Chat') }) => {
 
   return (
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
-      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} settings={settings} api={chatAPI} >
+      <SessionsProvider
+        workspaceID={workspaceID}
+        projectUuid={projectUuid}
+        settings={settings}
+        localStorageKey={`sea-ticket-${projectUuid}-portal-chat-sessions-display`}
+        api={chatAPI}
+      >
         <DocumentsProvider>
           <Main title={title} settings={settings} />
         </DocumentsProvider>
