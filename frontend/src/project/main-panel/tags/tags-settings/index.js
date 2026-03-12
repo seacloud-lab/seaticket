@@ -78,7 +78,7 @@ const TagsSettings = ({
     if (isShowEditor) return;
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
-    let newValue = value.filter(i => i !== Number(tag._id));
+    let newValue = value.filter(i => i !== tag._id);
     if (newValue.length > 0) {
       const tags = getRowsByIds(tagsData, newValue);
       newValue = tags.map(tag => Number(tag._id));
