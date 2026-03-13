@@ -122,6 +122,7 @@ def record_message_to_db(ai_result, username, session_uuid, message_id, query, a
 
 def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query, attachments):
     has_recorded_result = False
+    enconter_generator_exit = False
     error_msg = None
     try:
         for line in ai_response.iter_lines():
@@ -147,10 +148,12 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                     if not line_str.endswith('\n\n'):
                         line_str += '\n\n'
                     item = line_str
-                try:
-                    yield item
-                except: # continues to receive data even client interrupts the stream
-                    continue
+                if not enconter_generator_exit:
+                    try:
+                        yield item
+                    except GeneratorExit:
+                        enconter_generator_exit = True
+                        continue
                 if error_msg:
                     raise ConnectionError(error_msg)
     except Exception as e:
@@ -162,14 +165,16 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                     "sources": []
                 }, username, session_uuid, message_id, query, attachments)
             })}\n\n'
+            if not enconter_generator_exit:
+                try:
+                    yield item
+                except GeneratorExit:
+                    enconter_generator_exit = True
+        if not enconter_generator_exit:
             try:
-                yield item
-            except:
-                pass
-        try:
-            yield 'data: [DONE]\n\n'
-        except:
-            pass
+                yield 'data: [DONE]\n\n'
+            except GeneratorExit:
+                enconter_generator_exit = True
     cache.delete(chat_task_id_info)
 
 def get_ai_reply(params):
