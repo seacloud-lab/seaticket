@@ -7,7 +7,7 @@ import Item from './item';
 
 import './index.css';
 
-const EmailDetails = ({ details, className, assetURLPrefix }) => {
+const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5);
   const { email } = getInfoByEmailFrom(details[0]['email_from']);
 
@@ -44,7 +44,7 @@ const EmailDetails = ({ details, className, assetURLPrefix }) => {
       )}
       {details.map((detail, index) => {
         if (!isShowAll && index < (details.length - 1)) return null;
-        return (<Item key={index} detail={detail} isExpand={index === details.length - 1} assetURLPrefix={assetURLPrefix} />);
+        return (<Item key={index} detail={detail} isExpand={index === details.length - 1} projectUuid={projectUuid} connection_id={connection_id} />);
       })}
     </div>
   );

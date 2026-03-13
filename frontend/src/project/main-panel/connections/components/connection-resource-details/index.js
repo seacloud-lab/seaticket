@@ -4,7 +4,6 @@ import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
-import { generatorConnectionAssetURLPrefix } from '../../utils';
 import { initConnectionResourceDetails } from '../../utils';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
@@ -40,12 +39,12 @@ const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails }) => 
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     }
     if (type === CONNECTION_TYPE.EMAIL) {
-      const assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, resource.connection_id);
       return (
         <EmailDetails
           className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
           details={details}
-          assetURLPrefix={assetURLPrefix}
+          projectUuid={projectUuid}
+          connection_id={resource.connection_id}
         />
       );
     }
