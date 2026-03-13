@@ -672,6 +672,17 @@ CREATE TABLE `portal_external_invitations` (
   KEY `portal_external_invitations_project_uuid_idx` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `project_issues_statistics` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(36) NOT NULL,
+  `org_id` int(11) NOT NULL DEFAULT -1,
+  `total_issues_count` int(11) NOT NULL DEFAULT 0,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_issues_statistics_project_uuid_uniq` (`project_uuid`),
+  KEY `project_issues_statistics_org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `project_external_users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,

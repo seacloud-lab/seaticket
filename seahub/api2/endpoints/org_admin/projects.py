@@ -1,4 +1,3 @@
-import uuid
 import logging
 
 from django.utils import timezone
@@ -21,6 +20,7 @@ from seahub.organizations.models import Organization
 from seahub.group.models import Group
 
 from seahub.api2.endpoints.admin.projects import get_project_info
+from seahub.project.models import ProjectIssuesStatistics
 
 logger = logging.getLogger(__name__)
 FILE_TYPE = '.project'
@@ -65,7 +65,10 @@ class OrgAdminProjectsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        projects = [get_project_info(d) for d in projects_queryset]
+        project_uuids = [str(d.uuid) for d in projects_queryset]
+        stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
+        issues_stats_dict = {str(s.project_uuid): s.total_issues_count for s in stats}
+        projects = [get_project_info(d, issues_stats_dict=issues_stats_dict) for d in projects_queryset]
 
         return Response({
             'projects': projects,
@@ -241,8 +244,12 @@ class OrgAdminSearchProjectsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        project_uuids = [str(p.uuid) for p in projects_queryset]
+        stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
+        issues_stats_dict = {s.project_uuid: s.total_issues_count for s in stats}
+
         return Response({
-            'projects': [get_project_info(project, include_deleted=False) for project in projects_queryset],
+            'projects': [get_project_info(project, include_deleted=False, issues_stats_dict=issues_stats_dict) for project in projects_queryset],
             'count': projects_count
         })
 

@@ -13,8 +13,10 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 
 from seahub.organizations.models import OrgMemberQuota, OrgSettings, Organization
+from django.db.models import Sum
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
+from seahub.project.models import ProjectIssuesStatistics
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +58,15 @@ class OrgAdminInfo(APIView):
             member_usage = len(org_members)
             active_members = len([m for m in org_members if m.is_active])
 
+        # issues usage
+        try:
+            issues_usage = ProjectIssuesStatistics.objects.filter(
+                org_id=org_id
+            ).aggregate(total=Sum('total_issues_count'))['total'] or 0
+        except Exception as e:
+            logger.error(e)
+            issues_usage = 0
+
         info = {}
         info['org_id'] = org_id
         info['org_name'] = org.org_name
@@ -63,6 +74,7 @@ class OrgAdminInfo(APIView):
         info['member_usage'] = member_usage
         info['active_members'] = active_members
         info['role'] = org_role
+        info['issues_usage'] = issues_usage
 
         return Response(info)
 

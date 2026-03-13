@@ -994,3 +994,24 @@ class ProjectGithubAppInstallation(models.Model):
         db_table = 'project_github_app_installation'
         unique_together = [['project_uuid', 'installation_id']]
 
+
+class ProjectIssuesStatisticsManager(models.Manager):
+
+    def get_by_project(self, project_uuid):
+        try:
+            return self.get(project_uuid=project_uuid)
+        except self.model.DoesNotExist:
+            return None
+
+    def get_by_org(self, org_id):
+        return self.filter(org_id=org_id)
+
+
+class ProjectIssuesStatistics(models.Model):
+    project_uuid = models.UUIDField(unique=True, db_index=True)
+    org_id = models.IntegerField(default=-1, db_index=True)
+    total_issues_count = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'project_issues_statistics'

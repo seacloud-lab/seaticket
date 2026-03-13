@@ -22,7 +22,7 @@ from seahub.base.accounts import User
 logger = logging.getLogger(__name__)
 
 
-def get_project_info(project, include_deleted=False, orgs_dict={}):
+def get_project_info(project, include_deleted=False, orgs_dict={}, issues_stats_dict=None):
     project_info = project.to_dict(include_deleted=include_deleted)
     project_info['org_id'] = project.workspace.org_id
     project_info['org_name'] = orgs_dict.get(
@@ -32,6 +32,8 @@ def get_project_info(project, include_deleted=False, orgs_dict={}):
     owner_name, owner_deleted = get_project_owner(project)
     project_info['owner'] = owner_name
     project_info['owner_deleted'] = owner_deleted
+    if issues_stats_dict is not None:
+        project_info['issues_count'] = issues_stats_dict.get(str(project.uuid), 0)
     return project_info
 
 
