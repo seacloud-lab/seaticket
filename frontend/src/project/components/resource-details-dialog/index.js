@@ -31,8 +31,8 @@ const initColumns = [
 const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
-  getTicket,
   createMoreOptions,
+  getTicket, getKB,
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 
@@ -140,7 +140,7 @@ const ResourceDetailsDialog = ({
           <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} updateDetails={updateDetails} />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
-          <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={updateDetails} />
+          <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={updateDetails} getKB={getKB} />
         )}
         {type === TICKET_TYPE && (
           <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={updateDetails} getTicket={getTicket} />

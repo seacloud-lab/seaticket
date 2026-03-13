@@ -7,22 +7,10 @@
   display: flex;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user {
-  width: 44px;
-  overflow: hidden;
-}
-
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user img {
-  height: 32px;
-  width: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 12px;
-}
-
 .sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings {
   flex: 1;
-  padding-top: 4px;
+  padding-top: 8px;
+  padding-left: 44px;
 }
 
 .sea-qa-project-edit-knowledge .sea-qa-project-knowledge-name {
@@ -59,7 +47,7 @@
   align-items: center;
   justify-content: space-between;
   padding-left: 0;
-  padding-bottom: 50px;
+  padding-bottom: 40px;
 }
 
 .sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer .sea-qa-loading-icon {
@@ -98,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-bottom: 50px;
+  padding-bottom: 40px;
 }
 
 .sea-qa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {

@@ -15,6 +15,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
   const [viewID, toggleView] = useState('');
+  const [isKBRecordPreview, toggleKBRecordPreview] = useState(true);
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
     const { origin } = location;
@@ -80,6 +81,11 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   }, [togglePageSlugId]);
 
   useEffect(() => {
+    if ([KNOWLEDGE_PAGE_SLUG_ID.ALL, KNOWLEDGE_PAGE_SLUG_ID.TRASH, KNOWLEDGE_PAGE_SLUG_ID.NEW].includes(pageSlugId)) return;
+    toggleKBRecordPreview(true);
+  }, [pageSlugId]);
+
+  useEffect(() => {
     resetURL(pageSlugId, childrenPageSlugId, viewID);
   }, [pageSlugId, childrenPageSlugId, viewID, resetURL]);
 
@@ -89,6 +95,8 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       viewID,
       childrenPageSlugId,
       isLoading,
+      isKBRecordPreview,
+      toggleKBRecordPreview,
       togglePageSlugId,
       toggleView,
       onRefresh,

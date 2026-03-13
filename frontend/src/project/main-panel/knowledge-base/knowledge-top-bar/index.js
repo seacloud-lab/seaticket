@@ -2,14 +2,14 @@ import React, { useCallback, useState } from 'react';
 import TopBar from '../../top-bar';
 import { useKnowledgePage } from '../hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
-import { IconButton, IconTextBtn } from '@/components';
-import { gettext } from '@/constants';
+import { IconButton, IconTextBtn, SecondaryBtn } from '@/components';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import { RefreshBtn } from '@/project/components';
 
 import './index.css';
 
-const KnowledgeTopBar = ({ title }) => {
-  const { pageSlugId, childrenPageSlugId, togglePageSlugId, onRefresh } = useKnowledgePage();
+const KnowledgeTopBar = ({ title, permission }) => {
+  const { pageSlugId, childrenPageSlugId, isKBRecordPreview, toggleKBRecordPreview, togglePageSlugId, onRefresh } = useKnowledgePage();
 
   const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
   const toggleMoreMenu = useCallback(() => setIsMoreMenuShow(prev => !prev), []);
@@ -57,12 +57,12 @@ const KnowledgeTopBar = ({ title }) => {
         <IconButton
           icon="arrow-down"
           className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
-          onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
+          onClick={() => isKBRecordPreview ? togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL) : toggleKBRecordPreview(true)}
         />
         <span className="text-truncate" title={editTitle}>{editTitle}</span>
       </>
     );
-  }, [pageSlugId, title, togglePageSlugId]);
+  }, [pageSlugId, title, togglePageSlugId, isKBRecordPreview, toggleKBRecordPreview]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
@@ -75,9 +75,19 @@ const KnowledgeTopBar = ({ title }) => {
       return null;
     }
 
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) return null;
-    return null;
-  }, [pageSlugId, childrenPageSlugId, togglePageSlugId, isMoreMenuShow, toggleMoreMenu]);
+    if (permission !== PERMISSION_TYPES.READ_WRITE) return null;
+
+    if (!isKBRecordPreview) return null;
+
+    return (
+      <SecondaryBtn
+        icon="revise"
+        isSmall={true}
+        text={gettext('Edit')}
+        onClick={() => toggleKBRecordPreview(false)}
+      />
+    );
+  }, [pageSlugId, childrenPageSlugId, togglePageSlugId, isMoreMenuShow, toggleMoreMenu, isKBRecordPreview, toggleKBRecordPreview]);
 
   return (
     <TopBar>

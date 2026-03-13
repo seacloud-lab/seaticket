@@ -2,54 +2,30 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, toaster } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { Utils } from '@/utils/utils';
-import { knowledgeBaseAPI } from '@/project/api';
-import { useKnowledgePage } from '../../hooks/knowledge-page';
-import UploadFilesButton from '../../../tickets/components/upload-files-btn';
+import { toaster } from '@/components';
+import UploadFilesButton from '../../../../tickets/components/upload-files-btn';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { useData, useTags } from '@/project/hooks';
-import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { useTags } from '@/project/hooks';
 
 import './index.css';
 
-const EditKnowledge = ({ editorAPI, projectUuid }) => {
-  const { tagsData, createTag } = useTags();
-  const { pageSlugId, togglePageSlugId } = useKnowledgePage();
-  const [isLoading, setLoading] = useState(true);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState({ text: '' });
+const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, onLinkClick }) => {
+  const [title, setTitle] = useState(knowledge?.title || '');
+  const [content, setContent] = useState({ text: knowledge?.content || '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState(knowledge?.tags || []);
 
   const contentEditorRef = useRef(null);
   const knowledgeRef = useRef(null);
 
-  const { modifyLocalRow, getTableByName } = useData();
+  const { tagsData, createTag } = useTags();
 
-  const lastRecordId = useRef('');
-
-  const user = useMemo(() => {
-    return {
-      name,
-      username,
-      avatar_url: avatarURL
-    };
-  }, []);
   const disabled = useMemo(() => {
     return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
   }, [title, content, isSubmitting]);
-
-  const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
-    const table = getTableByName(KB_TABLE_NAME);
-    const columns = Object.values(table.key_column_map);
-    if (columns.length === 0) return;
-    modifyLocalRow(KB_TABLE_NAME, ticketID, convertRowToKeyValue(update, { data: { columns }, tagsData }));
-  }, [tagsData, getTableByName, modifyLocalRow]);
 
   const onTitleChange = useCallback((event) => {
     const newTitle = event.target.value;
@@ -87,7 +63,12 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     }
   }, [editorAPI]);
 
+  const onCancel = useCallback(() => {
+    toggleKBRecordPreview && toggleKBRecordPreview(true);
+  }, [toggleKBRecordPreview]);
+
   const onSubmit = useCallback(() => {
+    setIsSubmitting(true);
     const validTitle = title.trim();
     const text = (content && typeof content === 'object') ? (content.text || '') : (content || '');
     const { previewText, images, links, checklist } = getPreviewContent(text, true, false);
@@ -98,43 +79,16 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
       links: links || [],
       checklist: checklist || { total: 0, completed: 0 },
     };
-    const data = { title: validTitle, content: normalizedContent, tags: tags || [] };
-    let serverData = {};
-    Object.keys(data).forEach(columnName => {
-      let value = data[columnName];
-      serverData[columnName] = value;
+    onChange && onChange({ title: validTitle, content: normalizedContent, tags: tags || [] }, (error) => {
+      if (error) {
+        setIsSubmitting(false);
+        return;
+      }
+      onCancel();
     });
-    knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, serverData).then(res => {
-      handleUpdateRowsCacheData(pageSlugId, serverData);
-      togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      setIsSubmitting(false);
-    });
-  }, [title, content, tags]);
+  }, [title, content, tags, onChange, onCancel]);
 
   useEffect(() => {
-    if (Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) return;
-    if (lastRecordId.current === pageSlugId) return;
-    lastRecordId.current = pageSlugId;
-    setLoading(true);
-    knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
-      handleUpdateRowsCacheData(pageSlugId, res?.data.record);
-      const { title = '', content = '', tags = [] } = res?.data.record || {};
-      setTitle(title);
-      setContent({ text: content || '' });
-      setTags(tags);
-      setLoading(false);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      setLoading(false);
-    });
-  }, [projectUuid, pageSlugId, handleUpdateRowsCacheData]);
-
-  useEffect(() => {
-    if (isLoading) return;
     const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
       if (!knowledgeDom) return;
@@ -146,31 +100,23 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, [isLoading]);
+  }, []);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
-        <Button className="mr-4" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+        <Button className="mr-4" onClick={onCancel}>{gettext('Cancel')}</Button>
         <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
       </div>
     );
-  }, [disabled, togglePageSlugId, onSubmit]);
-
-  if (isLoading) return (<CenteredLoading />);
+  }, [disabled, onCancel, onSubmit]);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 892;
 
   return (
     <div className={classnames('sea-qa-project-edit-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
-      {!isSmallScreen && (
-        <div className="sea-qa-project-knowledge-user">
-          <img src={user.avatar_url} alt={user.name} />
-        </div>
-      )}
       <div className="sea-qa-project-knowledge-settings">
-        <div className="sea-qa-project-knowledge-name mb-3">{gettext('Edit record ')}</div>
         <div className="sea-qa-project-knowledge-settings-container">
           <div className="sea-qa-project-knowledge-content-settings">
             <div className="sea-qa-project-knowledge-title mb-4">
@@ -199,6 +145,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
                 editorApi={editorAPI}
                 autoFocus={false}
                 onSaveEditorValue={onContentChange}
+                onLinkClick={onLinkClick}
               />
             </div>
             <div className="sea-qa-project-knowledge-footer">
