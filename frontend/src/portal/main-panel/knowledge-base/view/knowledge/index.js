@@ -8,7 +8,7 @@ import { useData, useTags } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import Preview from '@/project/main-panel/knowledge-base/view/knowledge/preview';
 
-const PortalEditKnowledge = ({ editorAPI, projectUuid }) => {
+const Knowledge = ({ editorAPI, projectUuid }) => {
   const { modifyLocalRow, getTableByName } = useData();
   const { tagsData } = useTags();
   const { pageSlugId } = usePortalKnowledgePage();
@@ -48,4 +48,4 @@ const PortalEditKnowledge = ({ editorAPI, projectUuid }) => {
 
 };
 
-export default PortalEditKnowledge;
+export default Knowledge;
