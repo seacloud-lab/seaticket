@@ -216,6 +216,8 @@ class ChatMessagesView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        developer_mode = project.to_dict()['settings'].get('developer_mode', False)
 
         workspace = project.workspace
 
@@ -234,12 +236,13 @@ class ChatMessagesView(APIView):
 
             message_ids = set([message.message_id for message in messages])
 
-            message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
+            if developer_mode:
+                message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
 
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if message.role == 'assistant':
+                if developer_mode and message.role == 'assistant':
                     if thought_process := message_id_thought_process_map.get(message.message_id, {}):
                         data['thought_process'] = thought_process
                 messages_data.append(data)
@@ -275,6 +278,11 @@ class ChatView(APIView):
             if not session:
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            project = Projects.objects.get_project_by_uuid(session.project_uuid)
+            if not project:
+                error_msg = 'project not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
             chat_task_id_info = gen_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
@@ -285,9 +293,11 @@ class ChatView(APIView):
                 'ai_reply': ai_reply['content'],
                 'ai_reply_message_id': ai_reply['id'],
                 'sources': ai_reply['sources'],
-                'thought_process': ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(session_uuid, ai_reply['message_id']),
                 'session_uuid': session_uuid
             }
+
+            if project.to_dict()['settings'].get('developer_mode', False):
+                result['thought_process'] = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(session_uuid, ai_reply['message_id'])
 
             return Response(result)
 
