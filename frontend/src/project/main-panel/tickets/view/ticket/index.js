@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import copy from 'copy-to-clipboard';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
+import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
+import { BAR_TYPE } from '@/project/constants';
+import { generatorTicketsContextMenuOptions } from '../../utils';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { isShiftSlash } from '@/utils/hotkey';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -19,6 +21,8 @@ import {
 } from '../../components/ticket-settings';
 import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
 import StatusToggleButton from './status-toggle-btn';
+import RelatedIssuesDialog from '../../components/related-issues-dialog';
+import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -29,7 +33,10 @@ import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';
 
-const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
+const Ticket = ({
+  editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
+  toggleBar, onRefresh, togglePageSlugId
+}) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
@@ -40,10 +47,14 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
+  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
+  const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
+  const [kbSourceTicket, setKbSourceTicket] = useState(null);
 
   const { typesData, statesData, substatesData } = useMetadata();
-  const { modifyLocalRow, getTableByName } = useData();
+  const { modifyLocalRow, getTableByName, deleteRow } = useData();
   const { tagsData, createTag } = useTags();
+  const { updateAttachments } = useAIChatTools();
 
   const lastTicketID = useRef('');
 
@@ -147,10 +158,51 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const copyLink = useCallback(() => {
-    copy(window.location.href);
-    toaster.success(gettext('The ticket link has been copied'));
+  const chatTicketsByAI = useCallback((tickets) => {
+    updateAttachments(tickets);
+    toggleBar([BAR_TYPE.CHAT]);
+  }, [toggleBar, updateAttachments]);
+
+  const findRelatedIssues = useCallback((row) => {
+    if (!row) return;
+    setIsShowRelatedIssuesDialog(true);
   }, []);
+
+  const createKnowledgeBaseRecord = useCallback((row) => {
+    if (!row) return;
+    setKbSourceTicket({
+      _id: row._id || row.id,
+      title: row.title || '',
+      content: (typeof row.content === 'object' ? (row.content?.text || row.content?.preview || '') : (row.content || '')),
+    });
+    setIsShowCreateKBRecordDialog(true);
+  }, []);
+
+  const createMoreOptions = useCallback(() => {
+    if (!ticket) return [];
+    const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, key_column_map: {} };
+    const row = ticket;
+    return generatorTicketsContextMenuOptions({
+      isGroupView: false,
+      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
+      table: { id_row_map: { [row.id]: row }, columns: Object.values(table.key_column_map) },
+      rowMetrics: { idSelectedRowMap: {} },
+      canDeleteRow: true,
+      deleteRow: (_) => {
+        deleteRow(TICKET_TABLE_NAME, _, () => ticketsAPI.deleteProjectTicket(projectUuid, row.id));
+        toaster.success(gettext('Ticket deleted'));
+        togglePageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+        onRefresh();
+      },
+      rowGetterByIndex: () => row,
+      chatTicketsByAI,
+      togglePageSlugId: () => {},
+      workspaceID,
+      projectName,
+      findRelatedIssues,
+      createKnowledgeBaseRecord,
+    }).filter(item => item.key !== 'open_ticket');
+  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName, findRelatedIssues, createKnowledgeBaseRecord]);
 
   const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
@@ -414,7 +466,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
-        copyLink={copyLink}
+        createMoreOptions={createMoreOptions}
         modifyTitle={onTitleChange}
       />
       <Header
@@ -520,6 +572,25 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       </div>
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
+      )}
+      {isShowRelatedIssuesDialog && (
+        <RelatedIssuesDialog
+          projectUuid={projectUuid}
+          ticketId={ticket._id || ticket.id}
+          workspaceID={workspaceID}
+          projectName={projectName}
+          onClose={() => setIsShowRelatedIssuesDialog(false)}
+        />
+      )}
+      {isShowCreateKBRecordDialog && kbSourceTicket && (
+        <CreateKBRecordDialog
+          projectUuid={projectUuid}
+          ticket={kbSourceTicket}
+          onClose={() => {
+            setIsShowCreateKBRecordDialog(false);
+            setKbSourceTicket(null);
+          }}
+        />
       )}
     </div>
   );

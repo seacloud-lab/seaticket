@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
-import { Button, Input } from 'reactstrap';
+import { Button, Input, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, toaster, Icon, Option } from '@/components';
+import { IconButton, toaster, Icon, Option, CustomizeDropdownMenu } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
 import { TICKET_STATE } from '../../../constants';
@@ -15,11 +15,12 @@ const Header = forwardRef(({
   id,
   stateOption,
   typeOption,
-  copyLink,
+  createMoreOptions,
   modifyTitle,
 }, ref) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [title, setTitle] = useState(propsTitle);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const domRef = useRef(null);
 
@@ -102,9 +103,25 @@ const Header = forwardRef(({
                 {gettext('Submit')}
               </Button>
             </>
-          ) : (
-            <IconButton icon="copy" className="sea-qa-project-ticket-copy" onClick={copyLink} />
-          )}
+          ) : createMoreOptions ? (
+            <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+              <DropdownToggle tag="span">
+                <IconButton className="more-btn" icon="more" title={gettext('More')}/>
+              </DropdownToggle>
+              <CustomizeDropdownMenu>
+                {createMoreOptions().map((option, index) => {
+                  if (option === 'Divider') {
+                    return <DropdownItem key={index} divider />;
+                  }
+                  return (
+                    <DropdownItem key={option.key || index} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
+                      {option.label}
+                    </DropdownItem>
+                  );
+                })}
+              </CustomizeDropdownMenu>
+            </Dropdown>
+          ) : null}
         </div>
       </div>
       <div className="sea-qa-project-ticket-state-wrapper">

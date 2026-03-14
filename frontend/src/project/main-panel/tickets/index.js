@@ -30,7 +30,7 @@ const Page = ({ toggleBar, type }) => {
     projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin, toggleBar
   }), [toggleBar]);
 
-  const { isLoading, pageSlugId, childrenPageSlugId } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, onRefresh } = useTicketsPage();
   if (isLoading) return null;
   if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
     if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
@@ -48,7 +48,7 @@ const Page = ({ toggleBar, type }) => {
   if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
     return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
   }
-  return (<Ticket { ...props } ticketID={pageSlugId} editorAPI={longtextAPI} />);
+  return (<Ticket { ...props } ticketID={pageSlugId} editorAPI={longtextAPI} onRefresh={onRefresh} togglePageSlugId={togglePageSlugId} />);
 };
 
 const Tickets = ({ title, toggleBar, type }) => {

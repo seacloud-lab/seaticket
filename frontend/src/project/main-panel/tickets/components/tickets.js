@@ -12,6 +12,7 @@ import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
+import toaster from '@/components/toaster';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
@@ -37,6 +38,7 @@ const Tickets = ({
   toggleView,
   isLoading = false,
   getTicket,
+  onRefresh,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
@@ -239,6 +241,30 @@ const Tickets = ({
     return generatorTicketsContextMenuOptions(params);
   }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord]);
 
+  const createMoreOptions = useCallback((resource) => {
+    const row = resource;
+    return generatorTicketsContextMenuOptions({
+      isGroupView: false,
+      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
+      table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
+      rowMetrics: { idSelectedRowMap: {} },
+      deleteRow: (rowId) => {
+        metadataAPI.deleteRow(rowId);
+        setIsShowTicketDetailsDialog(false);
+        toaster.success(context.translate('{Row} deleted'));
+        onRefresh();
+      },
+      rowGetterByIndex: () => row,
+      context,
+      chatTicketsByAI,
+      togglePageSlugId,
+      workspaceID,
+      projectName,
+      findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
+      createKnowledgeBaseRecord,
+    });
+  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI]);
+
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
     const index = ticketsData.findIndex(r => r._id === currentTicket._id);
@@ -254,6 +280,12 @@ const Tickets = ({
     const ticket = ticketsData[newIndex];
     setCurrentTicket({ ...ticket, type: TICKET_TYPE });
   }, [currentTicket, metadataRef]);
+
+  const onCloseRelatedIssuesDialog = useCallback(() => {
+    setIsShowRelatedIssuesDialog(false);
+    if (isShowTicketDetailsDialog) return;
+    setCurrentTicket(null);
+  }, [isShowTicketDetailsDialog]);
 
   if (isLoading) return (<CenteredLoading />);
 
@@ -292,7 +324,7 @@ const Tickets = ({
           ticketId={currentTicket._id}
           workspaceID={workspaceID}
           projectName={projectName}
-          onClose={() => { setIsShowRelatedIssuesDialog(false); setCurrentTicket(null); }}
+          onClose={onCloseRelatedIssuesDialog}
         />
       )}
       {isShowTicketDetailsDialog && (
@@ -303,6 +335,7 @@ const Tickets = ({
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
           getTicket={getTicket}
+          createMoreOptions={createMoreOptions}
         />
       )}
       {isShowCreateKBRecordDialog && kbSourceTicket && (
