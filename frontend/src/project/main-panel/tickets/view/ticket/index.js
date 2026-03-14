@@ -180,12 +180,12 @@ const Ticket = ({
 
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
-    const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, columns: [] };
+    const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, key_column_map: {} };
     const row = ticket;
     return generatorTicketsContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
-      table: { id_row_map: { [row.id]: row }, columns: table.columns || [] },
+      table: { id_row_map: { [row.id]: row }, columns: Object.values(table.key_column_map) },
       rowMetrics: { idSelectedRowMap: {} },
       canDeleteRow: true,
       deleteRow: (_) => {
