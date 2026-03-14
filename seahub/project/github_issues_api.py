@@ -16,7 +16,7 @@ class GitHubAppNotInstalled(Exception):
 class GitHubAPI:
     def __init__(self, installation_id, timeout=60):
         self.installation_id = installation_id
-        self.app_id = GITHUB_APP_ID
+        self.app_id = str(GITHUB_APP_ID)
         self.app_private_key = GITHUB_PRIVATE_KEY
         self.timeout = timeout
         self.headers = self._gen_headers()
