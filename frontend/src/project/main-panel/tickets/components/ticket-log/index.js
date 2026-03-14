@@ -174,6 +174,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
 
       // assignees
       case LOG_TYPE.ASSIGNEES_ADDED: {
+        if (!Array.isArray(new_value)) return null;
         return (
           <AddLog
             name={gettext('assigned')}
@@ -228,6 +229,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
 
       // tags
       case LOG_TYPE.TAGS_ADDED: {
+        if (!Array.isArray(new_value)) return null;
         return (
           <AddLog
             name={gettext('added tags')}
@@ -244,6 +246,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         );
       }
       case LOG_TYPE.TAGS_REMOVED: {
+        if (!Array.isArray(new_value)) return null;
         return (
           <RemoveLog
             name={gettext('removed tags')}
