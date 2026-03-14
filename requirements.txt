@@ -17,7 +17,7 @@ python-dateutil==2.9.*
 requests==2.32.*
 chardet==5.1.*
 pillow==10.4.*
-pyjwt==2.8.*
+pyjwt==2.12.*
 python-ldap==3.4.*
 pysaml2==7.2.*
 aliyun-python-sdk-core-v3==2.13.11
