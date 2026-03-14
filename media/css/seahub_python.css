@@ -574,6 +574,72 @@ input.short-input {
   text-decoration: none;
 }
 
+/* password toggle */
+.password-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 14px;
+  height: 14px;
+  color: var(--bs-body-secondary-color);
+  cursor: pointer;
+  display: flex;
+}
+
+.password-toggle .eye-icon svg,
+.password-toggle .eye-slash-icon svg {
+  fill: currentColor;
+  flex-shrink: 0;
+  height: 1rem;
+  overflow: hidden;
+  width: 1rem;
+  display: block;
+}
+
+.password-toggle .eye-icon {
+  display: none;
+}
+
+.password-toggle.password-show .eye-slash-icon {
+  display: none;
+}
+
+.password-toggle.password-show .eye-icon {
+  display: unset;
+}
+
+/* remember-me-toggle */
+.remember-me-toggle {
+  cursor: pointer;
+}
+
+.remember-me-toggle .remember-me-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.remember-me-toggle .remember-me-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.remember-me-toggle .remember-me-icon-outline {
+  display: block;
+}
+
+.remember-me-toggle .remember-me-icon-outline svg path {
+  fill: var(--bs-icon-secondary-color);
+}
+
+.remember-me-toggle .remember-me-icon-checked {
+  display: none;
+}
+
+.remember-me-toggle .remember-me-icon-checked svg path {
+  fill: var(--bs-primary);
+}
+
 /* login-panel */
 .login-panel-wrapper {
   width: fit-content;
@@ -632,15 +698,6 @@ input.short-input {
   font-size: 14px;
   color: var(--bs-orange);
   font-weight: normal;
-}
-
-.login-panel-wrapper .login-form-wrapper .password-toggle {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  width: 14px;
-  height: 14px;
-  color: var(--bs-body-secondary-color)
 }
 
 .login-panel-wrapper .btn-sso {
