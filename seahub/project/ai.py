@@ -22,7 +22,7 @@ from seahub.utils.ai_client import (
 )
 from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
 from seahub.utils.indexer import find_related_records
-from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType
+from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
@@ -176,7 +176,8 @@ class ConvertRecordToTicket(APIView):
             'username': username,
             'record_detail': record_detail,
             'project_uuid': project_uuid,
-            'org_id': org_id
+            'org_id': org_id,
+            'scenario': AIScenario.RECORD_GENERATION.value,
         }
         try:
             ai_title, ai_content = convert_record_to_ticket(params)
@@ -261,6 +262,7 @@ class ConvertTicketToKnowledgeBaseRecord(APIView):
             'ticket_comments': sanitized_comments,
             'project_uuid': project_uuid,
             'org_id': org_id,
+            'scenario': AIScenario.RECORD_GENERATION.value,
         }
 
         try:

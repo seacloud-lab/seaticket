@@ -569,6 +569,7 @@ CREATE TABLE `ai_usage_statistics` (
   `group_id` int(11) DEFAULT NULL,
   `org_id` bigint(20) DEFAULT NULL,
   `model` varchar(100) NOT NULL,
+  `scenario` varchar(64) NOT NULL DEFAULT 'unknown',
   `input_tokens` int(11) DEFAULT NULL,
   `output_tokens` int(11) DEFAULT NULL,
   `cost` double NOT NULL,
@@ -578,10 +579,12 @@ CREATE TABLE `ai_usage_statistics` (
   KEY `idx_date_org_user` (`date`, `org_id`, `username`, `cost`),
   KEY `idx_date_org_proj` (`date`, `org_id`, `project_uuid`, `cost`),
   KEY `idx_date_org_group` (`date`, `org_id`, `group_id`, `cost`),
+  KEY `idx_date_org_scenario` (`date`, `org_id`, `scenario`, `cost`),
   KEY `idx_username_model_date` (`username`, `model`, `date`, `cost`),
   KEY `idx_project_model_date` (`project_uuid`, `model`, `date`, `cost`),
   KEY `idx_group_model_date` (`group_id`, `model`, `date`, `cost`),
-  KEY `idx_org_model_date` (`org_id`, `model`, `date`, `cost`)
+  KEY `idx_org_model_date` (`org_id`, `model`, `date`, `cost`),
+  KEY `idx_scenario_model_date` (`scenario`, `model`, `date`, `cost`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

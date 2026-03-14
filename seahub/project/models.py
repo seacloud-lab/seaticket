@@ -938,6 +938,7 @@ class AIUsageStatistics(models.Model):
     org_id = models.IntegerField(null=True)
     group_id = models.IntegerField(null=True)
     model = models.CharField(max_length=64)
+    scenario = models.CharField(max_length=64, default='unknown')
     input_tokens = models.IntegerField(default=0)
     output_tokens = models.IntegerField(default=0)
     cost = models.FloatField(default=0)
@@ -949,7 +950,9 @@ class AIUsageStatistics(models.Model):
         indexes = [
             models.Index(fields=['date', 'username']),
             models.Index(fields=['date', 'project_uuid']),
-            models.Index(fields=['date', 'group_id', 'org_id'])
+            models.Index(fields=['date', 'group_id', 'org_id']),
+            models.Index(fields=['date', 'org_id', 'scenario']),
+            models.Index(fields=['scenario', 'model', 'date']),
         ]
 
 

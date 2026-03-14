@@ -35,6 +35,18 @@ class ExtraSourceType(Enum):
     KNOWLEDGE_BASE = 'knowledge_base'
     TICKET = 'ticket'
 
+class AIScenario(Enum):
+    SUMMARY = 'summary'
+    AGENT = 'agent'
+    CHAT = 'chat'
+    SEARCH = 'search'
+    RECORD_GENERATION = 'record_generation'
+    UNKNOWN = 'unknown'
+
+    @classmethod
+    def is_valid(cls, value):
+        return value in {item.value for item in cls}
+
 class ConnectionField(object):
     def __init__(self, key, is_required=False, is_unique=False):
         self.key = key

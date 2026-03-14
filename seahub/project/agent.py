@@ -32,6 +32,7 @@ from seahub.notifications.signal_handler import (
     MSG_TYPE_TICKET_COMMENTED,
 )
 from seahub.tickets.signals import agent_notify_assignees, ticket_commented
+from seahub.project.constants import AIScenario
 
 logger = logging.getLogger(__name__)
 
@@ -432,6 +433,7 @@ class AgentActionConfirmView(APIView):
             'record_detail': record_detail,
             'project_uuid': project_uuid,
             'org_id': org_id,
+            'scenario': AIScenario.RECORD_GENERATION.value,
         }
         try:
             ai_title, ai_content = ai_convert_record_to_ticket(params)
