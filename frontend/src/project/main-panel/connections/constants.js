@@ -322,7 +322,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   STATE_REASON: 'state_reason',
   ISSUE_TYPE: 'issue_type',
   LABELS: 'labels',
-  COMMENTS_COUNT: 'comments_count',
+  COMMENT_COUNT: 'comment_count',
   MODIFIED_TIME: 'modified_time',
   CLOSED_TIME: 'closed_time',
   CREATED_TIME: 'created_time',
@@ -404,7 +404,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Labels'),
       is_predefined: true,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENTS_COUNT]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENT_COUNT]: {
       display_name: gettext('Total comments'),
       type: CellType.NUMBER,
       is_predefined: true,
