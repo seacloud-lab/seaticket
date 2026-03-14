@@ -19,7 +19,6 @@ from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.organizations.models import Organization
 from seahub.group.models import Group
 
-from seahub.api2.endpoints.admin.projects import get_project_info
 from seahub.project.models import ProjectIssuesStatistics
 
 logger = logging.getLogger(__name__)
@@ -34,6 +33,21 @@ def _check_org(org_id):
         error_msg = 'Organization %s not found.' % org_id
         return api_error(status.HTTP_404_NOT_FOUND, error_msg), None
     return None, org
+
+def _get_project_info(project, include_deleted=False, orgs_dict={}, issues_stats_dict=None):
+    project_info = project.to_dict(include_deleted=include_deleted)
+    project_info['org_id'] = project.workspace.org_id
+    project_info['org_name'] = orgs_dict.get(
+        project.workspace.org_id, {}).get('org_name')
+    project_info['email'] = project.workspace.owner
+    project_info['group_id'] = project.get_owner_group_id()
+    owner_name, owner_deleted = get_project_owner(project)
+    project_info['owner'] = owner_name
+    project_info['owner_deleted'] = owner_deleted
+    if issues_stats_dict is not None:
+        project_info['issues_count'] = issues_stats_dict.get(str(project.uuid), 0)
+    return project_info
+
 
 
 class OrgAdminProjectsView(APIView):
@@ -68,7 +82,7 @@ class OrgAdminProjectsView(APIView):
         project_uuids = [str(d.uuid) for d in projects_queryset]
         stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
         issues_stats_dict = {str(s.project_uuid): s.total_issues_count for s in stats}
-        projects = [get_project_info(d, issues_stats_dict=issues_stats_dict) for d in projects_queryset]
+        projects = [_get_project_info(d, issues_stats_dict=issues_stats_dict) for d in projects_queryset]
 
         return Response({
             'projects': projects,
@@ -144,9 +158,12 @@ class OrgAdminTrashProjectsView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        project_uuids = [str(p.uuid) for p in projects_queryset]
+        stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
+        issues_stats_dict = {str(s.project_uuid): s.total_issues_count for s in stats}
 
         return Response({
-            'projects': [get_project_info(d, include_deleted=True) for d in projects_queryset],
+            'projects': [_get_project_info(d, include_deleted=True, issues_stats_dict=issues_stats_dict) for d in projects_queryset],
             'count': projects_count
         })
 
@@ -246,10 +263,10 @@ class OrgAdminSearchProjectsView(APIView):
 
         project_uuids = [str(p.uuid) for p in projects_queryset]
         stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
-        issues_stats_dict = {s.project_uuid: s.total_issues_count for s in stats}
+        issues_stats_dict = {str(s.project_uuid): s.total_issues_count for s in stats}
 
         return Response({
-            'projects': [get_project_info(project, include_deleted=False, issues_stats_dict=issues_stats_dict) for project in projects_queryset],
+            'projects': [_get_project_info(project, include_deleted=False, issues_stats_dict=issues_stats_dict) for project in projects_queryset],
             'count': projects_count
         })
 
