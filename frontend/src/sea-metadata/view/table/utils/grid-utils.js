@@ -106,7 +106,7 @@ class GridUtils {
     const renderRowsCount = renderRowIds.length;
 
     const isFromCut = pasteSource === PASTE_SOURCE.CUT && type === TRANSFER_TYPES.METADATA_FRAGMENT;
-    if (isFromCut) {
+    if (isFromCut && context.getSetting('canClearCells')) {
       const { search } = window.location;
       const urlParams = new URLSearchParams(search);
       const currentViewId = urlParams.has('view') && urlParams.get('view');
@@ -173,6 +173,7 @@ class GridUtils {
       return;
     }
 
+    if (!context.getSetting('canPasteCells')) return;
     this.api.modifyRows(updateRowIds, idRowUpdates, idOldRowOldData, isCopyPaste);
   }
 

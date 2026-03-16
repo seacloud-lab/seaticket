@@ -37,6 +37,7 @@ const Tickets = ({
   togglePageSlugId = () => {},
   toggleView,
   isLoading = false,
+  settings = {},
   getTicket,
   onRefresh,
   ...props
@@ -315,7 +316,7 @@ const Tickets = ({
         substatesData={substatesData}
         createSubstate={createSubstate}
         toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
-
+        settings={{ ...settings, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
         { ...props }
       />
       {isShowRelatedIssuesDialog && currentTicket && (

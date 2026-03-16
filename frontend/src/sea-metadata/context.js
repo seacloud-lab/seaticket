@@ -12,6 +12,9 @@ const SETTINGS = {
   isFilterComputedOnServer: true,
   isSortComputedOnServer: true,
   canManageView: true,
+  canClearCells: true,
+  canPasteCells: true,
+  canDragFillCells: true,
 };
 
 class Context {
