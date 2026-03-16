@@ -503,6 +503,7 @@ class InteractionMasks extends React.Component {
         oldRowData: { [column.key]: oldCellValue },
         rowUpdate: { [column.key]: null },
       });
+      return;
     }
 
     let updateRowIds = [];

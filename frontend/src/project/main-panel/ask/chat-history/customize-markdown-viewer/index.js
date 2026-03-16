@@ -7,9 +7,9 @@ import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
 import CustomizeLink from '../customize-link';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { gettext, siteRoot } from '@/constants';
+import { gettext } from '@/constants';
 import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
-import { BAR_TYPE } from '@/project/constants';
+import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/utils';
 
 import './index.css';
 
@@ -65,8 +65,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
       // Render seaqa-kb-entry as a direct link to the created KB record
       const kbEntryRegex = /<seaqa-kb-entry\s+id=(?:["'])(\d+)(?:["'])\s+title=(?:["'])(.*?)(?:["'])\s*\/>/g;
       value = value.replace(kbEntryRegex, (match, kbId, title) => {
-        const origin = location.origin;
-        const kbUrl = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${kbId}/`;
+        const kbUrl = generatorKnowledgeBaseURL({ kb: kbId, workspaceID, projectName });
         return `[${title}](${kbUrl})`;
       });
       aiReplyForCopy = value;
