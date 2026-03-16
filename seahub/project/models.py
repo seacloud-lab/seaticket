@@ -950,9 +950,8 @@ class AIUsageStatistics(models.Model):
         indexes = [
             models.Index(fields=['date', 'username']),
             models.Index(fields=['date', 'project_uuid']),
-            models.Index(fields=['date', 'group_id', 'org_id']),
-            models.Index(fields=['date', 'org_id', 'scenario']),
-            models.Index(fields=['scenario', 'model', 'date']),
+            models.Index(fields=['date', 'group_id']),
+            models.Index(fields=['date', 'org_id']),
         ]
 
 

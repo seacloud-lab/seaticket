@@ -576,15 +576,10 @@ CREATE TABLE `ai_usage_statistics` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_date_org_user` (`date`, `org_id`, `username`, `cost`),
-  KEY `idx_date_org_proj` (`date`, `org_id`, `project_uuid`, `cost`),
-  KEY `idx_date_org_group` (`date`, `org_id`, `group_id`, `cost`),
-  KEY `idx_date_org_scenario` (`date`, `org_id`, `scenario`, `cost`),
-  KEY `idx_username_model_date` (`username`, `model`, `date`, `cost`),
-  KEY `idx_project_model_date` (`project_uuid`, `model`, `date`, `cost`),
-  KEY `idx_group_model_date` (`group_id`, `model`, `date`, `cost`),
-  KEY `idx_org_model_date` (`org_id`, `model`, `date`, `cost`),
-  KEY `idx_scenario_model_date` (`scenario`, `model`, `date`, `cost`)
+  KEY `idx_user` (`date`, `username`),
+  KEY `idx_proj` (`date`, `project_uuid`),
+  KEY `idx_group` (`date`, `group_id`),
+  KEY `idx_org` (`date`, `org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
