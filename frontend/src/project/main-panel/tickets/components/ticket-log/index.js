@@ -169,7 +169,6 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const stateNewValueOption = getRowById(statesData, stateNewValue + '') || DELETED_OPTION;
         const substateOldValueOption = getRowById(substatesData, substateOldValue + '') || DELETED_OPTION;
         const substateNewValueOption = getRowById(substatesData, substateNewValue + '') || DELETED_OPTION;
-
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name,
@@ -182,7 +181,33 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
           }
         ];
 
-        return (<ModifyLog modifies={modifies} />);
+        if (stateOldValue && stateNewValue && substateOldValue && substateNewValue) {
+          return (<ModifyLog modifies={modifies} />);
+        }
+
+        let stateLog = (<ModifyLog modifies={[modifies[0]]} />);
+        if (!stateOldValue && stateNewValue) {
+          stateLog = (<AddLog name={gettext('added state')} value={<Option option={stateNewValueOption} />} />);
+        } else if (stateOldValue && !stateNewValue) {
+          stateLog = (<RemoveLog name={gettext('Removed state')} value={(<Option option={stateOldValueOption} />)} />);
+        }
+
+        let substateLog = (<ModifyLog modifies={[modifies[1]]} />);
+        if (!substateOldValue && substateNewValue) {
+          substateLog = (<AddLog name={gettext('added substate')} value={<Option option={substateNewValueOption} />} />);
+        } else if (substateOldValue && !substateNewValue) {
+          substateLog = (<RemoveLog name={gettext('Removed substate')} value={(<Option option={substateOldValueOption} />)} />);
+        }
+
+        return (
+          <>
+            {stateLog}
+            {' '}
+            {gettext('and')}
+            {' '}
+            {substateLog}
+          </>
+        );
       }
 
       // assignees
