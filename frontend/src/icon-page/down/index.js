@@ -9,11 +9,3 @@ root.render(
     <Icon symbol="arrow-down-b" />
   </>
 );
-
-const rightdownIcon = createRoot(document.getElementById('right-down-icon-wrapper'));
-
-rightdownIcon.render(
-  <>
-    <Icon symbol="arrow-down-b" />
-  </>
-);

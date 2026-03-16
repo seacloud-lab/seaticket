@@ -426,13 +426,7 @@ input.short-input {
   color: #212529;
 }
 
-#lang-context-selector .sea-qa-icon-svg {
-  width: 14px;
-  height: 14px;
-  fill: var(--bs-icon-color);
-}
-
-#lang-context-selector .un-check-mark .sea-qa-icon-svg {
+#lang-context-selector .un-check-mark {
   display: none;
 }
 
@@ -453,9 +447,20 @@ input.short-input {
   background-color: rgba(0, 0, 0, 0.04)
 }
 
-#lang-context .sea-qa-icon-svg {
-  color: var(--bs-body-secondary-color);
+#lang-context .sea-qa-html-icon-svg svg {
   margin-top: -2px;
+  width: 12px;
+  height: 12px;
+}
+
+/* sea-qa-html-icon-svg style */
+.sea-qa-html-icon-svg svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sea-qa-html-icon-svg svg path {
+  fill: var(--bs-icon-color);
 }
 
 /* layout */
@@ -586,13 +591,9 @@ input.short-input {
   display: flex;
 }
 
-.password-toggle .eye-icon svg,
-.password-toggle .eye-slash-icon svg {
-  fill: currentColor;
-  flex-shrink: 0;
-  height: 1rem;
-  overflow: hidden;
-  width: 1rem;
+.password-toggle .sea-qa-html-icon-svg svg {
+  height: 16px;
+  width: 16px;
   display: block;
 }
 
@@ -613,14 +614,7 @@ input.short-input {
   cursor: pointer;
 }
 
-.remember-me-toggle .remember-me-icon {
-  width: 14px;
-  height: 14px;
-}
-
-.remember-me-toggle .remember-me-icon svg {
-  width: 100%;
-  height: 100%;
+.remember-me-toggle .sea-qa-html-icon-svg svg {
   display: block;
 }
 
