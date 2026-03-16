@@ -86,17 +86,23 @@ const Cell = React.memo(({
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseEnter = useCallback((event) => {
-    if (!getEventClassName(event).includes('sea-metadata-table-cell') || !isFunction(cellMetaData.onCellMouseEnter)) return;
-    const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
-    const mousePosition = { x: event.clientX, y: event.clientY };
-    cellMetaData.onCellMouseEnter({ ...cell, mousePosition }, event);
+    if (!isFunction(cellMetaData.onCellMouseEnter)) return;
+    // long text cell className is special, so we need to check it separately
+    if (getEventClassName(event).includes('sea-metadata-table-cell') || getEventClassName(event).includes('sea-metadata-table-long-text-cell')) {
+      const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
+      const mousePosition = { x: event.clientX, y: event.clientY };
+      cellMetaData.onCellMouseEnter({ ...cell, mousePosition }, event);
+    }
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseMove = useCallback((event) => {
-    if (!getEventClassName(event).includes('sea-metadata-table-cell') || !isFunction(cellMetaData.onCellMouseMove)) return;
-    const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
-    const mousePosition = { x: event.clientX, y: event.clientY };
-    cellMetaData.onCellMouseMove({ ...cell, mousePosition }, event);
+    if (!isFunction(cellMetaData.onCellMouseMove)) return;
+    // long text cell className is special, so we need to check it separately
+    if (getEventClassName(event).includes('sea-metadata-table-cell') || getEventClassName(event).includes('sea-metadata-long-text-formatter')) {
+      const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
+      const mousePosition = { x: event.clientX, y: event.clientY };
+      cellMetaData.onCellMouseMove({ ...cell, mousePosition }, event);
+    }
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseLeave = useCallback(() => {
