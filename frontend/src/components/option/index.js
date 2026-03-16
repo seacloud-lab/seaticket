@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import './index.css';
 
 const Option = ({ option, className, children }) => {
+  if (!option) return null;
 
   const { color, text_color, border_color = 'transparent', name, display_name } = option;
   return (
