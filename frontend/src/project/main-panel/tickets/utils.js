@@ -273,13 +273,6 @@ export const generatorTicketsContextMenuOptions = ({
       list.push('Divider');
     }
 
-    if (context.canModify()) {
-      list.push({
-        label: gettext('Clear selected'),
-        key: 'clear_selected',
-        callback: onClearSelected,
-      });
-    }
     list.push({
       label: gettext('Copy selected'),
       key: 'copy_selected',

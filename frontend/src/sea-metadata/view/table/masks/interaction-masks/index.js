@@ -506,6 +506,8 @@ class InteractionMasks extends React.Component {
       return;
     }
 
+    if (!context.getSetting('canClearCells')) return;
+
     let updateRowIds = [];
     let idRowUpdates = {}; // row's id to modified original rows data: { [row_id]: { [column.key: null] } }
     let idOldRowData = {}; // row's id to old original rows data: { [row_id]: { [column.key: xxx] } }
@@ -619,12 +621,14 @@ class InteractionMasks extends React.Component {
       cutPosition: this.cutPosition,
       viewId: copiedViewId
     });
-    if (!multiplePaste) {
+    if (!multiplePaste && context.getSetting('canPasteCells')) {
       this.setPasteRange(copiedRowsCount, copiedColumnsCount);
     }
   };
 
   onCut = (event) => {
+    if (!context.getSetting('canClearCells')) return;
+
     // when activeElement is not cellMask or has no permission, can't paste cell
     if (!this.isCellMaskActive() || !this.canModifyRows) return;
     const { selectedPosition, selectedRange } = this.state;
@@ -1055,8 +1059,8 @@ class InteractionMasks extends React.Component {
 
   renderSingleCellSelectView = () => {
     const { isEditorEnabled, selectedPosition } = this.state;
-    const isDragEnabled = this.checkIsSelectedCellEditable();
-    const showDragHandle = isDragEnabled && context.canModifyRows();
+    const isSelectedCellsEditable = this.checkIsSelectedCellEditable();
+    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
     if (isEditorEnabled) {
       return null;
     }
@@ -1077,8 +1081,8 @@ class InteractionMasks extends React.Component {
   renderCellRangeSelectView = () => {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
-    const isDragEnabled = this.checkIsSelectedCellsEditable();
-    const showDragHandle = isDragEnabled && context.canModifyRows();
+    const isSelectedCellsEditable = this.checkIsSelectedCellsEditable();
+    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
     return [
       <SelectionRangeMask
         key="range-mask"

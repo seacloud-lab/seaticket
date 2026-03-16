@@ -125,7 +125,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
         api={api}
         ref={metadataRef}
         permission={permission}
-        settings={{ enableExportAndImportXlsx: true }}
+        settings={{ enableExportAndImportXlsx: true, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
         localStorageNamePrefix={localStorageName}
         toggleView={toggleView}
         expandRow={handleExpandRow}
