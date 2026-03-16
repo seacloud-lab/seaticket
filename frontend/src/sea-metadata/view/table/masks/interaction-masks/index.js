@@ -491,6 +491,20 @@ class InteractionMasks extends React.Component {
     const editableColumns = getColumnsFromSelectedRange({ selectedRange, columns }, true);
     if (editableColumns.length === 0) return;
 
+    if (editableColumns.length === 1 && editableRows.length === 1) {
+      const column = editableColumns[0];
+      const row = editableRows[0];
+      if (column.is_required) return;
+      const oldCellValue = row[column.key];
+      if (!this.props.modifyRow || !isValidCellValue(oldCellValue, column)) return;
+      this.props.modifyRow({
+        cellKey: column.key,
+        rowId: row._id,
+        oldRowData: { [column.key]: oldCellValue },
+        rowUpdate: { [column.key]: null },
+      });
+    }
+
     let updateRowIds = [];
     let idRowUpdates = {}; // row's id to modified original rows data: { [row_id]: { [column.key: null] } }
     let idOldRowData = {}; // row's id to old original rows data: { [row_id]: { [column.key: xxx] } }
@@ -501,7 +515,7 @@ class InteractionMasks extends React.Component {
       editableColumns.forEach(column => {
         const { key } = column;
         const cellVal = getCellValueByColumn(row, column);
-        if (isValidCellValue(cellVal, column)) {
+        if (!column.is_required && isValidCellValue(cellVal, column)) {
           oldRowData[key] = cellVal;
           rowUpdates[key] = null;
         }

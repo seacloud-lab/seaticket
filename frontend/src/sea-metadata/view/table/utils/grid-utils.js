@@ -118,7 +118,7 @@ class GridUtils {
     // need expand rows
     const startExpandRowIndex = renderRowsCount - startRowIndex;
 
-    if ((copiedRowsLen > startExpandRowIndex)) return;
+    if (copiedRowsLen > startExpandRowIndex) return;
 
     let updateRowIds = [];
     let idRowUpdates = {};
@@ -167,6 +167,12 @@ class GridUtils {
     }
 
     if (updateRowIds.length === 0) return;
+    if (updateRowIds.length === 1 && pasteColumnsLen === 1) {
+      const rowId = updateRowIds[0];
+      this.api.modifyRow(rowId, idRowUpdates[rowId], idOldRowOldData[rowId], true);
+      return;
+    }
+
     this.api.modifyRows(updateRowIds, idRowUpdates, idOldRowOldData, isCopyPaste);
   }
 
