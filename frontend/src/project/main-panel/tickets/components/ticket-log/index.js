@@ -4,7 +4,7 @@ import dayjs from '@/utils/dayjs';
 import { IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
-import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
+import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
 import ModifyLog from './modify-log';
 import AddLog from './add-log';
@@ -114,8 +114,16 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return (<ModifyLog modifies={modifies}/>);
       }
       case LOG_TYPE.SUBSTATE_CHANGED: {
-        const oldValueOption = getRowById(substatesData, old_value + '');
-        const newValueOption = getRowById(substatesData, new_value + '');
+        const oldValueOption = getRowById(substatesData, old_value + '') || DELETED_OPTION;
+        const newValueOption = getRowById(substatesData, new_value + '') || DELETED_OPTION;
+        if (!old_value) {
+          return (<AddLog name={gettext('added the substate')} value={(<Option option={newValueOption} />)}/>);
+        }
+
+        if (!new_value) {
+          return (<RemoveLog name={gettext('removed the substate')} value={(<Option option={oldValueOption} />)}/>);
+        }
+
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name,
@@ -125,18 +133,23 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         ];
 
         return (<ModifyLog modifies={modifies}/>);
+
       }
       case LOG_TYPE.TYPE_CHANGED: {
-        const oldValueOption = getRowById(typesData, old_value + '');
-        const newValueOption = getRowById(typesData, new_value + '');
+        const oldValueOption = getRowById(typesData, old_value + '') || DELETED_OPTION;
+        const newValueOption = getRowById(typesData, new_value + '') || DELETED_OPTION;
 
         if (!old_value) {
           return (<AddLog name={gettext('added the type')} value={(<Option option={newValueOption} />)}/>);
         }
 
+        if (!new_value) {
+          return (<RemoveLog name={gettext('removed the type')} value={(<Option option={oldValueOption} />)}/>);
+        }
+
         const modifies = [
           {
-            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name,
+            name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TYPE].op_name,
             oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
             newValue: (<Option option={newValueOption} />),
           }
@@ -152,10 +165,10 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const substateOldValue = old_value[substate_key];
         const substateNewValue = new_value[substate_key];
 
-        const stateOldValueOption = getRowById(statesData, stateOldValue + '');
-        const stateNewValueOption = getRowById(statesData, stateNewValue + '');
-        const substateOldValueOption = getRowById(substatesData, substateOldValue + '');
-        const substateNewValueOption = getRowById(substatesData, substateNewValue + '');
+        const stateOldValueOption = getRowById(statesData, stateOldValue + '') || DELETED_OPTION;
+        const stateNewValueOption = getRowById(statesData, stateNewValue + '') || DELETED_OPTION;
+        const substateOldValueOption = getRowById(substatesData, substateOldValue + '') || DELETED_OPTION;
+        const substateNewValueOption = getRowById(substatesData, substateNewValue + '') || DELETED_OPTION;
 
         const modifies = [
           {
