@@ -362,6 +362,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
 CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['url'],
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
+    ConnectionType.NOTION.value: ['page_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000

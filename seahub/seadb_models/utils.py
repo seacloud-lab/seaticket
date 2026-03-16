@@ -1104,7 +1104,7 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
 
 def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
     notion_table_name = NotionTable.gen_table_name(connection_id)
-    sql = f"SELECT title, content, created_time, modified_time, creator FROM `{notion_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT title, content, created_time, modified_time, creator, page_id FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)
         notion_record = notion_res.get('results')[0]

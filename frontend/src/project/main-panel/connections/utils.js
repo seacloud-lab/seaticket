@@ -57,6 +57,14 @@ const getEmailOriginalPageUrl = (row) => {
   return 'https://app.fastmail.com/mail/all/' + origin_thread_id + '.' + email_id;
 };
 
+const getNotionOriginalPageUrl = (row, columns) => {
+  const pageIdColumn = getColumnByName(columns, 'page_id');
+  const pageId = getCellValueByColumn(row, pageIdColumn);
+  if (!pageId) return '';
+  const normalizedPageId = String(pageId).replace(/-/g, '');
+  return `https://www.notion.so/${normalizedPageId}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -74,6 +82,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.EMAIL: {
       return getEmailOriginalPageUrl(row);
+    }
+    case CONNECTION_TYPE.NOTION: {
+      return getNotionOriginalPageUrl(row, columns);
     }
     default: {
       return '';
