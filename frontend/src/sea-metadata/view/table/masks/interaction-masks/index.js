@@ -1059,8 +1059,8 @@ class InteractionMasks extends React.Component {
 
   renderSingleCellSelectView = () => {
     const { isEditorEnabled, selectedPosition } = this.state;
-    const isDragEnabled = this.checkIsSelectedCellEditable();
-    const showDragHandle = isDragEnabled && context.canModifyRows();
+    const isSelectedCellsEditable = this.checkIsSelectedCellEditable();
+    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
     if (isEditorEnabled) {
       return null;
     }
@@ -1081,8 +1081,8 @@ class InteractionMasks extends React.Component {
   renderCellRangeSelectView = () => {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
-    const isDragEnabled = this.checkIsSelectedCellsEditable();
-    const showDragHandle = isDragEnabled && context.canModifyRows();
+    const isSelectedCellsEditable = this.checkIsSelectedCellsEditable();
+    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
     return [
       <SelectionRangeMask
         key="range-mask"
