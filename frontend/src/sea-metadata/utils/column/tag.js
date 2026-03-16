@@ -25,22 +25,22 @@ export const convertTagToNameValue = (tagsData, tag) => {
   const textColorColumn = getTagTextColorColumn(tagsData);
   const descriptionColumn = getTagDescriptionColumn(tagsData);
   if (nameColumn) {
-    _tag[nameColumn.name] = tag[nameColumn.key];
+    _tag[nameColumn.name] = tag[nameColumn.key] || tag[nameColumn.name];
   }
   if (colorColumn) {
-    _tag[colorColumn.name] = tag[colorColumn.key];
+    _tag[colorColumn.name] = tag[colorColumn.key] || tag[colorColumn.name];
   }
   if (textColorColumn) {
-    _tag[textColorColumn.name] = tag[textColorColumn.key];
+    _tag[textColorColumn.name] = tag[textColorColumn.key] || tag[textColorColumn.name];
   }
   if (descriptionColumn) {
-    _tag[descriptionColumn.name] = tag[descriptionColumn.key];
+    _tag[descriptionColumn.name] = tag[descriptionColumn.key] || tag[descriptionColumn.name];
   }
   return _tag;
 };
 
 export const convertTagToNameValueByTagId = (tagsData, tagID) => {
-  const tag = getRowById(tagsData, tagID);
+  const tag = getRowById(tagsData, tagID + '');
   if (!tag) return null;
   return convertTagToNameValue(tagsData, tag);
 };
