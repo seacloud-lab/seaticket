@@ -253,29 +253,29 @@ $('#login-form').on('submit', function(){
 });
 
 (function initRememberMeToggle() {
-    var wrapper = document.getElementById('remember-me-icon-wrapper');
-    var input = document.getElementById('remember-me-input');
-    if (!wrapper || !input) return;
+  var wrapper = document.getElementById('remember-me-icon-wrapper');
+  var input = document.getElementById('remember-me-input');
+  if (!wrapper || !input) return;
 
-    wrapper.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
+  wrapper.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
 
-        var checked = !input.checked;
-        input.checked = checked;
+    var checked = !input.checked;
+    input.checked = checked;
 
-        var outlineIcon = document.getElementById('remember-me-icon-outline');
-        var checkedIcon = document.getElementById('remember-me-icon-checked');
-        if (!outlineIcon || !checkedIcon) return;
+    var outlineIcon = document.getElementById('remember-me-icon-outline');
+    var checkedIcon = document.getElementById('remember-me-icon-checked');
+    if (!outlineIcon || !checkedIcon) return;
 
-        if (checked) {
-            outlineIcon.style.display = 'none';
-            checkedIcon.style.display = 'block';
-        } else {
-            outlineIcon.style.display = 'block';
-            checkedIcon.style.display = 'none';
-        }
-    });
+    if (checked) {
+      outlineIcon.style.display = 'none';
+      checkedIcon.style.display = 'block';
+    } else {
+      outlineIcon.style.display = 'block';
+      checkedIcon.style.display = 'none';
+    }
+  });
 })();
 
 {% if enable_sso %}
