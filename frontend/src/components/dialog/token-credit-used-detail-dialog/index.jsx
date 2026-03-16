@@ -19,7 +19,7 @@ const ALL_SCENARIOS = [
   { value: 'agent', label: 'Agent' },
   { value: 'chat', label: 'Chat' },
   { value: 'search', label: 'Search' },
-  { value: 'record_generation', label: 'Record Generation' },
+  { value: 'record_generation', label: 'Record generation' },
 ];
 
 class TokenCreditUsedDetailDialog extends Component {
