@@ -8,7 +8,6 @@ import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
 import context from '../../../../../../context';
-import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 
@@ -86,14 +85,14 @@ const Cell = React.memo(({
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseEnter = useCallback((event) => {
-    if (!getEventClassName(event).includes('sea-metadata-table-cell') || !isFunction(cellMetaData.onCellMouseEnter)) return;
+    if (!isFunction(cellMetaData.onCellMouseEnter)) return;
     const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
     const mousePosition = { x: event.clientX, y: event.clientY };
     cellMetaData.onCellMouseEnter({ ...cell, mousePosition }, event);
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseMove = useCallback((event) => {
-    if (!getEventClassName(event).includes('sea-metadata-table-cell') || !isFunction(cellMetaData.onCellMouseMove)) return;
+    if (!isFunction(cellMetaData.onCellMouseMove)) return;
     const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
     const mousePosition = { x: event.clientX, y: event.clientY };
     cellMetaData.onCellMouseMove({ ...cell, mousePosition }, event);
