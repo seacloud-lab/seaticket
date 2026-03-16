@@ -77,7 +77,7 @@ class ProfileSettings extends React.Component {
         icon: 'password'
       },
       {
-        show: true,
+        show: false,
         href: '#lang-setting',
         text: gettext('Language'),
         icon: 'language'
