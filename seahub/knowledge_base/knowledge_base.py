@@ -268,11 +268,13 @@ class KnowledgeBaseAPIView(APIView):
         row = {}
         username = request.user.username
 
-        if 'tags' in request.data:
-            tags = request.data.get('tags')
+        is_update_tags = 'tags' in request.data
+        tags = request.data.get('tags')
+        if is_update_tags and tags is not None:   
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if is_update_tags:
             row[KnowledgeBaseTable.tags.name] = tags
 
         if 'title' in request.data:
