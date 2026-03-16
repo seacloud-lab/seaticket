@@ -2,7 +2,7 @@ import json
 import logging
 from urllib.parse import urlparse
 
-from seahub.project.constants import ConnectionType, ConnectionCategory
+from seahub.project.constants import ConnectionType, ConnectionCategory, AIScenario
 from seahub.project.models import ProjectConnections
 from seahub.utils.ai_client import rank_related_issues
 from seahub.seadb_models.utils import fetch_tickets_batch, fetch_issue_type_connection_records_batch
@@ -128,6 +128,7 @@ def perform_reranking(candidates_for_rerank, query_record, request, username, pr
         'username': username,
         'org_id': org_id,
         'project_uuid': project_uuid,
+        'scenario': AIScenario.SEARCH.value,
     }
 
     reranked_keys = rank_related_issues(rerank_params)

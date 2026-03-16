@@ -214,8 +214,11 @@ class OrgAdminAIStatisticsDetailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'range of date must be provided')
         start_date = datetime.datetime.strptime(start_date.split('T')[0], '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date.split('T')[0], '%Y-%m-%d').date()
-        
-        query_set = query_ai_statistics_detail(group_by, [start_date, end_date], condition)
+
+        scenarios_str = request.GET.get('scenarios')
+        scenarios = [s.strip() for s in scenarios_str.split(',') if s.strip()] if scenarios_str else []
+
+        query_set = query_ai_statistics_detail(group_by, [start_date, end_date], condition, scenarios=scenarios or None)
 
         if group_by == 'date':
             results = []

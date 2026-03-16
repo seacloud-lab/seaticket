@@ -29,7 +29,7 @@ from seahub.utils.ai_client import rank_related_issues
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType
+from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
 
 
 logger = logging.getLogger(__name__)
@@ -392,6 +392,7 @@ def rank_search_results(query, results, username, org_id, project_uuid):
         'username': username,
         'org_id': org_id,
         'project_uuid': project_uuid,
+        'scenario': AIScenario.SEARCH.value,
     }
 
     try:

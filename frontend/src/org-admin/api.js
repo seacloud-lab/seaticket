@@ -298,7 +298,7 @@ class OrgAdminAPI {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminGetAIStatisticsDetail(orgID, groupBy, startDate, endDate, condition) {
+  orgAdminGetAIStatisticsDetail(orgID, groupBy, startDate, endDate, condition, scenarios) {
     const url = this.server + '/api/v1/org/' + orgID + '/admin/statistics/ai/detail/';
     let params = {
       group_by: groupBy,
@@ -306,6 +306,9 @@ class OrgAdminAPI {
       end_date: endDate.format('YYYY-MM-DD'),
       condition
     };
+    if (scenarios && scenarios.length > 0) {
+      params.scenarios = scenarios.join(',');
+    }
     return this.req.get(url, { params: params });
   }
 

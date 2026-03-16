@@ -1,5 +1,6 @@
 from django.db.models import Sum
 from seahub.project.models import AIUsageStatistics
+from seahub.project.constants import PRESET_BUILTIN_USERNAMES
 from seahub.project.utils import convert_cost_to_credit
 
 def query_ai_statistics_overview(group_by, date_range, org_id=None):
@@ -28,7 +29,7 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
         query_kwargs['org_id'] = org_id
     query_set = AIUsageStatistics.objects.filter(**query_kwargs)
     if group_by == 'username':
-        query_set = query_set.exclude(username='seaqa-indexer')
+        query_set = query_set.exclude(username__in=PRESET_BUILTIN_USERNAMES)
     query_set = query_set.values(
         group_by
     ).annotate(
@@ -44,7 +45,7 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
     return query_set
 
 
-def query_ai_statistics_detail(group_by, date_range, condition):
+def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
     """
     sql:
     SELECT `date`, SUM(`input_tokens`) as `total_input_tokens`, SUM(`output_tokens`) as `total_output_tokens`, SUM(`cost`) as `total_credit_used`
@@ -54,6 +55,7 @@ def query_ai_statistics_detail(group_by, date_range, condition):
     ORDER BY `{date or total_credit_used}`
 
     if has model_list => add a new condition of `model` in where condition
+    if has scenarios => add a new condition of `scenario` in where condition
     """
     date_begin, date_end = date_range
 
@@ -69,6 +71,8 @@ def query_ai_statistics_detail(group_by, date_range, condition):
         query_kwargs['group_id'] = int(condition['group_id'])
     if 'org_id' in condition:
         query_kwargs['org_id'] = int(condition['org_id'])
+    if scenarios:
+        query_kwargs['scenario__in'] = scenarios
 
     query_set = AIUsageStatistics.objects.filter(
         **query_kwargs
@@ -87,5 +91,7 @@ def query_ai_statistics_detail(group_by, date_range, condition):
         'total_output_tokens',
         'total_credit_used'
     )
+    if group_by == 'username':
+        query_set = query_set.exclude(username__in=PRESET_BUILTIN_USERNAMES)
 
     return query_set

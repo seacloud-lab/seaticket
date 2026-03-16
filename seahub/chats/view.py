@@ -22,6 +22,7 @@ from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, g
     record_message_to_db, process_stream_ai_reply, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
+from seahub.project.constants import AIScenario
 
 logger = logging.getLogger(__name__)
 
@@ -412,6 +413,7 @@ class ChatView(APIView):
             'attachments': attachments,
             'username': username,
             'org_id': org_id,
+            'scenario': AIScenario.CHAT.value,
             'llm_model': request.data.get('model'),
             'stream': stream,
             'project_prompt': project_prompt

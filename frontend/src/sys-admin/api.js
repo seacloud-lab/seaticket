@@ -648,7 +648,7 @@ class SysAdminServiceApi {
   }
 
 
-  sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition) {
+  sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition, scenarios) {
     const url = this.server + '/api/v1/admin/statistics/ai/detail/';
     let params = {
       group_by: groupBy,
@@ -656,6 +656,9 @@ class SysAdminServiceApi {
       end_date: endDate.format('YYYY-MM-DD'),
       condition
     };
+    if (scenarios && scenarios.length > 0) {
+      params.scenarios = scenarios.join(',');
+    }
     return this.req.get(url, { params: params });
   }
 

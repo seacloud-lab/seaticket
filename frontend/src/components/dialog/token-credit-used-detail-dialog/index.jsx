@@ -14,6 +14,14 @@ import TokenCreditUsed from '../../chart/token-credit-used';
 import './index.css';
 import '@/sea-metadata/components/popover/filter-popover/basic-filters/index.css';
 
+const ALL_SCENARIOS = [
+  { value: 'summary', label: 'Summary' },
+  { value: 'agent', label: 'Agent' },
+  { value: 'chat', label: 'Chat' },
+  { value: 'search', label: 'Search' },
+  { value: 'record_generation', label: 'Record generation' },
+];
+
 class TokenCreditUsedDetailDialog extends Component {
   constructor(props) {
     super(props);
@@ -25,6 +33,7 @@ class TokenCreditUsedDetailDialog extends Component {
       endDate: dayjs(),
       availableModels: {},
       selectedModels: [], // selected models
+      selectedScenarios: ALL_SCENARIOS.map(s => s.value),
       fullData: null,
       data: null,
       modelsUsageStatics: null,
@@ -50,6 +59,7 @@ class TokenCreditUsedDetailDialog extends Component {
       groupBy: 'date',
       availableModels: {},
       selectedModels: [],
+      selectedScenarios: ALL_SCENARIOS.map(s => s.value),
       modelsUsageStatics: null
     }, () => {
       this.fetchStatistics();
@@ -111,9 +121,11 @@ class TokenCreditUsedDetailDialog extends Component {
   fetchStatistics = () => {
     this.setState({ isLoading: true });
     const { condition } = this.props;
-    const { groupBy, startDate, endDate } = this.state;
+    const { groupBy, startDate, endDate, selectedScenarios } = this.state;
+    const allValues = ALL_SCENARIOS.map(s => s.value);
+    const scenariosParam = selectedScenarios.length === allValues.length ? undefined : selectedScenarios;
 
-    this.props.getAIStatisticsDetail(groupBy, startDate, endDate, JSON.stringify(condition)).then(res => {
+    this.props.getAIStatisticsDetail(groupBy, startDate, endDate, JSON.stringify(condition), scenariosParam).then(res => {
       const fullData = res.data.results;
       this.setState({ fullData: fullData || null }, () => {
         if (groupBy === 'date') {
@@ -178,6 +190,19 @@ class TokenCreditUsedDetailDialog extends Component {
     });
   };
 
+  updateFilterScenarios = (newValue) => {
+    let newSelected = this.state.selectedScenarios.slice(0);
+    if (newSelected.includes(newValue)) {
+      if (newSelected.length === 1) return;
+      newSelected = newSelected.filter(v => v !== newValue);
+    } else {
+      newSelected = [...newSelected, newValue];
+    }
+    this.setState({ selectedScenarios: newSelected }, () => {
+      this.fetchStatistics();
+    });
+  };
+
   updateView = (newView) => {
     this.setState({ groupBy: newView }, () => {
       this.fetchStatistics();
@@ -191,6 +216,7 @@ class TokenCreditUsedDetailDialog extends Component {
       endDate,
       availableModels,
       selectedModels,
+      selectedScenarios,
       data,
       groupBy,
       modelsUsageStatics
@@ -207,6 +233,18 @@ class TokenCreditUsedDetailDialog extends Component {
         )
       };
     });
+
+    const scenarioOptions = ALL_SCENARIOS.map(s => ({
+      value: s.value,
+      label: (
+        <div className="select-basic-filter-option">
+          <div className="select-basic-filter-option-checkbox mr-2">
+            <input type="checkbox" checked={selectedScenarios.includes(s.value)} readOnly />
+          </div>
+          <div className="select-basic-filter-option-name" title={s.label} aria-label={s.label}>{s.label}</div>
+        </div>
+      )
+    }));
 
     const modelsOptions = availableModels && typeof availableModels === 'object' ? Object.entries(availableModels).map(([label, value]) => {
       return {
@@ -239,6 +277,14 @@ class TokenCreditUsedDetailDialog extends Component {
                 onChange={this.updateView}
               />
             )}
+            <CustomizeSelect
+              disabled={false}
+              supportMultipleSelect={true}
+              className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedScenarios.length < ALL_SCENARIOS.length })}
+              value={{ label: `${gettext('Scenario')} (${selectedScenarios.length}/${ALL_SCENARIOS.length})` }}
+              options={scenarioOptions}
+              onChange={this.updateFilterScenarios}
+            />
             {false &&
               <CustomizeSelect
                 disabled={false}

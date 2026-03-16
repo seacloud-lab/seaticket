@@ -61,8 +61,8 @@ class Statistics extends Component {
     this.getStatisticsByPage(this.state.currentPage);
   }
 
-  getAIStatisticsDetail = (groupBy, startDate, endDate, condition) => {
-    return sysAdminAPI.sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition);
+  getAIStatisticsDetail = (groupBy, startDate, endDate, condition, scenarios) => {
+    return sysAdminAPI.sysAdminGetAIStatisticsDetail(groupBy, startDate, endDate, condition, scenarios);
   };
 
   onOpenAIStaticsDetailDialog = (groupBy, condition) => {
