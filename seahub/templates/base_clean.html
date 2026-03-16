@@ -79,7 +79,10 @@ html, body, #wrapper {
     <div id="header" class="hide">
       {# for non-logged-in user #}
       <!-- <div id="lang">
-        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span id="down-icon-wrapper"></span></a>
+        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">
+          {{ LANGUAGE_CODE|language_name_local|capfirst }}
+          <span class="sea-qa-html-icon-svg">{% include "svg/arrow-down-b.svg" %}</span>
+        </a>
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
             {% for LANG in LANGUAGES %}
