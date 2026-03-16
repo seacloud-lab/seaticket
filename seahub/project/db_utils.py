@@ -28,7 +28,7 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
         query_kwargs['org_id'] = org_id
     query_set = AIUsageStatistics.objects.filter(**query_kwargs)
     if group_by == 'username':
-        query_set = query_set.exclude(username='seaqa-indexer')
+        query_set = query_set.exclude(username='seaqa-indexer').exclude(username='agent')
     query_set = query_set.values(
         group_by
     ).annotate(
@@ -90,5 +90,7 @@ def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
         'total_output_tokens',
         'total_credit_used'
     )
+    if group_by == 'username':
+        query_set = query_set.exclude(username='seaqa-indexer').exclude(username='agent')
 
     return query_set
