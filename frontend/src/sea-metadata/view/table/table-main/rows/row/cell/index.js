@@ -8,6 +8,7 @@ import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
 import context from '../../../../../../context';
+import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 
@@ -86,16 +87,22 @@ const Cell = React.memo(({
 
   const onCellMouseEnter = useCallback((event) => {
     if (!isFunction(cellMetaData.onCellMouseEnter)) return;
-    const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
-    const mousePosition = { x: event.clientX, y: event.clientY };
-    cellMetaData.onCellMouseEnter({ ...cell, mousePosition }, event);
+    // long text cell className is special, so we need to check it separately
+    if (getEventClassName(event).includes('sea-metadata-table-cell') || getEventClassName(event).includes('sea-metadata-table-long-text-cell')) {
+      const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
+      const mousePosition = { x: event.clientX, y: event.clientY };
+      cellMetaData.onCellMouseEnter({ ...cell, mousePosition }, event);
+    }
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseMove = useCallback((event) => {
     if (!isFunction(cellMetaData.onCellMouseMove)) return;
-    const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
-    const mousePosition = { x: event.clientX, y: event.clientY };
-    cellMetaData.onCellMouseMove({ ...cell, mousePosition }, event);
+    // long text cell className is special, so we need to check it separately
+    if (getEventClassName(event).includes('sea-metadata-table-cell') || getEventClassName(event).includes('sea-metadata-long-text-formatter')) {
+      const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
+      const mousePosition = { x: event.clientX, y: event.clientY };
+      cellMetaData.onCellMouseMove({ ...cell, mousePosition }, event);
+    }
   }, [column, groupRowIndex, rowIndex, cellMetaData]);
 
   const onCellMouseLeave = useCallback(() => {
