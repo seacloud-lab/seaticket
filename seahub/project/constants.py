@@ -16,7 +16,7 @@ TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX =  'TICKET_DEFAULT_SUBSTATE_'
 IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
 
-MANUAL_SYNC_INTERVAL = 10 * 60
+MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
 # connection types
