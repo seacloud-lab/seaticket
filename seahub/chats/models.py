@@ -12,7 +12,7 @@ class ChatSessionsManager(models.Manager):
             project_uuid=project_uuid,
             session_uuid=session_uuid,
             username=username,
-            session_name=session_name
+            session_name=session_name,
         )
         session.save()
         return session

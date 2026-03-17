@@ -19,6 +19,7 @@ const ChatInput = forwardRef(({
   isReply,
   readOnly,
   projectUuid,
+  canAddDocuments = true,
   clearContext,
   sendMessage,
   resetClearContext,
@@ -219,7 +220,9 @@ const ChatInput = forwardRef(({
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
-              <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
+              {canAddDocuments && (
+                <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
+              )}
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>

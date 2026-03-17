@@ -6,6 +6,10 @@ from .apis import PortalTicketsView, PortalMyTicketsView, PortalTagsView, \
     PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalTicketMetadataView, PortalSettingsView, \
     PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalExternalUsersView, PortalUserListView, PortalTicketView
+from .chat.apis import (
+    PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
+    PortalChatView
+)
 
 
 urlpatterns = [
@@ -14,6 +18,8 @@ urlpatterns = [
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
 
     # portal page (for external users)
@@ -21,6 +27,8 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
@@ -44,4 +52,10 @@ urlpatterns = [
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
 
+
+    # portal chat API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/$', PortalChatView.as_view(), name='api-v1-portal-chat'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/$', PortalChatSessionsView.as_view(), name='api-v1-portal-chat-sessions'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/$', PortalChatSessionView.as_view(), name='api-v1-portal-chat-session'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/messages/$', PortalChatMessagesView.as_view(), name='api-v1-portal-chat-messages'),
 ]

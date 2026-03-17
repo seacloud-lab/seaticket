@@ -153,7 +153,6 @@ class PortalAPI {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
     return this.req.post(url, settings);
   }
-
 }
 
 const portalAPI = new PortalAPI();

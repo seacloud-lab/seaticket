@@ -5,6 +5,7 @@ import { gettext, siteRoot } from '@/constants';
 import { PORTAL_PAGE } from '../constants';
 
 const BASE_NAV_ITEMS = [
+  { key: PORTAL_PAGE.CHAT, name: gettext('Chat'), icon: 'chat' },
   { key: PORTAL_PAGE.SUBMIT_TICKET, name: gettext('Submit ticket'), icon: 'submit-ticket' },
   { key: PORTAL_PAGE.MY_TICKETS, name: gettext('My tickets'), icon: 'my-tickets' },
 ];

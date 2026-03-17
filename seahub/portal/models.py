@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.utils import timezone
 from uuid import uuid4
@@ -64,3 +65,112 @@ class ProjectExternalUser(models.Model):
     class Meta:
         unique_together = (('email', 'project_uuid'),)
         db_table = 'project_external_users'
+
+
+class PortalChatSessionsManager(models.Manager):
+
+    def create_session(self, project_uuid, session_name, username):
+        session_uuid = str(uuid4())
+        session = self.model(
+            project_uuid=project_uuid,
+            session_uuid=session_uuid,
+            username=username,
+            session_name=session_name,
+        )
+        session.save()
+        return session
+
+    def get_sessions_by_project(self, project_uuid, username):
+        return self.filter(project_uuid=project_uuid, username=username).order_by('-updated_at')
+
+    def get_session_by_uuid(self, session_uuid):
+        try:
+            return self.get(session_uuid=session_uuid)
+        except self.model.DoesNotExist:
+            return None
+
+
+class PortalChatSessions(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.CharField(max_length=36, db_index=True)
+    session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
+    username = models.CharField(max_length=255, db_index=True)
+    session_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = PortalChatSessionsManager()
+
+    class Meta:
+        db_table = 'portal_chat_sessions'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_uuid': self.project_uuid,
+            'session_uuid': self.session_uuid,
+            'username': self.username,
+            'session_name': self.session_name,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class PortalChatMessagesManager(models.Manager):
+
+    def create_message(self, session_uuid, message_id, username, role, content, as_context=True):
+        message = self.model(
+            session_uuid=session_uuid,
+            message_id=message_id,
+            username=username,
+            role=role,
+            content=content,
+            as_context=as_context,
+        )
+        message.save()
+        return message
+
+    def get_messages_by_session(self, session_uuid):
+        return self.filter(session_uuid=session_uuid).order_by('created_at')
+
+    def get_last_message_by_session(self, session_uuid):
+        """Retrieve the last message of the session"""
+        return self.filter(session_uuid=session_uuid).order_by('-created_at').first()
+
+    def clear_context(self, session_uuid, username):
+        self.create_message(session_uuid, None, username, 'chat_manager', '<break_context>', False)
+        records = self.filter(session_uuid=session_uuid)
+        records.update(as_context=False)
+
+
+class PortalChatMessages(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    session_uuid = models.CharField(max_length=36, null=False)
+    message_id = models.CharField(max_length=4, null=True)
+    username = models.CharField(max_length=255)
+    role = models.CharField(max_length=20)
+    content = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    as_context = models.BooleanField(default=True)
+
+    objects = PortalChatMessagesManager()
+
+    class Meta:
+        db_table = 'portal_chat_messages'
+        indexes = [
+            models.Index(fields=['session_uuid', 'created_at']),
+        ]
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_uuid': self.session_uuid,
+            'message_id': self.message_id,
+            'username': self.username,
+            'role': self.role,
+            'content': self.content,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'as_context': self.as_context,
+        }

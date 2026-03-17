@@ -34,20 +34,6 @@ class ChatAPI {
     return this;
   }
 
-  login() {
-    const url = this.server + '/api2/auth-token/';
-    return axios.post(url, {
-      username: this.username,
-      password: this.password
-    }).then((response) => {
-      this.token = response.data.token;
-      this.req = axios.create({
-        baseURL: this.server,
-        headers: { 'Authorization': 'Token ' + this.token }
-      });
-    });
-  }
-
   _sendPostRequest(url, form) {
     if (form.getHeaders) {
       return this.req.post(url, form, {
@@ -58,9 +44,10 @@ class ChatAPI {
     }
   }
 
-  sendChatMessage(params, options) {
-    const url = this.server + '/api/v1/ai/chat/';
-    return this._sendPostRequest(url, params);
+  // Portal Chat APIs
+  sendChatMessage(params) {
+    const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
+    return this.req.post(url, params);
   }
 
   _handleEventStreamRequest(url, form, options = {}) {
@@ -105,69 +92,43 @@ class ChatAPI {
   }
 
   sendChatMessageByStream(params, options = {}) {
-    const url = this.server + '/api/v1/ai/chat/';
+    const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
     return this._handleEventStreamRequest(url, params, options);
   }
 
+  listChatSessions(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/';
+    return this.req.get(url);
+  }
+
+  createChatSession(projectUuid, sessionName) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/';
+    return this.req.post(url, { session_name: sessionName });
+  }
+
+  modifyChatSession(projectUuid, sessionUuid, update) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/';
+    return this.req.put(url, update);
+  }
+
+  deleteChatSession(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/';
+    return this.req.delete(url);
+  }
+
+  getChatMessages(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/messages/';
+    return this.req.get(url);
+  }
+
   getChatMessage(projectUuid, sessionId) {
-    const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId;
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId;
     return this.req.get(url);
   }
 
   getChatMessageByStream(projectUuid, sessionId, streamed_length, options) {
-    const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
     return this._handleEventStreamRequest(url, undefined, options);
-  }
-
-  // chat sessions api
-  listChatSessions(projectUuid) {
-    const url = this.server + '/api/v1/chat/sessions/?project_uuid=' + projectUuid;
-    return this.req.get(url);
-  }
-
-  listTeamSharedSessions(projectUuid) {
-    const url = this.server + '/api/v1/chat/sessions/?project_uuid=' + projectUuid + '&type=team';
-    return this.req.get(url);
-  }
-
-  shareChatSession(projectUuid, sessionUuid, isShared) {
-    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
-    const data = {
-      project_uuid: projectUuid,
-      is_shared: isShared
-    };
-    return this.req.put(url, data);
-  }
-
-  createChatSession(projectUuid, sessionName) {
-    const url = this.server + '/api/v1/chat/sessions/';
-    const data = {
-      project_uuid: projectUuid,
-      session_name: sessionName,
-    };
-    return this.req.post(url, data);
-  }
-
-  deleteChatSession(projectUuid, sessionUuid) {
-    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
-    const data = {
-      project_uuid: projectUuid
-    };
-    return this.req.delete(url, { data });
-  }
-
-  modifyChatSession(projectUuid, sessionUuid, update) {
-    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
-    const data = {
-      ...update,
-      project_uuid: projectUuid
-    };
-    return this.req.put(url, data);
-  }
-
-  getChatMessages(projectUuid, sessionUuid) {
-    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/messages/?project_uuid=' + projectUuid;
-    return this.req.get(url);
   }
 
 }

@@ -14,7 +14,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL
+from seahub.settings import MEDIA_URL, LLM_MODELS
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -27,12 +27,14 @@ def _get_portal_settings(project):
     except Exception:
         project_settings = {}
     portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
     return {
         'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
         'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
         'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
         'password': portal_settings.get('password'),
+        'streaming_response': streaming_response,
     }
 
 
@@ -47,7 +49,7 @@ def _get_external_session_user(request, project_uuid):
     return ext_username, ext_is_valid
 
 
-def portal_view(request, project_uuid, children_id=None):
+def portal_view(request, project_uuid, children_id=None, session_uuid=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
@@ -57,6 +59,7 @@ def portal_view(request, project_uuid, children_id=None):
     enable_password_protection = portal_settings['enable_password_protection']
     show_kb_in_portal = portal_settings['show_kb_in_portal']
     enable_portal = portal_settings['enable_portal']
+    streaming_response = portal_settings['streaming_response']
     
     if not enable_portal:
         return render_error(request, _('Portal is not enabled'))
@@ -89,6 +92,10 @@ def portal_view(request, project_uuid, children_id=None):
         username = request.user.username if is_authenticated_user else ext_username
     else:
         username = ''
+    valid_llm_models = [
+        llm_model
+        for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
+    ]
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -98,13 +105,15 @@ def portal_view(request, project_uuid, children_id=None):
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
-        'username': username,
         'is_external_user': is_external_user,
+        'username': username,
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'show_kb_in_portal': show_kb_in_portal,
-        }
+            'streaming_response': streaming_response,
+        },
+        'llm_models': json.dumps(valid_llm_models),
     }
     if not is_logged_in or (not same_org and not ext_is_valid):
         need_password = False
@@ -237,7 +246,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
 
 @login_required
-def portal_edit_view(request, project_uuid, page=None, children_id=None):
+def portal_edit_view(request, project_uuid, page=None, children_id=None, session_uuid=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
@@ -256,6 +265,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
             project_settings = {}
     
     portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
     show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
     allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
     enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -269,6 +279,11 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
         if encoded_password:
             request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
 
+    valid_llm_models = [
+        llm_model
+        for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
+    ]
+
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
@@ -280,6 +295,8 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None):
         'is_external_user': False,
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
+            'streaming_response': streaming_response
         },
+        'llm_models': json.dumps(valid_llm_models),
     }
     return render(request, 'portal_view_react.html', return_dict)

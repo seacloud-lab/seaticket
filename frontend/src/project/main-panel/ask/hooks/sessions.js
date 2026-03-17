@@ -9,14 +9,14 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 import { SESSION_TAB_TYPE } from '../constants';
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, children }) => {
+export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, localStorageKey, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
   const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(true);
-  const localStorageKeyRef = useRef(`sea-qa-${projectUuid}-ask-sessions-display`);
+  const localStorageKeyRef = useRef(localStorageKey || `sea-ticket-${projectUuid}-chat-sessions-display`);
 
   const sendMessageRequestController = useRef({});
 
@@ -171,19 +171,19 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, chil
     };
 
     if (isStream) {
-      api.getChatMessageByStream(sessionId, streamed_length, options).then(res => {
+      api.getChatMessageByStream(projectUuid, sessionId, streamed_length, options).then(res => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
       }).catch(error => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
       });
       return;
     }
-    api.getChatMessage(sessionId, options).then(res => {
+    api.getChatMessage(projectUuid, sessionId, options).then(res => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
     });
-  }, [api]);
+  }, [api, projectUuid]);
 
   const loadTeamSessions = useCallback(() => {
     setIsTeamSessionsLoading(true);
