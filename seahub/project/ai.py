@@ -12,6 +12,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+from seahub.seadb_models.jira_seadb_api import JiraSeaDBAPI
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, rank_vector_search_results
@@ -135,6 +136,35 @@ class ConvertRecordToTicket(APIView):
                     if len(body_content) + len(content_to_add) > MAX_LENGTH:
                         break
                     body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Body: {body_content}
+                """
+            case ConnectionType.JIRA_ISSUE.value:
+                jira_db_api = JiraSeaDBAPI(project_uuid)
+                issues = jira_db_api.get_issues_by_pks(connection_id, [record_id])
+                issue = issues[0] if issues else {}
+                title = issue.get('title', '')
+                default_title = title
+                body_content = issue.get('content', '')
+                issue_id = issue.get('issue_id')
+                if issue_id is not None:
+                    comments_map = jira_db_api.get_comments_by_issue_ids(
+                        connection_id, [issue_id]
+                    )
+                    comments = comments_map.get(issue_id, [])
+                    for comment in comments:
+                        if not comment.get('content'):
+                            continue
+
+                        content_to_add = comment.get('content')
+                        if body_content:
+                            content_to_add = '\n\n' + content_to_add
+                        if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                            break
+                        body_content += content_to_add
 
                 record_detail = f"""
                     **Ticket Information:**

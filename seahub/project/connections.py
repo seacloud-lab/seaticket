@@ -221,7 +221,7 @@ class ProjectConnectionsView(APIView):
             if not is_project_admin:
                 record_info.pop('config')
             new_records.append(record_info)
-            
+
 
         return Response({'records': new_records}, status=status.HTTP_200_OK)
 
@@ -1231,6 +1231,9 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             record, columns, linked_ticket_title = list_discord_thread_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            record, columns, linked_ticket_title = list_jira_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
+
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1276,6 +1279,7 @@ class ProjectConnectionRecordView(APIView):
         supported_types = [
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.JIRA_ISSUE.value,
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
@@ -1310,6 +1314,8 @@ class ProjectConnectionRecordView(APIView):
             table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1411,7 +1417,7 @@ class ProjectConnectionRecordView(APIView):
             logger.error(f'update connection record error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
             unread = row_data.get('unread')
             sql = f"UPDATE `{SchemaTables.EMAIL.table_name(connection_id)}` SET unread={unread} WHERE thread_id = {record_id}"
@@ -1440,7 +1446,7 @@ class ProjectConnectionUnreadEmailView(APIView):
         unread = request.data.get('unread')
         if unread is None:
             return api_error(status.HTTP_400_BAD_REQUEST, 'unread invalid.')
-        
+
         record_id = request.data.get('record_id')
         try:
             record_pk = int(record_id)
@@ -1478,7 +1484,7 @@ class ProjectConnectionUnreadEmailView(APIView):
             results = response.get('results', [])
             if not results:
                 return Response({'success': True})
-            
+
             update_row['row']['unread'] = unread
             seadb_api.update_rows(project_uuid, email_table_name, [update_row])
 
@@ -1671,6 +1677,7 @@ class ProjectConnectionRecordsView(APIView):
         supported_types = [
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.JIRA_ISSUE.value,
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
@@ -1705,6 +1712,8 @@ class ProjectConnectionRecordsView(APIView):
             table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
         update_rows = []
         general_task_events = []

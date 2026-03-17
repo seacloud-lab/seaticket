@@ -53,6 +53,7 @@ class EmailOAuthProfileError(Exception):
 LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.DISCOURSE_FORUM.value,
     ConnectionType.GITHUB_ISSUE.value,
+    ConnectionType.JIRA_ISSUE.value,
     ConnectionType.EMAIL.value,
     ConnectionType.GENERAL_TASK.value,
     ConnectionType.LINEAR.value,

@@ -89,6 +89,7 @@ export const STEPS = [
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
   GITHUB_ISSUE: 'github_issue',
+  JIRA_ISSUE: 'jira_issue',
   DISCOURSE_FORUM: 'discourse_forum',
   GENERAL_TASK: 'general_task',
   SITE: 'site',
@@ -109,6 +110,7 @@ export const DOCUMENT_CONNECTION_TYPE_MAP = {
 export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
+  [CONNECTION_TYPE.JIRA_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
   [CONNECTION_TYPE.DISCORD]: true,
 };
@@ -305,6 +307,42 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
+    },
+  ],
+  [CONNECTION_TYPE.JIRA_ISSUE]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true
+    }, {
+      key: 'base_url',
+      name: gettext('Jira base URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+      tip: gettext('The URL of your Jira site, like https://your-domain.atlassian.net')
+    }, {
+      key: 'user_email',
+      name: gettext('User email'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_custom: true
+    }, {
+      key: 'api_token',
+      name: gettext('API token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      is_custom: true
+    }, {
+      key: 'space_key',
+      name: gettext('Project key'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_custom: true,
+      tip: gettext('The Jira project key, like SAM1')
     },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
@@ -518,6 +556,10 @@ export const CONNECTION_TYPES = [
     help_link: HELP_WEB_URL + 'Github',
     sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }, {
+    type: CONNECTION_TYPE.JIRA_ISSUE,
+    icon: 'ticket',
+    name: gettext('Jira'),
+  }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',
     name: gettext('Discourse forums'),
@@ -651,6 +693,11 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   STATE: 'state',
   STATE_REASON: 'state_reason',
   ISSUE_TYPE: 'issue_type',
+  ISSUE_KEY: 'issue_key',
+  STATUS: 'status',
+  PRIORITY: 'priority',
+  ASSIGNEE: 'assignee',
+  DUE_DATE: 'due_date',
   LABELS: 'labels',
   COMMENT_COUNT: 'comment_count',
   MODIFIED_TIME: 'modified_time',
@@ -763,6 +810,60 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Closed time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+      is_predefined: true,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.JIRA_ISSUE]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      is_predefined: true,
+      click: (row) => {
+        if (row && row.url) {
+          window.open(row.url);
+        }
+      }
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_KEY]: {
+      display_name: gettext('Issue key'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: {
+      display_name: gettext('Status'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: {
+      display_name: gettext('Priority'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEE]: {
+      display_name: gettext('Assignee'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
+      display_name: gettext('Type'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
+      display_name: gettext('Labels'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
+      display_name: gettext('Due date'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD' },
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENTS_COUNT]: {
+      display_name: gettext('Total comments'),
+      type: CellType.NUMBER,
       is_predefined: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
@@ -1034,6 +1135,7 @@ export const CONNECTION_COLUMNS_ORDER_CONFIG = {
 
 export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.JIRA_ISSUE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
@@ -1062,11 +1164,13 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.JIRA_ISSUE,
 ];
 
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.JIRA_ISSUE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCORD,
 ];
@@ -1103,6 +1207,7 @@ export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.JIRA_ISSUE,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,

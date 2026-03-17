@@ -43,6 +43,8 @@ def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = ConnectionType.GITHUB_ISSUE.value + '_' + str(connection_id)
+    elif connection_type == ConnectionType.JIRA_ISSUE.value:
+        table_name = ConnectionType.JIRA_ISSUE.value + '_' + str(connection_id)
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = ConnectionType.DISCOURSE_FORUM.value + '_' + str(connection_id)
     elif connection_type == ConnectionType.SEAFILE.value:

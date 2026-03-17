@@ -80,6 +80,7 @@ def _deep_update(target, source):
 class ConnectionType(Enum):
     EMAIL = 'email'
     GITHUB_ISSUE = 'github_issue'
+    JIRA_ISSUE = 'jira_issue'
     DISCOURSE_FORUM = 'discourse_forum'
     GENERAL_TASK = 'general_task'
     SITE = 'site'
@@ -153,6 +154,12 @@ CONNECTION_FIELDS = {
         ConnectionField('repository', True, False).to_dict(),
         ConnectionField('installation_id', True, False).to_dict(),
         # ConnectionField('webhook_secret', False, False).to_dict(),
+    ],
+    ConnectionType.JIRA_ISSUE.value: [
+        ConnectionField('base_url', True, False).to_dict(),
+        ConnectionField('user_email', True, False).to_dict(),
+        ConnectionField('api_token', True, False).to_dict(),
+        ConnectionField('space_key', True, False).to_dict(),
     ],
     ConnectionType.DISCOURSE_FORUM.value: [
         ConnectionField('url', True, False).to_dict(),
@@ -287,6 +294,25 @@ CONNECTION_DEFAULT_DETAILS = {
         'navigation': [
             {'_id': 'open', 'type': 'view'},
             {'_id': 'closed', 'type': 'view'}
+        ]
+    },
+    ConnectionType.JIRA_ISSUE.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
         ]
     },
     ConnectionType.SITE.value: {
@@ -518,6 +544,9 @@ TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'ai_summary', 'ai_proce
 PORTAL_ISSUE_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'creator', 'state', 'substate', 'type', 'tags', 'priority', 'linked_ticket', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comment_count', 'closed_time', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
+    ConnectionType.JIRA_ISSUE.value: ['_pk', 'issue_key', 'title', 'status', 'priority', 'assignees', 'issue_type',
+                                      'due_date', 'comment_count', 'created_time', 'modified_time', 'ai_summary',
+                                      'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
@@ -533,6 +562,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
 # These columns are must returned to the front end to make some frontend functions work
 CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['url'],
+    ConnectionType.JIRA_ISSUE.value: ['url'],
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
     ConnectionType.NOTION.value: ['page_id'],
     ConnectionType.LINEAR.value: ['identifier'],
@@ -561,6 +591,7 @@ class ConnectionCategory:
             ConnectionType.GITHUB_ISSUE.value,
             ConnectionType.LINEAR.value,
             ConnectionType.DISCORD.value,
+            ConnectionType.JIRA_ISSUE.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
