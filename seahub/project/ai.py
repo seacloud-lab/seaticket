@@ -150,6 +150,8 @@ class ConvertRecordToTicket(APIView):
                     connection_id, record_id
                 )
                 title = ''
+                email_id = emails[0].get('email_id') if emails else ''
+                origin_thread_id = emails[0].get('origin_thread_id') if emails else ''
                 for email in emails:
                     if not title:
                         title = email.get('title')
@@ -187,11 +189,18 @@ class ConvertRecordToTicket(APIView):
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        return Response({
+
+        payload = {
             'title': ai_title,
             'content': ai_content,
             'linked_connection_records': [f'{connection_id}_{record_id}'],
-        })
+        }
+
+        if connection.type == ConnectionType.EMAIL.value and email_id and origin_thread_id:
+            related_url = f'https://app.fastmail.com/mail/all/{origin_thread_id}.{email_id}'
+            payload['related_url'] = related_url
+
+        return Response(payload)
 
 
 class ConvertTicketToKnowledgeBaseRecord(APIView):

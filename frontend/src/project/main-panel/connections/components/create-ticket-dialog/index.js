@@ -89,8 +89,8 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
   useEffect(() => {
     setLoading(true);
     connectionsAPI.convertRecordToTicket(projectUuid, connection.id, row._id).then(res => {
-      let { title, content, assignees, type, tags, priority } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, ...res?.data };
-      const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+      let { title, content, assignees, type, tags, priority, related_url } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, related_url: '', ...res?.data };
+      const suffix = `${gettext('Related record')}: ${related_url || relatedUrl}`;
       const initContent = content ? `${content}\n\n${suffix}` : suffix;
       setTitle(title || '');
       setContent(initContent || '');
