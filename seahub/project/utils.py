@@ -249,11 +249,9 @@ def get_ai_credit_by_org_id(org_id):
     os = OrgSettings.objects.filter(org_id=org_id).first()
     if os:
         role = os.role
-    ai_credit_per_user = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
-    if ai_credit_per_user < 0:
+    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
+    if ai_credit < 0:
         return -1
-    max_user = OrgMemberQuota.objects.get_quota(org_id)
-    ai_credit = ai_credit_per_user * max_user
 
     return ai_credit
 
@@ -269,7 +267,7 @@ def get_ai_credit_by_username(username):
     except User.DoesNotExist:
         role = TEAM_FREE
 
-    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
+    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
     return ai_credit
 
 
