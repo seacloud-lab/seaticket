@@ -15,13 +15,13 @@ const CustomizeDefinition = ({ element, sources, ...props }) => {
   }
 
   const identifier = Number(element.identifier);
-  if (identifier < 3) {
+  if (identifier < 4) {
     return (
       <Definition element={element} sources={sources} { ...props } />
     );
   }
 
-  if (identifier === 3) {
+  if (identifier === 4) {
     return (
       <>
         <MoreDefinition sources={sources} { ...props } />

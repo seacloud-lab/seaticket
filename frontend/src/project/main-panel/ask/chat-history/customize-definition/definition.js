@@ -35,24 +35,29 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
       { ...attributes }
     >
       <div className="sea-ai-chat-customize-definition-simple-info">
-        <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-content">
-          <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
-        </div>
-        <div className="sea-ai-chat-customize-definition-avatar">
-          <img src={icon} alt={''} />
+          <div className="sea-ai-chat-customize-definition-title">{title}</div>
         </div>
       </div>
-      {(mtime) && (
-        <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
-          {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
-        </div>
-      )}
       {content && (
         <div className="sea-ai-chat-customize-definition-content">
           {removeTextMark(content)}
         </div>
       )}
+      <div className="sea-ai-chat-customize-definition-content-divider"></div>
+      <div className="d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          <div className="sea-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
+            <img src={icon} alt={''} />
+          </div>
+          {(mtime) && (
+            <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
+              {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
+            </div>
+          )}
+        </div>
+        <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
+      </div>
     </div>
   );
 };

@@ -21,19 +21,44 @@
   align-items: center;
   justify-content: space-around;
   width: 100%;
-  height: 24px;
+  height: 32px;
   border-bottom: 1px solid #ccc;
-  padding: 0 8px;
+  padding: 0 12px;
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-title .sea-ai-chat-customize-definitions-index {
   flex: 1;
   text-align: center;
+  font-size: 14px;
+}
+
+.sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-title .sea-ai-chat-customize-definitions-index .sources-count-text {
+  color: var(--bs-body-secondary-color)
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-title .sea-ai-chat-customize-definitions-index-btn {
+  height: 24px;
+  width: 24px;
+}
+
+.sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-title .sea-ai-chat-customize-definitions-index-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-title .sea-ai-chat-customize-definitions-index-btn .sea-qa-icon-svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sea-ai-chat-customize-more-definition {
+  width: 40px;
+}
+
+.sea-ai-chat-customize-more-definition .more-definition-content {
+  align-self: center;
+  transform: translateY(40px);
   height: 20px;
-  width: 20px;
+  line-height: 20px;
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definition {
@@ -41,6 +66,7 @@
   margin: 0 !important;
   background-color: inherit;
   box-shadow: none;
+  padding-top: 12px;
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definition:hover {
