@@ -655,11 +655,6 @@ class OrgAdminTwoFactorAuth(APIView):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         
-        username = request.user.username
-        if not is_org_staff(org_id, username):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
@@ -698,11 +693,6 @@ class OrgAdminTwoFactorAuth(APIView):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        username = request.user.username
-        if not is_org_staff(org_id, username):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-            
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
