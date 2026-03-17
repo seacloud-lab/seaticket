@@ -781,7 +781,7 @@ class PortalExternalLoginSendCodeView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
         if not ProjectExternalUser.objects.filter(email=email, project_uuid=project_uuid).exists():
-            err_resp = {'error_msg': 'Internal Server Error', 'detail': _('External user not found. Please use the invitation link first.')}
+            err_resp = {'error_msg': 'external user not found', 'detail': _('External user not found. Please use the invitation link first.')}
             return Response(err_resp, status=status.HTTP_404_NOT_FOUND)
 
         try:
