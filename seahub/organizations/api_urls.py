@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from seahub.api2.endpoints.org_admin.users import OrgAdminUser, OrgAdminUsers, \
-    OrgAdminSearchUsers, OrgAdminInviteUsers
+    OrgAdminSearchUsers, OrgAdminInviteUsers, OrgAdminTwoFactorAuth
 from seahub.api2.endpoints.org_admin.user_set_password import OrgAdminUserSetPassword
 from seahub.api2.endpoints.org_admin.groups import OrgAdminGroups, OrgAdminGroup, \
     AdminGroupMembers, AdminGroupMember, OrgAdminGroupProjects, OrgAdminGroupProject
@@ -28,6 +28,7 @@ urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/search-users/$', OrgAdminSearchUsers.as_view(), name='api-v1-org-admin-search-users'),
     re_path(r'^(?P<org_id>\d+)/admin/users/(?P<email>[^/]+)/$', OrgAdminUser.as_view(), name='api-v1-org-admin-user'),
     re_path(r'^(?P<org_id>\d+)/admin/users/(?P<email>[^/]+)/set-password/', OrgAdminUserSetPassword.as_view(), name='api-v1-org-admin-user-reset-password'),
+    re_path(r'^(?P<org_id>\d+)/admin/users/(?P<email>[^/]+)/two-factor-auth/$', OrgAdminTwoFactorAuth.as_view(), name='api-v1-org-admin-user-two-factor-auth'),
 
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/members/$', AdminGroupMembers.as_view(), name='api-admin-group-members'),
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', AdminGroupMember.as_view(), name='api-admin-group-member'),

@@ -34,6 +34,11 @@ from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_DEACTIVATE, USER_ACTIVATE
 from seahub.invitations.models import Invitation
 
+from seahub.two_factor.models import devices_for_user
+from seahub.options.models import UserOptions
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
+from seahub.organizations.views import org_user_exists
+
 
 logger = logging.getLogger(__name__)
 
@@ -633,3 +638,93 @@ def get_user_info(email, org_id):
     info['contact_email'] = email2contact_email(email)
 
     return info
+
+class OrgAdminTwoFactorAuth(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (IsOrgAdminUser,)
+    def put(self, request, org_id, email):
+        """ Enable or disable two-factor authentication for an organization user.
+        """
+        if not ENABLE_TWO_FACTOR_AUTH:
+            error_msg = 'Two factor auth is not enabled'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        username = request.user.username
+        if not is_org_staff(org_id, username):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            error_msg = "User %s not found" % email
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not org_user_exists(org_id, user.username):
+            err_msg = 'User %s does not exist in the organization.' % user.username
+            return api_error(status.HTTP_404_NOT_FOUND, err_msg)
+
+        force_2fa = request.data.get('force_2fa', None)
+        if str(force_2fa) == '1':
+            UserOptions.objects.set_force_2fa(email)
+        elif str(force_2fa) == '0':
+            UserOptions.objects.unset_force_2fa(email)
+
+        return Response({'success': True})
+
+    def delete(self, request, org_id, email):
+        """ Disable two-factor authentication for an organization user.
+        """
+        if not ENABLE_TWO_FACTOR_AUTH:
+            error_msg = 'Two factor auth is not enabled'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not email:
+            error_msg = "email can not be empty"
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not is_org_staff(org_id, username):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+            
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            error_msg = "User %s not found" % email
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        if not org_user_exists(org_id, user.username):
+            err_msg = 'User %s does not exist in the organization.' % user.username
+            return api_error(status.HTTP_404_NOT_FOUND, err_msg)
+
+        try:
+            devices = devices_for_user(user)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        if devices:
+            for device in devices:
+                device.delete()
+
+        return Response({'success': True})
