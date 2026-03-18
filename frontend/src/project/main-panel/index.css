@@ -16,6 +16,7 @@
   position: relative;
   background: #ffff;
   border-radius: 8px;
+  overflow-y: auto;
 }
 
 .sea-qa-project-main-panel .sea-metadata {
