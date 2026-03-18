@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, Input, Table } from 'reactstrap';
 import copy from 'copy-to-clipboard';
+import { CenteredLoading } from '@/components';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import homeAPI from '../../home/api';
@@ -312,9 +313,7 @@ class ProjectAPITokenDialog extends React.Component {
 
           <div className="modal-content-container">
             {isLoading ? (
-              <div className="text-center">
-                <div className="spinner-border" role="status" />
-              </div>
+              <CenteredLoading />
             ) : tokens.length > 0 && (
               <Table className="token-list-table">
                 <thead>
