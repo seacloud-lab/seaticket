@@ -1,5 +1,4 @@
 {% load seahub_tags i18n static %}
-{% load render_bundle from webpack_loader %}
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
@@ -29,8 +28,6 @@
 {% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
 </head>
 {% block extra_style %}
-{% render_bundle 'downIcon' 'css' %}
-{% render_bundle 'checkMarkIcon' 'css' %}
 <style type="text/css">
 html, body, #wrapper {
   height: 100%;
@@ -82,16 +79,19 @@ html, body, #wrapper {
     <div id="header" class="hide">
       {# for non-logged-in user #}
       <!-- <div id="lang">
-        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span id="down-icon-wrapper"></span></a>
+        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">
+          {{ LANGUAGE_CODE|language_name_local|capfirst }}
+          <span class="sea-qa-html-icon-svg">{% include "svg/arrow-down-b.svg" %}</span>
+        </a>
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
             {% for LANG in LANGUAGES %}
             <li class="d-flex align-items-center justify-content-between">
               <a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a>
               {% if LANG.0 == LANGUAGE_CODE %}
-              <span id="check-mark-icon-wrapper"></span>
+              <span class="sea-qa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
               {% else %}
-              <span class="un-check-mark" id="un-check-mark-icon-wrapper"></span>
+              <span class="un-check-mark sea-qa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
               {% endif %}
             </li>
             {% endfor %}
@@ -153,7 +153,5 @@ html, body, #wrapper {
         })();
     </script>
     {% block extra_script %}{% endblock %}
-    {% render_bundle 'downIcon' 'js' %}
-    {% render_bundle 'checkMarkIcon' 'js' %}
 </body>
 </html>

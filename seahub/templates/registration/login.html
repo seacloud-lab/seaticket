@@ -1,5 +1,4 @@
 {% extends "base_clean.html" %}
-{% load render_bundle from webpack_loader %}
 {% load i18n %}
 
 {% block sub_title %}{% trans "Log in" %} - {% endblock %}
@@ -10,15 +9,7 @@
     width: 30%;
     border-bottom: 1px solid #a6a6a6;
 }
-
 {% endblock %}
-
-{% block extra_style %}{{block.super}}
-{% render_bundle 'eyeIcon' 'css' %}
-{% render_bundle 'downIcon' 'css' %}
-{% render_bundle 'rememberMeIcon' 'css' %}
-{% endblock %}
-
 
 {% block main_content %}
 <div class="login-panel-outer-container vh">
@@ -61,7 +52,10 @@
 				    id="id_password1"
 				    autocomplete="new-password"
 				  />
-				  <div class="password-toggle" id="eye-icon-wrapper"></div>
+				  <div class="password-toggle" id="eye-icon-wrapper">
+				    <span class="eye-icon sea-qa-html-icon-svg">{% include "svg/eye.svg" %}</span>
+				    <span class="eye-slash-icon sea-qa-html-icon-svg">{% include "svg/eye-slash.svg" %}</span>
+				  </div>
 				</div>
 
 				{% if form.captcha %}
@@ -96,7 +90,10 @@
 				<label class="login-form-pass-member d-flex align-items-center justify-content-between">
 					<div class="d-flex align-items-center">
 						<input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-						<span class="remember-me-toggle" id="remember-me-icon-wrapper"></span>
+						<span class="remember-me-toggle" id="remember-me-icon-wrapper">
+						  <span id="remember-me-icon-outline" class="sea-qa-html-icon-svg remember-me-icon-outline">{% include "svg/check-box-outline.svg" %}</span>
+						  <span id="remember-me-icon-checked" class="sea-qa-html-icon-svg remember-me-icon-checked">{% include "svg/check-box.svg" %}</span>
+						</span>
 						<span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
 					</div>
 					{% if email_host %}
@@ -255,6 +252,32 @@ $('#login-form').on('submit', function(){
 		sessionStorage.setItem('isAutofocus', 'false');
 });
 
+(function initRememberMeToggle() {
+  var wrapper = document.getElementById('remember-me-icon-wrapper');
+  var input = document.getElementById('remember-me-input');
+  if (!wrapper || !input) return;
+
+  wrapper.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var checked = !input.checked;
+    input.checked = checked;
+
+    var outlineIcon = document.getElementById('remember-me-icon-outline');
+    var checkedIcon = document.getElementById('remember-me-icon-checked');
+    if (!outlineIcon || !checkedIcon) return;
+
+    if (checked) {
+      outlineIcon.style.display = 'none';
+      checkedIcon.style.display = 'block';
+    } else {
+      outlineIcon.style.display = 'block';
+      checkedIcon.style.display = 'none';
+    }
+  });
+})();
+
 {% if enable_sso %}
 $(function() {
     $('#sso').on('click', function() {
@@ -275,8 +298,4 @@ $(function() {
 
 
 </script>
-
-{% render_bundle 'eyeIcon' 'js' %}
-{% render_bundle 'downIcon' 'js' %}
-{% render_bundle 'rememberMeIcon' 'js' %}
 {% endblock %}
