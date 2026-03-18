@@ -412,28 +412,40 @@ class Workspace extends React.Component {
     this.isDropdownOpen = state;
   };
 
-  renderEmpty = () => {
+  renderEmpty = (isOwnerOrAdmin) => {
     const { page } = this.props;
     const { projectItemWidth, projectList, isShowVirtualProject } = this.state;
     if (projectList.length === 0 && !isShowVirtualProject) {
       if (page === 'workspace-in-main-panel') {
-        return (
-          <EmptyTip
-            title={gettext('No projects')}
-            text={gettext('Add a project to track issues')}
-          >
-            <Button color="primary" onClick={this.showVirtualProject} className='mt-5'>
-              {gettext('Add project')}
-            </Button>
-          </EmptyTip>
-        );
+        if (isOwnerOrAdmin) {
+          return (
+            <EmptyTip
+              title={gettext('No projects')}
+              text={gettext('Add a project to track issues')}
+            >
+              <Button color="primary" onClick={this.showVirtualProject} className='mt-5'>
+                {gettext('Add project')}
+              </Button>
+            </EmptyTip>
+          );
+        } else {
+          return (
+            <EmptyTip
+              title={gettext('No projects')}
+              text={gettext('Contact the group admin to add a project to track issues')}
+            >
+            </EmptyTip>
+          );
+        }
       } else if (page === 'all-workspaces') {
-        return (
-          <div className="empty-project-card" onClick={this.showVirtualProject} style={{ width: projectItemWidth }}>
-            <div className="empty-project-card-icon">+</div>
-            <p className="empty-project-card-text">{gettext('Add a project to track issues')}</p>
-          </div>
-        );
+        if (isOwnerOrAdmin) {
+          return (
+            <div className="empty-project-card" onClick={this.showVirtualProject} style={{ width: projectItemWidth }}>
+              <div className="empty-project-card-icon">+</div>
+              <p className="empty-project-card-text">{gettext('Add a project to track issues')}</p>
+            </div>
+          );
+        }
       }
     }
   };
@@ -505,7 +517,7 @@ class Workspace extends React.Component {
             getProjectClassAndStyle={this.getProjectClassAndStyle}
           />
         </div>
-        {this.renderEmpty()}
+        {this.renderEmpty(isOwnerOrAdmin)}
         {this.state.isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
             title={gettext('Delete project')}
