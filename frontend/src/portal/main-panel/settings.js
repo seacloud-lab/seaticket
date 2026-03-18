@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button, FormGroup, Label, Input } from 'reactstrap';
-import { Icon, toaster, Switch, PasswordInput, IconButton } from '@/components';
+import { Icon, toaster, Switch, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
 import { SOURCE_TYPE_OPTIONS } from '../constants';
