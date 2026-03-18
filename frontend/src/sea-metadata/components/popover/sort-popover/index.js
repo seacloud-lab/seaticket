@@ -194,8 +194,8 @@ class SortPopover extends Component {
     return (
       <div key={'sort-item-' + index} className="sort-item">
         {!readOnly &&
-          <div className="delete-sort" onClick={(index === 0) ? () => {} : (event) => this.deleteSort(event, index)}>
-            {(index !== 0) && <Icon className="sea-metadata-icon" symbol="close"/>}
+          <div className="delete-sort" onClick={(event) => this.deleteSort(event, index)}>
+            <Icon className="sea-metadata-icon" symbol="close"/>
           </div>
         }
         <div className="condition">
@@ -242,7 +242,7 @@ class SortPopover extends Component {
         boundariesElement={document.body}
       >
         <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
-          <div className={`sorts-list ${isEmpty ? 'empty-sorts-container' : ''}`} >
+          <div className={`sorts-list${isEmpty ? ' empty-sorts-container' : ''}`} >
             {isEmpty ?
               <div className="empty-sorts-list">{gettext('No sorts')}</div> :
               this.renderSortsList()
