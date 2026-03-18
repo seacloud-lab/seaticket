@@ -155,8 +155,12 @@ function ajaxErrorHandler(xhr, textStatus, errorThrown) {
 }
 {% if not request.user.is_authenticated %}
 (function() {
-    var lang_context = $('#lang-context'),
-        lang_selector = $('#lang-context-selector');
+    var lang_context = $('#lang-context');
+    var lang_selector = $('#lang-context-selector');
+            
+    if (lang_context.length === 0 || lang_selector.length === 0) {
+        return;
+    }
 
     lang_context.parent().css({'position':'relative'});
 

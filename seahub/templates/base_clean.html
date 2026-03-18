@@ -125,6 +125,10 @@ html, body, #wrapper {
         (function() {
           var lang_context = $('#lang-context');
           var lang_selector = $('#lang-context-selector');
+          
+          if (lang_context.length === 0 || lang_selector.length === 0) {
+            return;
+          }
 
           lang_context.parent().css({'position':'relative'});
 
