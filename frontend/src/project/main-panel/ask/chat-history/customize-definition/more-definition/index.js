@@ -6,7 +6,7 @@ import Definition from '../definition';
 
 import './index.css';
 
-const initDefinitionIndex = 3;
+const initDefinitionIndex = 4;
 
 const MoreDefinition = ({ element, attributes, editor, sources, settings, onClick, openDefinitionRecord }) => {
   const [isShowMore, setIsShowMore] = useState(false);
