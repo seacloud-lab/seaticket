@@ -4,7 +4,7 @@ import PortalKnowledgeTopBar from './knowledge-top-bar';
 import { knowledgeBaseAPI } from '@/project/api/knowledge-base-api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import PortalAllKnowledge from './view/all-knowledge';
-import PortalEditKnowledge from './view/edit-knowledge';
+import Knowledge from './view/knowledge';
 import { PortalKnowledgePageProvider, usePortalKnowledgePage } from './hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
@@ -26,7 +26,7 @@ const Page = () => {
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
     return (<PortalAllKnowledge { ...props } editorAPI={longtextAPI} />);
   }
-  return (<PortalEditKnowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
+  return (<Knowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
 };
 
 const PortalKnowledgeBase = () => {

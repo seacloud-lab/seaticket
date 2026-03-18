@@ -5,7 +5,7 @@ import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import NewKnowledge from './view/new-knowledge';
 import AllKnowledge from './view/all-knowledge';
-import EditKnowledge from './view/edit-knowledge';
+import Knowledge from './view/knowledge';
 import TrashKnowledge from './view/trash-knowledge';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
@@ -35,13 +35,14 @@ const Page = ({ title }) => {
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
     return (<NewKnowledge { ...props } editorAPI={longtextAPI} />);
   }
-  return (<EditKnowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
+  return (<Knowledge { ...props } knowledgeID={pageSlugId} editorAPI={longtextAPI} />);
 };
 
 const KnowledgeBase = ({ title }) => {
+
   return (
     <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
-      <KnowledgeTopBar title={title} />
+      <KnowledgeTopBar title={title} permission={permission} />
       <Page title={title} />
     </KnowledgePageProvider>
   );
