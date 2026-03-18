@@ -51,6 +51,13 @@
   font-weight: 500;
 }
 
+.sea-ticket-connection-email-record-details .email-record-info-to {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sea-ticket-connection-email-record-details .email-record-info .email-record-info-content {
   flex: 1;
   color: #666;
