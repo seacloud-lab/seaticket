@@ -298,6 +298,7 @@ class PortalTicketView(APIView):
                     'created_time': ticket_comment.get('created_time'),
                     'modified_time': ticket_comment.get('modified_time'),
                     'creator': ticket_comment.get('creator'),
+                    'via_agent': bool(ticket_comment.get('via_agent')),
                 }
                 if not ticket.get('comments'):
                     ticket['comments'] = []

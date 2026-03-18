@@ -49,15 +49,3 @@ def rank_related_issues(params):
     resp_json = resp.json()
     ranked_ids = resp_json.get('ranked_ids', [])
     return ranked_ids
-
-
-# ── Agent APIs ────────────────────────────────────────────────────
-
-def trigger_agent(project_uuid):
-    headers = _build_headers()
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/trigger-agent')
-    data = {'project_uuid': project_uuid}
-    resp = requests.post(url, json=data, headers=headers, timeout=300)
-    if resp.status_code != 200:
-        raise Exception(f'trigger agent error status: {resp.status_code} body: {resp.text}')
-    return resp.json()

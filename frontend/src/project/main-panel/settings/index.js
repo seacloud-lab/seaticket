@@ -22,6 +22,14 @@ const Settings = ({
         className="mb-4"
       />
       <SwitchSettingsItem
+        title={gettext('Agent')}
+        placeholder={gettext('Enable Agent')}
+        tip={gettext('Enable agent to automatically analyze and process tickets, GitHub issues, etc.')}
+        className="mb-4"
+        value={settings.agent?.enabled}
+        onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
+      />
+      <SwitchSettingsItem
         title={gettext('Chat')}
         placeholder={gettext('Streaming response')}
         tip={gettext('Enable streaming response')}

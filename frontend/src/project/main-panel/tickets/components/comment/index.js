@@ -108,7 +108,7 @@ const Comment = ({
       const creator = userMap[comment.creator];
       setCreator(creator);
     });
-  }, [comment.creator]);
+  }, [comment.creator, comment.via_agent]);
 
   const renderAvatar = useCallback(() => {
     return (
@@ -119,11 +119,15 @@ const Comment = ({
   }, [creator, isSmallScreen]);
 
   const renderOperationLog = useCallback(() => {
-    const { created_time } = comment;
+    const { created_time, via_agent: isViaAgent } = comment;
+    const approverLabel = creator?.name || comment.creator || '';
+    const userName = isViaAgent
+      ? `${gettext('SeaTicket AI')} (${gettext('Approved by')} ${approverLabel})`
+      : (creator.name || comment.creator || '');
     return (
       <>
         {isSmallScreen && renderAvatar()}
-        <span className="sea-qa-project-ticket-comment-user-name mr-1">{creator.name}</span>
+        <span className="sea-qa-project-ticket-comment-user-name mr-1">{userName}</span>
         {isShowStatus && (
           <span className="sea-qa-project-ticket-comment-status mr-1">{gettext('opened')}</span>
         )}

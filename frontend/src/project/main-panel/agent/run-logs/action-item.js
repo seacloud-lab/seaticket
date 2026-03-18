@@ -18,10 +18,11 @@ const ACTION_TYPE = {
 
 // Tool names that carry a user-editable content payload
 const SUGGESTION_TOOL_NAMES = new Set([
-  'notify_assignee',
-  'add_comment',
+  'suggest_notify_assignee',
+  'suggest_add_comment',
   'suggest_resolution',
   'suggest_create_ticket',
+  'suggest_modify_type',
 ]);
 
 const ActionItem = ({
@@ -67,6 +68,7 @@ const ActionItem = ({
       case ACTION_TYPE.SUGGESTION: {
         if (tool_name === 'suggest_resolution') return <span className="action-icon">💡</span>;
         if (tool_name === 'suggest_create_ticket') return <span className="action-icon">📋</span>;
+        if (tool_name === 'suggest_modify_type') return <span className="action-icon">🏷️</span>;
         return <span className="action-icon">💡</span>;
       }
       default:
@@ -100,7 +102,7 @@ const ActionItem = ({
             {result && (
               <div className="tool-result">
                 {renderStatusIcon()}
-                <span className="result-text">{result}</span>
+                <span className="result-text">{content}</span>
               </div>
             )}
           </div>
@@ -136,7 +138,7 @@ const ActionItem = ({
         );
       }
       default:
-        return <div className="action-content">{content}</div>;
+        return <div className="action-content">{content ? content : result}</div>;
     }
   };
 
