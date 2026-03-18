@@ -107,6 +107,7 @@ class ChangeProjectGroupDialog extends React.Component {
             options={groups}
             onChange={this.onGroupChange}
             placeholder={gettext('Select a group')}
+            noOptionsPlaceholder={gettext('No groups available')}
             disabled={isLoading || isSubmitting}
             isInModal={true}
           />
