@@ -32,7 +32,7 @@ const Preview = ({ knowledge, className, onLinkClick }) => {
           api={queryUser}
         />
         <div className="sea-ticket-knowledge-create-time">
-          <IconButton icon="time-stroked" size={14} />
+          <IconButton icon="time-stroked" className="no-hover-bg" size={14} />
           <DateFormatter value={created_time} className="sea-ticket-knowledge-create-time-content" />
         </div>
       </div>
