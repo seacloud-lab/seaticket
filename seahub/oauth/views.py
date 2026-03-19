@@ -39,7 +39,7 @@ if ENABLE_OAUTH:
     SCOPE = getattr(settings, 'OAUTH_SCOPE', '')
     ACCESS_TOKEN_IN_URI = getattr(settings, 'OAUTH_ACCESS_TOKEN_IN_URI', False)
 
-    # Used for init an user for SeaTable.
+    # Used for init an user for SeaTicket.
     PROVIDER_DOMAIN = getattr(settings, 'OAUTH_PROVIDER_DOMAIN', '')
     OAUTH_ATTRIBUTE_MAP = getattr(settings, 'OAUTH_ATTRIBUTE_MAP', {})
 

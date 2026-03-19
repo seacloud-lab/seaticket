@@ -525,7 +525,7 @@ def org_transfer(request, **kwargs):
 
     # check
     if Organization.objects.get_orgs_by_user(username):
-        return render_error(request, '您的账号已经加入过 SeaTable 团队')
+        return render_error(request, '您的账号已经加入过 SeaTicket 团队')
 
     if not org_id:
         return render_error(request, 'org_id invalid.')

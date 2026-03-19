@@ -3,7 +3,8 @@
 
 <style type="text/css">
 .user-terms-label {
-  margin-bottom: 20px;
+  margin-top: 8px;
+  margin-bottom: 0px;
   position: relative;
 }
 
@@ -137,7 +138,7 @@
 
 </style>
 
-{% block %}
+{% block extra_css %}
 
 {% render_bundle 'exclamationCircleIcon' 'css' %}
 
@@ -154,7 +155,7 @@
   </div>
   <input type="checkbox" name="user_terms" class="vam user-terms-input" />
   <span class="vam user-terms-text ml-1">
-    我已阅读并同意 SeaTable
+    我已阅读并同意 SeaTicket
     <a class="normal" target="_blank" href="{{ terms_of_service_link }}">用户协议</a>
     和
     <a class="normal" target="_blank" href="{{ privacy_policy_link }}">隐私条款</a>
