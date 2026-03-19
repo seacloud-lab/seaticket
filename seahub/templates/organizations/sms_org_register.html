@@ -167,9 +167,6 @@
             <input id="id_sms_code" type="text" name="sms_code" placeholder="请输入短信验证码" value="" class="input name-input w-100" style="height: 40px; box-sizing: border-box;" autocomplete="off" />
             <p class="error">{{ error_msg }}</p>
             {{ form.non_field_errors }}
-            {% if cn_force_check_user_agreement %}
-            {% include "registration/user_terms_check.html" %}
-            {% endif %}
             <button id="sms-org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
         </form>
         <div class="login-panel-bottom-container">
@@ -207,15 +204,6 @@
 {% block extra_script %}
 <script type="text/javascript">
 $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
-
-{% if cn_force_check_user_agreement %}
-$('#sms-org-register-submit').on('click', function(event){
-  if (!$('.user-terms-input').prop('checked')) {
-    showUserTermsTip();
-    event.preventDefault();
-  }
-});
-{% endif %}
 
 {% include "snippets/password_strength_js.html" %}
 

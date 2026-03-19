@@ -522,9 +522,6 @@ SESSION_COOKIE_AGE = 24 * 60 * 60
 # Days of remembered login info (default: 7 days)
 LOGIN_REMEMBER_DAYS = 7
 
-# Need to check user agreement before logging in and registering(Domestic cloud services)
-CN_FORCE_USER_AGREE_TERMS = False
-
 CAPTCHA_IMAGE_SIZE = (90, 42)
 
 # Absolute filesystem path to the directory that will hold thumbnail files.

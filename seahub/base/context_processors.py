@@ -20,7 +20,7 @@ from seahub.settings import SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
     SITE_ROOT, FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
     MEDIA_ROOT, SHOW_LOGOUT_ICON, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
     LOGIN_BG_IMAGE_PATH, CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
-    ENABLE_SIGNUP, CN_FORCE_USER_AGREE_TERMS
+    ENABLE_SIGNUP
 
 from seahub.constants import DEFAULT_ADMIN
 from seahub.utils import get_site_name, get_service_url
@@ -120,7 +120,6 @@ def base(request):
         'is_tablet': request.is_tablet,
         'privacy_policy_link': PRIVACY_POLICY_LINK,
         'terms_of_service_link': TERMS_OF_SERVICE_LINK,
-        'cn_force_check_user_agreement': CN_FORCE_USER_AGREE_TERMS,
         'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL
     }
 

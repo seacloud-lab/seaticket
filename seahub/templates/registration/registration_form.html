@@ -40,9 +40,6 @@
 				{% endif %}
 
 				<p class="error hide mt-1"></p>
-				{% if cn_force_check_user_agreement %}
-				{% include "registration/user_terms_check.html" %}
-				{% endif %}
 				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
 			</form>
 			{% endif %}
@@ -140,12 +137,6 @@ $('#signup-form').on('submit', function(){
                 $('.error').html(passwd_tip).removeClass('hide');
                 return false;
             }
-        {% endif %}
-        {% if cn_force_check_user_agreement %}
-          if (!$('.user-terms-input').prop('checked')) {
-            showUserTermsTip();
-            return false;
-          }
         {% endif %}
 });
 

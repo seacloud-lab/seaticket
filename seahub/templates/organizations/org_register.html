@@ -37,9 +37,6 @@
         {{ form.password2.errors }}
 
         {{ form.non_field_errors }}
-        {% if cn_force_check_user_agreement %}
-        {% include "registration/user_terms_check.html" %}
-        {% endif %}
         <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
       </form>
       {% endif %}
@@ -54,15 +51,6 @@
 {% block extra_script %}
 <script type="text/javascript">
 $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
-
-{% if cn_force_check_user_agreement %}
-$('#org-register-submit').on('click', function(event){
-  if (!$('.user-terms-input').prop('checked')) {
-    showUserTermsTip();
-    event.preventDefault();
-  }
-});
-{% endif %}
 
 $("body").on('click', '.password-toggle', function(){
     var $pass1 = document.getElementById("password1");
