@@ -141,6 +141,7 @@ const PortalAllKnowledge = ({ projectUuid }) => {
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={currentKB}
+          getKB={(...params) => portalAPI.getKBRecord(...params)}
           columns={allColumns.current}
           switchResource={handleSwitchKB}
           onToggle={() => setIsShowKBDetailsDialog(false)}

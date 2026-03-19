@@ -71,7 +71,7 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
       const linkedUpdateRecord = {
         [res.data.ticket._pk]: res.data.ticket.title,
       };
-      const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_RECORDS);
+      const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
       const rowUpdateData = { [linkColumn.key]: [res.data.ticket._pk] };
       insertRowByLink(TICKET_TABLE_NAME, tableName, linkedUpdateRecord, row._id, rowUpdateData, () => {
         const eventBus = context.eventBus;

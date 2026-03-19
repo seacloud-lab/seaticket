@@ -426,13 +426,7 @@ input.short-input {
   color: #212529;
 }
 
-#lang-context-selector .sea-qa-icon-svg {
-  width: 14px;
-  height: 14px;
-  fill: var(--bs-icon-color);
-}
-
-#lang-context-selector .un-check-mark .sea-qa-icon-svg {
+#lang-context-selector .un-check-mark {
   display: none;
 }
 
@@ -453,9 +447,20 @@ input.short-input {
   background-color: rgba(0, 0, 0, 0.04)
 }
 
-#lang-context .sea-qa-icon-svg {
-  color: var(--bs-body-secondary-color);
+#lang-context .sea-qa-html-icon-svg svg {
   margin-top: -2px;
+  width: 12px;
+  height: 12px;
+}
+
+/* sea-qa-html-icon-svg style */
+.sea-qa-html-icon-svg svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sea-qa-html-icon-svg svg path {
+  fill: var(--bs-icon-color);
 }
 
 /* layout */
@@ -574,6 +579,61 @@ input.short-input {
   text-decoration: none;
 }
 
+/* password toggle */
+.password-toggle {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 14px;
+  height: 14px;
+  color: var(--bs-body-secondary-color);
+  cursor: pointer;
+  display: flex;
+}
+
+.password-toggle .sea-qa-html-icon-svg svg {
+  height: 16px;
+  width: 16px;
+  display: block;
+}
+
+.password-toggle .eye-icon {
+  display: none;
+}
+
+.password-toggle.password-show .eye-slash-icon {
+  display: none;
+}
+
+.password-toggle.password-show .eye-icon {
+  display: unset;
+}
+
+/* remember-me-toggle */
+.remember-me-toggle {
+  cursor: pointer;
+}
+
+.remember-me-toggle .sea-qa-html-icon-svg svg {
+  display: block;
+}
+
+.remember-me-toggle .remember-me-icon-outline {
+  display: block;
+}
+
+.remember-me-toggle .remember-me-icon-outline svg path {
+  fill: var(--bs-icon-secondary-color);
+}
+
+.remember-me-toggle .remember-me-icon-checked {
+  display: none;
+}
+
+.remember-me-toggle .remember-me-icon-checked svg path {
+  fill: var(--bs-primary);
+}
+
 /* login-panel */
 .login-panel-wrapper {
   width: fit-content;
@@ -632,15 +692,6 @@ input.short-input {
   font-size: 14px;
   color: var(--bs-orange);
   font-weight: normal;
-}
-
-.login-panel-wrapper .login-form-wrapper .password-toggle {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  width: 14px;
-  height: 14px;
-  color: var(--bs-body-secondary-color)
 }
 
 .login-panel-wrapper .btn-sso {

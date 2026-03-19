@@ -91,7 +91,7 @@
 }
 
 .sea-qa-select .selected-option-show .sea-qa-icon-svg {
-  color: var(--bs-icon-color);
+  color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
 }

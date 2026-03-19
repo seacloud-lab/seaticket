@@ -334,7 +334,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
   RESOLVED: 'resolved',
-  LINKED_RECORDS: 'linked_records',
+  LINKED_TICKET: 'linked_ticket',
   TAGS: 'tags',
 };
 
@@ -361,8 +361,8 @@ const CONNECTION_PREDEFINED_COLUMN = {
     type: CellType.CHECKBOX,
     editable: true,
   },
-  [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_RECORDS]: {
-    display_name: gettext('Linked records'),
+  [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: {
+    display_name: gettext('Linked ticket'),
     data: {
       linked_table: TICKET_TABLE_NAME,
     },
