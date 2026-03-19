@@ -84,3 +84,7 @@
   height: 20px;
   width: 20px;
 }
+
+.sea-ticket-resource-details-dialog .sea-ticket-github-comment-editor {
+  margin-bottom: 16px;
+}
