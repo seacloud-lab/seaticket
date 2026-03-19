@@ -1135,7 +1135,7 @@ input.short-input {
 .confirm-password-panel .confirm-password-panel-hd,
 .reset-password-tip-panel .reset-password-tip-panel-hd,
 .login-panel .login-panel-hd {
-  margin: 0px 0 20px;
+  margin: 0 0 16px;
   line-height: 1.5rem;
   font-size: 16px;
   font-weight: 500;
@@ -1668,6 +1668,21 @@ a.sf-popover-item {
   height: 1em;
   overflow: hidden;
   width: 1em;
+}
+
+/**** btn with link styles ****/
+.sf-link-btn {
+  color: #ED7109;
+  border: none;
+  padding: 0;
+  background: none;
+}
+
+.sf-link-btn:focus,
+.sf-link-btn:hover {
+  color: #ED7109;
+  background: none;
+  text-decoration: underline;
 }
 
 /* client-login-confirm-panel */
