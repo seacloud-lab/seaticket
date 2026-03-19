@@ -2,6 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 class ConnectionsAPI {
 
@@ -248,9 +249,17 @@ class ConnectionsAPI {
     return this.req.delete(url, { data: { record_ids: recordIDs } });
   }
 
-  createGithubIssueComment(projectUuid, connectionID, recordID, comment) {
+  modifyGithubIssue(projectUuid, connectionID, recordID, update = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/github-issue-editor/';
-    return this.req.post(url, { record_id: recordID, comment });
+    const { title, content, labels, issue_type, state_reason, state } = update;
+    let updateData = { _pk: recordID };
+    if (hasOwnProperty(update, 'title')) updateData['title'] = title;
+    if (hasOwnProperty(update, 'content')) updateData['content'] = content;
+    if (hasOwnProperty(update, 'labels')) updateData['labels'] = labels;
+    if (hasOwnProperty(update, 'issue_type')) updateData['issue_type'] = issue_type || '';
+    if (hasOwnProperty(update, 'state_reason')) updateData['state_reason'] = state_reason;
+    if (hasOwnProperty(update, 'state')) updateData['state'] = state;
+    return this.req.put(url, updateData);
   }
 
   listGitHubRepositories(projectUuid) {

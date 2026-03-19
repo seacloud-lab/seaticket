@@ -1,17 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
+import GitHubIssuesDetails from './github-issues-details';
 import { initConnectionResourceDetails } from '../../utils';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
-import GitHubCommentEditor from '../github-comment-editor';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, permission }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, isSmallScreen, updateDetails }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -86,6 +86,16 @@ const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, permi
     );
   }
 
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    return (
+      <GitHubIssuesDetails
+        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        details={details}
+        isSmallScreen={isSmallScreen}
+      />
+    );
+  }
+
   if (Array.isArray(details)) {
     if (details.length === 0) {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
@@ -97,14 +107,6 @@ const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, permi
             <CommonDetailItem detail={detail} type={type} key={index} />
           );
         })}
-        {type === CONNECTION_TYPE.GITHUB_ISSUE && (
-          <GitHubCommentEditor
-            projectUuid={projectUuid}
-            connectionId={resource.connection_id}
-            recordId={resource._id}
-            onChange={addComment}
-          />
-        )}
       </div>
     );
   }

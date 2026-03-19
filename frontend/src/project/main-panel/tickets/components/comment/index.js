@@ -9,6 +9,7 @@ import { downloadFile } from '@/utils/download';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { isModEnter } from '@/utils/hotkey';
 import UploadFilesButton from '../upload-files-btn';
+import { isObject } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -99,6 +100,11 @@ const Comment = ({
   }, [content, onModify]);
 
   useEffect(() => {
+    if (comment.via_agent) return;
+    if (isObject(comment.creator)) {
+      setCreator(comment.creator);
+      return;
+    }
     const creator = getCollaborator(comment.creator);
     if (creator) {
       setCreator(creator);
@@ -120,10 +126,10 @@ const Comment = ({
 
   const renderOperationLog = useCallback(() => {
     const { created_time, via_agent: isViaAgent } = comment;
-    const approverLabel = creator?.name || comment.creator || '';
+    const approverLabel = creator?.name || (isObject(comment.creator) ? comment.creator.name : comment.creator) || '';
     const userName = isViaAgent
       ? `${gettext('SeaTicket AI')} (${gettext('Approved by')} ${approverLabel})`
-      : (creator.name || comment.creator || '');
+      : approverLabel;
     return (
       <>
         {isSmallScreen && renderAvatar()}
@@ -231,7 +237,7 @@ const Comment = ({
                     onSaveEditorValue={onCommentChange}
                   />
                   <div className="sea-qa-project-ticket-footer mt-2 pl-0">
-                    <UploadFilesButton onChange={handleFiles} />
+                    {editorAPI ? (<UploadFilesButton onChange={handleFiles} />) : (<div></div>)}
                     <div className="ml-2">
                       <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
                       <Button

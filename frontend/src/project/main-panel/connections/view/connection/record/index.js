@@ -19,11 +19,16 @@ import { BAR_TYPE } from '@/project/constants';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '../../../constants';
+import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
 import { connectionsAPI } from '@/project/api';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
+import TypeSettings from '../../../components/connection-resource-details/github-issues-details/type-settings';
+import LabelsSettings from '../../../components/connection-resource-details/github-issues-details/labels-settings';
+import StateSettings from '../../../components/connection-resource-details/github-issues-details/state-settings';
+import StateReasonSettings from '../../../components/connection-resource-details/github-issues-details/state-reason-settings';
+import Rename from './rename';
 
 import './index.css';
 
@@ -40,7 +45,7 @@ const initColumns = [
 
 const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
-  const { getRow, getTableByName, modifyRow, modifyRowLink } = useData();
+  const { getRow, getTableByName, modifyRow, modifyRowLink, modifyLocalRow } = useData();
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
 
@@ -50,6 +55,7 @@ const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
 
   const recordRef = useRef(null);
 
@@ -147,6 +153,64 @@ const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
     setDetails(details?.title ? details : '');
   }, [updateConnectionInfo]);
 
+  const modifyRecord = useCallback((update, callback) => {
+    connectionsAPI.modifyGithubIssue(projectUuid, pageSlugId, Number(childrenPageSlugId), update).then(res => {
+      const connectionTableName = getTableName(connection);
+      modifyLocalRow(connectionTableName, childrenPageSlugId, update);
+      setDetails({ ...details, ...update });
+      callback && callback(false);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback(true);
+    });
+  }, [details, connection, projectUuid, pageSlugId, childrenPageSlugId, modifyLocalRow]);
+
+  const renderGitHubSidePanel = useCallback(() => {
+    const columns = details?.columns || [];
+    const labelsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LABELS);
+    const typeColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
+    const stateColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+    const stateReasonColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
+
+    return (
+      <>
+        <LabelsSettings
+          id="github-issue-labels-editor-popover"
+          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+          value={details?.labels}
+          column={labelsColumn}
+          onChange={modifyRecord}
+        />
+        <StateSettings
+          id="state-editor-popover"
+          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+          state={details?.state}
+          stateReason={details?.state_reason}
+          stateColumn={stateColumn}
+          stateReasonColumn={stateReasonColumn}
+          onChange={modifyRecord}
+        />
+        <StateReasonSettings
+          id="substate-editor-popover"
+          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+          value={details?.state_reason}
+          state={details?.state}
+          stateColumn={stateColumn}
+          column={stateReasonColumn}
+          onChange={modifyRecord}
+        />
+        <TypeSettings
+          id="github-issue-type-editor-popover"
+          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+          value={details?.issue_type}
+          column={typeColumn}
+          onChange={modifyRecord}
+        />
+      </>
+    );
+  }, [details, modifyRecord]);
+
   useEffect(() => {
     if (isConnectionsPageLoading || !details) return;
     const recordDom = recordRef.current;
@@ -170,9 +234,11 @@ const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
     <>
       <div className={classnames('sea-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
         <div className="sea-connection-record-details-header">
-          <div className="sea-connection-record-details-header-left">
-            {title && (
-              <>
+          {isRenaming ? (
+            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={modifyRecord} />
+          ) : (
+            <>
+              <div className="sea-connection-record-details-header-left">
                 {title && (<div className="text-truncate d-inline-block" title={title}>{title}</div>)}
                 {url && (
                   <IconButton
@@ -182,40 +248,56 @@ const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
                     onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
                   />
                 )}
-              </>
-            )}
-          </div>
-          <div className="sea-connection-record-details-header-right">
-            {tools.length > 0 && (
-              <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
-                <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
-                <CustomizeDropdownMenu className="position-fixed">
-                  {tools.map((tool, index) => {
-                    if (tool.key === 'divider' || tool === 'Divider') {
-                      return <CustomizeDropdownItem key={index} divider />;
-                    }
-                    return (
-                      <CustomizeDropdownItem
-                        key={tool.key}
-                        onClick={() => {
-                          tool.callback && tool.callback();
-                          setIsMoreMenuOpen(false);
-                        }}
-                      >
-                        {tool.label}
-                      </CustomizeDropdownItem>
-                    );
-                  })}
-                </CustomizeDropdownMenu>
-              </Dropdown>
-            )}
-          </div>
+                {title && connection.type === CONNECTION_TYPE.GITHUB_ISSUE && permission === PERMISSION_TYPES.READ_WRITE && (
+                  <IconButton
+                    className="open-in-new-tab-btn"
+                    icon="rename"
+                    title={gettext('Edit title')}
+                    onClick={() => setIsRenaming(true)}
+                  />
+                )}
+              </div>
+              <div className="sea-connection-record-details-header-right">
+                {tools.length > 0 && (
+                  <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+                    <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
+                    <CustomizeDropdownMenu className="position-fixed">
+                      {tools.map((tool, index) => {
+                        if (tool.key === 'divider' || tool === 'Divider') {
+                          return <CustomizeDropdownItem key={index} divider />;
+                        }
+                        return (
+                          <CustomizeDropdownItem
+                            key={tool.key}
+                            onClick={() => {
+                              tool.callback && tool.callback();
+                              setIsMoreMenuOpen(false);
+                            }}
+                          >
+                            {tool.label}
+                          </CustomizeDropdownItem>
+                        );
+                      })}
+                    </CustomizeDropdownMenu>
+                  </Dropdown>
+                )}
+              </div>
+            </>
+          )}
         </div>
         <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
           <div className="sea-connection-record-details-container">
             <ConnectionResourceDetails resource={resource} connection={connection} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} editorAPI={editorAPI} />
           </div>
-          {details && (<div className="sea-connection-record-details-others"></div>)}
+          {details && (
+            <div className="sea-connection-record-details-others">
+              {connection.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+                <>
+                  {renderGitHubSidePanel()}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {isShowRelatedIssuesDialog && (

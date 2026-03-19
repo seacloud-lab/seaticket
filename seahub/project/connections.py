@@ -606,24 +606,29 @@ class GithubWebhookView(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class GithubLocalEditorView(APIView):
+class GithubIssueEditorView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     @require_org_context
-    def post(self, request, project_uuid, connection_id):
-        record_id = request.data.get('record_id')
-        comment = request.data.get('comment', '')
+    def put(self, request, project_uuid, connection_id):
+        _pk = request.data.get('_pk')
+        title = request.data.get('title', None)
+        state = request.data.get('state', None)
+        state_reason = request.data.get('state_reason', None)
+        labels = request.data.get('labels', None)
+        issue_type = request.data.get('issue_type', None)
 
-        if not record_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Missing record_id.')
+        if not _pk:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
         try:
-            record_id = int(record_id)
+            _pk = int(_pk)
         except (TypeError, ValueError):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'record_id invalid.')
-        if not comment or not isinstance(comment, str) or not comment.strip():
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Comment is invalid.')
+            return api_error(status.HTTP_400_BAD_REQUEST, '_pk is invalid.')
+
+        if all(value is None for value in (title, labels, issue_type, state, state_reason)):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Nothing to update.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -647,6 +652,17 @@ class GithubLocalEditorView(APIView):
         if not project_connection.is_active:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Connection is inactive.')
 
+        # GitHub requires `state` to be present when updating `state_reason`.
+        update_state = state.lower() if isinstance(state, str) else None
+        update_state_reason = state_reason.lower() if isinstance(state_reason, str) else None
+        if update_state_reason is not None and update_state is None:
+            if update_state_reason == 'reopened':
+                update_state = 'open'
+            elif update_state_reason in ('completed', 'not_planned', 'duplicate'):
+                update_state = 'closed'
+            else:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'state_reason is invalid.')
+
         config = decrypt_config(json.loads(project_connection.config))
         installation_id = config.get('installation_id')
         if not installation_id:
@@ -654,7 +670,7 @@ class GithubLocalEditorView(APIView):
 
         seadb_api = SeaDBAPI(username)
         try:
-            issue_record = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, record_id)
+            issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         except Exception as e:
             logger.error(f'get github issue details error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -671,16 +687,25 @@ class GithubLocalEditorView(APIView):
 
         try:
             github_api = GitHubAPI(installation_id=installation_id)
-            comment_data = github_api.create_issue_comment(repo_owner, repo_name, issue_number, comment.strip())
+            issue_data = github_api.update_issue(
+                repo_owner,
+                repo_name,
+                issue_number,
+                title=title if title else None,
+                labels=labels if labels is not None else None,
+                state=update_state,
+                state_reason=update_state_reason,
+                issue_type=issue_type if issue_type is not None else None
+            )
         except GitHubAppNotInstalled as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         except FileNotFoundError as e:
             return api_error(status.HTTP_404_NOT_FOUND, str(e))
         except GitHubAPIException as e:
-            logger.error(f'create github issue comment error: {e}')
+            logger.error(f'github issue update error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         except Exception as e:
-            logger.error(f'create github issue comment error: {e}')
+            logger.error(f'github issue update error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
@@ -692,7 +717,7 @@ class GithubLocalEditorView(APIView):
         except Exception as e:
             logger.warning(f'trigger sync for connection {connection_id} error: {e}')
 
-        return Response({'comment': comment_data}, status=status.HTTP_201_CREATED)
+        return Response({'issue': issue_data}, status=status.HTTP_200_OK)
 
 
 class DiscourseWebhookView(APIView):

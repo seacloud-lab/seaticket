@@ -396,6 +396,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       is_name_column: true,
       frozen: true,
       is_predefined: true,
+      editable: true,
       click: (row) => {
         if (row && row.url) {
           window.open(row.url);
@@ -409,18 +410,24 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: {
       display_name: gettext('State'),
       is_predefined: true,
+      editable: true,
+      is_required: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: {
       display_name: gettext('State reason'),
       is_predefined: true,
+      editable: true,
+      is_required: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
       display_name: gettext('Type'),
-      is_predefined: true,
+      is_predefined: false,
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
       display_name: gettext('Labels'),
-      is_predefined: true,
+      is_predefined: false,
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENT_COUNT]: {
       display_name: gettext('Total comments'),

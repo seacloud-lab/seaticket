@@ -132,7 +132,7 @@ export const isInputOrEditorActive = () => {
   return false;
 };
 
-const allPopovers = ['priority-editor-popover', 'assignees-editor-popover', 'tags-editor-popover', 'state-editor-popover', 'substate-editor-popover', 'type-editor-popover'];
+const allPopovers = ['priority-editor-popover', 'assignees-editor-popover', 'tags-editor-popover', 'state-editor-popover', 'substate-editor-popover', 'type-editor-popover', 'github-issue-type-editor-popover', 'github-issue-labels-editor-popover'];
 export const isActiveOtherPopover = (curPopover) => {
   const otherPopovers = allPopovers.filter(p => p !== curPopover);
   const otherPopover = otherPopovers.find(p => document.getElementById(p));

@@ -97,7 +97,13 @@
 }
 
 .sea-connection-record-details .sea-ticket-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
+  padding: 10px 16px 24px 16px !important;
+  border: unset;
+  height: auto;
+  width: 100%;
   max-width: 100%;
+  min-height: 100%;
+  background-color: #FDFDFD;
 }
 
 /* seafile */

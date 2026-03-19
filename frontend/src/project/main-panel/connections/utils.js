@@ -5,7 +5,8 @@ import {
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
   SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
 } from './constants';
-import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
@@ -338,7 +339,6 @@ export const generateLinkAnExistingTicketOption = ({ row, columns, connection },
   };
 };
 
-
 export const generateCreateRelatedTicketOption = ({ row, columns, connection }, callback) => {
   const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
   if (!enableCreateRelatedTicket) return null;
@@ -354,7 +354,6 @@ export const generateCreateRelatedTicketOption = ({ row, columns, connection }, 
     callback: () => callback && callback(row),
   };
 };
-
 
 export const generateOpenOriginalPageOption = ({ connection, row, columns }) => {
   const url = getOriginalPageUrl(connection, row, columns);
@@ -380,3 +379,29 @@ export const generateCopyOriginalLinkOption = ({ connection, row, columns }) => 
   };
 };
 
+export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
+  const row = getRowById(table, rowId);
+  if (!row || !rowUpdate) return;
+  const updatedColumnKeys = Object.keys(rowUpdate);
+
+  // When the value of state is modified, the values of substate are updated in a cascading fashion.
+  const stateColumn = getColumnByName(table.columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+  if (stateColumn && updatedColumnKeys.includes(stateColumn?.key)) {
+    const stateReasonColumn = getColumnByName(table.columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
+    if (stateReasonColumn) {
+      const { cascade_settings = {} } = stateReasonColumn.data || {};
+      const options = getColumnOptions(stateReasonColumn);
+      if (cascade_settings) {
+        const cellValue = rowUpdate[stateColumn.key];
+        const cascadeOptionIds = cellValue ? (cascade_settings[cellValue] || []) : [];
+        const oldCascadeCellValue = getCellValueByColumn(rowUpdate, stateReasonColumn) || getCellValueByColumn(row, stateReasonColumn);
+        if (!cascadeOptionIds.includes(oldCascadeCellValue)) {
+          const validCascadeOptionIds = cascadeOptionIds.filter(id => getOption(options, id));
+          const cascadeCellValue = validCascadeOptionIds[0] || null;
+          rowUpdate[stateReasonColumn.key] = cascadeCellValue;
+          oldRowData[stateReasonColumn.key] = oldCascadeCellValue;
+        }
+      }
+    }
+  }
+};
