@@ -11,6 +11,10 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   const [showInboxDrawer, setShowInboxDrawer] = useState(false);
   const [notificationList, setNotificationList] = useState([]);
   const [unseen, setUnseen] = useState(0);
+  const [unseenByType, setUnseenByType] = useState({
+    [NOTIFICATION_TYPE.GENERAL]: 0,
+    [NOTIFICATION_TYPE.PROJECT]: 0,
+  });
   const [allNotificationCount, setAllNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -90,7 +94,13 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
     return notificationAPI.listAllNotifications(page, perPage, { signal: controller.signal })
       .then((res) => {
-        const count = res.data.general.unseen_count + res.data.project.unseen_count;
+        const generalUnseenCount = res.data.general.unseen_count || 0;
+        const projectUnseenCount = res.data.project.unseen_count || 0;
+        const count = generalUnseenCount + projectUnseenCount;
+        setUnseenByType({
+          [NOTIFICATION_TYPE.GENERAL]: generalUnseenCount,
+          [NOTIFICATION_TYPE.PROJECT]: projectUnseenCount,
+        });
         // First load
         if (!type) {
           setUnseen(count);
@@ -159,6 +169,10 @@ export const NotificationProvider = ({ children, projectUuid }) => {
             prev.map(item => item.id === notice.id ? { ...item, seen: true } : item)
           );
           setUnseen(u => Math.max(0, u - 1));
+          setUnseenByType(prev => ({
+            ...prev,
+            [NOTIFICATION_TYPE.GENERAL]: Math.max(0, prev[NOTIFICATION_TYPE.GENERAL] - 1),
+          }));
         })
         .catch(err => {
           const errorMsg = Utils.getErrorMsg(err);
@@ -180,6 +194,10 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         .then(() => {
           setUnseen(unseen - unSeenList.length);
           setNotificationList(prev => prev.map(item => ({ ...item, seen: true })));
+          setUnseenByType(prev => ({
+            ...prev,
+            [NOTIFICATION_TYPE.GENERAL]: Math.max(0, prev[NOTIFICATION_TYPE.GENERAL] - unSeenList.length),
+          }));
         })
         .catch(err => {
           const errorMsg = Utils.getErrorMsg(err);
@@ -194,8 +212,12 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       }, 0);
       Promise.all(unSeenList.map(item => notificationAPI.markAllProjectRead(item.project_uuid)))
         .then(() => {
-          setUnseen(unseen - count);
+          setUnseen(Math.max(0, unseen - count));
           setNotificationList([]);
+          setUnseenByType(prev => ({
+            ...prev,
+            [NOTIFICATION_TYPE.PROJECT]: Math.max(0, prev[NOTIFICATION_TYPE.PROJECT] - count),
+          }));
         })
         .catch(err => {
           const errorMsg = Utils.getErrorMsg(err);
@@ -224,6 +246,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     allNotificationCount,
     setAllNotificationCount,
     unseen,
+    unseenByType,
     loading,
     loadingMore,
     fetchNotifications, // Fetch project

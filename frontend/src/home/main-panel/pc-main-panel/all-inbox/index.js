@@ -15,6 +15,7 @@ const AllInbox = () => {
   const {
     loading, loadingMore, notificationList, allNotificationCount,
     markAsReadByTab, markAllAsReadByTab, fetchAllNotifications,
+    unseenByType,
     showInboxDrawer, setShowInboxDrawer, setNotificationList, setAllNotificationCount,
   } = useNotification();
   const [curTab, setCurTab] = useState(NOTIFICATION_TYPE.GENERAL); // general or project
@@ -22,6 +23,8 @@ const AllInbox = () => {
   const inboxPanelRef = useRef(null);
   const bar = BAR_TYPE_CONFIG[BAR_TYPE.INBOX];
   const title = bar.name;
+  const projectUnreadCount = unseenByType?.[NOTIFICATION_TYPE.PROJECT] || 0;
+  const projectUnreadCountText = projectUnreadCount > 99 ? '99+' : projectUnreadCount;
 
   const onScroll = useCallback((e) => {
     const hasMore = notificationList.length < allNotificationCount;
@@ -78,7 +81,19 @@ const AllInbox = () => {
           value={curTab}
           tabs={[
             { value: NOTIFICATION_TYPE.GENERAL, label: gettext('General') },
-            { value: NOTIFICATION_TYPE.PROJECT, label: gettext('Project') },
+            {
+              value: NOTIFICATION_TYPE.PROJECT,
+              label: (
+                <span className="sea-qa-inbox-tab-label">
+                  {gettext('Project')}
+                  {projectUnreadCount > 0 && (
+                    <span className="sea-qa-inbox-tab-badge" title={projectUnreadCountText}>
+                      {projectUnreadCountText}
+                    </span>
+                  )}
+                </span>
+              ),
+            },
           ]}
           onChange={setCurTab}
         />
