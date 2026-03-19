@@ -5,8 +5,8 @@ import logging
 import json
 import datetime
 import sys
-import uuid
 from email.utils import formatdate, make_msgid
+from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -33,9 +33,9 @@ from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_site_record_details, list_email_record_details, init_notion_seadb_table, list_notion_record_details
+    list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
+    init_notion_seadb_table, list_notion_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
-
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
@@ -45,6 +45,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
+from seahub.project.github_issues_api import GitHubAPI, GitHubAPIException, GitHubAppNotInstalled
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -603,6 +604,95 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class GithubLocalEditorView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        record_id = request.data.get('record_id')
+        comment = request.data.get('comment', '')
+
+        if not record_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Missing record_id.')
+        try:
+            record_id = int(record_id)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_id invalid.')
+        if not comment or not isinstance(comment, str) or not comment.strip():
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Comment is invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.GITHUB_ISSUE.value:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type invalid.')
+
+        if not project_connection.is_active:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection is inactive.')
+
+        config = decrypt_config(json.loads(project_connection.config))
+        installation_id = config.get('installation_id')
+        if not installation_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'GitHub auth config missing.')
+
+        seadb_api = SeaDBAPI(username)
+        try:
+            issue_record = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, record_id)
+        except Exception as e:
+            logger.error(f'get github issue details error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        issue_number = issue_record.get('issue_number')
+        server_url = config.get('repository')
+        try:
+            path = urlparse(server_url).path
+            parts = path.strip("/").split("/")
+            repo_owner, repo_name = parts[0], parts[1]
+        except Exception as e:
+            logger.error(f"Github repository is invalid {e}")
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Github repository is invalid.')
+
+        try:
+            github_api = GitHubAPI(installation_id=installation_id)
+            comment_data = github_api.create_issue_comment(repo_owner, repo_name, issue_number, comment.strip())
+        except GitHubAppNotInstalled as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+        except FileNotFoundError as e:
+            return api_error(status.HTTP_404_NOT_FOUND, str(e))
+        except GitHubAPIException as e:
+            logger.error(f'create github issue comment error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        except Exception as e:
+            logger.error(f'create github issue comment error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        try:
+            params = {
+                'connection_id': project_connection.id,
+                'connection_type': ConnectionType.GITHUB_ISSUE.value,
+            }
+            res, status_code = manual_sync_connection(params)
+        except Exception as e:
+            logger.warning(f'trigger sync for connection {connection_id} error: {e}')
+
+        return Response({'comment': comment_data}, status=status.HTTP_201_CREATED)
 
 
 class DiscourseWebhookView(APIView):

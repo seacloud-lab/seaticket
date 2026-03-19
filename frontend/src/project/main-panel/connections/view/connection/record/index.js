@@ -38,7 +38,7 @@ const initColumns = [
   { key: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED, name: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED },
 ];
 
-const Record = ({ projectUuid, permission, toggleBar }) => {
+const Record = ({ projectUuid, permission, toggleBar, editorAPI }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
   const { getRow, getTableByName, modifyRow, modifyRowLink } = useData();
   const { connections } = useConnections();
@@ -213,7 +213,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         </div>
         <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
           <div className="sea-connection-record-details-container">
-            <ConnectionResourceDetails resource={resource} connection={connection} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
+            <ConnectionResourceDetails resource={resource} connection={connection} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} editorAPI={editorAPI} />
           </div>
           {details && (<div className="sea-connection-record-details-others"></div>)}
         </div>

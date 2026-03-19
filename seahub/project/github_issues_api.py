@@ -14,7 +14,9 @@ class GitHubAppNotInstalled(Exception):
 
 
 class GitHubAPI:
-    def __init__(self, installation_id, timeout=60):
+    def __init__(self, installation_id=None, timeout=60):
+        if not installation_id:
+            raise ValueError('Either installation_id is required.')
         self.installation_id = installation_id
         self.app_id = str(GITHUB_APP_ID)
         self.app_private_key = GITHUB_PRIVATE_KEY
@@ -69,6 +71,26 @@ class GitHubAPI:
         elif response.status_code >= 400:
             raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
         return response.json()
+
+    def _request_post(self, url, payload=None):
+        response = requests.post(url, headers=self.headers, json=payload, timeout=self.timeout)
+        if response.status_code == 404:
+            raise FileNotFoundError(f'Not found: {url}')
+        elif response.status_code >= 400:
+            raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
+        return response.json()
+
+    def create_issue_comment(self, owner, repo, issue_number, body):
+        url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        payload = {"body": body}
+        comment_data = self._request_post(url, payload=payload)
+        user = comment_data.get('user') or {}
+        print(comment_data)
+        return {
+            'author': user.get('login', ''),
+            'content': comment_data.get('body', ''),
+            'created_time': comment_data.get('created_at', ''),
+        }
 
     def get_installation_repositories(self, per_page=30, page=1):
         if not (1 <= per_page <= 100):

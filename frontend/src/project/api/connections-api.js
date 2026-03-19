@@ -248,6 +248,11 @@ class ConnectionsAPI {
     return this.req.delete(url, { data: { record_ids: recordIDs } });
   }
 
+  createGithubIssueComment(projectUuid, connectionID, recordID, comment) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/github-issue-editor/';
+    return this.req.post(url, { record_id: recordID, comment });
+  }
+
   listGitHubRepositories(projectUuid) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/repositories/';
     return this.req.get(url);

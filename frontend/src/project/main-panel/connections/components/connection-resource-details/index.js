@@ -1,20 +1,26 @@
 import React, { useEffect, useMemo, useCallback, useState } from 'react';
-import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
-import { gettext, mediaUrl } from '@/constants';
+import { Button } from 'reactstrap';
+import { LongTextInlineEditor } from '@seafile/seafile-editor';
+import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError, toaster } from '@/components';
+import { gettext, mediaUrl, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
 import { initConnectionResourceDetails } from '../../utils';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, updateDetails }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, updateDetails, editorAPI }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
   const [localEmailDetails, setLocalEmailDetails] = useState([]);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
 
   const type = useMemo(() => resource.type, [resource]);
 
@@ -34,12 +40,21 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   }, [details, type, localEmailDetails]);
 
   useEffect(() => {
+    document.body.classList.add('github-issue-comment-editor');
+    return () => {
+      document.body.classList.remove('github-issue-comment-editor');
+    };
+  }, []);
+
+  useEffect(() => {
     setStatus('loading');
     connectionsAPI.getConnectionRowDetail(projectUuid, resource.connection_id, { _pk: resource._id }).then((res) => {
       const details = initConnectionResourceDetails(resource.type, res.data);
       setDetails(details?.details);
       updateDetails(details);
       setStatus('loaded');
+      setComment('');
+      setEditorKey(prev => prev + 1);
     }).catch((error) => {
       const errMessage = Utils.getErrorMsg(error);
       setErrorMessage(errMessage);
@@ -69,6 +84,42 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     };
     setLocalEmailDetails(prev => [...prev, nextDetail]);
   }, [connection, details]);
+
+  const onCommentChange = useCallback((value) => {
+    if (isLongTextValueExceedLimit(value)) {
+      toaster.closeAll();
+      toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
+      return;
+    }
+    setComment(value);
+  }, []);
+
+  const handleSubmitComment = useCallback(() => {
+    const content = comment?.text ? comment.text.trim() : (typeof comment === 'string' ? comment.trim() : '');
+    if (!content || isSubmitting) return;
+    setIsSubmitting(true);
+    connectionsAPI.createGithubIssueComment(projectUuid, resource.connection_id, resource._id, content).then((res) => {
+      const newComment = res?.data?.comment;
+      if (newComment) {
+        setDetails((prev) => {
+          const next = Array.isArray(prev) ? prev.slice(0) : [];
+          next.push({
+            author: newComment.author || '',
+            time: newComment.created_time || '',
+            body: newComment.content || '',
+          });
+          return next;
+        });
+        setComment('');
+        setEditorKey(prev => prev + 1);
+      }
+      setIsSubmitting(false);
+    }).catch((error) => {
+      const errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+      setIsSubmitting(false);
+    });
+  }, [comment, isSubmitting, projectUuid, resource]);
 
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
@@ -101,6 +152,33 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
             <CommonDetailItem detail={detail} type={type} key={index} />
           );
         })}
+        {type === CONNECTION_TYPE.GITHUB_ISSUE && (
+          <div className="sea-ticket-connection-github-comment-editor github-issue-comment-editor">
+            <LongTextInlineEditor
+              key={editorKey}
+              isAlwaysEnableEdit={true}
+              lang={lang}
+              headerName={gettext('Comment')}
+              value={comment || ''}
+              autoSave={false}
+              saveDelay={20 * 1000}
+              isCheckBrowser={true}
+              isImageUploadOnly={false}
+              isSupportMultipleFiles={false}
+              editorApi={editorAPI}
+              onSaveEditorValue={onCommentChange}
+            />
+            <div className="github-comment-actions">
+              <Button
+                color="primary"
+                onClick={handleSubmitComment}
+                disabled={isSubmitting || !(comment?.text ? comment.text.trim() : (typeof comment === 'string' ? comment.trim() : ''))}
+              >
+                {gettext('Submit')}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

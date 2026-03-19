@@ -3,3 +3,25 @@
   overflow: auto;
   padding: 0 16px;
 }
+
+.sea-ticket-connection-github-comment-editor {
+  margin: 16px 0 24px;
+}
+
+.sea-ticket-connection-github-comment-editor .sf-long-text-inline-editor-container {
+  min-height: 140px;
+}
+
+.github-issue-comment-editor .sf-insert-menu-popover #seafile_image {
+  display: none !important;
+}
+
+.github-issue-comment-editor .sf-insert-image-menu-popover {
+  display: none !important;
+}
+
+.sea-ticket-connection-github-comment-editor .github-comment-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
