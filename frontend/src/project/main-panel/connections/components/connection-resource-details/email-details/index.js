@@ -9,6 +9,8 @@ import './index.css';
 
 const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5);
+  const [isLastExpand, setIsLastExpanded] = useState(false);
+
   const { email } = getInfoByEmailFrom(details[0]['email_from']);
 
   if (details.length === 0) {
@@ -20,7 +22,7 @@ const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
   }
 
   return (
-    <div className={classnames('sea-ticket-connection-email-record', className)}>
+    <div className={classnames('sea-ticket-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
       {!isShowAll && (
         <div className="sea-ticket-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
           <div className="email-avatar">
@@ -44,7 +46,17 @@ const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
       )}
       {details.map((detail, index) => {
         if (!isShowAll && index < (details.length - 1)) return null;
-        return (<Item key={index} detail={detail} isExpand={index === details.length - 1} projectUuid={projectUuid} connection_id={connection_id} />);
+        return (
+          <Item
+            key={index}
+            isLast={index === (details.length - 1)}
+            detail={detail}
+            isExpand={index === details.length - 1}
+            projectUuid={projectUuid}
+            connection_id={connection_id}
+            setIsLastExpanded={setIsLastExpanded}
+          />
+        );
       })}
     </div>
   );

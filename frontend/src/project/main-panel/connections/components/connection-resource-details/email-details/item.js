@@ -7,7 +7,7 @@ import HTMLContentWrapper from './html-content';
 
 import './index.css';
 
-const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
+const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
 
   const ref = useRef(null);
@@ -33,6 +33,8 @@ const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
     // HTML Content contains '```' at begin and end
     return isHTMLContent ? value.trim().substring(3, value.length - 3) : value;
   }, [isHTMLContent, content, HTMLContent]);
+
+  const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
 
   const addQuoteToggleBtn = useCallback(() => {
     const quotedEmails = ref.current.getElementsByTagName('blockquote');
@@ -81,6 +83,11 @@ const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
     }
   }, [isExpanded]);
 
+  useEffect(() => {
+    if (!isLast) return;
+    setIsLastExpanded(isExpanded);
+  }, [isLast, isExpanded]);
+
   if (!isExpanded) {
     return (
       <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
@@ -93,8 +100,8 @@ const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
             <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
-          <div className="email-record-info-to">
-            {gettext('To')}: {detail['email_to']?.split(',')?.join(', ')}
+          <div className="email-record-info-to" title={emailTo}>
+            {gettext('To')}: {emailTo}
           </div>
         </div>
       </div>
@@ -113,8 +120,8 @@ const Item = ({ isExpand, detail, projectUuid, connection_id }) => {
             <span className="email-record-info-content text-truncate"></span>
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
-          <div className="email-record-info-to">
-            {gettext('To')}: {detail['email_to']?.split(',')?.join(', ')}
+          <div className="email-record-info-to" title={emailTo}>
+            {gettext('To')}: {emailTo}
           </div>
         </div>
       </div>
