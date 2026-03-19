@@ -1,9 +1,8 @@
 .sea-ai-chat-customize-definition {
   display: inline-flex;
   flex-direction: column;
-  /* 48px is the width of the more definition button (margin + button width) */
-  width: calc((100% - 20px - 48px) / 3);
-  height: 135px;
+  justify-content: space-between;
+  height: 156px;
   flex-shrink: 0;
   margin-left: 8px;
   margin-bottom: 12px !important;
@@ -11,7 +10,6 @@
   padding: 16px 16px 8px 16px;
   background: #F7F7F5;
   border-radius: 8px;
-  box-shadow: 0px 2px 4px #ECEDF0;
   cursor: pointer;
 }
 
@@ -35,6 +33,10 @@
   background-color: var(--bs-th-fifth-bg);
   flex-shrink: 0;
   color: var(--bs-body-secondary-color);
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-simple-info {
+  height: 44px;
 }
 
 .sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-title-content {
@@ -70,7 +72,8 @@
   font-size: 13px;
   -webkit-line-clamp: 2;
   line-height: 20px !important;
-  max-height: 63px;
+  max-height: 40px;
+  height: 100%;
   -webkit-box-orient: vertical;
   word-wrap: break-word;
   display: -webkit-box;

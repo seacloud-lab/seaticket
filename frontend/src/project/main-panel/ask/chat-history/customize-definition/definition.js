@@ -21,6 +21,14 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
     openDefinitionRecord && openDefinitionRecord(event, source);
   }, [source, onClick, openDefinitionRecord]);
 
+  const definitionWidth = useMemo(() => {
+    // 48px is the width of the more definition button (margin + button width)
+    // 8px is the width of margin
+    const horizontalGap = sources.length < 3 ? `${Math.max(sources.length - 1, 0) * 8}px` : '16px';
+    const offsetWidth = sources.length > 3 ? '48px' : '0px';
+    return `calc((100% - ${horizontalGap} - ${offsetWidth}) / 3)`;
+  }, [sources]);
+
   if (!element) return null;
 
   const { identifier, icon, title, content, mtime } = source;
@@ -30,6 +38,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
   return (
     <div
       className={classnames('sea-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
+      style={{ width: definitionWidth }}
       onClick={handleClick}
       data-id={element.id}
       { ...attributes }
