@@ -77,6 +77,11 @@
 
 .sea-connection-record-details .sea-ticket-connection-email-resource-details {
   overflow-y: unset;
+  padding-bottom: 28px !important;
+}
+
+.sea-connection-record-details .sea-ticket-connection-email-resource-details.last-record-expand {
+  padding-bottom: 0 !important;
 }
 
 .sea-connection-record-details .sea-ticket-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
