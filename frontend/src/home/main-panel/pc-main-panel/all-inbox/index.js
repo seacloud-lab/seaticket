@@ -87,9 +87,10 @@ const AllInbox = () => {
                 <span className="sea-qa-inbox-tab-label">
                   {gettext('Project')}
                   {projectUnreadCount > 0 && (
-                    <span className="sea-qa-inbox-tab-badge" title={projectUnreadCountText}>
-                      {projectUnreadCountText}
-                    </span>
+                    <>
+                      {`(${projectUnreadCountText})`}
+                      <span className="sea-qa-inbox-tab-badge" />
+                    </>
                   )}
                 </span>
               ),

@@ -37,21 +37,17 @@
 .sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  position: relative;
 }
 
 .sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-badge {
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  line-height: 1;
-  color: #fff;
-  background: var(--bs-primary);
+  width: 8px;
+  height: 8px;
+  right: -8px;
+  top: 0px;
+  border-radius: 50%;
+  background-color: #FC6440;
+  position: absolute;
 }
 
 .sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions {
