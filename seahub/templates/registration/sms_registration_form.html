@@ -47,9 +47,6 @@
 
             <input id="id_sms_code" type="text" name="sms_code" placeholder="请输入短信验证码" value="" class="input name-input w-100" style="height: 40px; box-sizing: border-box;" autocomplete="off" />
             <p class="error mt-2 mb-2">{{ error_msg }}</p>
-            {% if cn_force_check_user_agreement %}
-            {% include "registration/user_terms_check.html" %}
-            {% endif %}
             <button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
         </form>
         <div class="login-panel-bottom-container">
@@ -67,12 +64,7 @@
 $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
 
 document.addEventListener("DOMContentLoaded", function() {
-  var userTermsDiv = document.querySelector('.user-terms-label');
-  if (userTermsDiv) {
-      document.getElementById('id_sms_code').style.marginBottom = '0px';
-  } else {
-      document.getElementById('id_sms_code').style.marginBottom = '12px';
-  }
+  document.getElementById('id_sms_code').style.marginBottom = '12px';
 });
 
 $("body").on('click', '.password-toggle', function(){
@@ -187,12 +179,6 @@ $('#signup-form').on('submit', function(){
             $('.error').html(passwd_tip).removeClass('hide');
             return false;
         }
-        {% if cn_force_check_user_agreement %}
-            if (!$('.user-terms-input').prop('checked')) {
-                showUserTermsTip();
-                return false;
-            }
-        {% endif %}
 });
 
 // for refresh page
