@@ -34,6 +34,22 @@
   height: 40px;
 }
 
+.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-label {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-badge {
+  width: 8px;
+  height: 8px;
+  right: -8px;
+  top: 0px;
+  border-radius: 50%;
+  background-color: #FC6440;
+  position: absolute;
+}
+
 .sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions {
   display: flex;
   cursor: pointer;
