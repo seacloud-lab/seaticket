@@ -48,7 +48,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
       <div className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">
           <div className="sea-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
-            <img src={icon} alt={''} />
+            <img src={icon} alt="" />
           </div>
           {(mtime) && (
             <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
