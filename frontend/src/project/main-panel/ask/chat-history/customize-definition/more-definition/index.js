@@ -11,6 +11,7 @@ const initDefinitionIndex = 4;
 const MoreDefinition = ({ element, attributes, editor, sources, settings, onClick, openDefinitionRecord }) => {
   const [isShowMore, setIsShowMore] = useState(false);
   const [definitionIndex, setDefinitionIndex] = useState(initDefinitionIndex);
+  const [popoverWidth, setPopoverWidth] = useState(0);
 
   const moreRef = useRef();
 
@@ -20,8 +21,11 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
   const sourcesCount = useMemo(() => sources.length, [sources]);
 
   const openShowMore = useCallback(() => {
+    const siblingWidth = moreRef.current?.previousElementSibling?.getBoundingClientRect()?.width;
+    const width = Number.isFinite(siblingWidth) ? `${siblingWidth}px` : undefined;
+    setPopoverWidth(width);
     setIsShowMore(true);
-  }, []);
+  }, [moreRef]);
 
   const hideShowMore = useCallback(() => {
     setIsShowMore(false);
@@ -73,7 +77,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
           hidePopover={hideShowMore}
           hidePopoverWithEsc={hideShowMore}
         >
-          <div className="sea-ai-chat-customize-definitions-container" style={{ width: moreRef.current?.previousElementSibling?.getBoundingClientRect()?.width }}>
+          <div className="sea-ai-chat-customize-definitions-container" style={{ width: popoverWidth }}>
             <div className="sea-ai-chat-customize-definitions-title">
               <IconButton icon="arrow-left" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
               <div className="sea-ai-chat-customize-definitions-index">
@@ -89,6 +93,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
               settings={settings}
               onClick={handleClick}
               openDefinitionRecord={handleOpenDefinitionRecord}
+              disableAutoWidth={true}
             />
           </div>
         </CustomizePopover>
