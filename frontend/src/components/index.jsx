@@ -62,7 +62,7 @@ import Tooltip from './tooltip';
 import PriorityEditor, { PriorityIconBtn } from './priority-editor';
 import PathRedirection from './path-redirection';
 import CustomizeLabel from './customize-label';
-import { IconTextBtn, SecondaryBtn } from './btn';
+import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
 
 export {
   FixedWidthTable,
@@ -134,4 +134,5 @@ export {
   CustomizeLabel,
   IconTextBtn,
   SecondaryBtn,
+  CustomizeBtn,
 };
