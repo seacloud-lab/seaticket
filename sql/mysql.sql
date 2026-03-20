@@ -277,16 +277,13 @@ CREATE TABLE `profile_profile` (
   `contact_email` varchar(225) DEFAULT NULL,
   `institution` varchar(225) DEFAULT NULL,
   `list_in_address_book` tinyint(1) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
   `need_show_video` tinyint(1) NOT NULL DEFAULT 0,
   `unit` longtext DEFAULT NULL,
-  `sms_2fa` tinyint(1) DEFAULT 0,
   `is_manually_set_contact_email` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user` (`user`),
   UNIQUE KEY `login_id` (`login_id`),
   UNIQUE KEY `profile_profile_contact_email_0975e4bf_uniq` (`contact_email`),
-  UNIQUE KEY `phone` (`phone`),
   KEY `profile_profile_institution_c0286bd1` (`institution`),
   KEY `profile_profile_list_in_address_book_b1009a78` (`list_in_address_book`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -298,9 +298,6 @@ class SysAdminServiceApi {
       case 'contact_email':
         formData.append('contact_email', value);
         break;
-      case 'phone':
-        formData.append('phone', value);
-        break;
       case 'reference_id':
         formData.append('reference_id', value);
         break;

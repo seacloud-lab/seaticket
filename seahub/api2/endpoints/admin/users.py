@@ -79,7 +79,7 @@ def create_user_info(request, email, nickname, contact_email):
 
 def update_user_info(request, user, password, is_active, is_staff,
                      nickname, login_id, contact_email, institution_name,
-                     id_in_org, unit, phone):
+                     id_in_org, unit):
 
     email = user.username
 
@@ -115,9 +115,6 @@ def update_user_info(request, user, password, is_active, is_staff,
         Profile.objects.add_or_update(email, contact_email=contact_email)
         key = normalize_cache_key(email, CONTACT_CACHE_PREFIX)
         cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
-
-    if phone is not None:
-        Profile.objects.add_or_update(email, phone=phone)
 
     if institution_name is not None:
         Profile.objects.add_or_update(email, institution=institution_name)
@@ -165,7 +162,6 @@ def get_user_info(email):
 
     info['is_staff'] = user.is_staff
     info['is_active'] = user.is_active
-    info['phone'] = profile.phone if profile and profile.phone else ''
 
     info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
 
@@ -438,16 +434,6 @@ class AdminUser(APIView):
             if Profile.objects.filter(contact_email=contact_email).exists():
                 error_msg = f'Contact email {contact_email} exists.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        phone = request.data.get('phone')
-        if phone is not None and phone.strip() != '':
-            phone = phone.strip()
-            if not re.match(r'^1[3456789]\d{9}$', phone):
-                return api_error(status.HTTP_400_BAD_REQUEST, 'phone invalid')
-            if Profile.objects.filter(phone=phone).exists():
-                error_msg = f'Phone {phone} exists.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         org_id = -1
         try:
             orgs = Organization.objects.get_orgs_by_user(email)
@@ -494,7 +480,7 @@ class AdminUser(APIView):
         try:
             update_user_info(request, user=user_obj, password=password, is_active=is_active, is_staff=is_staff,
                              nickname=name, login_id=login_id, contact_email=contact_email,
-                             institution_name=institution, id_in_org=id_in_org, unit=unit, phone=phone)
+                             institution_name=institution, id_in_org=id_in_org, unit=unit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
