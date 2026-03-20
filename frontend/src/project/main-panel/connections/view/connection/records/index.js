@@ -617,7 +617,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           row={currentRow}
           connection={connection}
           columns={allColumns.current}
-          relatedUrl={getOriginalPageUrl(connection, currentRow, allColumns.current)}
           onClose={closeAll}
         />
       )}

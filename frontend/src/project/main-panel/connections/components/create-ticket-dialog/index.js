@@ -18,7 +18,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 
 import './index.css';
 
-const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns, onClose }) => {
+const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) => {
   const [isLoading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrMessage] = useState('');
@@ -89,8 +89,8 @@ const CreateTicketDialog = ({ projectUuid, row, relatedUrl, connection, columns,
   useEffect(() => {
     setLoading(true);
     connectionsAPI.convertRecordToTicket(projectUuid, connection.id, row._id).then(res => {
-      let { title, content, assignees, type, tags, priority } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, ...res?.data };
-      const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+      let { title, content, assignees, type, tags, priority, related_url } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, related_url: '', ...res?.data };
+      const suffix = `${gettext('Related record')}: ${related_url || ''}`;
       const initContent = content ? `${content}\n\n${suffix}` : suffix;
       setTitle(title || '');
       setContent(initContent || '');

@@ -93,5 +93,5 @@ def github_issue_connection(real_project, project_creator):
         project=real_project,
         connection_type='github_issue',
         name='gh-conn',
-        config={},
+        config={'repository': 'https://github.com/abc/def'},
     )

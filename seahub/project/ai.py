@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
+from urllib.parse import urlparse
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -93,6 +95,10 @@ class ConvertRecordToTicket(APIView):
                 )
                 title = topics[0].get('title', '') if topics else ''
                 topic_id = topics[0].get('topic_id') if topics else ''
+                slug = topics[0].get('slug') if topics else ''
+                config = json.loads(connection.config)
+                discourse_forum_url = config.get('url')
+                related_url = discourse_forum_url.rstrip('/') + '/t/' + slug + '/' + str(topic_id)
                 default_title = title
                 replies = discourse_db_api.get_replies_by_topic_id(
                     connection_id, topic_id
@@ -123,7 +129,11 @@ class ConvertRecordToTicket(APIView):
                 title = issue[0].get('title', '') if issue else ''
                 default_title = title
                 body_content = issue[0].get('content', '') if issue else ''
-                issue_id = issue[0].get('issue_id') if issue else ''
+                config = json.loads(connection.config)
+                repository = config.get('repository')
+                issue_number = issue[0].get('issue_number')
+                related_url = f'{repository}/issues/' + str(issue_number)
+                issue_id = issue[0].get('issue_id')
                 comments = github_db_api.get_comments_by_issue_id(
                     connection_id, issue_id
                 )
@@ -150,6 +160,9 @@ class ConvertRecordToTicket(APIView):
                     connection_id, record_id
                 )
                 title = ''
+                email_id = emails[0].get('email_id') if emails else ''
+                origin_thread_id = emails[0].get('origin_thread_id') if emails else ''
+                related_url = f'https://app.fastmail.com/mail/all/{origin_thread_id}.{email_id}' if origin_thread_id and email_id else ''
                 for email in emails:
                     if not title:
                         title = email.get('title')
@@ -187,9 +200,11 @@ class ConvertRecordToTicket(APIView):
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         return Response({
             'title': ai_title,
             'content': ai_content,
+            'related_url': related_url,
             'linked_connection_records': [f'{connection_id}_{record_id}'],
         })
 
