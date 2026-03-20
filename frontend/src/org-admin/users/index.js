@@ -25,7 +25,7 @@ class OrgUsers extends Component {
       orgUsers: [],
       page: 1,
       pageNext: false,
-      perPage: 25,
+      perPage: 5,
       isShowAddOrgAdminDialog: false,
       isShowAddOrgUserDialog: false,
       isShowInviteUsersDialog: false,
