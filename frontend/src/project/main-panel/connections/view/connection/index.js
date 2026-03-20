@@ -4,7 +4,7 @@ import Record from './record';
 import { useConnectionsPage } from '../../hooks';
 
 const Connection = (props) => {
-  const { isLoading, childrenPageSlugId } = useConnectionsPage();
+  const { isLoading, childrenPageSlugId, onRefresh } = useConnectionsPage();
 
   if (isLoading) return null;
 
@@ -13,7 +13,7 @@ const Connection = (props) => {
       {childrenPageSlugId ? (
         <Record { ...props } />
       ) : (
-        <Records { ...props } />
+        <Records { ...props } onRefresh={onRefresh} />
       )}
     </>
   );

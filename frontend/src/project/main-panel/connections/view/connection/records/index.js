@@ -27,7 +27,7 @@ import { useData, useTags } from '@/project/hooks';
 
 import './index.css';
 
-const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
+const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }) => {
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
 
@@ -551,6 +551,32 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     generateMarkAsOutdatedOptions, generateAIOptions, generateCopyOriginalLinkOption,
   ]);
 
+  const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {
+    if (!api?.modifyRow) return;
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    const modifyPromises = rowIds.map((rowId) => {
+      const rowUpdate = idRowUpdates?.[rowId] || {};
+      return api.modifyRow(rowId, rowUpdate, isCopyPaste, { data: { columns: allColumns.current }, typesData, tagsData });
+    });
+    return Promise.all(modifyPromises).then(() => {
+      setIsShowRowDetailsDialog(false);
+      onRefresh();
+    });
+  }, [api, data, onRefresh]);
+
+  const createMoreOptions = useCallback((resource) => {
+    if (!resource?._id) return [];
+    const row = resource;
+    return createContextMenuOptions({
+      isGroupView: false,
+      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
+      table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
+      rowMetrics: { idSelectedRowMap: {} },
+      rowGetterByIndex: () => row,
+      modifyRows: modifyRowsByDetailsMenu,
+    });
+  }, [createContextMenuOptions, modifyRowsByDetailsMenu]);
+
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
@@ -609,6 +635,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           columns={allColumns.current}
           switchResource={switchResource}
           onToggle={closeAll}
+          createMoreOptions={createMoreOptions}
         />
       )}
       {isTicketDialogOpen && (
