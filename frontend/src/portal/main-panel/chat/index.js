@@ -61,6 +61,7 @@ const Main = ({ title, settings }) => {
                 settings={settings}
                 api={chatAPI}
                 canAddDocuments={false}
+                canSelectModel={false}
               />
               <Documents />
             </div>

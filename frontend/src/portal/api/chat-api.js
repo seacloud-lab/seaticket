@@ -46,8 +46,13 @@ class ChatAPI {
 
   // Portal Chat APIs
   sendChatMessage(params) {
+    const validParams = {};
+    validParams.clear_context = params.clear_context;
+    validParams.query = params.query;
+    validParams.session_uuid = params.session_uuid;
+    validParams.stream = params.stream;
     const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
-    return this.req.post(url, params);
+    return this.req.post(url, validParams);
   }
 
   _handleEventStreamRequest(url, form, options = {}) {
@@ -92,8 +97,13 @@ class ChatAPI {
   }
 
   sendChatMessageByStream(params, options = {}) {
+    const validParams = {};
+    validParams.clear_context = params.clear_context;
+    validParams.query = params.query;
+    validParams.session_uuid = params.session_uuid;
+    validParams.stream = params.stream;
     const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
-    return this._handleEventStreamRequest(url, params, options);
+    return this._handleEventStreamRequest(url, validParams, options);
   }
 
   listChatSessions(projectUuid) {
