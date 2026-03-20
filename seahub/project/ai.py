@@ -130,14 +130,10 @@ class ConvertRecordToTicket(APIView):
                 default_title = title
                 body_content = issue[0].get('content', '') if issue else ''
                 config = json.loads(connection.config)
-                server_url = config.get('repository')
-                url_parsed = urlparse(server_url)
-                base_url = url_parsed.scheme + "://" + url_parsed.netloc
-                parts = url_parsed.path.strip("/").split("/")
-                repo_owner, repo_name = parts[0], parts[1]
-                issue_number = issue[0].get('issue_number') if issue else ''
-                related_url = f'{base_url}/{repo_owner}/{repo_name}/issues/' + str(issue_number) if issue_number else ''
-                issue_id = issue[0].get('issue_id') if issue else ''
+                repository = config.get('repository')
+                issue_number = issue[0].get('issue_number')
+                related_url = f'{repository}/issues/' + str(issue_number)
+                issue_id = issue[0].get('issue_id')
                 comments = github_db_api.get_comments_by_issue_id(
                     connection_id, issue_id
                 )
