@@ -20,6 +20,7 @@
   width: fit-content;
   max-width: fit-content;
   z-index: 9999;
+  border-radius: 4px !important;
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definitions-container {
@@ -67,6 +68,7 @@
   background-color: inherit;
   box-shadow: none;
   padding-top: 12px;
+  height: 152px;
 }
 
 .sea-ai-chat-customize-definitions-popover .sea-ai-chat-customize-definition:hover {
