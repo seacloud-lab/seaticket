@@ -14,6 +14,7 @@ from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
+from seahub.portal.views import _get_portal_settings
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -60,6 +61,12 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         llm_model
         for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
     ]
+
+    portal_settings = _get_portal_settings(project)
+    enable_portal = portal_settings.get('enable_portal', False)
+
+    if not enable_portal and request.resolver_match.url_name == 'project_support_portal_view':
+        return render_error(request, _('Portal is not enabled'))
 
     return_dict = {
         'version': SEAQA_VERSION,
