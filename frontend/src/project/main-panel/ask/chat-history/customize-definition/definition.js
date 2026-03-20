@@ -23,10 +23,8 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   const definitionWidth = useMemo(() => {
     // 48px is the width of the more definition button (margin + button width)
-    // 8px is the width of margin
-    const horizontalGap = sources.length < 3 ? `${Math.max(sources.length - 1, 0) * 8}px` : '16px';
     const offsetWidth = sources.length > 3 ? '48px' : '0px';
-    return `calc((100% - ${horizontalGap} - ${offsetWidth}) / 3)`;
+    return `calc((100% - 16px - ${offsetWidth}) / 3)`;
   }, [sources]);
 
   if (!element) return null;
@@ -49,11 +47,9 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
           <div className="sea-ai-chat-customize-definition-title">{title}</div>
         </div>
       </div>
-      {content && (
-        <div className="sea-ai-chat-customize-definition-content">
-          {removeTextMark(content)}
-        </div>
-      )}
+      <div className="sea-ai-chat-customize-definition-content">
+        {removeTextMark(content)}
+      </div>
       <div className="sea-ai-chat-customize-definition-content-divider"></div>
       <div className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">

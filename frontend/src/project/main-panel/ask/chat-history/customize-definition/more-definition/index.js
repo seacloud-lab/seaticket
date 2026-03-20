@@ -22,9 +22,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
 
   const openShowMore = useCallback(() => {
     const siblingWidth = moreRef.current?.previousElementSibling?.getBoundingClientRect()?.width;
-    const gap = 8;
-    const moreWidth = 48;
-    const width = Number.isFinite(siblingWidth) ? `${siblingWidth + gap / 3 + moreWidth / 3}px` : undefined;
+    const width = Number.isFinite(siblingWidth) ? `${siblingWidth}px` : undefined;
     setPopoverWidth(width);
     setIsShowMore(true);
   }, [moreRef]);
