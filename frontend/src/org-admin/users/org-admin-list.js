@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import User from './user';
-import CenteredLoading from '@/components/centered-loading';
+import { FixedWidthTable, CenteredLoading } from '@/components';
 
 import './org-admin-list.css';
 
@@ -43,30 +43,23 @@ class OrgAdminList extends React.Component {
 
     return (
       <>
-        <table>
-          <thead>
-            <tr>
-              {this.columns.map(c => (<th width={c.width} key={c.key}>{c.name}</th>))}
-            </tr>
-          </thead>
-          <tbody>
-            {orgAdminUsers.map(user => {
-              return (
-                <User
-                  key={user.id}
-                  user={user}
-                  columns={this.columns}
-                  currentTab={this.props.currentTab}
-                  isItemFreezed={this.state.isItemFreezed}
-                  toggleDelete={this.props.toggleDelete}
-                  toggleRevokeAdmin={this.props.toggleRevokeAdmin}
-                  onFreezedItem={this.onFreezedItem}
-                  onUnfreezedItem={this.onUnfreezedItem}
-                />
-              );
-            })}
-          </tbody>
-        </table>
+        <FixedWidthTable columns={this.columns}>
+          {orgAdminUsers.map(user => {
+            return (
+              <User
+                key={user.id}
+                user={user}
+                columns={this.columns}
+                currentTab={this.props.currentTab}
+                isItemFreezed={this.state.isItemFreezed}
+                toggleDelete={this.props.toggleDelete}
+                toggleRevokeAdmin={this.props.toggleRevokeAdmin}
+                onFreezedItem={this.onFreezedItem}
+                onUnfreezedItem={this.onUnfreezedItem}
+              />
+            );
+          })}
+        </FixedWidthTable>
       </>
     );
   }

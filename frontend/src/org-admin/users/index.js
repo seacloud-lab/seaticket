@@ -272,7 +272,7 @@ class OrgUsers extends Component {
                 perPage={this.state.perPage}
                 onChangePageNum={this.onChangePageNum}
                 onChangePerPage={this.onChangePerPage}
-                isLoading={this.state.isLoading}
+                isLoading={this.state.page === 1 && this.state.isLoading}
               />
             </>
           }
@@ -292,7 +292,7 @@ class OrgUsers extends Component {
                 toggleRevokeAdmin={this.toggleRevokeAdmin}
                 orgAdminUsers={this.state.orgAdminUsers}
                 initOrgAdmin={this.initOrgAdmin}
-                isLoading={this.state.isLoading}
+                isLoading={this.state.page === 1 && this.state.isLoading}
               />
             </>
           }
