@@ -20,6 +20,7 @@ const ChatInput = forwardRef(({
   readOnly,
   projectUuid,
   canAddDocuments = true,
+  canSelectModel = true,
   clearContext,
   sendMessage,
   resetClearContext,
@@ -225,7 +226,9 @@ const ChatInput = forwardRef(({
               )}
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
-              <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>
+              {canSelectModel && (
+                <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>
+              )}
               <>
                 <IconButton
                   disabled={disabled || !value}

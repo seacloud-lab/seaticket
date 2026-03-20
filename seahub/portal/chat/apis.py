@@ -345,8 +345,6 @@ class PortalChatView(APIView):
         if check_ai_limit(username, org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 
-        model = request.data.get('model')
-
         try:
             message_id = gen_portal_message_id(session.session_uuid)
         except Exception as e:
@@ -368,7 +366,6 @@ class PortalChatView(APIView):
             'attachments': [],
             'username': username,
             'org_id': org_id,
-            'llm_model': model,
             'allowed_sources': allowed_sources,
             'is_external_portal': True,
             'stream': stream,
