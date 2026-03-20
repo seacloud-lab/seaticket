@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, ModalHeader, StepsNavigation } from '@/components';
+import { TextInput, ModalHeader, StepsNavigation, IconTextBtn, IconTooltip } from '@/components';
 import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
 import ConnectionConfigEditor from '../connection-config-editor';
@@ -22,6 +22,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
   const [newRecord, setNewRecord] = useState(null);
+
+  const installGitHubAppURL = useMemo(() => {
+    const currentPath = window.location.pathname + window.location.search;
+    return `${server}/github/install/?next=${encodeURIComponent(currentPath)}&project_uuid=${projectUuid}`;
+  }, [server, projectUuid]);
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
@@ -223,6 +228,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         )}
         {step.key === STEP.CONFIG && (
           <div className="sea-qa-project-new-connection-config">
+            {isGithub &&
+              <FormGroup>
+                <IconTextBtn text={gettext('Install GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
+                <IconTooltip
+                  tip={gettext('Install GitHub app to get repositories to enable SeaTicket to sync issues from these repositories')}
+                  placement="right"
+                />
+              </FormGroup>
+            }
             <FormGroup>
               <Label>{gettext('Connection type')}</Label>
               <Input value={typeOption.name} disabled />
