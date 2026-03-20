@@ -15,9 +15,12 @@
 }
 
 .paginator .paginator-btn .sea-qa-icon-svg {
-  height: 12px;
-  width: 12px;
-  color: #999;
+  height: 14px;
+  width: 14px;
+}
+
+.paginator .paginator-btn:not(.disabled) .sea-qa-icon-svg {
+  color: #212529;
 }
 
 .paginator .paginator-dropdown .btn {
@@ -54,8 +57,4 @@
   height: 12px;
   width: 12px;
   font-weight: 400;
-}
-
-.paginator-dropdown .dropdown-menu .dropdown-item:hover .paginator-dropdown-tick .sea-qa-icon-svg {
-  color: #fff;
 }
