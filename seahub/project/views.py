@@ -65,7 +65,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     portal_settings = _get_portal_settings(project)
     enable_portal = portal_settings.get('enable_portal', False)
 
-    if not enable_portal:
+    if not enable_portal and request.resolver_match.url_name == 'project_support_portal_view':
         return render_error(request, _('Portal is not enabled'))
 
     return_dict = {
