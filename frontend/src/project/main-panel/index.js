@@ -11,6 +11,7 @@ import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Tags from './tags';
 import Inbox from './inbox';
+import SupportPortal from './support-portal';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { useTags, useMetadata } from '../hooks';
 import { useConnections } from './connections/hooks';
@@ -66,6 +67,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.TAGS: {
       return (<Tags title={title} />);
+    }
+    case BAR_TYPE.SUPPORT_PORTAL: {
+      return (<SupportPortal title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);
