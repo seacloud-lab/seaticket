@@ -21,14 +21,9 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import IdInOrgTuple
 from seahub.profile.models import Profile
-from seahub.settings import ENABLE_UPDATE_USER_INFO, ENABLE_USER_SET_CONTACT_EMAIL, SEND_SMS_ATTEMPT_LIMIT, \
-    SEND_SMS_ATTEMPT_TIMEOUT, ENABLE_USER_SET_NAME
+from seahub.settings import ENABLE_UPDATE_USER_INFO, ENABLE_USER_SET_CONTACT_EMAIL, ENABLE_USER_SET_NAME
 from seahub.utils import is_org_context, send_html_email, get_update_contact_email_cache_key
 from seahub.auth.models import SocialAuthUser
-from seahub.base.accounts import User as AccountUser
-from seahub.utils.verify import verify_sms_code
-from seahub.auth.utils import get_send_sms_attempts, increase_send_sms_attempts, clear_send_sms_attempts
-from seahub.utils.ip import get_remote_ip
 from seahub.password_session.handlers import update_session_auth_hash
 from seahub.base.accounts import UNUSABLE_PASSWORD
 from seahub.utils.password import is_password_strength_valid
@@ -59,8 +54,6 @@ class User(APIView):
         info['contact_email'] = profile.contact_email if profile and profile.contact_email else ''
         info['login_id'] = profile.login_id if profile else ''
         info['list_in_address_book'] = profile.list_in_address_book if profile else False
-        info['bind_phone'] = profile.phone if profile else ''
-        info['sms_2fa'] = profile.sms_2fa if profile else False
 
         return info
 
@@ -73,10 +66,6 @@ class User(APIView):
         # update user list_in_address_book
         if info_dict['list_in_address_book']:
             Profile.objects.add_or_update(email, list_in_address_book=info_dict['list_in_address_book'])
-
-        # update user sms_2fa
-        if info_dict['sms_2fa'] is not None:
-            Profile.objects.add_or_update(email, sms_2fa=info_dict['sms_2fa'])
 
     def get(self, request):
         email = request.user.username
@@ -129,16 +118,9 @@ class User(APIView):
                 error_msg = 'list_in_address_book invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        sms_2fa = request.data.get("sms_2fa", None)
-        if sms_2fa is not None:
-            if not isinstance(sms_2fa, bool):
-                error_msg = 'sms_2fa invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         info_dict = {
             'name': name,
             'list_in_address_book': list_in_address_book,
-            'sms_2fa': sms_2fa,
         }
 
         # update user profile and user additionnal info
@@ -214,85 +196,6 @@ class UserContactEmailView(APIView):
         return Response({
             'msg': 'Email has been sent, please check it in your current mail box.'
         })
-
-
-class RemovePasswordView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    def put(self, request):
-        try:
-            profile = Profile.objects.get(user=request.user.username)
-        except Profile.DoesNotExist:
-            error_msg = 'user %s not found.' % request.user.username
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        except Exception as e:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not profile.phone:
-            error_msg = 'phone not bind'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        try:
-            remove_user_password(request.user.username)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'success': True})
-
-
-class UserResetPasswordByPhoneView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    def post(self, request):
-        code = request.data.get('code')
-        phone = request.data.get('phone')
-        new_password = request.data.get('new_password')
-        confirm_password = request.data.get('confirm_password')
-        if not all([code, phone]):
-            error_msg = 'code or phone invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not all([new_password, confirm_password]) or new_password != confirm_password:
-            error_msg = 'password invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if len(new_password) > 4096:
-            error_msg = 'Password is too long (maximum is 4096 characters).'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        ip = get_remote_ip(request)
-
-        if get_send_sms_attempts(ip=ip) >= SEND_SMS_ATTEMPT_LIMIT:
-            error_msg = '验证码错误次数过多，请 %s 分钟后再试' % (SEND_SMS_ATTEMPT_TIMEOUT // 60)
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
-
-        increase_send_sms_attempts(phone, ip)
-
-        # verify code
-        if not verify_sms_code(phone, 'reset_password', code):
-            error_msg = 'Code incorrect'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        try:
-            user = AccountUser.objects.get(email=request.user.username)
-        except AccountUser.DoesNotExist as e:
-            logger.error(e)
-            error_msg = 'email invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        user.set_password(new_password)
-        user.save()
-
-        clear_send_sms_attempts(phone, ip)
-
-        return Response({'success': True})
 
 
 class ResetPasswordView(APIView):

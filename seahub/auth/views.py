@@ -41,13 +41,10 @@ from seahub.utils.ip import get_remote_ip
 from seahub.utils.two_factor_auth import two_factor_auth_enabled, handle_two_factor_auth
 from seahub.utils.auth import get_login_bg_image_path
 from seahub.utils.http import rate_limit
-from seahub.auth.sms_two_factor_auth import sms_two_factor_auth_enabled, \
-    handle_sms_two_factor_auth
 from seahub.settings import LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED, \
     LOGIN_REMEMBER_DAYS, USER_PASSWORD_MIN_LENGTH, USER_STRONG_PASSWORD_REQUIRED, \
     USER_PASSWORD_STRENGTH_LEVEL
 
-from seahub.password_session import update_session_auth_hash
 try:
     from seahub.settings import LDAP_PROVIDER
 except ImportError:
@@ -84,9 +81,6 @@ def log_user_in(request, user, redirect_to):
             user.otp_device = default_device(user)
         else:
             return handle_two_factor_auth(request, user, redirect_to)
-
-    if sms_two_factor_auth_enabled(user):
-        return handle_sms_two_factor_auth(request, user, redirect_to)
 
     # Okay, security checks complete. Log the user in.
     auth_login(request, user)
@@ -230,7 +224,6 @@ def login(request, template_name='registration/login.html',
         'enable_sso': enable_sso,
         'enable_multi_saml': getattr(settings, 'ENABLE_MULTI_SAML', False),
         'login_bg_image_path': login_bg_image_path,
-        'enable_sms_login': settings.ENABLE_SMS_LOGIN,
         'email_host': settings.EMAIL_HOST,
         'cur_language': cur_language,
     })

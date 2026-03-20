@@ -1,7 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # encoding: utf-8
 import re
-import time
 import logging
 import json
 from urllib.parse import urlparse
@@ -14,33 +13,26 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.csrf import csrf_protect
 
 from seahub.auth import login, REDIRECT_FIELD_NAME
 from seahub.auth.decorators import login_required, login_required_ajax
 from seahub.base.accounts import User
 from seahub.constants import TEAM_FREE
 from seahub.group.views import remove_group_common
-from seahub.utils import get_service_url, render_error, check_slide_captcha_verified_time
+from seahub.utils import get_service_url, render_error
 from seahub.utils.auth import get_login_bg_image_path
 from seahub.organizations.signals import org_created
 from seahub.organizations.decorators import org_staff_required
-from seahub.organizations.forms import OrgRegistrationForm, SmsOrgRegistrationForm
+from seahub.organizations.forms import OrgRegistrationForm
 from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO
 from seahub.organizations.utils import transfer_user_to_org, can_org_use_saml
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
-from seahub.utils.ip import get_remote_ip
 from seahub.api2.throttling import OrgRegisterRateThrottle
-from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML, USER_STRONG_PASSWORD_REQUIRED, \
-    ENABLE_TWO_FACTOR_AUTH
+from seahub.settings import ENABLE_MULTI_SAML, ENABLE_TWO_FACTOR_AUTH
 
 from seahub.organizations.models import OrgUser
-
-SESSION_KEY_SMS_ORG_REGISTRATION_PHONE = 'sms-org-registration-phone'
-SESSION_KEY_SMS_ORG_REGISTRATION_LOCK_TIME = 'sms-org-registration-lock-time'
-SMS_ORG_REGISTRATION_SMS_TYPE = 'sms-org-registration'
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -216,9 +208,6 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
     - `request`:
     """
 
-    if settings.USE_PHONE_REGISTRATION_BY_DEFAULT:
-        raise Http404
-
     login_bg_image_path = get_login_bg_image_path()
     redirect_to = request.GET.get(redirect_field_name)
 
@@ -286,224 +275,6 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
         'redirect_to': redirect_to or reverse('projects_list'),
-    })
-
-
-def clear_sms_org_registration_session(request):
-    for key in (SESSION_KEY_SMS_ORG_REGISTRATION_PHONE,
-                SESSION_KEY_SMS_ORG_REGISTRATION_LOCK_TIME):
-        request.session.pop(key, '')
-    return
-
-
-def render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone):
-    from seahub.auth import REDIRECT_FIELD_NAME
-    service_url = get_service_url()
-    up = urlparse(service_url)
-    service_url_scheme = up.scheme
-    service_url_remaining = up.netloc + up.path
-    return render(request, 'organizations/sms_org_register.html', {
-        'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
-        'form': SmsOrgRegistrationForm(),
-        REDIRECT_FIELD_NAME: redirect_to or reverse('projects_list'),
-        'redirect_to': redirect_to or reverse('projects_list'),
-        'login_bg_image_path': get_login_bg_image_path(),
-        'error_msg': error_msg,
-        'send_button_disabled': send_button_disabled,
-        'phone': phone,
-        'service_url_scheme': service_url_scheme,
-        'service_url_remaining': service_url_remaining,
-        'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-    })
-
-
-def render_sms_org_registration_json_error(error_msg):
-    return HttpResponse(json.dumps({'error': error_msg}), content_type='application/json')
-
-@csrf_protect
-@api_view(['GET', 'POST'])
-@throttle_classes([OrgRegisterRateThrottle])
-def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
-    from seahub.auth.utils import get_send_sms_attempts, increase_send_sms_attempts, clear_send_sms_attempts
-    from seahub.utils.verify import get_random_code, set_sms_verify_code_cache, check_phone, verify_sms_code
-
-    if not settings.USE_PHONE_REGISTRATION_BY_DEFAULT:
-        raise Http404
-
-    login_bg_image_path = get_login_bg_image_path()
-    redirect_to = request.GET.get(redirect_field_name)
-
-    phone = ''
-    error_msg = ''
-    send_button_disabled = ''
-    form = SmsOrgRegistrationForm()
-
-    ip = get_remote_ip(request)
-    # send sms attempts
-    if get_send_sms_attempts(ip=ip) >= settings.SEND_SMS_ATTEMPT_LIMIT:
-        phone = request.session.get(SESSION_KEY_SMS_ORG_REGISTRATION_PHONE, '')
-        error_msg = '发送验证码过于频繁，请 %s 分钟后再试' % (settings.SEND_SMS_ATTEMPT_TIMEOUT // 60)
-        return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-
-    if request.method == 'POST':
-        phone = request.POST.get('phone', '')
-        sms_code = request.POST.get('sms_code', '')
-        if not phone and not sms_code:
-            error_msg = '手机号或验证码不能为空'
-            return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-
-        if ORG_AUTO_URL_PREFIX:
-            # generate url prefix automatically
-            url_prefix = gen_org_url_prefix(3)
-            if url_prefix is None:
-                messages.error(request, "Failed to create organization account, please try again later.")
-                return render(request, 'organizations/sms_org_register.html', {
-                    'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
-                    'form': form,
-                    'login_bg_image_path': login_bg_image_path,
-                    'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-                })
-
-        # send sms code
-        if phone and not sms_code:
-            lock_time = request.session.get(SESSION_KEY_SMS_ORG_REGISTRATION_LOCK_TIME, 0)
-            if int(time.time()) < lock_time:
-                error_msg = '请 %s 秒后再次发送验证码' % (lock_time - int(time.time()))
-                send_button_disabled = 'disabled'
-                return render_sms_org_registration_json_error(error_msg)
-
-            if not check_phone(phone):
-                error_msg = '手机号格式错误'
-                return render_sms_org_registration_json_error(error_msg)
-
-            exists = Profile.objects.get_username_by_phone(phone)
-            if exists:
-                error_msg = '手机号已注册'
-                return render_sms_org_registration_json_error(error_msg)
-
-            if ENABLE_SLIDE_CAPTCHA:
-                if not check_slide_captcha_verified_time(request):
-                    error_msg = '滑动验证失败'
-                    return render_sms_org_registration_json_error(error_msg)
-
-            # same as seaqa-web/seahub/api2/endpoints/verify.py
-            try:
-                from seahub.utils.sms_clients import AliyunSmsClient
-
-                # gen new code
-                code = get_random_code()
-                # send sms
-                AliyunSmsClient().send_verify_code(phone, code)
-
-                # cache the code
-                set_sms_verify_code_cache(phone, SMS_ORG_REGISTRATION_SMS_TYPE, code)
-
-                send_button_disabled = 'disabled'
-                request.session[SESSION_KEY_SMS_ORG_REGISTRATION_PHONE] = phone
-                request.session[SESSION_KEY_SMS_ORG_REGISTRATION_LOCK_TIME] = int(time.time()) + 60
-                increase_send_sms_attempts(phone, ip)
-                return HttpResponse(json.dumps({'success': True}), content_type='application/json')
-
-            except Exception as e:
-                logger.error('phone: %s send verify code: %s error: %s', phone, code, e)
-                error_msg = _('Internal Server Error')
-                return render_sms_org_registration_json_error(error_msg)
-        # registration
-        else:
-            phone = request.session.get(SESSION_KEY_SMS_ORG_REGISTRATION_PHONE)
-            if not phone:
-                error_msg = '请先发送短信'
-                return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-            if not check_phone(phone):
-                error_msg = '手机号格式错误'
-                return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-
-            exists = Profile.objects.get_username_by_phone(phone)
-            if exists:
-                error_msg = '手机号已注册'
-                return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-
-            # same as seaqa-web/seahub/api2/endpoints/profile.py
-            verify_success = verify_sms_code(phone, SMS_ORG_REGISTRATION_SMS_TYPE, sms_code)
-
-            if not verify_success:
-                error_msg = '验证码不正确'
-                return render_sms_org_registration_error(request, redirect_to, error_msg, send_button_disabled, phone)
-
-            form = SmsOrgRegistrationForm(request.POST)
-            if form.is_valid():
-                name = form.cleaned_data['name']
-                email = ''  # set email empty string
-                password = form.cleaned_data['password1']
-                org_name = form.cleaned_data['org_name']
-
-                for prefix in settings.REJECT_REGISTRATION_ORG_PREFIX:
-                    if name.lower().startswith(prefix.lower()):
-                        return render_error(request, 'invalid parameters')
-                    if org_name.lower().startswith(prefix.lower()):
-                        return render_error(request, 'invalid parameters')
-
-                for re_str in settings.REJECT_REGISTRATION_ORG_RE_STR:
-                    if re.search(re_str, name.lower()):
-                        return render_error(request, 'invalid parameters')
-                    if re.search(re_str, org_name.lower()):
-                        return render_error(request, 'invalid parameters')
-
-                new_user = User.objects.create_user(
-                    email, password, is_staff=False, is_active=True)
-                # bind phone
-                Profile.objects.add_or_update(new_user.username, nickname=name, phone=phone)
-
-                create_org(org_name, url_prefix, new_user.username)
-                new_org = get_org_by_url_prefix(url_prefix)
-                org_created.send(sender=None, org=new_org)
-                OrgSettings.objects.add_or_update(new_org, TEAM_FREE)
-
-                # record the org's register IP to dtable_web.log
-                remote_address = request.META.get('REMOTE_ADDR', '')
-                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
-                if x_forwarded_for:
-                    remote_address = x_forwarded_for.split(',')[0]
-                logger.warning('Org %s register IP is: %s' % (org_name, remote_address))
-
-                # login the user
-                new_user.backend = settings.AUTHENTICATION_BACKENDS[0]
-                login(request, new_user)
-
-                # clear
-                clear_sms_org_registration_session(request)
-                clear_send_sms_attempts(phone, ip)
-
-                if not redirect_to:
-                    response = HttpResponseRedirect(reverse('projects_list'))
-                else:
-                    response = HttpResponseRedirect(redirect_to)
-
-                response.delete_cookie('REGISTRATION_SOURCE')
-                response.delete_cookie('INVITATION_TOKEN')
-                return response
-    else:
-        phone = request.session.get(SESSION_KEY_SMS_ORG_REGISTRATION_PHONE, '')
-
-    service_url = get_service_url()
-    up = urlparse(service_url)
-    service_url_scheme = up.scheme
-    service_url_remaining = up.netloc + up.path
-    strong_pwd_required = USER_STRONG_PASSWORD_REQUIRED
-
-    return render(request, 'organizations/sms_org_register.html', {
-        'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
-        'form': form,
-        'login_bg_image_path': login_bg_image_path,
-        'service_url_scheme': service_url_scheme,
-        'service_url_remaining': service_url_remaining,
-        'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('projects_list'),
-        redirect_field_name: redirect_to or reverse('projects_list'),
-        'error_msg': error_msg,
-        'send_button_disabled': send_button_disabled,
-        'phone': phone,
-        'strong_pwd_required': strong_pwd_required,
     })
 
 

@@ -8,7 +8,6 @@ from django.utils.translation import gettext as _
 
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
@@ -23,7 +22,6 @@ DIGIT_WEB_SETTINGS = [
     'FORCE_PASSWORD_CHANGE',
     'LOGIN_ATTEMPT_LIMIT', 'FREEZE_USER_ON_LOGIN_FAILED',
     'ENABLE_TWO_FACTOR_AUTH',
-    'ENABLE_BRANDING_CSS',
 ]
 
 STRING_WEB_SETTINGS = ('SITE_NAME', 'SITE_TITLE', 'CUSTOM_CSS')

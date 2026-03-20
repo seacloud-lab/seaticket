@@ -18,7 +18,6 @@ from seahub.auth.decorators import login_required
 from seahub.auth import login as auth_login
 from seahub.auth import get_backends
 from seahub.base.accounts import User
-from seahub.profile.models import Profile
 import seahub.settings as settings
 from seahub.settings import AVATAR_FILE_STORAGE
 
@@ -126,24 +125,11 @@ def custom_css_view(request):
 
 @login_required
 def seaqa_fake_view(request, **kwargs):
-    username = request.user.username
-    phone = ''
-    profile = None
-
     if request.user.is_staff:
         return HttpResponseRedirect(reverse('sys_info'))
-
-    if settings.ENABLE_BIND_PHONE:
-        try:
-            if not profile:
-                profile = Profile.objects.filter(user=username).first()
-            phone = profile.phone
-        except Exception as e:
-            logger.error('get user phone failed. {}'.format(e))
 
     return render(request, 'home.html', {
         'version': SEAQA_VERSION,
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
-        'has_bound_phone': True if phone else False,
         'disable_adding_personal_projects': True if settings.DISABLE_ADDING_PERSONAL_PROJECTS else False,
     })

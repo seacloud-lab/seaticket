@@ -122,7 +122,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
         token = request.META.get('HTTP_X_SEAFILE_OTP', '')
         if not token:
-            # Generate challenge(send sms/call/...) if token is not provided.
+            # Generate challenge(send call/...) if token is not provided.
             default_device(user).generate_challenge()
 
             self.two_factor_auth_failed = True

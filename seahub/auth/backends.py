@@ -137,8 +137,6 @@ class SeafileRemoteUserBackend(AuthBackend):
 
                 if not self.auto_activate:
                     notify_admins_on_activate_request(username)
-                elif settings.NOTIFY_ADMIN_AFTER_REGISTRATION:
-                    notify_admins_on_register_complete(username)
 
             except Exception as e:
                 logger.error(e)

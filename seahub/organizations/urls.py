@@ -1,12 +1,11 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 from django.urls import re_path
 
-from .views import org_add, org_register, sms_org_register, org_transfer, react_fake_view
+from .views import org_add, org_register, org_transfer, react_fake_view
 
 urlpatterns = [
     re_path(r'^add/$', org_add, name='org_add'),
     re_path(r'^register/$', org_register, name='org_register'),
-    re_path(r'^sms-register/$', sms_org_register, name='sms_org_register'),
     re_path(r'^transfer/$', org_transfer, name='org_transfer'),
 
     re_path(r'^users/$', react_fake_view, name='org_user_admin'),

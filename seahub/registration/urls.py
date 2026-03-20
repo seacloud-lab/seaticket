@@ -11,13 +11,11 @@ from django.views.generic import TemplateView
 from django.conf import settings
 
 from .views import activate
-from .views import register, org_register, sms_register
-from .forms import RegistrationForm, SmsRegistrationForm
+from .views import register
+from .forms import RegistrationForm
 from seahub.base.generic import DirectTemplateView
 from seahub.two_factor.views.login import TwoFactorVerifyView
 from seahub.auth import views as auth_views
-from seahub.auth.sms_two_factor_auth import sms_two_factor_auth
-from seahub.auth.sms_login import sms_login
 
 ENABLE_CUSTOM_AUTH = getattr(settings, 'ENABLE_CUSTOM_AUTH', False)
 
@@ -39,10 +37,6 @@ urlpatterns = [
     re_path(r'^register/$', register,
         {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': form_class},
         name='registration_register'),
-
-    re_path(r'^sms-register/$', sms_register,
-        {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': SmsRegistrationForm},
-        name='sms_register'),
 
     # re_path(r'^org/(?P<org_id>\d+)/register/$', org_register,
     #     {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': form_class},
@@ -79,12 +73,6 @@ urlpatterns += [
     re_path(r'^login/two-factor-auth/$',
         TwoFactorVerifyView.as_view(),
         name='two_factor_auth'),
-    re_path(r'^login/sms-two-factor-auth/$',
-        sms_two_factor_auth,
-        name='sms_two_factor_auth'),
-    re_path(r'^login/sms-login/$',
-        sms_login,
-        name='sms_login'),
 ]
 
 if not ENABLE_CUSTOM_AUTH:

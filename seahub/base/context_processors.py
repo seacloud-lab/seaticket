@@ -12,13 +12,11 @@ import re
 import os
 
 from django.conf import settings as dj_settings
-from django.utils import translation
 from django.utils.functional import lazy
 
-from seahub.settings import SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
-    LOGO_PATH, BRANDING_CSS, LOGO_WIDTH, LOGO_HEIGHT,\
+from seahub.settings import SITE_TITLE, LOGO_PATH, LOGO_WIDTH, LOGO_HEIGHT,\
     SITE_ROOT, FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
-    MEDIA_ROOT, SHOW_LOGOUT_ICON, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
+    MEDIA_ROOT, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
     LOGIN_BG_IMAGE_PATH, CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
     ENABLE_SIGNUP
 
@@ -93,8 +91,6 @@ def base(request):
     result = {
         'version': SEAQA_VERSION,
         'site_title': SITE_TITLE,
-        'branding_css': BRANDING_CSS,
-        'enable_branding_css': ENABLE_BRANDING_CSS,
         'favicon_path': favicon_path,
         'apple_touch_icon_path': apple_touch_icon_path,
         'favicon_notification_path': favicon_notification_path,
@@ -113,7 +109,6 @@ def base(request):
         'CSRF_COOKIE_NAME': dj_settings.CSRF_COOKIE_NAME,
         'LOGIN_URL': dj_settings.LOGIN_URL,
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
-        'show_logout_icon': SHOW_LOGOUT_ICON,
         'service_url': get_service_url().rstrip('/'),
         'avatar_url': avatar_url if avatar_url else '',
         'is_mobile': request.is_mobile,

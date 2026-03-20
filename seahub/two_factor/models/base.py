@@ -17,8 +17,6 @@ def get_available_phone_methods():
     methods = []
     if getattr(settings, 'TWO_FACTOR_CALL_GATEWAY', None):
         methods.append(('call', _('Phone Call')))
-    if getattr(settings, 'TWO_FACTOR_SMS_GATEWAY', None):
-        methods.append(('sms', _('Text Message')))
     return methods
 
 def get_available_methods():
@@ -99,8 +97,8 @@ class Device(models.Model):
         """
         Generates a challenge value that the user will need to produce a token.
         This method is permitted to have side effects, such as transmitting
-        information to the user through some other channel (email or SMS,
-        perhaps). And, of course, some devices may need to commit the
+        information to the user through some other channel. And, of course,
+        some devices may need to commit the
         challenge to the databse.
 
         :returns: A message to the user. This should be a string that fits

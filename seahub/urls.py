@@ -14,11 +14,8 @@ from seahub.api2.endpoints.group_invite_links import GroupInviteLinks, GroupInvi
 from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember, GroupMembersBulk
 from seahub.api2.endpoints.search_group import SearchGroup
 from seahub.api2.endpoints.user_avatar import UserAvatarView
-from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswordView, \
-    UserResetPasswordByPhoneView, ResetPasswordView
-from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
+from seahub.api2.endpoints.user import User, UserContactEmailView, ResetPasswordView
 from seahub.api2.endpoints.sessions import SessionsView, OnlineSessionView, SessionView
-from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
 from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView, TrashProjectsView, \
     TrashProjectView
@@ -71,16 +68,7 @@ urlpatterns = [
     # user list
     re_path(r'^api/v1/user-list/$', UserListView.as_view(), name='api-v1-user-list'),
 
-    ## user:phone
-    re_path(r'^api/v1/user/sms-verify/$', SmsVerifyCodeView.as_view(), name="api-v1-user-sms-verify"),
-    re_path(r'^api/v1/user/bind-phone/$', BindPhoneView.as_view(), name="api-v1-user-phone-bind"),
-    re_path(r'^api/v1/user/unbind-phone/$', UnbindPhoneView.as_view(), name="api-v1-user-phone-unbind"),
-
     # user:password
-    re_path(r'^api/v1/user/remove-password/$', RemovePasswordView.as_view(), name="api-v1-user-remove-password"),
-
-    # user:reset password by phone
-    re_path(r'^api/v1/user/reset-password-by-phone/$', UserResetPasswordByPhoneView.as_view(), name="api-v1-user-reset-password-by-phone"),
     re_path(r'^api/v1/user/reset-password/$', ResetPasswordView.as_view(), name="api-v1-user-reset-password"),
 
     ## sessions

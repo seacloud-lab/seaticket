@@ -32,8 +32,6 @@
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260304" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_react.css?t=20260122" />
 {% block extra_style %}{% endblock %}
-{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
-{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
 </head>
 
 <body>

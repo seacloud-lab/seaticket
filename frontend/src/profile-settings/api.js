@@ -66,33 +66,6 @@ class ProfileSettingsAPI {
     return this.req.put(url, form);
   }
 
-  sendVerifyCode(phone, type) {
-    let url = this.server + '/api/v1/user/sms-verify/';
-    let data = {
-      phone: phone,
-      type: type
-    };
-    return this.req.post(url, data);
-  }
-
-  bindPhoneNumber(phone, code) {
-    let url = this.server + '/api/v1/user/bind-phone/';
-    let data = {
-      phone: phone,
-      code: code
-    };
-    return this.req.post(url, data);
-  }
-
-  unbindPhoneNumber(phone, code) {
-    let url = this.server + '/api/v1/user/unbind-phone/';
-    let data = {
-      phone: phone,
-      code: code
-    };
-    return this.req.post(url, data);
-  }
-
   updateEmailNotificationInterval(emailInterval, collaborateEmailInterval) {
     const url = this.server + '/api2/account/info/';
     const data = {
@@ -115,7 +88,7 @@ class ProfileSettingsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  updateUserInfo({ name, telephone, contact_email, list_in_address_book, sms_2fa }) {
+  updateUserInfo({ name, telephone, contact_email, list_in_address_book }) {
     const url = this.server + '/api/v1/user/';
     let data = {};
     if (name !== undefined) {
@@ -129,9 +102,6 @@ class ProfileSettingsAPI {
     }
     if (list_in_address_book !== undefined) {
       data.list_in_address_book = list_in_address_book;
-    }
-    if (sms_2fa !== undefined) {
-      data.sms_2fa = sms_2fa;
     }
     return this.req.put(url, data);
   }
@@ -164,17 +134,6 @@ class ProfileSettingsAPI {
   removePassword() {
     const url = this.server + '/api/v1/user/remove-password/';
     return this.req.put(url);
-  }
-
-  resetPasswordByPhone(phone, code, newPassword, confirmPassword) {
-    let url = this.server + '/api/v1/user/reset-password-by-phone/';
-    let data = {
-      phone: phone,
-      code: code,
-      new_password: newPassword,
-      confirm_password: confirmPassword,
-    };
-    return this.req.post(url, data);
   }
 
   resetPassword(oldPassword, newPassword) {

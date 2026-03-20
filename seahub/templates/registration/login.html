@@ -123,25 +123,6 @@
 				<a href="{{ signup_url }}" id="sign-up">{% trans "Sign up" %}</a>
 			</div>
 			{% endif %}
-
-			{% if enable_sms_login %}
-			<div class="mt-5">
-			  <span class="d-flex align-items-center justify-content-center">
-				  <span class="mr-2 login-form-divider-lin"></span>
-				  <span style="color: #a6a6a6;">{% trans "Login with" %}</span>
-				  <span class="ml-2 login-form-divider-lin"></span>
-			  </span>
-			  <div class="d-flex justify-content-center">
-				  {% if enable_sms_login %}
-				  <div class="d-flex justify-content-center mt-4 ml-4">
-					  <a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
-						  <img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
-					  </a>
-				  </div>
-				  {% endif %}
-			  </div>
-			</div>
-			{% endif %}
 		</div>
 		<div class="login-panel-bottom-panel-layout d-flex align-items-center justify-content-center">
 			<div class="login-panel-bottom-container d-flex align-items-center"></div>

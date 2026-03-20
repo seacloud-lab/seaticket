@@ -276,7 +276,7 @@ USER_PASSWORD_STRENGTH_LEVEL = 3
 
 # default False, only check USER_PASSWORD_MIN_LENGTH
 # when True, check password strength level, STRONG(or above) is allowed
-USER_STRONG_PASSWORD_REQUIRED = False
+USER_STRONG_PASSWORD_REQUIRED = True
 
 # Force user to change password when admin add/reset a user.
 FORCE_PASSWORD_CHANGE = True
@@ -343,7 +343,6 @@ REST_FRAMEWORK = {
         'ping': '3000/minute',
         'anon': '60/minute',
         'user': '3000/minute',
-        'sms_verify': '1/minute',
         'sync_common_dataset': '60/minute',
         'org-admin': '1000/day',
         'org_register': '3/day',
@@ -370,16 +369,10 @@ TRASH_CLEAN_AFTER_DAYS = 30
 ACTIVATE_AFTER_REGISTRATION = True
 # Whether or not send activation Email to user when registration complete.
 # This option will be ignored if ``ACTIVATE_AFTER_REGISTRATION`` set to ``True``.
-REGISTRATION_SEND_MAIL = False
-
-# Whether or not send notify email to system admins when user registered or
-# first login through Shibboleth.
-NOTIFY_ADMIN_AFTER_REGISTRATION = False
+REGISTRATION_SEND_MAIL = True
 
 # Whether or not activate inactive user on first login. Mainly used in LDAP user sync.
 ACTIVATE_AFTER_FIRST_LOGIN = False
-
-REQUIRE_DETAIL_ON_REGISTRATION = False
 
 # Account initial password, for password resetting.
 # INIT_PASSWD can either be a string, or a function (function has to be set without the brackets)
@@ -417,12 +410,6 @@ CUSTOM_FAVICON_PATH = 'custom/favicon.ico'
 CUSTOM_FAVICON_NOTIFICATION_PATH = 'custom/notification-favicon.ico'
 CUSTOM_LOGIN_BG_PATH = 'custom/login-bg.jpg'
 
-# used before version 6.3: the relative path of css file under seaqa-web-data (e.g. custom/custom.css)
-BRANDING_CSS = ''
-
-# used in 6.3+, enable setting custom css via admin web interface
-ENABLE_BRANDING_CSS = False
-
 # Using Django to server static file. Set to `False` if deployed behind a web
 # server.
 SERVE_STATIC = True
@@ -430,26 +417,9 @@ SERVE_STATIC = True
 # Enable or disable registration on web.
 ENABLE_SIGNUP = False
 
-USE_PHONE_REGISTRATION_BY_DEFAULT = False
-
-# show 'log out' icon in top-bar or not.
-SHOW_LOGOUT_ICON = False
-
-# Enable or disable login with phone
-ENABLE_BIND_PHONE = False
-
-# aliyun sms config
-ALIYUN_SMS_CONFIG = {}
-
 # privacy policy link and service link
 PRIVACY_POLICY_LINK = ''
 TERMS_OF_SERVICE_LINK = ''
-
-# reject registration org prefix
-REJECT_REGISTRATION_ORG_PREFIX = []
-
-# reject registration org re str
-REJECT_REGISTRATION_ORG_RE_STR = []
 
 # slide captcha
 ENABLE_SLIDE_CAPTCHA = False
@@ -528,7 +498,7 @@ CAPTCHA_IMAGE_SIZE = (90, 42)
 SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../seaqa-web-data')
 
 ENABLE_WEBDAV_SECRET = False
-ENABLE_USER_SET_CONTACT_EMAIL = False
+ENABLE_USER_SET_CONTACT_EMAIL = True
 ENABLE_USER_SET_NAME = True
 
 ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER = False
@@ -574,13 +544,6 @@ ENABLE_TWO_FACTOR_AUTH = False
 OTP_LOGIN_URL = '/profile/two_factor_authentication/setup/'
 TWO_FACTOR_DEVICE_REMEMBER_DAYS = 90
 ENABLE_FORCE_2FA_TO_ALL_USERS = False
-
-ENABLE_SMS_TWO_FACTOR_AUTH = False
-
-ENABLE_SMS_LOGIN = False
-
-SEND_SMS_ATTEMPT_LIMIT = 5
-SEND_SMS_ATTEMPT_TIMEOUT = 60 * 60  # 1h
 
 GROUP_MEMBER_LIMIT = 500
 

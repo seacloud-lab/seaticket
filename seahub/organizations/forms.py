@@ -60,17 +60,3 @@ class OrgRegistrationForm(forms.Form):
             if self.cleaned_data['password1'] != self.cleaned_data['password2']:
                 raise forms.ValidationError(_("The two password fields didn't match."))
         return self.cleaned_data
-
-
-class SmsOrgRegistrationForm(forms.Form):
-
-    name = forms.CharField(max_length=64)
-    password1 = forms.CharField(max_length=4096)
-    password2 = forms.CharField(max_length=4096)
-    org_name = forms.CharField()
-
-    def clean(self):
-        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
-            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
-                raise forms.ValidationError(_("The two password fields didn't match."))
-        return self.cleaned_data

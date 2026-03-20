@@ -14,14 +14,12 @@ import TwoFactorAuthentication from './two-factor-auth';
 import SocialLogin from './social-login';
 import DeleteAccount from './delete-account';
 import UserConvertToTeam from './user-convert-to-team';
-import BindPhone from './bind-phone';
 import EmailNotice from './email-notice';
 import BindContactEmail from './bind-contact-email';
 import SessionLogs from './session-logs';
 import UserSetPassword from './password-widgets/user-set-password-dialog';
 import UserUpdatePassword from './password-widgets/user-update-password-dialog';
 import UserRemovePassword from './password-widgets/user-remove-password-dialog';
-import UserResetPassword from './password-widgets/user-reset-password-dialog';
 
 import '@/css/toolbar.css';
 import './profile-settings.css';
@@ -32,7 +30,6 @@ const {
   enableWebdavSecret,
   twoFactorAuthEnabled,
   enableDeleteAccount,
-  enableBindPhone,
   enableConvertToTeamAccount,
   enableSAML,
   enableMultiSAML,
@@ -63,12 +60,6 @@ class ProfileSettings extends React.Component {
         href: '#update-user-passwd',
         text: gettext('Password'),
         icon: 'password'
-      },
-      {
-        show: enableBindPhone && !this.isWorkWX,
-        href: '#bind-phone',
-        text: gettext('Bind phone number'),
-        icon: 'email'
       },
       {
         show: enableWebdavSecret,
@@ -121,7 +112,6 @@ class ProfileSettings extends React.Component {
       isSetPasswordDialogOpen: false,
       isUpdatePasswordDialogOpen: false,
       isRemovePasswordDialogOpen: false,
-      isResetPasswordDialogOpen: false,
     };
     this.isMobile = isMobile;
   }
@@ -176,16 +166,8 @@ class ProfileSettings extends React.Component {
     });
   };
 
-  toggleResetPassword = () => {
-    this.setState({
-      isResetPasswordDialogOpen: !this.state.isResetPasswordDialogOpen
-    });
-  };
-
   render() {
-    const canRemovePassword = enableBindPhone && this.state.userInfo && this.state.userInfo.bind_phone;
-
-    const bindPhone = this.state.userInfo ? this.state.userInfo.bind_phone : '';
+    const canRemovePassword = false;
     const logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
       <React.Fragment>
@@ -226,7 +208,7 @@ class ProfileSettings extends React.Component {
                     <h3 className="setting-item-heading">{gettext('Password')}</h3>
                     {userUnusablePassword ? (
                       <>
-                        <p>{gettext('You have not set a password yet. Setting a password and binding a phone number or an email will enable you to login via phone number or email.')}</p>
+                        <p>{gettext('You have not set a password yet. Setting a password and binding an email will enable you to login via email.')}</p>
                         <button className="btn btn-outline-primary mb-2" onClick={this.toggleSetPassword}>{gettext('Set')}</button>
                       </>
                     ) : (
@@ -235,17 +217,8 @@ class ProfileSettings extends React.Component {
                     {canRemovePassword && !userUnusablePassword &&
                       <button className="btn btn-outline-primary ml-2 mb-2" onClick={this.toggleRemovePassword}>{gettext('Remove')}</button>
                     }
-                    {bindPhone && !userUnusablePassword && <button className="btn btn-outline-primary ml-2 mb-2" onClick={this.toggleResetPassword}>{gettext('Reset')}</button>}
                   </div>
                 }
-                {enableBindPhone && !this.isWorkWX && this.state.userInfo && (
-                  <BindPhone
-                    oldBindPhone={this.state.userInfo.bind_phone}
-                    sms2fa={this.state.userInfo.sms_2fa}
-                    updateUserInfo={this.updateUserInfo}
-                    contactEmail={this.state.contactEmail}
-                  />
-                )}
                 {enableWebdavSecret && <WebdavPassword />}
                 {/* <LanguageSetting /> */}
                 <EmailNotice />
@@ -264,7 +237,6 @@ class ProfileSettings extends React.Component {
         {this.state.isSetPasswordDialogOpen && <UserSetPassword toggle={this.toggleSetPassword} />}
         {this.state.isUpdatePasswordDialogOpen && <UserUpdatePassword toggle={this.toggleUpdatePassword} />}
         {this.state.isRemovePasswordDialogOpen && <UserRemovePassword toggle={this.toggleRemovePassword} />}
-        {this.state.isResetPasswordDialogOpen && <UserResetPassword toggle={this.toggleResetPassword} bindPhone={bindPhone} />}
       </React.Fragment>
     );
   }

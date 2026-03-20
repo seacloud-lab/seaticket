@@ -22,8 +22,6 @@
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260304" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_react.css?t=20260122" />
 {% render_bundle 'home' 'css' %}
-{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
-{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
 </head>
 
 <body>
@@ -61,7 +59,6 @@
             orgID: {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %},
             langCode: "{{LANGUAGE_CODE|escapejs}}",
             customNavItems: {% if custom_nav_items %} JSON.parse('{{ custom_nav_items | escapejs }}') {% else %} {{'[]'}} {% endif %},
-            hasBoundPhone: {% if has_bound_phone %} true {% else %} false {% endif %},
             disableAddingPersonalProjects: {% if disable_adding_personal_projects %} true {% else %} false {% endif %},
             trashCleanExpireDays: '{{trash_clean_expire_days}}',
         }

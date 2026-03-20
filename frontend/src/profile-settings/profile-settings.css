@@ -119,53 +119,6 @@ body {
   min-width: 60px;
 }
 
-/* Bind phone module styles */
-.bind-phone-module .bind-phone-container .row {
-  margin-left: 0;
-  padding-left: 0;
-}
-
-.bind-phone-container .bind-phone-message {
-  display: flex;
-  align-items: center;
-}
-
-.bind-phone-container .btn-outline-disabled {
-  color: #ababab;
-  border: 1px solid rgba(0, 40, 100, 0.12);
-  opacity: 1;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.bind-phone-container .btn-outline-custom {
-  color: #212529;
-  border: 1px solid rgba(0, 40, 100, 0.12);
-  opacity: 1;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.bind-phone-container .error {
-  color: rgb(236, 76, 71);
-}
-
-.bind-phone-container .success {
-  color: rgb(71, 184, 129);
-}
-
-.bind-phone-container .phone-number {
-  width: 360px;
-}
-
-.bind-phone-container .verify-code-container {
-  display: flex;
-  padding: 0;
-  width: 360px;
-}
-
-.bind-phone-container .verify-code-container .verify-code {
-  flex: 1;
-}
-
 /* Session logs table styles */
 .logged-in-session-table .logged-state {
   width: 10px;
@@ -208,10 +161,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .bind-phone-container .verify-code-container .verify-code {
-    min-width: 50%;
-  }
-  
   .logged-in-session-table thead tr {
     display: flex;
   }

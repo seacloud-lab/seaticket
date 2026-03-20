@@ -94,11 +94,6 @@ class RegistrationBackend(object):
                                                                         password, site,
                                                                         send_email=REGISTRATION_SEND_MAIL)
 
-        if settings.REQUIRE_DETAIL_ON_REGISTRATION:
-            name = kwargs.get('name', '')
-            note = kwargs.get('note', '')
-            Profile.objects.add_or_update(new_user.username, name, note)
-
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,
                                      request=request)

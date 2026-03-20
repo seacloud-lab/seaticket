@@ -20,7 +20,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_e
 from seahub.options.models import UserOptions, COLLABORATE_EMAIL_INTERVAL_DEFAULT
 from seahub.utils import render_error, get_update_contact_email_cache_key
 from seahub.utils.two_factor_auth import has_two_factor_auth
-from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOUNT, ENABLE_UPDATE_USER_INFO, ENABLE_BIND_PHONE, \
+from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOUNT, ENABLE_UPDATE_USER_INFO, \
     ENABLE_LDAP_USER_CHANGE_PASSWORD, USE_EXTERNAL_TEAM_ADMIN, ENABLE_CONVERT_TO_TEAM_ACCOUNT, \
     ENABLE_SAML, ENABLE_MULTI_SAML, ENABLE_USER_SET_NAME, USER_STRONG_PASSWORD_REQUIRED
 from seahub.auth.models import SocialAuthUser
@@ -106,7 +106,6 @@ def edit_profile(request):
             'ENABLE_USER_SET_NAME' : ENABLE_USER_SET_NAME,
             'use_external_team_admin': USE_EXTERNAL_TEAM_ADMIN,
             'user_unusable_password': request.user.enc_password == UNUSABLE_PASSWORD,
-            'enable_bind_phone': ENABLE_BIND_PHONE,
             'enable_saml': enable_saml,
             'saml_connected': saml_connected,
             'enable_multi_saml': enable_multi_saml,

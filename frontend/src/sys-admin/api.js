@@ -168,9 +168,6 @@ class SysAdminServiceApi {
     if (orgInfo.assetQuotaMb) {
       formData.append('asset_quota_mb', orgInfo.assetQuotaMb);
     }
-    if (orgInfo.smsMessageLimitPerMonth) {
-      formData.append('sms_message_limit_per_month', orgInfo.smsMessageLimitPerMonth);
-    }
     return this.req.put(url, formData);
   }
 

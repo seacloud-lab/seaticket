@@ -9,7 +9,7 @@ from seahub.auth import login as auth_login, authenticate
 from seahub.base.accounts import User
 from seahub.invitations.models import Invitation, InvitationLinks
 from seahub.invitations.signals import org_member_invite_accepted
-from seahub.settings import SITE_ROOT, NOTIFY_ADMIN_AFTER_REGISTRATION
+from seahub.settings import SITE_ROOT
 from seahub.registration.models import notify_admins_on_register_complete
 from seahub.utils import render_error
 from seahub.organizations.models import Organization
@@ -78,10 +78,6 @@ def token_view(request, token):
         # send signal to notify inviter
         org_member_invite_accepted.send(
             sender=None, invitation_obj=i)
-
-        # send email to notify admin
-        if NOTIFY_ADMIN_AFTER_REGISTRATION:
-            notify_admins_on_register_complete(user.email)
 
         return HttpResponseRedirect(SITE_ROOT)
 
