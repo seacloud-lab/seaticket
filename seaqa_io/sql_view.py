@@ -140,5 +140,6 @@ def view_data_2_sql(table_name, columns, view, username='', start=0, limit=100, 
     order_clause = _sorts_sql(columns, view or {})
     if order_clause:
         sql = "%s %s" % (sql, order_clause)
-    sql = "%s LIMIT %s, %s" % (sql, start or 0, limit or 100)
+    if limit is not None:
+        sql = "%s LIMIT %s, %s" % (sql, start or 0, limit)
     return sql

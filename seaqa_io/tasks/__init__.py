@@ -52,9 +52,8 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
         columns = table_meta.get('columns', [])
         display_columns = filter_display_columns(columns) or columns
 
-        sql = view_data_2_sql(kb_table_name, display_columns, view, username, 0, 1000, include_deleted=True)
-        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        rows = res.get('results', []) if res else []
+        offset = 0
+        page_size = 1000
 
         column_name_map = {
             'title': 'Title',
@@ -77,18 +76,27 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
         if header:
             ws.append(header)
 
-        for row in (rows or []):
-            row_data = []
-            for col_name, col_key in zip(header_names, header_keys):
-                val = row.get(col_key)
-                if col_name in ('created_time', 'modified_time') and val:
-                    try:
-                        dt = parser.parse(str(val))
-                        val = dt.strftime('%Y-%m-%d %H:%M:%S')
-                    except Exception:
-                        pass
-                row_data.append(val)
-            ws.append(row_data)
+        while True:
+            sql = view_data_2_sql(kb_table_name, display_columns, view, username, offset, page_size, include_deleted=True)
+            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+            rows = res.get('results', []) if res else []
+            if not rows:
+                break
+            for row in rows:
+                row_data = []
+                for col_name, col_key in zip(header_names, header_keys):
+                    val = row.get(col_key)
+                    if col_name in ('created_time', 'modified_time') and val:
+                        try:
+                            dt = parser.parse(str(val))
+                            val = dt.strftime('%Y-%m-%d %H:%M:%S')
+                        except Exception:
+                            pass
+                    row_data.append(val)
+                ws.append(row_data)
+            if len(rows) < page_size:
+                break
+            offset += len(rows)
 
         wb.save(target_path)
         return {}
