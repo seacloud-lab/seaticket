@@ -47,10 +47,6 @@ class Content extends Component {
     this.toggleDialog('contact_email', gettext('Set contact email'));
   };
 
-  toggleSetUserPhoneDialog = () => {
-    this.toggleDialog('phone', gettext('Set phone'));
-  };
-
   toggleSetUseIdInOrgTupleDialog = () => {
     this.toggleDialog('id_in_org', gettext('Set ID'));
   };
@@ -117,11 +113,6 @@ class Content extends Component {
             <dd className="info-item-content">
               {user.name || '--'}
               {this.showEditIcon(this.toggleSetNameDialog)}
-            </dd>
-            <dt className="info-item-heading">{gettext('Phone')}</dt>
-            <dd className="info-item-content">
-              {user.phone || '--'}
-              {this.showEditIcon(this.toggleSetUserPhoneDialog)}
             </dd>
 
             <dt className="info-item-heading">{gettext('Contact email')}</dt>

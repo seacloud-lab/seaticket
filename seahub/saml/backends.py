@@ -3,8 +3,7 @@ from django.conf import settings
 
 from seahub.auth.backends import RemoteUserBackend
 from seahub.base.accounts import User
-from seahub.registration.models import notify_admins_on_register_complete,\
-     notify_admins_on_activate_request
+from seahub.registration.models import notify_admins_on_activate_request
 from seahub.organizations.models import OrgUser
 
 
@@ -46,7 +45,4 @@ class SAMLRemoteUserBackend(RemoteUserBackend):
 
             if not self.activate_after_creation:
                 notify_admins_on_activate_request(user.username)
-            elif settings.NOTIFY_ADMIN_AFTER_REGISTRATION:
-                notify_admins_on_register_complete(user.username)
-
         return user

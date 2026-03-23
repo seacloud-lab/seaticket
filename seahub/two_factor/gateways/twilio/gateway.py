@@ -9,7 +9,7 @@ except ImportError:
 from django.conf import settings
 from django.urls import reverse
 from django.utils import translation
-from django.utils.translation import gettext, pgettext
+from django.utils.translation import pgettext
 from twilio.rest import TwilioRestClient
 
 from .middleware import get_current_request
@@ -56,14 +56,6 @@ class Twilio(object):
         self.client.calls.create(to=device.number,
                                  from_=getattr(settings, 'TWILIO_CALLER_ID'),
                                  url=uri, method='GET', if_machine='Hangup', timeout=15)
-
-    def send_sms(self, device, token):
-        body = gettext('Your authentication token is %s') % token
-        self.client.sms.messages.create(
-            to=device.number,
-            from_=getattr(settings, 'TWILIO_CALLER_ID'),
-            body=body)
-
 
 def validate_voice_locale(locale):
     with translation.override(locale):

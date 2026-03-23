@@ -565,7 +565,7 @@ def saml_disconnect(request, org_id=None):
     if request.user.enc_password == '!':
         return render_error(request, 'Failed to unbind SAML, please set a password first.')
     profile = Profile.objects.get_profile_by_user(username)
-    if not profile or not (profile.contact_email or profile.phone):
+    if not profile or not profile.contact_email:
         return render_error(request, 'Failed to unbind SAML, please set a contact email first.')
 
     SocialAuthUser.objects.delete_by_username_and_provider(username, SAML_PROVIDER_IDENTIFIER)

@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .base import Device, key_validator
-from seahub.two_factor.gateways import make_call, send_sms
+from seahub.two_factor.gateways import make_call
 from seahub.two_factor.utils import random_hex
 # from phonenumber_field.modelfields import PhoneNumberField
 
@@ -74,7 +74,4 @@ class PhoneDevice(Device):
         """
         no_digits = totp_digits()
         token = str(totp(self.bin_key, digits=no_digits)).zfill(no_digits)
-        if self.method == 'call':
-            make_call(device=self, token=token)
-        else:
-            send_sms(device=self, token=token)
+        make_call(device=self, token=token)

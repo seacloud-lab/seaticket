@@ -6,18 +6,15 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.forms import Form
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.module_loading import import_string
 from django.views.decorators.cache import never_cache
-from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import FormView, DeleteView, TemplateView
+from django.views.generic import FormView, TemplateView
 from django.views.generic.base import View
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 import qrcode
-import qrcode.image.svg
 
 try:
     from formtools.wizard.views import SessionWizardView
@@ -25,9 +22,8 @@ except ImportError:
     # pylint: disable=import-error,no-name-in-module
     from django.contrib.formtools.wizard.views import SessionWizardView
 
-from seahub.auth import login as login, REDIRECT_FIELD_NAME
+from seahub.auth import login as login
 from seahub.auth.decorators import login_required
-from seahub.auth.forms import AuthenticationForm
 
 from seahub.two_factor import login as two_factor_login
 from seahub.two_factor.decorators import otp_required
@@ -58,15 +54,13 @@ class SetupView(CheckTwoFactorEnabledMixin, IdempotentSessionWizardView):
         # ('welcome', Form),
         ('method', MethodForm),
         ('generator', TOTPDeviceForm),
-        ('sms', PhoneNumberForm),
         ('call', PhoneNumberForm),
         ('validation', DeviceValidationForm),
     )
     condition_dict = {
         'generator': lambda self: self.get_method() == 'generator',
         'call': lambda self: self.get_method() == 'call',
-        'sms': lambda self: self.get_method() == 'sms',
-        'validation': lambda self: self.get_method() in ('sms', 'call'),
+        'validation': lambda self: self.get_method() == 'call',
     }
 
     def get_method(self):
@@ -125,7 +119,7 @@ class SetupView(CheckTwoFactorEnabledMixin, IdempotentSessionWizardView):
             device = form.save()
 
         # PhoneNumberForm / YubiKeyDeviceForm
-        elif self.get_method() in ('call', 'sms', 'yubikey'):
+        elif self.get_method() in ('call', 'yubikey'):
             device = self.get_device()
             device.save()
 
@@ -160,14 +154,14 @@ class SetupView(CheckTwoFactorEnabledMixin, IdempotentSessionWizardView):
         """
         Uses the data from the setup step and generated key to recreate device.
 
-        Only used for call / sms -- generator uses other procedure.
+        Only used for call -- generator uses other procedure.
         """
         method = self.get_method()
         kwargs = kwargs or {}
         kwargs['name'] = 'default'
         kwargs['user'] = self.request.user
 
-        if method in ('call', 'sms'):
+        if method == 'call':
             kwargs['method'] = method
             kwargs['number'] = self.storage.validated_step_data\
                 .get(method, {}).get('number')

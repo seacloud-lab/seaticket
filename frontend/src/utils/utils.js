@@ -342,12 +342,6 @@ export const Utils = {
     };
   },
 };
-
-export const isIPhone = () => {
-  const userAgent = navigator.userAgent.toLowerCase();
-  return /iphone/gi.test(userAgent);
-};
-
 export const isShiftKeyDown = (e) => {
   return e && e.shiftKey;
 };

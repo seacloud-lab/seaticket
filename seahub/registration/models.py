@@ -364,7 +364,3 @@ def email_admin_on_registration(sender, **kwargs):
             bool(REGISTRATION_SEND_MAIL) is False:
         reg_email = kwargs['user'].email
         notify_admins_on_activate_request(reg_email)
-
-    if settings.NOTIFY_ADMIN_AFTER_REGISTRATION is True:
-        reg_email = kwargs['user'].email
-        notify_admins_on_register_complete(reg_email)

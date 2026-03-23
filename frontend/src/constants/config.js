@@ -33,7 +33,6 @@ export const enableUpdateUserInfo = window.app.pageOptions.enableUpdateUserInfo;
 export const enableUserSetContactEmail = window.app.pageOptions.enableUserSetContactEmail;
 export const enableUserSetName = window.app.pageOptions.enableUserSetName;
 export const customNavItems = window.app.pageOptions.customNavItems;
-export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const isOrgStaff = window.app.pageOptions.isOrgStaff;
 

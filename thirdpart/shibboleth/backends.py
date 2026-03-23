@@ -3,8 +3,7 @@ from django.db import connection
 
 from seahub.auth.backends import RemoteUserBackend
 from seahub.base.accounts import User
-from seahub.registration.models import (
-    notify_admins_on_activate_request, notify_admins_on_register_complete)
+from seahub.registration.models import notify_admins_on_activate_request
 
 class ShibbolethRemoteUserBackend(RemoteUserBackend):
     """
@@ -54,8 +53,6 @@ class ShibbolethRemoteUserBackend(RemoteUserBackend):
                     # Do not send follwing registration finished email (if any)
                     # which will cause confusion.
                     return user
-                if user and settings.NOTIFY_ADMIN_AFTER_REGISTRATION is True:
-                    notify_admins_on_register_complete(user.email)
             else:
                 user = None
 
