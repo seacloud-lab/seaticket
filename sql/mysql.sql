@@ -676,6 +676,8 @@ CREATE TABLE `project_issues_statistics` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(36) NOT NULL,
   `org_id` int(11) NOT NULL DEFAULT -1,
+  `connection_issues_count` int(11) NOT NULL DEFAULT 0,
+  `ticket_issues_count` int(11) NOT NULL DEFAULT 0,
   `total_issues_count` int(11) NOT NULL DEFAULT 0,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),

@@ -489,13 +489,30 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     return result
 
 
-def send_ticket_update_msg(project_uuid):
+def send_ticket_update_msg(project_uuid, add=0, delete=0, update=0):
     try:
-        msg_content = json.dumps({'project_uuid': uuid_str_to_32_chars(project_uuid)})
+        normalized_project_uuid = uuid_str_to_32_chars(project_uuid)
+        msg_content = json.dumps({'project_uuid': normalized_project_uuid})
+
         if mq.publish('ticket_update', msg_content) > 0:
             logger.debug('Publish ticket_update event: %s' % msg_content)
         else:
             logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
+
+        add_count = int(add or 0)
+        delete_count = int(delete or 0)
+        update_count = int(update or 0)
+        connection_update_content = json.dumps({
+            'project_uuid': normalized_project_uuid,
+            'type': 'ticket',
+            'add': add_count,
+            'delete': delete_count,
+            'update': update_count,
+        })
+        if mq.publish('connection_update', connection_update_content) > 0:
+            logger.debug('Publish connection_update event from ticket: %s' % connection_update_content)
+        else:
+            logger.info('No one subscribed to connection_update channel, event (%s) has not been send' % connection_update_content)
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
 

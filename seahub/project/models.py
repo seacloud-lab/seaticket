@@ -998,6 +998,8 @@ class ProjectGithubAppInstallation(models.Model):
 class ProjectIssuesStatistics(models.Model):
     project_uuid = models.UUIDField(unique=True, db_index=True)
     org_id = models.IntegerField(default=-1, db_index=True)
+    connection_issues_count = models.IntegerField(default=0)
+    ticket_issues_count = models.IntegerField(default=0)
     total_issues_count = models.IntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
