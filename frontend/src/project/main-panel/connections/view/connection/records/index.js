@@ -564,9 +564,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     });
   }, [api, data, onRefresh]);
 
-  const createMoreOptions = useCallback((resource) => {
-    if (!resource?._id) return [];
-    const row = resource;
+  const createMoreOptions = useCallback((row) => {
+    if (!row?._id) return [];
     return createContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
