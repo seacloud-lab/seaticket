@@ -12,7 +12,9 @@ import { username } from '@/constants';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
-  return `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
+  const urlObj = new URL(url);
+  return urlObj.href;
 };
 
 export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }) => {
@@ -364,8 +366,7 @@ export const generatorTicketsContextMenuOptions = ({
     label: gettext('Copy link'),
     key: 'copy_link',
     callback: () => {
-      const { origin } = location;
-      let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${row._id}/`;
+      const url = generatorTicketURL({ ticket: row, workspaceID, projectName });
       copy(url);
       toaster.success(gettext('The ticket link has been copied'));
     }
