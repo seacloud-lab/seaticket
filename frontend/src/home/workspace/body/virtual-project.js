@@ -149,7 +149,12 @@ class VirtualProject extends React.Component {
       >
         <div className="w-100 d-flex justify-content-between">
           <div className="project-item-icon">
-            <i className={`project-icon project-icon-style ${icon || 'icon-worksheet'}`} style={{ color: bgColor || DEFAULT_COLOR }}></i>
+            <i
+              className={`project-icon project-icon-style ${icon || 'icon-worksheet'}`}
+              style={{ color: bgColor || DEFAULT_COLOR }}
+              aria-hidden="true"
+            >
+            </i>
           </div>
         </div>
         <div className="project-item-name" title={name}>

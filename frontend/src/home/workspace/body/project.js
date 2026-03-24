@@ -201,7 +201,12 @@ class Project extends React.Component {
       >
         <div className="w-100 d-flex justify-content-between">
           <div className="project-item-icon">
-            <i className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} style={{ color: project.color || DEFAULT_COLOR }}></i>
+            <i
+              className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}
+              style={{ color: project.color || DEFAULT_COLOR }}
+              aria-hidden="true"
+            >
+            </i>
           </div>
           {(active || isProjectDropdownShow) && (isOwner || isAdmin) && (
             <Dropdown
