@@ -48,7 +48,7 @@ import CustomizeTable from './customize-table';
 import CustomizeNameDialog from './customize-name-dialog';
 import SubDropdown from './sub-dropdown';
 import { UsageCard, MultipleTextCard, InfoCard } from './chart';
-import { SectionSettings, AdminCheckboxSettings } from './settings';
+import { SectionSettings } from './settings';
 import FixedWidthTable from './fixed-width-table';
 import ProjectsTable from './projects-table';
 import UserSelect from './user-select';
@@ -72,7 +72,6 @@ export {
   MultipleTextCard,
   InfoCard,
   SectionSettings,
-  AdminCheckboxSettings,
   AdminSearch,
   CenteredError, CenteredLoading,
   ClickOutside,

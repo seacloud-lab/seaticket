@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, CenteredLoading, SectionSettings, AdminCheckboxSettings } from '@/components';
+import { toaster, CenteredLoading, SectionSettings } from '@/components';
+import AdminCheckboxSettings from '@/components/settings/admin-checkbox-settings';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
 import { gettext, displayTwoFactorAuth } from '@/constants';
@@ -103,7 +104,6 @@ class OrgSettings extends React.Component {
                 <SectionSettings title={gettext('Two factor authentication')}>
                   <AdminCheckboxSettings
                     onChange={this.saveSetting}
-                    displayName={gettext('Enable force two factor authentication')}
                     keyText='enable_force_2fa'
                     value={settings['enable_force_2fa']}
                     helpTip={gettext('Enable force two factor authentication')}
@@ -113,14 +113,12 @@ class OrgSettings extends React.Component {
               <SectionSettings title={gettext('User management')}>
                 <AdminCheckboxSettings
                   onChange={this.saveSetting}
-                  displayName={gettext('Enable sending email on adding users')}
                   keyText='enable_new_user_email'
                   value={settings['enable_new_user_email']}
                   helpTip={gettext('Enable sending email on adding users')}
                 />
                 <AdminCheckboxSettings
                   onChange={this.saveSetting}
-                  displayName={gettext('Enable members modify their own name')}
                   keyText='enable_member_modify_name'
                   value={settings['enable_member_modify_name']}
                   helpTip={gettext('Enable members modify their own name')}

@@ -5,9 +5,11 @@ import { Row, Col, Label } from 'reactstrap';
 const AdminSettingsTemplate = ({ helpTip, displayName, mainContent, attachment }) => {
   return (
     <Row>
-      <Col md="3">
-        <Label className="web-setting-label">{displayName}</Label>
-      </Col>
+      {displayName && (
+        <Col md="3">
+          <Label className="web-setting-label">{displayName}</Label>
+        </Col>
+      )}
       <Col md="5">
         {mainContent}
         {helpTip && <p className="tip-default mt-1">{helpTip}</p>}
@@ -20,7 +22,7 @@ const AdminSettingsTemplate = ({ helpTip, displayName, mainContent, attachment }
 };
 
 AdminSettingsTemplate.propTypes = {
-  displayName: PropTypes.string.isRequired,
+  displayName: PropTypes.string,
   helpTip: PropTypes.string,
   mainContent: PropTypes.object.isRequired,
   attachment: PropTypes.object
