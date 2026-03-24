@@ -8,7 +8,7 @@ import './index.css';
 const CustomizeBtn = ({ icon, className, children, ...rest }) => {
   return (
     <Button className={classnames('sea-ticket-customize-btn', className)} { ...rest }>
-      {icon && (<Icon symbol={icon} className="sea-ticket-customize-btn-icon mr-2" />)}
+      {icon && (<Icon symbol={icon} className="sea-ticket-customize-btn-icon mr-2" aria-hidden="true" />)}
       {children}
     </Button>
   );

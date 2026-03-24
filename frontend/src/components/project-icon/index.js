@@ -8,7 +8,12 @@ import './index.css';
 const ProjectIcon = ({ className, bgColor, icon, size = '' }) => {
   return (
     <div className={classnames('project-item-icon', className, size)}>
-      <i className={`project-icon ${icon || PROJECT_ICON_LIST[0]} project-icon-style`} style={{ color: bgColor || PROJECT_ICON_COLORS[0] }}></i>
+      <i
+        className={`project-icon ${icon || PROJECT_ICON_LIST[0]} project-icon-style`}
+        style={{ color: bgColor || PROJECT_ICON_COLORS[0] }}
+        aria-hidden="true"
+      >
+      </i>
     </div>
   );
 };
@@ -20,4 +25,3 @@ ProjectIcon.propTypes = {
 };
 
 export default ProjectIcon;
-

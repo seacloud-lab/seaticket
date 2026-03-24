@@ -8,16 +8,29 @@ const IconTextBtn = ({
   icon,
   text,
   className,
+  onClick,
   ...props
 }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (onClick) {
+        onClick(e);
+      }
+    }
+  };
   return (
     <div
       className={classnames('sea-ticket-icon-text-btn', className, `sea-ticket-${icon}-text-btn`)}
       title={text}
       aria-label={text}
+      role="button"
+      tabIndex="0"
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
       { ...props }
     >
-      {icon && (<Icon symbol={icon} className="mr-2" />)}
+      {icon && (<Icon symbol={icon} className="mr-2" aria-hidden="true" />)}
       <span>{text}</span>
     </div>
   );

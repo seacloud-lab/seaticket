@@ -15,7 +15,7 @@ function Icon({ className, symbol, ...otherProps }) {
   const SvgComponent = components[symbol];
   if (!SvgComponent) return null;
   return (
-    <SvgComponent className={`sea-qa-icon-svg sea-qa-icon-svg-${symbol} ${className ?? ''}`} {...otherProps} />
+    <SvgComponent className={`sea-qa-icon-svg sea-qa-icon-svg-${symbol} ${className ?? ''}`} aria-hidden="true" {...otherProps} />
   );
 }
 
