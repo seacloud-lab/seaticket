@@ -84,7 +84,6 @@ const hasJsxRuntime = (() => {
 
 const excludedChunkNames = [
   // 'eyeIcon',
-  // 'checkCircleIcon',
   // 'moreIcon',
   // 'downIcon',
 ];
