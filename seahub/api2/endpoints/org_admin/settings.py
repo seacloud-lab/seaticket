@@ -15,6 +15,7 @@ from seahub.api2.utils import api_error
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.api2.permissions import IsOrgAdminUser
 from seahub.organizations.settings import ENABLE_ORG_LOGO
+from seahub.options.models import UserOptions
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,10 @@ class OrgAdminSettingsView(APIView):
         org_id = request.user.org.org_id
         try:
             settings = OrgAdminSettings.objects.get_admin_settings(org_id)
+            username = request.user.username
+            subscription_status = UserOptions.objects.get_user_option(username, 'newsletter_subscribed')
+            is_subscribed = subscription_status == 'true'
+            settings['newsletter_subscribed'] = is_subscribed
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -36,8 +41,21 @@ class OrgAdminSettingsView(APIView):
     def put(self, request):
         org_id = request.user.org.org_id
         try:
+            # Handle newsletter subscription status (frontend sends '0' or '1')
+            newsletter_subscribed = request.data.get('newsletter_subscribed', '0')
+            # Convert '0'/'1' to boolean for database storage
+            is_subscribed = newsletter_subscribed == '1'
+            
+            # Store as 'true' or 'false' in database
+            if is_subscribed:
+                UserOptions.objects.set_user_option(request.user.username, 'newsletter_subscribed', 'true')
+            else:
+                UserOptions.objects.set_user_option(request.user.username, 'newsletter_subscribed', 'false')
+
             OrgAdminSettings.objects.add_or_update(org_id, **dict(request.data.items()))
             settings = OrgAdminSettings.objects.get_admin_settings(org_id)
+            # Return the boolean value in response
+            settings['newsletter_subscribed'] = is_subscribed
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

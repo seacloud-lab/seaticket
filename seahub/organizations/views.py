@@ -13,6 +13,8 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 from seahub.auth import login, REDIRECT_FIELD_NAME
 from seahub.auth.decorators import login_required, login_required_ajax
@@ -29,6 +31,7 @@ from seahub.organizations.utils import transfer_user_to_org, can_org_use_saml
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
+from seahub.options.models import UserOptions
 from seahub.api2.throttling import OrgRegisterRateThrottle
 from seahub.settings import ENABLE_MULTI_SAML, ENABLE_TWO_FACTOR_AUTH
 
@@ -247,6 +250,15 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
 
             if name:
                 Profile.objects.add_or_update(new_user.username, name)
+
+            # Handle newsletter subscription
+            newsletter_subscribed = request.POST.get('newsletter') == 'on'
+            if newsletter_subscribed:
+                try:
+                    # Save newsletter subscription status to user options
+                    UserOptions.objects.set_user_option(new_user.username, 'newsletter_subscribed', 'true')
+                except Exception as e:
+                    logger.warning('Failed to save newsletter subscription status: %s' % e)
 
             # login the user
             new_user.backend = settings.AUTHENTICATION_BACKENDS[0]

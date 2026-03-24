@@ -124,6 +124,15 @@ class OrgSettings extends React.Component {
                   helpTip={gettext('Enable members modify their own name')}
                 />
               </SectionSettings>
+              <SectionSettings title={gettext('Newsletter')}>
+                <AdminCheckboxSettings
+                  onChange={this.saveSetting}
+                  displayName={gettext('Enable newsletter subscription')}
+                  keyText='newsletter_subscribed'
+                  value={settings['newsletter_subscribed']}
+                  helpTip={gettext('Enable newsletter subscription')}
+                />
+              </SectionSettings>
             </>
           )}
         </Main>

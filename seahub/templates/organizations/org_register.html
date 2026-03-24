@@ -37,6 +37,10 @@
         {{ form.password2.errors }}
 
         {{ form.non_field_errors }}
+        <div class="form-check mt-1 d-flex align-items-center">
+          <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input mr-2 mt-0">
+          <label for="newsletter">{% trans "Subscribe to our newsletter" %}</label>
+        </div>
         <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
       </form>
       {% endif %}
