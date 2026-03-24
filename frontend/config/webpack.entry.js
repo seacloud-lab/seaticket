@@ -8,7 +8,6 @@ const entryFiles = {
   project: '/project',
   portal: '/portal',
   eyeIcon: '/icon-page/eye-icon',
-  checkCircleIcon: '/icon-page/check-circle',
   moreIcon: '/icon-page/more',
   downIcon: '/icon-page/down',
 };
