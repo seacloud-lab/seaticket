@@ -7,7 +7,7 @@ import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';
 
-const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources }) => {
+const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources, disableAutoWidth = false }) => {
 
   const source = useMemo(() => {
     if (!element) return {};
@@ -21,38 +21,49 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
     openDefinitionRecord && openDefinitionRecord(event, source);
   }, [source, onClick, openDefinitionRecord]);
 
+  const definitionWidth = useMemo(() => {
+    // 48px is the width of the more definition button (margin + button width)
+    const offsetWidth = sources.length > 3 ? '48px' : '0px';
+    return `calc((100% - 16px - ${offsetWidth}) / 3)`;
+  }, [sources]);
+
   if (!element) return null;
 
   const { identifier, icon, title, content, mtime } = source;
 
   const identifierIndex = identifier - 1;
+  const definitionStyle = disableAutoWidth ? undefined : { width: definitionWidth };
 
   return (
     <div
       className={classnames('sea-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
+      style={definitionStyle}
       onClick={handleClick}
       data-id={element.id}
       { ...attributes }
     >
       <div className="sea-ai-chat-customize-definition-simple-info">
-        <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-content">
-          <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
-        </div>
-        <div className="sea-ai-chat-customize-definition-avatar">
-          <img src={icon} alt={''} />
+          <div className="sea-ai-chat-customize-definition-title">{title}</div>
         </div>
       </div>
-      {(mtime) && (
-        <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
-          {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
+      <div className="sea-ai-chat-customize-definition-content">
+        {removeTextMark(content)}
+      </div>
+      <div className="sea-ai-chat-customize-definition-content-divider"></div>
+      <div className="d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          <div className="sea-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
+            <img src={icon} alt="" />
+          </div>
+          {(mtime) && (
+            <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
+              {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
+            </div>
+          )}
         </div>
-      )}
-      {content && (
-        <div className="sea-ai-chat-customize-definition-content">
-          {removeTextMark(content)}
-        </div>
-      )}
+        <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
+      </div>
     </div>
   );
 };

@@ -1,29 +1,31 @@
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { getResourceIconURL } from '@/project/utils';
-import { gettext } from '@/constants';
 import { CustomizePopover, IconButton } from '@/components';
 import Definition from '../definition';
 
 import './index.css';
 
-const initDefinitionIndex = 3;
+const initDefinitionIndex = 4;
 
 const MoreDefinition = ({ element, attributes, editor, sources, settings, onClick, openDefinitionRecord }) => {
   const [isShowMore, setIsShowMore] = useState(false);
   const [definitionIndex, setDefinitionIndex] = useState(initDefinitionIndex);
+  const [popoverWidth, setPopoverWidth] = useState(0);
 
   const moreRef = useRef();
 
-  const icons = useMemo(() => {
-    return sources.slice(2).map(s => getResourceIconURL(s.type));
+  const count = useMemo(() => {
+    return Math.max(0, sources.length - 3);
   }, [sources]);
   const sourcesCount = useMemo(() => sources.length, [sources]);
 
   const openShowMore = useCallback(() => {
+    const siblingWidth = moreRef.current?.previousElementSibling?.getBoundingClientRect()?.width;
+    const width = Number.isFinite(siblingWidth) ? `${siblingWidth}px` : undefined;
+    setPopoverWidth(width);
     setIsShowMore(true);
-  }, []);
+  }, [moreRef]);
 
   const hideShowMore = useCallback(() => {
     setIsShowMore(false);
@@ -59,33 +61,29 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
   return (
     <>
       <div
-        className={classnames('sea-ai-chat-customize-definition')}
+        className={classnames('sea-ai-chat-customize-definition sea-ai-chat-customize-more-definition')}
         onClick={openShowMore}
         ref={moreRef}
       >
-        <div className="sea-ai-chat-customize-definition-simple-info">
-          <div className="sea-ai-chat-customize-definition-title-score">
-            <div className="sea-ai-chat-customize-definition-title text-truncate">{gettext('See context')}</div>
-          </div>
-          <div className="sea-ai-chat-customize-definition-avatars">
-            {icons.map((icon, index) => (<img src={icon} key={index} alt='' />))}
-          </div>
-        </div>
-        <div className="sea-ai-chat-customize-definition-content">
-          {gettext('See more')}
-        </div>
+        <span className="more-definition-content">
+          +{count}
+        </span>
       </div>
       {isShowMore && (
         <CustomizePopover
           target={moreRef}
           className="sea-ai-chat-customize-definitions-popover"
+          placement="bottom-end"
           hidePopover={hideShowMore}
           hidePopoverWithEsc={hideShowMore}
         >
-          <div className="sea-ai-chat-customize-definitions-container" style={{ width: moreRef.current?.getBoundingClientRect()?.width }}>
+          <div className="sea-ai-chat-customize-definitions-container" style={{ width: popoverWidth }}>
             <div className="sea-ai-chat-customize-definitions-title">
               <IconButton icon="arrow-left" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
-              <div className="sea-ai-chat-customize-definitions-index">{`${definitionIndex} / ${sourcesCount}`}</div>
+              <div className="sea-ai-chat-customize-definitions-index">
+                <span>{definitionIndex}</span>
+                <span className="sources-count-text">/{sourcesCount}</span>
+              </div>
               <IconButton icon="arrow-right" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(1)} />
             </div>
             <Definition
@@ -95,6 +93,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
               settings={settings}
               onClick={handleClick}
               openDefinitionRecord={handleOpenDefinitionRecord}
+              disableAutoWidth={true}
             />
           </div>
         </CustomizePopover>
