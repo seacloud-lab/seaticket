@@ -13,8 +13,8 @@ import { username } from '@/constants';
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
   const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
-  const urlObj = new URL(url);
-  return urlObj.href;
+  const urlObject = new URL(url);
+  return urlObject.href;
 };
 
 export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }) => {

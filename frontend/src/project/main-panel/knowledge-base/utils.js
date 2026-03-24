@@ -3,7 +3,9 @@ import { BAR_TYPE } from '@/project/constants';
 
 export const generatorKnowledgeBaseURL = ({ kb, workspaceID, projectName }) => {
   const { origin } = location;
-  return `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${kb._id}/`;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${kb._id}/`;
+  const urlObject = new URL(url);
+  return urlObject.href;
 };
 
 export const generatorKnowledgeContextMenuOptions = ({
