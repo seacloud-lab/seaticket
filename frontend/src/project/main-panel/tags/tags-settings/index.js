@@ -119,7 +119,9 @@ const TagsSettings = ({
           <>
             {selectedTags.map(tag => (
               <Tag tag={tag} key={tag._id} className="mr-0">
-                <RemoveBtn callback={(event) => handleRemove(event, tag)} />
+                {!isReadonly && (
+                  <RemoveBtn callback={(event) => handleRemove(event, tag)} />
+                )}
               </Tag>
             ))}
           </>
