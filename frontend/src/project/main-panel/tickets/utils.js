@@ -12,7 +12,8 @@ import { username } from '@/constants';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
-  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticket._id}/`;
+  const ticketId = ticket._id || ticket.id;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticketId}/`;
   const urlObject = new URL(url);
   return urlObject.href;
 };
