@@ -384,7 +384,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
       label: gettext('Copy original link'),
       key: 'copy_original_link',
       callback: () => {
-        copy(url);
+        const urlObj = new URL(url);
+        copy(urlObj.href);
         toaster.success(gettext('The original link has been copied'));
       },
     };

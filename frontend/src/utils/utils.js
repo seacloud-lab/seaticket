@@ -342,6 +342,7 @@ export const Utils = {
     };
   },
 };
+
 export const isShiftKeyDown = (e) => {
   return e && e.shiftKey;
 };
