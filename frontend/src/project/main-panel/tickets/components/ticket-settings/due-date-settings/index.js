@@ -17,10 +17,10 @@ dayjs.extend(utc);
 dayjs.extend(localeData);
 dayjs.extend(weekOfYear);
 
-const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) => {
+const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', onChange }) => {
   const calendarContainerRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const formatValue = value ? dayjs(value) : null;
+  const [value, setValue] = useState(propsValue || null);
+  const formatValue = useMemo(() => value ? dayjs(value) : null, [value]);
 
   const getCalendarContainer = useCallback(() => {
     return calendarContainerRef.current;
@@ -28,14 +28,15 @@ const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) =>
 
   const onDueDateChange = useCallback((value) => {
     const newValue = value ? dayjs(value).format('YYYY-MM-DD') : '';
-    onChange(newValue);
-    setOpen(true);
-  }, [onChange]);
+    setValue(newValue);
+  }, []);
 
   const onOpenChange = useCallback((nextOpen) => {
     if (isReadonly) return;
-    setOpen(nextOpen);
-  }, [isReadonly]);
+    if (nextOpen) return;
+    if (propsValue === value) return;
+    onChange && onChange(value);
+  }, [isReadonly, value, propsValue, onChange]);
 
   const locale = useMemo(() => {
     return translateCalendar();
@@ -54,7 +55,8 @@ const DueDateSettings = ({ isReadonly, value, className = 'mb-4', onChange }) =>
           value={formatValue}
           onChange={onDueDateChange}
           onOpenChange={onOpenChange}
-          open={open}
+          // open={open}
+          isRemainOpen={true}
         >
           {
             ({ value }) => {
