@@ -484,6 +484,11 @@ class RelatedRecordsView(APIView):
 
             formatted_results = []
             for result in search_results:
+                if source_record_id == int(result['_id']) and \
+                    (ticket_provided and result['type'] == ExtraSourceType.TICKET.value or \
+                    connection_provided and int(result.get('connection_id', -1)) == int(connection_id)):
+                    continue
+
                 res = {
                     'type': result['type'],
                     '_id': result['_id'],
@@ -491,8 +496,8 @@ class RelatedRecordsView(APIView):
                     'content': result['content'],
                     'modified_time': result['modified_time']
                 }
-                if connection_id := result.get('connection_id'):
-                    res['connection_id'] = connection_id
+                if c_id := result.get('connection_id'):
+                    res['connection_id'] = c_id
                 formatted_results.append(res)
 
             return Response({
