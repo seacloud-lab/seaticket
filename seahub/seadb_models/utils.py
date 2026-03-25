@@ -1,6 +1,6 @@
 import logging
 
-from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
+from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.project.utils import get_current_table_metadata
@@ -32,26 +32,6 @@ def fetch_records_by_table_batch(seadb_api, project_uuid, table_name, pks):
     except Exception as e:
         logger.error(f'Error batch querying `{table_name}`: {e}')
         return {}
-
-
-def fetch_tickets_batch(seadb_api, project_uuid, ticket_pks):
-    return fetch_records_by_table_batch(seadb_api, project_uuid, 'tickets', ticket_pks)
-
-
-def fetch_issue_type_connection_records_batch(seadb_api, project_uuid, connection_id, connection_type, pks):
-    table_name = None
-    if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.EMAIL.value:
-        table_name = ThreadTable.gen_table_name(connection_id)
-    else:
-        logger.warning(f'Unsupported issue connection type: {connection_type}')
-        return {}
-
-    return fetch_records_by_table_batch(seadb_api, project_uuid, table_name, pks)
-
 
 def init_site_seadb_table(seadb_api, project_uuid, connection_id):
     site_table_name = WebCrawlTable.gen_table_name(connection_id)
@@ -966,10 +946,105 @@ def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_ty
 
         sql = f'SELECT {fields_str} FROM `{table["name"]}` WHERE `title` ILIKE "%{search_text}%" AND (`deleted` = False OR `deleted` IS NULL) LIMIT 0, {limit - len(results)}'
 
-        for result in seadb_api.query_rows(project_uuid, sql).get('results'):
+        for result in seadb_api.query_rows(project_uuid, sql).get('results', []):
             result['type'] = table['type']
             if 'connection_id' in table:
                 result['connection_id'] = table['connection_id']
             results.append(result)
 
     return results
+
+def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, connection_id=None):
+    if source_type == ConnectionType.GITHUB_ISSUE.value:
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.DISCOURSE_FORUM.value:
+        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.SITE.value:
+        table_name = WebCrawlTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.SEAFILE.value:
+        table_name = SeafileTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.EMAIL.value:
+        table_name = ThreadTable.gen_table_name(connection_id)
+    elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
+        table_name == KnowledgeBaseTable.gen_table_name()
+    elif source_type == ExtraSourceType.TICKET.value:
+        table_name == TicketsTable.gen_table_name()
+
+    sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
+    results = {}
+    for result in seadb_api.query_rows(project_uuid, sql).get('results', []):
+        results[result['_pk']] = {
+            'title': result['title'],
+            'ai_summary': result['ai_summary']
+        }
+    return results
+
+def retrive_vector_search_rerank_data(seadb_api, project_uuid, results):
+    conn_id_type_map = {}
+    conn_id_pks_map = {}
+    kb_pks = []
+    tk_pks = []
+
+    for result in results:
+        if result['type'] == ExtraSourceType.TICKET.value:
+            tk_pks.append(int(result['_id']))
+        elif result['type'] == ExtraSourceType.KNOWLEDGE_BASE.value:
+            kb_pks.append(int(result['_id']))
+        else:
+            connection_id = int(result['connection_id'])
+            if connection_id not in conn_id_type_map:
+                conn_id_type_map[connection_id] = result['type']
+                conn_id_pks_map[connection_id] = []
+            conn_id_pks_map[connection_id].append(int(result['_id']))
+    
+    conn_id_pk_title_summary_map = {}
+    for connection_id, connection_type in conn_id_type_map.items():
+        pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, connection_type, list(set(conn_id_pks_map[connection_id])), connection_id)
+        if pk_title_summary_map:
+            conn_id_pk_title_summary_map[connection_id] = pk_title_summary_map
+    tk_pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, ExtraSourceType.TICKET.value, list(set(tk_pks))) if tk_pks else {}
+    kb_pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, ExtraSourceType.KNOWLEDGE_BASE.value, list(set(kb_pks))) if kb_pks else {}
+
+    new_results_map = {}
+    for result in results:
+        connection_id = None
+        record_id = None
+        title_summary = {}
+        if result['type'] in ConnectionType and \
+            (c_id := int(result['connection_id'])) in conn_id_pk_title_summary_map and \
+            (r_id := int(result['_id'])) in conn_id_pk_title_summary_map[c_id]:
+            connection_id = c_id
+            record_id = r_id
+            title_summary = conn_id_pk_title_summary_map[c_id][r_id]
+        elif result['type'] == ExtraSourceType.KNOWLEDGE_BASE.value and (r_id := int(result['_id'])) in kb_pk_title_summary_map:
+            connection_id = ExtraSourceType.KNOWLEDGE_BASE.value
+            record_id = r_id
+            title_summary = kb_pk_title_summary_map[r_id]
+        elif result['type'] == ExtraSourceType.TICKET.value and (r_id := int(result['_id'])) in tk_pk_title_summary_map:
+            connection_id = ExtraSourceType.TICKET.value
+            record_id = r_id
+            title_summary = tk_pk_title_summary_map[r_id]
+        else:
+            continue
+        if connection_id not in new_results_map:
+            new_results_map[connection_id] = {}
+
+        if 'snippet' in result:
+            if existing_record := new_results_map[connection_id].get(record_id):
+                snippets = existing_record.get('snippets', [])
+            else:
+                snippets = []
+            result['snippets'] = snippets
+            result['snippets'].append(result['snippet'])
+            result.pop('snippet', None)
+        
+        result.update(title_summary)
+        result['content'] = '\n.................\n'.join(result.get('snippets')) if result.get('snippets') else result['ai_summary']
+        new_results_map[connection_id][record_id] = result
+
+    return [
+        result
+        for pk_result in new_results_map.values()
+        for result in pk_result.values()
+    ]
+

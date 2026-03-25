@@ -5,7 +5,7 @@ import jwt
 import requests
 from urllib.parse import urljoin
 
-from seahub.settings import SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL, JWT_PRIVATE_KEY
+from seahub.settings import SEAQA_AI_INNER_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 

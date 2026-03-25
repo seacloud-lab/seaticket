@@ -22,8 +22,8 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
-    rank_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table
+    rank_vector_search_results
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, retrive_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import search
@@ -443,10 +443,26 @@ class SearchView(APIView):
         # Rerank results using LLM for semantic search
         if search_type == 'semantic_search' and results:
             org_id = request.user.org.org_id if is_org_context(request) else -1
-            results = rank_search_results(query, results, username, org_id, project_uuid)
+            # preparing required fields for reranking
+            results = retrive_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
 
-        return Response({'results': results})
+            # rerank
+            results = rank_vector_search_results({'ai_summary': query}, results, username, org_id, project_uuid)
 
+        # returns only the required fields
+        formatted_results = []
+        for result in results:
+            res = {
+                'type': result['type'],
+                '_id': result['_id'],
+                'title': result['title'],
+                'content': result['content'],
+                'modified_time': result['modified_time']
+            }
+            if connection_id := result.get('connection_id'):
+                res['connection_id'] = connection_id
+            formatted_results.append(res)
+        return Response({'results': formatted_results})
 
 class TrashProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
