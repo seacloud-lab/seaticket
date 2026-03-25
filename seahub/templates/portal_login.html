@@ -1,63 +1,154 @@
+{% extends "base_clean.html" %}
 {% load i18n static %}
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>{{ project_name }} - {% trans "Portal Login" %}</title>
-  <link rel="stylesheet" type="text/css" href="{{ media_url }}css/sea-qa-ui.css" />
-</head>
-<body>
-  <div class="container mt-5" style="max-width: 520px;">
-    <h3 class="mb-3">{{ project_name }} - {% trans "Portal" %}</h3>
-    <div class="card p-3">
-      <label class="mb-1">{% trans "Email" %}</label>
-      <input id="portal-email" type="email" class="form-control" placeholder="{% trans 'Enter email' %}">
-      <div class="d-flex mt-3" style="gap: 8px;">
-        <button id="send-btn" class="btn btn-outline-primary">{% trans "Send code" %}</button>
-        <input id="code" type="text" class="form-control" placeholder="{% trans 'Login code' %}">
-        <button id="verify-btn" class="btn btn-primary">{% trans "Login" %}</button>
+
+{% block sub_title %}{{ project_name }} - {% trans "Portal Login" %} - {% endblock %}
+
+{% block main_content %}
+<div class="login-panel-outer-container">
+  <div class="portal-login-panel-wrapper">
+    <div class="portal-login-panel-content">
+      <div class="portal-login-panel-header d-flex justify-content-center align-items-center">
+			  <div class="portal-login-title">{{ project_name }} - {% trans "Portal" %}</div>
+		  </div>
+      <div class="login-form-wrapper">
+        <input id="portal-email" type="email" class="input form-item-input" placeholder="{% trans 'Enter email' %}">
+        <div id="prompt-email" class="prompt-text">{% trans "We will send a login code to the email that you were invited with." %}</div>
+        <input id="code" type="text" class="input form-item-input" placeholder="{% trans 'Login code' %}" style="display: none;">
+        <div id="prompt-code" class="prompt-text" style="display: none;"></div>
+        <button id="send-btn" class="btn btn-primary btn-block">{% trans "Continue" %}</button>
+        <button id="verify-btn" class="btn btn-primary btn-block" style="display: none;">{% trans "Login" %}</button>
+        <div id="countdown-wrapper" class="countdown-wrapper" style="display: none;"></div>
       </div>
-      <div id="msg" class="text-danger mt-2" style="min-height:20px;"></div>
     </div>
   </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
 <script>
-  const projectUuid = "{{ project_uuid }}";
   function getCookie(name) {
     const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return v ? v.pop() : '';
   }
-  const csrftoken = getCookie('seaqa_csrftoken');
 
-  function showMsg(text, ok) {
-    const el = document.getElementById('msg');
-    el.className = ok ? 'text-success mt-2' : 'text-danger mt-2';
+  const csrftoken = getCookie('{{ CSRF_COOKIE_NAME|default:"seaqa_csrftoken" }}');
+  const projectUuid = "{{ project_uuid }}";
+  let countdownTimer = null;
+  const resendInTemplate = '{% blocktrans with sec="__SEC__" %}Resend in {{ sec }}s{% endblocktrans %}';
+
+  const emailInput = document.getElementById('portal-email');
+  const codeInput = document.getElementById('code');
+  const promptEmail = document.getElementById('prompt-email');
+  const promptCode = document.getElementById('prompt-code');
+  const sendBtn = document.getElementById('send-btn');
+  const verifyBtn = document.getElementById('verify-btn');
+  const countdownWrapper = document.getElementById('countdown-wrapper');
+
+  function showMsg(el, text, isError) {
+    if (!el) return;
     el.textContent = text || '';
+    el.style.color = isError ? '#ff0000' : '#666';
   }
 
-  document.getElementById('send-btn').onclick = function () {
-    const email = document.getElementById('portal-email').value.trim();
-    if (!email) { showMsg('{% trans "Email is required" %}'); return; }
-    fetch(`/api/v1/portal/${projectUuid}/external-login/send-code/`, {
+  function sendCode(email) {
+    return fetch(`/api/v1/portal/${projectUuid}/external-login/send-code/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email })
-    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
-      .then(() => showMsg('{% trans "Code sent, please check your email" %}', true))
-      .catch(e => showMsg(e.detail || '{% trans "Send failed" %}'));
+    }).then(r => {
+      return {}
+      // r.ok ? r.json() : r.json().then(e => Promise.reject(e))
+    });
+  }
+
+  function showVerifyStep() {
+    codeInput.style.display = 'block';
+    verifyBtn.style.display = 'block';
+    promptCode.style.display = 'block';
+    sendBtn.style.display = 'none';
+    promptEmail.style.display = 'none';
+  }
+
+  function resendCode() {
+    const email = emailInput.value.trim();
+    if (!email) {
+      showMsg(promptCode, '{% trans "Email is required" %}', true);
+      return;
+    }
+
+    sendCode(email)
+      .then(() => {
+        startCountdown(30);
+        showMsg(promptCode, '{% trans "Code sent, please check your email" %}');
+      })
+      .catch(e => showMsg(promptCode, '{% trans "External user not found. Please use the invitation link first." %}', true));
+  }
+
+  function startCountdown(seconds = 30) {
+    if (!countdownWrapper) return;
+
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+
+    countdownWrapper.onclick = null;
+    countdownWrapper.style.color = '#666';
+    countdownWrapper.style.cursor = 'default';
+
+    let remain = seconds;
+    countdownWrapper.style.display = 'block';
+    countdownWrapper.textContent = resendInTemplate.replace('__SEC__', remain);
+
+    countdownTimer = setInterval(() => {
+      remain -= 1;
+      if (remain <= 0) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        countdownWrapper.style.color = '#ed7109';
+        countdownWrapper.style.cursor = 'pointer';
+        countdownWrapper.textContent = '{% trans "Resend login code" %}';
+        console.log('countdownWrapper', countdownWrapper, resendCode)
+        countdownWrapper.onclick = resendCode;
+        return;
+      }
+      countdownWrapper.textContent = resendInTemplate.replace('__SEC__', remain);
+    }, 1000);
+  }
+
+  // Continue button
+  sendBtn.onclick = function () {
+    const email = emailInput.value.trim();
+    if (!email) {
+      showMsg(promptEmail, '{% trans "Email is required" %}', true);
+      return;
+    }
+
+    sendCode(email)
+      .then(() => {
+        showVerifyStep();
+        startCountdown(30);
+        showMsg(promptCode, '{% trans "Code sent, please check your email" %}');
+      })
+      .catch(e => showMsg(promptEmail, '{% trans "External user not found. Please use the invitation link first." %}', true));
   };
 
-  document.getElementById('verify-btn').onclick = function () {
-    const email = document.getElementById('portal-email').value.trim();
-    const code = document.getElementById('code').value.trim();
-    if (!email || !code) { showMsg('{% trans "Email and code are required" %}'); return; }
+  // Login button
+  verifyBtn.onclick = function () {
+    const email = emailInput.value.trim();
+    const code = codeInput.value.trim();
+    if (!email || !code) {
+      showMsg(promptCode, '{% trans "Email and code are required" %}', true);
+      return;
+    }
+
     fetch(`/api/v1/portal/${projectUuid}/external-login/verify/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email, code })
     }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
       .then(() => { window.location.href = `/portal/${projectUuid}/`; })
-      .catch(e => showMsg(e.detail || '{% trans "Verify failed" %}'));
+      .catch(e => showMsg(promptCode, '{% trans "Verify failed" %}', true));
   };
 </script>
-</body>
-</html>
+{% endblock %}
