@@ -496,7 +496,8 @@ class RelatedRecordsView(APIView):
                     'content': result['content'],
                     'modified_time': result['modified_time']
                 }
-                if c_id := result.get('connection_id'):
+                c_id = result.get('connection_id')
+                if c_id:
                     res['connection_id'] = c_id
                 formatted_results.append(res)
 

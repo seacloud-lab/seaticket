@@ -459,7 +459,8 @@ class SearchView(APIView):
                 'content': result['content'],
                 'modified_time': result['modified_time']
             }
-            if connection_id := result.get('connection_id'):
+            connection_id = result.get('connection_id')
+            if connection_id:
                 res['connection_id'] = connection_id
             formatted_results.append(res)
         return Response({'results': formatted_results})

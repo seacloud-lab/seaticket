@@ -244,7 +244,8 @@ class ChatMessagesView(APIView):
             for message in messages:
                 data = message.to_dict()
                 if developer_mode and message.role == 'assistant':
-                    if thought_process := message_id_thought_process_map.get(message.message_id, {}):
+                    thought_process = message_id_thought_process_map.get(message.message_id, {})
+                    if thought_process:
                         data['thought_process'] = thought_process
                 messages_data.append(data)
             chat_task_info = cache.get(gen_chat_task_id(session_uuid))

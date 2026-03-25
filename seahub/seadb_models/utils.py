@@ -1011,26 +1011,27 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
         record_id = None
         title_summary = {}
         if result['type'] in ConnectionType and \
-            (c_id := int(result['connection_id'])) in conn_id_pk_title_summary_map and \
-            (r_id := int(result['_id'])) in conn_id_pk_title_summary_map[c_id]:
-            connection_id = c_id
-            record_id = r_id
-            title_summary = conn_id_pk_title_summary_map[c_id][r_id]
-        elif result['type'] == ExtraSourceType.KNOWLEDGE_BASE.value and (r_id := int(result['_id'])) in kb_pk_title_summary_map:
+            int(result['connection_id']) in conn_id_pk_title_summary_map and \
+            int(result['_id']) in conn_id_pk_title_summary_map[int(result['connection_id'])]:
+            connection_id = int(result['connection_id'])
+            record_id = int(result['_id'])
+            title_summary = conn_id_pk_title_summary_map[connection_id][record_id]
+        elif result['type'] == ExtraSourceType.KNOWLEDGE_BASE.value and int(result['_id']) in kb_pk_title_summary_map:
             connection_id = ExtraSourceType.KNOWLEDGE_BASE.value
-            record_id = r_id
-            title_summary = kb_pk_title_summary_map[r_id]
-        elif result['type'] == ExtraSourceType.TICKET.value and (r_id := int(result['_id'])) in tk_pk_title_summary_map:
+            record_id = int(result['_id'])
+            title_summary = kb_pk_title_summary_map[record_id]
+        elif result['type'] == ExtraSourceType.TICKET.value and int(result['_id']) in tk_pk_title_summary_map:
             connection_id = ExtraSourceType.TICKET.value
-            record_id = r_id
-            title_summary = tk_pk_title_summary_map[r_id]
+            record_id = int(result['_id'])
+            title_summary = tk_pk_title_summary_map[record_id]
         else:
             continue
         if connection_id not in new_results_map:
             new_results_map[connection_id] = {}
 
         if 'snippet' in result:
-            if existing_record := new_results_map[connection_id].get(record_id):
+            existing_record = new_results_map[connection_id].get(record_id)
+            if existing_record:
                 snippets = existing_record.get('snippets', [])
             else:
                 snippets = []
