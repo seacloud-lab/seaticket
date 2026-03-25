@@ -23,7 +23,7 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
     rank_vector_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, retrive_vector_search_rerank_data
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, retrieve_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import search
@@ -444,7 +444,7 @@ class SearchView(APIView):
         if search_type == 'semantic_search' and results:
             org_id = request.user.org.org_id if is_org_context(request) else -1
             # preparing required fields for reranking
-            results = retrive_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
+            results = retrieve_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
 
             # rerank
             results = rank_vector_search_results({'ai_summary': query}, results, username, org_id, project_uuid)

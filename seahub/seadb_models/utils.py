@@ -979,7 +979,7 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         }
     return results
 
-def retrive_vector_search_rerank_data(seadb_api, project_uuid, results):
+def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
     conn_id_type_map = {}
     conn_id_pks_map = {}
     kb_pks = []

@@ -27,7 +27,7 @@ from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSo
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
-from seahub.seadb_models.utils import retrive_vector_search_rerank_data
+from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 
 
@@ -474,7 +474,7 @@ class RelatedRecordsView(APIView):
             
             org_id = request.user.org.org_id if is_org_context(request) else -1
             # preparing required fields for reranking
-            search_results = retrive_vector_search_rerank_data(seadb_api, uuid_str_to_32_chars(project_uuid), search_results)
+            search_results = retrieve_vector_search_rerank_data(seadb_api, uuid_str_to_32_chars(project_uuid), search_results)
 
             # rerank
             search_results = rank_vector_search_results({
