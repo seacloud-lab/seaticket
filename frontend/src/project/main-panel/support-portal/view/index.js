@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { gettext, mediaUrl, PERMISSION_TYPES, server, siteRoot } from '@/constants';
+import { gettext, mediaUrl, server, siteRoot } from '@/constants';
 import { CustomizeBtn } from '@/components';
 
 import './index.css';
 
-const View = ({ projectUuid, permission }) => {
+const { projectUuid, isProjectAdmin } = window.app.pageOptions;
+
+const View = () => {
   const [height, setHeight] = useState(600);
 
   const viewRef = useRef(null);
@@ -39,7 +41,7 @@ const View = ({ projectUuid, permission }) => {
         {gettext('Support portal allows external users to self-service and obtain support information, including documentation, knowledge base articles, and ticket management. It acts as the customer-facing interface for your support services.')}
       </div>
       <div className="sea-ticket-support-portal-tip-pages">
-        {permission === PERMISSION_TYPES.READ_WRITE && (
+        {isProjectAdmin && (
           <CustomizeBtn color="primary" icon="rename" onClick={() => window.open(editURL, '_blank', 'noopener,noreferrer')}>
             {gettext('Edit portal')}
           </CustomizeBtn>
