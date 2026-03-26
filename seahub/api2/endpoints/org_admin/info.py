@@ -16,7 +16,7 @@ from seahub.organizations.models import OrgMemberQuota, OrgSettings, Organizatio
 from django.db.models import Sum
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
-from seahub.project.models import ProjectIssuesStatistics
+from seahub.project.models import ProjectIssuesStatistics, Projects
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,13 @@ class OrgAdminInfo(APIView):
 
         # issues usage
         try:
+            active_project_uuids = Projects.objects.filter(
+                workspace__org_id=org_id,
+                deleted=False,
+            ).values_list('uuid', flat=True)
             issues_usage = ProjectIssuesStatistics.objects.filter(
-                org_id=org_id
+                org_id=org_id,
+                project_uuid__in=active_project_uuids,
             ).aggregate(total=Sum('total_issues_count'))['total'] or 0
         except Exception as e:
             logger.error(e)
