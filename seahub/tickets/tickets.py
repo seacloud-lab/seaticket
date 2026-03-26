@@ -344,7 +344,7 @@ class TicketsAPIView(APIView):
             project_name=project.project_name,
         )
 
-        send_ticket_update_msg(project_uuid, add=1)
+        send_ticket_update_msg(project_uuid, added=1)
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
@@ -588,7 +588,7 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         if need_delete_ticket_ids:
-            send_ticket_update_msg(project_uuid, delete=len(need_delete_ticket_ids))
+            send_ticket_update_msg(project_uuid, deleted=len(need_delete_ticket_ids))
 
         return Response({
             'success': need_delete_ticket_ids,
@@ -945,7 +945,7 @@ class TicketAPIView(APIView):
                     project_name=project.project_name,
                 )
 
-        send_ticket_update_msg(project_uuid, update=1)
+        send_ticket_update_msg(project_uuid, updated=1)
 
         # Rename activity_type to type_description for frontend
         for activity in new_activities:
@@ -998,7 +998,7 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        send_ticket_update_msg(project_uuid, delete=1)
+        send_ticket_update_msg(project_uuid, deleted=1)
 
         return Response({'success': True})
 
@@ -1724,7 +1724,7 @@ class TicketTrashAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         if update_rows:
-            send_ticket_update_msg(project_uuid, add=len(update_rows))
+            send_ticket_update_msg(project_uuid, added=len(update_rows))
 
         return Response({'success': True})
 
