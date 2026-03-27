@@ -109,7 +109,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
         const list = getFormatList(res, type);
         if (isFetchMore) {
-          setNotificationList([...notificationList, ...list]);
+          setNotificationList((prev) => [...prev, ...list]);
         } else {
           setNotificationList(list);
           const allCount = (type === NOTIFICATION_TYPE.PROJECT ? res.data.project.count : res.data.general.count);
@@ -119,15 +119,16 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       })
       .catch((err) => {
         const errorMsg = Utils.getErrorMsg(err);
-        if (errorMsg !== 'canceled') {
+        if (errorMsg !== 'canceled' && err?.name !== 'AbortError') {
           toaster.danger(errorMsg);
         }
       })
       .finally(() => {
+        if (abortControllerRef.current !== controller) return;
         setLoading(false);
         setLoadingMore(false);
       });
-  }, [notificationList]);
+  }, [getFormatList]);
 
   const markAsRead = useCallback((noticeId) => {
     const noticeItem = notificationList.find(item => item.id === noticeId);
