@@ -378,6 +378,42 @@ export const DataProvider = ({
     });
   }, [modifyLocalRow]);
 
+  const modifyRowLink = useCallback((table1Update, table2Update, api) => {
+    const _updateTableData = (data, tableUpdate) => {
+      const { tableName = '', rowId = '', rowUpdate = {}, linkedRecords = {} } = tableUpdate || {};
+
+      let table = data[tableName];
+      if (table) {
+        const idRowMap = table.id_row_map;
+        const oldRow = idRowMap[rowId];
+        let rowData = rowUpdate;
+        if (tableName === TICKET_TABLE_NAME) {
+          const key = Object.keys(rowUpdate)[0];
+          const oldValue = oldRow[key] || [];
+          const addedValue = rowUpdate[key] || [];
+          const newValue = [...oldValue, ...addedValue];
+          rowData[key] = newValue;
+        }
+        data[tableName] = {
+          ...table,
+          id_row_map: { ...idRowMap, [rowId]: { ...oldRow, ...rowData } },
+          linked_records: { ...table.linked_records, ...linkedRecords },
+        };
+      }
+    };
+
+    return api().then(res => {
+      setData(data => {
+        const newData = deepcopy(data);
+        _updateTableData(newData, table1Update);
+        _updateTableData(newData, table2Update);
+        newData.version = newData.version + 1;
+        return newData;
+      });
+      return res;
+    });
+  }, []);
+
   const modifyRows = useCallback((tableName, rowsUpdate = [], api) => {
     return api().then(res => {
       modifyLocalRows(tableName, rowsUpdate);
@@ -581,6 +617,7 @@ export const DataProvider = ({
       insertRow,
       insertRowByLink,
       modifyRow,
+      modifyRowLink,
       modifyLocalRow,
       modifyRows,
       modifyLocalRows,

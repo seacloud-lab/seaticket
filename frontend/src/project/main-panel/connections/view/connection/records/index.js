@@ -24,6 +24,10 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useData, useTags } from '@/project/hooks';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { Utils } from '@/utils/utils';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
 
@@ -37,6 +41,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
+  const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
   const { viewID, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
@@ -44,7 +49,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRows
+    getMetadata, modifyRow, modifyRows, deleteRows, modifyRowLink,
   } = useData();
   const { tagsData, createTag } = useTags();
 
@@ -217,6 +222,12 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     setTicketDialogOpen(true);
   }, []);
 
+  const handleLinkAnExistingTicket = useCallback((row) => {
+    if (!row) return;
+    setCurrentRow(row);
+    setIsShowTicketsDialog(true);
+  }, []);
+
   const handleResolveIssueByAI = useCallback((issues = []) => {
     if (!Array.isArray(issues) || issues.length === 0 || !connectionID) return;
     updateAttachments(issues);
@@ -265,9 +276,31 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     };
   }, [connection, handleFindRelatedIssues]);
 
-  const generateCreateRelatedTicketOption = useCallback(({ row }) => {
+  const generateLinkAnExistingTicketOption = useCallback(({ row, columns }) => {
     const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
     if (!enableCreateRelatedTicket) return null;
+
+    const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+    if (!column) return null;
+    const cellValue = getCellValueByColumn(row, column);
+    if (cellValue) return null;
+
+    return {
+      key: 'link_an_existing_ticket',
+      label: gettext('Link an existing ticket'),
+      callback: () => handleLinkAnExistingTicket(row),
+    };
+  }, [connection, handleLinkAnExistingTicket]);
+
+  const generateCreateRelatedTicketOption = useCallback(({ row, columns }) => {
+    const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
+    if (!enableCreateRelatedTicket) return null;
+
+    const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+    if (!column) return null;
+    const cellValue = getCellValueByColumn(row, column);
+    if (cellValue) return null;
+
     return {
       key: 'create_related_ticket',
       label: gettext('Create related ticket'),
@@ -399,7 +432,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
       children = [
         generateAIOptions({ rows, columns }),
         generateFindRelatedIssuesOption({ row }),
-        generateCreateRelatedTicketOption({ row }),
+        generateCreateRelatedTicketOption({ row, columns }),
+        generateLinkAnExistingTicketOption({ row, columns }),
         { key: 'divider' },
         generateOpenOriginalPageOption({ row }),
         generateCopyOriginalLinkOption({ row }),
@@ -455,6 +489,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
     generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOptions, generateCopyOriginalLinkOption,
+    generateLinkAnExistingTicketOption,
   ]);
 
   const createContextMenuOptions = useCallback(({
@@ -519,7 +554,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     list = [
       generateAIOptions({ rows: [row], columns: table.columns }),
       generateFindRelatedIssuesOption({ row }),
-      generateCreateRelatedTicketOption({ row }),
+      generateCreateRelatedTicketOption({ row, columns: table.columns }),
+      generateLinkAnExistingTicketOption({ row, columns: table.columns }),
       'Divider',
       generateOpenOriginalPageOption({ row }),
       generateCopyOriginalLinkOption({ row }),
@@ -549,7 +585,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     return list.filter(Boolean);
   }, [
     connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
-    generateMarkAsOutdatedOptions, generateAIOptions, generateCopyOriginalLinkOption,
+    generateMarkAsOutdatedOptions, generateAIOptions, generateCopyOriginalLinkOption, generateLinkAnExistingTicketOption,
   ]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {
@@ -600,10 +636,42 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
   }, [currentRow, connection, seaMetaDataRef]);
 
+  const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
+    const linkedTicketColumn = getColumnByName(allColumns.current, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
+    const rowId = currentRow._id;
+    const connectionLinkedUpdate = {
+      [ticket.id]: ticket.title,
+    };
+    modifyRowLink({
+      tableName: TICKET_TABLE_NAME,
+      rowId: String(ticket.id),
+      rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connectionID}_${rowId}`] },
+      linked_records: { [`${connectionID}_${rowId}`]: currentRow.title }
+    }, {
+      tableName: getTableNameByConnectionID(connectionID),
+      rowId: rowId,
+      rowUpdate: rowUpdate,
+      linked_records: connectionLinkedUpdate
+    }, () => {
+      return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
+        const eventBus = context.eventBus;
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: connectionLinkedUpdate }, false);
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(true);
+      });
+    });
+  }, [currentRow, getTableNameByConnectionID, connectionID, modifyRowLink]);
+
   const closeAll = useCallback(() => {
     setIsShowRowDetailsDialog(false);
     setTicketDialogOpen(false);
     setIsShowRelatedIssuesDialog(false);
+    setIsShowTicketsDialog(false);
     setCurrentRow({});
   }, []);
 
@@ -654,6 +722,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
           connectionId={connectionID}
           onClose={closeAll}
           onRowClick={handleCreateRelatedTicket}
+        />
+      )}
+      {isShowTicketsDialog && (
+        <TicketsDialog
+          projectUuid={projectUuid}
+          onSubmit={linkAnExistingTicket}
+          onToggle={closeAll}
         />
       )}
     </>

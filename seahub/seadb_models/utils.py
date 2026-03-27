@@ -619,6 +619,32 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
     return records, display_columns
 
 
+def list_tickets_by_link_search(seadb_api, project_uuid, search_text, start, end):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
+    if not table_metadata:
+        return [], []
+    columns = table_metadata.get('columns') or []
+    if not columns:
+        return [], []
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in TICKET_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    display_columns_names = [column['name'] for column in display_columns]
+    column_join = ', '.join(['`%s`' % column_name for column_name in display_columns_names])
+    sql = f'SELECT {column_join} FROM `tickets` WHERE `title` ILIKE "%{search_text}%" AND (`deleted` = False OR `deleted` IS NULL) LIMIT {start}, {end}'
+    try:
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection tickets: {e}')
+        records = []
+    return records, display_columns
+
+
 def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []

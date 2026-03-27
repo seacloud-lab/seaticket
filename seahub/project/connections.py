@@ -38,7 +38,7 @@ from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopi
     SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
-from seahub.tickets.ticket_utils import build_linked_ticket_titles_map
+from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
@@ -850,11 +850,31 @@ class ProjectConnectionRecordView(APIView):
             update_row['row']['tags'] = row_data.get('tags')
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
+        seadb_api = SeaDBAPI()
+        if 'linked_ticket' in row_data and project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
+            linked_ticket = row_data.get('linked_ticket')
+            update_row['row']['linked_ticket'] = linked_ticket
+            update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+            ticket, ticket_metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
+            old_value = ticket.get('linked_connection_records', []) or []
+            new_value = old_value + [f'{connection_id}_{record_id}']
+            try:
+                update_rows = [
+                    {
+                        'pk': ticket.get('_pk'),
+                        'row': { 'linked_connection_records': new_value }
+                    }
+                ]
+                seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+            except Exception as e:
+                logger.error(f'update connection record error: {e}')
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         if not update_row['row']:
             return Response({'success': True})
 
         table_name = table_cls.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI()
 
         try:
             seadb_api.update_rows(project_uuid, table_name, [update_row])

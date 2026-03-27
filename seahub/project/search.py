@@ -13,10 +13,63 @@ from seahub.utils.decorators import require_org_context
 from seahub.project.constants import ConnectionType
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission
-from seahub.seadb_models.utils import list_tickets_by_search, list_documents_by_search
+from seahub.seadb_models.utils import list_tickets_by_search, list_documents_by_search, list_tickets_by_link_search
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.tickets.ticket_utils import build_linked_record_titles_map
 
 logger = logging.getLogger(__name__)
+
+class SearchTicketsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        query = request.GET.get('query', '')
+        limit = 100
+
+        if query:
+            limit = 50
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check, same as AI
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # project_uuid, username, search_text, start, end
+        try:
+            seadb_api = SeaDBAPI(username)
+            tickets, columns = list_tickets_by_link_search(seadb_api, project_uuid, query, 0, limit)
+        except Exception as e:
+            logger.error(e)
+            import traceback
+            traceback.print_exc()
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+    
+        linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
+        return Response({
+            'tickets': tickets,
+            'columns': columns,
+            'linked_record_titles': linked_record_titles,
+        })
+
+
 class SearchTicketsAndDocumentsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
