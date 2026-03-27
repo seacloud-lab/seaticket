@@ -17,7 +17,7 @@ from seahub.seadb_models.utils import list_tickets_by_search, list_documents_by_
 from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
-class SearchTickectsAndDocumentsView(APIView):
+class SearchTicketsAndDocumentsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
