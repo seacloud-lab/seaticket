@@ -22,6 +22,8 @@ class ResizeColumn extends Component {
       e.preventDefault();
     }
 
+    this.props.onDragStart && this.props.onDragStart();
+
     window.addEventListener('mouseup', this.onMouseUp);
     window.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('touchend', this.onMouseUp);

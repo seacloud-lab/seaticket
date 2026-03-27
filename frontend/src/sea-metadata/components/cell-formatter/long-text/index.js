@@ -124,10 +124,9 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, heigh
       onMouseLeave={onMouseLeave}
       ref={ref}
     >
-      {height >= ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
+      {height >= ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] ? (
         <CustomizeMarkdownViewer value={markdownContent} showTOC={false} />
-      )}
-      {height < ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
+      ) : (
         <>
           {renderLinks()}
           {renderCheckList()}

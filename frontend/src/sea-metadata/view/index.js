@@ -1,14 +1,11 @@
 import React, { useCallback } from 'react';
 import CenteredLoading from '@/components/centered-loading';
 import Table from './table';
+import Card from './card';
 import { useMetadata } from '../hooks';
 import { VIEW_TYPE } from '../constants';
 
-const View = ({
-  fixedColumnCount,
-  expandRow,
-  children
-}) => {
+const View = (props) => {
   const { isLoading, metadata, errorMessage } = useMetadata();
 
   const renderView = useCallback((metadata) => {
@@ -16,13 +13,16 @@ const View = ({
     const viewType = metadata?.view?.type;
     switch (viewType) {
       case VIEW_TYPE.TABLE: {
-        return (<Table fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />);
+        return (<Table { ...props } />);
+      }
+      case VIEW_TYPE.CARD: {
+        return (<Card { ...props } />);
       }
       default: {
-        return (<Table fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />);
+        return (<Table { ...props } />);
       }
     }
-  }, [fixedColumnCount, children]);
+  }, [props]);
 
   if (isLoading) return (<CenteredLoading />);
 

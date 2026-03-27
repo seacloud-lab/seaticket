@@ -1,0 +1,19 @@
+.sea-metadata-card-column-name-content .sea-metadata-column-icon {
+  color: var(--bs-icon-secondary-color);
+  height: 14px;
+  width: 14px;
+}
+
+.sea-metadata-card-column-name {
+  color: #888;
+  cursor: default;
+  flex-shrink: 0;
+  font-size: 14px;
+  height: 30px;
+  line-height: 30px;
+  margin: 0 8px;
+}
+
+.sea-metadata-card-column-name:first-child {
+  margin-left: 0;
+}

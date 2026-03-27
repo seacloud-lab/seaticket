@@ -37,7 +37,7 @@ export const MetadataProvider = forwardRef(({
   const storeRef = useRef(null);
 
   const { collaborators, collaboratorsCache } = useCollaborators();
-  const { updateSelectedRowIdsByDelete } = useSelectedRows();
+  const { selectedRowIds, updateSelectedRowIdsByDelete } = useSelectedRows();
 
   const tableChanged = useCallback(() => {
     setMetadata(storeRef.current.data);
@@ -367,7 +367,8 @@ export const MetadataProvider = forwardRef(({
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,
-  }), [metadata]);
+    getSelectedRowIds: () => selectedRowIds,
+  }), [metadata, selectedRowIds]);
 
   return (
     <MetadataContext.Provider

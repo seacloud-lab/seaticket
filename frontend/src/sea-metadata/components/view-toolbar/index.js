@@ -53,6 +53,8 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
   const view = metadata?.view;
   const viewType = view?.type;
   const readOnly = view && context.canModifyView ? !context.canModifyView(view) : true;
+  const isShowViews = context.getSetting('isShowViews', true);
+  if (!isShowViews) return null;
 
   return (
     <div className="sea-metadata-view-ribbon" onClick={onHeaderClick}>
