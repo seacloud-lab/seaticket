@@ -118,11 +118,10 @@ class PortalChatSessions(models.Model):
 
 class PortalChatMessagesManager(models.Manager):
 
-    def create_message(self, session_uuid, message_id, username, role, content, as_context=True):
+    def create_message(self, session_uuid, message_id, role, content, as_context=True):
         message = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
-            username=username,
             role=role,
             content=content,
             as_context=as_context,
@@ -137,8 +136,8 @@ class PortalChatMessagesManager(models.Manager):
         """Retrieve the last message of the session"""
         return self.filter(session_uuid=session_uuid).order_by('-created_at').first()
 
-    def clear_context(self, session_uuid, username):
-        self.create_message(session_uuid, None, username, 'chat_manager', '<break_context>', False)
+    def clear_context(self, session_uuid):
+        self.create_message(session_uuid, None, 'chat_manager', '<break_context>', False)
         records = self.filter(session_uuid=session_uuid)
         records.update(as_context=False)
 
@@ -147,7 +146,6 @@ class PortalChatMessages(models.Model):
     id = models.BigAutoField(primary_key=True)
     session_uuid = models.CharField(max_length=36, null=False)
     message_id = models.CharField(max_length=4, null=True)
-    username = models.CharField(max_length=255)
     role = models.CharField(max_length=20)
     content = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -167,7 +165,6 @@ class PortalChatMessages(models.Model):
             'id': self.id,
             'session_uuid': self.session_uuid,
             'message_id': self.message_id,
-            'username': self.username,
             'role': self.role,
             'content': self.content,
             'created_at': self.created_at,

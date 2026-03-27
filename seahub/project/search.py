@@ -51,7 +51,7 @@ class SearchTickectsAndDocumentsView(APIView):
 
         # project_uuid, username, search_text, start, end
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
 
             # ticket
             results = [

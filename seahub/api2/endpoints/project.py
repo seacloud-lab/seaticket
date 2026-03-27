@@ -204,7 +204,7 @@ class ProjectsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             seadb_api.create_base(project.uuid)
             init_ticket_seadb_table(seadb_api, project.uuid)
             init_knowledge_base_seadb_table(seadb_api, project.uuid)

@@ -137,7 +137,7 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         connection_id = record.id
-        seadb_api = SeaDBAPI(request.user.username)
+        seadb_api = SeaDBAPI()
         try:
             if connection_type == ConnectionType.SITE.value:
                 init_site_seadb_table(seadb_api, project.uuid, connection_id)
@@ -232,7 +232,7 @@ class ProjectGithubConnectionsView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
             connection_id = record.id
-            seadb_api = SeaDBAPI(request.user.username)
+            seadb_api = SeaDBAPI()
             try:
                 init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
             except Exception as e:
@@ -486,7 +486,7 @@ class ProjectConnectionDetailsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             records, columns = list_connection_view_records(
                 seadb_api, project_uuid, project_connection, view, start, limit
             )
@@ -683,7 +683,7 @@ class ProjectConnectionRowDetailView(APIView):
             error_msg = 'Missing _pk.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             record = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SITE.value:
@@ -854,7 +854,7 @@ class ProjectConnectionRecordView(APIView):
             return Response({'success': True})
 
         table_name = table_cls.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         try:
             seadb_api.update_rows(project_uuid, table_name, [update_row])
@@ -952,7 +952,7 @@ class ProjectConnectionRecordsView(APIView):
             return Response({'success': True})
 
         table_name = table_cls.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         try:
             seadb_api.update_rows(project_uuid, table_name, update_rows)
@@ -1014,7 +1014,7 @@ class ProjectConnectionRecordsView(APIView):
     #         })
 
     #     table_name = ThreadTable.gen_table_name(connection_id)
-    #     seadb_api = SeaDBAPI(username)
+    #     seadb_api = SeaDBAPI()
 
     #     try:
     #         seadb_api.update_rows(project_uuid, table_name, update_rows)

@@ -99,11 +99,10 @@ def shared_chat_session(real_project, project_creator):
 
 
 @pytest.fixture
-def chat_messages_with_thought_process(chat_session, project_creator):
+def chat_messages_with_thought_process(chat_session):
     user_msg = ChatMessages.objects.create_message(
         chat_session.session_uuid,
         'm1',
-        project_creator.username,
         'user',
         'hello',
         attachments=[{'content': 'x', 'foo': 1}],
@@ -111,7 +110,6 @@ def chat_messages_with_thought_process(chat_session, project_creator):
     assistant_msg = ChatMessages.objects.create_message(
         chat_session.session_uuid,
         'm2',
-        project_creator.username,
         'assistant',
         'hi',
         sources='[]',

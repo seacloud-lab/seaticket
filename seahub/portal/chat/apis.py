@@ -15,7 +15,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
-from seahub.project.models import Projects, ProjectConnections
+from seahub.project.models import Projects
 from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import get_ai_reply
@@ -76,7 +76,7 @@ def gen_portal_chat_task_id(session_uuid):
     return f"portal_chat_{session_uuid.replace('-', '')}"
 
 
-def record_portal_message_to_db(ai_result, username, session_uuid, message_id, query):
+def record_portal_message_to_db(ai_result, session_uuid, message_id, query):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
 
@@ -87,10 +87,10 @@ def record_portal_message_to_db(ai_result, username, session_uuid, message_id, q
 
     try:
         user_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, username, 'user', query
+            session_uuid, message_id, 'user', query
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, username, 'assistant', ai_result['ai_reply']
+            session_uuid, message_id, 'assistant', ai_result['ai_reply']
         )
         ai_result.update({
             'user_message_id': user_message.id,
@@ -102,7 +102,7 @@ def record_portal_message_to_db(ai_result, username, session_uuid, message_id, q
     return ai_result
 
 
-def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query):
+def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query):
     has_recorded_result = False
     error_msg = None
     try:
@@ -115,11 +115,11 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, ses
                 # use if - else instead of json.loads() to avoid performance issues
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
-                    item = f'data: {json.dumps({"results": record_portal_message_to_db(results, username, session_uuid, message_id, query)})}\n\n'
+                    item = f'data: {json.dumps({"results": record_portal_message_to_db(results, session_uuid, message_id, query)})}\n\n'
                     has_recorded_result = True
                 elif content.startswith('[ERROR: ') and content.endswith(']'):
                     error_msg = content[1:-1]
-                    item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": error_msg, "sources": []}, username, session_uuid, message_id, query)})}\n\n'
+                    item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": error_msg, "sources": []}, session_uuid, message_id, query)})}\n\n'
                     has_recorded_result = True
                 else:
                     if not line_str.endswith('\n\n'):
@@ -134,7 +134,7 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, username, ses
     except Exception as e:
         logger.exception(f'Portal streaming response is interrupted: {e}')
         if not has_recorded_result:
-            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later", "sources": []}, username, session_uuid, message_id, query)})}\n\n'
+            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later", "sources": []}, session_uuid, message_id, query)})}\n\n'
             try:
                 yield item
             except:
@@ -338,7 +338,7 @@ class PortalChatView(APIView):
             return error
 
         if clear_context:
-            PortalChatMessages.objects.clear_context(session_uuid, username)
+            PortalChatMessages.objects.clear_context(session_uuid)
 
         # Check AI quota
         org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
@@ -381,7 +381,7 @@ class PortalChatView(APIView):
         if stream:
             try:
                 return StreamingHttpResponse(
-                    process_portal_stream_ai_reply(chat_task_id_info, get_ai_reply(params), username, session.session_uuid, message_id, query),
+                    process_portal_stream_ai_reply(chat_task_id_info, get_ai_reply(params), session.session_uuid, message_id, query),
                     content_type='text/event-stream',
                     headers={
                         'Cache-Control': 'no-cache',
@@ -402,10 +402,10 @@ class PortalChatView(APIView):
 
         # Save messages
         user_message = PortalChatMessages.objects.create_message(
-            session.session_uuid, message_id, username, 'user', query
+            session.session_uuid, message_id, 'user', query
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
-            session.session_uuid, message_id, username, 'assistant',
+            session.session_uuid, message_id, 'assistant',
             ai_response['ai_reply']
         )
 

@@ -530,7 +530,6 @@ CREATE TABLE `chat_messages` (
   `id` bigint(11) NOT NULL AUTO_INCREMENT,
   `session_uuid` varchar(36) NOT NULL,
   `message_id` varchar(4) DEFAULT NULL,
-  `username` varchar(255) NOT NULL,
   `role` enum('user','assistant') NOT NULL,
   `content` longtext DEFAULT NULL,
   `attachments` longtext DEFAULT NULL,
@@ -573,10 +572,9 @@ CREATE TABLE `ai_usage_statistics` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_user` (`date`, `username`),
   KEY `idx_proj` (`date`, `project_uuid`),
-  KEY `idx_group` (`date`, `group_id`),
-  KEY `idx_org` (`date`, `org_id`)
+  KEY `idx_group_username` (`date`, `group_id`, `username`),
+  KEY `idx_date_org_group_id` (`date`, `org_id`, `group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -702,7 +700,6 @@ CREATE TABLE `portal_chat_messages` (
   `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
   `session_uuid` VARCHAR(36) NOT NULL,
   `message_id` VARCHAR(4) DEFAULT NULL,
-  `username` VARCHAR(255) NOT NULL,
   `role` VARCHAR(20) NOT NULL,
   `content` LONGTEXT,
   `created_at` DATETIME(6) NOT NULL,

@@ -27,6 +27,10 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
         query_kwargs['org_id__gte'] = 0
     if org_id:
         query_kwargs['org_id'] = org_id
+    if group_by == 'username':
+        # for username (i.e., user page, only shows the user's projects usage, the projects in group is not included)
+        # add to the last for using index idx_date_org_group_id
+        query_kwargs['group_id'] = -1
     query_set = AIUsageStatistics.objects.filter(**query_kwargs)
     if group_by == 'username':
         query_set = query_set.exclude(username__in=PRESET_BUILTIN_USERNAMES)
@@ -64,6 +68,8 @@ def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
         'date__lte': date_end,
     }
     if 'username' in condition:
+        # for username (i.e., user page, only shows the user's projects usage, the projects in group is not included)
+        query_kwargs['group_id'] = -1
         query_kwargs['username'] = condition['username']
     if 'project_uuid' in condition:
         query_kwargs['project_uuid'] = condition['project_uuid'].replace('-', '')

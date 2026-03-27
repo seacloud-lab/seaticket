@@ -107,7 +107,7 @@ class PortalTicketsView(APIView):
         due_date = request.POST.get('due_date', '')
 
         username = request.user.username
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
@@ -230,7 +230,7 @@ class PortalMyTicketsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         basic_filters = view_config.get('basic_filters', [])
         basic_filters.append({
@@ -274,7 +274,7 @@ class PortalTicketView(APIView):
 
         username = getattr(request.user, 'username', '')
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -336,7 +336,7 @@ class PortalTagsView(APIView):
 
         username = request.user.username if request.user else 'Anonymous'
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             table_name = TagTable.gen_table_name()
             sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -407,7 +407,7 @@ class PortalKnowledgeBaseRecordsView(APIView):
 
         username = request.user.username if request.user.is_authenticated else ''
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             view = KnowledgeBaseViews.objects.get_view(project_uuid, view_id)
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
         except SQLGeneratorOptionInvalidError as e:
@@ -441,7 +441,7 @@ class PortalKnowledgeBaseRecordView(APIView):
 
         username = getattr(request.user, 'username', '')
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         except Exception as e:
             logger.error(e)
@@ -496,7 +496,7 @@ class PortalTicketMetadataView(APIView):
 
     def get(self, request, project_uuid):
         username = request.user.username if request.user else 'Anonymous'
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)

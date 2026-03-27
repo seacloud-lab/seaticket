@@ -400,7 +400,7 @@ class RelatedRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # init SeaDB API
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         project_uuid_32 = uuid_str_to_32_chars(project_uuid)
 
         # get query vector

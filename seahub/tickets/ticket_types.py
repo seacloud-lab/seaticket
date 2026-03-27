@@ -49,7 +49,7 @@ class TicketTypesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
         return Response({
             'types': type_options,
@@ -92,7 +92,7 @@ class TicketTypesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
         table_id = table_meta.get('id')
@@ -143,7 +143,7 @@ class TicketTypesAPIView(APIView):
 
         # main
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
@@ -185,7 +185,7 @@ class TicketTypeAPIView(APIView):
 
         try:
             type_option = None
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_columns = table_meta.get('columns')
@@ -248,7 +248,7 @@ class TicketTypeAPIView(APIView):
 
         try:
             type_option = None
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
@@ -306,7 +306,7 @@ class TicketTypeAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(tickets_table_metadata.get('columns'), 'type')

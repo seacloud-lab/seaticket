@@ -132,7 +132,7 @@ class TestChatMessagesView:
 
         assert resp.status_code == 404
 
-    def test_get_success_thought_process(self, factory, project_creator, real_project, chat_session, chat_messages_with_thought_process):
+    def test_get_success_thought_process(self, factory, project_creator, real_project, chat_session):
         project = real_project
         request = factory.get(
             f"/api/v1/chat/sessions/{chat_session.session_uuid}/messages/",
