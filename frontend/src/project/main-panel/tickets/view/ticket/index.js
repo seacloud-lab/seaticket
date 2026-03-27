@@ -9,7 +9,6 @@ import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, 
 import { BAR_TYPE } from '@/project/constants';
 import { generatorTicketsContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { isShiftSlash } from '@/utils/hotkey';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -182,7 +181,7 @@ const Ticket = ({
     if (!ticket) return [];
     const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, key_column_map: {} };
     const row = ticket;
-    return generatorTicketsContextMenuOptions({
+    let options = generatorTicketsContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row.id]: row }, columns: Object.values(table.key_column_map) },
@@ -202,6 +201,15 @@ const Ticket = ({
       findRelatedIssues,
       createKnowledgeBaseRecord,
     }).filter(item => item.key !== 'open_ticket');
+    if (options[options.length - 1] !== 'Divider') {
+      options.push('Divider');
+    }
+    options.push({
+      label: gettext('Open keyboard shortcuts'),
+      key: 'open_keyboard_shortcuts',
+      callback: () => setIsShowKeyboardShortcuts(true),
+    });
+    return options;
   }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName, findRelatedIssues, createKnowledgeBaseRecord]);
 
   const onCommentChange = useCallback((value) => {
@@ -401,21 +409,6 @@ const Ticket = ({
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
   }, [isLoading, ticket]);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (isShiftSlash(event)) {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsShowKeyboardShortcuts(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown, true);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, []);
 
   // Merge comments and activities into a timeline
   const timeline = useMemo(() => {

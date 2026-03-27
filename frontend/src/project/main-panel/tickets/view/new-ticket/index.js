@@ -1,12 +1,14 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { Button, Input, Label } from 'reactstrap';
+import { Button, Input, Label, Dropdown } from 'reactstrap';
 import classnames from 'classnames';
+import {
+  toaster,
+  CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
+} from '@/components';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME } from '../../constants';
-import { isShiftSlash } from '@/utils/hotkey';
 import { CollaboratorsSettings, TypeSettings, PrioritySettings, DueDateSettings } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
@@ -31,6 +33,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
@@ -125,21 +128,6 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     };
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (isShiftSlash(event)) {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsShowKeyboardShortcuts(true);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown, true);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, []);
-
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
@@ -160,7 +148,19 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
         </div>
       )}
       <div className="sea-qa-project-ticket-settings">
-        <div className="sea-qa-project-ticket-name mb-3">{gettext('New ticket')}</div>
+        <div className="sea-qa-project-ticket-name-container mb-3">
+          <div className="sea-qa-project-ticket-name text-truncate">
+            {gettext('New ticket')}
+          </div>
+          <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+            <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
+            <CustomizeDropdownMenu className="position-fixed">
+              <CustomizeDropdownItem onClick={() => { setIsShowKeyboardShortcuts(true); setIsMoreMenuOpen(false); }}>
+                {gettext('Open keyboard shortcuts')}
+              </CustomizeDropdownItem>
+            </CustomizeDropdownMenu>
+          </Dropdown>
+        </div>
         <div className="sea-qa-project-ticket-settings-container">
           <div className="sea-qa-project-ticket-content-settings">
             <div className="sea-qa-project-ticket-title mb-4">

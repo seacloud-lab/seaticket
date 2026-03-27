@@ -39,9 +39,6 @@ class KeyboardShortcuts extends React.PureComponent {
       <Modal isOpen={true} toggle={toggle} className="keyboard-shortcut-dialog">
         <ModalHeader toggle={toggle}>
           <span className="mr-2">{gettext('Keyboard shortcuts')}</span>
-          <span className="keyboard-shortcut">
-            <kbd>Shift</kbd><kbd>/</kbd>
-          </span>
         </ModalHeader>
         <ModalBody>
           <div className="pb-2">
@@ -52,7 +49,6 @@ class KeyboardShortcuts extends React.PureComponent {
             {this.renderContainer(['S'], gettext('Open state panel'))}
             {this.renderContainer(['Shift', 'S'], gettext('Open substate panel'))}
             {this.renderContainer(['Shift', 'T'], gettext('Open type panel'))}
-            {this.renderContainer(['Shift', '/'], gettext('Open keyboard shortcuts'))}
           </div>
         </ModalBody>
       </Modal>
