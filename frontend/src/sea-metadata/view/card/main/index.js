@@ -10,7 +10,7 @@ const CARD_ITEM_HEIGHT = 98;
 const RENDER_MORE_NUMBER = 20;
 
 const Main = ({
-  titleColumnKey,
+  metadata,
   isMultipleSelect = false,
   columns, rows,
   mode = 'add',
@@ -27,6 +27,7 @@ const Main = ({
   const [highlightIndex, setHighlightIndex] = useState(0);
 
   const rowsCount = useMemo(() => rows.length, [rows]);
+  const titleColumnKey = useMemo(() => columns.find(c => c.is_name_column)?.key, [columns]);
 
   const headerRef = useRef(null);
   const rowsContainer = useRef(null);
@@ -185,6 +186,7 @@ const Main = ({
                 initRowDom={initRowDom}
                 scrollLeft={scrollLeft}
                 highlight={highlightIndex === (index + startRenderIndex)}
+                metadata={metadata}
                 removeRowDom={removeRowDom}
                 setItemScrollLeft={setItemScrollLeft}
                 onClick={handleRowClick}

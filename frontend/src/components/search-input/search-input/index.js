@@ -13,7 +13,7 @@ class SearchInput extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchValue: props.value,
+      searchValue: props.value || '',
     };
     this.isInputtingChinese = false;
     this.timer = null;

@@ -68,7 +68,7 @@ const LinkFormatter = ({ value, className, column, metadata, children: emptyForm
   return (
     <>
       <div className={classnames('sea-metadata-ui cell-formatter-container link-formatter', className)} title={validValueTitles}>
-        {validValue.map(v => (<LinkItem value={v} key={v} onClick={() => handleExpand(v)} />))}
+        {validValue.map(v => (<LinkItem value={v} key={v} metadata={metadata} onClick={() => handleExpand(v)} />))}
       </div>
       {isShowDetailsDialog && (
         <ResourceDetailsDialog

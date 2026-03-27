@@ -71,7 +71,8 @@ class Store {
     if (!this.mounted) return;
     return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
       const rows = res?.data?.rows || [];
-      const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
+      const columnsWidth = context.localStorage.getItem('columns_width') || {};
+      const columns = normalizeColumns(res?.data?.columns || [], columnsWidth, this.columnOrderRules);
       const linked_records = res?.data?.linked_records || {};
       const errorMsg = res?.data?.error_msg || '';
       let data = new Metadata({

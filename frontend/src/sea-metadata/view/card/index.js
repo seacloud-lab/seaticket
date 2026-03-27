@@ -4,7 +4,6 @@ import Main from './main';
 
 const Card = ({
   expandRow,
-  titleColumnKey,
   isMultipleSelect = false,
   mode = 'add',
   metadata,
@@ -39,7 +38,6 @@ const Card = ({
         columns={metadata.columns}
         metadata={metadata}
         onRowClick={onRowClick}
-        titleColumnKey={titleColumnKey}
         activeRow={expandRowRef.current}
         isMultipleSelect={isMultipleSelect}
         mode={mode}

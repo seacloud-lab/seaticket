@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from seahub.project.search import SearchTickectsAndDocumentsView
+from seahub.project.search import SearchTicketsAndDocumentsView
 
 
 class TestSearchTickectsAndDocumentsView:
@@ -10,7 +10,7 @@ class TestSearchTickectsAndDocumentsView:
         request = factory.get(f"/api/v1/project/{project.uuid}/search-tickets-and-documents/", {})
         request.user = no_org_user
 
-        resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
+        resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 403
 
@@ -19,7 +19,7 @@ class TestSearchTickectsAndDocumentsView:
         request = factory.get(f'/api/v1/project/{project_uuid}/search-tickets-and-documents/', {})
         request.user = project_creator
 
-        resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project_uuid)
+        resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project_uuid)
 
         assert resp.status_code == 404
 
@@ -28,7 +28,7 @@ class TestSearchTickectsAndDocumentsView:
         request = factory.get(f"/api/v1/project/{project.uuid}/search-tickets-and-documents/", {})
         request.user = auth_user
 
-        resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
+        resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 403
 
@@ -48,7 +48,7 @@ class TestSearchTickectsAndDocumentsView:
         with patch('seahub.project.search.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.search.list_tickets_by_search', return_value=tickets) as ticket_mock, \
                 patch('seahub.project.search.list_documents_by_search', return_value=documents) as doc_mock:
-            resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
+            resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         assert len(resp.data['results']) == 3
@@ -75,7 +75,7 @@ class TestSearchTickectsAndDocumentsView:
                 patch('seahub.project.search.list_tickets_by_search', return_value=[]) as ticket_mock, \
                 patch('seahub.project.search.ProjectConnections.objects.filter', return_value=filter_qs), \
                 patch('seahub.project.search.list_documents_by_search', return_value=[]) as doc_mock:
-            resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
+            resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
         ticket_mock.assert_called_once_with(seadb, project.uuid, '', 0, 100)
@@ -87,6 +87,6 @@ class TestSearchTickectsAndDocumentsView:
         request.user = project_creator
 
         with patch('seahub.project.search.SeaDBAPI', side_effect=Exception('boom')):
-            resp = SearchTickectsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
+            resp = SearchTicketsAndDocumentsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 500
