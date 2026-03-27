@@ -484,6 +484,10 @@ class RelatedRecordsView(APIView):
 
             formatted_results = []
             for result in search_results:
+                # Skip the original records that need to be queried:
+                # - If it's a ticket, both `ticket_provided == True` and `record_id` must exactly match the original record.
+                # - If it's a connection, both `connection_provided == True` and `connection_id` and `record_id` must exactly match the original record.
+
                 if source_record_id == int(result['_id']) and \
                     (ticket_provided and result['type'] == ExtraSourceType.TICKET.value or \
                     connection_provided and int(result.get('connection_id', -1)) == int(connection_id)):
