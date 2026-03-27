@@ -27,10 +27,11 @@ const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialo
         ref={ref}
         columns={[
           { name: '', key: 'icon', width: 44, isFixed: true },
-          { name: gettext('Name'), key: 'name', width: 0.18 },
-          { name: 'ID', key: 'uuid', width: 0.32 },
-          { name: 'Owner', key: 'owner', width: 0.25 },
-          { name: gettext('Deleted at'), key: 'delete_time', type: 'date', width: 0.15 },
+          { name: gettext('Name'), key: 'name', width: 0.16 },
+          { name: 'ID', key: 'uuid', width: 0.28 },
+          { name: 'Owner', key: 'owner', width: 0.2 },
+          { name: gettext('Issues'), key: 'issues_count', width: 0.1 },
+          { name: gettext('Deleted at'), key: 'delete_time', type: 'date', width: 0.16 },
           { name: '', key: 'placeholder', width: 0.1 },
           { name: '', key: 'op', width: 44, isFixed: true }
         ]}

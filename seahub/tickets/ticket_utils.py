@@ -489,9 +489,20 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     return result
 
 
-def send_ticket_update_msg(project_uuid):
+def send_ticket_update_msg(project_uuid, added=0, deleted=0, updated=0):
     try:
-        msg_content = json.dumps({'project_uuid': uuid_str_to_32_chars(project_uuid)})
+        normalized_project_uuid = uuid_str_to_32_chars(project_uuid)
+        added_count = int(added or 0)
+        deleted_count = int(deleted or 0)
+        updated_count = int(updated or 0)
+
+        msg_content = json.dumps({
+            'project_uuid': normalized_project_uuid,
+            'added': added_count,
+            'deleted': deleted_count,
+            'updated': updated_count,
+        })
+
         if mq.publish('ticket_update', msg_content) > 0:
             logger.debug('Publish ticket_update event: %s' % msg_content)
         else:

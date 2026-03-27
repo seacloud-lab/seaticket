@@ -13,6 +13,7 @@ class Info extends Component {
       member_quota: 0,
       member_usage: 0,
       active_members: 0,
+      issues_usage: 0,
       org_name: '',
       org_id: null,
     };
@@ -24,6 +25,7 @@ class Info extends Component {
         member_quota: res.data.member_quota,
         member_usage: res.data.member_usage,
         active_members: res.data.active_members,
+        issues_usage: res.data.issues_usage,
         org_name: res.data.org_name,
         org_id: res.data.org_id,
       });
@@ -31,7 +33,7 @@ class Info extends Component {
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage } = this.state;
     return (
 
       <Fragment>
@@ -46,6 +48,11 @@ class Info extends Component {
               { name: gettext('Active users'), value: active_members || '--' },
               { name: gettext('Total users'), value: member_usage || '--' },
               { name: gettext('Limits'), value: orgMemberQuotaEnabled ? (member_quota || '--') : '--' },
+            ]}
+          />
+          <MultipleTextCard
+            texts={[
+              { name: gettext('Total issues'), value: issues_usage || '--' },
             ]}
           />
         </Main>

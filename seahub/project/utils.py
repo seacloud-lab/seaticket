@@ -4,7 +4,7 @@ import hashlib
 from urllib.parse import quote_plus
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    AIUsageStatistics, AIUsageStatistics, Workspaces
+    AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.tickets.models import TicketViews
@@ -223,6 +223,7 @@ def delete_project(project):
 
     try:
         Projects.objects.delete_project(project.workspace, project.name)
+        ProjectIssuesStatistics.objects.filter(project_uuid=project_uuid).delete()
         DeletedProjects(project_uuid=project_uuid).save()
     except Exception as e:
         logger.error('delete project: %s error: %s', str(project_uuid), e)
