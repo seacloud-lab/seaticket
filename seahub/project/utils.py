@@ -25,7 +25,7 @@ from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.notifications.models import ProjectNotification
 from seahub.utils.timeutils import get_month_date_range
-from seahub.utils.ai_client import rank_related_issues
+from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
@@ -398,7 +398,7 @@ def rank_vector_search_results(query_record, results, username, org_id, project_
     }
 
     try:
-        ranked_ids = rank_related_issues(params)
+        ranked_ids = rank_related_records(params)
     except Exception as e:
         logger.warning(f'rank search results failed: {e}')
         return results

@@ -966,9 +966,9 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
     elif source_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
-        table_name == KnowledgeBaseTable.gen_table_name()
+        table_name = KnowledgeBaseTable.gen_table_name()
     elif source_type == ExtraSourceType.TICKET.value:
-        table_name == TicketsTable.gen_table_name()
+        table_name = TicketsTable.gen_table_name()
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}

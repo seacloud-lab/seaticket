@@ -22,7 +22,7 @@ from seahub.utils.ai_client import (
     convert_ticket_to_kb_record
 )
 from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
-from seahub.utils.indexer import find_related_records
+from seahub.utils.indexer import vector_search
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -468,7 +468,7 @@ class RelatedRecordsView(APIView):
         }
 
         try:
-            search_results = find_related_records(search_data)
+            search_results = vector_search(search_data)
             if not search_results:
                 return Response({'related_records': [], 'success': True})
             
