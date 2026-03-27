@@ -55,10 +55,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email })
-    }).then(r => {
-      return {}
-      // r.ok ? r.json() : r.json().then(e => Promise.reject(e))
-    });
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
   }
 
   function showVerifyStep() {
