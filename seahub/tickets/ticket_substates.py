@@ -54,7 +54,7 @@ class TicketSubstatesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         try:
             substate_options, substate_column = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
@@ -120,7 +120,7 @@ class TicketSubstatesAPIView(APIView):
 
         # main
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
@@ -193,7 +193,7 @@ class TicketSubstatesAPIView(APIView):
 
         # main
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
@@ -236,7 +236,7 @@ class TicketSubstateAPIView(APIView):
 
         try:
             substate_option = None
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_columns = table_meta.get('columns')
@@ -302,7 +302,7 @@ class TicketSubstateAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         substate_option = None
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
         column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
@@ -382,7 +382,7 @@ class TicketSubstateAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             column = get_column_from_columns_by_name(tickets_table_metadata.get('columns'), 'substate')

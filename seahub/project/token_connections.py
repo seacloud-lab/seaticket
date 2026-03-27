@@ -132,7 +132,7 @@ class ProjectConnectionDetailByTokenView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, f'Connection view with id "{view_id}" not found.')
 
             username = api_token_obj.generated_by
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             records, _ = list_connection_view_records(
                 seadb_api, project_uuid, connection, view, start, limit
             )
@@ -195,7 +195,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
         connection_id = connection.id
         project_uuid = str(project.uuid)
         username = api_token_obj.generated_by
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         row_details = []
 
         try:

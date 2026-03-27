@@ -359,7 +359,7 @@ class ChatView(APIView):
 
         # Extra contents
         try:
-            attachments = get_attachments(SeaDBAPI(username), project_uuid, request.data.get('attachments', []))
+            attachments = get_attachments(SeaDBAPI(), project_uuid, request.data.get('attachments', []))
         except Exception as e:
             attachments = []
             logger.warning(f'Failure to get extra contents: {e}')
@@ -383,7 +383,7 @@ class ChatView(APIView):
                     error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
                     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             elif clear_context:
-                ChatMessages.objects.clear_context(session_uuid, username)
+                ChatMessages.objects.clear_context(session_uuid)
         
         chat_task_id_info = gen_chat_task_id(session_uuid)
         if cache.get(chat_task_id_info) is not None:
@@ -431,7 +431,7 @@ class ChatView(APIView):
         if stream:
             try:
                 return StreamingHttpResponse(
-                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), request.user.username, session_uuid, message_id, query, attachments),
+                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), session_uuid, message_id, query, attachments),
                     content_type='text/event-stream',
                     headers={
                         'Cache-Control': 'no-cache',
@@ -455,6 +455,6 @@ class ChatView(APIView):
                 'sources': []
             }
 
-        response = record_message_to_db(ai_response, request.user.username, session_uuid, message_id, query, attachments)
+        response = record_message_to_db(ai_response, session_uuid, message_id, query, attachments)
         cache.delete(chat_task_id_info)
         return Response(response)

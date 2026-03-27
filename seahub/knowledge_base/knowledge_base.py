@@ -83,7 +83,7 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(request.user.username)
+        seadb_api = SeaDBAPI()
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
@@ -165,7 +165,7 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             records, columns = list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username)
         except SQLGeneratorOptionInvalidError as e:
@@ -208,7 +208,7 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(request.user.username)
+        seadb_api = SeaDBAPI()
         update_rows = []
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for r_id in record_ids:
@@ -251,7 +251,7 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         except Exception as e:
             logger.error(e)
@@ -321,7 +321,7 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        seadb_api = SeaDBAPI(request.user.username)
+        seadb_api = SeaDBAPI()
         record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
@@ -385,7 +385,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
             kb_columns = kb_meta.get('columns') or []
@@ -426,7 +426,7 @@ class KnowledgeBasesTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = []
             for r_id in record_ids:

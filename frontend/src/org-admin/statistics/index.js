@@ -69,11 +69,6 @@ class StatisticsAI extends Component {
         value: 'project', label: gettext('Project')
       });
     }
-    if (groupBy === 'group') {
-      this.statisticsDetailGroups.push({
-        value: 'user', label: gettext('User')
-      });
-    }
     this.setState({ isOpenStatisticsDetailDialog: true, condition });
   };
 

@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class EmailSeaDBAPI:
-    def __init__(self, base_id, username='', timeout=30, seadb_api=None):
+    def __init__(self, base_id, timeout=30, seadb_api=None):
         self.base_id = base_id
-        self.seadb_api = seadb_api or SeaDBAPI(username=username, timeout=timeout)
+        self.seadb_api = seadb_api or SeaDBAPI(timeout=timeout)
 
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""

@@ -66,7 +66,7 @@ class TagsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             table_name = TagTable.gen_table_name()
             sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -120,7 +120,7 @@ class TagsAPIView(APIView):
         table_name = TagTable.gen_table_name()
         # main
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             row = {
                 TagTable.name.name: name,
                 TagTable.color.name: color,
@@ -171,7 +171,7 @@ class TagsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), tag_ids)
         except Exception as e:
             logger.error(e)
@@ -208,7 +208,7 @@ class TagAPIView(APIView):
 
         try:
             tag_option = None
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_columns = table_meta.get('columns')
@@ -229,7 +229,7 @@ class TagAPIView(APIView):
 
         # main
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_option.get('name')])
         except Exception as e:
             logger.error(e)
@@ -273,7 +273,7 @@ class TagAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         try:
             update_data = {}
@@ -321,7 +321,7 @@ class TagAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), [int(tag_id)])
         except Exception as e:
             logger.error(e)

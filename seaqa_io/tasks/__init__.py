@@ -43,7 +43,7 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
         view = next((v for v in details.get('views', []) if v.get('_id') == view_id), {'name': 'view'})
         view_name = view.get('name') or 'view'
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         metadata = seadb_api.get_base_metadata(project_uuid)
 
         tables_metadata = metadata.get('tables') or []
@@ -196,7 +196,7 @@ def import_kb_from_excel(project_uuid, username, file_name):
         return {}
 
     rows_to_insert = []
-    seadb_api = SeaDBAPI(username)
+    seadb_api = SeaDBAPI()
     kb_table_name = 'knowledge_base'
     now = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
@@ -242,7 +242,7 @@ def import_kb_from_excel(project_uuid, username, file_name):
 
 def perform_embedding_analysis(project_uuid, connection_ids, username, start_date=None, end_date=None):
     try:
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         all_records = []
 
         if isinstance(connection_ids, str):

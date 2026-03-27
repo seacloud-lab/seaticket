@@ -39,7 +39,7 @@ def gen_message_id(session_uuid, max_try=5):
 
     return new_message_id
 
-def record_message_to_db(ai_result, username, session_uuid, message_id, query, attachments):
+def record_message_to_db(ai_result, session_uuid, message_id, query, attachments):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
 
@@ -51,8 +51,8 @@ def record_message_to_db(ai_result, username, session_uuid, message_id, query, a
 
     try:
         ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_result.get('thought_process', {}))
-        user_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'user', query, attachments=attachments)
-        ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, username, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
+        user_message = ChatMessages.objects.create_message(session_uuid, message_id, 'user', query, attachments=attachments)
+        ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
         ai_result.update({
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id
@@ -62,7 +62,7 @@ def record_message_to_db(ai_result, username, session_uuid, message_id, query, a
 
     return ai_result
 
-def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uuid, message_id, query, attachments):
+def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments):
     has_recorded_result = False
     enconter_generator_exit = False
     error_msg = None
@@ -77,13 +77,13 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
                     item = f'data: {json.dumps({
-                        "results": record_message_to_db(results, username, session_uuid, message_id, query, attachments)
+                        "results": record_message_to_db(results, session_uuid, message_id, query, attachments)
                     })}\n\n'
                     has_recorded_result = True
                 elif content.startswith('[ERROR: ') and content.endswith(']'):
                     error_msg = content[1:-1]
                     item = f'data: {json.dumps({
-                        "results": record_message_to_db(error_msg, username, session_uuid, message_id, query, attachments)
+                        "results": record_message_to_db(error_msg, session_uuid, message_id, query, attachments)
                     })}\n\n'
                     has_recorded_result = True
                 else:
@@ -105,7 +105,7 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, username, session_uu
                 "results": record_message_to_db({
                     "ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later",
                     "sources": []
-                }, username, session_uuid, message_id, query, attachments)
+                }, session_uuid, message_id, query, attachments)
             })}\n\n'
             if not enconter_generator_exit:
                 try:

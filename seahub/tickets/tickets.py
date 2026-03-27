@@ -103,7 +103,7 @@ class TicketsAPIView(APIView):
         # main
         try:
             view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             tickets, columns = list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
@@ -212,7 +212,7 @@ class TicketsAPIView(APIView):
         tag_ids = request.POST.get('tags', "[]")
         tag_ids = json.loads(tag_ids)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         default_substate = ''
         cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
@@ -368,7 +368,7 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
 
         ticket_id_to_row = {}
         for ticket_data in tickets_data:
@@ -556,7 +556,7 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -622,7 +622,7 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -699,7 +699,7 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
         if not ticket:
             error_msg = 'Ticket not found.'
@@ -973,7 +973,7 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1037,7 +1037,7 @@ class TicketsSearchAPIView(APIView):
 
         # project_uuid, username, search_text, start, end
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             tickets = list_tickets_by_search(seadb_api, project_uuid, query, 0, limit)
         except Exception as e:
             logger.error(e)
@@ -1085,7 +1085,7 @@ class TicketCommentsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -1141,7 +1141,7 @@ class TicketCommentsAPIView(APIView):
         username = request.user.username
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -1274,7 +1274,7 @@ class TicketCommentAPIView(APIView):
         username = request.user.username
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -1359,7 +1359,7 @@ class TicketCommentAPIView(APIView):
         username = request.user.username
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, ticket_id)
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -1436,7 +1436,7 @@ class TicketActivitiesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             ticket, metadata = get_ticket(seadb_api, project_uuid, int(ticket_id))
             if not ticket:
                 error_msg = 'Ticket not found.'
@@ -1575,7 +1575,7 @@ class MyTicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         try:
             tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
         except Exception as e:
@@ -1610,7 +1610,7 @@ class TicketMetadataAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         try:
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
@@ -1670,7 +1670,7 @@ class TicketTrashAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         try:
             tickets, columns = list_trash_tickets(seadb_api, project_uuid, start, limit)
         except Exception as e:
@@ -1700,7 +1700,7 @@ class TicketTrashAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         update_rows = []
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for ticket_id in ticket_ids:
@@ -1744,7 +1744,7 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             need_delete_tickets = get_deleted_tickets(seadb_api, project_uuid)
             need_delete_ticket_ids = [ticket['ticket_id'] for ticket in need_delete_tickets]
             if not need_delete_ticket_ids:

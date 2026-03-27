@@ -615,7 +615,7 @@ class ConnectionsViewsManager(models.Manager):
         if connection_type == ConnectionType.GITHUB_ISSUE.value:
             from seahub.project.seadb_api import SeaDBAPI
             from seahub.seadb_models.utils import get_connection_columns
-            seadb_api = SeaDBAPI('seaqa-web')
+            seadb_api = SeaDBAPI()
             columns = get_connection_columns(seadb_api, project_uuid, connection)
             views = details.get('views', [])
             for v in views:
@@ -948,10 +948,9 @@ class AIUsageStatistics(models.Model):
     class Meta:
         db_table = 'ai_usage_statistics'
         indexes = [
-            models.Index(fields=['date', 'username']),
             models.Index(fields=['date', 'project_uuid']),
-            models.Index(fields=['date', 'group_id']),
-            models.Index(fields=['date', 'org_id']),
+            models.Index(fields=['date', 'group_id', 'username']),
+            models.Index(fields=['date', 'org_id', 'group_id']),
         ]
 
 

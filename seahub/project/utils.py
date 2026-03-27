@@ -11,10 +11,9 @@ from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
-from django.utils import timezone as django_timezone
 from django.core.cache import cache
 
-from seahub.organizations.models import OrgSettings, OrgMemberQuota
+from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.utils.user_permissions import get_user_role
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
