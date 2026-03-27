@@ -135,7 +135,7 @@ def get_token_v2(request, username, platform, device_id, device_name,
         username, platform, device_id, device_name,
         client_version, platform_version, get_client_ip(request))
 
-def get_api_token(request, keys=None, key_prefix=''):
+def get_api_token(request, keys=None):
 
     if not keys:
         keys = [
@@ -146,16 +146,13 @@ def get_api_token(request, keys=None, key_prefix=''):
             'platform_version',
         ]
 
-    if key_prefix:
-        keys = [key_prefix + item for item in keys]
-
     if all([key in request.GET for key in keys]):
 
-        platform = request.GET['%splatform' % key_prefix]
-        device_id = request.GET['%sdevice_id' % key_prefix]
-        device_name = request.GET['%sdevice_name' % key_prefix]
-        client_version = request.GET['%sclient_version' % key_prefix]
-        platform_version = request.GET['%splatform_version' % key_prefix]
+        platform = request.GET['platform']
+        device_id = request.GET['device_id']
+        device_name = request.GET['device_name']
+        client_version = request.GET['client_version']
+        platform_version = request.GET['platform_version']
 
         token = get_token_v2(request, request.user.username, platform,
                              device_id, device_name, client_version,

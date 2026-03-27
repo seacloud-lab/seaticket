@@ -203,8 +203,7 @@ def login(request, template_name='registration/login.html',
     else:
         signup_url = ''
 
-    enable_sso = getattr(settings, 'ENABLE_KRB5_LOGIN', False) or \
-                 getattr(settings, 'ENABLE_SAML', False) or \
+    enable_sso = getattr(settings, 'ENABLE_SAML', False) or \
                  getattr(settings, 'ENABLE_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CAS', False) or \

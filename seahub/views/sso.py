@@ -35,9 +35,6 @@ def sso(request):
     if getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False):
         return HttpResponseRedirect(next_page)
 
-    if getattr(settings, 'ENABLE_KRB5_LOGIN', False):
-        return HttpResponseRedirect(next_page)
-
     # send next page back to other views
     next_param = '?%s=' % REDIRECT_FIELD_NAME + quote(next_page)
     if getattr(settings, 'ENABLE_SAML', False):
