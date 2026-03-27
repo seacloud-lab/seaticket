@@ -38,6 +38,7 @@ KEY_FILE_UPDATES_LAST_EMAILED_TIME = "file_updates_last_emailed_time"
 KEY_PROJECT_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
 KEY_COLLABORATE_EMAIL_INTERVAL = 'collaborate_email_interval'
 KEY_COLLABORATE_LAST_EMAILED_TIME = 'collaborate_last_emailed_time'
+KEY_NEWSLETTER_SUBSCRIBED = 'newsletter_subscribed'
 
 COLLABORATE_EMAIL_INTERVAL_DEFAULT = 3600
 
@@ -189,6 +190,8 @@ class UserOptionsManager(models.Manager):
             username, KEY_COLLABORATE_LAST_EMAILED_TIME,
             time_dt.strftime("%Y-%m-%d %H:%M:%S"))
 
+    def set_newsletter_subscribed(self, username, subscribed):
+        return self.set_user_option(username, KEY_NEWSLETTER_SUBSCRIBED, subscribed)
 
 class UserOptions(models.Model):
     email = LowerCaseCharField(max_length=255, db_index=True)

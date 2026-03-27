@@ -13,8 +13,6 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 
 from seahub.auth import login, REDIRECT_FIELD_NAME
 from seahub.auth.decorators import login_required, login_required_ajax
@@ -256,7 +254,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if newsletter_subscribed:
                 try:
                     # Save newsletter subscription status to user options
-                    UserOptions.objects.set_user_option(new_user.username, 'newsletter_subscribed', 'true')
+                    UserOptions.objects.set_newsletter_subscribed(new_user.username, 'true')
                 except Exception as e:
                     logger.warning('Failed to save newsletter subscription status: %s' % e)
 
