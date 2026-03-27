@@ -203,8 +203,7 @@ def login(request, template_name='registration/login.html',
     else:
         signup_url = ''
 
-    enable_sso = getattr(settings, 'ENABLE_SHIB_LOGIN', False) or \
-                 getattr(settings, 'ENABLE_KRB5_LOGIN', False) or \
+    enable_sso = getattr(settings, 'ENABLE_KRB5_LOGIN', False) or \
                  getattr(settings, 'ENABLE_SAML', False) or \
                  getattr(settings, 'ENABLE_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
@@ -258,14 +257,6 @@ def logout(request, next_page=None,
 
     from seahub.auth import logout
     logout(request)
-
-    # Local logout for shibboleth user.
-    shib_logout_url = getattr(settings, 'SHIBBOLETH_LOGOUT_URL', '')
-    if getattr(settings, 'ENABLE_SHIB_LOGIN', False) and shib_logout_url:
-        shib_logout_return = getattr(settings, 'SHIBBOLETH_LOGOUT_RETURN', '')
-        if shib_logout_return:
-            shib_logout_url += shib_logout_return
-        response = HttpResponseRedirect(shib_logout_url)
 
     # Local logout for ouath user.
     via_oauth = request.COOKIES.get('via_oauth', '')

@@ -135,7 +135,7 @@ def get_token_v2(request, username, platform, device_id, device_name,
         username, platform, device_id, device_name,
         client_version, platform_version, get_client_ip(request))
 
-def get_api_token(request, keys=None, key_prefix='shib_'):
+def get_api_token(request, keys=None, key_prefix=''):
 
     if not keys:
         keys = [

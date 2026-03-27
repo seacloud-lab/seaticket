@@ -1,18 +1,13 @@
 import logging
-from fnmatch import fnmatch
-from collections import OrderedDict
 
 from django.conf import settings
 
 from seahub.base.accounts import User, AuthBackend
 from seahub.profile.models import Profile
-from seahub.registration.models import notify_admins_on_activate_request, \
-        notify_admins_on_register_complete
+from seahub.registration.models import notify_admins_on_activate_request
 logger = logging.getLogger(__name__)
 
 
-# No longer maintained
-# Only used for old code of shibboleth authenticate
 class RemoteUserBackend(object):
     """
     This backend is to be used in conjunction with the ``RemoteUserMiddleware``
@@ -79,33 +74,6 @@ class SeafileRemoteUserBackend(AuthBackend):
     # Create active user by default.
     auto_activate = getattr(settings,
                             'REMOTE_USER_ACTIVATE_USER_AFTER_CREATION', True)
-
-    # map user attribute in HTTP header and Seahub user attribute
-    # REMOTE_USER_ATTRIBUTE_MAP = {
-    #     'HTTP_DISPLAYNAME': 'name',
-    #     'HTTP_MAIL': 'contact_email',
-    #
-    #     # for shibboleth user info
-    #     'HTTP_GIVENNAME': 'givenname',
-    #     'HTTP_SN': 'surname',
-    #     'HTTP_ORGANIZATION': 'institution',
-    #
-    #     # for shibboleth user role
-    #     'HTTP_Shibboleth-affiliation': 'affiliation',
-    # }
-
-    # for shibboleth user role
-    # SHIBBOLETH_AFFILIATION_ROLE_MAP = {
-    #     'employee@uni-mainz.de': 'staff',
-    #     'member@uni-mainz.de': 'staff',
-    #     'student@uni-mainz.de': 'student',
-    #     'employee@hu-berlin.de': 'guest',
-    #     'patterns': (
-    #         ('*@hu-berlin.de', 'guest1'),
-    #         ('*@*.de', 'guest2'),
-    #         ('*', 'guest'),
-    #     ),
-    # }
 
     remote_user_attribute_map = getattr(settings, 'REMOTE_USER_ATTRIBUTE_MAP',
                                         {})
@@ -214,7 +182,6 @@ class SeafileRemoteUserBackend(AuthBackend):
             profile.nickname = name
         else:
             # or use values of "HTTP_GIVENNAME" and "HTTP_SN" headers
-            # for shibboleth
             givenname = user_info.get('givenname', '')
             surname = user_info.get('surname', '')
             if givenname.strip() and surname.strip():
@@ -227,31 +194,3 @@ class SeafileRemoteUserBackend(AuthBackend):
             profile.contact_email = contact_email
 
         profile.save()
-
-
-    def _get_role_by_affiliation(self, affiliation):
-        """ Specific for Shibboleth
-        """
-
-        try:
-            role_map = settings.SHIBBOLETH_AFFILIATION_ROLE_MAP
-        except AttributeError:
-            return
-
-        role = role_map.get(affiliation)
-        if role:
-            return role
-
-        if role_map.get('patterns') is not None:
-            joker_map = role_map.get('patterns')
-            try:
-                od = OrderedDict(joker_map)
-            except Exception as e:
-                logger.error(e)
-                return
-
-            for k in od:
-                if fnmatch(affiliation, k):
-                    return od[k]
-
-        return None
