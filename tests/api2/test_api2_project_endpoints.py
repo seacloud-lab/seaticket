@@ -286,7 +286,7 @@ class TestSearchView:
         )
         request.user = project_creator
 
-        with patch('seahub.api2.endpoints.project.search', return_value=[{'id': 1}]):
+        with patch('seahub.api2.endpoints.project.keyword_search', return_value=[{'id': 1}]):
             resp = SearchView.as_view()(request)
 
         assert resp.status_code == 200
