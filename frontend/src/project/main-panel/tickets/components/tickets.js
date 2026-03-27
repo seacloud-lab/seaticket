@@ -111,11 +111,6 @@ const Tickets = ({
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
 
-          const titleColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-          if (titleColumn) {
-            context.setSetting('titleColumnKey', titleColumn.key);
-          }
-
           allColumns.current = columns;
           return {
             data: {

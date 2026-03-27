@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
-import { useMetadata } from '@/sea-metadata/hooks';
 import LinkItem from './link-item';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useConnections } from '@/project/main-panel/connections/hooks';
@@ -10,11 +9,9 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const LinkFormatter = ({ value, className, column, children: emptyFormatter }) => {
+const LinkFormatter = ({ value, className, column, metadata, children: emptyFormatter }) => {
   const [isShowDetailsDialog, setIsShowDetailsDialog] = useState(false);
   const [currentLinkItem, setCurrentLinkItem] = useState(null);
-
-  const { metadata } = useMetadata();
   const { connections } = useConnections();
 
   const validValue = useMemo(() => {

@@ -16,6 +16,7 @@ const RowCard = forwardRef(({
   renderColumns,
   titleColumnKey,
   scrollLeft,
+  metadata,
   setItemScrollLeft,
   onClick,
   onStatusClick,
@@ -87,7 +88,7 @@ const RowCard = forwardRef(({
             const value = getCellValueByColumn(row, column);
             return (
               <div className="sea-metadata-card-row-cell-value text-truncate" style={{ width: column.width }} key={column.key}>
-                <CellFormatter readonly={true} value={value} column={column} row={row} />
+                <CellFormatter readonly={true} value={value} column={column} row={row} metadata={metadata} />
               </div>
             );
           })}

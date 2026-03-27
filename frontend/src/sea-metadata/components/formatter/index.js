@@ -149,7 +149,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     }
     case CellType.LINK: {
       return (
-        <LinkFormat value={value} row={row} className={className} { ...props }>
+        <LinkFormat value={value} row={row} className={className} { ...params} { ...props }>
           <Empty type={columnType} placeholder={emptyTip} />
         </LinkFormat>
       );
