@@ -10,17 +10,6 @@ from seahub.base.fields import LowerCaseCharField
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-KEY_SERVER_CRYPTO = "server_crypto"
-VAL_SERVER_CRYPTO_ENABLED = "1"
-VAL_SERVER_CRYPTO_DISABLED = "0"
-
-KEY_USER_GUIDE = "user_guide"
-VAL_USER_GUIDE_ON = "1"
-VAL_USER_GUIDE_OFF = "0"
-
-KEY_SUB_LIB = "sub_lib"
-VAL_SUB_LIB_ENABLED = "1"
-VAL_SUB_LIB_DISABLED = "0"
 
 KEY_FORCE_PASSWD_CHANGE = "force_passwd_change"
 VAL_FORCE_PASSWD_CHANGE = "1"
@@ -31,6 +20,9 @@ VAL_FORCE_2FA = "1"
 KEY_USER_LOGGED_IN = "user_logged_in"
 VAL_USER_LOGGED_IN = "1"
 
+KEY_NEWSLETTER_SUBSCRIBED = 'newsletter_subscribed'
+VAL_NEWSLETTER_SUBSCRIBED = '1'
+
 KEY_DEFAULT_REPO = "default_repo"
 KEY_WEBDAV_SECRET = "webdav_secret"
 KEY_FILE_UPDATES_EMAIL_INTERVAL = "file_updates_email_interval"
@@ -38,6 +30,7 @@ KEY_FILE_UPDATES_LAST_EMAILED_TIME = "file_updates_last_emailed_time"
 KEY_PROJECT_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
 KEY_COLLABORATE_EMAIL_INTERVAL = 'collaborate_email_interval'
 KEY_COLLABORATE_LAST_EMAILED_TIME = 'collaborate_last_emailed_time'
+
 
 COLLABORATE_EMAIL_INTERVAL_DEFAULT = 3600
 
@@ -189,6 +182,8 @@ class UserOptionsManager(models.Manager):
             username, KEY_COLLABORATE_LAST_EMAILED_TIME,
             time_dt.strftime("%Y-%m-%d %H:%M:%S"))
 
+    def set_newsletter_subscribed(self, username):
+        return self.set_user_option(username, KEY_NEWSLETTER_SUBSCRIBED, VAL_NEWSLETTER_SUBSCRIBED)
 
 class UserOptions(models.Model):
     email = LowerCaseCharField(max_length=255, db_index=True)

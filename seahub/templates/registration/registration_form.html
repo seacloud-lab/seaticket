@@ -40,6 +40,10 @@
 				{% endif %}
 
 				<p class="error hide mt-1"></p>
+				<div class="form-check mt-1 d-flex align-items-center">
+			        <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input mr-2 mt-0">
+				    <label for="newsletter">{% trans "Subscribe to our newsletter" %}</label>
+				</div>
 				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
 			</form>
 			{% endif %}
