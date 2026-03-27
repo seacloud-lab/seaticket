@@ -3,9 +3,9 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByKey } from '@/sea-metadata/utils/column';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
+import { IconButton } from '@/components';
 
 import './index.css';
-import { IconButton } from '@/components';
 
 const RowCard = forwardRef(({
   row,

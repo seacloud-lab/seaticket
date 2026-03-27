@@ -1,6 +1,5 @@
 import deepcopy from 'deep-copy';
 import { CellType, SEQUENCE_COLUMN_WIDTH } from '../../constants';
-import context from '../../context';
 import { getCellValueByColumn } from '../cell';
 
 export const checkIsColumnFrozen = (column) => {
@@ -198,9 +197,8 @@ export const getColumnOriginType = (column) => {
   return type;
 };
 
-export const normalizeColumns = (columns, columnOrderRules) => {
+export const normalizeColumns = (columns, columnsWidth, columnOrderRules) => {
   if (!Array.isArray(columns) || columns.length === 0) return [];
-  const columnsWidth = context.localStorage.getItem('columns_width') || {};
   let displayColumns = [];
 
   // Arrange columns based on predefined order

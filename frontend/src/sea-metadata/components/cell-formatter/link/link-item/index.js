@@ -1,10 +1,8 @@
 import React from 'react';
-import { useMetadata } from '@/sea-metadata/hooks';
 
 import './index.css';
 
-const LinkItem = ({ value, onClick }) => {
-  const { metadata } = useMetadata();
+const LinkItem = ({ value, metadata, onClick }) => {
   const { linked_records } = metadata;
 
   const title = linked_records[value];
