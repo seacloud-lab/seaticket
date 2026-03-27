@@ -1,7 +1,10 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
-import { Button, Input, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
+import { Button, Input, Dropdown } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, toaster, Icon, Option, CustomizeDropdownMenu } from '@/components';
+import {
+  IconButton, toaster, Icon, Option,
+  CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
+} from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
 import { TICKET_STATE } from '../../../constants';
@@ -104,19 +107,17 @@ const Header = forwardRef(({
               </Button>
             </>
           ) : createMoreOptions ? (
-            <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
-              <DropdownToggle tag="span">
-                <IconButton className="more-btn" icon="more" title={gettext('More')}/>
-              </DropdownToggle>
-              <CustomizeDropdownMenu>
+            <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+              <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
+              <CustomizeDropdownMenu className="position-fixed">
                 {createMoreOptions().map((option, index) => {
                   if (option === 'Divider') {
-                    return <DropdownItem key={index} divider />;
+                    return <CustomizeDropdownItem key={index} divider />;
                   }
                   return (
-                    <DropdownItem key={option.key || index} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
+                    <CustomizeDropdownItem key={option.key || index} onClick={() => { option.callback && option.callback(); setIsMoreMenuOpen(false); }}>
                       {option.label}
-                    </DropdownItem>
+                    </CustomizeDropdownItem>
                   );
                 })}
               </CustomizeDropdownMenu>

@@ -26,6 +26,13 @@
   overflow-x: hidden;
 }
 
+.sea-qa-project-new-ticket .sea-qa-project-ticket-name-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
 .sea-qa-project-new-ticket .sea-qa-project-ticket-name {
   font-size: 16px;
   font-weight: 600;
