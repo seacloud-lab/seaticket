@@ -5,8 +5,10 @@ import CheckboxEditor from '../../../../../../components/cell-editors/checkbox-e
 import PriorityEditor from '../../../../../../components/cell-editors/priority-editor';
 import { canEditCell } from '../../../../../../utils/cell';
 import { CellType } from '../../../../../../constants';
+import { useMetadata } from '@/sea-metadata/hooks';
 
 const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) => {
+  const { metadata } = useMetadata();
   const { type } = column;
   const cellEditAble = canEditCell(column, row, true);
   if (type === CellType.CHECKBOX && cellEditAble) {
@@ -16,7 +18,7 @@ const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) 
     return (<PriorityEditor { ...params } isCellSelected={isCellSelected} value={value} column={column} onChange={onChange} row={row} />);
   }
 
-  return (<CellFormatter { ...params } readonly={true} value={value} column={column} row={row} />);
+  return (<CellFormatter { ...params } readonly={true} value={value} column={column} row={row} metadata={metadata} />);
 };
 
 Formatter.propTypes = {
