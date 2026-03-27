@@ -25,12 +25,11 @@ from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.notifications.models import ProjectNotification
 from seahub.utils.timeutils import get_month_date_range
-from seahub.utils.ai_client import rank_related_issues
+from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
-
 
 logger = logging.getLogger(__name__)
 
@@ -363,8 +362,7 @@ def query_items(request, query_str, query_type):
         return query_projects(request, query_str)
     return []
 
-
-def rank_search_results(query, results, username, org_id, project_uuid):
+def rank_vector_search_results(query_record, results, username, org_id, project_uuid):
     if not results:
         return results
 
@@ -374,27 +372,22 @@ def rank_search_results(query, results, username, org_id, project_uuid):
     for result in results:
         _id = result.get('_id')
         connection_id = result.get('connection_id', '')
-        source_type = result.get('source_type', '')
-        title = result.get('title', '')
-        content = result.get('content', '')
 
         candidate = {
             '_id': _id,
             'connection_id': connection_id,
-            'title': title,
+            'title': result.get('title', ''),
+            'ai_summary': result.get('ai_summary', '')
         }
 
-        if source_type == 'chunk':
-            candidate['snippets'] = content
-        else:
-            candidate['ai_summary'] = content
+        if 'snippets' in result:
+            candidate['snippets'] = result['snippets']
 
         candidate_records.append(candidate)
 
         map_key = f"{_id}:{connection_id}"
         result_map[map_key] = result
 
-    query_record = {'ai_summary': query}
     params = {
         'query_record': query_record,
         'candidate_records': candidate_records,
@@ -405,7 +398,7 @@ def rank_search_results(query, results, username, org_id, project_uuid):
     }
 
     try:
-        ranked_ids = rank_related_issues(params)
+        ranked_ids = rank_related_records(params)
     except Exception as e:
         logger.warning(f'rank search results failed: {e}')
         return results

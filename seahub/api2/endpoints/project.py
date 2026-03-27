@@ -22,11 +22,11 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
-    rank_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table
+    rank_vector_search_results
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, retrieve_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
-from seahub.utils.indexer import search
+from seahub.utils.indexer import keyword_search, vector_search_with_text
 
 logger = logging.getLogger(__name__)
 
@@ -393,7 +393,11 @@ class SearchView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        search_type = request.data.get('search_type', 'normal_search')
+        search_type = request.data.get('search_type', 'keyword_search')
+        if search_type not in ('keyword_search', 'semantic_search'):
+            error_msg = 'search_type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             count = int(request.GET.get('count', '20'))
         except ValueError:
@@ -435,18 +439,35 @@ class SearchView(APIView):
             'extra_sources': extra_sources,
             'count': count,
             'time_from': time_from,
-            'time_to': time_to,
-            'search_type': search_type,
+            'time_to': time_to
         }
-        results = search(params)
-
-        # Rerank results using LLM for semantic search
-        if search_type == 'semantic_search' and results:
+        
+        if search_type == 'keyword_search':
+            results = keyword_search(params)
+        else:
+            results = vector_search_with_text(params)
             org_id = request.user.org.org_id if is_org_context(request) else -1
-            results = rank_search_results(query, results, username, org_id, project_uuid)
+            # preparing required fields for reranking
+            results = retrieve_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
 
-        return Response({'results': results})
+            # rerank
+            results = rank_vector_search_results({'ai_summary': query}, results, username, org_id, project_uuid)
 
+        # returns only the required fields
+        formatted_results = []
+        for result in results:
+            res = {
+                'type': result['type'],
+                '_id': result['_id'],
+                'title': result['title'],
+                'content': result['content'],
+                'modified_time': result['modified_time']
+            }
+            connection_id = result.get('connection_id')
+            if connection_id:
+                res['connection_id'] = connection_id
+            formatted_results.append(res)
+        return Response({'results': formatted_results})
 
 class TrashProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

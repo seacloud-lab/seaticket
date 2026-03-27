@@ -6,9 +6,11 @@ from seahub.api2.authentication import ProjectAPITokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Workspaces, Projects
-from seahub.project.utils import check_project_permission
-from seahub.utils import uuid_str_to_32_chars
-from seahub.utils.indexer import search
+from seahub.project.utils import check_project_permission, rank_vector_search_results
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.utils import uuid_str_to_32_chars, is_org_context
+from seahub.utils.indexer import keyword_search, vector_search_with_text
+from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 
 
 class ViaProjectSearchView(APIView):
@@ -26,8 +28,13 @@ class ViaProjectSearchView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
 
-        search_type = request.data.get('search_type', 'normal_search')
+        search_type = request.data.get('search_type', 'keyword_search')
+        if search_type not in ('keyword_search', 'semantic_search'):
+            error_msg = 'search_type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             count = int(request.GET.get('count', '20'))
         except ValueError:
@@ -76,9 +83,20 @@ class ViaProjectSearchView(APIView):
             'count': count,
             'time_from': time_from,
             'time_to': time_to,
-            'search_type': search_type,
         }
-        results = search(params)
+        
+        if search_type == 'keyword_search':
+            results = keyword_search(params)
+        else:
+            results = vector_search_with_text(params)
+            org_id = request.user.org.org_id if is_org_context(request) else -1
+
+            # preparing required fields for reranking
+            results = retrieve_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
+
+            # rerank
+            results = rank_vector_search_results({'ai_summary': query}, results, username, org_id, project_uuid)
+        
         if results is None:
             results = []
 

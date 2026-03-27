@@ -286,11 +286,23 @@ class TestSearchView:
         )
         request.user = project_creator
 
-        with patch('seahub.api2.endpoints.project.search', return_value=[{'id': 1}]):
+        with patch('seahub.api2.endpoints.project.keyword_search', return_value=[{
+            'type': 'test_type',
+            '_id': 1,
+            'title': 'test_doc_title',
+            'content': 'test doc content',
+            'modified_time': '2026-03-27T17-45-00'
+        }]):
             resp = SearchView.as_view()(request)
 
         assert resp.status_code == 200
-        assert resp.data == {'results': [{'id': 1}]}
+        assert resp.data == {'results': [{
+            'type': 'test_type',
+            '_id': 1,
+            'title': 'test_doc_title',
+            'content': 'test doc content',
+            'modified_time': '2026-03-27T17-45-00'
+        }]}
         assert Projects.objects.filter(uuid=project.uuid).exists()
 
 

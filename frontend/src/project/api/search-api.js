@@ -78,7 +78,7 @@ class SearchAPI {
       params.time_to = timeTo;
     }
     if (typeof semanticSearch !== 'undefined') {
-      params.search_type = semanticSearch ? 'semantic_search' : 'normal_search';
+      params.search_type = semanticSearch ? 'semantic_search' : 'keyword_search';
     }
     return this.req.post(url, params, { cancelToken: cancelToken, params: { count: 100 } });
   }

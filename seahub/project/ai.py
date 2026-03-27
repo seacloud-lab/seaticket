@@ -16,20 +16,18 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_project_permission, check_ai_limit
+from seahub.project.utils import check_project_permission, check_ai_limit, rank_vector_search_results
 from seahub.utils.ai_client import (
     convert_record_to_ticket,
-    convert_ticket_to_kb_record,
-    rank_related_issues,
+    convert_ticket_to_kb_record
 )
 from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
-from seahub.utils.indexer import find_related_records
+from seahub.utils.indexer import vector_search
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
-from seahub.project.ai_utils import get_search_connection_ids, prepare_candidates_for_rerank, perform_reranking, \
-    collect_reranked_pks, fetch_connection_objects, fetch_reranked_records, build_final_results
+from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 
 
@@ -407,7 +405,6 @@ class RelatedRecordsView(APIView):
         table_name = 'tickets' if ticket_provided else None
         connection = None
         current_category = ConnectionCategory.ISSUE if ticket_provided else None
-        source_connection_id = None
         source_record_id = int(ticket_id) if ticket_provided else None
 
         if connection_provided:
@@ -429,7 +426,6 @@ class RelatedRecordsView(APIView):
                 error_msg = 'Unsupported connection type for similarity search.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            source_connection_id = int(connection_id)
             source_record_id = int(record_id)
 
         if not table_name or source_record_id is None:
@@ -451,7 +447,16 @@ class RelatedRecordsView(APIView):
             current_category = ConnectionCategory.ISSUE
 
         # get search connection ids
-        search_connection_ids = get_search_connection_ids(project, current_category)
+        project_connections = ProjectConnections.objects.filter(
+            project=project,
+            is_active=True,
+            deleted=False
+        ).select_related('project')
+
+        search_connection_ids = []
+        for proj_conn in project_connections:
+            if ConnectionCategory.from_type(proj_conn.type) == current_category:
+                search_connection_ids.append(proj_conn.id)
 
         # build search params and execute search
         search_data = {
@@ -463,45 +468,48 @@ class RelatedRecordsView(APIView):
         }
 
         try:
-            search_results = find_related_records(search_data)
+            search_results = vector_search(search_data)
             if not search_results:
                 return Response({'related_records': [], 'success': True})
+            
+            org_id = request.user.org.org_id if is_org_context(request) else -1
+            # preparing required fields for reranking
+            search_results = retrieve_vector_search_rerank_data(seadb_api, uuid_str_to_32_chars(project_uuid), search_results)
 
-            # prepare candidates for reranking and build key to result map
-            candidate_for_rerank, key_to_result = prepare_candidates_for_rerank(
-                search_results, ticket_provided, ticket_id, source_connection_id, source_record_id
-            )
+            # rerank
+            search_results = rank_vector_search_results({
+                'title': query_record['title'],
+                'ai_summary': query_record['ai_summary']
+            }, search_results, username, org_id, project_uuid)
 
-            # rerank results
-            reranked_keys = perform_reranking(candidate_for_rerank, query_record, request, username, project_uuid)
-            reranked_results = []
-            if reranked_keys:
-                reranked_candidates = [(key, key_to_result[key]) for key in reranked_keys if key in key_to_result]
+            formatted_results = []
+            for result in search_results:
+                # Skip the original records that need to be queried:
+                # - If it's a ticket, both `ticket_provided == True` and `record_id` must exactly match the original record.
+                # - If it's a connection, both `connection_provided == True` and `connection_id` and `record_id` must exactly match the original record.
 
-                # collect pks to fetch
-                ticket_pks, connection_pks_map = collect_reranked_pks(reranked_candidates, source_connection_id)
+                if source_record_id == int(result['_id']) and \
+                    (ticket_provided and result['type'] == ExtraSourceType.TICKET.value or \
+                    connection_provided and int(result.get('connection_id', -1)) == int(connection_id)):
+                    continue
 
-                # fetch connection objects
-                connection_objects = fetch_connection_objects(
-                    connection, connection_id, set(connection_pks_map.keys())
-                )
+                res = {
+                    'type': result['type'],
+                    '_id': result['_id'],
+                    'title': result['title'],
+                    'content': result['content'],
+                    'modified_time': result['modified_time']
+                }
+                c_id = result.get('connection_id')
+                if c_id:
+                    res['connection_id'] = c_id
+                formatted_results.append(res)
 
-                # fetch records
-                records_map = fetch_reranked_records(
-                    seadb_api, project_uuid_32, ticket_pks,
-                    connection_pks_map, connection_objects, current_category
-                )
-
-                # build final results
-                reranked_results = build_final_results(
-                    reranked_candidates, records_map, connection_objects, source_connection_id
-                )
+            return Response({
+                'related_records': formatted_results,
+            })
 
         except Exception as e:
             logger.error(f"Error calling vector search indexer: {e}")
             error_msg = 'Error calling vector search indexer.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({
-            'related_records': reranked_results,
-        })

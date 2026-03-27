@@ -5,7 +5,7 @@ import jwt
 import requests
 from urllib.parse import urljoin
 
-from seahub.settings import SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL, JWT_PRIVATE_KEY
+from seahub.settings import SEAQA_AI_INNER_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +40,9 @@ def convert_ticket_to_kb_record(params):
     return kb_title, kb_content
 
 
-def rank_related_issues(params):
+def rank_related_records(params):
     headers = _build_headers()
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/rank-related-issues')
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/rank-related-records')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'rank related records error status: {resp.status_code} body: {resp.text}')
