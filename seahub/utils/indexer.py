@@ -48,7 +48,7 @@ def vector_search(params):
 
 def vector_search_with_text(params):
     headers = _build_headers()
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/search/vector-with-text')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/search/vector-from-text')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'search error status: {resp.status_code} body: {resp.text}')
