@@ -254,7 +254,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if newsletter_subscribed:
                 try:
                     # Save newsletter subscription status to user options
-                    UserOptions.objects.set_newsletter_subscribed(new_user.username, '1')
+                    UserOptions.objects.set_newsletter_subscribed(new_user.username)
                 except Exception as e:
                     logger.warning('Failed to save newsletter subscription status: %s' % e)
 
