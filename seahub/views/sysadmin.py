@@ -110,7 +110,6 @@ def sys_sudo_mode(request):
         else:
             incr_login_failed_attempts(username=username, ip=ip)
 
-    enable_shib_login = getattr(settings, 'ENABLE_SHIB_LOGIN', False)
     enable_saml_login = getattr(settings, 'ENABLE_SAML', False)
 
     login_bg_image_path = get_login_bg_image_path()
@@ -118,7 +117,7 @@ def sys_sudo_mode(request):
     return render(request,
         'sysadmin/sudo_mode.html', {
             'password_error': password_error,
-            'enable_sso': enable_shib_login or enable_saml_login,
+            'enable_sso': enable_saml_login,
             'next': next_page,
             'login_bg_image_path': login_bg_image_path,
         })

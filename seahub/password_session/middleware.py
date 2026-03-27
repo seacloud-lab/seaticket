@@ -10,7 +10,7 @@ class CheckPasswordHash(MiddlewareMixin):
     def process_view(self, request, *args, **kwargs):
         if getattr(request.user, 'is_authenticated') and request.user.is_authenticated:
             if request.user.enc_password == '!':
-                # Disable for LDAP/Shibboleth/SAML/... users.
+                # Disable for LDAP/SSO/... users.
                 return None
 
             if request.session.get(PASSWORD_HASH_KEY) != get_password_hash(request.user):

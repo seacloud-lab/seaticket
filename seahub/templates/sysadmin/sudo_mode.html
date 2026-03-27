@@ -42,7 +42,7 @@
             {% endif %}
             <button type="submit" class="submit btn btn-primary btn-block">{% trans "Confirm password" %}</button>
             {% if enable_sso %}
-            <button id="shib-login" class="btn btn-secondary btn-sso btn-block">SSO</button>
+            <button id="sso-login" class="btn btn-secondary btn-sso btn-block">SSO</button>
             {% endif %}
         </form>
     </div>
@@ -72,8 +72,8 @@ $("#confirm-password-form").on('click', '.password-toggle', function(){
 
 {% if enable_sso %}
 $(function() {
-    $('#shib-login').on('click', function() {
-        window.location = "{% url 'shib_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}";
+    $('#sso-login').on('click', function() {
+        window.location = "{% url 'sso' %}{% if next %}?next={{ next|urlencode }}{% endif %}";
         return false;
     });
 });

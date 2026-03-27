@@ -170,15 +170,7 @@ class SeafileRemoteUserMiddleware(MiddlewareMixin):
                 auth.logout(request)
 
     def _set_auth_cookie(self, request, response):
-
-        if getattr(settings, 'ENABLE_SHIB_LOGIN', False):
-            key_prefix = 'shib_'
-        elif getattr(settings, 'ENABLE_KRB5_LOGIN', False):
-            key_prefix = 'krb5_'
-        else:
-            key_prefix = ''
-
-        api_token = get_api_token(request, key_prefix)
+        api_token = get_api_token(request)
         response.set_cookie('seahub_auth',
                             request.user.username + '@' + api_token.key,
                             domain=settings.SESSION_COOKIE_DOMAIN)
