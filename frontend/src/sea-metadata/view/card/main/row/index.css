@@ -1,0 +1,114 @@
+.sea-metadata-card-row {
+  align-items: flex-start;
+  background-color: #fff;
+  border: 1px solid #0000001a;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  height: 88px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sea-metadata-card-row.sea-metadata-card-row-highlight,
+.sea-metadata-card-row:hover {
+  border-color: #0000004d;
+}
+
+.sea-metadata-card-row:hover {
+  cursor: pointer;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-container {
+  padding: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-header {
+  padding: 0 12px;
+  pointer-events: none;
+  position: absolute;
+  top: 12px;
+  align-items: center;
+  display: inline-flex;
+  height: 24px;
+  justify-content: space-between;
+  width: 100%;
+  z-index: 1;
+  gap: 16px;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-header .sea-metadata-card-row-name {
+  font-weight: 500;
+  pointer-events: none;
+  height: 100%;
+  flex: 1 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-header .sea-metadata-card-row-header-status-icon-btn .sea-qa-icon-svg-check-circle {
+  color: #59cb74;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body {
+  height: 100%;
+  padding: 40px 12px 0;
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: none;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  margin: 0 8px;
+  text-align: left;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value:first-child {
+  justify-content: flex-start;
+  margin: 0 8px 0 0;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .cell-formatter-container {
+  height: 24px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .sea-metadata-row-cell-empty {
+  background-color: #f1f1f1;
+  border-radius: 4px;
+  display: inline-block;
+  height: 8px;
+  width: 20px;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .sea-metadata-ui.sea-metadata-ctime-formatter,
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .sea-metadata-ui.sea-metadata-mtime-formatter {
+  justify-content: flex-start;
+}
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .sea-metadata-ui.sea-metadata-text-formatter {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}

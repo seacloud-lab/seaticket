@@ -36,14 +36,14 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     case CellType.TEXT: {
       return (
         <TextFormatter value={value} column={column} className={className} { ...props } { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </TextFormatter>
       );
     }
     case CellType.URL: {
       return (
         <URLFormatter value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </URLFormatter>
       );
     }
@@ -51,7 +51,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     case CellType.MTIME: {
       return (
         <CTimeFormatter value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </CTimeFormatter>
       );
     }
@@ -59,105 +59,105 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     case CellType.LAST_MODIFIER: {
       return (
         <CreatorFormatter value={value} className={className} api={queryUserAPI} { ...params } { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </CreatorFormatter>
       );
     }
     case CellType.DATE: {
       return (
         <DateFormatter value={value} format={column.data?.format} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </DateFormatter>
       );
     }
     case CellType.SINGLE_SELECT: {
       return (
         <SingleSelectFormatter value={value} options={column.data?.options || []} row={row} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </SingleSelectFormatter>
       );
     }
     case CellType.MULTIPLE_SELECT: {
       return (
         <MultipleSelectFormatter value={value} options={column.data?.options || []} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </MultipleSelectFormatter>
       );
     }
     case CellType.COLLABORATOR: {
       return (
         <CollaboratorsFormatter value={value} className={className} api={queryUserAPI} {...params} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </CollaboratorsFormatter>
       );
     }
     case CellType.CHECKBOX: {
       return (
         <CheckboxFormatter value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </CheckboxFormatter>
       );
     }
     case CellType.LONG_TEXT: {
       return (
         <LongTextFormatter {...params} value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </LongTextFormatter>
       );
     }
     case CellType.NUMBER: {
       return (
         <NumberFormatter value={value} formats={column?.data} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </NumberFormatter>
       );
     }
     case CellType.PRIORITY: {
       return (
         <PriorityFormatter value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </PriorityFormatter>
       );
     }
     case CellType.RATE: {
       return (
         <RateFormatter value={value} data={column?.data} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </RateFormatter>
       );
     }
     case CellType.TYPE: {
       return (
         <TypeFormatter value={value} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </TypeFormatter>
       );
     }
     case CellType.TAGS: {
       return (
         <TagsFormatter value={value} className={className} showName={true} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </TagsFormatter>
       );
     }
     case CellType.TAG: {
       return (
         <TagFormatter value={value} row={row} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </TagFormatter>
       );
     }
     case CellType.LINK: {
       return (
         <LinkFormat value={value} row={row} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </LinkFormat>
       );
     }
     default: {
       return (
         <TextFormatter value={value} column={column} className={className} { ...props }>
-          <Empty columnType={columnType} placeholder={emptyTip} />
+          <Empty type={columnType} placeholder={emptyTip} />
         </TextFormatter>
       );
     }

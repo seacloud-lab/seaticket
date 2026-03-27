@@ -4,28 +4,34 @@ export * from './table';
 
 export const VIEW_TYPE = {
   TABLE: 'table',
+  CARD: 'card',
 };
 
 export const FACE_RECOGNITION_VIEW_ID = '_face_recognition';
 
 export const VIEW_TYPE_ICON = {
   [VIEW_TYPE.TABLE]: 'table',
+  [VIEW_TYPE.CARD]: 'card',
 };
 
 export const VIEW_TYPE_DEFAULT_SORTS = {
   [VIEW_TYPE.TABLE]: [],
+  [VIEW_TYPE.CARD]: [],
 };
 
 export const VIEW_SORT_COLUMN_RULES = {
   [VIEW_TYPE.TABLE]: (column) => SORT_COLUMN_OPTIONS.includes(column.type) && column.sort_able,
+  [VIEW_TYPE.CARD]: (column) => SORT_COLUMN_OPTIONS.includes(column.type) && column.sort_able,
 };
 
 export const VIEW_FIRST_SORT_COLUMN_RULES = {
   [VIEW_TYPE.TABLE]: (column) => SORT_COLUMN_OPTIONS.includes(column.type),
+  [VIEW_TYPE.CARD]: (column) => SORT_COLUMN_OPTIONS.includes(column.type),
 };
 
 export const VIEW_DEFAULT_SETTINGS = {
   [VIEW_TYPE.TABLE]: {},
+  [VIEW_TYPE.CARD]: {},
 };
 
 export const VIEW_PROPERTY_KEYS = {

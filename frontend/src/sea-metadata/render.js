@@ -40,6 +40,7 @@ const Main = forwardRef(({
 
   useImperativeHandle(ref, () => ({
     getData: () => metadataRef.current.getData(),
+    getSelectedRowIds: () => metadataRef.current.getSelectedRowIds(),
   }), []);
 
   useEffect(() => {
