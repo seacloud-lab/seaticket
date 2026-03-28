@@ -7,14 +7,12 @@ from typing import Dict
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.seadb_models.models import TicketActivitiesTable
-from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
-from seahub.seadb_models.models import DiscourseTopicsTable, GithubIssuesTable, ThreadTable
 from seahub.seadb_models.utils import list_connection_record_titles
 from seahub.project.models import ProjectConnections
-from seahub.project.constants import ConnectionType
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
 
@@ -450,7 +448,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     """
 
     tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
-    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, AI_CHAT_TICKET_MAX_COMMENTS_NUM)
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ISSUE_ATTACHMENT_MAX_COMMENTS)
     all_comments_users = []
     for ticket_comments in ticket_ids_comments_map.values():
         for ticket_comment in ticket_comments:
@@ -480,11 +478,15 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             nickname = nickname_map.get(ticket_comment.get('creator'))
             commented_at = ticket_comment.get('created_time')
             commented_at = time_str_to_utc_time(commented_at).isoformat()
-            whole_ticket_data['comments'].append({
+            new_comment = {
                 'nickname': nickname,
                 'content': ticket_comment.get('content'),
                 'commented_at': commented_at
-            })
+            }
+            # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
+            if len(f'{whole_ticket_data}{new_comment}') > ATTACHMENT_CONTENT_MAX_SIZE:
+                break
+            whole_ticket_data['comments'].append(new_comment)
         result.append(whole_ticket_data)
     return result
 

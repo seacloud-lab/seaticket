@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import DiscourseTopicsTable, DiscourseRepliesTable
-from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
 
@@ -108,7 +108,7 @@ class DiscourseSeaDBAPI:
             topics = self.get_topics_by_pks(connection_id, _pks)
 
             topic_ids_str = [str(topic['topic_id']) for topic in topics]
-            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
+            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, ISSUE_ATTACHMENT_MAX_COMMENTS)
 
             for topic_data in topics:
                 whole_topic_data = {
@@ -123,12 +123,16 @@ class DiscourseSeaDBAPI:
                 }
 
                 for reply in topics_replies_map.get(topic_data['topic_id'], []):
-                    whole_topic_data['replies'].append({
+                    new_reply = {
                         'author': reply.get('author'),
                         'content': reply.get('content'),
                         'post_number': reply.get('post_number'),
                         'modified_time': reply.get('modified_time')
-                    })
+                    }
+                    # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
+                    if len(f'{whole_topic_data}{new_reply}') > ATTACHMENT_CONTENT_MAX_SIZE:
+                        break
+                    whole_topic_data['emails'].append(new_reply)
 
                 result.append(whole_topic_data)
         return result

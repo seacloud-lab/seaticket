@@ -3,6 +3,7 @@ import logging
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import SeafileTable
 from seahub.project.constants import ConnectionType
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class SeafileSeaDBAPI:
                     'connection_id': connection_id,
                     'record_id': seafile['_pk'],
                     'title': seafile['title'],
-                    'content': seafile['content']
+                    'content': seafile['content'][:ATTACHMENT_CONTENT_MAX_SIZE]
                 }
                 for seafile in current_seafiles
             ]
