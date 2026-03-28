@@ -38,17 +38,39 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    get_column_from_columns_by_name, get_option_id_by_name
+    get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.utils import normalize_cache_key
+from seahub.project.constants import DataEventType
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 
 logger = logging.getLogger(__name__)
+
+
+
+def build_ticket_data_event(event_type, old_row=None, new_row=None):
+    old_row = old_row or {}
+    new_row = new_row or {}
+    old_value = {}
+    new_value = {}
+
+    for field_name, field_value in new_row.items():
+        old_field_value = old_row.get(field_name)
+        if old_field_value == field_value:
+            continue
+        old_value[field_name] = old_field_value
+        new_value[field_name] = field_value
+
+    return {
+        'type': event_type,
+        'old_value': old_value or None,
+        'new_value': new_value or None,
+    }
 
 
 class TicketsAPIView(APIView):
@@ -345,6 +367,11 @@ class TicketsAPIView(APIView):
         )
 
         send_ticket_update_msg(project_uuid, added=1)
+        send_data_update_msg(
+            project_uuid,
+            ticket_pk,
+            event=build_ticket_data_event(DataEventType.TICKET_ADDED.value, new_row=row),
+        )
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
@@ -406,9 +433,11 @@ class TicketsAPIView(APIView):
 
         ticket_link_diff = {}
         update_rows = []
+        ticket_events = {}
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for row in results:
             updated_row = {}
+            event_type = DataEventType.TICKET_UPDATED.value
             row_data = ticket_id_to_row.get(str(row.get('_pk')))
             if not row_data:
                 continue
@@ -416,8 +445,10 @@ class TicketsAPIView(APIView):
                 ticket_state_name = row_data.get('state').lower()
                 updated_row[TicketsTable.state.name] = ticket_state_name
                 if ticket_state_name == 'closed':
+                    event_type = DataEventType.TICKET_CLOSED.value
                     updated_row[TicketsTable.closed_time.name] = now_datetime
                 elif ticket_state_name == 'open':
+                    event_type = DataEventType.TICKET_REOPENED.value
                     updated_row[TicketsTable.closed_time.name] = ''
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
@@ -478,6 +509,7 @@ class TicketsAPIView(APIView):
                     'row': updated_row,
                 }
             )
+            ticket_events[int(row.get('_pk'))] = build_ticket_data_event(event_type, old_row=row, new_row=updated_row)
 
         if ticket_link_diff:
             try:
@@ -532,6 +564,14 @@ class TicketsAPIView(APIView):
                     )
             except Exception as e:
                 logger.error(e)
+
+        for update_row in update_rows:
+            ticket_id = int(update_row.get('pk'))
+            send_data_update_msg(
+                project_uuid,
+                ticket_id,
+                event=ticket_events.get(ticket_id),
+            )
 
         return Response({'success': True})
 
@@ -646,6 +686,7 @@ class TicketAPIView(APIView):
                     'created_time': ticket_comment.get('created_time'),
                     'modified_time': ticket_comment.get('modified_time'),
                     'creator': ticket_comment.get('creator'),
+                    'via_agent': bool(ticket_comment.get('via_agent')),
                 }
                 if not ticket.get('comments'):
                     ticket['comments'] = []
@@ -816,6 +857,7 @@ class TicketAPIView(APIView):
         # main
         try:
             update_row = {}
+            event_type = DataEventType.TICKET_UPDATED.value
             if title:
                 update_row[TicketsTable.title.name] = title
             if content:
@@ -842,8 +884,10 @@ class TicketAPIView(APIView):
                 ticket_state_name = ticket_state_name.lower()
                 update_row[TicketsTable.state.name] = ticket_state_name
                 if ticket_state_name == 'closed':
+                    event_type = DataEventType.TICKET_CLOSED.value
                     update_row[TicketsTable.closed_time.name] = now_datetime
                 elif ticket_state_name == 'open':
+                    event_type = DataEventType.TICKET_REOPENED.value
                     update_row[TicketsTable.closed_time.name] = ''
 
             update_row[TicketsTable.participants.name] = participants
@@ -946,6 +990,11 @@ class TicketAPIView(APIView):
                 )
 
         send_ticket_update_msg(project_uuid, updated=1)
+        send_data_update_msg(
+            project_uuid,
+            ticket.get('_pk'),
+            event=build_ticket_data_event(event_type, old_row=ticket, new_row=update_row),
+        )
 
         # Rename activity_type to type_description for frontend
         for activity in new_activities:
@@ -1180,6 +1229,7 @@ class TicketCommentsAPIView(APIView):
                 TicketCommentsTable.created_time.name: now_datetime,
                 TicketCommentsTable.modified_time.name: now_datetime,
                 TicketCommentsTable.deleted.name: False,
+                TicketCommentsTable.via_agent.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'ticket_comments', [row])
             pks = res.get('pks', [])
@@ -1187,7 +1237,7 @@ class TicketCommentsAPIView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
-            row.update({'number': pk})
+            row.update({'number': pk, 'via_agent': False})
             ticket_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_comments` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
                 'pk': ticket.get('_pk'),
@@ -1222,6 +1272,19 @@ class TicketCommentsAPIView(APIView):
                 workspace_id=workspace.id,
                 project_name=project.project_name,
             )
+
+        send_data_update_msg(
+            project_uuid,
+            ticket.get('_pk'),
+            event={
+                'type': DataEventType.TICKET_COMMENT_ADDED.value,
+                'old_value': None,
+                'new_value': {
+                    'comment_id': pk,
+                    'content': content,
+                }
+            },
+        )
 
         return Response({'ticket_comment': row}, status=status.HTTP_201_CREATED)
 
@@ -1340,6 +1403,22 @@ class TicketCommentAPIView(APIView):
             seadb_api.update_rows(project_uuid, TABLE_TICKETS, [ticket_update])
         except Exception as e:
             logger.error(e)
+
+        send_data_update_msg(
+            project_uuid,
+            ticket.get('_pk'),
+            event={
+                'type': DataEventType.TICKET_COMMENT_UPDATED.value,
+                'old_value': {
+                    'comment_id': ticket_comment_data.get('_pk'),
+                    'content': ticket_comment_data.get('content'),
+                },
+                'new_value': {
+                    'comment_id': ticket_comment_data.get('_pk'),
+                    'content': content,
+                }
+            },
+        )
 
         return Response({'ticket_comment': ticket_comment_data})
 
@@ -1725,6 +1804,16 @@ class TicketTrashAPIView(APIView):
 
         if update_rows:
             send_ticket_update_msg(project_uuid, added=len(update_rows))
+        for ticket_id in ticket_ids:
+            send_data_update_msg(
+                project_uuid,
+                ticket_id,
+                event={
+                    'type': DataEventType.TICKET_RESTORED.value,
+                    'old_value': {'deleted': True},
+                    'new_value': {'deleted': False},
+                },
+            )
 
         return Response({'success': True})
 

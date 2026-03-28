@@ -8,10 +8,9 @@ const { projectUuid } = window.app.pageOptions;
 export const useAgentSettings = () => {
   const [settings, setSettings] = useState({
     agent: {
-      enabled: false,
-      model: 'gemini-2.5-flash',
+      enabled: true,
+      model: 'gemini-3-flash',
       notify_before_due_hours: 48,
-      run_interval_hours: 1,
     }
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -21,10 +20,9 @@ export const useAgentSettings = () => {
       const data = res.data;
       setSettings({
         agent: {
-          enabled: data.enabled ?? false,
-          model: data.model ?? 'gemini-2.5-flash',
+          enabled: data.enabled ?? true,
+          model: data.model ?? 'gemini-3-flash',
           notify_before_due_hours: data.notify_before_due_hours ?? 48,
-          run_interval_hours: data.run_interval_hours ?? 1,
         }
       });
       setIsLoading(false);

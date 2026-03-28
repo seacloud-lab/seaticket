@@ -14,7 +14,7 @@ const AgentSettings = ({
       <SwitchSettingsItem
         title={gettext('Agent')}
         placeholder={gettext('Enable Agent')}
-        tip={gettext('Enable agent to automatically analyze and process tickets, github issues, etc.')}
+        tip={gettext('Enable agent to automatically analyze and process tickets, GitHub issues, etc.')}
         className="mb-4"
         value={settings.enabled}
         onChange={(value, callback) => updateSettings({ enabled: value }, callback)}

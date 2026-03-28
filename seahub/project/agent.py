@@ -1,3 +1,4 @@
+import datetime
 import logging
 import json
 
@@ -12,7 +13,6 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.ai_client import (
-    trigger_agent,
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
 from seahub.project.seadb_api import SeaDBAPI
@@ -154,34 +154,6 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
     except Exception as e:
         logger.exception(e)
         raise
-
-
-class AgentExecuteView(APIView):
-    """
-    Trigger agent execution manually for a project.
-    POST /api/v1/project/<project_uuid>/agent/execute/
-    """
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def post(self, request, project_uuid):
-        username = request.user.username
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-
-        if not check_project_permission(username, project.workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        try:
-            result = trigger_agent(project_uuid)
-            return Response(result)
-        except Exception as e:
-            logger.exception(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
 class AgentRunsView(APIView):
     """
@@ -360,9 +332,9 @@ class AgentActionConfirmView(APIView):
             logger.error(f'Invalid ticket source_id: {source_id!r}')
             return f'Invalid ticket source_id: {source_id}'
 
-        if tool_name == 'notify_assignee':
+        if tool_name == 'suggest_notify_assignee':
             return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, content, username)
-        elif tool_name == 'add_comment':
+        elif tool_name == 'suggest_add_comment':
             return self._execute_add_comment(seadb_api, project, project_uuid, ticket_id, content, username)
         elif tool_name == 'final_answer':
             return 'Final answer acknowledged.'
@@ -374,6 +346,8 @@ class AgentActionConfirmView(APIView):
         """Dispatch GitHub issue actions to the appropriate handler."""
         if tool_name == 'suggest_resolution':
             return self._execute_github_suggest_resolution(source_id, content)
+        elif tool_name == 'suggest_modify_type':
+            return self._execute_github_suggest_modify_type(source_id, content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         elif tool_name == 'final_answer':
@@ -388,7 +362,18 @@ class AgentActionConfirmView(APIView):
         Currently records the confirmation. Future enhancement: post as a GitHub comment
         via the GitHub API.
         """
-        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:500]}'
+        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
+
+    def _execute_github_suggest_modify_type(self, source_id, suggestion_content):
+        """Confirm an issue type suggestion for a GitHub issue.
+
+        This is a user-facing triage recommendation. It does not update
+        the source issue_type enum automatically.
+        """
+        return (
+            f'Issue type suggestion for GitHub issue {source_id} confirmed. '
+            f'Content: {(suggestion_content or "")[:500]}...'
+        )
 
     def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
         """Create an internal ticket from a GitHub issue.
@@ -423,7 +408,7 @@ class AgentActionConfirmView(APIView):
         record_detail = (
             f"**GitHub Issue Information:**\n"
             f"Title: {title}\n"
-            f"Body: {body_content[:3000]}"
+            f"Body: {body_content[:3000]}..."
         )
 
         # Call AI service to generate ticket title and content
@@ -530,6 +515,7 @@ class AgentActionConfirmView(APIView):
             TicketCommentsTable.created_time.name: now,
             TicketCommentsTable.modified_time.name: now,
             TicketCommentsTable.deleted.name: False,
+            TicketCommentsTable.via_agent.name: True,
         }
 
         try:
@@ -571,7 +557,7 @@ class AgentActionConfirmView(APIView):
                     from_user_id=creator,
                     ticket_id=ticket_id,
                     comment_id=comment_id,
-                    comment_content=(content or '')[:100],
+                    comment_content=(content or '')[:100] + '...',
                     ticket_title=ticket.get(TicketsTable.title.name),
                     workspace_id=project.workspace_id,
                     project_name=project.project_name,
@@ -709,7 +695,7 @@ class AgentSettingsView(APIView):
     {
       "agent": {
         "enabled": false,
-        "model": "gemini-2.5-flash",
+        "model": "gemini-3-flash",
         "notify_before_due_hours": 48
       }
     }
@@ -735,17 +721,15 @@ class AgentSettingsView(APIView):
                 settings = {}
 
             agent_settings = settings.get('agent', {
-                'enabled': False,
-                'model': 'gemini-2.5-flash',
+                'enabled': True,
+                'model': 'gemini-3-flash',
                 'notify_before_due_hours': 48,
-                'run_interval_hours': 1,
             })
 
             return Response({
-                'enabled': agent_settings.get('enabled', False),
-                'model': agent_settings.get('model', 'gemini-2.5-flash'),
-                'notify_before_due_hours': agent_settings.get('notify_before_due_hours', 48),
-                'run_interval_hours': agent_settings.get('run_interval_hours', 1),
+                'enabled': agent_settings.get('enabled'),
+                'model': agent_settings.get('model'),
+                'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -757,7 +741,6 @@ class AgentSettingsView(APIView):
         enabled = request.data.get('enabled')
         model = request.data.get('model')
         notify_before_due_hours = request.data.get('notify_before_due_hours')
-        run_interval_hours = request.data.get('run_interval_hours')
 
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -781,18 +764,15 @@ class AgentSettingsView(APIView):
                 agent_settings['model'] = str(model)
             if notify_before_due_hours is not None:
                 agent_settings['notify_before_due_hours'] = int(notify_before_due_hours)
-            if run_interval_hours is not None:
-                agent_settings['run_interval_hours'] = float(run_interval_hours)
 
             settings['agent'] = agent_settings
             project.settings = json.dumps(settings)
             project.save()
 
             return Response({
-                'enabled': agent_settings.get('enabled', False),
-                'model': agent_settings.get('model', 'gemini-2.5-flash'),
-                'notify_before_due_hours': agent_settings.get('notify_before_due_hours', 48),
-                'run_interval_hours': agent_settings.get('run_interval_hours', 1),
+                'enabled': agent_settings.get('enabled'),
+                'model': agent_settings.get('model'),
+                'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

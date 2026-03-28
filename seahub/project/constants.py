@@ -47,6 +47,19 @@ class AIScenario(Enum):
     def is_valid(cls, value):
         return value in {item.value for item in cls}
 
+class DataEventType(Enum):
+    TICKET_ADDED = 'ticket_added'
+    TICKET_UPDATED = 'ticket_updated'
+    TICKET_CLOSED = 'ticket_closed'
+    TICKET_REOPENED = 'ticket_reopened'
+    TICKET_COMMENT_ADDED = 'ticket_comment_added'
+    TICKET_COMMENT_UPDATED = 'ticket_comment_updated'
+    TICKET_RESTORED = 'ticket_restored'
+
+    @classmethod
+    def is_valid(cls, value):
+        return value in {item.value for item in cls}
+
 PRESET_BUILTIN_USERNAMES = ['seaqa-indexer', 'agent']
 
 class ConnectionField(object):

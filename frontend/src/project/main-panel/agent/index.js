@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import TopBar from '../top-bar';
-import SwitchSettingsItem from '../settings/switch-settings-item';
 import RunLogs from './run-logs';
 import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentSettings, useAgentRunLogs } from './hooks';
@@ -14,7 +13,7 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const Agent = ({ title }) => {
-  const { settings, isLoading: isSettingsLoading, updateSettings } = useAgentSettings();
+  const { isLoading: isSettingsLoading } = useAgentSettings();
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -23,7 +22,6 @@ const Agent = ({ title }) => {
     refresh,
     updateRunLog,
   } = useAgentRunLogs();
-  const [isExecuting, setIsExecuting] = React.useState(false);
 
   const handleConfirmAction = useCallback((actionId) => {
     for (const run of runLogs) {
@@ -82,17 +80,6 @@ const Agent = ({ title }) => {
     }
   }, [runLogs, updateRunLog]);
 
-  const handleExecuteNow = useCallback(() => {
-    setIsExecuting(true);
-    agentAPI.executeAgent(projectUuid).then(() => {
-      refresh();
-      setIsExecuting(false);
-    }).catch(err => {
-      console.error('Failed to execute agent:', err);
-      setIsExecuting(false);
-    });
-  }, [refresh]);
-
   if (isSettingsLoading) {
     return (
       <>
@@ -111,26 +98,9 @@ const Agent = ({ title }) => {
       <TopBar title={title}>
         <div className="agent-topbar-content">
           <div className="w-100 text-truncate">{title}</div>
-          {settings.agent?.enabled && (
-            <button
-              className="agent-execute-btn"
-              onClick={handleExecuteNow}
-              disabled={isExecuting}
-            >
-              {isExecuting ? gettext('Executing...') : gettext('Execute now')}
-            </button>
-          )}
         </div>
       </TopBar>
       <div className="agent-container">
-        <SwitchSettingsItem
-          title={gettext('Agent')}
-          placeholder={gettext('Enable Agent')}
-          tip={gettext('Enable agent to automatically analyze and process tickets, github issues, etc.')}
-          className="mb-4"
-          value={settings.agent?.enabled}
-          onChange={(value, callback) => updateSettings({ enabled: value }, callback)}
-        />
         <div className="agent-run-logs-section">
           <div className="agent-run-logs-header">
             <span>

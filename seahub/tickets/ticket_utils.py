@@ -510,6 +510,21 @@ def send_ticket_update_msg(project_uuid, added=0, deleted=0, updated=0):
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
 
+def send_data_update_msg(project_uuid, record_id, event=None):
+    try:
+        msg_content = json.dumps({
+            'event': event,
+            'project_uuid': uuid_str_to_32_chars(project_uuid),
+            'source_type': ExtraSourceType.TICKET.value,
+            'record_id': record_id,
+        })
+        if mq.publish('data_events', msg_content) > 0:
+            logger.debug('Publish data_update event: %s' % msg_content)
+        else:
+            logger.info('No one subscribed to data_update channel, event (%s) has not been send' % msg_content)
+    except Exception as e:
+        logger.error('send data update msg failed, error: %s', e)
+
 
 def compare_ticket_changes(old_ticket, new_data):
     """ compare ticket changes, return changes list
