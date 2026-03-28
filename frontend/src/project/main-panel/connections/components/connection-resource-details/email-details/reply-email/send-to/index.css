@@ -1,0 +1,66 @@
+.sea-ticket-email-to-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  height: 38px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 3px;
+  padding: 0 .75rem;
+  gap: 8px;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-value {
+  max-width: 70%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-value .sea-ticket-email-to-user {
+  height: 24px;
+  max-width: 240px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px 0 8px;
+  border-radius: 4px;
+  background-color: #F7F7F5;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-email {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-remove-btn {
+  display: flex;
+  margin-left: 6px;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-remove-btn .sea-qa-icon-svg,
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-remove-btn:hover .sea-qa-icon-svg {
+  color: var(--bs-icon-color) !important;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-remove-btn:hover {
+  background-color: var(--option-bg-color);
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user .sea-ticket-email-to-user-remove-btn .sea-qa-icon-svg {
+  margin-top: 0;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user-input {
+  padding: 0;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+.sea-ticket-email-to-container .sea-ticket-email-to-user-input:focus {
+  box-shadow: none;
+}

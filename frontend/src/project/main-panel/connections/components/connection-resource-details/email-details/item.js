@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { gettext, mediaUrl } from '@/constants';
-import { CustomizeMarkdownViewer } from '@/components';
+import dayjs from '@/utils/dayjs';
+import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
+import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
 import DateFormatter from '../../cell-formatter/date-formatter';
 import { getInfoByEmailFrom } from '../../../utils';
 import HTMLContentWrapper from './html-content';
+import ReplyEmail from './reply-email';
+import { connectionsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded }) => {
+const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
+  const [isShowReply, setIsShowReply] = useState(false);
 
   const ref = useRef(null);
 
@@ -77,8 +82,61 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     setIsExpanded(true);
   }, []);
 
+  const openReply = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    setIsShowReply(true);
+  }, []);
+
+  const onSubmit = useCallback(({ to, cc, content }, callback) => {
+    const payload = {
+      html_content: content,
+      to: to.join(','),
+      cc: cc.join(','),
+      reply_to_message_id: detail.reply_to_message_id,
+    };
+    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, recordId, payload).then(() => {
+      callback && callback();
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      callback && callback(true);
+    });
+  }, [projectUuid, connection_id, recordId]);
+
+  const renderReply = useCallback(() => {
+    let initValue = '<div></div><div></div><div></div>';
+
+    let quotedContent = HTMLContent ? '' : `<pre style="font-family: Helvetica,Arial,sans-serif;">${content}</pre>`;
+    if (HTMLContent) {
+      const parsed = new DOMParser().parseFromString(HTMLContent.substring(3, HTMLContent.length - 3), 'text/html');
+      const HTMLContentBody = parsed.body;
+      quotedContent = HTMLContentBody.outerHTML;
+    }
+
+    const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
+    let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
+    tip = tip.replace('{day}', sendTime.format('ddd'))
+      .replace('{date_year}', sendTime.format('ll'))
+      .replace('{time}', sendTime.format('LT'))
+      .replace('{email_from}', sender);
+
+    initValue += '<div style="outline: 0;">';
+    initValue += `<div>${tip}</div>`;
+    initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 1px solid #ccc; padding-left: 1ex;">${quotedContent}</blockquote>`;
+    initValue += '</div>';
+
+    return (
+      <ReplyEmail
+        emailTo={[detail['email_from']]}
+        initValue={initValue}
+        onToggle={() => setIsShowReply(false)}
+        onSubmit={onSubmit}
+      />
+    );
+  }, [detail, HTMLContent, content, sender, onSubmit]);
+
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded || isShowReply) return;
     if (HTMLContent) {
       addQuoteToggleBtn();
     } else {
@@ -86,30 +144,38 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
         addQuoteToggleBtn();
       });
     }
-  }, [isExpanded]);
+  }, [isExpanded, isShowReply]);
 
   useEffect(() => {
     if (!isLast) return;
     setIsLastExpanded(isExpanded);
   }, [isLast, isExpanded]);
 
-  if (!isExpanded) {
+  if (!isExpanded || isShowReply) {
     return (
-      <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
-        <div className="email-avatar">
-          <img alt='' src={`${mediaUrl}avatars/default.png`}/>
-        </div>
-        <div className="email-record-info">
-          <div className="email-record-info-container">
-            <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
-            <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
-            <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+      <>
+        <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
+          <div className="email-avatar">
+            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
-          <div className="email-record-info-to" title={emailTo}>
-            {gettext('To')}: {emailTo}
+          <div className="email-record-info">
+            <div className="email-record-info-container">
+              <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
+              <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
+              <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+            </div>
+            <div className="email-record-info-to-container">
+              <div className="email-record-info-to">
+                {gettext('To')}: {emailTo}
+              </div>
+              {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+                <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+        {isShowReply && (<>{renderReply()}</>)}
+      </>
     );
   }
 
@@ -125,8 +191,13 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <span className="email-record-info-content text-truncate"></span>
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
-          <div className="email-record-info-to" title={emailTo}>
-            {gettext('To')}: {emailTo}
+          <div className="email-record-info-to-container">
+            <div className="email-record-info-to">
+              {gettext('To')}: {emailTo}
+            </div>
+            {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+              <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+            )}
           </div>
         </div>
       </div>

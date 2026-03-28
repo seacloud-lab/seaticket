@@ -7,6 +7,7 @@ import './index.css';
 const IconTextBtn = ({
   icon,
   text,
+  color = 'primary',
   className = '',
   onClick,
   ...props
@@ -21,7 +22,7 @@ const IconTextBtn = ({
   };
   return (
     <div
-      className={classnames('sea-ticket-icon-text-btn', className, (icon ? `sea-ticket-${icon}-text-btn` : ''))}
+      className={classnames('sea-ticket-icon-text-btn', className, (icon ? `sea-ticket-${icon}-text-btn` : ''), `sea-ticket-${color}-icon-text-btn`)}
       title={text}
       aria-label={text}
       role="button"

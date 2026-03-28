@@ -1099,9 +1099,9 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         content = (request.data.get('content') or '').strip()
-        if not content:
-            error_msg = 'content invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        # if not content:
+        #     error_msg = 'content invalid.'
+        #     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         config = decrypt_config(json.loads(project_connection.config))
         smtp_host = config.get('smtp_host')
@@ -1122,7 +1122,7 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         seadb_api = SeaDBAPI(username)
-        email_seadb_api = EmailSeaDBAPI(project_uuid, username=username, seadb_api=seadb_api)
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         thread = email_seadb_api.get_thread_by_pk(connection_id, record_id)
         if not thread:
             error_msg = f'record {record_id} not found.'
@@ -1188,9 +1188,17 @@ class ProjectConnectionReplyEmailView(APIView):
 
         try:
             ssl_context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30, context=ssl_context) as smtp_server:
-                smtp_server.login(smtp_user, smtp_password)
-                smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
+            if smtp_port == 465:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30, context=ssl_context) as smtp_server:
+                    smtp_server.login(smtp_user, smtp_password)
+                    smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as smtp_server:
+                    smtp_server.ehlo()
+                    smtp_server.starttls(context=ssl_context)
+                    smtp_server.ehlo()
+                    smtp_server.login(smtp_user, smtp_password)
+                    smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
         except Exception as e:
             logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
             error_msg = 'Failed to send email.'

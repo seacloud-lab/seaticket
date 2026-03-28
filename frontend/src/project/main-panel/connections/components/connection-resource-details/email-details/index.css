@@ -149,3 +149,19 @@
 .sea-ticket-connection-email-record-details.more .email-record-info-more-count {
   font-weight: 600;
 }
+
+.sea-ticket-connection-email-record-details .email-record-info-to {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-ticket-connection-email-record-details .email-record-info-to-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+

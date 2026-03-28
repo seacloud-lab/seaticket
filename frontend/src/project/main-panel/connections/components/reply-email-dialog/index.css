@@ -1,9 +1,0 @@
-.sea-qa-reply-email-dialog .modal-body {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.sea-qa-reply-email-dialog .reply-email-content-input {
-  min-height: 180px;
-  resize: vertical;
-}

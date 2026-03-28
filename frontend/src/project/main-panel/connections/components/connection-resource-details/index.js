@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
@@ -10,10 +10,11 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, localEmailDetails = [] }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, updateDetails }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
+  const [localEmailDetails, setLocalEmailDetails] = useState([]);
 
   const type = useMemo(() => resource.type, [resource]);
 
@@ -46,26 +47,56 @@ const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, local
     });
   }, [projectUuid, resource]);
 
+  const handleReplyEmailSuccess = useCallback((payload) => {
+    if (!payload) return;
+    const senderEmail = connection?.config?.sender_email || connection?.config?.smtp_user || '';
+    const senderName = connection?.config?.sender_name || '';
+    const emailFrom = senderName && senderEmail
+      ? `${senderName} <${senderEmail}>`
+      : (senderEmail || senderName || '');
+    const emailTo = payload.to || payload.replyTargetEmail?.email_from || '';
+    const now = new Date().toISOString();
+    const nextDetail = {
+      email_from: emailFrom,
+      email_to: emailTo,
+      title: payload.subject || details?.title || '',
+      cc: payload.cc || '',
+      content: payload.content || '',
+      html_content: payload.html_content || '',
+      modified_time: now,
+      is_sender: true,
+      local_id: `local-${Date.now()}`,
+    };
+    setLocalEmailDetails(prev => [...prev, nextDetail]);
+  }, [connection, details]);
+
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
 
-  if (Array.isArray(mergedDetails)) {
+  if (type === CONNECTION_TYPE.EMAIL) {
     if (mergedDetails.length === 0) {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     }
-    if (type === CONNECTION_TYPE.EMAIL) {
-      return (
-        <EmailDetails
-          className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
-          details={details}
-          projectUuid={projectUuid}
-          connection_id={resource.connection_id}
-        />
-      );
+    return (
+      <EmailDetails
+        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        details={mergedDetails}
+        projectUuid={projectUuid}
+        connection_id={resource.connection_id}
+        recordId={resource._id}
+        permission={permission}
+        handleReplyEmailSuccess={handleReplyEmailSuccess}
+      />
+    );
+  }
+
+  if (Array.isArray(details)) {
+    if (details.length === 0) {
+      return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     }
     return (
       <div className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details`}>
-        {mergedDetails.map((detail, index) => {
+        {details.map((detail, index) => {
           return (
             <CommonDetailItem detail={detail} type={type} key={index} />
           );
@@ -74,8 +105,8 @@ const ConnectionResourceDetails = ({ resource, projectUuid, updateDetails, local
     );
   }
 
-  if (mergedDetails) {
-    return (<CustomizeMarkdownViewer className={`sea-ticket-connection-${type}-resource-details`} value={mergedDetails} showTOC={false} />);
+  if (details) {
+    return (<CustomizeMarkdownViewer className={`sea-ticket-connection-${type}-resource-details`} value={details} showTOC={false} />);
   }
   return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };
