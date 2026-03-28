@@ -34,7 +34,7 @@ import './index.css';
 
 const Ticket = ({
   editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
-  toggleBar, onRefresh, togglePageSlugId
+  toggleBar, togglePageSlugId
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
@@ -188,10 +188,14 @@ const Ticket = ({
       rowMetrics: { idSelectedRowMap: {} },
       canDeleteRow: true,
       deleteRow: (_) => {
-        deleteRow(TICKET_TABLE_NAME, _, () => ticketsAPI.deleteProjectTicket(projectUuid, row.id));
-        toaster.success(gettext('Ticket deleted'));
-        togglePageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
-        onRefresh();
+        deleteRow(TICKET_TABLE_NAME, row.id, () => ticketsAPI.deleteProjectTicket(projectUuid, row.id))
+          .then(() => {
+            toaster.success(gettext('Ticket deleted'));
+            togglePageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+          })
+          .catch((error) => {
+            toaster.danger(Utils.getErrorMsg(error));
+          });
       },
       rowGetterByIndex: () => row,
       chatTicketsByAI,
