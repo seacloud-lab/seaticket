@@ -1143,6 +1143,7 @@ input.short-input {
   font-size: 24px;
   font-weight: 500;
   line-height: 28px;
+  max-width: 400px;
 }
 
 .portal-login-panel-wrapper .login-form-wrapper {
