@@ -470,7 +470,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),
-            'content': ticket.get('content'),
+            'content': ticket.get('content', '')[:ATTACHMENT_CONTENT_MAX_SIZE],
             'created_time': created_time,
             'comments': []
         }

@@ -112,7 +112,7 @@ class GitHubSeaDBAPI:
                     'record_id': int(issue_data['_pk']),
                     'state': issue_data.get('state'),
                     'title': issue_data.get('title'),
-                    'content': issue_data.get('content'),
+                    'content': issue_data.get('content', '')[:ATTACHMENT_CONTENT_MAX_SIZE],
                     'url': issue_data.get('url'),
                     'created_at': issue_data.get('created_time'),
                     'comments': []
