@@ -95,6 +95,7 @@ def base(request):
         'apple_touch_icon_path': apple_touch_icon_path,
         'favicon_notification_path': favicon_notification_path,
         'login_bg_path': login_bg_path,
+        'login_bg_image_path': login_bg_path,
         'logo_path': logo_path,
         'logo_width': LOGO_WIDTH,
         'logo_height': LOGO_HEIGHT,

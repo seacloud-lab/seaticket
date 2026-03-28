@@ -1027,12 +1027,13 @@ input.short-input {
   width: fit-content;
 }
 
-/* login-panel, multi-saml-sso-panel, password-reset-panel, org-register-panel, individual-register-panel, --input style */
+/* login-panel, multi-saml-sso-panel, password-reset-panel, org-register-panel, individual-register-panel, portal-login-panel --input style */
 .login-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .multi-saml-sso-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .password-reset-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .org-register-panel-wrapper .login-form-wrapper input:-webkit-autofill, 
-.individual-register-panel-wrapper .login-form-wrapper input:-webkit-autofill {
+.individual-register-panel-wrapper .login-form-wrapper input:-webkit-autofill,
+.portal-login-panel-wrapper .login-form-wrapper input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px white inset !important;
   box-shadow: 0 0 0 1000px white inset !important;
 }
@@ -1041,7 +1042,8 @@ input.short-input {
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
 .org-register-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
-.individual-register-panel .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
+.individual-register-panel .login-form-wrapper input::-webkit-input-placeholder,
+.portal-login-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
   color: #868E96
 }
 
@@ -1049,7 +1051,8 @@ input.short-input {
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-moz-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-moz-placeholder,
 .org-register-panel-wrapper .login-form-wrapper input::-moz-placeholder,
-.individual-register-panel .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
+.individual-register-panel .login-form-wrapper input::-moz-placeholder,
+.portal-login-panel-wrapper .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
   color: #868E96;
   opacity: 1;
 }
@@ -1058,7 +1061,8 @@ input.short-input {
 .multi-saml-sso-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
 .org-register-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
-.individual-register-panel .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
+.individual-register-panel .login-form-wrapper input:-ms-input-placeholder,
+.portal-login-panel-wrapper .login-form-wrapper input:-ms-input-placeholder { /* IE 10-11 */
   color: #868E96;
 }
 
@@ -1066,7 +1070,8 @@ input.short-input {
 .multi-saml-sso-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
 .password-reset-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
 .org-register-panel-wrapper .login-form-wrapper input::-ms-input-placeholder,
-.individual-register-panel .login-form-wrapper input::-ms-input-placeholder { /* Microsoft Edge */
+.individual-register-panel .login-form-wrapper input::-ms-input-placeholder,
+.portal-login-panel-wrapper .login-form-wrapper input::-ms-input-placeholder { /* Microsoft Edge */
   color: #868E96;
 }
 
@@ -1111,8 +1116,76 @@ input.short-input {
 .multi-saml-sso-panel-wrapper .login-form-wrapper .btn-block:focus,
 .password-reset-panel-wrapper .login-form-wrapper .btn-block:focus,
 .individual-register-panel-wrapper .login-form-wrapper .btn-block:focus,
-.org-register-panel-wrapper .login-form-wrapper .btn-block:focus {
+.org-register-panel-wrapper .login-form-wrapper .btn-block:focus,
+.portal-login-panel-wrapper .login-form-wrapper .btn-block:focus {
   border-color: var(--bs-primary);
+}
+
+/* portal-login-panel */
+.portal-login-panel-wrapper {
+  width: fit-content;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+}
+
+.portal-login-panel-wrapper .portal-login-panel-content {
+  width: fit-content;
+  padding: 64px 40px;
+  margin: 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--bs-border-secondary-color);
+  background-color: var(--bs-body-bg);
+}
+
+.portal-login-panel-wrapper .portal-login-panel-header .portal-login-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 28px;
+  max-width: 400px;
+}
+
+.portal-login-panel-wrapper .login-form-wrapper {
+  width: 400px;
+  margin-top: 32px;
+}
+
+.portal-login-panel-wrapper .login-form-wrapper .form-item-input {
+  font-size: 14px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0px 16px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 100%;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
+
+.portal-login-panel-wrapper .login-form-wrapper .form-item-input:focus {
+  border-color: #FF8000;
+}
+
+.portal-login-panel-wrapper .login-form-wrapper .prompt-text {
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--bs-body-secondary-color);
+  height: 20px;
+  line-height: 20px;
+}
+
+.portal-login-panel-wrapper .login-form-wrapper .btn-block {
+  margin-top: 0px;
+  height: 40px;
+}
+
+.portal-login-panel-wrapper .login-form-wrapper .countdown-wrapper {
+  margin-top: 16px;
+  color: var(--bs-body-secondary-color);
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  font-size: 14px;
 }
 
 /* confirm-password-panel */
