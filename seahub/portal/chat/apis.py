@@ -134,7 +134,7 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
     except Exception as e:
         logger.exception(f'Portal streaming response is interrupted: {e}')
         if not has_recorded_result:
-            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later", "sources": []}, session_uuid, message_id, query)})}\n\n'
+            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, session_uuid, message_id, query)})}\n\n'
             try:
                 yield item
             except:
