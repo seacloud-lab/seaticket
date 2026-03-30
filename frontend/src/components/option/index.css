@@ -1,5 +1,6 @@
 .sea-qa-ui-option {
   height: 20px;
+  line-height: 20px;
   border-width: 1px;
   border-style: solid;
   display: inline-flex;

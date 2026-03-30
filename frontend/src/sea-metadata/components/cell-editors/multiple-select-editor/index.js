@@ -83,8 +83,15 @@ const MultipleSelectEditor = forwardRef(({
           return value.map(item => {
             const option = getOption(options, item);
             return (
-              <Option option={option}>
-                <IconButton icon="close" onClick={() => onChange(item)} className="sea-metadata-select-remove-btn no-hover-bg" size={{ btn: 14, icon: 10 }} iconStyle={{ color: option.text_color }} />
+              <Option option={option} className="sea-metadata-multiple-select-editor-option">
+                <IconButton
+                  icon="close"
+                  onClick={() => onChange(item)}
+                  className="sea-metadata-select-remove-btn no-hover-bg"
+                  size={{ btn: 14, icon: 10 }}
+                  style={{ margin: '0 -2px 0 2px', cursor: 'pointer' }}
+                  iconStyle={{ color: option.text_color }}
+                />
               </Option>
             );
           });
