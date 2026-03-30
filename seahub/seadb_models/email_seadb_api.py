@@ -120,17 +120,20 @@ class EmailSeaDBAPI:
                     'emails': []
                 }
 
+                total_content_size = 0
                 for email in threads_emails_map.get(thread_data['_pk'], []):
-                    new_email = {
+                    content = email.get('content', '')
+                    total_content_size += len(content)
+
+                    # break if exceed maximum content size
+                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                        break
+
+                    whole_thread_data['emails'].append({
                         'from': email.get('email_from'),
                         'to': email.get('email_to'),
-                        'content': email.get('content'),
+                        'content': content,
                         'modified_time': email.get('modified_time')
-                    }
-                    # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
-                    if len(f'{whole_thread_data}{new_email}') > ATTACHMENT_CONTENT_MAX_SIZE:
-                        break
-                    whole_thread_data['emails'].append(new_email)
-
+                    })
                 result.append(whole_thread_data)
         return result

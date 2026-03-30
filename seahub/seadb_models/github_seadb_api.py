@@ -118,17 +118,19 @@ class GitHubSeaDBAPI:
                     'comments': []
                 }
 
+                total_content_size = len(whole_issue_data['content'])
                 for comment in issues_comments_map.get(issue_data['issue_id'], []):
-                    new_comment = {
-                        'author': comment.get('author'),
-                        'content': comment.get('content'),
-                        'created_time': comment.get('created_time')
-                    }
+                    content = comment.get('content', '')
+                    total_content_size += len(content)
 
-                    # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
-                    if len(f'{whole_issue_data}{new_comment}') > ATTACHMENT_CONTENT_MAX_SIZE:
+                    # break if exceed maximum content size
+                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
                         break
-                    whole_issue_data['comments'].append(new_comment)
 
+                    whole_issue_data['comments'].append({
+                        'author': comment.get('author'),
+                        'content': content,
+                        'created_time': comment.get('created_time')
+                    })
                 result.append(whole_issue_data)
         return result

@@ -474,19 +474,23 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             'created_time': created_time,
             'comments': []
         }
+        total_content_size = len(whole_ticket_data['content'])
         for ticket_comment in ticket_ids_comments_map.get(ticket['_pk'], []):
+            content = ticket_comment.get('content', '')
+            total_content_size += len(content)
+
+            # break if exceed maximum content size
+            if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                break
+
             nickname = nickname_map.get(ticket_comment.get('creator'))
             commented_at = ticket_comment.get('created_time')
             commented_at = time_str_to_utc_time(commented_at).isoformat()
-            new_comment = {
+            whole_ticket_data['comments'].append({
                 'nickname': nickname,
-                'content': ticket_comment.get('content'),
+                'content': content,
                 'commented_at': commented_at
-            }
-            # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
-            if len(f'{whole_ticket_data}{new_comment}') > ATTACHMENT_CONTENT_MAX_SIZE:
-                break
-            whole_ticket_data['comments'].append(new_comment)
+            })
         result.append(whole_ticket_data)
     return result
 

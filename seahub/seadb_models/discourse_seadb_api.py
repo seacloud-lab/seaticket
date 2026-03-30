@@ -122,17 +122,21 @@ class DiscourseSeaDBAPI:
                     'replies': []
                 }
 
+                total_content_size = 0
                 for reply in topics_replies_map.get(topic_data['topic_id'], []):
-                    new_reply = {
+                    content = reply.get('content', '')
+                    total_content_size += len(content)
+
+                    # break if exceed maximum content size
+                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                        break
+
+                    whole_topic_data['replies'].append({
                         'author': reply.get('author'),
-                        'content': reply.get('content'),
+                        'content': content,
                         'post_number': reply.get('post_number'),
                         'modified_time': reply.get('modified_time')
-                    }
-                    # if the data size exceed ATTACHMENT_CONTENT_MAX_SIZE, break
-                    if len(f'{whole_topic_data}{new_reply}') > ATTACHMENT_CONTENT_MAX_SIZE:
-                        break
-                    whole_topic_data['emails'].append(new_reply)
+                    })
 
                 result.append(whole_topic_data)
         return result
