@@ -34,25 +34,7 @@
 
 				{% if remember_days > 0 %}
 				<label class="login-form-pass-member d-flex align-items-center">
-				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" style="display: none;" />
-					<span class="remember-me-toggle" id="remember-me-icon-wrapper">
-						<span
-              id="remember-me-icon-outline"
-              class="sea-qa-html-icon-svg remember-me-icon-outline"
-              tabindex="0"
-              role="checkbox"
-              aria-checked="false"
-              aria-label="{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}"
-            >{% include "svg/check-box-outline.svg" %}</span>
-						<span
-              id="remember-me-icon-checked"
-              class="sea-qa-html-icon-svg remember-me-icon-checked"
-              tabindex="0"
-              role="checkbox"
-              aria-checked="true"
-              aria-label="{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}"
-            >{% include "svg/check-box.svg" %}</span>
-					</span>
+				  <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input" />
 				  <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
 				</label>
 				{% endif %}
@@ -99,49 +81,6 @@ $('#login-form').on('submit', function(){
         return false;
     }
 });
-
-(function initRememberMeToggle() {
-  var wrapper = document.getElementById('remember-me-icon-wrapper');
-  var input = document.getElementById('remember-me-input');
-  if (!wrapper || !input) return;
-
-  var outlineIcon = document.getElementById('remember-me-icon-outline');
-  var checkedIcon = document.getElementById('remember-me-icon-checked');
-  if (!outlineIcon || !checkedIcon) return;
-
-  function toggleCheckbox() {
-    var checked = !input.checked;
-    input.checked = checked;
-
-    if (checked) {
-      outlineIcon.style.display = 'none';
-      checkedIcon.style.display = 'block';
-      outlineIcon.setAttribute('aria-checked', 'false');
-      checkedIcon.setAttribute('aria-checked', 'true');
-    } else {
-      outlineIcon.style.display = 'block';
-      checkedIcon.style.display = 'none';
-      outlineIcon.setAttribute('aria-checked', 'true');
-      checkedIcon.setAttribute('aria-checked', 'false');
-    }
-  }
-
-  wrapper.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleCheckbox();
-  });
-
-  function handleKeyDown(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleCheckbox();
-    }
-  }
-
-  outlineIcon.addEventListener('keydown', handleKeyDown);
-  checkedIcon.addEventListener('keydown', handleKeyDown);
-})();
 
 </script>
 {% endblock %}

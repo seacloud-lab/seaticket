@@ -1095,14 +1095,16 @@ input.short-input {
   font-weight: 400;
 }
 
-.login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-toggle,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-toggle {
-  margin-right: 8px;
+.login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input,
+.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input {
+  cursor: pointer;
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text {
   user-select: none;
+  margin-left: 8px;
+  cursor: pointer;
 }
 
 /* login-panel, multi-saml-sso-panel, password-reset-panel --btn-block style */
