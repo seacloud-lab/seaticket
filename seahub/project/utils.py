@@ -215,11 +215,6 @@ def delete_project(project):
         logger.error(e)
 
     try:
-        delete_project_dir_from_s3(project_uuid)
-    except Exception as e:
-        logger.error(e)
-
-    try:
         Projects.objects.delete_project(project.workspace, project.name)
         ProjectIssuesStatistics.objects.filter(project_uuid=project_uuid).delete()
         DeletedProjects(project_uuid=project_uuid).save()
