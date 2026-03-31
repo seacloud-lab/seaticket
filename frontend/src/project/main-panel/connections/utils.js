@@ -72,6 +72,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     case CONNECTION_TYPE.EMAIL: {
       return getEmailOriginalPageUrl(row);
     }
+    case CONNECTION_TYPE.GENERAL_TASK: {
+      return '';
+    }
     default: {
       return '';
     }
@@ -146,6 +149,22 @@ export const initConnectionResourceDetails = (type, {
         time: detail.modified_time,
         body: detail.content || '',
       })) : [],
+      ...prams
+    };
+  }
+  if (type === CONNECTION_TYPE.GENERAL_TASK) {
+    const details = [
+      ['Status', prams.status],
+      ['Size', prams.size],
+      ['Priority', prams.priority],
+      ['Assignees', prams.assignees],
+    ].filter(item => item[1]).map(item => `${item[0]}: ${item[1]}`).join('\n');
+    const taskDetails = prams.task_details ? String(prams.task_details) : '';
+    const mergedDetails = [details, taskDetails].filter(Boolean).join('\n\n');
+    return {
+      title,
+      time: prams.last_modified_at,
+      details: mergedDetails,
       ...prams
     };
   }

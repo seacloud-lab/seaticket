@@ -40,6 +40,7 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.DISCOURSE_FORUM.value,
     ConnectionType.GITHUB_ISSUE.value,
     ConnectionType.EMAIL.value,
+    ConnectionType.GENERAL_TASK.value,
 ]
 
 def check_project_limit(workspace, request):

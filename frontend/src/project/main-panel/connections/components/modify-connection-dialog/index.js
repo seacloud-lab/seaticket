@@ -20,6 +20,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns.filter(c => c.key !== 'repository');
+    if (type === CONNECTION_TYPE.GENERAL_TASK) return _columns.filter(c => c.key !== 'table_name');
     return _columns;
   }, [type]);
   const customColumns = useMemo(() => columns.filter(c => {

@@ -14,10 +14,12 @@ import { connectionsAPI } from '@/project/api';
 import './index.css';
 
 const { server, projectUuid } = window.app.pageOptions;
+const TASK_PARENT_TYPE = 'task_connection';
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
-  const [type, setType] = useState(CONNECTION_TYPES[0].type);
+  const [type, setType] = useState(CONNECTION_TYPES.find(item => item.type !== CONNECTION_TYPE.GENERAL_TASK)?.type || CONNECTION_TYPES[0].type);
+  const [typeSelectStage, setTypeSelectStage] = useState('root');
   const [name, setName] = useState('');
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
@@ -149,7 +151,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     //     return;
     //   }
     // }
-  }, [name, type, config, onSubmit, onToggle, newRecord, modifyConnection]);
+  }, [name, type, config, onSubmit, onToggle, newRecord, modifyConnection, isGithub]);
 
   // eslint-disable-next-line no-unused-vars
   const handleSubmitGithub = useCallback(() => {
@@ -163,7 +165,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       setNewRecord(newRecord);
     }
     );
-  }, [name, type, config, onSubmit, onToggle]);
+  }, [name, type, config, onSubmit, onToggle, isGithub]);
 
   // eslint-disable-next-line no-unused-vars
   const handleSubmitDiscourse = useCallback(() => {
@@ -188,9 +190,53 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         }
       };
     });
-  }, []);
+  }, [projectUuid]);
 
   const typeOption = CONNECTION_TYPES.find(i => i.type === type);
+  const rootTypeOptions = useMemo(() => {
+    const options = CONNECTION_TYPES.filter(item => item.type !== CONNECTION_TYPE.GENERAL_TASK);
+    return [
+      ...options,
+      {
+        type: TASK_PARENT_TYPE,
+        name: gettext('Task connection'),
+        icon: 'sites',
+      }
+    ];
+  }, []);
+  const taskSubTypeOptions = useMemo(() => {
+    return CONNECTION_TYPES.filter(item => item.type === CONNECTION_TYPE.GENERAL_TASK);
+  }, []);
+  const typeSelected = useMemo(() => {
+    if (typeSelectStage === 'task') {
+      return Boolean(type);
+    }
+    return true;
+  }, [type, typeSelectStage]);
+  const handleTypeNext = useCallback(() => {
+    if (typeSelectStage === 'task') {
+      if (!type) return;
+      setStepIndex(stepIndex + 1);
+      return;
+    }
+    setStepIndex(stepIndex + 1);
+  }, [stepIndex, type, typeSelectStage]);
+  const handleSelectRootType = useCallback((selectedType) => {
+    if (selectedType === TASK_PARENT_TYPE) {
+      setTypeSelectStage('task');
+      setType('');
+      setConfig({});
+      return;
+    }
+    setTypeSelectStage('root');
+    onTypeChange(selectedType);
+  }, [onTypeChange]);
+  const handleSelectTaskSubType = useCallback((selectedType) => {
+    onTypeChange(selectedType);
+  }, [onTypeChange]);
+  const handleBackTypeStage = useCallback(() => {
+    setStepIndex(stepIndex - 1);
+  }, [stepIndex]);
 
   return (
     <Modal
@@ -208,18 +254,30 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           currentIndex={stepIndex}
         />
         {step.key === STEP.TYPE && (
-          <div className="sea-qa-project-new-connection-types">
-            {CONNECTION_TYPES.map(connection => {
-              const { type: key, name } = connection;
-              const isActive = key === type;
-              return (
-                <div className={classnames('sea-qa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => onTypeChange(key)}>
-                  <img src={getConnectionIcon(key)} alt={name} className="sea-qa-project-new-connection-icon" />
-                  <span className="sea-qa-project-new-connection-name">{name}</span>
-                </div>
-              );
-            })}
-          </div>
+          <>
+            <div className="sea-qa-project-new-connection-types">
+              {typeSelectStage === 'root' && rootTypeOptions.map(connection => {
+                const { type: key, name } = connection;
+                const isActive = key === TASK_PARENT_TYPE ? false : key === type;
+                return (
+                  <div className={classnames('sea-qa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => handleSelectRootType(key)}>
+                    <img src={getConnectionIcon(key === TASK_PARENT_TYPE ? CONNECTION_TYPE.GENERAL_TASK : key)} alt={name} className="sea-qa-project-new-connection-icon" />
+                    <span className="sea-qa-project-new-connection-name">{name}</span>
+                  </div>
+                );
+              })}
+              {typeSelectStage === 'task' && taskSubTypeOptions.map(connection => {
+                const { type: key, name } = connection;
+                const isActive = key === type;
+                return (
+                  <div className={classnames('sea-qa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => handleSelectTaskSubType(key)}>
+                    <img src={getConnectionIcon(key)} alt={name} className="sea-qa-project-new-connection-icon" />
+                    <span className="sea-qa-project-new-connection-name">{name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
         {step.key === STEP.CONFIG && (
           <div className="sea-qa-project-new-connection-config">
@@ -305,8 +363,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       {!isGithub && !isDiscourse && (
         <ModalFooter>
           {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-          {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
+          {stepIndex === 0 && typeSelectStage === 'task' && (
+            <Button color="secondary" onClick={() => {
+              const fallbackType = CONNECTION_TYPES.find(item => item.type !== CONNECTION_TYPE.GENERAL_TASK)?.type || CONNECTION_TYPES[0].type;
+              setTypeSelectStage('root');
+              onTypeChange(fallbackType);
+            }}>
+              {gettext('Previous')}
+            </Button>
+          )}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={handleBackTypeStage}>{gettext('Previous')}</Button>)}
+          {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={handleTypeNext} disabled={!typeSelected}>{gettext('Next')}</Button>)}
           {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
         </ModalFooter>
       )}

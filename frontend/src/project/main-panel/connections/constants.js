@@ -7,8 +7,14 @@ export const CONNECTION_TYPE = {
   EMAIL: 'email',
   GITHUB_ISSUE: 'github_issue',
   DISCOURSE_FORUM: 'discourse_forum',
+  GENERAL_TASK: 'general_task',
   SITE: 'site',
   SEAFILE: 'seafile',
+};
+
+export const CONNECTION_CATEGORY = {
+  STANDARD: 'standard',
+  TASK: 'task',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
@@ -20,6 +26,7 @@ export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
+  [CONNECTION_TYPE.GENERAL_TASK]: true,
 };
 
 export const CONNECTION_FIELD_TYPE = {
@@ -249,6 +256,29 @@ export const CONNECTION_FIELDS = {
       can_edit_multiple_times: false,
       is_custom: true
     }
+  ],
+  [CONNECTION_TYPE.GENERAL_TASK]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true
+    }, {
+      key: 'base_url',
+      name: gettext('Middleware Base URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
+      is_required: true,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'auth_token',
+      name: gettext('Auth Token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      can_edit_multiple_times: false,
+      is_custom: true
+    }
   ]
 };
 
@@ -257,23 +287,44 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.EMAIL,
     icon: 'email',
     name: gettext('Emails'),
+    category: CONNECTION_CATEGORY.STANDARD,
   }, {
     type: CONNECTION_TYPE.GITHUB_ISSUE,
     icon: 'github-issues',
     name: gettext('GitHub'),
+    category: CONNECTION_CATEGORY.STANDARD,
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',
     name: gettext('Discourse forums'),
+    category: CONNECTION_CATEGORY.STANDARD,
+  }, {
+    type: CONNECTION_TYPE.GENERAL_TASK,
+    icon: 'sites',
+    name: gettext('General Task connection'),
+    category: CONNECTION_CATEGORY.TASK,
   }, {
     type: CONNECTION_TYPE.SITE,
     icon: 'sites',
     name: gettext('Sites'),
+    category: CONNECTION_CATEGORY.STANDARD,
   }, {
     type: CONNECTION_TYPE.SEAFILE,
     icon: 'seafile',
     name: gettext('Seafile libraries'),
+    category: CONNECTION_CATEGORY.STANDARD,
   }
+];
+
+export const CONNECTION_CATEGORY_OPTIONS = [
+  {
+    key: CONNECTION_CATEGORY.STANDARD,
+    name: gettext('Standard connection'),
+  },
+  {
+    key: CONNECTION_CATEGORY.TASK,
+    name: gettext('Task connection'),
+  },
 ];
 
 export const CONNECTION_PAGE_SLUG_ID = {
@@ -336,6 +387,13 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   RESOLVED: 'resolved',
   LINKED_TICKET: 'linked_ticket',
   TAGS: 'tags',
+  STATUS: 'status',
+  SIZE: 'size',
+  PRIORITY: 'priority',
+  ASSIGNEES: 'assignees',
+  COMPLETED_AT: 'completed_at',
+  CREATED_AT: 'created_at',
+  LAST_MODIFIED_AT: 'last_modified_at',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -486,6 +544,40 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       modify_data_able: true,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.GENERAL_TASK]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: {
+      display_name: gettext('Status'),
+      type: CellType.SINGLE_SELECT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: {
+      display_name: gettext('Size'),
+      type: CellType.SINGLE_SELECT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: {
+      display_name: gettext('Priority'),
+      type: CellType.SINGLE_SELECT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
+      display_name: gettext('Assignees'),
+      type: CellType.MULTIPLE_SELECT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.COMPLETED_AT]: {
+      display_name: gettext('Completed at'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIED_AT]: {
+      display_name: gettext('Last modified at'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
@@ -495,6 +587,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
@@ -508,6 +601,7 @@ export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [
@@ -516,12 +610,14 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
@@ -530,4 +626,5 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];

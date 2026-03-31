@@ -42,7 +42,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'auth_token']
 
 
 def encrypt_config(config):
@@ -993,4 +993,3 @@ class ProjectGithubAppInstallation(models.Model):
     class Meta:
         db_table = 'project_github_app_installation'
         unique_together = [['project_uuid', 'installation_id']]
-

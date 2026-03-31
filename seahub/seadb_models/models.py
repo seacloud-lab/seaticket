@@ -475,6 +475,31 @@ class ThreadTable(BaseModel):
         return ConnectionType.EMAIL.value + '_' + 'thread_' + str(connection_id)
 
 
+class GeneralTaskTable(BaseModel):
+    source_row_id = MappedColumn('source_row_id', PropertyTypes.TEXT)
+    title = MappedColumn('title', PropertyTypes.TEXT)
+    status = MappedColumn('status', PropertyTypes.SINGLE_SELECT)
+    size = MappedColumn('size', PropertyTypes.SINGLE_SELECT)
+    priority = MappedColumn('priority', PropertyTypes.SINGLE_SELECT)
+    assignees = MappedColumn('assignees', PropertyTypes.MULTIPLE_SELECT)
+    task_details = MappedColumn('task_details', PropertyTypes.TEXT, {'compressed': True})
+    completed_at = MappedColumn('completed_at', PropertyTypes.DATETIME)
+    last_modified_at = MappedColumn('last_modified_at', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
+    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    outdated = MappedColumn('outdated', PropertyTypes.BOOL)
+    record_modified_time = MappedColumn('record_modified_time', PropertyTypes.DATETIME)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
+    linked_ticket = MappedColumn('linked_ticket', PropertyTypes.INT)
+
+
+    @classmethod
+    def gen_table_name(cls, connection_id):
+        return ConnectionType.GENERAL_TASK.value + '_' + str(connection_id)
+
+
 class KnowledgeBaseTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})

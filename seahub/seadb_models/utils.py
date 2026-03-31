@@ -6,7 +6,7 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGenerato
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable
+    GeneralTaskTable, KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,8 @@ def fetch_issue_type_connection_records_batch(seadb_api, project_uuid, connectio
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
     else:
         logger.warning(f'Unsupported issue connection type: {connection_type}')
         return {}
@@ -471,10 +473,45 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
 
     index_column_names = [
         ThreadTable.title.name,
+        ThreadTable.title.name,
         ThreadTable.modified_time.name,
         ThreadTable.deleted.name,
         ThreadTable.sync_time.name,
         ThreadTable.linked_ticket.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
+
+
+def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in GeneralTaskTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    index_column_names = [
+        GeneralTaskTable.source_row_id.name,
+        GeneralTaskTable.title.name,
+        GeneralTaskTable.status.name,
+        GeneralTaskTable.priority.name,
+        GeneralTaskTable.last_modified_at.name,
+        GeneralTaskTable.record_modified_time.name,
+        GeneralTaskTable.deleted.name,
+        GeneralTaskTable.linked_ticket.name,
     ]
 
     for column_name in index_column_names:
@@ -588,6 +625,8 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = SeafileTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -814,6 +853,8 @@ def list_connection_record_titles(seadb_api, project_uuid, connection_id, connec
         table_name = SeafileTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
     else:
         return []
 
@@ -854,6 +895,17 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
         record = res.get('results')[0]
     except Exception as e:
         logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
+        record = {}
+    return record
+
+def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
+    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    sql = f"SELECT `title`, `status`, `size`, `priority`, `assignees`, `task_details`, `completed_at`, `last_modified_at` FROM `{table_name}` WHERE _pk = {_pk}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results')[0]
+    except Exception as e:
+        logger.error(f'SeaDB query error for general task details {table_name}: {e}')
         record = {}
     return record
 

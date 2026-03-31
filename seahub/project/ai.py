@@ -27,7 +27,7 @@ from seahub.utils.indexer import find_related_records
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
+from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable, GeneralTaskTable
 from seahub.project.ai_utils import get_search_connection_ids, prepare_candidates_for_rerank, perform_reranking, \
     collect_reranked_pks, fetch_connection_objects, fetch_reranked_records, build_final_results
 from seahub.utils.decorators import require_org_context
@@ -180,6 +180,26 @@ class ConvertRecordToTicket(APIView):
                     **Ticket Information:**
                     Title: {title}
                     Body: {body_content}
+                """
+            case ConnectionType.GENERAL_TASK.value:
+                task_table_name = GeneralTaskTable.gen_table_name(connection_id)
+                seadb_api = SeaDBAPI(username)
+                sql = f"SELECT `title`, `status`, `task_details`, `size`, `priority`, `assignees`, `completed_at`, `last_modified_at` FROM `{task_table_name}` WHERE _pk = {int(record_id)}"
+                results = seadb_api.query_rows(project_uuid, sql).get('results', [])
+                task = results[0] if results else {}
+                title = task.get('title', '')
+                related_url = ''
+                default_title = title
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Status: {task.get('status', '')}
+                    Task Details: {task.get('task_details', '')}
+                    Size: {task.get('size', '')}
+                    Priority: {task.get('priority', '')}
+                    Assignees: {task.get('assignees', '')}
+                    Completed At: {task.get('completed_at', '')}
+                    Last Modified At: {task.get('last_modified_at', '')}
                 """
         if not record_detail:
             error_msg = 'Record detail not found.'
@@ -424,6 +444,8 @@ class RelatedRecordsView(APIView):
                     table_name = DiscourseTopicsTable.gen_table_name(connection_id)
                 elif connection.type == ConnectionType.EMAIL.value:
                     table_name = ThreadTable.gen_table_name(connection_id)
+                elif connection.type == ConnectionType.GENERAL_TASK.value:
+                    table_name = GeneralTaskTable.gen_table_name(connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'
