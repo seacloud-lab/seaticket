@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
@@ -17,7 +17,7 @@ import toaster from '@/components/toaster';
 import './index.css';
 import './sea-qa-project-selected-connection.css';
 
-const { server, projectUuid } = window.app.pageOptions;
+const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
@@ -29,9 +29,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('connection-type') === 'github') {
+      onTypeChange(CONNECTION_TYPE.GITHUB_ISSUE);
+      setStepIndex(1);
+    }
+  }, []);
+
   const installGitHubAppURL = useMemo(() => {
-    const currentPath = window.location.pathname + window.location.search;
-    return `${server}/github/install/?next=${encodeURIComponent(currentPath)}&project_uuid=${projectUuid}`;
+    const newPath = `${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`;
+    return `${server}/github/install/?next=${encodeURIComponent(newPath)}&project_uuid=${projectUuid}`;
   }, [server, projectUuid]);
 
   const columns = useMemo(() => {

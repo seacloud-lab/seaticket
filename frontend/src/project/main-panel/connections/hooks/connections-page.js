@@ -21,17 +21,24 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    const currentUrlParams = new URLSearchParams(window.location.search);
     if (isConnectionRecordsView(pageSlugId)) {
       if (childrenPageSlugId) {
         urlPart = urlPart + 'records/' + childrenPageSlugId + '/';
       } else {
         if (viewID) {
-          urlPart = urlPart + '?view=' + viewID;
+          currentUrlParams.set('view', viewID);
+        } else {
+          currentUrlParams.delete('view');
         }
       }
+    } else {
+      currentUrlParams.delete('view');
     }
-    history.replaceState(null, null, url + urlPart);
-  }, [workspaceID]);
+    const queryString = currentUrlParams.toString();
+    const fullUrl = url + urlPart + (queryString ? '?' + queryString : '');
+    history.replaceState(null, null, fullUrl);
+  }, [workspaceID, projectName]);
 
   const togglePageSlugId = useCallback((pageSlugId, viewID = '', childrenPageSlugId = '') => {
     setLoading(true);

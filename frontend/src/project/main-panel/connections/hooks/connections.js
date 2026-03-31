@@ -21,10 +21,45 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   const [isLoading, setLoading] = useState(true);
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [connections, setConnections] = useState([]);
-  const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
+  const [isShowConnectionDialog, setShowConnectionDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
   const { deleteTableByName, markTablesViewExpired } = useData();
+
+  const getUrlParams = useCallback(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams;
+  }, []);
+
+  const updateUrlParams = useCallback((params) => {
+    const url = new URL(window.location.href);
+    const searchParams = url.searchParams;
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null || value === '') {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, value);
+      }
+    });
+    const newUrl = url.toString();
+    window.history.replaceState(null, '', newUrl);
+  }, []);
+
+  const toggleConnectionDialog = useCallback((show) => {
+    const newShow = typeof show === 'boolean' ? show : !isShowConnectionDialog;
+    setShowConnectionDialog(newShow);
+    updateUrlParams({
+      'connection-dialog': newShow ? 'open' : null
+    });
+  }, [isShowConnectionDialog, updateUrlParams]);
+
+  useEffect(() => {
+    const urlParams = getUrlParams();
+    const dialogParam = urlParams.get('connection-dialog');
+    if (dialogParam === 'open' && !isShowConnectionDialog) {
+      setShowConnectionDialog(true);
+    }
+  }, [getUrlParams]);
 
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
@@ -80,15 +115,15 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   }, [modifyLocalConnectionRecord]);
 
   const closeConnectionDialog = useCallback(() => {
-    setIsShowRecordDialog(false);
+    toggleConnectionDialog(false);
   }, []);
 
-  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowRecordDialog = false, callback) => {
+  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowConnectionDialog = false, callback) => {
     connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
       const connection = new Connection(res.data.record);
       const newConnections = [...connections, connection];
       setConnections(newConnections);
-      setIsShowRecordDialog(isShowRecordDialog);
+      toggleConnectionDialog(isShowConnectionDialog);
       callback && callback(connection);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -134,7 +169,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       }
       setConnections(newConnections);
       activeConnectionRef.current = null;
-      setIsShowRecordDialog(false);
+      toggleConnectionDialog(false);
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -144,7 +179,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
 
   const handleModify = useCallback((record) => {
     activeConnectionRef.current = record;
-    setIsShowRecordDialog(true);
+    toggleConnectionDialog(true);
   }, []);
 
   const loadMore = useCallback(() => {
@@ -203,12 +238,12 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   useEffect(() => {
     const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.NEW_CONNECTION, () => {
       activeConnectionRef.current = null;
-      setIsShowRecordDialog(true);
+      toggleConnectionDialog(true);
     });
     return () => {
       unsubscribeNewConnection();
     };
-  }, []);
+  }, [toggleConnectionDialog]);
 
   useEffect(() => {
     if (!isLoading) return;
@@ -229,7 +264,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       loadMore,
     }}>
       {children}
-      {isShowRecordDialog && (
+      {isShowConnectionDialog && (
         <>
           {activeConnectionRef.current ? (
             <ModifyConnectionDialog
