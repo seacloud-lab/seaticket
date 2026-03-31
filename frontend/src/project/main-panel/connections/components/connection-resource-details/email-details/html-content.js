@@ -18,7 +18,7 @@ const HTMLContent = ({
       const images = ref.current.querySelectorAll('img');
       images.forEach((img) => {
         const originalSrc = img.getAttribute('src');
-        if (originalSrc && !img.hasAttribute('sea-data-processed') && !isValidUrl(originalSrc)) {
+        if (originalSrc && !originalSrc.startsWith('data:image') && !img.hasAttribute('sea-data-processed') && !isValidUrl(originalSrc)) {
           img.setAttribute('sea-data-processed', 'true');
           const newSrc = `${assetURLPrefix}${detail._pk}/${originalSrc}`;
           img.removeAttribute('src');
