@@ -858,7 +858,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         thread_record = thread_res.get('results')[0]
         email_sql = f"""
         SELECT 
-        email_from, email_to, title, cc, content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk
+        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk
         FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC
         """
         email_res = seadb_api.query_rows(project_uuid, email_sql)
@@ -996,7 +996,7 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
                 conn_id_type_map[connection_id] = result['type']
                 conn_id_pks_map[connection_id] = []
             conn_id_pks_map[connection_id].append(int(result['_id']))
-    
+
     conn_id_pk_title_summary_map = {}
     for connection_id, connection_type in conn_id_type_map.items():
         pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, connection_type, list(set(conn_id_pks_map[connection_id])), connection_id)
@@ -1038,7 +1038,7 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
             result['snippets'] = snippets
             result['snippets'].append(result['snippet'])
             result.pop('snippet', None)
-        
+
         result.update(title_summary)
         result['content'] = '\n.................\n'.join(result.get('snippets')) if result.get('snippets') else result['ai_summary']
         new_results_map[connection_id][record_id] = result
