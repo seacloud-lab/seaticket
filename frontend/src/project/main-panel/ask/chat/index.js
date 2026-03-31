@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, api }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -498,7 +498,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
   const _isReply = loading || isReply;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small-page': isSmall })} ref={wrapperRef}>
+    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small-page': isSmall, 'has-header': sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={wrapperRef}>
       {sessionId !== ASK_PAGE_SLUG_ID.NEW && (
         <div className="sea-qa-ai-ask-chats-header">
           <ChatHeader
@@ -506,7 +506,10 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
             readOnly={readOnly}
             hasHistoryMessages={!isEmpty}
             session={session}
+            isEmpty={isEmpty}
             toggleClearContext={toggleClearContext}
+            renderOperation={renderOperation}
+            customHeaderTitle={customHeaderTitle}
           />
         </div>
       )}

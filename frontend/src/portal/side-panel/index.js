@@ -1,63 +1,69 @@
 import React from 'react';
 import classnames from 'classnames';
-import { Icon } from '../../components';
 import { gettext, siteRoot } from '@/constants';
-import { PORTAL_PAGE } from '../constants';
-
-const BASE_NAV_ITEMS = [
-  { key: PORTAL_PAGE.CHAT, name: gettext('Chat'), icon: 'chat' },
-  { key: PORTAL_PAGE.SUBMIT_TICKET, name: gettext('Submit ticket'), icon: 'submit-ticket' },
-  { key: PORTAL_PAGE.MY_TICKETS, name: gettext('My tickets'), icon: 'my-tickets' },
-];
+import { CustomizeTabs, Icon } from '@/components';
+import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
 
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
-  const navItems = isAnonymous
-    ? (enableKB ? [{ key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }] : [])
+  const primaryTabs = isAnonymous
+    ? (enableKB ? [{ value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }] : [])
     : (enableKB
-      ? [...BASE_NAV_ITEMS, { key: PORTAL_PAGE.KNOWLEDGE_BASE, name: gettext('Knowledge base'), icon: 'knowledge-base' }]
-      : BASE_NAV_ITEMS);
+      ? [...BASE_PRIMARY_TABS, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
+      : BASE_PRIMARY_TABS);
+
+  const isTicketsPage = activePage === PORTAL_PAGE.SUBMIT_TICKET || activePage === PORTAL_PAGE.MY_TICKETS;
+  const activePrimaryTab = isTicketsPage ? TICKETS_TAB : activePage;
+
+  const onPrimaryTabChange = (value) => {
+    if (value === TICKETS_TAB) {
+      const targetPage = isTicketsPage ? activePage : PORTAL_PAGE.SUBMIT_TICKET;
+      onPageChange(targetPage);
+      return;
+    }
+
+    onPageChange(value);
+  };
 
   const { isEditMode, projectUuid, isExternalUser, username } = window.app.pageOptions;
 
   return (
     <div className="sea-qa-portal-side-panel">
       <div className="sea-qa-portal-side-panel-header">
-        <div className="sea-qa-portal-side-panel-icon">
-          <i className="project-icon icon-color-white icon-club-members"></i>
+        <div className="sea-qa-portal-side-panel-logo d-flex align-items-center">
+          <div className="sea-qa-portal-side-panel-icon">
+            <i className="project-icon icon-color-white icon-club-members"></i>
+          </div>
+          <h3>{gettext('Support portal')}</h3>
         </div>
-        <h3>{gettext('Support portal')}</h3>
-      </div>
-      <div className="sea-qa-portal-navigation">
-        {navItems.map(item => (
-          <div
-            key={item.key}
-            className={classnames('sea-qa-portal-nav-item', { 'active': activePage === item.key })}
-            onClick={() => onPageChange(item.key)}
-          >
-            <Icon symbol={item.icon} className="sea-qa-portal-nav-item-icon" />
-            <span className="sea-qa-portal-nav-item-name">{item.name}</span>
-          </div>
-        ))}
-        {!isEditMode && isAnonymous && (
-          <div
-            className="sea-qa-portal-nav-item"
-            onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
-            title={gettext('Log in')}
-          >
-            <Icon symbol="support-portal" className="sea-qa-portal-nav-item-icon" />
-            <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
-          </div>
-        )}
-        {!isEditMode && isExternalUser && !!username && (
-          <div
-            className="sea-qa-portal-nav-item"
-            onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
-            title={gettext('Log out')}
-          >
-            <Icon symbol="logout" className="sea-qa-portal-nav-item-icon" />
-            <span className="sea-qa-portal-nav-item-name">{gettext('Log out')}</span>
-          </div>
-        )}
+        <div className="sea-qa-portal-side-panel-tabs d-flex justify-content-center flex-1">
+          <CustomizeTabs
+            tabs={primaryTabs}
+            value={activePrimaryTab}
+            onChange={onPrimaryTabChange}
+          />
+        </div>
+        <div className="sea-qa-portal-side-panel-actions">
+          {!isEditMode && isAnonymous && (
+            <div
+              className={classnames('sea-qa-portal-nav-item', 'sea-qa-portal-action-item')}
+              onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
+              title={gettext('Log in')}
+            >
+              <Icon symbol="support-portal" className="sea-qa-portal-nav-item-icon" />
+              <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
+            </div>
+          )}
+          {!isEditMode && isExternalUser && !!username && (
+            <div
+              className={classnames('sea-qa-portal-nav-item', 'sea-qa-portal-action-item')}
+              onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
+              title={gettext('Log out')}
+            >
+              <Icon symbol="logout" className="sea-qa-portal-nav-item-icon" />
+              <span className="sea-qa-portal-nav-item-name">{gettext('Log out')}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

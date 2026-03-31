@@ -16,3 +16,7 @@
 .sea-qa-ai-ask-chats-header .sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
   color: var(--bs-icon-color);
 }
+
+.sea-qa-ai-ask-chats-header .chat-header-operation-wrapper {
+  margin-left: auto;
+}

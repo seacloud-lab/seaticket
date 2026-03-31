@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { IconTooltip } from '@/components';
 import { username, gettext } from '@/constants';
 
@@ -10,16 +10,25 @@ const ChatHeader = ({
   session,
   isReply,
   readOnly,
+  isEmpty,
   hasHistoryMessages,
   toggleClearContext,
+  renderOperation,
+  customHeaderTitle,
 }) => {
   const isOwner = session?.username === username;
   const disabled = isReply || readOnly;
   const showClearBtn = hasHistoryMessages && (isProjectAdmin || isOwner);
+  const operationContent = renderOperation && renderOperation();
+
+  const renderCustomTitle = useCallback(() => {
+    const title = isEmpty ? customHeaderTitle : session?.name;
+    return <div className="chat-header-title-content" title={title}>{title}</div>;
+  }, [session, isEmpty, customHeaderTitle]);
 
   return (
     <>
-      <div className="chat-header-title-content" title={session?.name}>{session?.name}</div>
+      {customHeaderTitle ? renderCustomTitle() : <div className="chat-header-title-content" title={session?.name}>{session?.name}</div>}
       {showClearBtn && (
         <>
           <div className="chat-header-divider"></div>
@@ -34,6 +43,9 @@ const ChatHeader = ({
             onClick={disabled ? () => {} : toggleClearContext}
           />
         </>
+      )}
+      {operationContent && (
+        <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
     </>
   );
