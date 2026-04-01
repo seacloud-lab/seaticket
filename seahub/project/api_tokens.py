@@ -11,9 +11,8 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import (
-    Projects, ProjectAPIToken, API_TOKEN_PERMISSION_TUPLE
-)
+from seahub.project.models import Projects, ProjectAPIToken
+from seahub.project.constants import API_TOKEN_PERMISSION_TUPLE
 from seahub.project.utils import check_project_admin_permission
 from seahub.utils.decorators import require_org_context
 
