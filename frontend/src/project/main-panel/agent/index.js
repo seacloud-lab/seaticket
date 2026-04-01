@@ -14,7 +14,8 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const Agent = ({ title }) => {
-  const { isLoading: isSettingsLoading } = useAgentSettings();
+  const { isLoading: isSettingsLoading, settings } = useAgentSettings();
+  const enabledAgent = settings.agent.enabled;
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -106,7 +107,7 @@ const Agent = ({ title }) => {
           <div className="agent-run-logs-header">
             <span>
               {gettext('Run Logs')}
-              <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
+              {enabledAgent && <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />}
             </span>
           </div>
           <RunLogs
@@ -117,6 +118,7 @@ const Agent = ({ title }) => {
             onConfirmAction={handleConfirmAction}
             onCancelAction={handleCancelAction}
             onUpdateContent={handleUpdateContent}
+            enabledAgent={enabledAgent}
           />
         </div>
       </div>
