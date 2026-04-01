@@ -9,8 +9,8 @@ const { workspaceID, projectName } = window.app.pageOptions;
 const SOURCE_TYPE = {
   TICKET: 'ticket',
   GITHUB_ISSUE: 'github_issue',
-  DISCOURSE_TOPIC: 'discourse_topic',
-  EMAIL_THREAD: 'email_thread',
+  DISCOURSE_FORUM: 'discourse_forum',
+  EMAIL: 'email',
 };
 
 const formatDateTime = (dateStr) => {
@@ -76,23 +76,49 @@ const ItemHeader = ({ item }) => {
     );
   }
 
-  if (source_type === SOURCE_TYPE.DISCOURSE_TOPIC) {
+  if (source_type === SOURCE_TYPE.DISCOURSE_FORUM) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">💬</span>
         <span className="ticket-title">
-          {gettext('Forum Topic')} #{source_id}: {source_title}
+          {href ? (
+            <a
+              href={href}
+              onClick={(event) => event.stopPropagation()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {gettext('Discourse Forum')} #{source_id}: {source_title}
+            </a>
+          ) : (
+            <>
+              {gettext('Discourse Forum')} #{source_id}: {source_title}
+            </>
+          )}
         </span>
       </div>
     );
   }
 
-  if (source_type === SOURCE_TYPE.EMAIL_THREAD) {
+  if (source_type === SOURCE_TYPE.EMAIL) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">✉️</span>
         <span className="ticket-title">
-          {gettext('Email Thread')} #{source_id}: {source_title}
+          {href ? (
+            <a
+              href={href}
+              onClick={(event) => event.stopPropagation()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {gettext('Email')} #{source_id}: {source_title}
+            </a>
+          ) : (
+            <>
+              {gettext('Email')} #{source_id}: {source_title}
+            </>
+          )}
         </span>
       </div>
     );
