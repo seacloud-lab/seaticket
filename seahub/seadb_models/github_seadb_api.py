@@ -1,7 +1,7 @@
 import logging
 
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.seadb_models.models import GithubIssuesTable, GithubIssueCommentsTable
 from seahub.project.constants import ConnectionType
 
@@ -104,7 +104,7 @@ class GitHubSeaDBAPI:
         for connection_id, _pks in connection_ids_pks_map.items():
             issues = self.get_issues_by_pks(connection_id, _pks)
             issue_ids = [str(issue['issue_id']) for issue in issues]
-            issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
+            issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
             for issue_data in issues:
                 whole_issue_data = {
                     'type': ConnectionType.GITHUB_ISSUE.value,
@@ -112,18 +112,25 @@ class GitHubSeaDBAPI:
                     'record_id': int(issue_data['_pk']),
                     'state': issue_data.get('state'),
                     'title': issue_data.get('title'),
-                    'content': issue_data.get('content'),
+                    'content': issue_data.get('content', '')[:ATTACHMENT_CONTENT_MAX_SIZE],
                     'url': issue_data.get('url'),
                     'created_at': issue_data.get('created_time'),
                     'comments': []
                 }
 
+                total_content_size = len(whole_issue_data['content'])
                 for comment in issues_comments_map.get(issue_data['issue_id'], []):
+                    content = comment.get('content', '')
+                    total_content_size += len(content)
+
+                    # break if exceed maximum content size
+                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                        break
+
                     whole_issue_data['comments'].append({
                         'author': comment.get('author'),
-                        'content': comment.get('content'),
+                        'content': content,
                         'created_time': comment.get('created_time')
                     })
-
                 result.append(whole_issue_data)
         return result

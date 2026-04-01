@@ -7,14 +7,12 @@ from typing import Dict
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.seadb_models.models import TicketActivitiesTable
-from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
-from seahub.seadb_models.models import DiscourseTopicsTable, GithubIssuesTable, ThreadTable
 from seahub.seadb_models.utils import list_connection_record_titles
 from seahub.project.models import ProjectConnections
-from seahub.project.constants import ConnectionType
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
 
@@ -450,7 +448,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     """
 
     tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
-    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, AI_CHAT_TICKET_MAX_COMMENTS_NUM)
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
     all_comments_users = []
     for ticket_comments in ticket_ids_comments_map.values():
         for ticket_comment in ticket_comments:
@@ -472,17 +470,25 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),
-            'content': ticket.get('content'),
+            'content': ticket.get('content', '')[:ATTACHMENT_CONTENT_MAX_SIZE],
             'created_time': created_time,
             'comments': []
         }
+        total_content_size = len(whole_ticket_data['content'])
         for ticket_comment in ticket_ids_comments_map.get(ticket['_pk'], []):
+            content = ticket_comment.get('content', '')
+            total_content_size += len(content)
+
+            # break if exceed maximum content size
+            if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                break
+
             nickname = nickname_map.get(ticket_comment.get('creator'))
             commented_at = ticket_comment.get('created_time')
             commented_at = time_str_to_utc_time(commented_at).isoformat()
             whole_ticket_data['comments'].append({
                 'nickname': nickname,
-                'content': ticket_comment.get('content'),
+                'content': content,
                 'commented_at': commented_at
             })
         result.append(whole_ticket_data)

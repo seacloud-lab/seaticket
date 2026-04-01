@@ -7,6 +7,7 @@ from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq
 from seahub.utils import uuid_str_to_32_chars
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ def get_whole_knowledge_bases_data(seadb_api, project_uuid, record_ids):
             'type': ExtraSourceType.KNOWLEDGE_BASE.value,
             'record_id': kb['_pk'],
             'title': kb['title'],
-            'content': kb['content'],
+            'content': kb['content'][:ATTACHMENT_CONTENT_MAX_SIZE],
             'tags': kb['tags'],
             'creator': nickname_map.get(kb['creator']),
             'created_time': time_str_to_utc_time(kb['created_time']).isoformat(),

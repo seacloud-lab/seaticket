@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import EmailTable, ThreadTable
-from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ class EmailSeaDBAPI:
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
             threads = self.get_threads_by_pks(connection_id, _pks)
-            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
+            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, ATTACHMENT_ISSUE_MAX_COMMENTS)
 
             for thread_data in threads:
                 whole_thread_data = {
@@ -120,13 +120,20 @@ class EmailSeaDBAPI:
                     'emails': []
                 }
 
+                total_content_size = 0
                 for email in threads_emails_map.get(thread_data['_pk'], []):
+                    content = email.get('content', '')
+                    total_content_size += len(content)
+
+                    # break if exceed maximum content size
+                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
+                        break
+
                     whole_thread_data['emails'].append({
                         'from': email.get('email_from'),
                         'to': email.get('email_to'),
-                        'content': email.get('content'),
+                        'content': content,
                         'modified_time': email.get('modified_time')
                     })
-
                 result.append(whole_thread_data)
         return result

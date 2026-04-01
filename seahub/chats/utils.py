@@ -103,7 +103,7 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, messag
         if not has_recorded_result:
             item = f'data: {json.dumps({
                 "results": record_message_to_db({
-                    "ai_reply": "There is an issue with the AI server or web server (internal server error or LLM timeout), please try again later",
+                    "ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later",
                     "sources": []
                 }, session_uuid, message_id, query, attachments)
             })}\n\n'

@@ -6,6 +6,7 @@ from seahub.utils.storage import get_file_from_s3_web_crawl
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.constants import ConnectionType
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,6 @@ class SiteSeaDBAPI:
                         'record_id': site['_pk'],
                         'title': site['title'],
                         'url': site['url'],
-                        'content': content
+                        'content': content[:ATTACHMENT_CONTENT_MAX_SIZE]
                     })
         return result
