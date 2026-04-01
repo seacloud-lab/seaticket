@@ -1,29 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-
-const ACTION_STATUS = {
-  PENDING: 'pending',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
-  EXECUTED: 'executed',
-};
-
-const ACTION_TYPE = {
-  ANALYSIS: 'analysis',
-  TOOL_CALL: 'tool_call',
-  SUGGESTION: 'suggestion',
-  SUMMARY: 'summary',
-};
-
-// Tool names that carry a user-editable content payload
-const SUGGESTION_TOOL_NAMES = new Set([
-  'suggest_notify_assignee',
-  'suggest_add_comment',
-  'suggest_resolution',
-  'suggest_create_ticket',
-  'suggest_modify_type',
-]);
+import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP } from './constants';
 
 const ActionItem = ({
   action,
@@ -108,7 +86,7 @@ const ActionItem = ({
           </div>
         );
       case ACTION_TYPE.SUGGESTION: {
-        const hasEditableContent = SUGGESTION_TOOL_NAMES.has(tool_name);
+        const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         return (
           <div className="action-content">
             <span className="action-label">{gettext('Suggestion')}:</span>
