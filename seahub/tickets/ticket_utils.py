@@ -7,7 +7,7 @@ from typing import Dict
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.seadb_models.models import TicketActivitiesTable
-from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
@@ -448,7 +448,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     """
 
     tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
-    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ISSUE_ATTACHMENT_MAX_COMMENTS)
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
     all_comments_users = []
     for ticket_comments in ticket_ids_comments_map.values():
         for ticket_comment in ticket_comments:

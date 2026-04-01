@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import DiscourseTopicsTable, DiscourseRepliesTable
-from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
 
@@ -108,7 +108,7 @@ class DiscourseSeaDBAPI:
             topics = self.get_topics_by_pks(connection_id, _pks)
 
             topic_ids_str = [str(topic['topic_id']) for topic in topics]
-            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, ISSUE_ATTACHMENT_MAX_COMMENTS)
+            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, ATTACHMENT_ISSUE_MAX_COMMENTS)
 
             for topic_data in topics:
                 whole_topic_data = {

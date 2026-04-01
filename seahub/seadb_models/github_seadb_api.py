@@ -1,7 +1,7 @@
 import logging
 
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.seadb_models.models import GithubIssuesTable, GithubIssueCommentsTable
 from seahub.project.constants import ConnectionType
 
@@ -104,7 +104,7 @@ class GitHubSeaDBAPI:
         for connection_id, _pks in connection_ids_pks_map.items():
             issues = self.get_issues_by_pks(connection_id, _pks)
             issue_ids = [str(issue['issue_id']) for issue in issues]
-            issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, ISSUE_ATTACHMENT_MAX_COMMENTS)
+            issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
             for issue_data in issues:
                 whole_issue_data = {
                     'type': ConnectionType.GITHUB_ISSUE.value,

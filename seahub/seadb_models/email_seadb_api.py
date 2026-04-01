@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import EmailTable, ThreadTable
-from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ISSUE_ATTACHMENT_MAX_COMMENTS
+from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ class EmailSeaDBAPI:
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
             threads = self.get_threads_by_pks(connection_id, _pks)
-            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, ISSUE_ATTACHMENT_MAX_COMMENTS)
+            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, ATTACHMENT_ISSUE_MAX_COMMENTS)
 
             for thread_data in threads:
                 whole_thread_data = {
