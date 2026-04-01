@@ -867,13 +867,6 @@ class ConnectionsViews(models.Model):
         return self.folders_ids + self.views_ids
 
 
-PERMISSION_READ = 'r'
-PERMISSION_READ_WRITE = 'rw'
-API_TOKEN_PERMISSION_TUPLE = (
-    PERMISSION_READ,
-    PERMISSION_READ_WRITE,
-)
-
 class ProjectAPITokenManager(models.Manager):
     def add(self, project, app_name, username, permission):
         api_token_obj = self.model(
