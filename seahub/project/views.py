@@ -114,7 +114,7 @@ def github_installation_setup(request):
     project_uuid = ''
     if state:
         try:
-            return_url, project_uuid = base64.b64decode(state).decode().split('&')
+            return_url, project_uuid = base64.b64decode(state).decode().rsplit('&', 1)
         except Exception:
             return_url = '/'
     else:
