@@ -18,7 +18,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 
 import './index.css';
 
-const { server, projectUuid, isProjectAdmin } = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
@@ -137,14 +137,8 @@ const TopBar = ({ title, modifyLocalBar }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      const currentPath = window.location.pathname + window.location.search;
-      const installGitHubAppURL = `${server}/github/install/?next=${encodeURIComponent(currentPath)}&project_uuid=${projectUuid}`;
-
       return (
-        <>
-          {isProjectAdmin && (<IconTextBtn text={gettext('Install GitHub app')} onClick={() => location.href = installGitHubAppURL} />)}
-          <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
-        </>
+        <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
       );
     }
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;

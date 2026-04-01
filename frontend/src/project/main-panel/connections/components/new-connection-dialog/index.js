@@ -1,19 +1,23 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, ModalHeader, StepsNavigation } from '@/components';
+import { TextInput, ModalHeader, Loading } from '@/components';
 import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
+import SecondaryBtn from '@/components/btn/secondary-btn';
+import { Utils } from '@/utils/utils';
+import toaster from '@/components/toaster';
 
 import './index.css';
+import './sea-qa-project-selected-connection.css';
 
-const { server, projectUuid } = window.app.pageOptions;
+const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
@@ -22,6 +26,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
   const [newRecord, setNewRecord] = useState(null);
+  const [githubRepositories, setGithubRepositories] = useState([]);
+  const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('connection-type') === 'github') {
+      onTypeChange(CONNECTION_TYPE.GITHUB_ISSUE);
+      setStepIndex(1);
+    }
+  }, []);
+
+  const installGitHubAppURL = useMemo(() => {
+    const newPath = `${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`;
+    return `${server}/github/install/?next=${encodeURIComponent(newPath)}&project_uuid=${projectUuid}`;
+  }, [server, projectUuid]);
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
@@ -101,6 +120,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     if (type === newType) return;
     setConfig(initializeConfig(newType));
     setType(newType);
+
+    if (newType === CONNECTION_TYPE.GITHUB_ISSUE) {
+      setIsLoadingRepositories(true);
+      connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
+        const { repositories } = res.data;
+        setGithubRepositories(repositories);
+        setIsLoadingRepositories(false);
+      }).catch(error => {
+        let errMessage = Utils.getErrorMsg(error);
+        toaster.danger(errMessage);
+        setIsLoadingRepositories(false);
+      });
+    } else {
+      setGithubRepositories([]);
+    }
   }, [type, initializeConfig]);
 
   const onConfigChange = useCallback((key, value) => {
@@ -202,11 +236,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="sea-qa-project-connection-body">
-        <StepsNavigation
-          className="sea-qa-project-new-connection-steps"
-          steps={customSteps}
-          currentIndex={stepIndex}
-        />
+        <div className="sea-qa-project-selected-connection">
+          {stepIndex === 0 ?
+            <div className="sea-qa-project-selected-no-type">{gettext('Select connection type')}</div>
+            :
+            <div className='sea-qa-project-new-connection-type'>
+              <div className="sea-qa-project-new-connection-type-left d-flex align-items-center">
+                <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
+                <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
+              </div>
+              <div className="sea-qa-project-new-connection-type-right">
+                {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
+              </div>
+            </div>
+          }
+        </div>
         {step.key === STEP.TYPE && (
           <div className="sea-qa-project-new-connection-types">
             {CONNECTION_TYPES.map(connection => {
@@ -221,12 +265,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
             })}
           </div>
         )}
-        {step.key === STEP.CONFIG && (
+        {step.key === STEP.CONFIG && !isGithub && (
           <div className="sea-qa-project-new-connection-config">
-            <FormGroup>
-              <Label>{gettext('Connection type')}</Label>
-              <Input value={typeOption.name} disabled />
-            </FormGroup>
             <FormGroup>
               <Label>
                 {gettext('Connection name')}
@@ -240,7 +280,72 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                 return (
                   <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
                     {children.map((child, index) => (
-                      <ConnectionConfigEditor className="mx-0 px-0 width-half" column={child} key={`${key}-${index}`} row={config} readonly={isSubmitting} onChange={onConfigChange} />
+                      <ConnectionConfigEditor
+                        className="mx-0 px-0 width-half"
+                        column={child}
+                        key={`${key}-${index}`}
+                        row={config}
+                        readonly={isSubmitting}
+                        onChange={onConfigChange}
+                      />
+                    ))}
+                  </Row>
+                );
+              }
+              let api = null;
+              let row = { ...config };
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
+                api = listGitHubRepositories;
+                if (row[key]) {
+                  row[key] = row[key].value;
+                }
+              }
+              return ((
+                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
+              ));
+            })}
+          </div>
+        )}
+
+        {step.key === STEP.CONFIG && isGithub && isLoadingRepositories &&
+          <div className="sea-qa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
+            <Loading />
+            <h4 className="mt-5">{gettext('Checking GitHub App installation status...')}</h4>
+            <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
+          </div>
+        }
+
+        {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length === 0 &&
+          <div className="sea-qa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
+            <h4>{gettext('GitHub app not installed')}</h4>
+            <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
+            <Button color="primary" outline onClick={() => window.open(installGitHubAppURL, '_blank')} >{gettext('Install GitHub app')}</Button>
+          </div>
+        }
+
+        {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length > 0 && (
+          <div className="sea-qa-project-new-connection-config">
+            <FormGroup>
+              <Label>
+                {gettext('Connection name')}
+                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+              </Label>
+              <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
+            </FormGroup>
+            {customColumns.map(c => {
+              const { type, key, children } = c;
+              if (type === CONNECTION_FIELD_TYPE.GROUP) {
+                return (
+                  <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+                    {children.map((child, index) => (
+                      <ConnectionConfigEditor
+                        className="mx-0 px-0 width-half"
+                        column={child}
+                        key={`${key}-${index}`}
+                        row={config}
+                        readonly={isSubmitting}
+                        onChange={onConfigChange}
+                      />
                     ))}
                   </Row>
                 );

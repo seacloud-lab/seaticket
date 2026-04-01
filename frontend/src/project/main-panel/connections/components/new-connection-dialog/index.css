@@ -9,10 +9,6 @@
   overflow: hidden;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-steps {
-  margin: 0 0 24px;
-}
-
 .sea-qa-project-connection-dialog .sea-qa-project-new-connection-types {
   width: 100%;
   height: fit-content;

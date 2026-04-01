@@ -41,7 +41,6 @@ import OptionEditor from './option-editor';
 import SyncOptionsEditor from './sync-option-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
-import StepsNavigation from './steps-navigation';
 import UploadFile from './upload-file';
 import ColorSelectorPopover from './color-selector-popover';
 import CustomizeTable from './customize-table';
@@ -112,7 +111,6 @@ export {
   OptionEditor, SyncOptionsEditor,
   PasswordInput,
   TextInput,
-  StepsNavigation,
   UploadFile,
   ColorSelectorPopover,
   CustomizeTable,
