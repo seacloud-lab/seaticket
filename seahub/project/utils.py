@@ -201,20 +201,6 @@ def delete_portal_sessions(session_uuids):
 def delete_project(project):
     project_uuid = str(project.uuid)
     try:
-        ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
-        TicketViews.objects.filter(project_uuid=project_uuid).delete()
-        KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
-        ProjectNotification.objects.filter(project_uuid=project_uuid).delete()
-        PortalExternalInvitation.objects.filter(project_uuid=project_uuid).delete()
-        ProjectIssuesStatistics.objects.filter(project_uuid=project_uuid).delete()
-        session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
-        delete_sessions(session_uuids)
-        portal_session_uuids = PortalChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
-        delete_portal_sessions(portal_session_uuids)
-    except Exception as e:
-        logger.error(e)
-
-    try:
         Projects.objects.delete_project(project.workspace, project.name)
         DeletedProjects(project_uuid=project_uuid).save()
     except Exception as e:
