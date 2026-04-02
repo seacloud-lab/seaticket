@@ -1,8 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import ActionItem from './action-item';
-import { gettext, siteRoot } from '@/constants';
+import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
+import { ACTION_STATUS } from './constants';
+import IconTooltip from '@/components/icon-tooltip';
+import Icon from '@/components/icon';
 
 const { workspaceID, projectName } = window.app.pageOptions;
 
@@ -24,13 +27,15 @@ const formatDateTime = (dateStr) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
-const ItemHeader = ({ item }) => {
+const RunCardHeader = ({ item }) => {
   const { source_type, source_id, source_title } = item;
 
   if (source_type === SOURCE_TYPE.TICKET) {
     return (
       <div className="ticket-header">
-        <span className="ticket-icon">📋</span>
+        <span className="ticket-icon">
+          <img src={`${mediaUrl}/img/ticket.png`} alt="Ticket" width={16} height={16} />
+        </span>
         <span className="ticket-title">
           <a
             href={`${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${source_id}/`}
@@ -38,7 +43,7 @@ const ItemHeader = ({ item }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            {gettext('Ticket')} #{source_id}: {source_title}
+            <span style={{ color: '#212529' }}>{gettext('Ticket')} #{source_id}</span> {source_title}
           </a>
         </span>
       </div>
@@ -55,7 +60,9 @@ const ItemHeader = ({ item }) => {
   if (source_type === SOURCE_TYPE.GITHUB_ISSUE) {
     return (
       <div className="ticket-header">
-        <span className="ticket-icon">🐙</span>
+        <span className="ticket-icon">
+          <img src={`${mediaUrl}/img/connection/github-issues.png`} alt="GitHub Issues" width={16} height={16} />
+        </span>
         <span className="ticket-title">
           {href ? (
             <a
@@ -64,11 +71,11 @@ const ItemHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {gettext('GitHub Issue')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('GitHub Issue')} #{source_id}</span> {source_title}
             </a>
           ) : (
             <>
-              {gettext('GitHub Issue')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('GitHub Issue')} #{source_id}</span> {source_title}
             </>
           )}
         </span>
@@ -79,7 +86,9 @@ const ItemHeader = ({ item }) => {
   if (source_type === SOURCE_TYPE.DISCOURSE_FORUM) {
     return (
       <div className="ticket-header">
-        <span className="ticket-icon">💬</span>
+        <span className="ticket-icon">
+          <img src={`${mediaUrl}/img/connection/discourse-logo.png`} alt="Discourse Forum" width={16} height={16} />
+        </span>
         <span className="ticket-title">
           {href ? (
             <a
@@ -88,11 +97,11 @@ const ItemHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {gettext('Discourse Forum')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('Discourse Forum')} #{source_id}</span> {source_title}
             </a>
           ) : (
             <>
-              {gettext('Discourse Forum')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('Discourse Forum')} #{source_id}</span> {source_title}
             </>
           )}
         </span>
@@ -103,7 +112,9 @@ const ItemHeader = ({ item }) => {
   if (source_type === SOURCE_TYPE.EMAIL) {
     return (
       <div className="ticket-header">
-        <span className="ticket-icon">✉️</span>
+        <span className="ticket-icon">
+          <img src={`${mediaUrl}/img/connection/email.png`} alt="Email" width={16} height={16} />
+        </span>
         <span className="ticket-title">
           {href ? (
             <a
@@ -112,11 +123,11 @@ const ItemHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {gettext('Email')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('Email')} #{source_id}</span> {source_title}
             </a>
           ) : (
             <>
-              {gettext('Email')} #{source_id}: {source_title}
+              <span style={{ color: '#212529' }}>{gettext('Email')} #{source_id}</span> {source_title}
             </>
           )}
         </span>
@@ -126,9 +137,11 @@ const ItemHeader = ({ item }) => {
 
   return (
     <div className="ticket-header">
-      <span className="ticket-icon">•</span>
+      <span className="ticket-icon">
+        <img src={`${mediaUrl}/img/connection/ticket.png`} alt="Ticket" width={16} height={16} />
+      </span>
       <span className="ticket-title">
-        {gettext(source_type)} #{source_id}: {source_title}
+        <span style={{ color: '#212529' }}>{gettext(source_type)} #{source_id}:</span> {source_title}
       </span>
     </div>
   );
@@ -140,26 +153,42 @@ const RunCard = ({
   onCancelAction,
   onViewContent,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { id, started_at, items = [], actions = [] } = run;
+  const hasPendingSuggestion = items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
+  const [isExpanded, setIsExpanded] = useState(hasPendingSuggestion);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
   }, []);
 
-  const { id, started_at, items = [], actions = [] } = run;
-
   return (
     <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
-      <div className="run-card-header" onClick={toggleExpand}>
+      <div className="run-card-header" >
         <div className="run-card-header-left">
-          <span className="run-status-dot"></span>
           <span className="run-time">{formatDateTime(started_at)}</span>
           <span className="run-id">{gettext('Run')} #{id}</span>
+          {!hasPendingSuggestion &&
+            <span className="run-card-resolved">
+              <Icon symbol="check-circle" className="mr-1" />
+              {gettext('Resolved')}
+            </span>
+          }
         </div>
         <div className="run-card-header-right">
-          <span className="expand-toggle">
-            [{isExpanded ? gettext('Collapse') : gettext('Expand')}]
-          </span>
+          {hasPendingSuggestion &&
+            <span className="run-card-running mr-4">
+              <Icon symbol="spinner" className="mr-1" />
+              {gettext('Running')}
+            </span>
+          }
+          <IconTooltip
+            icon="arrow-down"
+            tip={isExpanded ? gettext('Collapse') : gettext('Expand')}
+            className={classnames('sea-ticket-project-refresh-btn', { 'rotate-180': isExpanded })}
+            placement="bottom"
+            hoverBackground={true}
+            onClick={toggleExpand}
+          />
         </div>
       </div>
 
@@ -167,7 +196,7 @@ const RunCard = ({
         <div className="run-card-body">
           {items.map((item, index) => (
             <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
-              <ItemHeader item={item} />
+              <RunCardHeader item={item} />
               <div className="ticket-actions">
                 {(item.actions || []).map((action, actionIndex) => (
                   <ActionItem

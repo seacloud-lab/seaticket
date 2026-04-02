@@ -2,16 +2,19 @@ import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP } from './constants';
+import IconTooltip from '@/components/icon-tooltip';
+import { Button } from 'reactstrap';
+import Icon from '@/components/icon';
 
-const ActionItem = ({
+const ActionItem = React.memo(({
   action,
   runId,
   onConfirm,
   onCancel,
   onViewContent,
 }) => {
+  const { id, type, status, content, result, tool_name, suggestion_text } = action;
   const [isExpanded, setIsExpanded] = useState(false);
-  const { type, status, content, result, tool_name, suggestion_text } = action;
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -19,67 +22,100 @@ const ActionItem = ({
 
   const handleConfirm = useCallback((e) => {
     e.stopPropagation();
-    onConfirm && onConfirm(action.id);
-  }, [action.id, onConfirm]);
+    onConfirm && onConfirm(id);
+  }, [id, onConfirm]);
 
   const handleCancel = useCallback((e) => {
     e.stopPropagation();
-    onCancel && onCancel(action.id);
-  }, [action.id, onCancel]);
+    onCancel && onCancel(id);
+  }, [id, onCancel]);
 
   const handleViewContent = useCallback((e) => {
     e.stopPropagation();
     onViewContent && onViewContent(action, runId);
   }, [action, runId, onViewContent]);
 
-  // Don't render SUMMARY type action
-  if (type === ACTION_TYPE.SUMMARY) {
-    return null;
-  }
-
-  const renderIcon = () => {
-    switch (type) {
-      case ACTION_TYPE.ANALYSIS:
-        return <span className="action-icon">🤔</span>;
-      case ACTION_TYPE.TOOL_CALL:
-        return <span className="action-icon">🔧</span>;
-      case ACTION_TYPE.SUGGESTION: {
-        if (tool_name === 'suggest_resolution') return <span className="action-icon">💡</span>;
-        if (tool_name === 'suggest_create_ticket') return <span className="action-icon">📋</span>;
-        if (tool_name === 'suggest_modify_type') return <span className="action-icon">🏷️</span>;
-        return <span className="action-icon">💡</span>;
-      }
-      default:
-        return <span className="action-icon">•</span>;
+  const formatErrorMessage = (errorContent) => {
+    if (!errorContent || !errorContent.includes('geminiException') || !errorContent.includes('Quota exceeded')) {
+      return <div>{errorContent}</div>;
     }
+
+    try {
+      const jsonStr = errorContent.substring(errorContent.indexOf('{'), errorContent.lastIndexOf('}') + 1);
+      const errorData = JSON.parse(jsonStr)?.error;
+      if (errorData) {
+        return (
+          <ul className="error-list mb-0">
+            <li>
+              <strong>{gettext('Error code')}:</strong> {errorData.code}
+            </li>
+            <li>
+              <strong>{gettext('Error type')}:</strong> {errorData.status}
+            </li>
+            <li>
+              <strong>{gettext('Error message')}:</strong> {errorData.message.split('\n')[0]}
+            </li>
+            <li>
+              <strong>{gettext('Quota limit')}:</strong> {errorData.details?.find(d => d['@type']?.includes('QuotaFailure'))?.violations?.[0]?.quotaValue || gettext('Unknown')} tokens
+            </li>
+            <li>
+              <strong>{gettext('Model')}:</strong> {errorData.details?.find(d => d['@type']?.includes('QuotaFailure'))?.violations?.[0]?.quotaDimensions?.model || gettext('Unknown')}
+            </li>
+            <li>
+              <strong>{gettext('Retry time')}:</strong> {errorData.details?.find(d => d['@type']?.includes('RetryInfo'))?.retryDelay || gettext('Unknown')}
+            </li>
+          </ul>
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to parse error JSON:', e);
+    }
+    return <div>{errorContent}</div>;
   };
 
-  const renderStatusIcon = () => {
-    if (status === ACTION_STATUS.COMPLETED || status === ACTION_STATUS.EXECUTED) {
-      return <span className="status-icon status-completed">✅</span>;
+  // Don't render SUMMARY type action
+  if (type === ACTION_TYPE.SUMMARY) return null;
+
+  const renderIcon = () => {
+    const icons = {
+      [ACTION_TYPE.ANALYSIS]: "analysis",
+      [ACTION_TYPE.TOOL_CALL]: "tool-call",
+      [ACTION_TYPE.SUGGESTION]: "suggestion",
+      [ACTION_TYPE.ERROR]: "close"
     }
-    return null;
+    
+    return (
+      <span className="action-icon">
+        <Icon symbol={icons[type]} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
+      </span>
+    );
   };
 
   const renderContent = () => {
+    const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
+
     switch (type) {
       case ACTION_TYPE.ANALYSIS:
         return (
           <div className="action-content">
-            <span className="action-label">{gettext('Analysis')}:</span>
-            <span className="action-text">{content}</span>
+            <div className="action-label">{gettext('Analysis')}:</div>
+            <div className="action-text">{content}</div>
           </div>
         );
       case ACTION_TYPE.TOOL_CALL:
         return (
           <div className="action-content">
             <div className="tool-call-header">
-              <span className="action-label">{gettext('Tool call')}:</span>
-              <span className="tool-name">{tool_name}</span>
+              <div className="action-label">{gettext('Tool call')}:</div>
             </div>
             {result && (
-              <div className="tool-result">
-                {renderStatusIcon()}
+              <div className="tool-result tool-call ml-0">
+                {isCompletedStatus && (
+                  <span className="status-completed">
+                    <Icon symbol="check-mark" />
+                  </span>
+                )}
+                <div className="tool-name">{tool_name}:</div>
                 <span className="result-text">{content}</span>
               </div>
             )}
@@ -89,34 +125,62 @@ const ActionItem = ({
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         return (
           <div className="action-content">
-            <span className="action-label">{gettext('Suggestion')}:</span>
-            <span className="action-text">{suggestion_text}</span>
-            {status === ACTION_STATUS.PENDING && (
-              <div className="action-buttons">
+            <div className="action-label">{gettext('Suggestion')}:</div>
+            <div className="action-card">
+              <div className="action-card-header d-flex align-items-center" style={{
+                color: '#212529',
+                fontSize: '14px',
+                lineHeight: '22px',
+                fontWeight: '500'
+              }}>
+                <Icon symbol={isCompletedStatus ? 'resolution-filled' : 'suitable-issue-type'} className="mr-1" />
+                <span>{suggestion_text}</span>
                 {hasEditableContent && (
-                  <button className="action-btn view-btn" onClick={handleViewContent}>
-                    {gettext('✍️ Edit content')}
-                  </button>
+                  <IconTooltip
+                    icon="edit"
+                    tip={gettext('Edit content')}
+                    className={classnames('sea-ticket-project-refresh-btn')}
+                    placement="bottom"
+                    hoverBackground={true}
+                    onClick={handleViewContent}
+                  />
                 )}
-                <button className="action-btn confirm-btn" onClick={handleConfirm}>
-                  {gettext('👍 Approve')}
-                </button>
-                <button className="action-btn cancel-btn" onClick={handleCancel}>
-                  {gettext('❌ Discard')}
-                </button>
               </div>
-            )}
-            {(status === ACTION_STATUS.EXECUTED || status === ACTION_STATUS.COMPLETED) && (
-              <div className="tool-result">
-                {renderStatusIcon()}
-                <span className="result-text">{result}</span>
-              </div>
-            )}
+              {status === ACTION_STATUS.PENDING && (
+                <div className="action-buttons">
+                  <Button color="secondary" onClick={handleConfirm} size="sm">
+                    <Icon symbol="approve" className="mr-1" />
+                    {gettext('Approve')}
+                  </Button>
+                  <Button color="secondary" onClick={handleCancel} size="sm">
+                    <Icon symbol="close" className="mr-1" />
+                    {gettext('Discard')}
+                  </Button>
+                </div>
+              )}
+              {(isCompletedStatus) && (
+                <div className="tool-result suggestion-tool-result" style={{ background: isCompletedStatus ? '#EDF8E2' : 'transparent' }}>
+                  <span className="status-completed">
+                    <Icon symbol="check-circle" />
+                  </span>
+                  <span className="result-text">{result}</span>
+                </div>
+              )}
+            </div>
           </div>
         );
       }
+      case ACTION_TYPE.ERROR:
+        return (
+          <div className="action-content">
+            <div className="action-label">{gettext('Error')}</div>
+            <div className="action-text">
+              {formatErrorMessage(content)}
+            </div>
+          </div>
+        );
       default:
-        return <div className="action-content">{content ? content : result}</div>;
+        return <div className="action-content">{content || result}</div>;
     }
   };
 
@@ -136,6 +200,6 @@ const ActionItem = ({
       </div>
     </div>
   );
-};
+});
 
 export default ActionItem;

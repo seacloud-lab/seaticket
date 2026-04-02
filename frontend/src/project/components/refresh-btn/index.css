@@ -5,7 +5,6 @@
   flex-shrink: 0;
 }
 
-.sea-ticket-project-refresh-btn .sea-qa-icon-svg-refresh {
-  margin-top: 0px;
+.sea-ticket-project-refresh-btn>svg  {
   color: #666 !important;
 }

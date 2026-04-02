@@ -10,6 +10,7 @@ const ACTION_TYPE = {
   TOOL_CALL: 'tool_call',
   SUGGESTION: 'suggestion',
   SUMMARY: 'summary',
+  ERROR: 'error',
 };
 
 // Tool names that carry a user-editable content payload

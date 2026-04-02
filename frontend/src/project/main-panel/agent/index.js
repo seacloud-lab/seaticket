@@ -107,7 +107,7 @@ const Agent = ({ title }) => {
           <div className="agent-run-logs-header">
             <span>
               {gettext('Run Logs')}
-              {enabledAgent && <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />}
+              <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
             </span>
           </div>
           <RunLogs
