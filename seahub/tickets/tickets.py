@@ -786,6 +786,20 @@ class TicketAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
+        is_update_participants = TicketsTable.participants.name in request.data
+        participants = request.data.get(TicketsTable.participants.name) or '[]'
+        if is_update_participants and participants is not None:
+            try:
+                participants = json.loads(participants)
+            except:
+                error_msg = 'participants invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            if not isinstance(participants, list):
+                error_msg = 'participants invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            participants = list(set(participants))
+
         is_update_due_date = 'due_date' in request.data
         due_date = request.data.get('due_date')
 
@@ -876,9 +890,10 @@ class TicketAPIView(APIView):
                 update_row[TicketsTable.due_date.name] = due_date or ''
             if is_update_linked_connection_records:
                 update_row[TicketsTable.linked_connection_records.name] = new_linked_connection_records
-            participants = ticket.get('participants') or []
-            if username not in participants:
-                participants.append(username)
+            if not is_update_participants:
+                participants = ticket.get(TicketsTable.participants.name) or []
+                if username not in participants:
+                    participants.append(username)
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if ticket_state_name or ticket_state_name == '':
                 ticket_state_name = ticket_state_name.lower()

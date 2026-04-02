@@ -191,7 +191,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Participants'),
-    editable: false,
+    editable: true,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.CREATED_TIME]: {
     type: CellType.CTIME,
@@ -283,3 +283,5 @@ export const TICKET_COLUMNS_WIDTH_CONFIG = {
 export const TICKET_TYPE = 'ticket';
 
 export const TICKET_TABLE_NAME = 'tickets';
+
+export const AUTO_UPDATE_PARTICIPANTS_KEY = '__auto_update_participants';
