@@ -13,6 +13,13 @@ const ACTION_TYPE = {
   ERROR: 'error',
 };
 
+const ACTION_ICON_MAPPER = {
+  [ACTION_TYPE.ANALYSIS]: 'analysis',
+  [ACTION_TYPE.TOOL_CALL]: 'tool-call',
+  [ACTION_TYPE.SUGGESTION]: 'suggestion',
+  [ACTION_TYPE.ERROR]: 'close'
+};
+
 // Tool names that carry a user-editable content payload
 const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_notify_assignee': true,
@@ -22,4 +29,4 @@ const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_modify_type': true,
 };
 
-export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP };
+export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER };

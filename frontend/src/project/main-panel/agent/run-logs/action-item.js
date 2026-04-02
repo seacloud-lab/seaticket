@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP } from './constants';
+import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import { Button } from 'reactstrap';
 import Icon from '@/components/icon';
@@ -77,16 +77,9 @@ const ActionItem = React.memo(({
   if (type === ACTION_TYPE.SUMMARY) return null;
 
   const renderIcon = () => {
-    const icons = {
-      [ACTION_TYPE.ANALYSIS]: "analysis",
-      [ACTION_TYPE.TOOL_CALL]: "tool-call",
-      [ACTION_TYPE.SUGGESTION]: "suggestion",
-      [ACTION_TYPE.ERROR]: "close"
-    }
-    
     return (
       <span className="action-icon">
-        <Icon symbol={icons[type]} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
+        <Icon symbol={ACTION_ICON_MAPPER[type]} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
       </span>
     );
   };
