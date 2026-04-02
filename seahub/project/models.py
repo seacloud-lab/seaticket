@@ -527,7 +527,7 @@ class ProjectConnections(models.Model):
     """ Project connections table
     """
 
-    project = models.ForeignKey(Projects, on_delete=models.CASCADE, to_field="uuid", db_column="project_uuid")
+    project = models.ForeignKey(Projects, on_delete=models.DO_NOTHING, to_field="uuid", db_column="project_uuid")
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     config = models.TextField()
