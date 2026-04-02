@@ -15,8 +15,9 @@ const SendTo = ({
   const [focus, setFocus] = useState(false);
   const [email, setEmail] = useState('');
 
-  const handleRemove = useCallback(() => {
-
+  const handleRemove = useCallback((email) => {
+    const newValue = value.filter(item => item !== email);
+    onChange(newValue);
   }, [value, onChange]);
 
   const onEmailChange = useCallback((event) => {

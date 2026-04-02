@@ -3,7 +3,7 @@ import dayjs from '@/utils/dayjs';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
 import DateFormatter from '../../cell-formatter/date-formatter';
-import { getInfoByEmailFrom } from '../../../utils';
+import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../utils';
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 import { connectionsAPI } from '@/project/api';
@@ -104,15 +104,6 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   }, [projectUuid, connection_id, recordId]);
 
   const renderReply = useCallback(() => {
-    let initValue = '<div></div><div></div><div></div>';
-
-    let quotedContent = HTMLContent ? '' : `<pre style="font-family: Helvetica,Arial,sans-serif;">${content}</pre>`;
-    if (HTMLContent) {
-      const parsed = new DOMParser().parseFromString(HTMLContent.substring(3, HTMLContent.length - 3), 'text/html');
-      const HTMLContentBody = parsed.body;
-      quotedContent = HTMLContentBody.outerHTML;
-    }
-
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
     let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
     tip = tip.replace('{day}', sendTime.format('ddd'))
@@ -120,10 +111,24 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       .replace('{time}', sendTime.format('LT'))
       .replace('{email_from}', sender);
 
-    initValue += '<div style="outline: 0;">';
-    initValue += `<div>${tip}</div>`;
-    initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 1px solid #ccc; padding-left: 1ex;">${quotedContent}</blockquote>`;
-    initValue += '</div>';
+    let initValue = '';
+    if (isHTMLContent) {
+      initValue = '<div></div><div></div><div></div>';
+      const parsed = new DOMParser().parseFromString(detailContent, 'text/html');
+      let HTMLContentBody = parsed.body;
+      const quotedContent = HTMLContentBody.outerHTML;
+      initValue += '<div style="outline: 0;">';
+      initValue += `<div>${tip}</div>`;
+      initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 2px solid rgba(0, 40, 100, .12); padding-left: 1ex;">${quotedContent}</blockquote>`;
+      initValue += '</div>';
+    } else {
+      initValue = '\n\n\n';
+      initValue += `${tip}\n`;
+      initValue += `> ${detailContent.replace(/\n/g, '\n> ')}`;
+    }
+
+    let assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, connection_id);
+    assetURLPrefix = `${assetURLPrefix}${detail._pk}/`;
 
     return (
       <ReplyEmail
@@ -131,9 +136,11 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
         initValue={initValue}
         onToggle={() => setIsShowReply(false)}
         onSubmit={onSubmit}
+        isHtmlValue={isHTMLContent}
+        assetURLPrefix={assetURLPrefix}
       />
     );
-  }, [detail, HTMLContent, content, sender, onSubmit]);
+  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
 
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
