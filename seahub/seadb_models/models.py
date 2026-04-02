@@ -405,6 +405,7 @@ class TicketsTable(BaseModel):
     closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
+    last_agent_processed_at = MappedColumn('last_agent_processed_at', PropertyTypes.DATETIME)
 
     @classmethod
     def gen_table_name(cls):
