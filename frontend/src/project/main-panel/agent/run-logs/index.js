@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button, ModalFooter } from 'reactstrap';
 import RunCard from './run-card';
-import { CenteredLoading } from '@/components';
+import { CenteredLoading, EmptyTip } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -14,6 +14,7 @@ const RunLogs = ({
   onConfirmAction,
   onCancelAction,
   onUpdateContent,
+  enabledAgent,
 }) => {
   const [viewContentModal, setViewContentModal] = useState(null);
   const [editContent, setEditContent] = useState('');
@@ -54,7 +55,10 @@ const RunLogs = ({
   if (!isLoading && runLogs.length === 0) {
     return (
       <div className="agent-run-logs-empty">
-        <p>{gettext('No agent runs yet')}</p>
+        <EmptyTip
+          title={gettext('No agent runs')}
+          text={!enabledAgent && gettext('Enable the agent in settings to start')}
+        />
       </div>
     );
   }

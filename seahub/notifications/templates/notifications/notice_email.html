@@ -22,12 +22,12 @@ You've got {{num}} new notices on {{ site_name }}:
     {% for notice in notices %}
     <tr>
         <td style="padding:8px 3px 5px; border-bottom: 1px solid #eee; text-align:center; vertical-align:top;"><img src="{{notice.avatar_src}}" width="32" height="32" alt="" style="border-radius:1000px;" /></td>
-        <td style="padding: 5px 3px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; word-wrap: break-word;">
+        <td style="padding: 5px 3px; border-bottom: 1px solid #eee; font-size: 13px; color: #212529; word-wrap: break-word;">
             {% autoescape off %}
             <p style="line-height:1.5; margin:.2em 10px .2em 0;">{{ notice.msg }}</p>
             {% endautoescape %}
         </td>
-        <td style="padding: 5px 3px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; word-wrap: break-word;">{{ notice.timestamp|date:"Y-m-d G:i:s"}}</td>
+        <td style="padding: 5px 3px; border-bottom: 1px solid #eee; font-size: 13px; color: #212529; word-wrap: break-word;">{{ notice.timestamp|date:"Y-m-d G:i:s"}}</td>
     </tr>
     {% endfor %}
 </table>

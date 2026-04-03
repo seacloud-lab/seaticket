@@ -2,7 +2,8 @@ import React, { useCallback } from 'react';
 import TopBar from '../top-bar';
 import RunLogs from './run-logs';
 import RefreshBtn from '@/project/components/refresh-btn';
-import { useAgentSettings, useAgentRunLogs } from './hooks';
+import { useAgentSettings } from './hooks/useAgentSettings';
+import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI } from '@/project/api';
 import { CenteredLoading } from '@/components';
 import toaster from '@/components/toaster';
@@ -13,7 +14,8 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const Agent = ({ title }) => {
-  const { isLoading: isSettingsLoading } = useAgentSettings();
+  const { isLoading: isSettingsLoading, settings } = useAgentSettings();
+  const enabledAgent = settings.agent.enabled;
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -116,6 +118,7 @@ const Agent = ({ title }) => {
             onConfirmAction={handleConfirmAction}
             onCancelAction={handleCancelAction}
             onUpdateContent={handleUpdateContent}
+            enabledAgent={enabledAgent}
           />
         </div>
       </div>
