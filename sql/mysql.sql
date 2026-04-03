@@ -422,6 +422,7 @@ CREATE TABLE `projects`  (
   `ticket_indexed_at` datetime(6) NULL,
   `ticket_ai_indexed_at` datetime(6) NULL,
   `last_ticket_active_time` datetime(6) NULL,
+  `last_agent_scanned_at` datetime(6) NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid`(`uuid`),
   UNIQUE KEY `projects_workspace_id_name_0b89d91b_uniq`(`workspace_id`, `name`),
