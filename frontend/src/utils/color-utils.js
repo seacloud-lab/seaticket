@@ -1,4 +1,3 @@
-
 export const isHexColor = (color = '') => {
   if (!color) return false;
   const reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
