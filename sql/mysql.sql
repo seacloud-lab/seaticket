@@ -461,7 +461,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   KEY `project_connection_deleted_5n3d6`(`deleted`),
   KEY `project_connection_is_active` (`is_active`),
-  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `project_connection_project_uuid` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `ticket_views`  (

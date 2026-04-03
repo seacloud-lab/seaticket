@@ -426,7 +426,7 @@ class ProjectConnectionsManager(models.Manager):
         except ProjectConnections.DoesNotExist:
             return None
 
-    def create(self, username, project, connection_type, name, config):
+    def create(self, username, project_uuid, connection_type, name, config):
         """ create record
         """
         status = {
@@ -441,17 +441,17 @@ class ProjectConnectionsManager(models.Manager):
             'last_ai_processing_status': 'pending',
         }
 
-        record = self.model(project=project, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status), ai_status=json.dumps(ai_status))
+        record = self.model(project_uuid=project_uuid, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status), ai_status=json.dumps(ai_status))
         record.save()
         return record
 
-    def modify(self, username, project, connection_type, connection_id, name, config, is_active):
+    def modify(self, username, project_uuid, connection_type, connection_id, name, config, is_active):
         """ modify record: if not record, create it
         """
 
-        record = self.filter(project=project, id=connection_id).first()
+        record = self.filter(project_uuid=project_uuid, id=connection_id).first()
         if not record:
-            record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username)
+            record = self.model(project_uuid=project_uuid, type=connection_type, name=name, config=config, modifier=username)
         else:
             if is_active is not None:
                 record.is_active = is_active
@@ -462,11 +462,11 @@ class ProjectConnectionsManager(models.Manager):
         record.save()
         return record
 
-    def get_records(self, project, connection_type):
+    def get_records(self, project_uuid, connection_type):
         """ get records by project and connection_type
         """
 
-        records = self.filter(project=project, type=connection_type)
+        records = self.filter(project_uuid=project_uuid, type=connection_type)
         return records
 
     def is_valid(self, connection_type, records, config):
@@ -492,14 +492,14 @@ class ProjectConnectionsManager(models.Manager):
 
         return flag
 
-    def enable_create(self, project, connection_type, config):
+    def enable_create(self, project_uuid, connection_type, config):
         """ check enable create
         """
 
-        if not project or not connection_type:
+        if not project_uuid or not connection_type:
             return False
 
-        records = self.filter(project=project, type=connection_type)
+        records = self.filter(project_uuid=project_uuid, type=connection_type)
         return self.is_valid(connection_type, records, config)
 
     def enable_modify(self, connection_type, connection_id, config):
@@ -527,7 +527,7 @@ class ProjectConnections(models.Model):
     """ Project connections table
     """
 
-    project = models.ForeignKey(Projects, on_delete=models.DO_NOTHING, to_field="uuid", db_column="project_uuid")
+    project_uuid = models.UUIDField(db_index=True)
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     config = models.TextField()

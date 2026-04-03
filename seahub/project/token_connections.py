@@ -58,7 +58,7 @@ class ProjectConnectionListByTokenView(APIView):
         end = start + per_page
 
         connections_qs = ProjectConnections.objects.filter(
-            project=project,
+            project_uuid=project.uuid,
             deleted=False
         )[start:end]
 
@@ -114,7 +114,7 @@ class ProjectConnectionDetailByTokenView(APIView):
 
         try:
             connection = ProjectConnections.objects.filter(
-                project=project,
+                project_uuid=project.uuid,
                 name=name,
                 type=connection_type,
                 deleted=False,
@@ -177,7 +177,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
 
         try:
             connection = ProjectConnections.objects.filter(
-                project=project,
+                project_uuid=project.uuid,
                 name=name,
                 type=connection_type,
                 deleted=False,

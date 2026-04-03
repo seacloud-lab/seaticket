@@ -79,7 +79,7 @@ def no_org_user():
 def site_connection(real_project, project_creator):
     return ProjectConnections.objects.create(
         username=project_creator.username,
-        project=real_project,
+        project_uuid=real_project.uuid,
         connection_type='site',
         name='site-conn',
         config={},
@@ -90,7 +90,7 @@ def site_connection(real_project, project_creator):
 def github_issue_connection(real_project, project_creator):
     return ProjectConnections.objects.create(
         username=project_creator.username,
-        project=real_project,
+        project_uuid=real_project.uuid,
         connection_type='github_issue',
         name='gh-conn',
         config={'repository': 'https://github.com/abc/def'},

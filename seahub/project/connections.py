@@ -80,7 +80,7 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        records = ProjectConnections.objects.filter(project=project, deleted=False)[start:end]
+        records = ProjectConnections.objects.filter(project_uuid=project_uuid, deleted=False)[start:end]
         records = [record.to_dict() for record in records]
 
         return Response({'records': records}, status=status.HTTP_200_OK)
@@ -124,13 +124,13 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         config = json.loads(config)
-        enable_create = ProjectConnections.objects.enable_create(project, connection_type, config)
+        enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
         if not enable_create:
             error_msg = 'Name or config is not unique'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            record = ProjectConnections.objects.create(request.user.username, project, connection_type, name, config)
+            record = ProjectConnections.objects.create(request.user.username, project_uuid, connection_type, name, config)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -327,7 +327,7 @@ class ProjectConnectionView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name,
+            record = ProjectConnections.objects.modify(username, project_uuid, project_connection.type, connection_id, name,
                                                        new_config, is_active)
         except Exception as e:
             logger.error(f'modify {connection_id} error: {e}')
@@ -359,7 +359,7 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            ProjectConnections.objects.filter(project=project, id=connection_id).update(deleted=True)
+            ProjectConnections.objects.filter(project_uuid=project_uuid, id=connection_id).update(deleted=True)
         except Exception as e:
             logger.error(f'delete {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
@@ -768,7 +768,7 @@ class ProjectConnectionsStatusView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         connection_ids = connection_ids.split(',')
-        records = ProjectConnections.objects.filter(project=project, deleted=False, id__in=connection_ids)
+        records = ProjectConnections.objects.filter(project_uuid=project_uuid, deleted=False, id__in=connection_ids)
         connections_status = {}
         for record in records:
             connections_status[record.id] = {
