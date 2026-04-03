@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import ActionItem from './action-item';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
-import { ACTION_STATUS } from './constants';
+import { ACTION_STATUS, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
 
