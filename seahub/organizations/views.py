@@ -343,4 +343,5 @@ def react_fake_view(request, **kwargs):
         'enable_org_logo': enable_org_logo,
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,
+        'enable_external_billing_service': settings.ENABLE_EXTERNAL_BILLING_SERVICE,
         })

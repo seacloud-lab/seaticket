@@ -1,4 +1,4 @@
-import { gettext, siteRoot, enableMultiSAML, canUseSAML } from '@/constants';
+import { gettext, siteRoot, enableMultiSAML, canUseSAML, enableExternalBillingService } from '@/constants';
 
 export const BAR_TYPE = {
   MANAGE: 'manage',
@@ -8,6 +8,7 @@ export const BAR_TYPE = {
   USERS: 'users',
   GROUPS: 'groups',
   SAML: 'saml-config',
+  BILLING: 'billing',
 };
 
 export const BAR_CONFIG = {
@@ -60,6 +61,14 @@ export const BAR_CONFIG = {
     link: `${siteRoot}org/${BAR_TYPE.SAML}/`,
     isActive: (bar) => bar === BAR_TYPE.SAML,
   },
+  [BAR_TYPE.BILLING]: {
+    icon: 'currency',
+    name: gettext('Billing'),
+    value: BAR_TYPE.BILLING,
+    href: `${siteRoot}billing/`,
+    isExternal: true,
+    isActive: () => false,
+  },
 };
 
 export const BARS = [
@@ -70,4 +79,5 @@ export const BARS = [
   BAR_CONFIG[BAR_TYPE.USERS],
   BAR_CONFIG[BAR_TYPE.GROUPS],
   enableMultiSAML && canUseSAML ? BAR_CONFIG[BAR_TYPE.SAML] : null,
+  enableExternalBillingService ? BAR_CONFIG[BAR_TYPE.BILLING] : null,
 ];

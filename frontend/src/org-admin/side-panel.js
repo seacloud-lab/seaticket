@@ -28,17 +28,30 @@ const SidePanel = ({
             <span className="side-nav-title">{gettext('Admin')}</span>
             <ul className="nav nav-pills flex-column nav-container mt-3">
               {BARS.filter(bar => bar).map(bar => {
-                const { icon, name, value, link, isActive } = bar;
+                const { icon, name, value, link, href, isExternal, isActive } = bar;
+                const active = isActive ? isActive(currentTab) : false;
                 return (
-                  <li className={classnames('nav-item', { 'active': isActive ? isActive(currentTab) : '' })} key={value}>
-                    <Link
-                      className={classnames('nav-link ellipsis', { 'active': isActive ? isActive(currentTab) : '' })}
-                      to={link}
-                      onClick={() => onClick(value)}
-                    >
-                      <Icon symbol={icon} />
-                      <span className="nav-text">{name}</span>
-                    </Link>
+                  <li className={classnames('nav-item', { 'active': active })} key={value}>
+                    {isExternal ? (
+                      <a
+                        className={classnames('nav-link ellipsis', { 'active': active })}
+                        href={href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Icon symbol={icon} />
+                        <span className="nav-text">{name}</span>
+                      </a>
+                    ) : (
+                      <Link
+                        className={classnames('nav-link ellipsis', { 'active': active })}
+                        to={link}
+                        onClick={() => onClick(value)}
+                      >
+                        <Icon symbol={icon} />
+                        <span className="nav-text">{name}</span>
+                      </Link>
+                    )}
                   </li>
                 );
               })}
