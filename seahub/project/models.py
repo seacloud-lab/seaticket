@@ -291,6 +291,8 @@ class Projects(models.Model):
     knowledge_base_ai_indexed_at = models.DateTimeField(null=True)
     ticket_indexed_at = models.DateTimeField(null=True)
     ticket_ai_indexed_at = models.DateTimeField(null=True)
+    last_ticket_active_time = models.DateTimeField(null=True)
+    last_agent_scanned_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 

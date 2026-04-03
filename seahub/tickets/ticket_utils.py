@@ -12,7 +12,7 @@ from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
 from seahub.seadb_models.utils import list_connection_record_titles
-from seahub.project.models import ProjectConnections
+from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
 
@@ -513,6 +513,10 @@ def send_ticket_update_msg(project_uuid, added=0, deleted=0, updated=0):
             logger.debug('Publish ticket_update event: %s' % msg_content)
         else:
             logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
+
+        Projects.objects.filter(uuid=normalized_project_uuid).update(
+            last_ticket_active_time=datetime.now(timezone.utc).isoformat()
+        )
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
 
