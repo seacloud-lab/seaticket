@@ -16,7 +16,7 @@ from .ai import ConvertRecordToTicket, ConvertTicketToKnowledgeBaseRecord, Embed
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
-from .search import SearchTicketsAndDocumentsView
+from .search import SearchTicketsView, SearchTicketsAndDocumentsView
 from .tags import TagsAPIView, TagAPIView
 from .agent import (
     AgentRunsView, AgentRunDetailView,
@@ -84,7 +84,8 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v1-connection-view-duplicate'),
 
     # search
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets-and-documents/$', SearchTicketsAndDocumentsView.as_view(), name='api-v1-search-ticket-and-documents'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets/$', SearchTicketsView.as_view(), name='api-v1-search-tickets'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets-and-documents/$', SearchTicketsAndDocumentsView.as_view(), name='api-v1-search-tickets-and-documents'),
 
     re_path(r'^api/v1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v1-ai-create-ticket'),
     re_path(r'^api/v1/ai/convert-ticket-to-knowledge-base/$', ConvertTicketToKnowledgeBaseRecord.as_view(), name='api-v1-ai-convert-ticket-to-kb-record'),

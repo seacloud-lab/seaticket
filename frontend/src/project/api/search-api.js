@@ -91,6 +91,14 @@ class SearchAPI {
     return this.req.get(url, { params: params, signal: signal });
   }
 
+  searchTickets(projectUuid, query = '', signal) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/search-tickets/';
+    const params = {
+      query,
+    };
+    return this.req.get(url, { params: params, signal: signal });
+  }
+
 }
 
 const searchAPI = new SearchAPI();

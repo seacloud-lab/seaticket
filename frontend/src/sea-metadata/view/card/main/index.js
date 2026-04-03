@@ -177,6 +177,7 @@ const Main = ({
           {rows.slice(startRenderIndex, endRenderIndex).map((row, index) => {
             return (
               <Row
+                key={row._id}
                 row={row}
                 columns={columns}
                 isSelected={selectedRowIds.includes(row._id)}
