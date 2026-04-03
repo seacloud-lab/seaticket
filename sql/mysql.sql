@@ -429,7 +429,7 @@ CREATE TABLE `projects`  (
   KEY `projects_deleted_n3b4o5b2_key`(`deleted`),
   KEY `projects_created_at_e6716f4b`(`created_at`),
   KEY `updated_at_h3g4o9u6_key`(`updated_at`),
-  KEY `idx_projects_deleted_last_active`(`deleted`, `last_ticket_active_time`),
+  KEY `idx_projects_last_active`(`last_ticket_active_time`),
   CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
