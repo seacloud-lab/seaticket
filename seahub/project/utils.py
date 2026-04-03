@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
-from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalExternalInvitation
 from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
@@ -201,27 +201,7 @@ def delete_portal_sessions(session_uuids):
 def delete_project(project):
     project_uuid = str(project.uuid)
     try:
-        ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
-        TicketViews.objects.filter(project_uuid=project_uuid).delete()
-        KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
-        ProjectNotification.objects.filter(project_uuid=project_uuid).delete()
-        session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
-        delete_sessions(session_uuids)
-        portal_session_uuids = PortalChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
-        delete_portal_sessions(portal_session_uuids)
-        seadb_api = SeaDBAPI()
-        seadb_api.delete_base(project_uuid)
-    except Exception as e:
-        logger.error(e)
-
-    try:
-        delete_project_dir_from_s3(project_uuid)
-    except Exception as e:
-        logger.error(e)
-
-    try:
         Projects.objects.delete_project(project.workspace, project.name)
-        ProjectIssuesStatistics.objects.filter(project_uuid=project_uuid).delete()
         DeletedProjects(project_uuid=project_uuid).save()
     except Exception as e:
         logger.error('delete project: %s error: %s', str(project_uuid), e)

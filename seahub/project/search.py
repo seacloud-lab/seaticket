@@ -65,7 +65,7 @@ class SearchTicketsAndDocumentsView(APIView):
 
             # documents, e.g., kb, site, seafile
             ## get useful connections
-            documents_connections = ProjectConnections.objects.filter(project=project, type__in=[ConnectionType.SITE.value, ConnectionType.SEAFILE.value], deleted=False, is_active=True).values_list('id', 'type')
+            documents_connections = ProjectConnections.objects.filter(project_uuid=project.uuid, type__in=[ConnectionType.SITE.value, ConnectionType.SEAFILE.value], deleted=False, is_active=True).values_list('id', 'type')
             documents_connection_id_type_map = {
                 connection[0]: connection[1]
                 for connection in documents_connections

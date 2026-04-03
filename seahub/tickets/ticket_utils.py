@@ -695,7 +695,7 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
 
     for conn_id in all_conn_ids:
         connection = connection_id_map.get(conn_id)
-        if not connection or str(getattr(connection.project, 'uuid', '')) != str(project_uuid):
+        if not connection or str(connection.project_uuid) != str(project_uuid):
             raise TicketLinkValidationError('Connection not found.')
 
     # Check if the connection records exist and are occupied

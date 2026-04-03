@@ -126,7 +126,7 @@ def chat_messages_with_thought_process(chat_session):
 def site_connection(real_project, project_creator):
     return ProjectConnections.objects.create(
         username=project_creator.username,
-        project=real_project,
+        project_uuid=real_project.uuid,
         connection_type='site',
         name='site-conn',
         config={},

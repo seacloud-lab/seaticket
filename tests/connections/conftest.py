@@ -80,7 +80,7 @@ def no_org_user():
 def site_connection(real_project, project_creator):
     return ProjectConnections.objects.create(
         username=project_creator.username,
-        project=real_project,
+        project_uuid=real_project.uuid,
         connection_type='site',
         name='site-conn',
         config={},
@@ -94,7 +94,7 @@ def connection_factory(real_project, project_creator):
             config = {}
         conn = ProjectConnections.objects.create(
             username=project_creator.username,
-            project=real_project,
+            project_uuid=real_project.uuid,
             connection_type=connection_type,
             name=name,
             config=config,
