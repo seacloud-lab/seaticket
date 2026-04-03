@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import ActionItem from './action-item';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
-import { ACTION_STATUS } from './constants';
+import { ACTION_STATUS, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
 
@@ -175,7 +175,7 @@ const RunCard = ({
           }
         </div>
         <div className="run-card-header-right">
-          {hasPendingSuggestion &&
+          {run.status === RUN_STATUS.RUNNING &&
             <span className="run-card-running mr-4">
               <Icon symbol="spinner" className="mr-1" />
               {gettext('Running')}

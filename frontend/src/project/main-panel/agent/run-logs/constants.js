@@ -1,3 +1,8 @@
+const RUN_STATUS = {
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+};
+
 const ACTION_STATUS = {
   PENDING: 'pending',
   COMPLETED: 'completed',
@@ -29,4 +34,4 @@ const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_modify_type': true,
 };
 
-export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER };
+export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER, RUN_STATUS };
