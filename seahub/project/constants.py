@@ -15,6 +15,7 @@ TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX =  'TICKET_DEFAULT_SUBSTATE_'
 
 IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
+GITHUB_ISSUE_ACTIVITY_TYPES = {'github_issue_added', 'github_issue_updated', 'github_issue_closed', 'github_issue_reopened', 'github_issue_comment_added'}
 
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60

@@ -26,7 +26,8 @@ from seahub.project.utils import check_project_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
-from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
+from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
+    GITHUB_ISSUE_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
@@ -1526,14 +1527,6 @@ class TicketActivitiesAPIView(APIView):
         except Exception as e:
             logger.error('Failed to get ticket activities: %s', e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        GITHUB_ISSUE_ACTIVITY_TYPES = frozenset({
-            'github_issue_added',
-            'github_issue_updated',
-            'github_issue_closed',
-            'github_issue_reopened',
-            'github_issue_comment_added',
-        })
 
         activities_list = []
         for a in activities:
