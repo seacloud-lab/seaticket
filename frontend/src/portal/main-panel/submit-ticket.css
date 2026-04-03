@@ -11,9 +11,6 @@
   height: fit-content;
   padding: 0px 50px;
   margin: 60px 0px;
-  background-color: var(--bs-body-bg);
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex: none;
   overflow: hidden;
@@ -28,25 +25,6 @@
 .sea-qa-portal-new-ticket .sea-qa-portal-ticket-settings {
   padding-top: 0px;
   flex: 1;
-}
-
-.sea-qa-portal-new-ticket .sea-qa-portal-ticket-name {
-  position: relative;
-  height: 104px;
-  font-size: 24px;
-  margin-bottom: 30px;
-  font-weight: 600;
-  width: 100%;
-}
-
-.sea-qa-portal-new-ticket .sea-qa-portal-ticket-name:after {
-  content: "";
-  position: absolute;
-  left: -50px;
-  right: -50px;
-  bottom: 0;
-  height: 1px;
-  background: var(--bs-border-secondary-color);
 }
 
 .sea-qa-portal-new-ticket .sea-qa-portal-ticket-content-settings {

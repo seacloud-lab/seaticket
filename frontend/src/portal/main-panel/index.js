@@ -1,5 +1,4 @@
 import React from 'react';
-import { gettext } from '@/constants';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
 import SubmitTicket from './submit-ticket';
 import MyTickets from './my-tickets';
@@ -12,17 +11,6 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
 
   const { isLoading: isMetadataLoading, typesData } = useMetadata();
   const { isLoading: isTagsDataLoading } = useTags();
-
-  const getTitle = () => {
-    switch (activePage) {
-      case PORTAL_PAGE.SUBMIT_TICKET:
-        return gettext('Submit ticket');
-      case PORTAL_PAGE.MY_TICKETS:
-        return gettext('My tickets');
-      default:
-        return '';
-    }
-  };
 
   const renderContent = () => {
     const isLoading = isMetadataLoading || isTagsDataLoading;
@@ -50,7 +38,6 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
         return null;
     }
   };
-  const isChat = activePage === PORTAL_PAGE.CHAT;
   const isTicketsPage = activePage === PORTAL_PAGE.SUBMIT_TICKET || activePage === PORTAL_PAGE.MY_TICKETS;
   const activePrimaryTab = isTicketsPage ? TICKETS_TAB : activePage;
 
@@ -64,11 +51,6 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
             value={activePage}
             onChange={onPageChange}
           />
-        </div>
-      )}
-      {activePage !== PORTAL_PAGE.KNOWLEDGE_BASE && !isChat && (
-        <div className="sea-qa-portal-top-bar">
-          {getTitle()}
         </div>
       )}
       <div className="sea-qa-portal-content">

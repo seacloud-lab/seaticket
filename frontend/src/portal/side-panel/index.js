@@ -1,5 +1,4 @@
 import React from 'react';
-import classnames from 'classnames';
 import { gettext, siteRoot } from '@/constants';
 import { CustomizeTabs, Icon } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
@@ -45,7 +44,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
         <div className="sea-qa-portal-side-panel-actions">
           {!isEditMode && isAnonymous && (
             <div
-              className={classnames('sea-qa-portal-nav-item', 'sea-qa-portal-action-item')}
+              className="sea-qa-portal-nav-item"
               onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
               title={gettext('Log in')}
             >
@@ -55,7 +54,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
           )}
           {!isEditMode && isExternalUser && !!username && (
             <div
-              className={classnames('sea-qa-portal-nav-item', 'sea-qa-portal-action-item')}
+              className="sea-qa-portal-nav-item"
               onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
               title={gettext('Log out')}
             >
