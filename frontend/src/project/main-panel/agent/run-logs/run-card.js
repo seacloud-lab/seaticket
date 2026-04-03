@@ -1,36 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
+import dayjs from 'dayjs';
 import ActionItem from './action-item';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { ACTION_STATUS, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 
 const { workspaceID, projectName } = window.app.pageOptions;
-
-const SOURCE_TYPE = {
-  TICKET: 'ticket',
-  GITHUB_ISSUE: 'github_issue',
-  DISCOURSE_FORUM: 'discourse_forum',
-  EMAIL: 'email',
-};
-
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
 
 const RunCardHeader = ({ item }) => {
   const { source_type, source_id, source_title } = item;
 
-  if (source_type === SOURCE_TYPE.TICKET) {
+  if (source_type === TICKET_TYPE) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">
@@ -43,7 +28,8 @@ const RunCardHeader = ({ item }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span style={{ color: '#212529' }}>{gettext('Ticket')} #{source_id}</span> {source_title}
+            <span>{gettext('Ticket')} #{source_id}</span>
+            <span className="sea-qa-text-orange"> {source_title}</span>
           </a>
         </span>
       </div>
@@ -57,7 +43,7 @@ const RunCardHeader = ({ item }) => {
     ? `${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}/${connectionId}/records/${recordId}/`
     : '';
 
-  if (source_type === SOURCE_TYPE.GITHUB_ISSUE) {
+  if (source_type === CONNECTION_TYPE.GITHUB_ISSUE) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">
@@ -71,11 +57,13 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span style={{ color: '#212529' }}>{gettext('GitHub Issue')} #{source_id}</span> {source_title}
+              <span>{gettext('GitHub Issue')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span style={{ color: '#212529' }}>{gettext('GitHub Issue')} #{source_id}</span> {source_title}
+              <span>{gettext('GitHub Issue')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
         </span>
@@ -83,7 +71,7 @@ const RunCardHeader = ({ item }) => {
     );
   }
 
-  if (source_type === SOURCE_TYPE.DISCOURSE_FORUM) {
+  if (source_type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">
@@ -97,11 +85,13 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span style={{ color: '#212529' }}>{gettext('Discourse Forum')} #{source_id}</span> {source_title}
+              <span>{gettext('Discourse Forum')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span style={{ color: '#212529' }}>{gettext('Discourse Forum')} #{source_id}</span> {source_title}
+              <span>{gettext('Discourse Forum')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
         </span>
@@ -109,7 +99,7 @@ const RunCardHeader = ({ item }) => {
     );
   }
 
-  if (source_type === SOURCE_TYPE.EMAIL) {
+  if (source_type === CONNECTION_TYPE.EMAIL) {
     return (
       <div className="ticket-header">
         <span className="ticket-icon">
@@ -123,11 +113,13 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span style={{ color: '#212529' }}>{gettext('Email')} #{source_id}</span> {source_title}
+              <span>{gettext('Email')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span style={{ color: '#212529' }}>{gettext('Email')} #{source_id}</span> {source_title}
+              <span>{gettext('Email')} #{source_id}</span>
+              <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
         </span>
@@ -141,7 +133,8 @@ const RunCardHeader = ({ item }) => {
         <img src={`${mediaUrl}/img/connection/ticket.png`} alt="Ticket" width={16} height={16} />
       </span>
       <span className="ticket-title">
-        <span style={{ color: '#212529' }}>{gettext(source_type)} #{source_id}:</span> {source_title}
+        <span>{gettext(source_type)} #{source_id}:</span>
+        <span className="sea-qa-text-orange"> {source_title}</span>
       </span>
     </div>
   );
@@ -165,7 +158,7 @@ const RunCard = ({
     <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
       <div className="run-card-header" >
         <div className="run-card-header-left">
-          <span className="run-time">{formatDateTime(started_at)}</span>
+          <span className="run-time">{dayjs(started_at).format('YYYY-MM-DD HH:mm')}</span>
           <span className="run-id">{gettext('Run')} #{id}</span>
           {!hasPendingSuggestion &&
             <span className="run-card-resolved">

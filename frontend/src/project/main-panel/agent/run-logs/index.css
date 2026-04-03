@@ -63,7 +63,6 @@
   line-height: 22px;
   letter-spacing: 0%;
   font-weight: 500;
-  font-style: Medium;
   color: #666;
 }
 
@@ -92,7 +91,6 @@
   color: #5EBA00;
   font-size: 12px;
   font-weight: 500;
-  font-style: Medium;
   line-height: 12px;
   letter-spacing: 0%;
   display: flex;
@@ -145,9 +143,11 @@
 }
 
 .ticket-title {
-  font-size: 14px;
-  color: #212529;
   font-weight: 500;
+}
+
+.ticket-title a {
+  color: #212529;
 }
 
 /* Ticket actions tree */
@@ -194,7 +194,6 @@
   line-height: 22px;
   letter-spacing: 0%;
   font-weight: 500;
-  font-style: Medium;
   color: #212925;
   margin-bottom: 12px;
 }
@@ -288,7 +287,6 @@
   line-height: 20px;
   letter-spacing: 0%;
   font-weight: 400;
-  font-style: Regular;
   color: #212529;
 }
 

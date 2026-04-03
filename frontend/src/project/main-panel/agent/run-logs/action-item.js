@@ -120,12 +120,7 @@ const ActionItem = React.memo(({
           <div className="action-content">
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
-              <div className="action-card-header d-flex align-items-center" style={{
-                color: '#212529',
-                fontSize: '14px',
-                lineHeight: '22px',
-                fontWeight: '500'
-              }}>
+              <div className="action-card-header d-flex align-items-center">
                 <Icon symbol={isCompletedStatus ? 'resolution-filled' : 'suitable-issue-type'} className="mr-1" />
                 <span>{suggestion_text}</span>
                 {hasEditableContent && (
