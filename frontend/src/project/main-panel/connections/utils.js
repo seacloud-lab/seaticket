@@ -67,6 +67,17 @@ const getNotionOriginalPageUrl = (row, columns) => {
   return `https://www.notion.so/${normalizedPageId}`;
 };
 
+const getLinearOriginalPageUrl = (connection, row, columns) => {
+  const identifierColumn = getColumnByName(columns, 'identifier');
+  const workspaceName = connection?.config?.workspace_name;
+  const titleColumn = getColumnByName(columns, 'title');
+  const issueTitle = getCellValueByColumn(row, titleColumn);
+  const identifier = getCellValueByColumn(row, identifierColumn);
+  if (!issueTitle || !identifier || !workspaceName) return '';
+  const slug = encodeURIComponent(String(issueTitle).trim().replace(/\s+/g, '-'));
+  return `https://linear.app/${workspaceName}/issue/${identifier}/${slug}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -88,6 +99,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.NOTION: {
       return getNotionOriginalPageUrl(row, columns);
+    }
+    case CONNECTION_TYPE.LINEAR: {
+      return getLinearOriginalPageUrl(connection, row, columns);
     }
     default: {
       return '';
@@ -115,6 +129,23 @@ export const initConnectionResourceDetails = (type, record) => {
     };
     const initComments = Array.isArray(comments) ? comments : [];
     return [mainPost, ...initComments];
+  }
+  if (type === CONNECTION_TYPE.LINEAR) {
+    const mainPost = {
+      author: author,
+      time: created_time,
+      body: content || '',
+    };
+    const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
+      ...detail,
+      time: detail.created_time,
+      body: detail.content || '',
+    })) : [];
+    return {
+      title,
+      details: [mainPost, ...initComments],
+      ...prams
+    };
   }
   if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     const { replies } = record;

@@ -24,7 +24,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
-    ConnectionsViews, ProjectGithubAppInstallation
+    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
     extract_email_addresses, get_connection_general_task_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
@@ -36,7 +36,8 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
     init_notion_seadb_table, list_notion_record_details, init_general_task_seadb_table, \
-    list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data
+    list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data,\
+    init_linear_seadb_table, list_linear_issue_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -45,7 +46,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable, LinearIssuesTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
@@ -57,6 +58,7 @@ from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIExc
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.utils import normalize_general_task_payload, create_general_task_via_adapter, update_general_task_via_adapter
 
+from django.utils import timezone
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -173,6 +175,8 @@ class ProjectConnectionsView(APIView):
                     error_msg = 'General task connection is not enabled'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 init_general_task_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.LINEAR.value:
+                init_linear_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -862,6 +866,37 @@ class ProjectConnectionsStatusView(APIView):
         return Response(connections_status)
 
 
+class ProjectLinearOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
+        if not linear_oauth:
+            return Response({'connected': False, 'expires_in': None}, status=status.HTTP_200_OK)
+        linear_api = LinearAPI(linear_oauth.access_token)
+        if linear_oauth.expires_in and linear_oauth.expires_in <= timezone.now():
+            linear_oauth, err = linear_api.refresh_oauth_token(linear_oauth)
+            if err:
+                return Response({'connected': False, 'expires_in': linear_oauth.expires_in}, status=status.HTTP_200_OK)
+
+        connected = linear_oauth.expires_in > timezone.now()
+        return Response({'connected': connected, 'expires_in': linear_oauth.expires_in}, status=status.HTTP_200_OK)
+
+
 class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -907,6 +942,8 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            record = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -959,6 +996,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
             ConnectionType.GENERAL_TASK.value,
+            ConnectionType.LINEAR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -979,6 +1017,8 @@ class ProjectConnectionRecordView(APIView):
             table_cls = NotionTable
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_cls = GeneralTaskTable
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            table_cls = LinearIssuesTable
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1166,6 +1206,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
             ConnectionType.GENERAL_TASK.value,
+            ConnectionType.LINEAR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1186,6 +1227,8 @@ class ProjectConnectionRecordsView(APIView):
             table_cls = NotionTable
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_cls = GeneralTaskTable
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            table_cls = LinearIssuesTable
 
         update_rows = []
         seadb_api = SeaDBAPI()

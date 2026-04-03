@@ -23,16 +23,23 @@ const CustomizeSelectSync = ({
   const ref = useRef(null);
 
   useEffect(() => {
+    if (typeof api !== 'function') {
+      setErrorMessage(gettext('Load options failed.'));
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setErrorMessage('');
     api().then(res => {
-      const { options } = res.data;
-      setAllOptions(options);
+      const { options } = res.data || {};
+      setAllOptions(Array.isArray(options) ? options : []);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrorMessage(errorMessage);
     }).finally(() => {
       setIsLoading(false);
     });
-  }, []);
+  }, [api]);
 
   const openEditor = useCallback(() => {
     if (isLoading || errorMessage) return;

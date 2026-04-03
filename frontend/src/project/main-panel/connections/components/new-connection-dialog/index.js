@@ -46,6 +46,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
+  const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
+  const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
+  const [linearOauthError, setLinearOauthError] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -81,6 +84,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
+  const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
 
   const step = useMemo(() => {
     return STEPS[stepIndex];
@@ -88,6 +92,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
+    if (isLinear && !isLinearOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -98,7 +103,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -141,6 +146,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       _config['repository'] = repository['html_url'];
       _config['installation_id'] = repository['installation_id'];
     }
+    if (isLinear) {
+      const team = _config.team_id;
+      if (team && team.team) {
+        _config['team_id'] = team.team.id;
+        _config['team_name'] = team.team.name;
+        _config['team_key'] = team.team.key;
+        _config['workspace_name'] = team.team.workspace_name;
+      }
+    }
+
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
@@ -159,6 +174,57 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, []);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
+  const listLinearTeams = useCallback(() => {
+    return connectionsAPI.listLinearTeams(projectUuid).then(res => {
+      const teams = res?.data?.teams || [];
+      return {
+        data: {
+          options: teams.map(t => ({
+            value: t.id,
+            team: t,
+            label: t.name,
+            name: t.name
+          })),
+        }
+      };
+    });
+  }, [projectUuid]);
+
+  const fetchLinearOauthStatus = useCallback(() => {
+    setCheckingLinearOauth(true);
+    return connectionsAPI.getLinearOauthStatus(projectUuid).then(res => {
+      setLinearOauthConnected(Boolean(res?.data?.connected));
+      setLinearOauthError('');
+    }).catch(() => {
+      setLinearOauthConnected(false);
+      setLinearOauthError(gettext('Failed to check Linear authorization status.'));
+    }).finally(() => {
+      setCheckingLinearOauth(false);
+    });
+  }, []);
+
+  const handleConnectLinear = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/linear/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
+  }, []);
+
+  useEffect(() => {
+    if (!isLinear) return;
+    fetchLinearOauthStatus();
+  }, [isLinear, fetchLinearOauthStatus]);
+
+  useEffect(() => {
+    if (!isLinear) return;
+    const handler = (event) => {
+      if (event?.data?.type === 'linear_oauth' && event?.data?.status === 'success') {
+        fetchLinearOauthStatus();
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [isLinear, fetchLinearOauthStatus]);
+
 
   return (
     <Modal
@@ -245,10 +311,35 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                   row[key] = row[key].value;
                 }
               }
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
+                api = listLinearTeams;
+                if (row[key]) {
+                  row[key] = row[key].value || row[key];
+                }
+              }
               return ((
                 <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
               ));
             })}
+            {isLinear && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="sea-qa-project-linear-oauth">
+                  <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
+                    {isLinearOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  </span>
+                  <Button
+                    color="primary"
+                    className="ml-2"
+                    disabled={isSubmitting || isCheckingLinearOauth}
+                    onClick={handleConnectLinear}
+                  >
+                    {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
+                  </Button>
+                  {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
+                </div>
+              </FormGroup>
+            )}
           </div>
         )}
 
@@ -301,6 +392,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                 api = listGitHubRepositories;
                 if (row[key]) {
                   row[key] = row[key].value;
+                }
+              }
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
+                api = listLinearTeams;
+                if (row[key]) {
+                  row[key] = row[key].value || row[key];
                 }
               }
               return ((

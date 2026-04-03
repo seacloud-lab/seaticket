@@ -91,6 +91,16 @@ class ConnectionsAPI {
     return this.req.delete(url);
   }
 
+  getLinearOauthStatus(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/linear-oauth/';
+    return this.req.get(url);
+  }
+
+  listLinearTeams(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/linear/teams/';
+    return this.req.get(url);
+  }
+
   getConnection(projectUuid, connectionID) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     return this.req.get(url);

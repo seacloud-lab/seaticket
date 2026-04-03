@@ -203,6 +203,47 @@ class SelectTypes:
     }
 
 
+    linear_state = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "Backlog",
+          "color": "#A2A2A2",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0002",
+          "name": "Todo",
+          "color": "#9F9FA2",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0003",
+          "name": "In Progress",
+          "color": "#F0BF00",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0004",
+          "name": "Done",
+          "color": "#5E6AD2",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0005",
+          "name": "Canceled",
+          "color": "#95A2B3",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0006",
+          "name": "Duplicate",
+          "color": "#95A2B3",
+          "text_color": "#FFFFFF"
+        }
+      ]
+    }
+
 class MappedColumn(object):
     def __init__(self, name, type, data=None):
         self.name = name
@@ -495,6 +536,46 @@ class GeneralTaskUserTable(BaseModel):
     @classmethod
     def gen_table_name(cls, connection_id):
         return ConnectionType.GENERAL_TASK.value + '_user_' + str(connection_id)
+
+
+class LinearIssuesTable(BaseModel):
+    title = MappedColumn('title', PropertyTypes.TEXT)
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    issue_id = MappedColumn('issue_id', PropertyTypes.TEXT)
+    identifier = MappedColumn('identifier', PropertyTypes.TEXT)
+    state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, SelectTypes.linear_state)
+    author = MappedColumn('author', PropertyTypes.TEXT)
+    labels = MappedColumn('labels', PropertyTypes.MULTIPLE_SELECT)
+    assignees = MappedColumn('assignees', PropertyTypes.TEXT)
+    due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
+    record_modified_time = MappedColumn('record_modified_time', PropertyTypes.DATETIME)
+    closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
+    priority = MappedColumn('priority', PropertyTypes.INT)
+    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    outdated = MappedColumn('outdated', PropertyTypes.BOOL)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
+    linked_ticket = MappedColumn('linked_ticket', PropertyTypes.INT)
+
+    @classmethod
+    def gen_table_name(cls, connection_id):
+        return ConnectionType.LINEAR.value + '_' + str(connection_id)
+
+class LinearIssueCommentsTable(BaseModel):
+    author = MappedColumn('author', PropertyTypes.TEXT)
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    issue_id = MappedColumn('issue_id', PropertyTypes.TEXT)
+    comment_id = MappedColumn('comment_id', PropertyTypes.TEXT)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
+
+    @classmethod
+    def gen_table_name(cls, connection_id):
+        return ConnectionType.LINEAR.value + '_comments' + '_' + str(connection_id)
 
 
 class KnowledgeBaseTable(BaseModel):

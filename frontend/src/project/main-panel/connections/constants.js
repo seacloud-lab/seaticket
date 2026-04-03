@@ -21,6 +21,7 @@ export const CONNECTION_TYPE = {
   SITE: 'site',
   SEAFILE: 'seafile',
   NOTION: 'notion',
+  LINEAR: 'linear',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
@@ -34,6 +35,7 @@ export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
   [CONNECTION_TYPE.GENERAL_TASK]: true,
+  [CONNECTION_TYPE.LINEAR]: true,
 };
 
 export const CONNECTION_FIELD_TYPE = {
@@ -295,6 +297,17 @@ export const CONNECTION_FIELDS = {
       can_edit_multiple_times: false,
       is_custom: true,
     }
+  ],
+  [CONNECTION_TYPE.LINEAR]: [
+    {
+      key: 'team_id',
+      name: gettext('Team'),
+      placeholder: gettext('Select a team'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    }
   ]
 };
 
@@ -344,6 +357,10 @@ export const CONNECTION_TYPES = [
     help_text: gettext('Provide the base URL of your API endpoint that list tasks, create a task and so on. If any problem occurs, check the'),
     // TODO: add General Tasks help document
     help_link: HELP_WEB_URL + 'General-Tasks',
+  }, {
+    type: CONNECTION_TYPE.LINEAR,
+    icon: 'linear',
+    name: gettext('Linear'),
   }
 ];
 
@@ -441,7 +458,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   PARTICIPANTS: 'participants',
   VERSION: 'version',
   OTHERS: 'others',
-  DUE_DATE: 'due_date',
+  ISSUE_ID: 'issue_id',
+  IDENTIFIER: 'identifier',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -680,6 +698,54 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.CTIME,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.LINEAR]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
+      display_name: gettext('Author'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
+      display_name: gettext('Assignees'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: {
+      display_name: gettext('State'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: {
+      display_name: gettext('State reason'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
+      display_name: gettext('Labels'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: {
+      display_name: gettext('Priority'),
+      type: CellType.NUMBER,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
+      display_name: gettext('Due date'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD' },
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
+      display_name: gettext('Last modified time'),
+      type: CellType.MTIME,
+      data: {
+        format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
+      }
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CLOSED_TIME]: {
+      display_name: gettext('Closed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
@@ -693,6 +759,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.GENERAL_TASK,
 ];
@@ -702,6 +769,7 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.NOTION,
 ];
 
@@ -709,6 +777,7 @@ export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.LINEAR,
 ];
 
 export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
@@ -726,12 +795,14 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   // CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.GENERAL_TASK,
+  CONNECTION_TYPE.LINEAR,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.LINEAR,
 ];
 
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
@@ -751,4 +822,5 @@ export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.GENERAL_TASK,
+  CONNECTION_TYPE.LINEAR,
 ];

@@ -3,16 +3,23 @@ import logging
 import json
 import base64
 from urllib.parse import unquote
+import secrets
+import datetime
+from urllib.parse import urlencode
+
+import requests
 
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.utils.translation import gettext as _
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation
+from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED
+from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
+    LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.views import _get_portal_settings
@@ -135,3 +142,124 @@ def github_installation_setup(request):
         ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
 
     return redirect(return_url)
+
+@login_required
+def linear_oauth(request):
+    return_to = request.GET.get('next') or '/'
+    project_uuid = request.GET.get('project_uuid', '')
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not LINEAR_CLIENT_ID or not LINEAR_CLIENT_SECRET or not LINEAR_REDIRECT_URL:
+        return render_error(request, _('Linear OAuth settings are invalid.'))
+
+    state = secrets.token_urlsafe(24)
+    request.session['linear_oauth_state'] = state
+    request.session['linear_oauth_project_uuid'] = project_uuid
+    request.session['linear_oauth_return_to'] = return_to
+
+    params = {
+        'client_id': LINEAR_CLIENT_ID,
+        'redirect_uri': LINEAR_REDIRECT_URL,
+        'response_type': 'code',
+        'state': state,
+    }
+
+    authorize_url = 'https://linear.app/oauth/authorize' + f"?{urlencode(params)}"
+    return redirect(authorize_url)
+
+
+@login_required
+def linear_oauth_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    session_state = request.session.get('linear_oauth_state')
+    project_uuid = request.session.get('linear_oauth_project_uuid')
+    return_to = request.session.get('linear_oauth_return_to', '/')
+
+    if not code or not state or state != session_state:
+        return render_error(request, _('Invalid Linear OAuth state.'))
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not LINEAR_CLIENT_ID or not LINEAR_CLIENT_SECRET or not LINEAR_REDIRECT_URL:
+        return render_error(request, _('Linear OAuth settings are invalid.'))
+
+    token_payload = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': LINEAR_REDIRECT_URL,
+        'client_id': LINEAR_CLIENT_ID,
+        'client_secret': LINEAR_CLIENT_SECRET,
+    }
+
+    try:
+        resp = requests.post('https://api.linear.app/oauth/token', data=token_payload, timeout=10)
+    except Exception as e:
+        logger.error('Linear OAuth token request error: %s', e)
+        return render_error(request, _('Failed to authorize Linear.'))
+
+    if resp.status_code != 200:
+        logger.error('Linear OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        return render_error(request, _('Failed to authorize Linear.'))
+
+    token_json = resp.json()
+    access_token = token_json.get('access_token')
+    refresh_token = token_json.get('refresh_token')
+    expires_in = token_json.get('expires_in')
+    if not access_token:
+        logger.error('Linear OAuth token missing access_token: %s', token_json)
+        return render_error(request, _('Failed to authorize Linear.'))
+
+    if expires_in:
+        expires_in = timezone.now() + datetime.timedelta(seconds=int(expires_in))
+    else:
+        expires_in = timezone.now() + datetime.timedelta(days=3650)
+
+    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_in, refresh_token, username)
+
+    request.session.pop('linear_oauth_state', None)
+    request.session.pop('linear_oauth_project_uuid', None)
+    request.session.pop('linear_oauth_return_to', None)
+
+    response_html = f"""
+    <html>
+      <head><title>Linear OAuth</title></head>
+      <body>
+        <script>
+          try {{
+            if (window.opener) {{
+              window.opener.postMessage({{ type: 'linear_oauth', status: 'success' }}, '*');
+              window.close();
+            }} else {{
+              window.location.href = {json.dumps(return_to)};
+            }}
+          }} catch (e) {{
+            window.location.href = {json.dumps(return_to)};
+          }}
+        </script>
+      </body>
+    </html>
+    """
+    return HttpResponse(response_html)
