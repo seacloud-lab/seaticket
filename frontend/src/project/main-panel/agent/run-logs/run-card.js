@@ -175,7 +175,7 @@ const RunCard = ({
           }
         </div>
         <div className="run-card-header-right">
-          {hasPendingSuggestion &&
+          {run.status === RUN_STATUS.RUNNING &&
             <span className="run-card-running mr-4">
               <Icon symbol="spinner" className="mr-1" />
               {gettext('Running')}
