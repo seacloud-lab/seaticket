@@ -862,7 +862,7 @@ class ProjectConnectionRecordView(APIView):
                 update_rows = [
                     {
                         'pk': ticket.get('_pk'),
-                        'row': { 'linked_connection_records': new_value }
+                        'row': {'linked_connection_records': new_value}
                     }
                 ]
                 seadb_api.update_rows(project_uuid, 'tickets', update_rows)

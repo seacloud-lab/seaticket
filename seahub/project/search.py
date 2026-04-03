@@ -33,10 +33,10 @@ class SearchTicketsView(APIView):
         """
         # argument check
         query = request.GET.get('query', '')
-        limit = 100
-
-        if query:
-            limit = 50
+        if not query:
+            error_msg = 'query invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        limit = 50
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -61,7 +61,7 @@ class SearchTicketsView(APIView):
             traceback.print_exc()
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-    
+
         linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
         return Response({
             'tickets': tickets,
