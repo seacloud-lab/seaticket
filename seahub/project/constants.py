@@ -44,6 +44,7 @@ class ConnectionType(Enum):
     SITE = 'site'
     SEAFILE = 'seafile'
     NOTION = 'notion'
+    LINEAR = 'linear'
 
     @classmethod
     def is_valid(cls, value):
@@ -127,6 +128,9 @@ CONNECTION_FIELDS = {
     ],
     ConnectionType.NOTION.value: [
         ConnectionField('integration_secret', True, False).to_dict(),
+    ],
+    ConnectionType.LINEAR.value: [
+        ConnectionField('team_id', True, False).to_dict(),
     ]
 }
 
@@ -345,6 +349,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
+    ConnectionType.LINEAR.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -408,7 +431,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags'],
     ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
-    ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'url', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
+    ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'url', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
+    ConnectionType.LINEAR.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'labels', 'priority', 'due_date', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 
@@ -417,6 +441,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['url'],
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
     ConnectionType.NOTION.value: ['page_id'],
+    ConnectionType.LINEAR.value: ['identifier'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
@@ -438,6 +463,7 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.LINEAR.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,

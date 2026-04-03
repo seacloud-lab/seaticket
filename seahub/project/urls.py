@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import project_view, github_install, github_installation_setup
+from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback
 
-from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, ProjectConnectionMetaView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
     ProjectConnectionReplyEmailView, ProjectConnectionReplyDiscourseView, ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
-    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus
+    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -49,6 +49,8 @@ urlpatterns = [
 
     re_path(r'^github/install/$', github_install, name='project_github_install'),
     re_path(r'^github/installation-setup/$', github_installation_setup, name='project_github_installation_setup'),
+    re_path(r'^linear/oauth/$', linear_oauth, name='project_linear_oauth'),
+    re_path(r'^linear/oauth/callback/$', linear_oauth_callback, name='project_linear_oauth_callback'),
 
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
@@ -65,10 +67,14 @@ urlpatterns = [
     re_path(r'^api/v1/project/connection-details/$', ProjectConnectionDetailByTokenView.as_view(), name='api-v1-connection-details-by-token'),
     re_path(r'^api/v1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v1-connection-row-details-by-token'),
 
-    #sync data
+    # connection webhook
     re_path(r'^webhook/github/$', GithubWebhookView.as_view(), name='github_webhook'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/repositories/$', ProjectGithubRepositories.as_view(), name='api-v1-project-github-repositories'),
     re_path(r'^webhook/discourse/$', DiscourseWebhookView.as_view(), name='discourse_webhook'),
+
+    # new connection dialog info
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/repositories/$', ProjectGithubRepositories.as_view(), name='api-v1-project-github-repositories'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear/teams/$', ProjectLinearTeams.as_view(), name='api-v1-project-linear-teams'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear-oauth/$', ProjectLinearOauthStatusView.as_view(), name='api-v1-linear-oauth-status'),
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),

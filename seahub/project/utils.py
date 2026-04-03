@@ -51,6 +51,7 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.GITHUB_ISSUE.value,
     ConnectionType.EMAIL.value,
     ConnectionType.GENERAL_TASK.value,
+    ConnectionType.LINEAR.value,
 ]
 
 

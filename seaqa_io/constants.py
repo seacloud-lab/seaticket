@@ -8,6 +8,7 @@ class ConnectionType(Enum):
     GENERAL_TASK = 'general_task'
     SITE = 'site'
     SEAFILE = 'seafile'
+    LINEAR = 'linear'
 
 
 MAX_EMBEDDING_ANALYSIS_RECORDS = 100000
