@@ -150,14 +150,11 @@ class SMTPEmailSender(_EmailSenderBase):
             smtp_port = int(self.smtp_port)
             # Port 465 uses SSL, other ports use STARTTLS
             if smtp_port == 465:
-                logger.info('Connecting to SMTP server via SSL: %s:%s', self.smtp_host, smtp_port)
                 context = ssl.create_default_context()
                 smtp = smtplib.SMTP_SSL(self.smtp_host, smtp_port, timeout=30, context=context)
             else:
-                logger.info('Connecting to SMTP server: %s:%s', self.smtp_host, smtp_port)
                 try:
                     smtp = smtplib.SMTP(self.smtp_host, smtp_port, timeout=30)
-                    logger.info('Starting TLS encryption')
                     smtp.starttls()
                 except (smtplib.SMTPServerDisconnected, ConnectionResetError, ssl.SSLError) as e:
                     if smtp_port == 587:
@@ -166,7 +163,6 @@ class SMTPEmailSender(_EmailSenderBase):
                         smtp = smtplib.SMTP_SSL(self.smtp_host, smtp_port, timeout=30, context=context)
                     else:
                         raise
-            logger.info('Logging in with username: %s', self.smtp_user)
             smtp.login(self.smtp_user, self.smtp_password)
         except Exception as e:
             logger.exception('Email server authorization failed. host: %s, port: %s, error: %s',
@@ -325,7 +321,7 @@ def get_email_sender_from_config(config):
 
     if server_provider == 'general_email_provider':
         smtp_host = config.get('smtp_host')
-        smtp_port = config.get('smtp_port')
+        smtp_port = config.get('smtp_port', 465)
         username = config.get('username')
         password = config.get('password')
 

@@ -93,7 +93,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       html_content: content,
       to: to.join(','),
       cc: cc.join(','),
-      reply_to_message_id: detail.reply_to_message_id,
+      email_id: detail._pk,
     };
     connectionsAPI.replyConnectionEmail(projectUuid, connection_id, recordId, payload).then(() => {
       callback && callback();

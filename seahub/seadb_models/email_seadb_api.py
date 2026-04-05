@@ -25,6 +25,11 @@ class EmailSeaDBAPI:
             return response['results']
         return []
 
+    def get_email_by_pk(self, connection_id, _pk):
+        """Retrieve email by _pk (alias for get_issue_by_pk for clarity)."""
+        emails = self.get_issue_by_pk(connection_id, _pk)
+        return emails[0] if emails else None
+
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = EmailTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY {EmailTable.modified_time.name} ASC "
@@ -175,7 +180,7 @@ class EmailSeaDBAPI:
             EmailTable.content.name: email_data.get('content', ''),
             EmailTable.html_content.name: email_data.get('html_content') or '',
             EmailTable.modified_time.name: now,
-            EmailTable.reply_to_message_id.name: email_data.get('reply_to_message_id') or email_data.get('target_message_id') or '',
+            EmailTable.reply_to_message_id.name: email_data.get('reply_to_message_id') or '',
             EmailTable.is_sender.name: True,
             EmailTable.sync_time.name: now,
             EmailTable.deleted.name: False,

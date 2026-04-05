@@ -1105,18 +1105,18 @@ class ProjectConnectionReplyEmailView(APIView):
             error_msg = f'record {record_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        thread_emails = email_seadb_api.get_emails_by_thread_id(connection_id, record_id)
-        thread_email_map = {
-            email.get('message_id'): email
-            for email in thread_emails
-            if email.get('message_id')
-        }
-        reply_to_message_id = (request.data.get('reply_to_message_id') or '').strip()
-        if reply_to_message_id:
-            target_email = thread_email_map.get(reply_to_message_id)
-            if not target_email:
-                error_msg = 'reply_to_message_id invalid.'
+        # email_id is the _pk of the email table to reply to
+        email_id = request.data.get('email_id')
+        if email_id:
+            try:
+                email_id = int(email_id)
+            except (TypeError, ValueError):
+                error_msg = 'email_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
+            if not target_email:
+                error_msg = 'email_id not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         else:
             target_email = email_seadb_api.get_latest_reply_target_email(connection_id, record_id)
         if not target_email:
@@ -1174,8 +1174,7 @@ class ProjectConnectionReplyEmailView(APIView):
             'subject': subject,
             'content': content,
             'html_content': html_content,
-            'reply_to_message_id': reply_to_message_id,
-            'target_message_id': target_message_id,
+            'reply_to_message_id': target_message_id,
             'origin_thread_id': target_email.get('origin_thread_id'),
             'message_id': message_id,
         }
