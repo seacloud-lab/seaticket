@@ -5,12 +5,6 @@ import logging
 import json
 import datetime
 import sys
-import smtplib
-import ssl
-from email.message import EmailMessage
-from email.utils import formataddr
-from email.utils import formatdate
-from email.utils import make_msgid
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -30,7 +24,7 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
-    build_reply_references, extract_email_addresses
+    extract_email_addresses
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
@@ -49,6 +43,9 @@ from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
+
+from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -1099,27 +1096,7 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         content = (request.data.get('content') or '').strip()
-        # if not content:
-        #     error_msg = 'content invalid.'
-        #     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         config = decrypt_config(json.loads(project_connection.config))
-        smtp_host = config.get('smtp_host')
-        smtp_port = config.get('smtp_port')
-        smtp_user = config.get('username')
-        smtp_password = config.get('password')
-        sender_email = config.get('sender_email') or smtp_user
-        sender_name = config.get('sender_name')
-
-        if not smtp_host or not smtp_user or not smtp_password or not sender_email:
-            error_msg = 'Email connection config is invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        try:
-            smtp_port = int(smtp_port or 587)
-        except (TypeError, ValueError):
-            error_msg = 'smtp_port invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         seadb_api = SeaDBAPI(username)
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
@@ -1161,79 +1138,53 @@ class ProjectConnectionReplyEmailView(APIView):
         if not subject.lower().startswith('re:'):
             subject = f'Re: {subject}'
 
-        message = EmailMessage()
-        if not message.get('Message-ID'):
-            message['Message-ID'] = make_msgid()
-        message['From'] = formataddr((sender_name, sender_email)) if sender_name else sender_email
-        message['To'] = ', '.join(to_emails)
-        if cc_emails:
-            message['Cc'] = ', '.join(cc_emails)
-        message['Subject'] = subject
-
-        target_message_id = target_email.get('message_id')
-        if target_message_id:
-            message['In-Reply-To'] = target_message_id
-
-        references = build_reply_references(target_email, thread_email_map)
-        if references:
-            message['References'] = ' '.join(references)
-
-        message.set_content(content, subtype='plain', charset='utf-8')
-        
         html_content = request.data.get('html_content')
-        if html_content:
-            message.add_alternative(html_content, subtype='html', charset='utf-8')
+        target_message_id = target_email.get('message_id')
 
-        recipients = list(dict.fromkeys(to_emails + cc_emails))
-
+        # Send email
+        send_info = {
+            'message': content,
+            'html_message': html_content,
+            'send_to': to_emails,
+            'copy_to': cc_emails,
+            'subject': subject,
+            'in_reply_to': target_message_id,
+        }
+        
         try:
-            ssl_context = ssl.create_default_context()
-            if smtp_port == 465:
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30, context=ssl_context) as smtp_server:
-                    smtp_server.login(smtp_user, smtp_password)
-                    smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
-            else:
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as smtp_server:
-                    smtp_server.ehlo()
-                    smtp_server.starttls(context=ssl_context)
-                    smtp_server.ehlo()
-                    smtp_server.login(smtp_user, smtp_password)
-                    smtp_server.send_message(message, from_addr=sender_email, to_addrs=recipients)
-        except Exception as e:
+            result = toggle_send_email(config, send_info)
+            message_id = result.get('message_id', '')
+        except EmailConfigError as e:
+            logger.error('email config error, connection_id: %s, error: %s', connection_id, e)
+            error_msg = 'Email connection config is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except EmailSendError as e:
             logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
             error_msg = 'Failed to send email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        sender_email = config.get('sender_email') or config.get('username')
+        sender_name = config.get('sender_name', '')
+
+        email_data = {
+            'sender_name': sender_name,
+            'sender_email': sender_email,
+            'to_text': to_text,
+            'cc_text': cc_text,
+            'subject': subject,
+            'content': content,
+            'html_content': html_content,
+            'reply_to_message_id': reply_to_message_id,
+            'target_message_id': target_message_id,
+            'origin_thread_id': target_email.get('origin_thread_id'),
+            'message_id': message_id,
+        }
         try:
-            now = datetime.datetime.now(datetime.UTC).isoformat()
-            email_table_name = EmailTable.gen_table_name(connection_id)
-            thread_table_name = ThreadTable.gen_table_name(connection_id)
-            seadb_api.insert_rows(project_uuid, email_table_name, [{
-                EmailTable.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
-                EmailTable.email_to.name: ', '.join(to_emails),
-                EmailTable.title.name: subject,
-                EmailTable.cc.name: ', '.join(cc_emails) if cc_emails else '',
-                EmailTable.content.name: content,
-                EmailTable.html_content.name: html_content or '',
-                EmailTable.modified_time.name: now,
-                EmailTable.reply_to_message_id.name: reply_to_message_id or target_message_id or '',
-                EmailTable.is_sender.name: True,
-                EmailTable.sync_time.name: now,
-                EmailTable.deleted.name: False,
-                EmailTable.thread_id.name: int(record_id),
-                EmailTable.message_id.name: message.get('Message-ID') or '',
-                EmailTable.origin_thread_id.name: target_email.get('origin_thread_id') or '',
-            }])
-            seadb_api.update_rows(project_uuid, thread_table_name, [{
-                'pk': int(record_id),
-                'row': {
-                    ThreadTable.modified_time.name: now,
-                    ThreadTable.record_modified_time.name: now,
-                    ThreadTable.unread.name: False,
-                }
-            }])
+            email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)
         except Exception as e:
-            logger.error('reply email seadb update failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            logger.error('save reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            error_msg = 'Failed to save reply email.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
