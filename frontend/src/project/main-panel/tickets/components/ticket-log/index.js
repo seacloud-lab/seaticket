@@ -111,9 +111,9 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const label = githubLabelMap[field] || field;
         const o = fmtGithubVal(oldObj[field]);
         const n = fmtGithubVal(newObj[field]);
-        if (!o && n) return <span key={field}>{' '}{gettext('added')} {label} <span>{n}</span></span>;
-        if (o && !n) return <span key={field}>{' '}{gettext('removed')} {label} <span className="sea-ticket-log-removed">{o}</span></span>;
-        if (o && n) return <span key={field}>{' '}{gettext('changed')} {label} {gettext('from')} <span className="sea-ticket-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
+        if (!o && n) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
+        if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="sea-ticket-log-removed">{o}</span></span>;
+        if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="sea-ticket-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
         return null;
       }).filter(Boolean);
     };
@@ -380,27 +380,15 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       }
       case LOG_TYPE.GITHUB_ISSUE_ADDED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
-        return <span>{gettext('added GitHub issue')}{ref ? <>{' '}{ref}</> : null}</span>;
+        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_CLOSED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
-        const changeNodes = renderGithubChangeNodes(old_value, new_value);
-        return (
-          <>
-            {gettext('closed GitHub issue')}{ref ? <>{' '}{ref}</> : null}
-            {changeNodes}
-          </>
-        );
+        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('closed')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_REOPENED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
-        const changeNodes = renderGithubChangeNodes(old_value, new_value);
-        return (
-          <>
-            {gettext('reopened GitHub issue')}{ref ? <>{' '}{ref}</> : null}
-            {changeNodes}
-          </>
-        );
+        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('reopened')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_UPDATED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
@@ -418,7 +406,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       case LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
         const count = typeof new_value === 'number' ? new_value : 1;
-        return <span>{gettext('added')} {count} {count === 1 ? gettext('comment') : gettext('comments')} {gettext('to GitHub issue')}{ref ? <>{' '}{ref}</> : null}</span>;
+        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}{gettext('added')}</span>;
       }
       default:
         return <span>{gettext('made changes')}</span>;
@@ -433,14 +421,16 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
       </div>
       <div className="sea-ticket-log-content">
-        <AsyncCollaborator
-          value={activity.creator}
-          className="sea-ticket-log-creator"
-          collaborators={collaborators}
-          collaboratorsCache={collaboratorsCache}
-          updateCollaboratorsCache={updateCollaboratorsCache}
-          api={queryUser}
-        />
+        {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && (
+          <AsyncCollaborator
+            value={activity.creator}
+            className="sea-ticket-log-creator"
+            collaborators={collaborators}
+            collaboratorsCache={collaboratorsCache}
+            updateCollaboratorsCache={updateCollaboratorsCache}
+            api={queryUser}
+          />
+        )}
         {renderActivityMessage()}
         <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
       </div>
