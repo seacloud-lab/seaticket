@@ -3,7 +3,7 @@ import logging
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.seadb_models.models import TicketActivitiesTable, TicketsTable
@@ -15,6 +15,8 @@ from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
+from seahub.portal.portal_utils import get_portal_issue, TABLE_PORTAL_ISSUES
+
 
 
 class TicketLinkValidationError(Exception):
@@ -28,6 +30,8 @@ class TicketLinkSyncPlan:
     # {connection_id: {record_id: ticket_id}}
     records_to_link: Dict[int, Dict[int, int]] = field(default_factory=dict)
     records_to_unlink: Dict[int, Dict[int, int]] = field(default_factory=dict)
+    # portal issue ids to link: [issue_id, ...]
+    portal_issue_ids: List[int] = field(default_factory=list)
 
 
 TABLE_TICKETS = 'tickets'
@@ -67,11 +71,41 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
         return linked_record_titles
 
     conn_id_to_record_ids = {}
+    portal_issue_ids = []
     for linked_key in keys:
         connection_id_str, record_id_str = linked_key.split('_', 1)
-        connection_id = int(connection_id_str)
-        record_id = int(record_id_str)
+        if not connection_id_str or not record_id_str:
+            continue
+        # Handle portal_ prefix
+        if connection_id_str == 'portal':
+            try:
+                portal_issue_ids.append(int(record_id_str))
+            except Exception:
+                continue
+            continue
+        try:
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except Exception:
+            continue
         conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+
+    # Query portal issue titles
+    if portal_issue_ids:
+        try:
+            ids_str = ','.join([str(i) for i in portal_issue_ids])
+            sql = f"SELECT _pk, title FROM `{TABLE_PORTAL_ISSUES}` WHERE `_pk` IN ({ids_str})"
+            res = seadb_api.query_rows(project_uuid, sql)
+            for row in (res.get('results') or []):
+                _pk = row.get('_pk')
+                if _pk is None:
+                    continue
+                linked_record_titles[f'portal_{_pk}'] = row.get('title') or ''
+        except Exception as e:
+            logger.error(f'Error querying portal issue titles: {e}')
+
+    if not conn_id_to_record_ids:
+        return linked_record_titles
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
@@ -687,7 +721,7 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
         seadb_api: SeaDB API instance
         project_uuid: project UUID
         ticket_link_diff: {ticket_id: (added_keys, removed_keys)}
-            key format is "connection_id_record_id"
+            key format is "connection_id_record_id" or "portal_issue_id"
 
     Returns:
         TicketLinkSyncPlan: Validated sync plan
@@ -703,6 +737,27 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
         # Parse added items
         for item in added_items:
             conn_id, rid = item.split('_', 1)
+
+            # Handle portal_ prefix
+            if conn_id == 'portal':
+                rid = int(rid)
+                # Check if portal issue exists and is not already linked
+                try:
+                    portal_issue, _ = get_portal_issue(seadb_api, project_uuid, rid)
+                    if not portal_issue:
+                        raise TicketLinkValidationError('Portal issue not found.')
+                    if portal_issue.get('linked_ticket'):
+                        raise TicketLinkValidationError('This portal issue is already linked to a ticket.')
+                except TicketLinkValidationError:
+                    raise
+                except Exception as e:
+                    logger.exception(e)
+                    raise TicketLinkValidationError('Internal Server Error')
+                sync_plan.portal_issue_ids.append(rid)
+                # Store ticket_id mapping for portal issues using 'portal' as key
+                sync_plan.records_to_link.setdefault('portal', {})[rid] = ticket_id
+                continue
+
             conn_id, rid = int(conn_id), int(rid)
 
             # Check if there is a conflict in the same batch (a record is linked to multiple tickets)
@@ -717,11 +772,18 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
             conn_id, rid = item.split('_', 1)
             if conn_id is None or rid is None:
                 continue
+            # Handle portal_ prefix for removal
+            if conn_id == 'portal':
+                rid = int(rid)
+                sync_plan.records_to_unlink.setdefault('portal', {})[rid] = ticket_id
+                continue
             conn_id, rid = int(conn_id), int(rid)
             sync_plan.records_to_unlink.setdefault(conn_id, {})[rid] = ticket_id
 
     # Check if the connection belongs to this project
     all_conn_ids = set(sync_plan.records_to_link.keys()) | set(sync_plan.records_to_unlink.keys())
+    # Exclude 'portal' key which is not a connection id
+    all_conn_ids.discard('portal')
     if not all_conn_ids:
         return sync_plan, None
 
@@ -773,75 +835,116 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
     return sync_plan, connections
 
 
-def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
+def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections, now_datetime=None):
     """
-    Sync ticket links in connection tables (Discourse topics, GitHub issues, emails).
+    Sync ticket links in connection tables (Discourse topics, GitHub issues, emails) and portal issues.
 
     Args:
         seadb_api: SeaDB API instance
         project_uuid: project UUID
         sync_plan: TicketLinkSyncPlan instance
+        connections: list of ProjectConnections
+        now_datetime: current datetime string (required for portal issues)
     """
-    if not connections:
-        return
-
-    # Get connections that support linked_ticket
-    connection_map = {c.id: c for c in connections}
-    supported_conn_ids = {
-        c.id for c in connections
-        if c.type in LINKED_TICKET_SUPPORT_TYPES
-    }
-
-    # Sync added links: set linked_ticket to the corresponding ticket ID
-    for conn_id, record_ticket_map in sync_plan.records_to_link.items():
-        if conn_id not in supported_conn_ids:
-            continue
-        connection = connection_map.get(conn_id)
-        table_name = get_connection_table_name(connection.type, conn_id)
-        if not table_name:
-            continue
-        update_rows = [
-            {
-                'pk': rid,
-                'row': {'linked_ticket': ticket_id}
-            }
-            for rid, ticket_id in record_ticket_map.items()
-        ]
-        if update_rows:
-            seadb_api.update_rows(project_uuid, table_name, update_rows)
-
-    # Sync removed links: clear linked_ticket
-    for conn_id, record_ticket_map in sync_plan.records_to_unlink.items():
-        if conn_id not in supported_conn_ids:
-            continue
-
-        connection = connection_map.get(conn_id)
-        table_name = get_connection_table_name(connection.type, conn_id)
-        if not table_name:
-            continue
-
-        record_ids = list(record_ticket_map.keys())
-        ids_sql = f"({', '.join(str(i) for i in record_ids)})"
-
-        # Query the current link status
-        sql = f"SELECT _pk, `linked_ticket` FROM `{table_name}` WHERE _pk IN {ids_sql}"
-        res = seadb_api.query_rows(project_uuid, sql)
-        rows = res.get('results') or []
-
-        current_linked = {
-            int(r.get('_pk')): r.get('linked_ticket')
-            for r in rows if r.get('_pk') is not None
+    # Sync connection records
+    if connections:
+        # Get connections that support linked_ticket
+        connection_map = {c.id: c for c in connections}
+        supported_conn_ids = {
+            c.id for c in connections
+            if c.type in LINKED_TICKET_SUPPORT_TYPES
         }
 
-        # Only clear the links that actually point to the current ticket
-        clear_rows = []
-        for rid, expected_ticket_id in record_ticket_map.items():
-            actual_linked = current_linked.get(rid)
-            if actual_linked and int(actual_linked) == expected_ticket_id:
-                clear_rows.append({
+        # Sync added links: set linked_ticket to the corresponding ticket ID
+        for conn_id, record_ticket_map in sync_plan.records_to_link.items():
+            if conn_id not in supported_conn_ids:
+                continue
+            connection = connection_map.get(conn_id)
+            table_name = get_connection_table_name(connection.type, conn_id)
+            if not table_name:
+                continue
+            update_rows = [
+                {
                     'pk': rid,
-                    'row': {'linked_ticket': None}
-                })
+                    'row': {'linked_ticket': ticket_id}
+                }
+                for rid, ticket_id in record_ticket_map.items()
+            ]
+            if update_rows:
+                seadb_api.update_rows(project_uuid, table_name, update_rows)
 
-        if clear_rows:
-            seadb_api.update_rows(project_uuid, table_name, clear_rows)
+        # Sync removed links: clear linked_ticket
+        for conn_id, record_ticket_map in sync_plan.records_to_unlink.items():
+            if conn_id not in supported_conn_ids:
+                continue
+
+            connection = connection_map.get(conn_id)
+            table_name = get_connection_table_name(connection.type, conn_id)
+            if not table_name:
+                continue
+
+            record_ids = list(record_ticket_map.keys())
+            ids_sql = f"({', '.join(str(i) for i in record_ids)})"
+
+            # Query the current link status
+            sql = f"SELECT _pk, `linked_ticket` FROM `{table_name}` WHERE _pk IN {ids_sql}"
+            res = seadb_api.query_rows(project_uuid, sql)
+            rows = res.get('results') or []
+
+            current_linked = {
+                int(r.get('_pk')): r.get('linked_ticket')
+                for r in rows if r.get('_pk') is not None
+            }
+
+            # Only clear the links that actually point to the current ticket
+            clear_rows = []
+            for rid, expected_ticket_id in record_ticket_map.items():
+                actual_linked = current_linked.get(rid)
+                if actual_linked and int(actual_linked) == expected_ticket_id:
+                    clear_rows.append({
+                        'pk': rid,
+                        'row': {'linked_ticket': None}
+                    })
+
+            if clear_rows:
+                seadb_api.update_rows(project_uuid, table_name, clear_rows)
+
+    # Sync portal issues
+    if sync_plan.portal_issue_ids or sync_plan.records_to_unlink.get('portal'):
+        # Sync added links
+        if sync_plan.portal_issue_ids and now_datetime:
+            for portal_issue_id in sync_plan.portal_issue_ids:
+                try:
+                    portal_issue, _ = get_portal_issue(seadb_api, project_uuid, portal_issue_id)
+                    if portal_issue and not portal_issue.get('linked_ticket'):
+                        ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
+                        if ticket_id:
+                            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [{
+                                'pk': int(portal_issue_id),
+                                'row': {
+                                    'linked_ticket': int(ticket_id),
+                                    'state': 'open',
+                                    'modified_time': now_datetime,
+                                }
+                            }])
+                except Exception as e:
+                    logger.error(f'Failed to update portal issue link: {e}')
+
+        # Sync removed links
+        portal_unlink_map = sync_plan.records_to_unlink.get('portal', {})
+        if portal_unlink_map:
+            for portal_issue_id, expected_ticket_id in portal_unlink_map.items():
+                try:
+                    portal_issue, _ = get_portal_issue(seadb_api, project_uuid, portal_issue_id)
+                    if portal_issue and portal_issue.get('linked_ticket'):
+                        actual_linked = int(portal_issue.get('linked_ticket'))
+                        if actual_linked == expected_ticket_id:
+                            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [{
+                                'pk': int(portal_issue_id),
+                                'row': {
+                                    'linked_ticket': None,
+                                    'modified_time': now_datetime,
+                                }
+                            }])
+                except Exception as e:
+                    logger.error(f'Failed to unlink portal issue: {e}')

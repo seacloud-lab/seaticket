@@ -42,13 +42,17 @@ const Tickets = ({
   settings = {},
   getTicket,
   onRefresh,
+  tableName = TICKET_TABLE_NAME,
+  rowType = TICKET_TYPE,
+  metadata: customMetadata,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
+  const defaultMetadata = useMetadata();
   const {
     typesData, createType,
     substatesData, createSubstate,
-  } = useMetadata();
+  } = customMetadata || defaultMetadata;
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
@@ -66,9 +70,9 @@ const Tickets = ({
   const [kbSourceTicket, setKbSourceTicket] = useState(null);
 
   const handleExpandRow = useCallback((ticket) => {
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setCurrentTicket({ ...ticket, type: rowType });
     setIsShowTicketDetailsDialog(true);
-  }, [projectUuid]);
+  }, [projectUuid, rowType]);
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -76,7 +80,7 @@ const Tickets = ({
     // metadata
     if (isFunction(api.getMetadata)) {
       _api.getMetadata = (...params) => {
-        return getMetadata(TICKET_TABLE_NAME, params[0], () => api.getMetadata(...params).then(res => {
+        return getMetadata(tableName, params[0], () => api.getMetadata(...params).then(res => {
           return {
             data: {
               ...res.data,
@@ -128,25 +132,25 @@ const Tickets = ({
 
     // view
     if (isFunction(api.getViews)) {
-      _api.getViews = () => getTableViews(TICKET_TABLE_NAME, () => api.getViews(), isBuiltInView);
+      _api.getViews = () => getTableViews(tableName, () => api.getViews(), isBuiltInView);
     }
     if (isFunction(api.getView)) {
-      _api.getView = (viewID) => getTableView(TICKET_TABLE_NAME, viewID, () => api.getView(viewID), isBuiltInView);
+      _api.getView = (viewID) => getTableView(tableName, viewID, () => api.getView(viewID), isBuiltInView);
     }
     if (isFunction(api.insertView)) {
-      _api.insertView = (name, viewData) => insertView(TICKET_TABLE_NAME, () => api.insertView(name, viewData));
+      _api.insertView = (name, viewData) => insertView(tableName, () => api.insertView(name, viewData));
     }
     if (isFunction(api.modifyView)) {
-      _api.modifyView = (viewID, viewData) => modifyView(TICKET_TABLE_NAME, viewID, viewData, () => api.modifyView(viewID, viewData), isBuiltInView);
+      _api.modifyView = (viewID, viewData) => modifyView(tableName, viewID, viewData, () => api.modifyView(viewID, viewData), isBuiltInView);
     }
     if (isFunction(api.deleteView)) {
-      _api.deleteView = (viewID) => deleteView(TICKET_TABLE_NAME, viewID, () => api.deleteView(viewID));
+      _api.deleteView = (viewID) => deleteView(tableName, viewID, () => api.deleteView(viewID));
     }
     if (isFunction(api.moveView)) {
-      _api.moveView = (sourceViewID, targetViewID) => moveView(TICKET_TABLE_NAME, sourceViewID, targetViewID, () => api.moveView(sourceViewID, targetViewID));
+      _api.moveView = (sourceViewID, targetViewID) => moveView(tableName, sourceViewID, targetViewID, () => api.moveView(sourceViewID, targetViewID));
     }
     if (isFunction(api.duplicateView)) {
-      _api.duplicateView = (viewID) => duplicateView(TICKET_TABLE_NAME, () => api.duplicateView(viewID));
+      _api.duplicateView = (viewID) => duplicateView(tableName, () => api.duplicateView(viewID));
     }
 
     // row
@@ -157,27 +161,27 @@ const Tickets = ({
         if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
           delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
         }
-        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste));
+        return modifyRow(tableName, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste));
       };
     }
     if (isFunction(api.modifyRows)) {
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
+        return modifyRows(tableName, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
       };
     }
     if (isFunction(api.deleteRow)) {
-      _api.deleteRow = (ticketNumber) => deleteRow(TICKET_TABLE_NAME, ticketNumber, () => api.deleteRow(ticketNumber));
+      _api.deleteRow = (ticketNumber) => deleteRow(tableName, ticketNumber, () => api.deleteRow(ticketNumber));
     }
     if (isFunction(api.deleteRows)) {
-      _api.deleteRows = (ticketIds) => deleteRows(TICKET_TABLE_NAME, ticketIds, () => api.deleteRows(ticketIds));
+      _api.deleteRows = (ticketIds) => deleteRows(tableName, ticketIds, () => api.deleteRows(ticketIds));
     }
 
     // file
     _api.uploadFile = (...params) => ticketsAPI.uploadFile(projectUuid, ...params);
 
     return _api;
-  }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+  }, [projectUuid, isBuiltInView, api, tableName, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `sea-qa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
@@ -285,8 +289,8 @@ const Tickets = ({
       newIndex = ticketsData.length - 1;
     }
     const ticket = ticketsData[newIndex];
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
-  }, [currentTicket, metadataRef]);
+    setCurrentTicket({ ...ticket, type: rowType });
+  }, [currentTicket, metadataRef, rowType]);
 
   const onCloseRelatedIssuesDialog = useCallback(() => {
     setIsShowRelatedIssuesDialog(false);

@@ -13,6 +13,9 @@ USER_PROJECT_CACHE_CACHE_TIMEOUT = 60 * 60 * 24
 TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
 TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX =  'TICKET_DEFAULT_SUBSTATE_'
 
+PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT = 10 * 60
+PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX =  'PORTAL_ISSUE_DEFAULT_SUBSTATE_'
+
 IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
 GITHUB_ISSUE_ACTIVITY_TYPES = {'github_issue_added', 'github_issue_updated', 'github_issue_closed', 'github_issue_reopened', 'github_issue_comment_added'}
@@ -353,6 +356,7 @@ class FilterTermModifier(object):
 
 
 TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'ai_summary', 'ai_processed_time', 'state', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_time', 'modified_time', 'closed_time', 'due_date', 'linked_connection_records']
+PORTAL_ISSUE_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'creator', 'state', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'linked_ticket', 'comment_count', 'created_time', 'modified_time', 'closed_time', 'deleted', 'due_date', 'ai_summary', 'ai_processed_time']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comment_count', 'closed_time', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
@@ -419,3 +423,40 @@ API_TOKEN_PERMISSION_TUPLE = (
 
 EMAIL_ATTACHMENT_TEMP_DIR = '/tmp/seaqa-io/email-attachment/'
 EMAIL_ATTACHMENTS_ZIP_NAME = 'attachments.zip'
+
+# portal issues
+PORTAL_ISSUES_DEFAULT_DETAILS = {
+    'views': [
+        {
+            '_id': 'open',
+            'name': _('Open'),
+            'type': 'table',
+            'basic_filters': [
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+            ],
+            'columns_keys': [],
+            'filter_conjunction': 'Or',
+            'filters': [],
+            'sorts': [{'column_key': 'created_time', 'sort_type': 'down'}],
+            'groupbys': [],
+            'hidden_columns': [],
+        }, {
+            '_id': 'closed',
+            'name': _('Closed'),
+            'type': 'table',
+            'basic_filters': [
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+            ],
+            'columns_keys': [],
+            'filter_conjunction': 'Or',
+            'filters': [],
+            'sorts': [{'column_key': 'created_time', 'sort_type': 'down'}],
+            'groupbys': [],
+            'hidden_columns': [],
+        }
+    ],
+    'navigation': [
+        {'_id': 'open', 'type': 'view'},
+        {'_id': 'closed', 'type': 'view'}
+    ]
+}

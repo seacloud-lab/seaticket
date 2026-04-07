@@ -1,12 +1,13 @@
 import logging
 
 from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
-    CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
+    CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, \
+    PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable
 
 logger = logging.getLogger(__name__)
 
@@ -396,6 +397,70 @@ def init_tag_seadb_table(seadb_api, project_uuid):
             ]
         )
 
+def init_portal_issues_seadb_table(seadb_api, project_uuid):
+    """Initialize SeaDB table for portal issues (issues submitted via support portal)"""
+    # Create portal_issues table
+    table_name = PortalIssuesTable.gen_table_name()
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    status_column_key = None
+    for column in PortalIssuesTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        if column.name == 'substate' and status_column_key:
+            mapped_column['column_data']['cascade_column_key'] = status_column_key
+        added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
+        if column.name == PortalIssuesTable.state.name:
+            status_column_key = added_column['column_key']
+
+    # Create portal_issues table indexes (matching tickets pattern)
+    portal_issues_index_columns = [
+        PortalIssuesTable.priority.name,
+        PortalIssuesTable.state.name,
+        PortalIssuesTable.substate.name,
+        PortalIssuesTable.type.name,
+        PortalIssuesTable.assignees.name,
+        PortalIssuesTable.participants.name,
+        PortalIssuesTable.creator.name,
+        PortalIssuesTable.deleted.name,
+        PortalIssuesTable.due_date.name,
+    ]
+    for column in portal_issues_index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [column],
+        )
+
+    # Create portal_issue_comments table
+    res = seadb_api.create_table(project_uuid, PortalIssueCommentsTable.gen_table_name())
+    comments_table_id = res['table_id']
+    for column in PortalIssueCommentsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, comments_table_id, mapped_column)
+
+    # Create portal_issue_comments table indexes
+    portal_issue_comments_index_columns = [
+        PortalIssueCommentsTable.issue_id.name,
+        PortalIssueCommentsTable.creator.name,
+        PortalIssueCommentsTable.deleted.name,
+    ]
+    for column in portal_issue_comments_index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            comments_table_id,
+            [column],
+        )
+
 def init_agent_seadb_table(seadb_api, project_uuid):
     """Initialize SeaDB tables for Agent runs and actions"""
     # Create agent_runs table
@@ -501,6 +566,15 @@ def get_tickets_columns(seadb_api, project_uuid):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    return columns
+
+def get_portal_issues_columns(seadb_api, project_uuid):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'portal_issues')
     if not table_metadata:
         return []
     columns = table_metadata.get('columns') or []
@@ -632,6 +706,98 @@ def list_trash_tickets(seadb_api, project_uuid, start, limit):
             display_columns.append(column)
     return records, display_columns
 
+
+def get_portal_issues_columns(seadb_api, project_uuid):
+    """Get portal issues table columns from metadata or model definition"""
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, PortalIssuesTable.gen_table_name())
+    if table_metadata:
+        columns = table_metadata.get('columns') or []
+        if columns:
+            return columns
+
+
+def list_trash_portal_issues(seadb_api, project_uuid, start, limit):
+    query_fields = ", ".join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
+    sql = f"SELECT {query_fields} FROM `portal_issues` WHERE deleted = True LIMIT {limit} OFFSET {start}"
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    records = res.get('results', [])
+    columns = get_portal_issues_columns(seadb_api, project_uuid)
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    return records, display_columns
+
+
+def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start, limit, view_config={}):
+    """List portal issues submitted by the current user."""
+    columns = get_portal_issues_columns(seadb_api, project_uuid)
+    
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    
+    # Build SQL query directly for portal_issues table
+    escaped_username = username.replace("'", "''")
+    where_clauses = [f"`creator` = '{escaped_username}'", f"`state` = '{issue_state}'"]
+    
+    # Process sorts from view_config
+    sorts = view_config.get('sorts', [])
+    order_by = '`created_time` DESC'
+    if sorts:
+        sort_clauses = []
+        for s in sorts:
+            col = s.get('column_key') or s.get('column_name', 'created_time')
+            sort_type = s.get('sort_type', 'down')
+            direction = 'DESC' if sort_type == 'down' else 'ASC'
+            sort_clauses.append(f"`{col}` {direction}")
+        if sort_clauses:
+            order_by = ', '.join(sort_clauses)
+    
+    where_clause = ' AND '.join(where_clauses)
+    sql = f"SELECT * FROM `{PortalIssuesTable.gen_table_name()}` WHERE {where_clause} ORDER BY {order_by} LIMIT {start}, {limit}"
+    
+    try:
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for portal issues: {e}')
+        records = []
+    
+    return records, display_columns
+
+def list_portal_issues_view_records(seadb_api, project_uuid, view, username, start, limit):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'portal_issues')
+    if not table_metadata:
+        return [], []
+    columns = table_metadata.get('columns') or []
+    if not columns:
+        return [], []
+    view_copy = view.copy()
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    try:
+        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_columns
+        raise
+    try:
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for portal issues: {e}')
+        records = []
+    return records, display_columns
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
     connection_type = connection.type

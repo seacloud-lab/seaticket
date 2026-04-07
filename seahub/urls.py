@@ -136,12 +136,11 @@ urlpatterns = [
     re_path(r'^captcha/', include('captcha.urls')),
 
     re_path(r'^', include('seahub.tickets.urls')),
+    re_path(r'^', include('seahub.portal.urls')),
 
     re_path(r'^', include('seahub.knowledge_base.urls')),
 
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
-
-    re_path(r'^', include('seahub.portal.urls')),
 
     ### system admin page ###
     re_path(r'^sys/info/$', sysadmin_react_fake_view, name="sys_info"),

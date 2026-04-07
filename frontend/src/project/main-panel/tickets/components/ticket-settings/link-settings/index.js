@@ -4,7 +4,8 @@ import { gettext } from '@/constants';
 import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
@@ -40,6 +41,11 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
     // other type connection
     const [connectionId, record_id] = linkItem.split('_');
+    // Handle portal_ prefix
+    if (connectionId === 'portal') {
+      setCurrentLinkItem({ _id: record_id, connection_id: '', type: PORTAL_ISSUE_TYPE, key: linkItem });
+      return;
+    }
     const validConnectionId = Number(connectionId);
     const connection = connections.find(c => c.id === validConnectionId);
     if (connection) {

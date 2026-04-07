@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
@@ -9,12 +9,19 @@ import { isFunction } from '@/utils/type-detection';
 
 const MetadataContext = React.createContext(null);
 
+// Module-level cache to prevent duplicate requests across component remounts
+const metadataCache = new Map();
+
 export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) => {
   const [isLoading, setLoading] = useState(true);
 
   const [substatesData, setSubstatesData] = useState(new OptionsData());
   const [typesData, setTypesData] = useState(new OptionsData());
   const [statesData, setStatesData] = useState(new OptionsData());
+
+  // Use api name or constructor name to distinguish different APIs
+  const cacheKey = `${projectUuid}-${api?.name || api?.constructor?.name || 'default'}`;
+  const loadedRef = useRef(false);
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
@@ -241,6 +248,8 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
     }
     api.getTicketMetadata(projectUuid).then(res => {
       const { states, substates, types } = res?.data || {};
+      // Cache the result
+      metadataCache.set(cacheKey, { states, substates, types });
       initSubStates(substates?.options, substates?.cascade_settings);
       applyCreateTypes(types?.options);
       applyCreateStates(states?.options);
@@ -250,7 +259,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, []);
+  }, [projectUuid, cacheKey]);
 
   return (
     <MetadataContext.Provider value={{

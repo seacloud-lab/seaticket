@@ -4,6 +4,7 @@ import LinkItem from './link-item';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
 
 import './index.css';
 
@@ -34,8 +35,16 @@ const LinkFormatter = ({ value, className, column, metadata, children: emptyForm
     }
 
     const [connectionId, record_id] = linkItem.split('_');
+
+    // Handle portal_ prefix
+    if (connectionId === 'portal') {
+      setCurrentLinkItem({ _id: record_id, connection_id: '', type: PORTAL_ISSUE_TYPE, key: linkItem });
+      return;
+    }
+
     let validConnectionId = Number(connectionId);
     const connection = connections.find(c => c.id === validConnectionId);
+    if (!connection) return;
     setCurrentLinkItem({ _id: record_id, connection_id: connection.id, type: connection.type, key: linkItem });
   }, [connections, column]);
 

@@ -277,8 +277,13 @@ class TicketsAPIView(APIView):
         if linked_connection_records:
             for connection_record in linked_connection_records:
                 try:
-                    connection_id, record_id = connection_record.split('_', 1)
-                    connection_id = int(connection_id)
+                    parts = connection_record.split('_', 1)
+                    if len(parts) != 2:
+                        raise ValueError()
+                    connection_id, record_id = parts
+                    # Support both numeric connection_id and 'portal' prefix
+                    if connection_id != 'portal':
+                        connection_id = int(connection_id)
                     record_id = int(record_id)
                 except Exception:
                     error_msg = 'linked_connection_records invalid.'
@@ -338,7 +343,7 @@ class TicketsAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-            # sync reverse link to discourse topics
+            # sync reverse link to discourse topics and portal issues
             if linked_connection_records:
                 ticket_link_diff = {
                     int(ticket_pk): (set(row.get(TicketsTable.linked_connection_records.name) or []), set())
@@ -346,10 +351,10 @@ class TicketsAPIView(APIView):
                 try:
                     sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
                 except TicketLinkValidationError as e:
-                    # rollback ticket creation if discourse topic already claimed
+                    # rollback ticket creation if discourse topic already claimed or portal issue already linked
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections, now_datetime)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1893,8 +1898,15 @@ class TicketTrashAPIView(APIView):
 
             need_update_connection_records = [ticket['linked_connection_records'] for ticket in need_delete_tickets if ticket['linked_connection_records']]
             update_connection_ids = set()
+            portal_issue_ids_to_unlink = set()
             for ticket_linked in need_update_connection_records:
-                update_connection_ids.update([int(record.split('_')[0]) for record in ticket_linked if record])
+                for record in ticket_linked:
+                    if not record:
+                        continue
+                    if record.startswith('portal_'):
+                        portal_issue_ids_to_unlink.add(int(record.split('_', 1)[1]))
+                    else:
+                        update_connection_ids.add(int(record.split('_')[0]))
 
             # Get connection types for each connection_id
             connections = ProjectConnections.objects.filter(id__in=update_connection_ids)
@@ -1922,6 +1934,27 @@ class TicketTrashAPIView(APIView):
                     })
                 if update_rows:
                     seadb_api.update_rows(project_uuid, table_name, update_rows)
+
+            # Clear linked_ticket on portal issues linked to the deleted tickets
+            if portal_issue_ids_to_unlink:
+                portal_ids_str = ','.join(str(pid) for pid in portal_issue_ids_to_unlink)
+                portal_sql = f"SELECT _pk, `linked_ticket` FROM `portal_issues` WHERE _pk IN ({portal_ids_str})"
+                portal_res = seadb_api.query_rows(project_uuid, portal_sql)
+                portal_rows = portal_res.get('results', [])
+                now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+                portal_update_rows = []
+                for portal_row in portal_rows:
+                    linked_ticket = portal_row.get('linked_ticket')
+                    if linked_ticket and int(linked_ticket) in need_delete_ticket_ids:
+                        portal_update_rows.append({
+                            'pk': int(portal_row.get('_pk')),
+                            'row': {
+                                'linked_ticket': None,
+                                'modified_time': now_datetime,
+                            }
+                        })
+                if portal_update_rows:
+                    seadb_api.update_rows(project_uuid, 'portal_issues', portal_update_rows)
 
             delete_ticket_comments_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             delete_ticket_activities_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)

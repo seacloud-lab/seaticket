@@ -6,6 +6,7 @@ import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { BAR_TYPE, EVENT_BUS_TYPE, PROJECT_DEFAULT_SETTINGS } from './constants';
 import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from './main-panel/portal-issues/constants';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
 import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
@@ -28,10 +29,10 @@ const Project = () => {
     const { origin, search } = location;
     let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.MY_TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE) && isKeepSearch) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.MY_TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);
@@ -51,6 +52,17 @@ const Project = () => {
       eventBus.dispatch(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, KNOWLEDGE_PAGE_SLUG_ID.ALL);
     } else if (activeBarKey === BAR_TYPE.KNOWLEDGE_TRASH) {
       eventBus.dispatch(EVENT_BUS_TYPE.KNOWLEDGE_PAGE, KNOWLEDGE_PAGE_SLUG_ID.TRASH);
+    }
+
+    // Portal issues page
+    if (activeBarKey === BAR_TYPE.PORTAL_ISSUES) {
+      eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.ALL);
+    } else if (activeBarKey === BAR_TYPE.PORTAL_ISSUES_TRASH) {
+      eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.TRASH);
+    } else if (activeBarKey === BAR_TYPE.PORTAL_ISSUE_TYPES) {
+      eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.TYPES);
+    } else if (activeBarKey === BAR_TYPE.PORTAL_ISSUE_SUBSTATES) {
+      eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES);
     }
 
     if (activeBar[0] === activeBarKey) {
@@ -91,6 +103,12 @@ const Project = () => {
           eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, newActiveBar[1]);
         }
       }
+      if (activeBarKey === BAR_TYPE.PORTAL_ISSUES) {
+        if (!location.pathname.endsWith('portal-issues/')) {
+          eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.ALL);
+        }
+        return;
+      }
     }
 
     resetURL(false, newActiveBar, newActiveBar[1]);
@@ -124,6 +142,19 @@ const Project = () => {
     // Activate the bar when the knowledge trash page refreshes
     if (bar === BAR_TYPE.KNOWLEDGE && children[0] === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       bar = BAR_TYPE.KNOWLEDGE_TRASH;
+      children[0] = '';
+    }
+    // Activate the bar when portal-issues sub-pages refresh
+    if (bar === BAR_TYPE.PORTAL_ISSUES && children[0] === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
+      bar = BAR_TYPE.PORTAL_ISSUES_TRASH;
+      children[0] = '';
+    }
+    if (bar === BAR_TYPE.PORTAL_ISSUES && children[0] === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES) {
+      bar = BAR_TYPE.PORTAL_ISSUE_TYPES;
+      children[0] = '';
+    }
+    if (bar === BAR_TYPE.PORTAL_ISSUES && children[0] === PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES) {
+      bar = BAR_TYPE.PORTAL_ISSUE_SUBSTATES;
       children[0] = '';
     }
     if (bar === BAR_TYPE.CONNECTION && children[0] && CONNECTION_PAGE_SLUG_ID.ALL !== children[0]) {

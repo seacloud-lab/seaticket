@@ -9,7 +9,8 @@ class Option {
     this.description = object.description;
     this.color = object.color || '';
     this.text_color = object.text_color || '';
-    this.tickets_count = object.tickets_count || 0;
+    // Support both tickets_count (for tickets) and issues_count (for portal issues)
+    this.tickets_count = object.tickets_count || object.issues_count || 0;
     this.parent_id = object.parent_id || '';
 
     const predefinedConfigInfo = predefinedConfig[this._id] || predefinedConfig[this.name];

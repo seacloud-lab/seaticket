@@ -485,6 +485,14 @@ CREATE TABLE `connection_views`  (
   KEY `connection_views_connection_id`(`connection_id`)
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `portal_issue_views`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  `details` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `portal_issue_views_project_uuid`(`project_uuid`)
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `options_useroptions`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,

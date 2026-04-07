@@ -2,10 +2,14 @@
 from django.urls import re_path
 
 from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view, portal_external_logout_view
-from .apis import PortalTicketsView, PortalMyTicketsView, PortalTagsView, \
-    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalTicketMetadataView, PortalSettingsView, \
-    PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
-    PortalExternalUsersView, PortalUserListView, PortalTicketView
+from .apis import PortalTagsView, \
+    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, PortalSettingsView, \
+    PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, PortalIssueViewView,\
+    PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
+    PortalIssuesView, PortalMyIssuesView, PortalIssueView, \
+    PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView
+from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
+from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
     PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
     PortalChatView
@@ -14,6 +18,8 @@ from .chat.apis import (
 
 urlpatterns = [
     # portal edit page (for admins)
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-ticket/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
@@ -23,6 +29,8 @@ urlpatterns = [
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
 
     # portal page (for external users)
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-ticket/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_view, name='portal_view'),
@@ -32,17 +40,14 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
- 
+    
     # portal API
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tickets/$', PortalTicketsView.as_view(), name='api-v1-portal-tickets'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', PortalMyTicketsView.as_view(), name='api-v1-portal-my-tickets'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tickets/(?P<ticket_id>\d+)/$', PortalTicketView.as_view(), name='api-v1-portal-ticket'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/(?P<knowledge_id>\d+)/$', PortalKnowledgeBaseRecordView.as_view(), name='api-v1-portal-knowledge-base-record'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/user-list/$', PortalUserListView.as_view(), name='api-v1-portal-user-list'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/ticket/metadata/$', PortalTicketMetadataView.as_view(), name='api-v1-portal-ticket-metadata'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issue/metadata/$', PortalIssueMetadataView.as_view(), name='api-v1-portal-issue-metadata'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/(?P<token>[a-f0-9]{32})/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations-detail'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/send-code/$', PortalExternalLoginSendCodeView.as_view(), name='api-v1-portal-external-login-send-code'),
@@ -52,6 +57,30 @@ urlpatterns = [
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
 
+
+    # portal issues API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/$', PortalIssuesView.as_view(), name='api-v1-portal-issues'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', PortalMyIssuesView.as_view(), name='api-v1-portal-my-issues'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/$', PortalIssueView.as_view(), name='api-v1-portal-issue'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/$', PortalIssueCommentsView.as_view(), name='api-v1-portal-issue-comments'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/(?P<comment_id>\d+)/$', PortalIssueCommentView.as_view(), name='api-v1-portal-issue-comment'),
+
+    # portal issues views API (for internal Seametadata)
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/$', PortalIssueViewsView.as_view(), name='api-v1-portal-issues-views'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/move/$', PortalIssueViewsMoveView.as_view(), name='api-v1-portal-issues-views-move'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/duplicate/$', PortalIssueViewsDuplicateView.as_view(), name='api-v1-portal-issues-view-duplicate'),
+
+    # portal issue types API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/types/$', PortalIssueTypesAPIView.as_view(), name='api-v1-portal-issues-types'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/types/(?P<type_id>[^/]+)/$', PortalIssueTypeAPIView.as_view(), name='api-v1-portal-issues-type'),
+
+    # portal issue substates API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/substates/$', PortalIssueSubstatesAPIView.as_view(), name='api-v1-portal-issues-substates'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/substates/(?P<substate_id>[^/]+)/$', PortalIssueSubstateAPIView.as_view(), name='api-v1-portal-issues-substate'),
+
+    # portal issues trash API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/trash/$', PortalIssueTrashAPIView.as_view(), name='api-v1-portal-issues-trash'),
 
     # portal chat API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/$', PortalChatView.as_view(), name='api-v1-portal-chat'),

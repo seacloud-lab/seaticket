@@ -3,6 +3,12 @@ import { gettext, siteRoot } from '@/constants';
 import { CustomizeTabs, Icon } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
 
+const BASE_NAV_ITEMS = [
+  { key: PORTAL_PAGE.CHAT, name: gettext('Chat'), icon: 'chat' },
+  { key: PORTAL_PAGE.SUBMIT_ISSUE, name: gettext('Submit issue'), icon: 'submit-ticket' },
+  { key: PORTAL_PAGE.MY_ISSUES, name: gettext('My issues'), icon: 'my-tickets' },
+];
+
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const primaryTabs = isAnonymous
     ? (enableKB ? [{ value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }] : [])
@@ -10,12 +16,12 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
       ? [...BASE_PRIMARY_TABS, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
       : BASE_PRIMARY_TABS);
 
-  const isTicketsPage = activePage === PORTAL_PAGE.SUBMIT_TICKET || activePage === PORTAL_PAGE.MY_TICKETS;
-  const activePrimaryTab = isTicketsPage ? TICKETS_TAB : activePage;
+  const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
+  const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
 
   const onPrimaryTabChange = (value) => {
     if (value === TICKETS_TAB) {
-      const targetPage = isTicketsPage ? activePage : PORTAL_PAGE.SUBMIT_TICKET;
+      const targetPage = isIssuesPage ? activePage : PORTAL_PAGE.SUBMIT_ISSUE;
       onPageChange(targetPage);
       return;
     }

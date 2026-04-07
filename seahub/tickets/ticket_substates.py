@@ -57,15 +57,16 @@ class TicketSubstatesAPIView(APIView):
         seadb_api = SeaDBAPI()
 
         try:
-            substate_options, substate_column = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
+            substate_options, substate_column = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate')
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # substate_column = TicketsTable.substate.data
-        cascade_settings = substate_column.get('data').get('cascade_settings')
-        cascade_column_key = substate_column.get('data').get('cascade_column_key')
+        column_data = substate_column.get('data') or {}
+        cascade_settings = column_data.get('cascade_settings') or {}
+        cascade_column_key = column_data.get('cascade_column_key')
         if state_id:
             allowed_ids = set(cascade_settings.get(state_id, []))
             substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]

@@ -1,7 +1,7 @@
 import React from 'react';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
-import SubmitTicket from './submit-ticket';
-import MyTickets from './my-tickets';
+import SubmitIssue from './submit-issue';
+import MyIssues from './my-issues';
 import PortalKnowledgeBase from './knowledge-base/index';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading, CustomizeTabs } from '@/components';
@@ -9,7 +9,7 @@ import PortalChat from './chat';
 
 const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
 
-  const { isLoading: isMetadataLoading, typesData } = useMetadata();
+  const { isLoading: isMetadataLoading } = useMetadata();
   const { isLoading: isTagsDataLoading } = useTags();
 
   const renderContent = () => {
@@ -18,17 +18,16 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
     if (isLoading) return (<CenteredLoading />);
 
     switch (activePage) {
-      case PORTAL_PAGE.SUBMIT_TICKET:
+      case PORTAL_PAGE.SUBMIT_ISSUE:
         return (
-          <SubmitTicket
+          <SubmitIssue
             { ...props }
             onPageChange={onPageChange}
-            typesData={typesData}
           />
         );
-      case PORTAL_PAGE.MY_TICKETS:
+      case PORTAL_PAGE.MY_ISSUES:
         return (
-          <MyTickets { ...props } />
+          <MyIssues { ...props } />
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
         return <PortalKnowledgeBase { ...props } />;
@@ -38,8 +37,9 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
         return null;
     }
   };
-  const isTicketsPage = activePage === PORTAL_PAGE.SUBMIT_TICKET || activePage === PORTAL_PAGE.MY_TICKETS;
-  const activePrimaryTab = isTicketsPage ? TICKETS_TAB : activePage;
+
+  const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
+  const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
 
   return (
     <div className="sea-qa-portal-main-panel">

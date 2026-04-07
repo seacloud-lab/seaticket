@@ -2,6 +2,8 @@ import { mediaUrl, siteRoot } from '@/constants';
 import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
 import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
 import { TICKET_TYPE } from './main-panel/tickets/constants';
+import { PORTAL_ISSUE_TYPE } from './main-panel/portal-issues/constants';
+import { BAR_TYPE } from './constants';
 import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/utils';
 import { generatorTicketURL } from './main-panel/tickets/utils';
 
@@ -11,7 +13,8 @@ export const getResourceIconURL = (type) => {
     case 'unknown': {
       return `${root}img/unknown.png`;
     }
-    case TICKET_TYPE: {
+    case TICKET_TYPE:
+    case PORTAL_ISSUE_TYPE: {
       return `${root}img/ticket.png?t=20260104`;
     }
     case KNOWLEDGE_BASE_TYPE: {
@@ -23,10 +26,21 @@ export const getResourceIconURL = (type) => {
   }
 };
 
+const generatorPortalIssueURL = ({ issue, workspaceID, projectName }) => {
+  const { origin } = location;
+  const issueId = issue._id || issue.id;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.PORTAL_ISSUES}/${issueId}/`;
+  const urlObject = new URL(url);
+  return urlObject.href;
+};
+
 export const getInternalNetworkAddress = (type, resourceID, { workspaceID, projectName, connectionID }) => {
   switch (type) {
     case TICKET_TYPE: {
       return generatorTicketURL({ ticket: { _id: resourceID, }, workspaceID, projectName });
+    }
+    case PORTAL_ISSUE_TYPE: {
+      return generatorPortalIssueURL({ issue: { _id: resourceID, }, workspaceID, projectName });
     }
     case KNOWLEDGE_BASE_TYPE: {
       return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
@@ -38,7 +52,7 @@ export const getInternalNetworkAddress = (type, resourceID, { workspaceID, proje
 };
 
 export const getResourceOriginalURL = (type, resource, connections, columns) => {
-  if (type === TICKET_TYPE || type === KNOWLEDGE_BASE_TYPE) return '';
+  if (type === TICKET_TYPE || type === PORTAL_ISSUE_TYPE || type === KNOWLEDGE_BASE_TYPE) return '';
   const connection = connections.find(c => (c.id + '') === (resource.connection_id + ''));
   if (!connection) return '';
   return getOriginalPageUrl(connection, resource, columns);

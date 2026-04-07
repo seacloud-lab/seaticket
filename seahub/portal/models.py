@@ -1,9 +1,38 @@
 import json
+import string
+import random
+import copy
 from django.db import models
 from django.utils import timezone
 from uuid import uuid4
 from django.urls import reverse
 from django.conf import settings
+from copy import deepcopy
+
+from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
+from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+def generate_random_string_lower_digits(length):
+    letters_and_digits = string.ascii_lowercase + string.digits
+    random_string = ''.join(random.choice(letters_and_digits) for i in range(length))
+    return random_string
+
+
+def generate_views_unique_id(length, folders_views_ids=None):
+    if not folders_views_ids:
+        return generate_random_string_lower_digits(length)
+
+    while True:
+        id = generate_random_string_lower_digits(length)
+        if id not in folders_views_ids:
+            break
+
+    return id
 
 
 class PortalExternalInvitationManager(models.Manager):
@@ -171,3 +200,238 @@ class PortalChatMessages(models.Model):
             'updated_at': self.updated_at,
             'as_context': self.as_context,
         }
+
+
+
+
+class PortalIssueView(object):
+
+    def __init__(self, name, view_type='table', config={}, folders_views_ids=None):
+        self.name = name
+        self.type = view_type
+        self.config = config
+        self.details = {}
+
+        self.init_view(folders_views_ids)
+
+    def init_view(self, folders_views_ids=None):
+        self.details = {
+            "_id": generate_views_unique_id(4, folders_views_ids),
+            "table_id": '0000',  # by default
+            "name": self.name,
+            'basic_filters': [
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
+            ],
+            "filters": [],
+            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            "groupbys": [],
+            "filter_conjunction": "Or",
+            "hidden_columns": [],
+            "type": self.type,
+        }
+        self.details.update(self.config)
+
+
+
+class PortalIssueViewsManager(models.Manager):
+
+    def update_init_view_details(self, project_uuid, details):
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_portal_issues_columns
+        seadb_api = SeaDBAPI()
+        columns = get_portal_issues_columns(seadb_api, project_uuid)
+        views = details.get('views', [])
+        for v in views:
+            basic_filters = v.get('basic_filters', [])
+            for basic_filter in basic_filters:
+                column_key = basic_filter['column_key']
+
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    column_name = column['name']
+                    basic_filter['column_key'] = column['key']
+                    if column_name in ['state', 'type', 'tags']:
+                        data = column.get('data', {})
+                        if data:
+                            options = data.get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+            v['basic_filters'] = basic_filters
+
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item['column_key']
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    item['column_key'] = column['key']
+            v['sorts'] = sorts
+            details['views'] = views
+        return details
+
+    def get_record(self, project_uuid):
+        project_uuid = uuid_str_to_32_chars(project_uuid)
+        record = self.filter(project_uuid=project_uuid).first()
+        if not record:
+            details = deepcopy(PORTAL_ISSUES_DEFAULT_DETAILS)
+            record = self.create(
+                project_uuid=project_uuid,
+                details=json.dumps(details)
+            )
+        return record
+
+    def list_views(self, project_uuid):
+        record = self.get_record(project_uuid)
+        return json.loads(record.details)
+
+    def get_view(self, project_uuid, view_id):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                return v
+        return None
+
+    def add_view(self, project_uuid, view_name, view_type='table', view_data={}):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        view_name = get_no_duplicate_obj_name(view_name, record.views_names)
+        exist_folders_views_ids = record.folders_views_ids
+        new_view = PortalIssueView(view_name, view_type, view_data, exist_folders_views_ids)
+        details = new_view.details
+        view_id = details.get('_id')
+        view_details['views'].append(details)
+        view_details = self.update_init_view_details(project_uuid, view_details)
+        new_view_nav = { '_id': view_id, 'type': 'view' }
+        navigation.append(new_view_nav)
+        record.details = json.dumps(view_details)
+        record.save()
+        return new_view.details
+
+    def update_view(self, project_uuid, view_id, view_dict):
+        record = self.get_record(project_uuid)
+        view_dict.pop('_id', '')
+        if 'name' in view_dict:
+            exist_obj_names = record.views_names
+            view_dict['name'] = get_no_duplicate_obj_name(view_dict['name'], exist_obj_names)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                v.update(view_dict)
+                break
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def delete_view(self, project_uuid, view_id):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        views = view_details.get('views', [])
+
+        for view in views:
+            if view.get('_id') == view_id:
+                views.remove(view)
+                break
+        for nav_item in navigation:
+            if nav_item.get('_id') == view_id:
+                navigation.remove(nav_item)
+                break
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def move_view(self, project_uuid, source_view_id, target_view_id):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+
+        # Find and remove source
+        source_nav = None
+        for nav in navigation:
+            if nav.get('_id') == source_view_id:
+                source_nav = nav
+                navigation.remove(nav)
+                break
+
+        if not source_nav:
+            return view_details
+
+        # Insert at target position
+        target_index = -1
+        for i, nav in enumerate(navigation):
+            if nav.get('_id') == target_view_id:
+                target_index = i
+                break
+
+        if target_index >= 0:
+            navigation.insert(target_index, source_nav)
+        else:
+            navigation.append(source_nav)
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def duplicate_view(self, view_id, record):
+        view_details = json.loads(record.details)
+        exist_folders_views_ids = record.folders_views_ids
+        new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
+        duplicate_view = next((copy.deepcopy(view) for view in view_details['views'] if view.get('_id') == view_id), None)
+        duplicate_view['_id'] = new_view_id
+        view_name = get_no_duplicate_obj_name(duplicate_view['name'], record.views_names)
+        duplicate_view['name'] = view_name
+        view_details['views'].append(duplicate_view)
+        navigation = view_details.get('navigation', [])
+        new_view_nav = {'_id': new_view_id, 'type': 'view'}
+        navigation.append(new_view_nav)
+
+        record.details = json.dumps(view_details)
+        record.save()
+
+        return duplicate_view
+
+
+class PortalIssueViews(models.Model):
+    project_uuid = models.UUIDField(db_index=True)
+    details = models.TextField()
+
+    objects = PortalIssueViewsManager()
+
+    class Meta:
+        db_table = 'portal_issue_views'
+
+    
+    @property
+    def folders_ids(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('_id') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def folders_names(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('name') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def views_ids(self):
+        views = json.loads(self.details)['views']
+        return [v.get('_id') for v in views]
+
+    @property
+    def views_names(self):
+        views = json.loads(self.details)['views']
+        return [v.get('name') for v in views]
+
+    @property
+    def folders_views_ids(self):
+        return self.folders_ids + self.views_ids
