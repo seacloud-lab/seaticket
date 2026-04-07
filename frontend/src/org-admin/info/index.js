@@ -33,7 +33,7 @@ class Info extends Component {
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_usage = 1591 } = this.state;
     return (
 
       <Fragment>
@@ -53,7 +53,9 @@ class Info extends Component {
           <MultipleTextCard
             texts={[
               { name: gettext('Total issues'), value: issues_usage || '--' },
+              { name: gettext('AI Credit'), value: ai_credit_usage || '--' },
             ]}
+            itemStyle={{ flex: 1 }}
           />
         </Main>
       </Fragment>
