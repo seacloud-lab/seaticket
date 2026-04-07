@@ -147,7 +147,7 @@ const RunCard = ({
   onViewContent,
 }) => {
   const { id, started_at, items = [], actions = [] } = run;
-  const hasPendingSuggestion = items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
+  const hasPendingSuggestion = (run.status === RUN_STATUS.RUNNING) && items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
   const [isExpanded, setIsExpanded] = useState(hasPendingSuggestion);
 
   const toggleExpand = useCallback(() => {
