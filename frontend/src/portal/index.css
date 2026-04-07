@@ -180,6 +180,20 @@
   flex-direction: column;
 }
 
+.sea-qa-portal-content .ask-main-container {
+  padding-right: 0px;
+}
+
+.sea-qa-portal-content .sea-qa-ai-ask-wrapper {
+  position: relative;
+}
+
+.sea-qa-portal-content .sea-qa-ai-ask-wrapper .chat-header-operation-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+}
+
 .sea-qa-portal-content .sea-qa-ai-ask-wrapper.empty.has-header .sea-qa-ai-ask-chats-header {
   margin-bottom: auto;
 }

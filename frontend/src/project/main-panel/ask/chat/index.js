@@ -496,9 +496,13 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
 
   const isEmpty = chatHistories.length === 0 && !loading;
   const _isReply = loading || isReply;
+  const operationContent = renderOperation && renderOperation();
 
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small-page': isSmall, 'has-header': sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={wrapperRef}>
+      {operationContent && (
+        <div className="chat-header-operation-wrapper">{operationContent}</div>
+      )}
       {sessionId !== ASK_PAGE_SLUG_ID.NEW && (
         <div className="sea-qa-ai-ask-chats-header">
           <ChatHeader
@@ -508,7 +512,6 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
             session={session}
             isEmpty={isEmpty}
             toggleClearContext={toggleClearContext}
-            renderOperation={renderOperation}
             customHeaderTitle={customHeaderTitle}
           />
         </div>

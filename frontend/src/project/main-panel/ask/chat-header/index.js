@@ -13,13 +13,11 @@ const ChatHeader = ({
   isEmpty,
   hasHistoryMessages,
   toggleClearContext,
-  renderOperation,
   customHeaderTitle,
 }) => {
   const isOwner = session?.username === username;
   const disabled = isReply || readOnly;
   const showClearBtn = hasHistoryMessages && (isProjectAdmin || isOwner);
-  const operationContent = renderOperation && renderOperation();
 
   const renderCustomTitle = useCallback(() => {
     const title = isEmpty ? customHeaderTitle : session?.name;
@@ -43,9 +41,6 @@ const ChatHeader = ({
             onClick={disabled ? () => {} : toggleClearContext}
           />
         </>
-      )}
-      {operationContent && (
-        <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
     </>
   );
