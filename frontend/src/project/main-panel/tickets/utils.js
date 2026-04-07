@@ -1,4 +1,4 @@
-import { gettext, siteRoot } from '@/constants';
+import { username, gettext, siteRoot } from '@/constants';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
@@ -8,7 +8,6 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
 import { TicketForAI } from './models';
-import { username } from '@/constants';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;

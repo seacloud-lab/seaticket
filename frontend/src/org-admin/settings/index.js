@@ -4,10 +4,9 @@ import { toaster, CenteredLoading, SectionSettings } from '@/components';
 import AdminCheckboxSettings from '@/components/settings/admin-checkbox-settings';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
-import { gettext, displayTwoFactorAuth } from '@/constants';
+import { orgID, gettext, displayTwoFactorAuth } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import InputItem from './input-item';
-import { orgID } from '@/constants';
 import { validateName } from '@/utils/validate';
 
 const propTypes = {

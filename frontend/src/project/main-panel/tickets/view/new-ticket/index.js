@@ -13,10 +13,9 @@ import { CollaboratorsSettings, TypeSettings, PrioritySettings, DueDateSettings 
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
-import { useTicketsPage } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { useMetadata } from '../../hooks';
 import { useData, useTags } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 

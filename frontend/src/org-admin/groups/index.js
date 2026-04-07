@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Paginator } from '@/components';
+import { toaster, Paginator, CenteredLoading } from '@/components';
 import { gettext, orgID } from '@/constants';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
 import OrgGroupInfo from '@/models/org-group';
 import Group from './group';
 import { TopBar, Main } from '../main-panel';
-import { CenteredLoading } from '@/components';
-
 class Groups extends Component {
 
   constructor(props) {

@@ -1,11 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, ModalPortal, ProjectIcon } from '@/components';
+import { toaster, ModalPortal, ProjectIcon, RestoreProjectDialog } from '@/components';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants/config';
 import homeAPI from '../../api';
-import { RestoreProjectDialog } from '@/components';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const propTypes = {

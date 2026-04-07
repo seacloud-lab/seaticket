@@ -812,6 +812,7 @@ module.exports = function (webpackEnv) {
             ...(!hasJsxRuntime && {
               'react/react-in-jsx-scope': 'error',
             }),
+            'no-duplicate-imports': 'warn',
           },
         },
       }),

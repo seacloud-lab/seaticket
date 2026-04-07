@@ -3,10 +3,10 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ChatSession } from '../models';
 import { useAskPage } from './page-type';
-import { ASK_PAGE_SLUG_ID } from '../constants';
+import { ASK_PAGE_SLUG_ID, SESSION_TAB_TYPE } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../constants';
-import { SESSION_TAB_TYPE } from '../constants';
+
 const SessionsContext = React.createContext(null);
 
 export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, localStorageKey, children }) => {

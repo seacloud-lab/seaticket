@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { gettext, KeyCodes } from '@/constants';
-import { IconButton } from '@/components';
-import { SearchInput } from '@/components';
+import { IconButton, SearchInput } from '@/components';
 import { EVENT_BUS_TYPE } from '../../constants';
 import context from '../../context';
 

@@ -24,10 +24,9 @@ import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
 import { useData, useTags, useMetadata } from '@/project/hooks';
-import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 
 import './index.css';

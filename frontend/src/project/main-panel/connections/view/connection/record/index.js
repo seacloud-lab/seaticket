@@ -1,10 +1,9 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { useConnectionsPage } from '../../../hooks';
+import { useConnectionsPage, useConnections } from '../../../hooks';
 import { CenteredLoading, IconButton } from '@/components';
 import { getTableName } from '../../../utils';
 import { useData } from '@/project/hooks';
-import { useConnections } from '../../../hooks';
 import ConnectionResourceDetails from '../../../components/connection-resource-details';
 import { getResourceOriginalURL } from '@/project/utils';
 import { gettext } from '@/constants';

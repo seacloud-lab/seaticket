@@ -1,9 +1,8 @@
 import {
   getDateDisplayString, getNumberDisplayString, formatStringToNumber, getOptionDisplayName, getCollaboratorsName, getFloatNumber, getColumnOptionNamesByIds,
   getOption, checkIsPredefinedOption, getColumnOptionNameById,
-  getTagsDisplayString,
+  getTagsDisplayString, getColumnOptions, generatorCellOption, generatorCellOptions, isLongTextValueExceedLimit, getValidLongTextValue
 } from './column';
-import { getColumnOptions, generatorCellOption, generatorCellOptions, isLongTextValueExceedLimit, getValidLongTextValue } from './column';
 import { isNumber } from './number';
 import { formatTextToDate } from './date';
 import { CellType, DEFAULT_DATE_FORMAT } from '../constants';
