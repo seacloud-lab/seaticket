@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
-import TopBar from '@/project/main-panel/top-bar';
 import Sessions from '@/project/main-panel/ask/sessions';
 import Chat from '@/project/main-panel/ask/chat';
 import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from '@/project/main-panel/ask/hooks';
@@ -25,28 +24,6 @@ const Main = ({ title, settings }) => {
 
   return (
     <>
-      <TopBar className="pr-3">
-        <div className="w-100 text-truncate">{title}</div>
-        {!isLoading && (
-          <div className="d-flex">
-            {!isAnonymous && (
-              <IconButton
-                icon="new-chat"
-                onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
-                className="mr-2"
-                title={gettext('New chat')}
-                aria-label={gettext('New chat')}
-              />
-            )}
-            <IconButton
-              icon="history"
-              onClick={toggleIsShowSessions}
-              title={gettext('Histories')}
-              aria-label={gettext('Histories')}
-            />
-          </div>
-        )}
-      </TopBar>
       <div className="ask-main-container">
         {isLoading ? (
           <CenteredLoading />
@@ -62,6 +39,26 @@ const Main = ({ title, settings }) => {
                 api={chatAPI}
                 canAddDocuments={false}
                 canSelectModel={false}
+                customHeaderTitle={gettext('Chat')}
+                renderOperation={() => (
+                  <div className="d-flex">
+                    {!isAnonymous && (
+                      <IconButton
+                        icon="new-chat"
+                        onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
+                        className="mr-2"
+                        title={gettext('New chat')}
+                        aria-label={gettext('New chat')}
+                      />
+                    )}
+                    <IconButton
+                      icon="history"
+                      onClick={toggleIsShowSessions}
+                      title={gettext('Histories')}
+                      aria-label={gettext('Histories')}
+                    />
+                  </div>
+                )}
               />
               <Documents />
             </div>

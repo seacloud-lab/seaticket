@@ -195,8 +195,17 @@ const Portal = () => {
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID}>
             {isEditMode && <LeftBar />}
-            <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
-            <MainPanel activePage={activePage} projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} onPageChange={onPageChange} />
+            <div className="sea-qa-portal-body">
+              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
+              <MainPanel
+                activePage={activePage}
+                projectUuid={projectUuid}
+                projectName={projectName}
+                workspaceID={workspaceID}
+                isAnonymous={isAnonymous}
+                onPageChange={onPageChange}
+              />
+            </div>
           </DataProvider>
         )}
       </div>

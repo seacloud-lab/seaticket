@@ -180,7 +180,6 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
     <div className="sea-qa-portal-new-ticket-container" ref={ticketRef}>
       <div className={classnames('sea-qa-portal-new-ticket', { 'small': isSmallScreen })}>
         <div className="sea-qa-portal-ticket-settings">
-          <div className="sea-qa-portal-ticket-name d-flex align-items-center">{gettext('New ticket')}</div>
           <div className="sea-qa-portal-ticket-settings-container d-flex">
             <div className="sea-qa-portal-ticket-content-settings">
               <div className="sea-qa-portal-ticket-label">
@@ -219,7 +218,7 @@ const SubmitTicket = ({ projectUuid, onPageChange, typesData }) => {
                   onChange={onTypeChange}
                 />
               )}
-              <div className="sea-qa-portal-ticket-footer">
+              <div className="sea-qa-portal-ticket-footer d-flex justify-content-center">
                 {renderSubmitBtns()}
               </div>
             </div>

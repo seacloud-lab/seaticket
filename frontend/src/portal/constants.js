@@ -1,3 +1,5 @@
+import { gettext } from '@/constants';
+
 export const PORTAL_PAGE = {
   SUBMIT_TICKET: 'submit-ticket',
   MY_TICKETS: 'my-tickets',
@@ -13,4 +15,16 @@ export const SOURCE_TYPE_OPTIONS = [
   { value: 'github_issue', label: 'GitHub Issues' },
   { value: 'discourse_forum', label: 'Discourse Forum' },
   { value: 'email', label: 'Email' },
+];
+
+export const TICKETS_TAB = 'tickets';
+
+export const BASE_PRIMARY_TABS = [
+  { value: PORTAL_PAGE.CHAT, label: gettext('Chat') },
+  { value: TICKETS_TAB, label: gettext('Tickets') },
+];
+
+export const TICKET_SECONDARY_TABS = [
+  { value: PORTAL_PAGE.SUBMIT_TICKET, label: gettext('Submit ticket') },
+  { value: PORTAL_PAGE.MY_TICKETS, label: gettext('My tickets') },
 ];
