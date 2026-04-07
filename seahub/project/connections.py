@@ -5,6 +5,7 @@ import logging
 import json
 import datetime
 import sys
+import uuid
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -1067,13 +1068,7 @@ class ProjectConnectionReplyEmailView(APIView):
     throttle_classes = (UserRateThrottle, )
 
     @require_org_context
-    def post(self, request, project_uuid, connection_id, record_id):
-        try:
-            record_id = int(record_id)
-        except (TypeError, ValueError):
-            error_msg = 'record_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
+    def post(self, request, project_uuid, connection_id):
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -1100,27 +1095,26 @@ class ProjectConnectionReplyEmailView(APIView):
 
         seadb_api = SeaDBAPI(username)
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        thread = email_seadb_api.get_thread_by_pk(connection_id, record_id)
-        if not thread:
-            error_msg = f'record {record_id} not found.'
+
+        # email_id is the _pk of the email table to reply to (required)
+        email_id = request.data.get('email_id')
+        if not email_id:
+            error_msg = 'email_id is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            email_id = int(email_id)
+        except (TypeError, ValueError):
+            error_msg = 'email_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
+        if not target_email:
+            error_msg = 'email_id not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # email_id is the _pk of the email table to reply to
-        email_id = request.data.get('email_id')
-        if email_id:
-            try:
-                email_id = int(email_id)
-            except (TypeError, ValueError):
-                error_msg = 'email_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
-            if not target_email:
-                error_msg = 'email_id not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        else:
-            target_email = email_seadb_api.get_latest_reply_target_email(connection_id, record_id)
-        if not target_email:
-            error_msg = 'No email found in this thread.'
+        # Get thread_id from email_table
+        record_id = target_email.get('thread_id')
+        if not record_id:
+            error_msg = 'No thread_id found in email.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         to_text = request.data.get('to') or target_email.get('email_from')
@@ -1134,12 +1128,17 @@ class ProjectConnectionReplyEmailView(APIView):
 
         subject = request.data.get('subject')
         if not subject:
-            subject = target_email.get('title') or thread[0].get('title')
+            subject = target_email.get('title')
         if not subject.lower().startswith('re:'):
             subject = f'Re: {subject}'
 
         html_content = request.data.get('html_content')
         target_message_id = target_email.get('message_id')
+
+        # Generate message_id before sending
+        sender_email = config.get('sender_email') or config.get('username')
+        domain = sender_email.split('@')[1] if '@' in sender_email else 'localhost'
+        message_id = f'<{uuid.uuid4().hex}@{domain}>'
 
         # Send email
         send_info = {
@@ -1149,11 +1148,11 @@ class ProjectConnectionReplyEmailView(APIView):
             'copy_to': cc_emails,
             'subject': subject,
             'in_reply_to': target_message_id,
+            'message_id': message_id,
         }
         
         try:
-            result = toggle_send_email(config, send_info)
-            message_id = result.get('message_id', '')
+            toggle_send_email(config, send_info)
         except EmailConfigError as e:
             logger.error('email config error, connection_id: %s, error: %s', connection_id, e)
             error_msg = 'Email connection config is invalid.'
@@ -1163,7 +1162,6 @@ class ProjectConnectionReplyEmailView(APIView):
             error_msg = 'Failed to send email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        sender_email = config.get('sender_email') or config.get('username')
         sender_name = config.get('sender_name', '')
 
         email_data = {

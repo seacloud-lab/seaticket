@@ -95,13 +95,13 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       cc: cc.join(','),
       email_id: detail._pk,
     };
-    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, recordId, payload).then(() => {
+    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then(() => {
       callback && callback();
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
       callback && callback(true);
     });
-  }, [projectUuid, connection_id, recordId]);
+  }, [projectUuid, connection_id]);
 
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
