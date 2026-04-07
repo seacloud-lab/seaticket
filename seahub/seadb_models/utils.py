@@ -508,7 +508,8 @@ def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
         GeneralTaskTable.title.name,
         GeneralTaskTable.status.name,
         GeneralTaskTable.priority.name,
-        GeneralTaskTable.last_modified_at.name,
+        GeneralTaskTable.modified_time.name,
+        GeneralTaskTable.created_time.name,
         GeneralTaskTable.record_modified_time.name,
         GeneralTaskTable.deleted.name,
         GeneralTaskTable.linked_ticket.name,
@@ -900,7 +901,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
     table_name = GeneralTaskTable.gen_table_name(connection_id)
-    sql = f"SELECT `title`, `status`, `size`, `priority`, `assignees`, `task_details`, `completed_at`, `last_modified_at` FROM `{table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `title`, `status`, `size`, `priority`, `assignees`, `content`, `due_date`, `modified_time` FROM `{table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]

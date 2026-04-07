@@ -2,6 +2,9 @@ import { mediaUrl, server } from '@/constants';
 import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
   CONNECTION_PREDEFINED_COLUMN_NAME,
+  GENERAL_TASK_STATUS_NAME_MAP,
+  GENERAL_TASK_PRIORITY_NAME_MAP,
+  GENERAL_TASK_SIZE_NAME_MAP,
 } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -153,17 +156,28 @@ export const initConnectionResourceDetails = (type, {
     };
   }
   if (type === CONNECTION_TYPE.GENERAL_TASK) {
+    const formatValue = (value, mapping) => {
+      if (!value) return '';
+      return mapping[value] || value;
+    };
+    const formatAssignees = (assignees) => {
+      if (!assignees) return '';
+      if (Array.isArray(assignees)) {
+        return assignees.join(', ');
+      }
+      return String(assignees);
+    };
     const details = [
-      ['Status', prams.status],
-      ['Size', prams.size],
-      ['Priority', prams.priority],
-      ['Assignees', prams.assignees],
+      ['Status', formatValue(prams.status, GENERAL_TASK_STATUS_NAME_MAP)],
+      ['Size', formatValue(prams.size, GENERAL_TASK_SIZE_NAME_MAP)],
+      ['Priority', formatValue(prams.priority, GENERAL_TASK_PRIORITY_NAME_MAP)],
+      ['Assignees', formatAssignees(prams.assignees)],
     ].filter(item => item[1]).map(item => `${item[0]}: ${item[1]}`).join('\n');
-    const taskDetails = prams.task_details ? String(prams.task_details) : '';
-    const mergedDetails = [details, taskDetails].filter(Boolean).join('\n\n');
+    const content = prams.content ? String(prams.content) : '';
+    const mergedDetails = [details, content].filter(Boolean).join('\n\n');
     return {
       title,
-      time: prams.last_modified_at,
+      time: prams.modified_time,
       details: mergedDetails,
       ...prams
     };

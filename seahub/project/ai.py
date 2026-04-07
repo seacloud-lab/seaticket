@@ -184,7 +184,7 @@ class ConvertRecordToTicket(APIView):
             case ConnectionType.GENERAL_TASK.value:
                 task_table_name = GeneralTaskTable.gen_table_name(connection_id)
                 seadb_api = SeaDBAPI(username)
-                sql = f"SELECT `title`, `status`, `task_details`, `size`, `priority`, `assignees`, `completed_at`, `last_modified_at` FROM `{task_table_name}` WHERE _pk = {int(record_id)}"
+                sql = f"SELECT `title`, `status`, `content`, `size`, `priority`, `assignees`, `due_date`, `modified_at` FROM `{task_table_name}` WHERE _pk = {int(record_id)}"
                 results = seadb_api.query_rows(project_uuid, sql).get('results', [])
                 task = results[0] if results else {}
                 title = task.get('title', '')
@@ -194,12 +194,12 @@ class ConvertRecordToTicket(APIView):
                     **Ticket Information:**
                     Title: {title}
                     Status: {task.get('status', '')}
-                    Task Details: {task.get('task_details', '')}
+                    Content: {task.get('content', '')}
                     Size: {task.get('size', '')}
                     Priority: {task.get('priority', '')}
                     Assignees: {task.get('assignees', '')}
-                    Completed At: {task.get('completed_at', '')}
-                    Last Modified At: {task.get('last_modified_at', '')}
+                    Completed At: {task.get('due_date', '')}
+                    Last Modified At: {task.get('modified_time', '')}
                 """
         if not record_detail:
             error_msg = 'Record detail not found.'

@@ -14,6 +14,9 @@ import {
   SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME,
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
   SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
+  GENERAL_TASK_STATUS_NAME_MAP,
+  GENERAL_TASK_PRIORITY_NAME_MAP,
+  GENERAL_TASK_SIZE_NAME_MAP,
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -140,6 +143,31 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
               let options = stateReasonColumn.data?.options || [];
               options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
               columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
+            }
+          }
+          if (type === CONNECTION_TYPE.GENERAL_TASK) {
+            const statusColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATUS);
+            if (statusColumnIndex > -1) {
+              const statusColumn = columns[statusColumnIndex];
+              let options = statusColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_STATUS_NAME_MAP[o.name] || o.name }));
+              columns[statusColumnIndex].data = { ...statusColumn.data, options };
+            }
+
+            const priorityColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY);
+            if (priorityColumnIndex > -1) {
+              const priorityColumn = columns[priorityColumnIndex];
+              let options = priorityColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_PRIORITY_NAME_MAP[o.name] || o.name }));
+              columns[priorityColumnIndex].data = { ...priorityColumn.data, options };
+            }
+
+            const sizeColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.SIZE);
+            if (sizeColumnIndex > -1) {
+              const sizeColumn = columns[sizeColumnIndex];
+              let options = sizeColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_SIZE_NAME_MAP[o.name] || o.name }));
+              columns[sizeColumnIndex].data = { ...sizeColumn.data, options };
             }
           }
           columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {

@@ -344,6 +344,25 @@ export const GITHUB_STATE_REASON_NAME_MAP = {
   'duplicate': gettext('Duplicate'),
 };
 
+export const GENERAL_TASK_STATUS_NAME_MAP = {
+  'open': gettext('Open'),
+  'in_progress': gettext('In progress'),
+  'done': gettext('Done'),
+  'closed': gettext('Closed'),
+};
+
+export const GENERAL_TASK_PRIORITY_NAME_MAP = {
+  'high': gettext('High'),
+  'medium': gettext('Medium'),
+  'low': gettext('Low'),
+};
+
+export const GENERAL_TASK_SIZE_NAME_MAP = {
+  'large': gettext('Large'),
+  'medium': gettext('Medium'),
+  'small': gettext('Small'),
+};
+
 export const CONNECTION_SYNC_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
@@ -391,9 +410,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   SIZE: 'size',
   PRIORITY: 'priority',
   ASSIGNEES: 'assignees',
-  COMPLETED_AT: 'completed_at',
-  CREATED_AT: 'created_at',
-  LAST_MODIFIED_AT: 'last_modified_at',
+  DUE_DATE: 'due_date',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -567,15 +584,19 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Assignees'),
       type: CellType.MULTIPLE_SELECT,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.COMPLETED_AT]: {
-      display_name: gettext('Completed at'),
+    [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
+      display_name: gettext('Due date'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIED_AT]: {
-      display_name: gettext('Last modified at'),
+    [CONNECTION_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
+      display_name: gettext('Last modified time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
   }
