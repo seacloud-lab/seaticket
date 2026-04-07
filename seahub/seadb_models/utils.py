@@ -918,7 +918,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         thread_record = thread_res.get('results')[0]
         email_sql = f"""
         SELECT 
-        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk, message_id, reply_to_message_id
+        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk
         FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC
         """
         email_res = seadb_api.query_rows(project_uuid, email_sql)
