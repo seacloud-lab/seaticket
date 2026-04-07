@@ -88,7 +88,6 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   }, []);
 
   const modifyLocalConnectionsSyncStatus = useCallback((update = {}, callback) => {
-    let successConnections = [];
     setConnections(connections => connections.map(connection => {
       const connectionUpdate = update[connection.id];
       if (!connectionUpdate) return connection;
@@ -96,12 +95,11 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       const newConnection = { ...connection, status, last_sync_time: connectionUpdate?.last_sync_time || '' };
       if (ObjectUtils.isSameObject(newConnection, connection)) return connection;
       if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
-        successConnections.push(newConnection);
+        const tableName = getTableName(newConnection);
+        markTablesViewExpired([tableName], callback);
       }
       return newConnection;
     }));
-    const successConnectionCacheDataNames = successConnections.map(c => getTableName(c));
-    markTablesViewExpired(successConnectionCacheDataNames, callback);
   }, [markTablesViewExpired]);
 
   const modifyConnectionIsActiveStatus = useCallback((connectionId, activeStatus) => {
