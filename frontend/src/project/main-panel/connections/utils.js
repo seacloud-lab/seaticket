@@ -1,5 +1,5 @@
 import copy from 'copy-to-clipboard';
-import { mediaUrl, server } from '@/constants';
+import { mediaUrl, server, gettext } from '@/constants';
 import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
@@ -8,7 +8,6 @@ import {
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
-import { gettext } from '@/constants';
 import { toaster } from '@/components';
 
 export const getConnectionIcon = (type) => {

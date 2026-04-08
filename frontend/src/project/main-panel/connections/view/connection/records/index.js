@@ -4,7 +4,7 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
-import { useConnectionsPage } from '../../../hooks';
+import { useConnectionsPage, useConnections } from '../../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -14,7 +14,6 @@ import {
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
-import { useConnections } from '../../../hooks';
 import {
   getTableName, generatorRowClassName,
   generateAIOptions, generateMarkAsOutdatedOptions, generateFindRelatedIssuesOption,

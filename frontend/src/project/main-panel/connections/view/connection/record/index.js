@@ -1,11 +1,10 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
-import { useConnectionsPage } from '../../../hooks';
+import { useConnectionsPage, useConnections } from '../../../hooks';
 import { CenteredLoading, IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { getTableName, generateAIOptions, generateFindRelatedIssuesOption } from '../../../utils';
 import { useData } from '@/project/hooks';
-import { useConnections } from '../../../hooks';
 import ConnectionResourceDetails from '../../../components/connection-resource-details';
 import { getResourceOriginalURL } from '@/project/utils';
 import { gettext } from '@/constants';
