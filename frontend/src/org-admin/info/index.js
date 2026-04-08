@@ -33,7 +33,7 @@ class Info extends Component {
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_usage = 1591 } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_usage } = this.state;
     return (
 
       <Fragment>

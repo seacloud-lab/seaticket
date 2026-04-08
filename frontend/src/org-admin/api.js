@@ -295,7 +295,26 @@ class OrgAdminAPI {
     if (month) {
       params.month = month;
     }
-    return this.req.get(url, { params: params });
+    return Promise.resolve({ data: {
+    "results": [
+        {
+            "project_uuid": "1a560fadcfe34b4a9dcc96e9b974e1ec",
+            "total_credit_used": 33.69138100000001,
+            "project_name": "Seafile English",
+            "owner": "0afaa2abacf44301a72d413f41e79f70@auth.local",
+            "nickname": "orgadmin"
+        },
+        {
+            "project_uuid": "ca6b90e672f640709faaac27b1136dbe",
+            "total_credit_used": 0.9636499999999999,
+            "project_name": "test team project",
+            "owner": "1@seafile_group",
+            "group_name": "test group"
+        }
+    ],
+    "count": 2
+} });
+    // return this.req.get(url, { params: params });
   }
 
   orgAdminGetAIStatisticsDetail(orgID, groupBy, startDate, endDate, condition, scenarios) {
@@ -309,7 +328,46 @@ class OrgAdminAPI {
     if (scenarios && scenarios.length > 0) {
       params.scenarios = scenarios.join(',');
     }
-    return this.req.get(url, { params: params });
+    return Promise.resolve({ data: {
+    "results": [
+        {
+            "date": "2026-03-10",
+            "org_id": 1,
+            "total_input_tokens": 3259,
+            "total_output_tokens": 197,
+            "total_credit_used": 0.058169999999999986
+        },
+        {
+            "date": "2026-03-12",
+            "org_id": 1,
+            "total_input_tokens": 92281,
+            "total_output_tokens": 1882,
+            "total_credit_used": 4.560345000000001
+        },
+        {
+            "date": "2026-03-13",
+            "org_id": 1,
+            "total_input_tokens": 93890,
+            "total_output_tokens": 1948,
+            "total_credit_used": 4.423201000000001
+        },
+        {
+            "date": "2026-03-19",
+            "org_id": 1,
+            "total_input_tokens": 672007,
+            "total_output_tokens": 6269,
+            "total_credit_used": 10.675092000000003
+        },
+        {
+            "date": "2026-03-20",
+            "org_id": 1,
+            "total_input_tokens": 265736,
+            "total_output_tokens": 0,
+            "total_credit_used": 0.531472
+        }
+    ]
+} });
+    // return this.req.get(url, { params: params });
   }
 
 }

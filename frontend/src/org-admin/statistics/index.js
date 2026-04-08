@@ -12,6 +12,7 @@ import MonthPicker from '../../project/main-panel/search/month-picker';
 import { TokenCreditUsedDetailDialog } from '@/components/dialog';
 import { CustomizeTabs, toaster } from '@/components';
 import StatisticList from './statistic-list';
+import { Overview } from '@/components/chart';
 
 import '@/css/statistics.css';
 
@@ -30,7 +31,7 @@ class StatisticsAI extends Component {
         has_next_page: false
       },
       results: [],
-      groupBy: 'project',
+      groupBy: 'overview',
       queryDate: 'date',
       isOpenStatisticsDetailDialog: false,
       condition: {},
@@ -151,7 +152,13 @@ class StatisticsAI extends Component {
       currentPage: this.initPage,
       hasFreezed: false,
       results: [],
+      errorMsg: '',
+      isLoading: false,
     };
+    if (groupBy === 'overview') {
+      this.setState(newState);
+      return;
+    }
     this.setState(newState, () => {
       this.getStatisticsByPage(this.initPage);
     });
@@ -190,57 +197,64 @@ class StatisticsAI extends Component {
                 className="statistic-tabs"
                 value={groupBy}
                 tabs={[
+                  { value: 'overview', label: gettext('Overview') },
                   { value: 'project', label: gettext('Projects') },
                   { value: 'user', label: gettext('Users') },
                   { value: 'group', label: gettext('Groups') },
                 ]}
                 onChange={this.changeTabActive}
               />
-              <div className="d-flex mb-4">
-                <CapsuleTabs
-                  tabs={this.dateTabList}
-                  defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
-                  onTabChange={this.changeQueryDateTab}
-                />
-                <div className='d-flex align-items-center ml-6'>
-                  {queryDate === 'date' && (
-                    <>
-                      <span className="mr-2">{`${gettext('Date')}:`}</span>
-                      <DateAndTimePicker
-                        showHourAndMinute={false}
-                        disabledDate={() => false}
-                        value={date}
-                        onChange={this.onDateChange}
-                        inputWidth={118}
-                      />
-                    </>
-                  )}
-                  {queryDate === 'month' && (
-                    <>
-                      <span className="mr-2">{`${gettext('Month')}:`}</span>
-                      <MonthPicker
-                        value={month}
-                        onChange={this.onMonthChange}
-                        disabledDate={(date) => date.isAfter(dayjs().add(1, 'month').startOf('month'))}
-                        inputWidth={94}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-              <StatisticList
-                loading={isLoading}
-                errorMsg={errorMsg}
-                items={results}
-                curPerPage={perPage}
-                pageInfo={pageInfo}
-                getStatisticsByPage={this.getStatisticsByPage}
-                resetPerPage={this.resetPerPage}
-                groupBy={groupBy}
-                hasFreezed={hasFreezed}
-                updateFreezed={this.updateFreezed}
-                onOpenAIStaticsDetailDialog={this.onOpenAIStaticsDetailDialog}
-              />
+              {groupBy === 'overview' ? (
+                <Overview />
+              ) : (
+                <>
+                  <div className="d-flex mb-4">
+                    <CapsuleTabs
+                      tabs={this.dateTabList}
+                      defaultActiveIndex={this.dateTabList.findIndex(tab => tab.value === queryDate)}
+                      onTabChange={this.changeQueryDateTab}
+                    />
+                    <div className='d-flex align-items-center ml-6'>
+                      {queryDate === 'date' && (
+                        <>
+                          <span className="mr-2">{`${gettext('Date')}:`}</span>
+                          <DateAndTimePicker
+                            showHourAndMinute={false}
+                            disabledDate={() => false}
+                            value={date}
+                            onChange={this.onDateChange}
+                            inputWidth={118}
+                          />
+                        </>
+                      )}
+                      {queryDate === 'month' && (
+                        <>
+                          <span className="mr-2">{`${gettext('Month')}:`}</span>
+                          <MonthPicker
+                            value={month}
+                            onChange={this.onMonthChange}
+                            disabledDate={(date) => date.isAfter(dayjs().add(1, 'month').startOf('month'))}
+                            inputWidth={94}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <StatisticList
+                    loading={isLoading}
+                    errorMsg={errorMsg}
+                    items={results}
+                    curPerPage={perPage}
+                    pageInfo={pageInfo}
+                    getStatisticsByPage={this.getStatisticsByPage}
+                    resetPerPage={this.resetPerPage}
+                    groupBy={groupBy}
+                    hasFreezed={hasFreezed}
+                    updateFreezed={this.updateFreezed}
+                    onOpenAIStaticsDetailDialog={this.onOpenAIStaticsDetailDialog}
+                  />
+                </>
+              )}
             </div>
             {isOpenStatisticsDetailDialog && (
               <TokenCreditUsedDetailDialog
