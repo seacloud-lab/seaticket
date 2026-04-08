@@ -90,11 +90,21 @@ const convertRowToNameValue = (rowUpdate, { data, typesData, tagsData }) => {
   return newRowData;
 };
 
-const convertRowsToNameValue = (rowsUpdate, { data, typesData, tagsData }) => {
-  return rowsUpdate.map(rowUpdate => {
-    const { row_id, row } = rowUpdate;
-    return { row_id, row: convertRowToNameValue(row, { data, typesData, tagsData }) };
-  }).filter(rowUpdate => rowUpdate.row && !ObjectUtils.isEmpty(rowUpdate.row));
+const convertRowsToNameValue = (rowsUpdate, context = {}) => {
+  if (!Array.isArray(rowsUpdate) || rowsUpdate.length === 0) {
+    return [];
+  }
+  const { data, typesData, tagsData } = context;
+  return rowsUpdate.map(item => {
+    if (!item || typeof item !== 'object') return null;
+    const { row_id, row } = item;
+    if (!row_id) return null;
+    const convertedRow = convertRowToNameValue(row, { data, typesData, tagsData });
+    if (convertedRow && typeof convertedRow === 'object' && Object.keys(convertedRow).length > 0) {
+      return { row_id, row: convertedRow };
+    }
+    return null;
+  }).filter(Boolean);
 };
 
 const convertRowToKeyValue = (rowUpdate, { data, typesData, tagsData }) => {
