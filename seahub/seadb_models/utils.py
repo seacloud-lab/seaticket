@@ -778,7 +778,7 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
     topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-    topics_sql = f"SELECT title, topic_id, created_time, `slug` FROM `{topics_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    topics_sql = f"SELECT title, topic_id, created_time, `slug`, `linked_ticket`, `outdated` FROM `{topics_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
         topic_record = topics_res.get('results')[0]
@@ -836,7 +836,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
     """Query GitHub issue comments from SeaDB"""
     issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
     comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-    issue_sql = f"SELECT title, author, content, created_time, issue_id, `url` FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT title, author, content, created_time, issue_id, `url`, `linked_ticket`, `outdated` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
@@ -879,7 +879,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     email_table_name = EmailTable.gen_table_name(connection_id)
     thread_table_name = ThreadTable.gen_table_name(connection_id)
     try:
-        thread_sql = f"SELECT title, modified_time FROM `{thread_table_name}` WHERE _pk = {_pk}"
+        thread_sql = f"SELECT title, modified_time, `linked_ticket`, `outdated` FROM `{thread_table_name}` WHERE _pk = {_pk}"
         thread_res = seadb_api.query_rows(project_uuid, thread_sql)
         thread_record = thread_res.get('results')[0]
         email_sql = f"""
