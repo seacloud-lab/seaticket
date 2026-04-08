@@ -223,22 +223,55 @@ class SMTPEmailSender(_EmailSenderBase):
             sent_folder = self._find_sent_folder(imap)
             uid = None
             folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
-            # Append email to Sent folder
-            status, res_data = imap.append(
-                folder_to_append,
-                '(\\Seen)',
-                imaplib.Time2Internaldate(time.time()),
-                msg_obj.as_bytes()
-            )
-            logger.info('Email saved to Sent folder: %s', sent_folder)
 
-            # Extract UID from append response
-            # Format: ('OK', [b'[APPENDUID 1234567890 123] Append completed.'])
-            if status == 'OK' and res_data and len(res_data) > 0:
-                res_str = res_data[0].decode('utf-8') if isinstance(res_data[0], bytes) else str(res_data[0])
-                match = re.search(r'APPENDUID\s+\d+\s+(\d+)', res_str)
-                if match:
-                    uid = int(match.group(1))
+            # Check if email is sent only to self - skip IMAP append in that case
+            sender_email = self.sender_email.lower()
+            to_header = msg_obj.get('To', '')
+            cc_header = msg_obj.get('Cc', '')
+
+            all_recipients = []
+            if to_header:
+                all_recipients.extend([parseaddr(addr)[1].lower() for addr in to_header.split(',')])
+            if cc_header:
+                all_recipients.extend([parseaddr(addr)[1].lower() for addr in cc_header.split(',')])
+
+            if all_recipients and not all(addr == sender_email for addr in all_recipients):
+                # Append email to Sent folder
+                status, res_data = imap.append(
+                    folder_to_append,
+                    '(\\Seen)',
+                    imaplib.Time2Internaldate(time.time()),
+                    msg_obj.as_bytes()
+                )
+                logger.info('Email saved to Sent folder: %s', sent_folder)
+
+                # Extract UID from append response
+                # Format: ('OK', [b'[APPENDUID 1234567890 123] Append completed.'])
+                if status == 'OK' and res_data and len(res_data) > 0:
+                    res_str = res_data[0].decode('utf-8') if isinstance(res_data[0], bytes) else str(res_data[0])
+                    match = re.search(r'APPENDUID\s+\d+\s+(\d+)', res_str)
+                    if match:
+                        uid = int(match.group(1))
+            else:
+                # Email sent to self - search in INBOX to get uid
+                message_id = msg_obj.get('Message-ID', '')
+                if message_id and 'fastmail' in self.imap_host:
+                    try:
+                        imap.select('INBOX', readonly=True)
+                        # Search by Message-ID
+                        status, search_data = imap.uid('SEARCH', None, f'HEADER Message-ID "{message_id}"')
+                        if status == 'OK' and search_data and search_data[0]:
+                            uid_strs = search_data[0].split()
+                            if uid_strs:
+                                uid = int(uid_strs[0])
+                                logger.info('Found email in INBOX with uid: %s', uid)
+                    except Exception as e:
+                        logger.warning('Failed to search email in INBOX: %s', e)
+                    finally:
+                        try:
+                            imap.close()
+                        except:
+                            pass
 
             # For Fastmail, fetch EMAILID extension using the UID
             email_id = None
