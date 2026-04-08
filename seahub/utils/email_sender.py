@@ -245,8 +245,8 @@ class SMTPEmailSender(_EmailSenderBase):
             thread_id = None
             if uid and 'fastmail' in self.imap_host:
                 try:
-                    try:
-                        imap.select('INBOX', readonly=True)
+                    for folder in ["INBOX", sent_folder]:
+                        imap.select(folder, readonly=True)
                         status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
                         if status == 'OK' and fetch_data:
                             # Parse EMAILID from response like: b'123 (EMAILID "abc123" THREADID "xyz789")'
@@ -261,8 +261,8 @@ class SMTPEmailSender(_EmailSenderBase):
                                     thread_match = re.search(r'THREADID\s+["(]?([^\s")]+)[")?]?', item_str)
                                     if thread_match:
                                         thread_id = thread_match.group(1)
-                    except Exception as e:
-                        logger.debug('Failed to search self-recipient email in %s: %s', folder, e)
+                        if email_id and thread_id:
+                            break
                    
                 except Exception as e:
                     logger.warning('Failed to fetch EMAILID from Fastmail: %s', e)
