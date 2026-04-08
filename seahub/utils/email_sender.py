@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.application import MIMEApplication
-from email.utils import formataddr, parseaddr
+from email.utils import formataddr, parseaddr, formatdate, make_msgid
 from urllib import parse
 
 import requests
@@ -80,9 +80,11 @@ class _EmailSenderBase:
         msg_obj['To'] = ",".join(send_to)
         msg_obj['Cc'] = ",".join(copy_to)
         msg_obj['Reply-to'] = reply_to
+        msg_obj['Date'] = formatdate(localtime=True)
 
-        if message_id:
-            msg_obj['Message-ID'] = message_id
+        if not message_id:
+            message_id = make_msgid()
+        msg_obj['Message-ID'] = message_id
 
         if in_reply_to:
             msg_obj['In-Reply-To'] = in_reply_to
