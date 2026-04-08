@@ -1,6 +1,7 @@
 const RUN_STATUS = {
   RUNNING: 'running',
   COMPLETED: 'completed',
+  FAILED: 'failed',
 };
 
 const ACTION_STATUS = {
