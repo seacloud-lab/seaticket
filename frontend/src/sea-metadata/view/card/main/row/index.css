@@ -112,3 +112,9 @@
   white-space: nowrap;
   display: block;
 }
+
+.sea-metadata-card-row .sea-metadata-card-row-body .sea-metadata-card-row-cell-value .sea-metadata-ui.sea-metadata-collaborator-formatter {
+  min-height: 24px;
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+}
