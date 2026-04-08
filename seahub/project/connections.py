@@ -1153,7 +1153,7 @@ class ProjectConnectionReplyEmailView(APIView):
         }
         
         try:
-            toggle_send_email(config, send_info)
+            send_res = toggle_send_email(config, send_info)
         except EmailConfigError as e:
             logger.error('email config error, connection_id: %s, error: %s', connection_id, e)
             error_msg = 'Email connection config is invalid.'
@@ -1164,18 +1164,22 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         sender_name = config.get('sender_name', '')
+        # Get Fastmail EMAILID if available
+        email_id = send_res.get('email_id')
+        origin_thread_id = send_res.get('origin_thread_id') or target_email.get('origin_thread_id')
 
         email_data = {
             'sender_name': sender_name,
             'sender_email': sender_email,
-            'to_text': to_text,
-            'cc_text': cc_text,
+            'email_to': to_text,
+            'cc': cc_text,
             'subject': subject,
             'content': content,
             'html_content': html_content,
             'reply_to_message_id': target_message_id,
-            'origin_thread_id': target_email.get('origin_thread_id'),
+            'origin_thread_id': origin_thread_id,
             'message_id': message_id,
+            'email_id': email_id,
         }
         try:
             pk = email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)

@@ -49,12 +49,12 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
   const handleReplyEmailSuccess = useCallback((payload) => {
     if (!payload) return;
-    const senderEmail = connection?.config?.sender_email || connection?.config?.smtp_user || '';
-    const senderName = connection?.config?.sender_name || '';
+    const senderEmail = payload.sender_email;
+    const senderName = payload.sender_name || '';
     const emailFrom = senderName && senderEmail
       ? `${senderName} <${senderEmail}>`
       : (senderEmail || senderName || '');
-    const emailTo = payload.to || payload.replyTargetEmail?.email_from || '';
+    const emailTo = payload.email_to || payload.replyTargetEmail?.email_from || '';
     const now = new Date().toISOString();
     const nextDetail = {
       email_from: emailFrom,

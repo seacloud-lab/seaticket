@@ -156,9 +156,9 @@ class EmailSeaDBAPI:
         
         email_row = {
             EmailTable.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
-            EmailTable.email_to.name: email_data.get('to_text', ''),
+            EmailTable.email_to.name: email_data.get('email_to', ''),
             EmailTable.title.name: email_data.get('subject', ''),
-            EmailTable.cc.name: email_data.get('cc_text') or '',
+            EmailTable.cc.name: email_data.get('cc') or '',
             EmailTable.content.name: email_data.get('content', ''),
             EmailTable.html_content.name: email_data.get('html_content') or '',
             EmailTable.modified_time.name: now,
@@ -169,6 +169,7 @@ class EmailSeaDBAPI:
             EmailTable.thread_id.name: int(record_id),
             EmailTable.message_id.name: email_data.get('message_id') or '',
             EmailTable.origin_thread_id.name: email_data.get('origin_thread_id') or '',
+            EmailTable.email_id.name: email_data.get('email_id') or '',
         }
         
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])

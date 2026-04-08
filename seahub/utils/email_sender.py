@@ -3,6 +3,8 @@ import time
 import base64
 import smtplib
 import ssl
+import imaplib
+import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -120,13 +122,19 @@ class _EmailSenderBase:
 
 class SMTPEmailSender(_EmailSenderBase):
     def __init__(self, smtp_host, smtp_port, smtp_user, smtp_password,
-                 sender_name='', sender_email=None):
+                 sender_name='', sender_email=None,
+                 imap_host=None, imap_port=None, imap_user=None, imap_password=None):
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
         self.sender_name = sender_name
         self.sender_email = sender_email or smtp_user
+        # IMAP config for saving sent emails
+        self.imap_host = imap_host
+        self.imap_port = imap_port or 993
+        self.imap_user = imap_user or smtp_user
+        self.imap_password = imap_password or smtp_password
 
         if not all([self.smtp_host, self.smtp_port, self.smtp_user, self.smtp_password]):
             logger.error('Email config is invalid. smtp_host: %s, smtp_port: %s, smtp_user: %s',
@@ -182,11 +190,117 @@ class SMTPEmailSender(_EmailSenderBase):
             raise EmailSendError('Failed to send email')
         else:
             logger.info('Email sending success!')
+            # Try to save to IMAP Sent folder
+            imap_res = self._save_to_imap_sent(msg_obj)
         finally:
             smtp.quit()
 
-        return {'success': True, 'message_id': message_id}
+        res = {'success': True, 'message_id': message_id}
+        if imap_res:
+            res.update(imap_res)
+        return res
 
+    def _save_to_imap_sent(self, msg_obj):
+        """Save sent email to IMAP Sent folder"""
+        if not self.imap_host:
+            # No IMAP config, skip saving to Sent folder
+            return None
+
+        if 'fastmail' not in self.smtp_host:
+            logger.info('Skip IMAP save: provider %s automatically saves sent emails', self.smtp_host)
+            return None
+
+        try:
+            imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port, timeout=30)
+            imap.login(self.imap_user, self.imap_password)
+        except Exception as e:
+            logger.warning('Failed to connect to IMAP: %s', e)
+            return None
+
+        try:
+            sent_folder = self._find_sent_folder(imap)
+            folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
+            status, res_data = imap.append(
+                folder_to_append,
+                '(\\Seen)',
+                imaplib.Time2Internaldate(time.time()),
+                msg_obj.as_bytes()
+            )
+            logger.info('Email saved to Sent folder: %s', sent_folder)
+
+            # Extract UID from append response
+            # Format: ('OK', [b'[APPENDUID 1234567890 123] Append completed.'])
+            uid = None
+            if status == 'OK' and res_data and len(res_data) > 0:
+                res_str = res_data[0].decode('utf-8') if isinstance(res_data[0], bytes) else str(res_data[0])
+                match = re.search(r'APPENDUID\s+\d+\s+(\d+)', res_str)
+                if match:
+                    uid = int(match.group(1))
+
+            # For Fastmail, fetch EMAILID extension using the UID
+            email_id = None
+            thread_id = None
+            if uid and 'fastmail' in self.imap_host:
+                try:
+                    # Select Sent folder and fetch EMAILID extension
+                    imap.select(f'"{sent_folder}"', readonly=True)
+                    # Fastmail supports EMAILID and THREADID extensions
+                    status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
+                    if status == 'OK' and fetch_data:
+                        # Parse EMAILID from response like: b'123 (EMAILID "abc123" THREADID "xyz789")'
+                        for item in fetch_data:
+                            if item:
+                                item_str = item.decode('utf-8') if isinstance(item, bytes) else str(item)
+                                # Extract EMAILID - handle formats: EMAILID "value", EMAILID (value), EMAILID value
+                                email_match = re.search(r'EMAILID\s+["(]?([^\s")]+)[")?]?', item_str)
+                                if email_match:
+                                    email_id = email_match.group(1)
+                                # Extract THREADID
+                                thread_match = re.search(r'THREADID\s+["(]?([^\s")]+)[")?]?', item_str)
+                                if thread_match:
+                                    thread_id = thread_match.group(1)
+                    imap.close()
+                except Exception as e:
+                    logger.warning('Failed to fetch EMAILID from Fastmail: %s', e)
+            result = {'imap_folder': sent_folder}
+            if uid:
+                result['imap_uid'] = uid
+            if email_id:
+                result['email_id'] = email_id
+            if thread_id:
+                result['origin_thread_id'] = thread_id
+            return result
+        except Exception as e:
+            logger.warning('Failed to save to Sent folder: %s', e)
+            return None
+        finally:
+            try:
+                imap.logout()
+            except:
+                pass
+
+    def _find_sent_folder(self, imap):
+        """Locate the Sent folder using the \\Sent attribute standard"""
+        status, folders = imap.list()
+        if status == 'OK':
+            for folder in folders:
+                folder_str = folder.decode('utf-8') if isinstance(folder, bytes) else folder
+                if '\\Sent' in folder_str:
+                    match = re.search(r'\s+"?([^"]+)"?\s*$', folder_str)
+                    if match:
+                        return match.group(1).strip('"')
+
+        # Fallback: try common names
+        for name in ['Sent', 'Sent Messages', 'INBOX.Sent', 'sent']:
+            try:
+                status, _ = imap.select(f'"{name}"', readonly=True)
+                if status == 'OK':
+                    imap.close()
+                    return name
+            except:
+                continue
+
+        return 'Sent'
 
 class _OAuthEmailSender(_EmailSenderBase):
     """Base class for OAuth-based email senders (Gmail, Microsoft)"""
@@ -328,6 +442,12 @@ def get_email_sender_from_config(config):
         sender_email = config.get('sender_email') or username
         sender_name = config.get('sender_name', '')
 
+        # IMAP config for saving sent emails
+        imap_host = config.get('imap_host')
+        imap_port = config.get('imap_port')
+        imap_user = config.get('username')
+        imap_password = config.get('password')
+
         return SMTPEmailSender(
             smtp_host=smtp_host,
             smtp_port=smtp_port,
@@ -335,6 +455,11 @@ def get_email_sender_from_config(config):
             smtp_password=password,
             sender_name=sender_name,
             sender_email=sender_email,
+            imap_host=imap_host,
+            imap_port=imap_port,
+            imap_user=imap_user,
+            imap_password=imap_password,
+
         )
     elif server_provider == 'Gmail':
         return GmailSender(config)

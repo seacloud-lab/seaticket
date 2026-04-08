@@ -213,7 +213,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         </div>
         <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
           <div className="sea-connection-record-details-container">
-            <ConnectionResourceDetails resource={resource} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
+            <ConnectionResourceDetails resource={resource} connection={connection} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
           </div>
           {details && (<div className="sea-connection-record-details-others"></div>)}
         </div>
