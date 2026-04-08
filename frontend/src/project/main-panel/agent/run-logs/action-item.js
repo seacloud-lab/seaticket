@@ -15,9 +15,15 @@ const ActionItem = React.memo(({
 }) => {
   const { id, type, status, content, result, tool_name, suggestion_text } = action;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
+  }, []);
+
+  const toggleThoughtExpand = useCallback((e) => {
+    e.stopPropagation();
+    setIsThoughtExpanded(prev => !prev);
   }, []);
 
   const handleConfirm = useCallback((e) => {
@@ -165,6 +171,23 @@ const ActionItem = React.memo(({
             <div className="action-text">
               {formatErrorMessage(content)}
             </div>
+          </div>
+        );
+      case ACTION_TYPE.THOUGHT:
+        return (
+          <div className="action-content">
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <div className="action-label mb-0">{gettext('Thought')}</div>
+              <IconTooltip
+                icon="arrow-down"
+                tip={isThoughtExpanded ? gettext('Collapse') : gettext('Expand')}
+                className={classnames('sea-ticket-project-refresh-btn', { 'rotate-180': isThoughtExpanded })}
+                placement="bottom"
+                hoverBackground={true}
+                onClick={toggleThoughtExpand}
+              />
+            </div>
+            {isThoughtExpanded && <div className="action-text">{content}</div>}
           </div>
         );
       default:

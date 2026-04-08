@@ -12,6 +12,7 @@ const ACTION_STATUS = {
 };
 
 const ACTION_TYPE = {
+  THOUGHT: 'thought',
   ANALYSIS: 'analysis',
   TOOL_CALL: 'tool_call',
   SUGGESTION: 'suggestion',
@@ -20,6 +21,7 @@ const ACTION_TYPE = {
 };
 
 const ACTION_ICON_MAPPER = {
+  [ACTION_TYPE.THOUGHT]: 'think',
   [ACTION_TYPE.ANALYSIS]: 'analysis',
   [ACTION_TYPE.TOOL_CALL]: 'tool-call',
   [ACTION_TYPE.SUGGESTION]: 'suggestion',
