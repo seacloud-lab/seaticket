@@ -1,7 +1,7 @@
 import { isHexColor, parseColorToRGB, isDarkColor, isWhiteColor } from '../utils/color-utils';
 
 describe('Color Utilities', () => {
-  
+
   describe('isHexColor', () => {
     test('should return true for valid 3-digit and 6-digit hex colors', () => {
       expect(isHexColor('#fff')).toBe(true);

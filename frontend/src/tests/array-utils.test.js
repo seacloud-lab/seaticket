@@ -1,7 +1,7 @@
 import { areArraysEqual } from '../utils/array-utils';
 
 describe('areArraysEqual', () => {
-  
+
   test('should return true for identical arrays in the same order', () => {
     expect(areArraysEqual([1, 2, 3], [1, 2, 3])).toBe(true);
     expect(areArraysEqual(['a', 'b'], ['a', 'b'])).toBe(true);

@@ -1,7 +1,7 @@
 import { getTime } from '../utils/date';
 
 describe('getTime', () => {
-  
+
   test('should return formatted time "HH:mm:ss" for a valid Date object', () => {
     const date = new Date(2023, 10, 20, 14, 30, 45); // 14:30:45
     expect(getTime(date)).toBe('14:30:45');
