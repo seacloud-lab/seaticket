@@ -26,7 +26,8 @@ from seahub.project.utils import check_project_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
-from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT
+from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
+    GITHUB_ISSUE_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
@@ -1531,11 +1532,18 @@ class TicketActivitiesAPIView(APIView):
         for a in activities:
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             field_name = detail.get('field_name', '')
-            field_id = field_name
             old_value = detail.get('old_value')
             new_value = detail.get('new_value')
+            field_key = None
+            activity_type = a.get('activity_type', '')
 
-            if field_name == 'state_substate':
+            issue_number = None
+            issue_url = None
+            if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
+                field_key = activity_type
+                issue_number = detail.get('issue_number')
+                issue_url = detail.get('issue_url', '')
+            elif field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
                 substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
                 state_key = (state_column or {}).get('key') or TicketsTable.state.name
@@ -1575,17 +1583,18 @@ class TicketActivitiesAPIView(APIView):
                         get_option_id_by_name(metadata, TicketsTable.tags.name, v)
                         for v in new_value
                     ]
-            if field_name == 'state_substate':
-                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
-                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
-                state_key = (state_column or {}).get('key')
-                substate_key = (substate_column or {}).get('key')
-                if state_key and substate_key:
-                    field_key = f'{state_key}_{substate_key}'
-            else:
-                column = get_column_from_columns_by_name(metadata, field_name)
-                if column and column.get('key'):
-                    field_key = column.get('key')
+            if activity_type not in GITHUB_ISSUE_ACTIVITY_TYPES:
+                if field_name == 'state_substate':
+                    state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
+                    substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                    state_key = (state_column or {}).get('key')
+                    substate_key = (substate_column or {}).get('key')
+                    if state_key and substate_key:
+                        field_key = f'{state_key}_{substate_key}'
+                else:
+                    column = get_column_from_columns_by_name(metadata, field_name)
+                    if column and column.get('key'):
+                        field_key = column.get('key')
             activities_list.append({
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
@@ -1595,6 +1604,8 @@ class TicketActivitiesAPIView(APIView):
                 'new_value': new_value,
                 'creator': a.get('creator'),
                 'created_time': a.get('created_time'),
+                'issue_number': issue_number,
+                'issue_url': issue_url,
             })
 
         return Response({
