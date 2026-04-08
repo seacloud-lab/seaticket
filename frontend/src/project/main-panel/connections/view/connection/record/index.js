@@ -114,24 +114,26 @@ const Record = ({ projectUuid, toggleBar }) => {
             )}
           </div>
           <div className="sea-connection-record-details-header-right">
-            <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
-              <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
-              <CustomizeDropdownMenu className="position-fixed">
-                {tools.map(tool => {
-                  return (
-                    <CustomizeDropdownItem
-                      key={tool.key}
-                      onClick={() => {
-                        tool.callback && tool.callback();
-                        setIsMoreMenuOpen(false);
-                      }}
-                    >
-                      {tool.label}
-                    </CustomizeDropdownItem>
-                  );
-                })}
-              </CustomizeDropdownMenu>
-            </Dropdown>
+            {tools.length > 0 && (
+              <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+                <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
+                <CustomizeDropdownMenu className="position-fixed">
+                  {tools.map(tool => {
+                    return (
+                      <CustomizeDropdownItem
+                        key={tool.key}
+                        onClick={() => {
+                          tool.callback && tool.callback();
+                          setIsMoreMenuOpen(false);
+                        }}
+                      >
+                        {tool.label}
+                      </CustomizeDropdownItem>
+                    );
+                  })}
+                </CustomizeDropdownMenu>
+              </Dropdown>
+            )}
           </div>
         </div>
         <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
