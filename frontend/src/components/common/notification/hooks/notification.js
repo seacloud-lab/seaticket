@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { notificationAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
+import { NOTIFICATION_TYPE, TICKET_MSG_TYPES } from '@/components/common/notification/constants';
 import { siteRoot } from '@/constants';
 
 const NotificationContext = createContext();
@@ -227,6 +227,22 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     }
   }, [notificationList, unseen]);
 
+  const markProjectNoticeAsReadByTicket = useCallback((projectUuid, ticketId) => {
+    if (unseen === 0) return;
+    notificationAPI.markProjectNoticeAsReadByTicket(projectUuid, ticketId).then(res => {
+      const { seen_count = 0 } = res.data;
+      setUnseen(Math.max(unseen - seen_count, 0));
+      const newNotificationList = notificationList.map(notification => {
+        if (!notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId) return { ...notification, seen: true };
+        return notification;
+      });
+      setNotificationList(newNotificationList);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [unseen, notificationList]);
+
   useEffect(() => {
     // When clicking on the project notification, open the inbox drawer
     const urlParams = new URLSearchParams(window.location.search);
@@ -255,9 +271,10 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     markAsRead,
     markAllAsRead,
     markAsReadByTab,
+    markProjectNoticeAsReadByTicket,
     markAllAsReadByTab,
     showInboxDrawer,
-    setShowInboxDrawer
+    setShowInboxDrawer,
   };
 
   return (

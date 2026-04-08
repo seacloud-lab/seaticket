@@ -28,6 +28,7 @@ import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 
 import './index.css';
 
@@ -53,6 +54,7 @@ const Ticket = ({
   const { modifyLocalRow, getTableByName, deleteRow } = useData();
   const { tagsData, createTag } = useTags();
   const { updateAttachments } = useAIChatTools();
+  const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
 
   const lastTicketID = useRef('');
 
@@ -63,6 +65,22 @@ const Ticket = ({
       avatar_url: avatarURL
     };
   }, []);
+
+  // Merge comments and activities into a timeline
+  const timeline = useMemo(() => {
+    if (!ticket) return [];
+    const { comments = [] } = ticket;
+    const items = [
+      ...comments.map(c => ({ ...c, type: 'comment' })),
+      ...activities.map(a => ({ ...a, type: 'log' }))
+    ];
+    // use original time for sorting: comments use _created_time, activities use created_time
+    return items.sort((a, b) => {
+      const timeA = a.type === 'comment' ? a._created_time : a.created_time;
+      const timeB = b.type === 'comment' ? b._created_time : b.created_time;
+      return new Date(timeA) - new Date(timeB);
+    });
+  }, [ticket, activities]);
 
   const ticketRef = useRef(null);
   const commentEditorRef = useRef(null);
@@ -396,7 +414,12 @@ const Ticket = ({
       // Activities loading failure is not critical
       console.error('Failed to load activities:', error);
     });
-  }, [projectUuid, ticketID, handleUpdateRowsCacheData]);
+  }, [projectUuid, ticketID, handleUpdateRowsCacheData, markProjectNoticeAsReadByTicket]);
+
+  useEffect(() => {
+    if (isLoading || isLoadingNotifications || !ticket) return;
+    markProjectNoticeAsReadByTicket(projectUuid, Number(ticketID));
+  }, [projectUuid, isLoading, isLoadingNotifications, ticketID]);
 
   useEffect(() => {
     if (isLoading || !ticket) return;
@@ -412,22 +435,6 @@ const Ticket = ({
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
   }, [isLoading, ticket]);
-
-  // Merge comments and activities into a timeline
-  const timeline = useMemo(() => {
-    if (!ticket) return [];
-    const { comments = [] } = ticket;
-    const items = [
-      ...comments.map(c => ({ ...c, type: 'comment' })),
-      ...activities.map(a => ({ ...a, type: 'log' }))
-    ];
-    // use original time for sorting: comments use _created_time, activities use created_time
-    return items.sort((a, b) => {
-      const timeA = a.type === 'comment' ? a._created_time : a.created_time;
-      const timeB = b.type === 'comment' ? b._created_time : b.created_time;
-      return new Date(timeA) - new Date(timeB);
-    });
-  }, [ticket, activities]);
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) {
