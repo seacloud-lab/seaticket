@@ -35,10 +35,6 @@
   flex: 1;
 }
 
-.sea-connection-record-details .sea-connection-record-details-header .sea-connection-record-details-header-left .text-truncate {
-  display: inline-block;
-}
-
 .sea-connection-record-details .sea-connection-record-details-body {
   display: flex;
   width: 100%;

@@ -705,7 +705,7 @@ const Connection = (props) => {
         {title_record && (
           <div className="sea-connection-record-details-header">
             <div className="sea-connection-record-details-header-left">
-              <div className="text-truncate" title={title_record}>{title_record}</div>
+              <div className="text-truncate d-inline-block" title={title_record}>{title_record}</div>
               {url_record && (
                 <IconButton
                   className="open-in-new-tab-btn"
