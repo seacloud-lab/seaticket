@@ -6,6 +6,7 @@ import json
 import datetime
 import sys
 import uuid
+from email.utils import formatdate
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -1177,13 +1178,14 @@ class ProjectConnectionReplyEmailView(APIView):
             'message_id': message_id,
         }
         try:
-            email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)
+            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)
+            email_data['_pk'] = pk
         except Exception as e:
             logger.error('save reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
             error_msg = 'Failed to save reply email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'success': True}, status=status.HTTP_200_OK)
+        return Response(email_data, status=status.HTTP_200_OK)
 
 
 class ConnectionFileView(APIView):

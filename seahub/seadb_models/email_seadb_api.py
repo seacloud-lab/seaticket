@@ -171,8 +171,8 @@ class EmailSeaDBAPI:
             EmailTable.origin_thread_id.name: email_data.get('origin_thread_id') or '',
         }
         
-        self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
-        
+        result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
+        pks = result.get('pks', [])
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(record_id),
             'row': {
@@ -181,3 +181,4 @@ class EmailSeaDBAPI:
                 ThreadTable.unread.name: False,
             }
         }])
+        return pks[0] if pks else None

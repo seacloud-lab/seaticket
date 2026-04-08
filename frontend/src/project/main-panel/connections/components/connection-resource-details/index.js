@@ -65,7 +65,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       html_content: payload.html_content || '',
       modified_time: now,
       is_sender: true,
-      local_id: `local-${Date.now()}`,
+      _pk: payload._pk,
     };
     setLocalEmailDetails(prev => [...prev, nextDetail]);
   }, [connection, details]);

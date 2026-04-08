@@ -11,7 +11,7 @@ import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission }) => {
+const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission, handleReplyEmailSuccess }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
 
@@ -95,13 +95,14 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       cc: cc.join(','),
       email_id: detail._pk,
     };
-    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then(() => {
+    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then((res) => {
       callback && callback();
+      handleReplyEmailSuccess(res.data);
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
       callback && callback(true);
     });
-  }, [projectUuid, connection_id]);
+  }, [projectUuid, connection_id, handleReplyEmailSuccess]);
 
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');

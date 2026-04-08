@@ -48,7 +48,7 @@ const EmailDetails = ({ details, className, ...props }) => {
         if (!isShowAll && index < (details.length - 1)) return null;
         return (
           <Item
-            key={index}
+            key={detail._pk}
             isLast={index === (details.length - 1)}
             detail={detail}
             isExpand={index === details.length - 1}
