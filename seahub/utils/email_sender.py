@@ -221,31 +221,67 @@ class SMTPEmailSender(_EmailSenderBase):
 
         try:
             sent_folder = self._find_sent_folder(imap)
-            folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
-            status, res_data = imap.append(
-                folder_to_append,
-                '(\\Seen)',
-                imaplib.Time2Internaldate(time.time()),
-                msg_obj.as_bytes()
-            )
-            logger.info('Email saved to Sent folder: %s', sent_folder)
-
-            # Extract UID from append response
-            # Format: ('OK', [b'[APPENDUID 1234567890 123] Append completed.'])
             uid = None
-            if status == 'OK' and res_data and len(res_data) > 0:
-                res_str = res_data[0].decode('utf-8') if isinstance(res_data[0], bytes) else str(res_data[0])
-                match = re.search(r'APPENDUID\s+\d+\s+(\d+)', res_str)
-                if match:
-                    uid = int(match.group(1))
+            sender_addr = parseaddr(msg_obj.get('From', ''))[1].lower()
+            recipient_addrs = set()
+            for header in ['To', 'Cc', 'Bcc']:
+                values = msg_obj.get(header, '')
+                if not values:
+                    continue
+                for val in values.split(','):
+                    addr = parseaddr(val)[1].lower()
+                    if addr:
+                        recipient_addrs.add(addr)
+            is_self_recipient = bool(sender_addr and sender_addr in recipient_addrs)
+            message_id = msg_obj.get('Message-ID', '')
+            folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
+            found_folder = None  # Track which folder the email was found in
+
+            # For self-recipient, search both INBOX and Sent for Fastmail auto-saved record
+            if is_self_recipient and message_id:
+                for folder in ['INBOX', folder_to_append]:
+                    try:
+                        imap.select(folder, readonly=True)
+                        status, data = imap.uid('SEARCH', None, 'HEADER', 'Message-ID', message_id)
+                        imap.close()
+                        if status == 'OK' and data and data[0]:
+                            existing_uids = data[0].split()
+                            if existing_uids:
+                                uid = int(existing_uids[-1])
+                                found_folder = folder
+                                logger.info('Found self-recipient email in %s (UID %s) after %d attempts', folder, uid, attempt + 1)
+                                break
+                    except Exception as e:
+                        logger.debug('Failed to search self-recipient email in %s: %s', folder, e)
+                    if uid:
+                        break
+
+            # For non-self-recipient, append to Sent folder
+            if not uid and not is_self_recipient:
+                status, res_data = imap.append(
+                    folder_to_append,
+                    '(\\Seen)',
+                    imaplib.Time2Internaldate(time.time()),
+                    msg_obj.as_bytes()
+                )
+                logger.info('Email saved to Sent folder: %s', sent_folder)
+
+                # Extract UID from append response
+                # Format: ('OK', [b'[APPENDUID 1234567890 123] Append completed.'])
+                if status == 'OK' and res_data and len(res_data) > 0:
+                    res_str = res_data[0].decode('utf-8') if isinstance(res_data[0], bytes) else str(res_data[0])
+                    match = re.search(r'APPENDUID\s+\d+\s+(\d+)', res_str)
+                    if match:
+                        uid = int(match.group(1))
 
             # For Fastmail, fetch EMAILID extension using the UID
             email_id = None
             thread_id = None
             if uid and 'fastmail' in self.imap_host:
                 try:
-                    # Select Sent folder and fetch EMAILID extension
-                    imap.select(f'"{sent_folder}"', readonly=True)
+                    # Select the folder where email was found (or Sent for appended emails)
+                    fetch_folder = found_folder if found_folder else f'"{sent_folder}"'
+                    imap.select(fetch_folder, readonly=True)
                     # Fastmail supports EMAILID and THREADID extensions
                     status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
                     if status == 'OK' and fetch_data:
