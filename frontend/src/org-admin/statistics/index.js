@@ -152,8 +152,6 @@ class StatisticsAI extends Component {
       currentPage: this.initPage,
       hasFreezed: false,
       results: [],
-      errorMsg: '',
-      isLoading: false,
     };
     if (groupBy === 'overview') {
       this.setState(newState);
@@ -204,9 +202,8 @@ class StatisticsAI extends Component {
                 ]}
                 onChange={this.changeTabActive}
               />
-              {groupBy === 'overview' ? (
-                <Overview />
-              ) : (
+              {groupBy === 'overview' && <Overview />}
+              {groupBy !== 'overview' && (
                 <>
                   <div className="d-flex mb-4">
                     <CapsuleTabs
