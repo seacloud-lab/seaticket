@@ -147,8 +147,23 @@ const RunCard = ({
   onViewContent,
 }) => {
   const { id, started_at, items = [], actions = [] } = run;
-  const hasPendingSuggestion = (run.status === RUN_STATUS.RUNNING) && items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
-  const [isExpanded, setIsExpanded] = useState(hasPendingSuggestion);
+
+  let isShowResolved;
+  let isCardExpanded;
+  if (run.status === RUN_STATUS.FAILED) {
+    isShowResolved = false;
+    isCardExpanded = false;
+  }
+  else if (run.status === RUN_STATUS.RUNNING) {
+    isShowResolved = false;
+    isCardExpanded = true;
+  }
+  else if (run.status === RUN_STATUS.COMPLETED) {
+    isShowResolved = !items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
+    isCardExpanded = !isShowResolved;
+  }
+
+  const [isExpanded, setIsExpanded] = useState(isCardExpanded);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -160,7 +175,7 @@ const RunCard = ({
         <div className="run-card-header-left">
           <span className="run-time">{dayjs(started_at).format('YYYY-MM-DD HH:mm')}</span>
           <span className="run-id">{gettext('Run')} #{id}</span>
-          {!hasPendingSuggestion &&
+          {isShowResolved &&
             <span className="run-card-resolved">
               <Icon symbol="check-circle" className="mr-1" />
               {gettext('Resolved')}
@@ -172,6 +187,11 @@ const RunCard = ({
             <span className="run-card-running mr-4">
               <Icon symbol="spinner" className="mr-1" />
               {gettext('Running')}
+            </span>
+          }
+          {run.status === RUN_STATUS.FAILED &&
+            <span className="run-card-failed mr-4">
+              {gettext('Failed')}
             </span>
           }
           <IconTooltip

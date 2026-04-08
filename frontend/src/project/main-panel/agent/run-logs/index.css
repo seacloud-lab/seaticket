@@ -72,6 +72,14 @@
   fill: #666;
 }
 
+.run-card-header-right .run-card-failed {
+  color: #FF0000;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0%;
+}
+
 .run-time {
   font-size: 14px;
   color: #212529;
