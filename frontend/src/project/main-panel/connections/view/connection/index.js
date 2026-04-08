@@ -3,12 +3,12 @@ import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
 import SeaMetadata from '@/sea-metadata';
 import { Dropdown } from 'reactstrap';
-import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
+import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, CenteredLoading, IconButton, toaster } from '@/components';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
-import { useConnectionsPage } from '../../hooks';
+import { useConnectionsPage, useConnections } from '../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -18,9 +18,7 @@ import {
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
   SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
 } from '../../constants';
-import { CenteredLoading, IconButton, toaster } from '@/components';
 import context from '@/sea-metadata/context';
-import { useConnections } from '../../hooks';
 import { getOriginalPageUrl, getTableName, generatorRowClassName } from '../../utils';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
