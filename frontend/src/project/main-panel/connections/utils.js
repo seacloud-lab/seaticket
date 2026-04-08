@@ -1,11 +1,15 @@
+import copy from 'copy-to-clipboard';
 import { mediaUrl, server } from '@/constants';
 import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
-  CONNECTION_PREDEFINED_COLUMN_NAME,
+  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
+  SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
 } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
+import { gettext } from '@/constants';
+import { toaster } from '@/components';
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;
@@ -197,3 +201,164 @@ export const generatorRowClassName = (row, columns = []) => {
   if (value) return 'outdated-record';
   return '';
 };
+
+export const generateAIOptions = ({ rows, columns, connection }, callback) => {
+  const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableUseAI) return null;
+
+  if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL) {
+    return {
+      key: 'chat_issues',
+      label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
+      callback: () => {
+        let newRows = [];
+        const titleColumn = getColumnByName(columns, 'title');
+        const stateColumn = getColumnByName(columns, 'state');
+        const urlColumn = getColumnByName(columns, 'url');
+
+        if (!titleColumn) return;
+        rows.forEach(row => {
+          const newRow = {
+            _pk: row._id,
+            title: getCellValueByColumn(row, titleColumn),
+            state: getCellValueByColumn(row, stateColumn),
+            url: getCellValueByColumn(row, urlColumn),
+            connection_id: connection?.id,
+            type: connection?.type,
+          };
+          newRows.push(newRow);
+        });
+        callback && callback(newRows);
+      }
+    };
+  }
+
+  return null;
+};
+
+export const generateMarkAsOutdatedOptions = ({ rows, columns, connection }, callback) => {
+  const enableMarkAsOutdated = SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableMarkAsOutdated) return [];
+  const rowList = Array.isArray(rows) ? rows : [rows];
+  if (rowList.length === 0) return [];
+  const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+  if (!outdatedColumn) return [];
+  let activeRows = [];
+  let outdatedRows = [];
+  rows.forEach(row => {
+    const oldValue = row[outdatedColumn.key];
+    if (oldValue) {
+      outdatedRows.push(row);
+    } else {
+      activeRows.push(row);
+    }
+  });
+  let options = [];
+  if (outdatedRows.length > 0) {
+    options.push({
+      key: 'mark_as_active',
+      label: gettext('Mark as active'),
+      callback: () => {
+        let rowIds = [];
+        let idRowUpdates = {};
+        let idOldRowOldData = {};
+        outdatedRows.forEach(row => {
+          const { _id } = row;
+          rowIds.push(_id);
+          idRowUpdates[_id] = { [outdatedColumn.key]: false };
+          idOldRowOldData[_id] = { [outdatedColumn.key]: true };
+        });
+        callback && callback(rowIds, idRowUpdates, idOldRowOldData, false);
+      },
+    });
+  }
+  if (activeRows.length > 0) {
+    options.push({
+      key: 'mark_as_outdated',
+      label: gettext('Mark as outdated'),
+      callback: () => {
+        let rowIds = [];
+        let idRowUpdates = {};
+        let idOldRowOldData = {};
+        activeRows.forEach(row => {
+          const { _id } = row;
+          const oldValue = row[outdatedColumn.key];
+          rowIds.push(_id);
+          idRowUpdates[_id] = { [outdatedColumn.key]: true };
+          idOldRowOldData[_id] = { [outdatedColumn.key]: oldValue };
+        });
+        callback && callback(rowIds, idRowUpdates, idOldRowOldData, false);
+      },
+    });
+  }
+  return options.length > 0 ? options : [];
+};
+
+export const generateFindRelatedIssuesOption = ({ row, connection }, callback) => {
+  const enableFindRelatedIssues = SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableFindRelatedIssues) return null;
+  return {
+    key: 'find_related_issues',
+    label: gettext('Find related issues'),
+    callback: () => callback && callback(row),
+  };
+};
+
+export const generateLinkAnExistingTicketOption = ({ row, columns, connection }, callback) => {
+  const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableCreateRelatedTicket) return null;
+
+  const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+  if (!column) return null;
+  const cellValue = getCellValueByColumn(row, column);
+  if (cellValue) return null;
+
+  return {
+    key: 'link_an_existing_ticket',
+    label: gettext('Link an existing ticket'),
+    callback: () => callback && callback(row),
+  };
+};
+
+
+export const generateCreateRelatedTicketOption = ({ row, columns, connection }, callback) => {
+  const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableCreateRelatedTicket) return null;
+
+  const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+  if (!column) return null;
+  const cellValue = getCellValueByColumn(row, column);
+  if (cellValue) return null;
+
+  return {
+    key: 'create_related_ticket',
+    label: gettext('Create related ticket'),
+    callback: () => callback && callback(row),
+  };
+};
+
+
+export const generateOpenOriginalPageOption = ({ connection, row, columns }) => {
+  const url = getOriginalPageUrl(connection, row, columns);
+  if (!url) return null;
+  return {
+    label: gettext('Open original page'),
+    key: 'open_original_page',
+    callback: () => window.open(url, '_blank', 'noopener,noreferrer'),
+  };
+};
+
+export const generateCopyOriginalLinkOption = ({ connection, row, columns }) => {
+  const url = getOriginalPageUrl(connection, row, columns);
+  if (!url) return null;
+  return {
+    label: gettext('Copy original link'),
+    key: 'copy_original_link',
+    callback: () => {
+      const urlObj = new URL(url);
+      copy(urlObj.href);
+      toaster.success(gettext('The original link has been copied'));
+    },
+  };
+};
+

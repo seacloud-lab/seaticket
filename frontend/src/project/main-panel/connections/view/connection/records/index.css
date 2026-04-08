@@ -1,0 +1,7 @@
+.sea-qa-connection-details-metadata .sea-metadata-table-row.outdated-record .sea-metadata-table-cell {
+  opacity: .65;
+}
+
+.sea-qa-connection-details-metadata .sea-metadata-table-row.outdated-record .table-cell-clickable .sea-metadata-ui {
+  text-decoration: line-through;
+}

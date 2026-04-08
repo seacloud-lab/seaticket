@@ -29,8 +29,8 @@
 }
 
 .sea-connection-record-details .sea-connection-record-details-header .sea-connection-record-details-header-left {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 8px;
   flex: 1;
 }
@@ -105,13 +105,4 @@
 .sea-connection-record-details .sea-ticket-connection-site-resource-details .sf-slate-viewer-article-container .article {
   max-width: 100%;
   padding: 0 !important;
-}
-
-/* records */
-.sea-qa-connection-details-metadata .sea-metadata-table-row.outdated-record .sea-metadata-table-cell {
-  opacity: .65;
-}
-
-.sea-qa-connection-details-metadata .sea-metadata-table-row.outdated-record .table-cell-clickable .sea-metadata-ui {
-  text-decoration: line-through;
 }
