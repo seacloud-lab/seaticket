@@ -570,13 +570,22 @@ def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            NotionTable.page_id.name,
-        ]
-    )
+    index_column_names = [
+        NotionTable.title.name,
+        NotionTable.modified_time.name,
+        NotionTable.deleted.name,
+        NotionTable.sync_time.name,
+        NotionTable.page_id.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
 
 
 def get_connection_table_name(connection_type, connection_id):
