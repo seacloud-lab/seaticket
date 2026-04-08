@@ -62,7 +62,6 @@
         pageOptions: {
             server: '{{ service_url }}',
             csrfToken: "{{ csrf_token }}",
-            dtableSocketUrl: '{{dtable_socket_url}}',
             name: "{{request.user.username|email2nickname|escapejs}}",
             contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
             username: "{{request.user.username|escapejs}}",

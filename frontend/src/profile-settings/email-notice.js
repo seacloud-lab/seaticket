@@ -12,16 +12,15 @@ class EmailNotice extends React.Component {
 
   constructor(props) {
     super(props);
-
-    // interval: in seconds
-    this.dtableUpdatesIntervalOptions = [
-      { interval: 0, text: gettext('Don\'t send') },
-      { interval: 86400, text: gettext('Per day') },
-      { interval: 604800, text: gettext('Per week') },
-    ];
-    this.dtableCollaborateIntervalOptions = [
-      { interval: 0, text: gettext('Don\'t send') },
-      { interval: 3600, text: gettext('Per hour') + ' (' + gettext('If notifications aren\'t read within the hour, they will be sent to your mailbox') + ')' },
+    this.collaborateIntervalOptions = [
+      {
+        interval: 0,
+        text: gettext('Don\'t send'),
+      },
+      {
+        interval: 3600,
+        text: gettext('Per hour') + ' (' + gettext('If notifications aren\'t read within the hour, they will be sent to your mailbox') + ')',
+      },
     ];
 
     this.state = {
@@ -65,7 +64,7 @@ class EmailNotice extends React.Component {
         <h6 className="mt-4">{gettext('Notifications of collaboration')}</h6>
         <p className="mb-1">{gettext('Do you want a summary of all notifications of collaboration to be sent to you by email?')}</p>
         <form method="post" action="" id="set-collaborate-email-interval-form">
-          {this.dtableCollaborateIntervalOptions.map((item, index) => {
+          {this.collaborateIntervalOptions.map((item, index) => {
             return (
               <React.Fragment key={index}>
                 <Radio

@@ -92,8 +92,8 @@ def bind_cookie_user(function):
         if not payload.get('is_internal'):
             return None
         payload_username = payload.get('username')
-        payload_dtable_uuid = payload.get('project_uuid')
-        if uuid_str_to_36_chars(payload_dtable_uuid) != uuid_str_to_36_chars(project_uuid):
+        payload_project_uuid = payload.get('project_uuid')
+        if uuid_str_to_36_chars(payload_project_uuid) != uuid_str_to_36_chars(project_uuid):
             return None
         user = User(payload_username)
         user.is_from_cookie = True
@@ -103,10 +103,10 @@ def bind_cookie_user(function):
     def wrapper(request, *args, **kwargs):
         if request.user and not isinstance(request.user, AnonymousUser):
             return function(request, *args, **kwargs)
-        request_dtable_uuid = kwargs.get('project_uuid')
-        if not request_dtable_uuid:
+        request_project_uuid = kwargs.get('project_uuid')
+        if not request_project_uuid:
             return function(request, *args, **kwargs)
-        access_token_user = get_access_token_user(request, request_dtable_uuid)
+        access_token_user = get_access_token_user(request, request_project_uuid)
         if access_token_user:
             request.user = access_token_user
         return function(request, *args, **kwargs)

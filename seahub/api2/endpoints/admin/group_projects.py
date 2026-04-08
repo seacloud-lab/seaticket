@@ -65,12 +65,12 @@ class AdminGroupProject(APIView):
     permission_classes = (IsAdminUser,)
     throttle_classes = (UserRateThrottle,)
 
-    def delete(self, request, group_id, dtable_uuid):
+    def delete(self, request, group_id, project_uuid):
         """
-        delete a dtable from a group
+        delete a project from a group
         :param request:
         :param group_id:
-        :param dtable_uuid:
+        :param project_uuid:
         :return:
         """
         group_id = int(group_id)
@@ -85,7 +85,7 @@ class AdminGroupProject(APIView):
             error_msg = _('Workspace not found')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        project = Projects.objects.filter(workspace=workspace, uuid=dtable_uuid).first()
+        project = Projects.objects.filter(workspace=workspace, uuid=project_uuid).first()
         if not project:
             error_msg = _('Project not found.')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -104,7 +104,7 @@ class AdminGroupProject(APIView):
         # send admin operation log signal
         admin_op_detail = {
             'name': project.name,
-            'dtable_uuid': str(project.uuid),
+            'project_uuid': str(project.uuid),
             'group_id': group_id,
             'group_name': group.group_name
         }
