@@ -1,9 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
-import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
+import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, CommonOperationConfirmationDialog } from '@/components';
 import { siteRoot, gettext } from '@/constants';
-import { CommonOperationConfirmationDialog } from '@/components';
 import TransferDialog from './transfer-dialog';
 
 class Group extends React.Component {

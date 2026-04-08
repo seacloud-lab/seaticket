@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
-import { Icon } from '@/components';
+import { Icon, CustomizeTabs } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
-import { gettext } from '@/constants';
+import { Z_INDEX, gettext } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
-import { Z_INDEX } from '@/constants';
 import { NOTIFICATION_TYPE } from '@/components/common/notification/constants';
-import { CustomizeTabs } from '@/components';
 
 import './index.css';
 

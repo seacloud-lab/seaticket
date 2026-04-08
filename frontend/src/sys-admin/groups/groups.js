@@ -1,14 +1,13 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
-import { toaster } from '@/components';
+import { toaster, AdminSearch } from '@/components';
 import { Utils } from '@/utils/utils';
 import { siteRoot, gettext } from '@/constants';
 import SysAdminCreateGroupDialog from '@/sys-admin/dialog/sysadmin-create-group-dialog';
 import sysAdminAPI from '@/sys-admin/api';
 import { TopBar, Main } from '../main-panel';
 import GroupsTable from './groups-table';
-import { AdminSearch } from '@/components';
 import { downloadFile } from '@/utils/download';
 
 const Groups = ({ onCloseSidePanel }) => {

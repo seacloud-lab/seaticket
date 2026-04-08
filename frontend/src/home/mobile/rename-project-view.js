@@ -2,8 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { toaster, List, InputItem, MobileCommonHeader, Icon } from '../../components';
-import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
-import { gettext } from '../../constants';
+import { gettext, PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
 import { validateName } from '@/utils/validate';
 
 const propTypes = {

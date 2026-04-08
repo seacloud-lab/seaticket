@@ -1,7 +1,6 @@
 import { useCallback, useState, useMemo } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
-import { CustomizeDropdownMenu } from '@/components';
-import { ModalHeader, IconTooltip, IconButton } from '@/components';
+import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../main-panel/connections/constants';
