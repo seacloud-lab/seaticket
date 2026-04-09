@@ -5,7 +5,10 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
+import {
+  TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
+  AUTO_UPDATE_PARTICIPANTS_KEY,
+} from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { generatorTicketsContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -86,8 +89,10 @@ const Ticket = ({
   // api
   const modifyTicket = useCallback((ticketID, data) => {
     let serverData = {};
+    const dataKeys = Object.keys(data);
+    const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
 
-    Object.keys(data).forEach(columnName => {
+    dataKeys.forEach(columnName => {
       let value = data[columnName];
       if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
@@ -103,7 +108,7 @@ const Ticket = ({
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
       let update = { ...data };
       const { participants = [] } = ticket;
-      if (!participants.includes(user.email)) {
+      if (isAutoUpdateParticipants && !participants.includes(user.email)) {
         update['participants'] = [...participants, user.email];
       }
       const newTicket = ticket._update(update);
@@ -562,7 +567,7 @@ const Ticket = ({
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
+          <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>

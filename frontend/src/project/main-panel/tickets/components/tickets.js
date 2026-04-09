@@ -6,7 +6,7 @@ import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
-  TICKET_TABLE_NAME, TICKET_TYPE,
+  TICKET_TABLE_NAME, TICKET_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
@@ -151,7 +151,10 @@ const Tickets = ({
     _api.insertRow = () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW);
     if (isFunction(api.modifyRow)) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
-        const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
+        let rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
+        if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
+          delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
+        }
         return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste));
       };
     }

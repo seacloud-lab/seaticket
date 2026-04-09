@@ -6,7 +6,7 @@ import { toaster } from '@/components';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, AUTO_UPDATE_PARTICIPANTS_KEY } from './constants';
 import { TicketForAI } from './models';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
@@ -181,25 +181,30 @@ export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
     }
   }
 
-  // User A modifies the data and A becomes a participant.
+  // User A modifies the data and A becomes a participant if not operate participants column
   // const assigneesColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
   const participantsColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS);
-  const oldParticipants = row[participantsColumn?.key] || [];
-  let newParticipants = oldParticipants.slice(0);
-  // if (assigneesColumn && updatedColumnKeys.includes(assigneesColumn?.key)) {
-  //   const assignees = rowUpdate[assigneesColumn.key];
-  //   assignees.forEach(assignee => {
-  //     if (!newParticipants.includes(assignee)) {
-  //       newParticipants.push(assignee);
-  //     }
-  //   });
-  // }
-  if (!newParticipants.includes(username)) {
-    newParticipants.push(username);
-  }
   if (participantsColumn) {
-    rowUpdate[participantsColumn.key] = newParticipants;
-    oldRowData[participantsColumn.key] = newParticipants;
+    if (updatedColumnKeys.includes(participantsColumn.key)) {
+      rowUpdate[AUTO_UPDATE_PARTICIPANTS_KEY] = false;
+    } else {
+      const oldParticipants = row[participantsColumn?.key] || [];
+      let newParticipants = oldParticipants.slice(0);
+      // if (assigneesColumn && updatedColumnKeys.includes(assigneesColumn?.key)) {
+      //   const assignees = rowUpdate[assigneesColumn.key];
+      //   assignees.forEach(assignee => {
+      //     if (!newParticipants.includes(assignee)) {
+      //       newParticipants.push(assignee);
+      //     }
+      //   });
+      // }
+      if (!newParticipants.includes(username)) {
+        newParticipants.push(username);
+        rowUpdate[participantsColumn.key] = newParticipants;
+        rowUpdate[AUTO_UPDATE_PARTICIPANTS_KEY] = true;
+        oldRowData[participantsColumn.key] = newParticipants;
+      }
+    }
   }
 };
 
