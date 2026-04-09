@@ -138,7 +138,6 @@ class ProjectTicketNotificationsView(APIView):
 
     def put(self, request, project_uuid, ticket_id):
         username = request.user.username
-        seen_count = 0
         try:
             seen_count = ProjectNotification.objects.mark_read_by_project_ticket(project_uuid, username, ticket_id)
         except Exception as e:

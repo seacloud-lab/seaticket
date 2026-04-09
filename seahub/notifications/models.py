@@ -69,17 +69,19 @@ class ProjectNotificationManager(models.Manager):
         return self.filter(project_uuid=project_uuid, to_user=username, seen=False).update(seen=True)
     
     def mark_read_by_project_ticket(self, project_uuid, username, ticket_id):
-        notices = self.filter(project_uuid=project_uuid, to_user=username, seen=False, msg_type__contains='ticket_')
-        unseen_count = 0
+        ticket_msg_types = ['ticket_assignee_added', 'ticket_commented', 'agent_notify_assignee']
+        notices = self.filter(project_uuid=project_uuid, to_user=username, seen=False, msg_type__in=ticket_msg_types)
+        notices_to_update = []
         for notice in notices:
-            notice_dict = notice.to_dict()
-            notice_detail = notice_dict.get('detail', {})
-            notice_ticket_id = notice_detail.get('ticket_id', None)
-            if str(notice_ticket_id) == str(ticket_id):
+            detail = json.loads(notice.detail) if notice.detail else {}
+            if str(detail.get('ticket_id')) == str(ticket_id):
                 notice.seen = True
-                notice.save()
-                unseen_count = unseen_count + 1
-        return unseen_count
+                notices_to_update.append(notice)
+        
+        if notices_to_update:
+            self.bulk_update(notices_to_update, ['seen'])
+        
+        return len(notices_to_update)
 
 
 class ProjectNotification(models.Model):
