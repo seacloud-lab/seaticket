@@ -74,7 +74,7 @@ CONF_DIR = os.getenv('CONF_PATH', '/opt/seaqa/conf/')
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-io')
 
-JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
+JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY', '')
 SEADB_SERVER_URL = configs.get('SEADB_SERVER_URL', 'http://seadb:8888')
 SEADB_SERVER_ACCESS_TOKEN = configs.get('SEADB_SERVER_ACCESS_TOKEN', '')
 
