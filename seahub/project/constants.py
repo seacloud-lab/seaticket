@@ -27,6 +27,7 @@ class ConnectionType(Enum):
     DISCOURSE_FORUM = 'discourse_forum'
     SITE = 'site'
     SEAFILE = 'seafile'
+    NOTION = 'notion'
 
     @classmethod
     def is_valid(cls, value):
@@ -103,6 +104,10 @@ CONNECTION_FIELDS = {
     ConnectionType.SEAFILE.value: [
         ConnectionField('server_url', True, False).to_dict(),
         ConnectionField('api_token', True, False).to_dict(),
+    ]
+    ,
+    ConnectionType.NOTION.value: [
+        ConnectionField('integration_secret', True, False).to_dict(),
     ]
 }
 
@@ -269,6 +274,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
+    ConnectionType.NOTION.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -329,7 +353,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
-    ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags']
+    ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags'],
+    ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated']
 }
 
 
@@ -337,6 +362,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
 CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['url'],
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
+    ConnectionType.NOTION.value: ['page_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000

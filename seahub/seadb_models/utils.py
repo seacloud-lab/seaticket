@@ -6,7 +6,7 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGenerato
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable
 
 logger = logging.getLogger(__name__)
 
@@ -556,6 +556,38 @@ def init_agent_seadb_table(seadb_api, project_uuid):
         [AgentActionsTable.run_id.name, AgentActionsTable.created_at.name],
     )
 
+
+def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = NotionTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in NotionTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    index_column_names = [
+        NotionTable.title.name,
+        NotionTable.modified_time.name,
+        NotionTable.deleted.name,
+        NotionTable.sync_time.name,
+        NotionTable.page_id.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
+
+
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
@@ -568,6 +600,8 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = SeafileTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.NOTION.value:
+        table_name = NotionTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -1075,3 +1109,15 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
         for result in pk_result.values()
     ]
 
+
+
+def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
+    notion_table_name = NotionTable.gen_table_name(connection_id)
+    sql = f"SELECT title, content, created_time, modified_time, creator, page_id FROM `{notion_table_name}` WHERE _pk = {_pk}"
+    try:
+        notion_res = seadb_api.query_rows(project_uuid, sql)
+        notion_record = notion_res.get('results')[0]
+    except Exception as e:
+        logger.error(f'SeaDB query error for issue details {notion_table_name}: {e}')
+        notion_record = {}
+    return notion_record

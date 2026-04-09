@@ -25,6 +25,7 @@ const initColumns = [
   { key: 'url', name: 'url' },
   { key: 'slug', name: 'slug' },
   { key: 'topic_id', name: 'topic_id' },
+  { key: 'page_id', name: 'page_id' },
 ];
 
 const ResourceDetailsDialog = ({
