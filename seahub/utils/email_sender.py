@@ -204,10 +204,6 @@ class SMTPEmailSender(_EmailSenderBase):
 
     def _save_to_imap_sent(self, msg_obj):
         """Save sent email to IMAP Sent folder"""
-        if not self.imap_host:
-            # No IMAP config, skip saving to Sent folder
-            return None
-
         if 'fastmail' not in self.smtp_host:
             logger.info('Skip IMAP save: provider %s automatically saves sent emails', self.smtp_host)
             return None
@@ -255,7 +251,7 @@ class SMTPEmailSender(_EmailSenderBase):
             else:
                 # Email sent to self - search in INBOX to get uid
                 message_id = msg_obj.get('Message-ID', '')
-                if message_id and 'fastmail' in self.imap_host:
+                if message_id:
                     try:
                         imap.select('INBOX', readonly=True)
                         # Search by Message-ID
@@ -276,9 +272,9 @@ class SMTPEmailSender(_EmailSenderBase):
             # For Fastmail, fetch EMAILID extension using the UID
             email_id = None
             thread_id = None
-            if uid and 'fastmail' in self.imap_host:
+            if uid:
                 try:
-                    for folder in ["INBOX", sent_folder]:
+                    for folder in [sent_folder, "INBOX"]:
                         imap.select(folder, readonly=True)
                         status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
                         if status == 'OK' and fetch_data:
@@ -296,7 +292,7 @@ class SMTPEmailSender(_EmailSenderBase):
                                         thread_id = thread_match.group(1)
                         if email_id and thread_id:
                             break
-                   
+
                 except Exception as e:
                     logger.warning('Failed to fetch EMAILID from Fastmail: %s', e)
                 finally:

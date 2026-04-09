@@ -6,7 +6,7 @@ import json
 import datetime
 import sys
 import uuid
-from email.utils import formatdate
+from email.utils import formatdate, make_msgid
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -1138,8 +1138,9 @@ class ProjectConnectionReplyEmailView(APIView):
 
         # Generate message_id before sending
         sender_email = config.get('sender_email') or config.get('username')
-        domain = sender_email.split('@')[1] if '@' in sender_email else 'localhost'
-        message_id = f'<{uuid.uuid4().hex}@{domain}>'
+        domain = sender_email.split('@')[1] if '@' in sender_email else None
+        message_id = make_msgid(domain=domain)
+
 
         # Send email
         send_info = {
@@ -1151,7 +1152,7 @@ class ProjectConnectionReplyEmailView(APIView):
             'in_reply_to': target_message_id,
             'message_id': message_id,
         }
-        
+
         try:
             send_res = toggle_send_email(config, send_info)
         except EmailConfigError as e:

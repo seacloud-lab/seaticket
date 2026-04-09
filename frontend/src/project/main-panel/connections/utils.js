@@ -49,8 +49,8 @@ const getEmailOriginalPageUrl = (row) => {
   if (details.length === 0) {
     return '';
   }
-  const email_id = details[details.length - 1].email_id;
-  const origin_thread_id = details[details.length - 1].origin_thread_id;
+  const email_id = details[0].email_id;
+  const origin_thread_id = details[0].origin_thread_id;
   if (!email_id || ! origin_thread_id) {
     return '';
   }
