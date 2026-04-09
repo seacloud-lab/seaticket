@@ -146,14 +146,14 @@ class EmailSeaDBAPI:
                 result.append(whole_thread_data)
         return result
 
-    def save_reply_email(self, project_uuid, connection_id, record_id, email_data):
+    def save_reply_email(self, project_uuid, connection_id, thread_id, email_data):
         now = datetime.datetime.now(datetime.UTC).isoformat()
         email_table_name = EmailTable.gen_table_name(connection_id)
         thread_table_name = ThreadTable.gen_table_name(connection_id)
-        
+
         sender_name = email_data.get('sender_name', '')
         sender_email = email_data['sender_email']
-        
+
         email_row = {
             EmailTable.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
             EmailTable.email_to.name: email_data.get('email_to', ''),
@@ -166,16 +166,16 @@ class EmailSeaDBAPI:
             EmailTable.is_sender.name: True,
             EmailTable.sync_time.name: now,
             EmailTable.deleted.name: False,
-            EmailTable.thread_id.name: int(record_id),
+            EmailTable.thread_id.name: thread_id,
             EmailTable.message_id.name: email_data.get('message_id') or '',
             EmailTable.origin_thread_id.name: email_data.get('origin_thread_id') or '',
             EmailTable.email_id.name: email_data.get('email_id') or '',
         }
-        
+
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
         pks = result.get('pks', [])
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
-            'pk': int(record_id),
+            'pk': int(thread_id),
             'row': {
                 ThreadTable.modified_time.name: now,
                 ThreadTable.record_modified_time.name: now,
