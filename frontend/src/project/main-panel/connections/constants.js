@@ -180,14 +180,12 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true,
-      tip: gettext('The API key is the API key of the forum.'),
     }, {
       key: 'api_username',
       name: gettext('API username'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true,
-      tip: gettext('The API username is the API username of the forum.'),
     }, {
       key: 'sync_years',
       name: gettext('Only sync topics updated within following number of years'),
@@ -230,12 +228,11 @@ export const CONNECTION_FIELDS = {
       is_display: true,
     }, {
       key: 'server_url',
-      name: gettext('Server URL'),
+      name: gettext('Seafile server URL'),
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('The server URL is the server URL of the Seafile server.'),
     }, {
       key: 'api_token',
       name: gettext('Library API token'),
