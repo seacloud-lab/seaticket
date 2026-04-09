@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
@@ -11,7 +11,7 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, isSmallScreen, updateDetails }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateDetails }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -34,23 +34,28 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, isSmallS
     });
   }, [details, type, localEmailDetails]);
 
-  const handleReplyEmailSuccess = useCallback(() => {
-
-  }, []);
-
-  const addComment = useCallback((comment) => {
-    if (!comment) return;
-    setDetails((details) => {
-      const newDetails = Array.isArray(details) ? details.slice(0) : [];
-      newDetails.push({
-        ...comment,
-        author: comment.author || '',
-        time: comment.created_time || '',
-        body: comment.content || '',
-      });
-      return newDetails;
-    });
-  }, []);
+  const handleReplyEmailSuccess = useCallback((payload) => {
+    if (!payload) return;
+    const senderEmail = payload.sender_email;
+    const senderName = payload.sender_name || '';
+    const emailFrom = senderName && senderEmail
+      ? `${senderName} <${senderEmail}>`
+      : (senderEmail || senderName || '');
+    const emailTo = payload.email_to || payload.replyTargetEmail?.email_from || '';
+    const now = new Date().toISOString();
+    const nextDetail = {
+      email_from: emailFrom,
+      email_to: emailTo,
+      title: payload.subject || details?.title || '',
+      cc: payload.cc || '',
+      content: payload.content || '',
+      html_content: payload.html_content || '',
+      modified_time: now,
+      is_sender: true,
+      _pk: payload._pk,
+    };
+    setLocalEmailDetails(prev => [...prev, nextDetail]);
+  }, [connection, details]);
 
   useEffect(() => {
     setStatus('loading');
