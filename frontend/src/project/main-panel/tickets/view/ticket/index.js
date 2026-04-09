@@ -92,7 +92,7 @@ const Ticket = ({
     const dataKeys = Object.keys(data);
     const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
 
-    dataKeys.forEach(columnName => {
+    dataKeys.filter(key => key !== AUTO_UPDATE_PARTICIPANTS_KEY).forEach(columnName => {
       let value = data[columnName];
       if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
@@ -306,6 +306,15 @@ const Ticket = ({
 
   const onDueDateChange = useCallback((due_date = '') => {
     modifyTicket(ticket.id, { due_date }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
+  const onParticipantsChange = useCallback((participants = []) => {
+    modifyTicket(ticket.id, { participants, [AUTO_UPDATE_PARTICIPANTS_KEY]: true }).then(res => {
       // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -567,7 +576,7 @@ const Ticket = ({
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} />
+          <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>
