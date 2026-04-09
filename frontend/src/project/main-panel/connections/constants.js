@@ -78,7 +78,7 @@ export const CONNECTION_FIELDS = {
           type: CONNECTION_FIELD_TYPE.TEXT,
           is_required: false,
           is_display: true,
-          is_custom: true
+          is_custom: true,
         }, {
           key: 'smtp_port',
           name: gettext('SMTP port'),
@@ -99,7 +99,7 @@ export const CONNECTION_FIELDS = {
           type: CONNECTION_FIELD_TYPE.TEXT,
           is_required: false,
           is_display: true,
-          is_custom: true
+          is_custom: true,
         }, {
           key: 'imap_port',
           name: gettext('IMAP port'),
@@ -119,7 +119,8 @@ export const CONNECTION_FIELDS = {
           name: gettext('Username'),
           type: CONNECTION_FIELD_TYPE.TEXT,
           is_required: true,
-          is_custom: true
+          is_custom: true,
+          tip: gettext('The username is the email address of the account.'),
         }, {
           key: 'password',
           name: gettext('Password'),
@@ -127,6 +128,7 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_custom: true,
           can_edit_multiple_times: false,
+          tip: gettext('The password for your email account. For some email providers, you may need to create an app password and use that app password here.'),
         }
       ]
     }, {
@@ -145,7 +147,7 @@ export const CONNECTION_FIELDS = {
       name: gettext('Name'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
-      is_display: true
+      is_display: true,
     }, {
       key: 'repository',
       name: gettext('Repository'),
@@ -155,19 +157,6 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-    // }, {
-    //   key: 'installation_id',
-    //   name: gettext('Installation ID'),
-    //   type: CONNECTION_FIELD_TYPE.PASSWORD,
-    //   is_required: true,
-    //   is_custom: true,
-    //   tip: gettext('Your personal access token in GitHub Developer Settings')
-    // }, {
-    //   key: 'webhook_secret',
-    //   name: gettext('Webhook secret (optional)'),
-    //   type: CONNECTION_FIELD_TYPE.TEXT,
-    //   is_required: false,
-    //   is_custom: true,
     },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
@@ -176,26 +165,29 @@ export const CONNECTION_FIELDS = {
       name: gettext('Name'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
-      is_display: true
+      is_display: true,
     }, {
       key: 'url',
       name: gettext('URL'),
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The URL is the URL of the forum.'),
     }, {
       key: 'api_key',
       name: gettext('API key'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The API key is the API key of the forum.'),
     }, {
       key: 'api_username',
       name: gettext('API username'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The API username is the API username of the forum.'),
     }, {
       key: 'sync_years',
       name: gettext('Only sync topics updated within following number of years'),
@@ -212,19 +204,21 @@ export const CONNECTION_FIELDS = {
       name: gettext('Name'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
-      is_display: true
+      is_display: true,
     }, {
       key: 'url',
       name: gettext('URL'),
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The URL is the URL of the site. Example: \'https://www.example.com\''),
     }, {
       key: 'sitemap_url',
       name: gettext('Sitemap URL'),
       type: CONNECTION_FIELD_TYPE.URL,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The sitemap URL is the URL of the sitemap. Example: \'https://www.example.com/sitemap.xml\''),
     },
   ],
   [CONNECTION_TYPE.SEAFILE]: [
@@ -233,21 +227,23 @@ export const CONNECTION_FIELDS = {
       name: gettext('Name'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
-      is_display: true
+      is_display: true,
     }, {
       key: 'server_url',
       name: gettext('Server URL'),
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The server URL is the server URL of the Seafile server.'),
     }, {
       key: 'api_token',
       name: gettext('Library API token'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       can_edit_multiple_times: false,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The API token is the API token of the Seafile library.'),
     }
   ]
 };
