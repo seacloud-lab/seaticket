@@ -22,7 +22,7 @@ const Inbox = ({ toggleBar }) => {
     // Load more notifications when near bottom
     if (isNearBottom(e.target)) {
       page.current = page.current + 1;
-      fetchNotifications(page.current, 20);
+      fetchNotifications(page.current, 50);
     }
   }, [loadingMore, notificationList]);
 

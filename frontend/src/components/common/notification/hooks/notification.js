@@ -36,7 +36,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     return list;
   }, []);
 
-  const fetchNotifications = useCallback((page = 1, perPage = 20) => {
+  const fetchNotifications = useCallback((page = 1, perPage = 50) => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -229,6 +229,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
   const markProjectNoticeAsReadByTicket = useCallback((projectUuid, ticketId) => {
     if (unseen === 0) return;
+    if (!notificationList.find(notification => !notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId)) return;
     notificationAPI.markProjectNoticeAsReadByTicket(projectUuid, ticketId).then(res => {
       const { seen_count = 0 } = res.data;
       setUnseen(Math.max(unseen - seen_count, 0));
