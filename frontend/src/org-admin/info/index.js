@@ -28,12 +28,13 @@ class Info extends Component {
         issues_usage: res.data.issues_usage,
         org_name: res.data.org_name,
         org_id: res.data.org_id,
+        ai_credit_used: res.data.ai_credit_used,
       });
     });
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_usage } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used } = this.state;
     return (
 
       <Fragment>
@@ -53,7 +54,7 @@ class Info extends Component {
           <MultipleTextCard
             texts={[
               { name: gettext('Total issues'), value: issues_usage || '--' },
-              { name: gettext('AI Credit'), value: ai_credit_usage || '--' },
+              { name: gettext('AI Credit'), value: ai_credit_used || '--' },
             ]}
             itemStyle={{ flex: 1 }}
           />

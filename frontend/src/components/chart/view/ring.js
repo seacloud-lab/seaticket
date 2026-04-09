@@ -95,8 +95,8 @@ const Ring = ({ data }) => {
           .attr('paint-order', 'stroke')
           .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
           .text((d) => {
-            const { value } = d.data;
-            return value;
+            const { percentage } = d.data;
+            return percentage;
           })
           .attr('fill', DEFAULT_LABEL_COLOR)
           .attr('font-size', DEFAULT_LABEL_FONT_SIZE);

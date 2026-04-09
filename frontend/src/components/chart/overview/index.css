@@ -92,3 +92,18 @@
 .chart-wrapper .chart-name {
   font-size: 20px;
 }
+
+.overview-chart-state {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overview-chart-state img {
+  display: none;
+}
+
+.overview-chart-state .empty-tip {
+  margin-bottom: 0px !important;
+}

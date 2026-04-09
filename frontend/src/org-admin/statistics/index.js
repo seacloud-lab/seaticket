@@ -53,10 +53,6 @@ class StatisticsAI extends Component {
     ];
   }
 
-  componentDidMount() {
-    this.getStatisticsByPage(this.state.currentPage);
-  }
-
   getAIStatisticsDetail = (groupBy, startDate, endDate, condition, scenarios) => {
     return orgAdminAPI.orgAdminGetAIStatisticsDetail(orgID, groupBy, startDate, endDate, condition, scenarios);
   };
