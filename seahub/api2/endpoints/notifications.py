@@ -131,6 +131,23 @@ class ProjectNotificationsView(APIView):
         return Response({'success': True})
 
 
+class ProjectTicketNotificationsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def put(self, request, project_uuid, ticket_id):
+        username = request.user.username
+        try:
+            seen_count = ProjectNotification.objects.mark_read_by_project_ticket(project_uuid, username, ticket_id)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error.')
+
+        return Response({'seen_count': seen_count})
+
+
+
 class ProjectNotificationView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )

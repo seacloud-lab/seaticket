@@ -59,6 +59,11 @@ class NotificationAPI {
     return this.req.put(url, {});
   }
 
+  markProjectNoticeAsReadByTicket(projectUuid, ticketID) {
+    const url = this.server + '/api/v1/projects/' + projectUuid + '/notifications/ticket/' + ticketID + '/';
+    return this.req.put(url, {});
+  }
+
   markAllRead() {
     const url = this.server + '/api/v1/notifications/';
     return this.req.put(url, {});
