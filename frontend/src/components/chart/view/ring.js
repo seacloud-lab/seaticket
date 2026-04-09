@@ -1,11 +1,41 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { initChart, destroyChart } from '../utils';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
+import ToolTip from '../components/tooltip';
+
+import './index.css';
 
 const Ring = ({ data }) => {
+  const [tooltipData, setTooltipData] = useState(null);
+  const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
   const chartRef = useRef(null);
+
+  const showTooltip = (event, data, colorScale) => {
+    const { offsetX, offsetY } = event;
+    const newTooltipData = {
+      title: false,
+      items: [
+        {
+          color: colorScale(data.name),
+          name: data.name,
+          value: data.value
+        }
+      ]
+    };
+    setTooltipData(newTooltipData);
+    setToolTipPosition({ offsetX, offsetY });
+  };
+
+  const moveTooltip = (event) => {
+    const { offsetX, offsetY } = event;
+    setToolTipPosition({ offsetX, offsetY });
+  };
+
+  const hiddenTooltip = (event) => {
+    setToolTipPosition(null);
+  };
 
   const drawChart = (chart, container, data = []) => {
     const { width: chartWidth, height: chartHeight, insertPadding } = container.chartBoundingClientRect;
@@ -65,11 +95,21 @@ const Ring = ({ data }) => {
           .attr('paint-order', 'stroke')
           .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
           .text((d) => {
-            const { value, percent } = d.data;
+            const { value } = d.data;
             return value;
           })
           .attr('fill', DEFAULT_LABEL_COLOR)
           .attr('font-size', DEFAULT_LABEL_FONT_SIZE);
+      })
+      .on('mouseenter', (event, rowData) => {
+        showTooltip(event, rowData.data, color);
+      })
+      .on('mousemove', (event) => {
+        moveTooltip(event);
+      })
+      .on('mouseleave', (event, data) => {
+        if (event.relatedTarget.getAttribute('class') === 'label') return;
+        hiddenTooltip();
       });
   };
 
@@ -92,6 +132,7 @@ const Ring = ({ data }) => {
 
   return (
     <div className="chart-svg-wrapper flex-1" ref={ref}>
+      <ToolTip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
     </div>
   );
 };
