@@ -40,7 +40,7 @@ from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discou
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
     list_general_task_record_details, build_general_task_row_data, get_connection_columns, list_linear_issue_record_details, \
-   list_confluence_record_details, list_discord_thread_record_details
+   list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
