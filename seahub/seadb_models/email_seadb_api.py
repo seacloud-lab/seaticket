@@ -1,4 +1,7 @@
 import logging
+import datetime
+
+from email.utils import formataddr
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import EmailTable, ThreadTable
@@ -21,6 +24,11 @@ class EmailSeaDBAPI:
         if response and 'results' in response:
             return response['results']
         return []
+
+    def get_email_by_pk(self, connection_id, _pk):
+        """Retrieve email by _pk (alias for get_issue_by_pk for clarity)."""
+        emails = self.get_issue_by_pk(connection_id, _pk)
+        return emails[0] if emails else None
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = EmailTable.gen_table_name(connection_id)
@@ -137,3 +145,41 @@ class EmailSeaDBAPI:
                     })
                 result.append(whole_thread_data)
         return result
+
+    def save_reply_email(self, project_uuid, connection_id, record_id, email_data):
+        now = datetime.datetime.now(datetime.UTC).isoformat()
+        email_table_name = EmailTable.gen_table_name(connection_id)
+        thread_table_name = ThreadTable.gen_table_name(connection_id)
+        
+        sender_name = email_data.get('sender_name', '')
+        sender_email = email_data['sender_email']
+        
+        email_row = {
+            EmailTable.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
+            EmailTable.email_to.name: email_data.get('email_to', ''),
+            EmailTable.title.name: email_data.get('subject', ''),
+            EmailTable.cc.name: email_data.get('cc') or '',
+            EmailTable.content.name: email_data.get('content', ''),
+            EmailTable.html_content.name: email_data.get('html_content') or '',
+            EmailTable.modified_time.name: now,
+            EmailTable.reply_to_message_id.name: email_data.get('reply_to_message_id') or '',
+            EmailTable.is_sender.name: True,
+            EmailTable.sync_time.name: now,
+            EmailTable.deleted.name: False,
+            EmailTable.thread_id.name: int(record_id),
+            EmailTable.message_id.name: email_data.get('message_id') or '',
+            EmailTable.origin_thread_id.name: email_data.get('origin_thread_id') or '',
+            EmailTable.email_id.name: email_data.get('email_id') or '',
+        }
+        
+        result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
+        pks = result.get('pks', [])
+        self.seadb_api.update_rows(project_uuid, thread_table_name, [{
+            'pk': int(record_id),
+            'row': {
+                ThreadTable.modified_time.name: now,
+                ThreadTable.record_modified_time.name: now,
+                ThreadTable.unread.name: False,
+            }
+        }])
+        return pks[0] if pks else None

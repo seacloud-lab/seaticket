@@ -5,7 +5,8 @@ import logging
 import json
 import datetime
 import sys
-from email.utils import formatdate
+import uuid
+from email.utils import formatdate, make_msgid
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -21,10 +22,11 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
-from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename
+from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
+    extract_email_addresses
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
@@ -32,15 +34,20 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, init_notion_seadb_table, list_notion_record_details
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
+
+from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -1054,6 +1061,136 @@ class ProjectConnectionRecordsView(APIView):
     #         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
     #     return Response({'success': True})
+
+
+class ProjectConnectionReplyEmailView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support replying email.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        content = (request.data.get('content') or '').strip()
+        config = decrypt_config(json.loads(project_connection.config))
+
+        seadb_api = SeaDBAPI(username)
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+
+        # email_id is the _pk of the email table to reply to (required)
+        email_id = request.data.get('email_id')
+        if not email_id:
+            error_msg = 'email_id is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            email_id = int(email_id)
+        except (TypeError, ValueError):
+            error_msg = 'email_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
+        if not target_email:
+            error_msg = 'email_id not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # Get thread_id from email_table
+        record_id = target_email.get('thread_id')
+        if not record_id:
+            error_msg = 'No thread_id found in email.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        to_text = request.data.get('to') or target_email.get('email_from')
+        to_emails = extract_email_addresses(to_text)
+        if not to_emails:
+            error_msg = 'to invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        cc_text = request.data.get('cc')
+        cc_emails = extract_email_addresses(cc_text)
+
+        subject = request.data.get('subject')
+        if not subject:
+            subject = target_email.get('title')
+        if not subject.lower().startswith('re:'):
+            subject = f'Re: {subject}'
+
+        html_content = request.data.get('html_content')
+        target_message_id = target_email.get('message_id')
+
+        # Generate message_id before sending
+        sender_email = config.get('sender_email') or config.get('username')
+        domain = sender_email.split('@')[1] if '@' in sender_email else None
+        message_id = make_msgid(domain=domain)
+
+
+        # Send email
+        send_info = {
+            'message': content,
+            'html_message': html_content,
+            'send_to': to_emails,
+            'copy_to': cc_emails,
+            'subject': subject,
+            'in_reply_to': target_message_id,
+            'message_id': message_id,
+        }
+
+        try:
+            send_res = toggle_send_email(config, send_info)
+        except EmailConfigError as e:
+            logger.error('email config error, connection_id: %s, error: %s', connection_id, e)
+            error_msg = 'Email connection config is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except EmailSendError as e:
+            logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            error_msg = 'Failed to send email.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        sender_name = config.get('sender_name', '')
+        # Get Fastmail EMAILID if available
+        email_id = send_res.get('email_id')
+        origin_thread_id = send_res.get('origin_thread_id') or target_email.get('origin_thread_id')
+
+        email_data = {
+            'sender_name': sender_name,
+            'sender_email': sender_email,
+            'email_to': to_text,
+            'cc': cc_text,
+            'subject': subject,
+            'content': content,
+            'html_content': html_content,
+            'reply_to_message_id': target_message_id,
+            'origin_thread_id': origin_thread_id,
+            'message_id': message_id,
+            'email_id': email_id,
+        }
+        try:
+            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)
+            email_data['_pk'] = pk
+        except Exception as e:
+            logger.error('save reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            error_msg = 'Failed to save reply email.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response(email_data, status=status.HTTP_200_OK)
 
 
 class ConnectionFileView(APIView):

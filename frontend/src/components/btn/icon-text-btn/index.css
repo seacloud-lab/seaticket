@@ -13,3 +13,11 @@
 .sea-ticket-icon-text-btn:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
+
+.sea-ticket-default-icon-text-btn {
+  color: var(--bs-body-color);
+}
+
+.sea-ticket-default-icon-text-btn .sea-qa-icon-svg {
+  color: var(--bs-icon-color);
+}

@@ -253,6 +253,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  replyConnectionEmail(projectUuid, connectionID, payload) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/reply-email/';
+    return this.req.post(url, payload);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

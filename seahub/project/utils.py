@@ -2,6 +2,7 @@ import re
 import logging
 import hashlib
 from urllib.parse import quote_plus
+from email.utils import getaddresses, formataddr
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
@@ -395,3 +396,18 @@ def rank_vector_search_results(query_record, results, username, org_id, project_
 
 def convert_cost_to_credit(cost):
     return 100 * cost
+
+# email utils
+def extract_email_addresses(address_text):
+    if not address_text:
+        return []
+
+    address_text = str(address_text).replace(';', ',')
+    addresses = []
+    for name, email in getaddresses([address_text]):
+        email = email.strip()
+        if email:
+            full_address = formataddr((name, email))
+            if full_address not in addresses:
+                addresses.append(full_address)
+    return addresses

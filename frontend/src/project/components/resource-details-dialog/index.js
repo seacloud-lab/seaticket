@@ -29,7 +29,7 @@ const initColumns = [
 ];
 
 const ResourceDetailsDialog = ({
-  projectUuid, resource, columns = initColumns, isShowIcon,
+  projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
   switchResource, onToggle,
   createMoreOptions,
   getTicket, getKB,
@@ -137,7 +137,7 @@ const ResourceDetailsDialog = ({
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (
-          <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} updateDetails={updateDetails} />
+          <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
           <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={updateDetails} getKB={getKB} />

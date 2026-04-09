@@ -1,0 +1,44 @@
+.sea-ticket-email-replay-container {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  position: relative;
+  background-color: #fff;
+  padding: 16px;
+  transition: margin .2s;
+  flex-direction: column;
+  margin-bottom: 16px;
+  margin-top: 40px;
+  box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
+  gap: 16px;
+}
+
+.sea-ticket-email-replay-container .sea-ticket-email-replay-to {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sea-ticket-email-replay-container .sea-ticket-email-replay-to .sea-ticket-email-replay-to-title {
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sea-ticket-email-replay-container .sea-email-editor {
+  min-height: 300px;
+}
+
+.sea-ticket-email-replay-container .sea-ticket-email-replay-op-btns {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.sea-ticket-email-replay-container .sea-ticket-email-replay-op-btns button {
+  height: 38px;
+}

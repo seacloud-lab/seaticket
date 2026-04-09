@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { gettext, mediaUrl } from '@/constants';
-import { CustomizeMarkdownViewer } from '@/components';
+import dayjs from '@/utils/dayjs';
+import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
+import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
 import DateFormatter from '../../cell-formatter/date-formatter';
-import { getInfoByEmailFrom } from '../../../utils';
+import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../utils';
 import HTMLContentWrapper from './html-content';
+import ReplyEmail from './reply-email';
+import { connectionsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded }) => {
+const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission, handleReplyEmailSuccess }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
+  const [isShowReply, setIsShowReply] = useState(false);
 
   const ref = useRef(null);
 
@@ -20,7 +25,8 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
     let value = content ? content.replace(hrefReg, '').replace('\n', ' ').substring(0, 150) : '';
-    const isGitLog = email.indexOf('github.com') > -1 || email.indexOf('gitlab') > -1;
+    const emailText = email || '';
+    const isGitLog = emailText.indexOf('github.com') > -1 || emailText.indexOf('gitlab') > -1;
     if (!isGitLog) return value;
     if (value.startsWith(`@${sender}`)) {
       value = value.replace(`@${sender}`, '');
@@ -30,8 +36,12 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
 
   const detailContent = useMemo(() => {
     const value = isHTMLContent ? HTMLContent : content;
-    // HTML Content contains '```' at begin and end
-    return isHTMLContent ? value.trim().substring(3, value.length - 3) : value;
+    if (!isHTMLContent) return value;
+    let trimmedValue = value.trim();
+    if (trimmedValue.startsWith('```') && trimmedValue.endsWith('```')) {
+      trimmedValue = trimmedValue.substring(3, trimmedValue.length - 3);
+    }
+    return trimmedValue;
   }, [isHTMLContent, content, HTMLContent]);
 
   const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
@@ -72,8 +82,69 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     setIsExpanded(true);
   }, []);
 
+  const openReply = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    setIsShowReply(true);
+  }, []);
+
+  const onSubmit = useCallback(({ to, cc, content }, callback) => {
+    const payload = {
+      html_content: content,
+      to: to.join(','),
+      cc: cc.join(','),
+      email_id: detail._pk,
+    };
+    connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then((res) => {
+      callback && callback();
+      handleReplyEmailSuccess(res.data);
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      callback && callback(true);
+    });
+  }, [projectUuid, connection_id, handleReplyEmailSuccess]);
+
+  const renderReply = useCallback(() => {
+    const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
+    let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
+    tip = tip.replace('{day}', sendTime.format('ddd'))
+      .replace('{date_year}', sendTime.format('ll'))
+      .replace('{time}', sendTime.format('LT'))
+      .replace('{email_from}', sender);
+
+    let initValue = '';
+    if (isHTMLContent) {
+      initValue = '<div></div><div></div><div></div>';
+      const parsed = new DOMParser().parseFromString(detailContent, 'text/html');
+      let HTMLContentBody = parsed.body;
+      const quotedContent = HTMLContentBody.outerHTML;
+      initValue += '<div style="outline: 0;">';
+      initValue += `<div>${tip}</div>`;
+      initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 2px solid rgba(0, 40, 100, .12); padding-left: 1ex;">${quotedContent}</blockquote>`;
+      initValue += '</div>';
+    } else {
+      initValue = '\n\n\n';
+      initValue += `${tip}\n`;
+      initValue += `> ${detailContent.replace(/\n/g, '\n> ')}`;
+    }
+
+    let assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, connection_id);
+    assetURLPrefix = `${assetURLPrefix}${detail._pk}/`;
+
+    return (
+      <ReplyEmail
+        emailTo={[detail['email_from']]}
+        initValue={initValue}
+        onToggle={() => setIsShowReply(false)}
+        onSubmit={onSubmit}
+        isHtmlValue={isHTMLContent}
+        assetURLPrefix={assetURLPrefix}
+      />
+    );
+  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
+
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded || isShowReply) return;
     if (HTMLContent) {
       addQuoteToggleBtn();
     } else {
@@ -81,30 +152,38 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
         addQuoteToggleBtn();
       });
     }
-  }, [isExpanded]);
+  }, [isExpanded, isShowReply]);
 
   useEffect(() => {
     if (!isLast) return;
     setIsLastExpanded(isExpanded);
   }, [isLast, isExpanded]);
 
-  if (!isExpanded) {
+  if (!isExpanded || isShowReply) {
     return (
-      <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
-        <div className="email-avatar">
-          <img alt='' src={`${mediaUrl}avatars/default.png`}/>
-        </div>
-        <div className="email-record-info">
-          <div className="email-record-info-container">
-            <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
-            <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
-            <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+      <>
+        <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
+          <div className="email-avatar">
+            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
-          <div className="email-record-info-to" title={emailTo}>
-            {gettext('To')}: {emailTo}
+          <div className="email-record-info">
+            <div className="email-record-info-container">
+              <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
+              <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
+              <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+            </div>
+            <div className="email-record-info-to-container">
+              <div className="email-record-info-to">
+                {gettext('To')}: {emailTo}
+              </div>
+              {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+                <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+        {isShowReply && (<>{renderReply()}</>)}
+      </>
     );
   }
 
@@ -120,8 +199,13 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <span className="email-record-info-content text-truncate"></span>
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
-          <div className="email-record-info-to" title={emailTo}>
-            {gettext('To')}: {emailTo}
+          <div className="email-record-info-to-container">
+            <div className="email-record-info-to">
+              {gettext('To')}: {emailTo}
+            </div>
+            {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+              <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+            )}
           </div>
         </div>
       </div>

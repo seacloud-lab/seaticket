@@ -7,7 +7,7 @@ import Item from './item';
 
 import './index.css';
 
-const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
+const EmailDetails = ({ details, className, ...props }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5);
   const [isLastExpand, setIsLastExpanded] = useState(false);
 
@@ -48,13 +48,12 @@ const EmailDetails = ({ details, className, projectUuid, connection_id }) => {
         if (!isShowAll && index < (details.length - 1)) return null;
         return (
           <Item
-            key={index}
+            key={detail._pk}
             isLast={index === (details.length - 1)}
             detail={detail}
             isExpand={index === details.length - 1}
-            projectUuid={projectUuid}
-            connection_id={connection_id}
             setIsLastExpanded={setIsLastExpanded}
+            { ...props }
           />
         );
       })}
