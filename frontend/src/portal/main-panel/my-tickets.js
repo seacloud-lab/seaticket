@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { gettext } from '@/constants';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import context from '@/sea-metadata/context';
 import { portalAPI } from '../api';
 import Tickets from '@/project/main-panel/tickets/components/tickets';
@@ -93,7 +93,7 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}
-      permission="r"
+      permission={PERMISSION_TYPES.READ_WRITE}
       viewID={viewID}
       api={api}
       getTicket={(uuid, ticketNumber) => portalAPI.getTicket(uuid, ticketNumber)}
