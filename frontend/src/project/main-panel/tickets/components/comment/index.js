@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem, CenteredLoading } from '@/components';
-import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
@@ -113,10 +113,10 @@ const Comment = ({
   const renderAvatar = useCallback(() => {
     return (
       <div className="sea-qa-project-ticket-comment-user-avatar">
-        <img src={creator.avatar_url} alt={creator.name} />
+        <img src={comment.via_agent ? `${mediaUrl}/img/agent-avatar.png` : creator.avatar_url} alt={creator.name} />
       </div>
     );
-  }, [creator, isSmallScreen]);
+  }, [creator.avatar_url, creator.name, comment.via_agent]);
 
   const renderOperationLog = useCallback(() => {
     const { created_time, via_agent: isViaAgent } = comment;
