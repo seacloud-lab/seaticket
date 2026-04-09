@@ -1113,8 +1113,8 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # Get thread_id from email_table
-        record_id = target_email.get('thread_id')
-        if not record_id:
+        thread_id = target_email.get('thread_id')
+        if not thread_id:
             error_msg = 'No thread_id found in email.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1160,7 +1160,7 @@ class ProjectConnectionReplyEmailView(APIView):
             error_msg = 'Email connection config is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         except EmailSendError as e:
-            logger.error('reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            logger.error('reply email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)
             error_msg = 'Failed to send email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
@@ -1183,10 +1183,10 @@ class ProjectConnectionReplyEmailView(APIView):
             'email_id': email_id,
         }
         try:
-            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, record_id, email_data)
+            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, thread_id, email_data)
             email_data['_pk'] = pk
         except Exception as e:
-            logger.error('save reply email failed, connection_id: %s, record_id: %s, error: %s', connection_id, record_id, e)
+            logger.error('save reply email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)
             error_msg = 'Failed to save reply email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
