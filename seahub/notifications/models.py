@@ -73,7 +73,8 @@ class ProjectNotificationManager(models.Manager):
         notices = self.filter(project_uuid=project_uuid, to_user=username, seen=False, msg_type__in=ticket_msg_types)
         notices_to_update = []
         for notice in notices:
-            detail = json.loads(notice.detail) if notice.detail else {}
+            notice_dict = notice.to_dict()
+            detail = notice_dict.get('detail')
             if str(detail.get('ticket_id')) == str(ticket_id):
                 notice.seen = True
                 notices_to_update.append(notice)
