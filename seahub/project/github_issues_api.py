@@ -66,16 +66,6 @@ class GitHubAPI:
         }
         return headers
 
-    def _request(self, url, params=None):
-        response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
-        response.raise_for_status()
-        return response.json()
-
-    def _request_patch(self, url, payload=None):
-        response = requests.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
-        response.raise_for_status()
-        return response.json()
-
     def get_installation_repositories(self, per_page=30, page=1):
         if not (1 <= per_page <= 100):
             raise ValueError("The value of per_page must be less than 100")
@@ -88,7 +78,9 @@ class GitHubAPI:
                 'page': page
             }
 
-            resp = self._request(url, params=params)
+            response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            resp = response.json()
             page_repositories = resp.get('repositories', [])
             if len(page_repositories) <= 0:
                 break
@@ -116,7 +108,9 @@ class GitHubAPI:
         if not payload:
             return {}
 
-        issue_data = self._request_patch(url, payload=payload)
+        response = requests.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        issue_data = response.json()
         return {
             'title': issue_data.get('title', ''),
             'labels': [item.get('name') for item in issue_data.get('labels', [])],
