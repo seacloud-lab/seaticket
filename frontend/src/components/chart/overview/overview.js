@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import orgAdminAPI from '@/org-admin/api';
 import { gettext, orgID } from '@/constants';
 import { Utils } from '@/utils/utils';
