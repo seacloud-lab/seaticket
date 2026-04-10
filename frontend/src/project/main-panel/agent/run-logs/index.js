@@ -67,8 +67,7 @@ const RunLogs = ({
 
   const filteredRunLogs = runLogs.filter(run => {
     const items = run.items || [];
-    const itemsProcessed = run.items_processed || 0;
-    return items.length > 0 || itemsProcessed > 0;
+    return items.length > 0;
   });
 
   return (

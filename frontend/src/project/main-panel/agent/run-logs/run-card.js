@@ -36,9 +36,10 @@ const RunCardHeader = ({ item }) => {
     );
   }
 
-  const connectionIdParts = typeof source_id === 'string' ? source_id.split('_') : [];
-  const connectionId = connectionIdParts[0];
-  const recordId = connectionIdParts[1];
+  const separatorIndex = source_id.indexOf('_');
+  const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
+  const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
+  const connectionDisplayId = recordId || source_id;
   const href = connectionId && recordId
     ? `${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}/${connectionId}/records/${recordId}/`
     : '';
@@ -57,12 +58,12 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>{gettext('GitHub Issue')} #{source_id}</span>
+              <span>{gettext('GitHub Issue')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span>{gettext('GitHub Issue')} #{source_id}</span>
+              <span>{gettext('GitHub Issue')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
@@ -85,12 +86,12 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>{gettext('Discourse Forum')} #{source_id}</span>
+              <span>{gettext('Discourse Forum')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span>{gettext('Discourse Forum')} #{source_id}</span>
+              <span>{gettext('Discourse Forum')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
@@ -113,12 +114,12 @@ const RunCardHeader = ({ item }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>{gettext('Email')} #{source_id}</span>
+              <span>{gettext('Email')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </a>
           ) : (
             <>
-              <span>{gettext('Email')} #{source_id}</span>
+              <span>{gettext('Email')} #{connectionDisplayId}</span>
               <span className="sea-qa-text-orange"> {source_title}</span>
             </>
           )}
@@ -133,7 +134,7 @@ const RunCardHeader = ({ item }) => {
         <img src={`${mediaUrl}/img/connection/ticket.png`} alt="Ticket" width={16} height={16} />
       </span>
       <span className="ticket-title">
-        <span>{gettext(source_type)} #{source_id}:</span>
+        <span>{gettext(source_type)} #{connectionDisplayId}:</span>
         <span className="sea-qa-text-orange"> {source_title}</span>
       </span>
     </div>
