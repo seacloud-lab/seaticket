@@ -53,7 +53,6 @@ class GitHubSeaDBAPI:
                 GithubIssuesTable.issue_type.name: issue_data.get('issue_type', ''),
                 GithubIssuesTable.state.name: issue_data.get('state', ''),
                 GithubIssuesTable.state_reason.name: issue_data.get('state_reason', ''),
-                GithubIssuesTable.modified_time.name: issue_data.get('updated_time'),
                 GithubIssuesTable.record_modified_time.name: now_datetime,
             }
         }

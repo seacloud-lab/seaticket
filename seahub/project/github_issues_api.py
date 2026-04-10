@@ -68,18 +68,12 @@ class GitHubAPI:
 
     def _request(self, url, params=None):
         response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
-        if response.status_code == 404:
-            raise GitHubRepoNotFound(f'Not found: {url}')
-        elif response.status_code >= 400:
-            raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
+        response.raise_for_status()
         return response.json()
 
     def _request_patch(self, url, payload=None):
         response = requests.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
-        if response.status_code == 404:
-            raise GitHubRepoNotFound(f'Not found: {url}')
-        elif response.status_code >= 400:
-            raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
+        response.raise_for_status()
         return response.json()
 
     def get_installation_repositories(self, per_page=30, page=1):

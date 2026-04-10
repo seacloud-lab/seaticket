@@ -698,8 +698,6 @@ class GithubIssueEditorView(APIView):
                 state_reason=update_state_reason,
                 issue_type=issue_type if issue_type is not None else None
             )
-        except GitHubRepoNotFound as e:
-            return api_error(status.HTTP_404_NOT_FOUND, str(e))
         except Exception as e:
             logger.error(f'github issue update error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
