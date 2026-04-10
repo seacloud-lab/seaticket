@@ -13,6 +13,10 @@ class GitHubAppNotInstalled(Exception):
     pass
 
 
+class GitHubRepoNotFound(Exception):
+    pass
+
+
 class GitHubAPI:
     def __init__(self, installation_id, timeout=60):
         self.installation_id = installation_id
@@ -65,7 +69,7 @@ class GitHubAPI:
     def _request(self, url, params=None):
         response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
         if response.status_code == 404:
-            raise FileNotFoundError(f'Not found: {url}')
+            raise GitHubRepoNotFound(f'Not found: {url}')
         elif response.status_code >= 400:
             raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
         return response.json()
@@ -73,7 +77,7 @@ class GitHubAPI:
     def _request_patch(self, url, payload=None):
         response = requests.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
         if response.status_code == 404:
-            raise FileNotFoundError(f'Not found: {url}')
+            raise GitHubRepoNotFound(f'Not found: {url}')
         elif response.status_code >= 400:
             raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
         return response.json()

@@ -36,6 +36,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
     init_notion_seadb_table, list_notion_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
@@ -45,7 +46,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI, GitHubAPIException, GitHubAppNotInstalled
+from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -697,25 +698,18 @@ class GithubIssueEditorView(APIView):
                 state_reason=update_state_reason,
                 issue_type=issue_type if issue_type is not None else None
             )
-        except GitHubAppNotInstalled as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-        except FileNotFoundError as e:
+        except GitHubRepoNotFound as e:
             return api_error(status.HTTP_404_NOT_FOUND, str(e))
-        except GitHubAPIException as e:
-            logger.error(f'github issue update error: {e}')
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         except Exception as e:
             logger.error(f'github issue update error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            params = {
-                'connection_id': project_connection.id,
-                'connection_type': ConnectionType.GITHUB_ISSUE.value,
-            }
-            res, status_code = manual_sync_connection(params)
+            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+            github_seadb_api.save_issue_update(project_uuid, connection_id, _pk, issue_data)
         except Exception as e:
-            logger.warning(f'trigger sync for connection {connection_id} error: {e}')
+            logger.error(f'update github issue in seadb error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'issue': issue_data}, status=status.HTTP_200_OK)
 

@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
@@ -40,6 +41,25 @@ class GitHubSeaDBAPI:
         if response and 'results' in response:
             return response['results']
         return []
+
+    def save_issue_update(self, project_uuid, connection_id, record_pk, issue_data):
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        update_row = {
+            'pk': int(record_pk),
+            'row': {
+                GithubIssuesTable.title.name: issue_data.get('title', ''),
+                GithubIssuesTable.labels.name: issue_data.get('labels', []),
+                GithubIssuesTable.issue_type.name: issue_data.get('issue_type', ''),
+                GithubIssuesTable.state.name: issue_data.get('state', ''),
+                GithubIssuesTable.state_reason.name: issue_data.get('state_reason', ''),
+                GithubIssuesTable.modified_time.name: issue_data.get('updated_time'),
+                GithubIssuesTable.record_modified_time.name: now_datetime,
+            }
+        }
+
+        self.seadb_api.update_rows(project_uuid, table_name, [update_row])
+        return True
     
     def get_issues_by_pks(self, connection_id, _pks):
         _pks_str = ', '.join([
