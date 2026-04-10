@@ -190,6 +190,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           projectUuid={projectUuid}
           connectionId={activeRecordRef.current?.id}
           onToggle={closeStatusDialog}
+          onManualSync={onManualSync}
+          record={activeRecordRef.current}
         />
       )}
       {isShowLogDialog && (
