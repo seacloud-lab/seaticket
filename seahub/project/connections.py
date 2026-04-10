@@ -607,7 +607,7 @@ class GithubWebhookView(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class GithubIssueEditorView(APIView):
+class GithubIssueView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)

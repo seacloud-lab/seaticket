@@ -250,7 +250,7 @@ class ConnectionsAPI {
   }
 
   modifyGithubIssue(projectUuid, connectionID, recordID, update = {}) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/github-issue-editor/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/github-issue/';
     const { title, content, labels, issue_type, state_reason, state } = update;
     let updateData = { _pk: recordID };
     if (hasOwnProperty(update, 'title')) updateData['title'] = title;
