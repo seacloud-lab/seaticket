@@ -62,6 +62,7 @@ import PriorityEditor, { PriorityIconBtn } from './priority-editor';
 import PathRedirection from './path-redirection';
 import CustomizeLabel from './customize-label';
 import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
+import CopyInput from './copy-input';
 
 export {
   FixedWidthTable,
@@ -132,4 +133,5 @@ export {
   IconTextBtn,
   SecondaryBtn,
   CustomizeBtn,
+  CopyInput,
 };

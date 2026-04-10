@@ -4,26 +4,44 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, ModalHeader, Loading } from '@/components';
-import CopyInput from '@/components/copy-input';
+import { TextInput, ModalHeader, Loading, CopyInput, SecondaryBtn, toaster } from '@/components';
 import { STEP, STEPS } from './constants';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
-import SecondaryBtn from '@/components/btn/secondary-btn';
 import { Utils } from '@/utils/utils';
-import toaster from '@/components/toaster';
 
 import './index.css';
 import './sea-qa-project-selected-connection.css';
 
 const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
 
+const INIT_TYPE = CONNECTION_TYPES[0].type;
+
+const initializeConfig = (newType) => {
+  const fields = CONNECTION_FIELDS[newType] || [];
+  const defaultConfig = {};
+  fields.forEach(field => {
+    if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
+      field.children.forEach(children => {
+        if (children.default_value !== undefined) {
+          defaultConfig[children.key] = children.default_value;
+        }
+      });
+    } else {
+      if (field.default_value !== undefined) {
+        defaultConfig[field.key] = field.default_value;
+      }
+    }
+  });
+  return defaultConfig;
+};
+
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
-  const [type, setType] = useState(CONNECTION_TYPES[0].type);
+  const [type, setType] = useState(INIT_TYPE);
   const [name, setName] = useState('');
-  const [config, setConfig] = useState({});
+  const [config, setConfig] = useState(initializeConfig(INIT_TYPE));
   const [isSubmitting, setSubmitting] = useState(false);
   const [newRecord, setNewRecord] = useState(null);
   const [githubRepositories, setGithubRepositories] = useState([]);
@@ -77,25 +95,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const step = useMemo(() => customSteps[stepIndex], [customSteps, stepIndex]);
 
-  const initializeConfig = useCallback((newType) => {
-    const fields = CONNECTION_FIELDS[newType] || [];
-    const defaultConfig = {};
-    fields.forEach(field => {
-      if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
-        field.children.forEach(children => {
-          if (children.default_value !== undefined) {
-            defaultConfig[children.key] = children.default_value;
-          }
-        });
-      } else {
-        if (field.default_value !== undefined) {
-          defaultConfig[field.key] = field.default_value;
-        }
-      }
-    });
-    return defaultConfig;
-  }, []);
-
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
@@ -135,7 +134,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     } else {
       setGithubRepositories([]);
     }
-  }, [type, initializeConfig]);
+  }, [type]);
 
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
