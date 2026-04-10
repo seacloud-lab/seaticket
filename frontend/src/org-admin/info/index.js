@@ -36,7 +36,7 @@ class Info extends Component {
 
   render() {
     let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used, ai_credit_limit } = this.state;
-    const aiCreditUsed = `${ai_credit_used || '--'} / ${ai_credit_limit || '--'}`;
+    const aiCreditUsed = !ai_credit_used && !ai_credit_limit ? '--' : `${ai_credit_used || '--'} / ${ai_credit_limit || '--'}`;
     return (
 
       <Fragment>
