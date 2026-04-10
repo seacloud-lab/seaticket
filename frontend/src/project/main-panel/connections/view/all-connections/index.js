@@ -18,6 +18,8 @@ import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
 
+const { isProjectAdmin } = window.app.pageOptions;
+
 const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
@@ -172,15 +174,15 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         }
         isLoading={isLoadingMore}
         loadMore={loadMore}
-        onDelete={handleDelete}
-        onModify={handleModify}
+        onDelete={isProjectAdmin ? handleDelete : null}
+        onModify={isProjectAdmin ? handleModify : null}
         onMore={onMore}
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onViewLog={onViewLog}
         onConfigureWebhook={onConfigureWebhook}
         onUpdate={modifyConnectionIsActiveStatus}
-        handleStatusActive={handleStatusActive}
+        handleStatusActive={isProjectAdmin ? handleStatusActive : null}
         rowsDidMount={rowsDidMount}
         rowsWillUnmount={rowsWillUnmount}
         modifyLocalRow={modifyLocalConnectionRecord}
