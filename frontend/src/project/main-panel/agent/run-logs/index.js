@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { Button, ModalFooter } from 'reactstrap';
 import RunCard from './run-card';
 import { CenteredLoading, EmptyTip } from '@/components';
@@ -19,10 +19,12 @@ const RunLogs = ({
   const [viewContentModal, setViewContentModal] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const initialContentRef = useRef('');
 
   const handleViewContent = useCallback((action, runId) => {
     setViewContentModal({ action, runId });
     const initialContent = action.content || action.suggestion_text || '';
+    initialContentRef.current = initialContent;
     setEditContent(initialContent);
   }, []);
 
@@ -113,7 +115,7 @@ const RunLogs = ({
             </div>
             <ModalFooter>
               <Button color="secondary" onClick={closeViewContentModal}>{gettext('Cancel')}</Button>
-              <Button color="primary" onClick={handleSaveContent} disabled={isSaving}>
+              <Button color="primary" onClick={handleSaveContent} disabled={isSaving || editContent === initialContentRef.current}>
                 {isSaving ? gettext('Saving...') : gettext('Save')}
               </Button>
             </ModalFooter>
