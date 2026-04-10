@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { Button, ModalFooter } from 'reactstrap';
 import RunCard from './run-card';
-import { CenteredLoading, EmptyTip, ModalHeader } from '@/components';
+import { CenteredLoading, EmptyTip } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
