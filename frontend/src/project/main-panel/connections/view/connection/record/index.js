@@ -183,7 +183,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
           onChange={modifyRecord}
         />
         <StateSettings
-          id="state-editor-popover"
+          id="github-issue-state-editor-popover"
           isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
           state={details?.state}
           stateReason={details?.state_reason}
@@ -192,7 +192,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
           onChange={modifyRecord}
         />
         <StateReasonSettings
-          id="substate-editor-popover"
+          id="github-issue-state-reason-editor-popover"
           isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
           value={details?.state_reason}
           state={details?.state}

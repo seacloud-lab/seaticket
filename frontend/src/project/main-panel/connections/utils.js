@@ -384,7 +384,7 @@ export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
   if (!row || !rowUpdate) return;
   const updatedColumnKeys = Object.keys(rowUpdate);
 
-  // When the value of state is modified, the values of substate are updated in a cascading fashion.
+  // When the value of state is modified, the values of state reason are updated in a cascading fashion.
   const stateColumn = getColumnByName(table.columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
   if (stateColumn && updatedColumnKeys.includes(stateColumn?.key)) {
     const stateReasonColumn = getColumnByName(table.columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);

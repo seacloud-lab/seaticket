@@ -4,7 +4,7 @@ import { gettext } from '@/constants';
 import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
-import { isEsc, isShiftT } from '@/utils/hotkey';
+import { isEsc, isShiftS } from '@/utils/hotkey';
 import { GITHUB_STATE_REASON_NAME_MAP } from '../../../constants';
 
 import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';
@@ -51,7 +51,7 @@ const StateReasonSettings = ({
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
 
-    if (isShiftT(event)) {
+    if (isShiftS(event)) {
       openEditor(event);
     } else if (isEsc(event)) {
       closeEditor();

@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
-import { isEsc, isS } from '@/utils/hotkey';
+import { isEsc, isS, isShiftS } from '@/utils/hotkey';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { GITHUB_STATE_OPTION_NAME_MAP, GITHUB_STATE_REASON_NAME_MAP } from '../../../constants';
 
@@ -97,7 +97,7 @@ const StateSettings = ({
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover('state-editor-popover')) return;
 
-    if (isS(event)) {
+    if (isS(event) && !isShiftS(event)) {
       openEditor();
     } else if (isEsc(event)) {
       closeEditor();

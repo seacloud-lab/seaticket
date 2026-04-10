@@ -4,7 +4,7 @@ import { gettext } from '@/constants';
 import { Option, CustomizePopover, CustomizeLabel, IconButton } from '@/components';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
-import { isEsc, isShiftT } from '@/utils/hotkey';
+import { isEsc, isL } from '@/utils/hotkey';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { isDarkColor } from '@/utils/color-utils';
@@ -71,7 +71,7 @@ const LabelsSettings = ({
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
 
-    if (isShiftT(event)) {
+    if (isL(event)) {
       openEditor(event);
     } else if (isEsc(event)) {
       closeEditor();

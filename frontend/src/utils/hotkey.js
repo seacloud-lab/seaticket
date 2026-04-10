@@ -32,6 +32,7 @@ const isUpArrow = isHotkey('arrowup');
 const isDownArrow = isHotkey('arrowdown');
 const isP = isHotkey('p'); // rate setting
 const isA = isHotkey('a'); // collaborators setting
+const isL = isHotkey('l'); // labels settings
 const isT = isHotkey('t'); // tags setting
 const isS = isHotkey('s'); // state setting
 const isShiftS = isHotkey('shift+s'); // sub state setting
@@ -41,5 +42,5 @@ const isShiftSlash = isHotkey('shift+/');
 export { isModS, isModZ, isModL, isModF, isModP, isModG, isModDot, isModComma, isModUp, isModDown, isModLeft, isModRight,
   isShiftEnter, isModSlash, isModBackslash, isModSemicolon, isSpace, isEnter, isEsc, isOptPageDown, isOptPageUp, isShiftModEnter,
   isModShiftZ, isModShiftG, isModShiftDot, isModShiftComma, isModEnter, isTab, isUpArrow, isDownArrow,
-  isP, isA, isT, isS, isShiftS, isShiftT, isShiftSlash
+  isP, isA, isT, isS, isShiftS, isShiftT, isShiftSlash, isL,
 };
