@@ -530,14 +530,16 @@ export const DataProvider = ({
     setData(data => {
       let newData = initDataWithInsertRow(data, linkedTableName);
       let table = newData[tableName];
-      table.linked_records = { ...table.linked_records, ...linkedRecord };
-      const rowIdString = rowId + '';
-      const row = table.id_row_map[rowIdString];
-      table.id_row_map[rowIdString] = { ...row, ...rowData };
-      newData[tableName] = table;
+      if (table) {
+        table.linked_records = { ...table.linked_records, ...linkedRecord };
+        const rowIdString = rowId + '';
+        const row = table.id_row_map[rowIdString];
+        table.id_row_map[rowIdString] = { ...row, ...rowData };
+        newData[tableName] = table;
 
-      if (data.version !== newData.version) {
-        newData.version = newData.version + 1;
+        if (data.version !== newData.version) {
+          newData.version = newData.version + 1;
+        }
       }
       setTimeout(() => callback && callback(), 0);
       return newData;
