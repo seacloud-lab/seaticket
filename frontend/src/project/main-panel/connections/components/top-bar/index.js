@@ -18,7 +18,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
+const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
@@ -137,6 +137,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
+      if (!isProjectAdmin) return null;
       return (
         <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
       );
