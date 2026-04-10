@@ -28,13 +28,15 @@ class Info extends Component {
         issues_usage: res.data.issues_usage,
         org_name: res.data.org_name,
         org_id: res.data.org_id,
-        ai_credit_used: res.data.ai_credit_used,
+        ai_credit_used: res.data.ai_credit_used || 0,
+        ai_credit_limit: res.data.ai_credit_limit || 0,
       });
     });
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used, ai_credit_limit } = this.state;
+    const aiCreditUsed = `${ai_credit_used || '--'} / ${ai_credit_limit || '--'}`;
     return (
 
       <Fragment>
@@ -54,7 +56,7 @@ class Info extends Component {
           <MultipleTextCard
             texts={[
               { name: gettext('Total issues'), value: issues_usage || '--' },
-              { name: gettext('AI Credit'), value: ai_credit_used || '--' },
+              { name: gettext('AI Credit'), value: aiCreditUsed },
             ]}
             itemStyle={{ flex: 1 }}
           />
