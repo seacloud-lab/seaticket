@@ -286,7 +286,7 @@ export const CONNECTION_TYPES = [
     name: gettext('Seafile libraries'),
   }, {
     type: CONNECTION_TYPE.NOTION,
-    icon: 'sites',
+    icon: 'notion',
     name: gettext('Notion'),
   }
 ];
