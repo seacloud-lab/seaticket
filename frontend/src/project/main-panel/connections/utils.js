@@ -238,7 +238,7 @@ export const generateAIOptions = ({ rows, columns, connection }, callback) => {
         if (!titleColumn) return;
         rows.forEach(row => {
           const newRow = {
-            _pk: row._id,
+            _pk: row._id || row._pk,
             title: getCellValueByColumn(row, titleColumn),
             state: getCellValueByColumn(row, stateColumn),
             url: getCellValueByColumn(row, urlColumn),

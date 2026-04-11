@@ -48,7 +48,6 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   const { getRow, getTableByName, modifyRow, modifyRowLink, modifyLocalRow } = useData();
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
-
   const [containerWidth, setContainerWidth] = useState(0);
   const [details, setDetails] = useState(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -56,9 +55,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
-
   const recordRef = useRef(null);
-
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
   const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
@@ -76,7 +73,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     if (!details) return [];
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
-      generateAIOptions({ rows: [details], columns: initColumns, connection }, (attachments) => {
+      generateAIOptions({ rows: details.details, columns: initColumns, connection }, (attachments) => {
         if (!Array.isArray(attachments) || attachments.length === 0) return;
         const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
         updateAttachments(newAttachments);
@@ -294,7 +291,13 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         </div>
         <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
           <div className="sea-connection-record-details-container">
-            <ConnectionResourceDetails resource={resource} connection={connection} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
+            <ConnectionResourceDetails
+              resource={resource}
+              connection={connection}
+              projectUuid={projectUuid}
+              permission={permission}
+              updateDetails={updateDetails}
+            />
           </div>
           {details && (
             <div className="sea-connection-record-details-others">
