@@ -21,9 +21,7 @@ const ACTION_TYPE = {
 };
 
 const ACTION_ICON_MAPPER = {
-  [ACTION_TYPE.THOUGHT]: 'think',
   [ACTION_TYPE.ANALYSIS]: 'analysis',
-  [ACTION_TYPE.TOOL_CALL]: 'tool-call',
   [ACTION_TYPE.SUGGESTION]: 'suggestion',
   [ACTION_TYPE.ERROR]: 'close'
 };
