@@ -5,6 +5,7 @@ import Icon from '../icon';
 import { isNumber, isObject } from '@/utils/type-detection';
 
 const IconButton = React.forwardRef(({
+  children,
   disabled,
   className,
   size,
@@ -34,6 +35,7 @@ const IconButton = React.forwardRef(({
       style={btnStyle}
       ref={ref}
     >
+      {children}
       {icon && (<Icon symbol={icon} className={iconClassName} style={iconStyle} />)}
     </div>
   );

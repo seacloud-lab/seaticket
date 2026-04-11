@@ -83,9 +83,11 @@ const ActionItem = React.memo(({
   if (type === ACTION_TYPE.SUMMARY) return null;
 
   const renderIcon = () => {
+    let symbol = ACTION_ICON_MAPPER[type];
+    if (!symbol) return null;
     return (
       <span className="action-icon">
-        <Icon symbol={ACTION_ICON_MAPPER[type]} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
+        <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
       </span>
     );
   };
@@ -96,7 +98,7 @@ const ActionItem = React.memo(({
     switch (type) {
       case ACTION_TYPE.ANALYSIS:
         return (
-          <div className="action-content">
+          <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}:</div>
             <div className="action-text">{content}</div>
           </div>
@@ -108,7 +110,7 @@ const ActionItem = React.memo(({
               <div className="action-label">{gettext('Tool call')}:</div>
             </div>
             {result && (
-              <div className="tool-result tool-call ml-0">
+              <div className="tool-result tool-call">
                 {isCompletedStatus && (
                   <span className="status-completed">
                     <Icon symbol="check-mark" />
@@ -123,7 +125,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.SUGGESTION: {
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         return (
-          <div className="action-content">
+          <div className="action-content action-content-suggestion">
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
@@ -177,17 +179,24 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content">
             <div className="d-flex align-items-center justify-content-between mb-2">
-              <div className="action-label mb-0">{gettext('Thought')}</div>
               <IconTooltip
                 icon="arrow-down"
                 tip={isThoughtExpanded ? gettext('Collapse') : gettext('Expand')}
-                className={classnames('sea-ticket-project-refresh-btn', { 'rotate-180': isThoughtExpanded })}
+                className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
                 placement="bottom"
                 hoverBackground={true}
                 onClick={toggleThoughtExpand}
-              />
+              >
+                <div className="action-label action-label-thought">{gettext('Thought')}</div>
+              </IconTooltip>
             </div>
-            {isThoughtExpanded && <div className="action-text">{content}</div>}
+            {isThoughtExpanded &&
+              <div className="action-text action-text-thought">
+                {content.split('\n').map((item, index) => (
+                  <p key={index}>{item}</p>
+                ))}
+              </div>
+            }
           </div>
         );
       default:

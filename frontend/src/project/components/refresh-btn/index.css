@@ -8,3 +8,13 @@
 .sea-ticket-project-refresh-btn>svg  {
   color: #666 !important;
 }
+
+.sea-ticket-project-refresh-btn-thought {
+  width: auto;
+  margin: 0px;
+  padding: 0 4px;
+}
+
+.sea-ticket-project-refresh-btn-expanded svg {
+  transform: rotate(180deg);
+}

@@ -197,6 +197,15 @@
   position: relative;
 }
 
+.action-content.action-content-analysis .action-label,
+.action-content.action-content-suggestion .action-label {
+  font-size: 16px;
+}
+
+.action-content.action-content-analysis .action-text {
+  color: #212529;
+}
+
 .action-label {
   font-size: 14px;
   line-height: 22px;
@@ -204,6 +213,12 @@
   font-weight: 500;
   color: #212925;
   margin-bottom: 12px;
+}
+
+.action-label-thought {
+  margin-bottom: 0;
+  margin-right: 4px;
+  color: #666;
 }
 
 .action-card {
@@ -233,6 +248,17 @@
   position: relative;
 }
 
+.action-text-thought p {
+  color: #666;
+  font-weight: 400;
+  font-style: Italic;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  margin-left: 28px;
+  margin-bottom: 8px;
+}
+
 .action-text::after {
   content: '';
   position: absolute;
@@ -243,6 +269,10 @@
   background: #eee;
 }
 
+.action-text.action-text-thought::after {
+  left: 8px;
+}
+
 .error-list {
   line-height: 22px;
 }
@@ -250,7 +280,7 @@
 .tool-call::after {
   content: '';
   position: absolute;
-  left: -20px;
+  left: 8px;
   height: calc(100% - 34px);
   width: 1px;
   top: 34px;
