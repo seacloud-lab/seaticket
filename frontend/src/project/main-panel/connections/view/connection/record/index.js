@@ -43,7 +43,7 @@ const initColumns = [
   { key: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED, name: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED },
 ];
 
-const Record = ({ projectUuid, permission, toggleBar }) => {
+const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
   const { getRow, getTableByName, modifyRow, modifyRowLink, modifyLocalRow } = useData();
   const { connections } = useConnections();
@@ -73,7 +73,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     if (!details) return [];
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
-      generateAIOptions({ rows: details.details, columns: initColumns, connection }, (attachments) => {
+      generateAIOptions({ rows: [details], columns: initColumns, connection, recordId }, (attachments) => {
         if (!Array.isArray(attachments) || attachments.length === 0) return;
         const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
         updateAttachments(newAttachments);
