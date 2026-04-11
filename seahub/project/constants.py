@@ -433,11 +433,13 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{'column_key': 'created_time', 'sort_type': 'down'}],
+            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }, {
@@ -446,11 +448,13 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{'column_key': 'created_time', 'sort_type': 'down'}],
+            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }

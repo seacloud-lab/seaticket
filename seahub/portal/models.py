@@ -234,14 +234,14 @@ class PortalIssueView(object):
         self.details.update(self.config)
 
 
-
 class PortalIssueViewsManager(models.Manager):
 
     def update_init_view_details(self, project_uuid, details):
         from seahub.project.seadb_api import SeaDBAPI
-        from seahub.seadb_models.utils import get_portal_issues_columns
+        from seahub.seadb_models.utils import get_seadb_table_columns
+        from seahub.seadb_models.models import PortalIssuesTable
         seadb_api = SeaDBAPI()
-        columns = get_portal_issues_columns(seadb_api, project_uuid)
+        columns = get_seadb_table_columns(seadb_api, project_uuid, PortalIssuesTable.gen_table_name())
         views = details.get('views', [])
         for v in views:
             basic_filters = v.get('basic_filters', [])
@@ -279,7 +279,7 @@ class PortalIssueViewsManager(models.Manager):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(project_uuid=project_uuid).first()
         if not record:
-            details = deepcopy(PORTAL_ISSUES_DEFAULT_DETAILS)
+            details = self.update_init_view_details(project_uuid, deepcopy(PORTAL_ISSUES_DEFAULT_DETAILS))
             record = self.create(
                 project_uuid=project_uuid,
                 details=json.dumps(details)

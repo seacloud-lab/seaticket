@@ -83,9 +83,9 @@ class TicketViewsManager(models.Manager):
 
     def update_init_view_details(self, project_uuid, details):
         from seahub.project.seadb_api import SeaDBAPI
-        from seahub.seadb_models.utils import get_tickets_columns
+        from seahub.seadb_models.utils import get_seadb_table_columns
         seadb_api = SeaDBAPI()
-        columns = get_tickets_columns(seadb_api, project_uuid)
+        columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
         views = details.get('views', [])
         for v in views:
             basic_filters = v.get('basic_filters', [])

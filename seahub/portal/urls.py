@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
+from seahub.project.views import project_view
 from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view, portal_external_logout_view
-from .apis import PortalTagsView, \
-    PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, PortalSettingsView, \
-    PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, PortalIssueViewView,\
-    PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
-    PortalIssuesView, PortalMyIssuesView, PortalIssueView, \
-    PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView
+from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
+    PortalSettingsView, PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, \
+    PortalIssueViewView, PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
+    PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -20,8 +19,6 @@ urlpatterns = [
     # portal edit page (for admins)
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),
-    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-ticket/$', portal_edit_view, name='portal_edit_view'),
-    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
@@ -31,8 +28,6 @@ urlpatterns = [
     # portal page (for external users)
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-ticket/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-tickets/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
@@ -40,6 +35,13 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
+
+    # portal page
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/$', project_view, name='project_portal_issues_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/(?P<children_id>\d+)/$', project_view, name='project_portal_issues_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/trash/$', project_view, name='project_portal_issues_trash_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/types/$', project_view, name='project_portal_issues_types_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/substates/$', project_view, name='project_portal_issues_substates_view'),
     
     # portal API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
@@ -65,7 +67,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/$', PortalIssueCommentsView.as_view(), name='api-v1-portal-issue-comments'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/(?P<comment_id>\d+)/$', PortalIssueCommentView.as_view(), name='api-v1-portal-issue-comment'),
 
-    # portal issues views API (for internal Seametadata)
+    # portal issues views API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/$', PortalIssueViewsView.as_view(), name='api-v1-portal-issues-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/move/$', PortalIssueViewsMoveView.as_view(), name='api-v1-portal-issues-views-move'),

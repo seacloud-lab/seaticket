@@ -9,6 +9,7 @@ from seahub.portal.apis import (
     PortalSettingsView,
     PortalTagsView,
     PortalIssuesView,
+    PortalIssueView,
     PortalIssueMetadataView,
     PortalMyIssuesView,
     PortalIssueTrashAPIView,
@@ -661,3 +662,160 @@ class TestPortalIssuesViewDelete:
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 500
+
+
+@pytest.mark.django_db
+class TestPortalIssueViewPut:
+
+    def test_link_ticket_success(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': 10},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        ticket = {'_pk': 10, 'linked_connection_records': []}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
+                patch('seahub.portal.apis.get_ticket', return_value=(ticket, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        assert resp.data['success'] is True
+        # Should update portal issue's linked_ticket
+        portal_update = seadb_api.update_rows.call_args_list[-1]
+        portal_rows = portal_update[0][2]
+        assert any(r['row'].get('linked_ticket') == 10 for r in portal_rows)
+        # Should update ticket's linked_connection_records
+        ticket_update = seadb_api.update_rows.call_args_list[0]
+        ticket_rows = ticket_update[0][2]
+        assert 'portal_1' in ticket_rows[0]['row']['linked_connection_records']
+
+    def test_link_ticket_already_linked(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': 20},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 400
+        assert 'already linked' in str(resp.data)
+
+    def test_link_ticket_same_ticket_id_ok(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': 10},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        ticket = {'_pk': 10, 'linked_connection_records': ['portal_1']}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
+                patch('seahub.portal.apis.get_ticket', return_value=(ticket, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        # portal_1 already in linked_connection_records, should not add again
+        ticket_update_calls = [c for c in seadb_api.update_rows.call_args_list
+                               if c[0][1] == 'tickets']
+        assert len(ticket_update_calls) == 0
+
+    def test_link_ticket_invalid_id(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': 'abc'},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 400
+
+    def test_link_ticket_not_found(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': 99},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
+                patch('seahub.portal.apis.get_ticket', return_value=(None, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 404
+
+    def test_unlink_ticket_success(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': None},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        ticket = {'_pk': 10, 'linked_connection_records': ['portal_1', '1_100']}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
+                patch('seahub.portal.apis.get_ticket', return_value=(ticket, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        # Should clear portal issue's linked_ticket
+        portal_update = seadb_api.update_rows.call_args_list[-1]
+        portal_rows = portal_update[0][2]
+        assert any(r['row'].get('linked_ticket') is None for r in portal_rows)
+        # Should remove portal_1 from ticket's linked_connection_records
+        ticket_update = seadb_api.update_rows.call_args_list[0]
+        ticket_rows = ticket_update[0][2]
+        assert 'portal_1' not in ticket_rows[0]['row']['linked_connection_records']
+        assert '1_100' in ticket_rows[0]['row']['linked_connection_records']
+
+    def test_unlink_ticket_no_current_link(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/1/",
+            data={'linked_ticket': None},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        # Should set linked_ticket to None on portal issue
+        portal_update = seadb_api.update_rows.call_args_list[-1]
+        portal_rows = portal_update[0][2]
+        assert any(r['row'].get('linked_ticket') is None for r in portal_rows)

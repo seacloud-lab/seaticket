@@ -562,19 +562,10 @@ def get_connection_columns(seadb_api, project_uuid, connection):
     columns = table_metadata.get('columns') or []
     return columns
 
-def get_tickets_columns(seadb_api, project_uuid):
+def get_seadb_table_columns(seadb_api, project_uuid, table_name):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
-    if not table_metadata:
-        return []
-    columns = table_metadata.get('columns') or []
-    return columns
-
-def get_portal_issues_columns(seadb_api, project_uuid):
-    metadata = seadb_api.get_base_metadata(project_uuid)
-    tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, 'portal_issues')
+    table_metadata = get_current_table_metadata(tables_metadata, table_name)
     if not table_metadata:
         return []
     columns = table_metadata.get('columns') or []
@@ -648,7 +639,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
 
 
 def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
-    columns = get_tickets_columns(seadb_api, project_uuid)
+    columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
         all_columns_names = [column_name for column_name in all_columns_names if column_name != TicketsTable.closed_time.name]
@@ -698,7 +689,7 @@ def list_trash_tickets(seadb_api, project_uuid, start, limit):
     sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results', [])
-    columns = get_tickets_columns(seadb_api, project_uuid)
+    columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     display_columns = []
     for column in columns:
         name = column['name']
@@ -707,23 +698,12 @@ def list_trash_tickets(seadb_api, project_uuid, start, limit):
     return records, display_columns
 
 
-def get_portal_issues_columns(seadb_api, project_uuid):
-    """Get portal issues table columns from metadata or model definition"""
-    metadata = seadb_api.get_base_metadata(project_uuid)
-    tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, PortalIssuesTable.gen_table_name())
-    if table_metadata:
-        columns = table_metadata.get('columns') or []
-        if columns:
-            return columns
-
-
 def list_trash_portal_issues(seadb_api, project_uuid, start, limit):
     query_fields = ", ".join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
     sql = f"SELECT {query_fields} FROM `portal_issues` WHERE deleted = True LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results', [])
-    columns = get_portal_issues_columns(seadb_api, project_uuid)
+    columns = get_seadb_table_columns(seadb_api, project_uuid, PortalIssuesTable.gen_table_name())
     display_columns = []
     for column in columns:
         name = column['name']
@@ -733,42 +713,45 @@ def list_trash_portal_issues(seadb_api, project_uuid, start, limit):
 
 
 def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start, limit, view_config={}):
-    """List portal issues submitted by the current user."""
-    columns = get_portal_issues_columns(seadb_api, project_uuid)
-    
+    columns = get_seadb_table_columns(seadb_api, project_uuid, PortalIssuesTable.gen_table_name())
+
     display_columns = []
     for column in columns:
         name = column['name']
         if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    
-    # Build SQL query directly for portal_issues table
-    escaped_username = username.replace("'", "''")
-    where_clauses = [f"`creator` = '{escaped_username}'", f"`state` = '{issue_state}'"]
-    
-    # Process sorts from view_config
-    sorts = view_config.get('sorts', [])
-    order_by = '`created_time` DESC'
-    if sorts:
-        sort_clauses = []
-        for s in sorts:
-            col = s.get('column_key') or s.get('column_name', 'created_time')
-            sort_type = s.get('sort_type', 'down')
-            direction = 'DESC' if sort_type == 'down' else 'ASC'
-            sort_clauses.append(f"`{col}` {direction}")
-        if sort_clauses:
-            order_by = ', '.join(sort_clauses)
-    
-    where_clause = ' AND '.join(where_clauses)
-    sql = f"SELECT * FROM `{PortalIssuesTable.gen_table_name()}` WHERE {where_clause} ORDER BY {order_by} LIMIT {start}, {limit}"
-    
+
+    view_copy = view_config.copy()
+    sorts = view_copy.get('sorts', [])
+    if not sorts:
+        sorts = [{ 'column_name': PortalIssuesTable.created_time.name, 'sort_type': 'down' }]
+    view_copy['sorts'] = sorts
+    basic_filters = view_copy.get('basic_filters', [])
+    if not basic_filters:
+        basic_filters = []
+    basic_filters.append({
+        'column_name': PortalIssuesTable.participants.name,
+        'filter_predicate': 'include_me',
+    })
+    basic_filters.append({
+        'column_name': PortalIssuesTable.state.name,
+        'filter_predicate': 'is',
+        'filter_term': '0001' if issue_state == 'open' else '0002',
+    })
+
+    view_copy['basic_filters'] = basic_filters
+    try:
+        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit)
+    except SQLGeneratorOptionInvalidError as e:
+        e.columns = display_columns
+        raise
+
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        records = res.get('results', [])
+        records = res.get('results')
     except Exception as e:
         logger.error(f'SeaDB query error for portal issues: {e}')
         records = []
-    
     return records, display_columns
 
 def list_portal_issues_view_records(seadb_api, project_uuid, view, username, start, limit):

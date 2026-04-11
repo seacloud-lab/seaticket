@@ -28,7 +28,7 @@ from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
-    check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids
+    check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -41,13 +41,11 @@ from seahub.portal.models import PortalExternalInvitation, PortalIssueViews
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_key
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
-from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues
+from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
+    TABLE_PORTAL_ISSUE_COMMENTS, TABLE_PORTAL_ISSUES
 
 logger = logging.getLogger(__name__)
 
-
-TABLE_PORTAL_ISSUES = 'portal_issues'
-TABLE_PORTAL_ISSUE_COMMENTS = 'portal_issue_comments'
 
 MAX_LENGTH = 10000
 
@@ -542,6 +540,15 @@ class PortalIssueView(APIView):
         is_update_substate = 'substate' in request.data
         substate_option_name = request.data.get('substate') or None
 
+        is_update_linked_ticket = 'linked_ticket' in request.data
+        linked_ticket = request.data.get('linked_ticket')
+        if is_update_linked_ticket and linked_ticket:
+            try:
+                linked_ticket = int(linked_ticket)
+            except (ValueError, TypeError):
+                error_msg = 'linked_ticket invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         if assignees:
             for assignee in assignees:
                 if not check_project_permission(assignee, workspace.owner):
@@ -589,6 +596,44 @@ class PortalIssueView(APIView):
                     update_row[PortalIssuesTable.closed_time.name] = now_datetime
                 elif issue_state_name == 'open':
                     update_row[PortalIssuesTable.closed_time.name] = ''
+
+            # Handle linked_ticket (link/unlink portal issue to/from a ticket)
+            if is_update_linked_ticket:
+                current_linked_ticket = issue.get('linked_ticket')
+                if current_linked_ticket:
+                    error_msg = 'This portal issue is already linked to a ticket.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                if linked_ticket:
+                    ticket, metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
+                    if not ticket:
+                        error_msg = 'Ticket not found.'
+                        return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                    update_row['linked_ticket'] = linked_ticket
+                    # Update ticket's linked_connection_records
+                    old_value = ticket.get('linked_connection_records', []) or []
+                    portal_key = f'portal_{issue.get("_pk")}'
+                    if portal_key not in old_value:
+                        new_value = old_value + [portal_key]
+                        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+                            'pk': ticket.get('_pk'),
+                            'row': {'linked_connection_records': new_value}
+                        }])
+                else:
+                    # Unlink portal issue from ticket
+                    if current_linked_ticket:
+                        update_row['linked_ticket'] = None
+                        ticket, metadata = get_ticket(seadb_api, project_uuid, int(current_linked_ticket))
+                        if ticket:
+                            old_value = ticket.get('linked_connection_records', []) or []
+                            portal_key = f'portal_{issue.get("_pk")}'
+                            if portal_key in old_value:
+                                new_value = [v for v in old_value if v != portal_key]
+                                seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+                                    'pk': ticket.get('_pk'),
+                                    'row': {'linked_connection_records': new_value}
+                                }])
+                    else:
+                        update_row['linked_ticket'] = None
 
             update_row[PortalIssuesTable.participants.name] = participants
             update_row[PortalIssuesTable.modified_time.name] = now_datetime

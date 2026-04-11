@@ -43,7 +43,7 @@ def project_creator(real_project):
 @pytest.fixture
 def mock_seadb():
     with patch('seahub.project.seadb_api.SeaDBAPI', return_value=Mock()), \
-            patch('seahub.seadb_models.utils.get_tickets_columns', return_value=[]):
+            patch('seahub.seadb_models.utils.get_seadb_table_columns', return_value=[]):
         yield
 
 
