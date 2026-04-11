@@ -13,14 +13,18 @@ class GitHubAppNotInstalled(Exception):
     pass
 
 
+class GitHubRepoNotFound(Exception):
+    pass
+
+
 class GitHubAPI:
     def __init__(self, installation_id, timeout=60):
         self.installation_id = installation_id
         self.app_id = str(GITHUB_APP_ID)
         self.app_private_key = GITHUB_PRIVATE_KEY
         self.timeout = timeout
-        self.headers = self._gen_headers()
         self.base_url = "https://api.github.com"
+        self.headers = self._gen_headers()
 
     def generate_github_app_jwt(self):
         now = int(time.time())
@@ -62,14 +66,6 @@ class GitHubAPI:
         }
         return headers
 
-    def _request(self, url, params=None):
-        response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
-        if response.status_code == 404:
-            raise FileNotFoundError(f'Not found: {url}')
-        elif response.status_code >= 400:
-            raise GitHubAPIException(f'GitHub API error {response.status_code}: {response.text}')
-        return response.json()
-
     def get_installation_repositories(self, per_page=30, page=1):
         if not (1 <= per_page <= 100):
             raise ValueError("The value of per_page must be less than 100")
@@ -82,7 +78,9 @@ class GitHubAPI:
                 'page': page
             }
 
-            resp = self._request(url, params=params)
+            response = requests.get(url, headers=self.headers, params=params, timeout=self.timeout)
+            response.raise_for_status()
+            resp = response.json()
             page_repositories = resp.get('repositories', [])
             if len(page_repositories) <= 0:
                 break
@@ -90,3 +88,34 @@ class GitHubAPI:
 
             page += 1
         return repositories
+
+    def update_issue(self, owner, repo, issue_number, title=None, labels=None, content=None, issue_type=None, state=None, state_reason=None):
+        url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}"
+        payload = {}
+        if title is not None:
+            payload['title'] = title
+        if labels is not None:
+            payload['labels'] = labels
+        if issue_type is not None:
+            if issue_type:
+                payload['type'] = issue_type
+            else:
+                payload['type'] = None
+        if state is not None:
+            payload['state'] = state
+        if state_reason is not None:
+            payload['state_reason'] = state_reason
+        if not payload:
+            return {}
+
+        response = requests.patch(url, headers=self.headers, json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        issue_data = response.json()
+        return {
+            'title': issue_data.get('title', ''),
+            'labels': [item.get('name') for item in issue_data.get('labels', [])],
+            'issue_type': (issue_data.get('type') or {}).get('name', ''),
+            'state': issue_data.get('state', ''),
+            'state_reason': issue_data.get('state_reason', ''),
+            'updated_time': issue_data.get('updated_at', ''),
+        }

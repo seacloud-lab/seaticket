@@ -132,7 +132,6 @@ def github_installation_setup(request):
     if not check_project_admin_permission(username, workspace.owner):
         return render_error(request, _('Permission denied.'))
 
-    username = request.user.username
     github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
     if not github_app_installation:
         ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)

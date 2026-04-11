@@ -5,8 +5,8 @@ import logging
 import json
 import datetime
 import sys
-import uuid
 from email.utils import formatdate, make_msgid
+from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse
@@ -33,9 +33,10 @@ from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_site_record_details, list_email_record_details, init_notion_seadb_table, list_notion_record_details
+    list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
+    init_notion_seadb_table, list_notion_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
-
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
@@ -45,6 +46,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
+from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -603,6 +605,111 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class GithubIssueView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def put(self, request, project_uuid, connection_id):
+        _pk = request.data.get('_pk')
+        title = request.data.get('title', None)
+        state = request.data.get('state', None)
+        state_reason = request.data.get('state_reason', None)
+        labels = request.data.get('labels', None)
+        issue_type = request.data.get('issue_type', None)
+
+        if not _pk:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
+        try:
+            _pk = int(_pk)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, '_pk is invalid.')
+
+        if all(value is None for value in (title, labels, issue_type, state, state_reason)):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Nothing to update.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.GITHUB_ISSUE.value:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type invalid.')
+
+        if not project_connection.is_active:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection is inactive.')
+
+        # GitHub requires `state` to be present when updating `state_reason`.
+        update_state = state.lower() if isinstance(state, str) else None
+        update_state_reason = state_reason.lower() if isinstance(state_reason, str) else None
+        if update_state_reason is not None and update_state is None:
+            if update_state_reason == 'reopened':
+                update_state = 'open'
+            elif update_state_reason in ('completed', 'not_planned', 'duplicate'):
+                update_state = 'closed'
+            else:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'state_reason is invalid.')
+
+        config = decrypt_config(json.loads(project_connection.config))
+        installation_id = config.get('installation_id')
+        if not installation_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'GitHub auth config missing.')
+
+        seadb_api = SeaDBAPI(username)
+        try:
+            issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        except Exception as e:
+            logger.error(f'get github issue details error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        issue_number = issue_record.get('issue_number')
+        server_url = config.get('repository')
+        try:
+            path = urlparse(server_url).path
+            parts = path.strip("/").split("/")
+            repo_owner, repo_name = parts[0], parts[1]
+        except Exception as e:
+            logger.error(f"Github repository is invalid {e}")
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Github repository is invalid.')
+
+        try:
+            github_api = GitHubAPI(installation_id=installation_id)
+            issue_data = github_api.update_issue(
+                repo_owner,
+                repo_name,
+                issue_number,
+                title=title if title else None,
+                labels=labels if labels is not None else None,
+                state=update_state,
+                state_reason=update_state_reason,
+                issue_type=issue_type if issue_type is not None else None
+            )
+        except Exception as e:
+            logger.error(f'github issue update error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        try:
+            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+            github_seadb_api.save_issue_update(project_uuid, connection_id, _pk, issue_data)
+        except Exception as e:
+            logger.error(f'update github issue in seadb error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'issue': issue_data}, status=status.HTTP_200_OK)
 
 
 class DiscourseWebhookView(APIView):

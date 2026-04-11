@@ -1,0 +1,20 @@
+.sea-ticket-rename-connection-title {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sea-ticket-rename-connection-title .sea-ticket-rename-connection-title-input,
+.sea-ticket-rename-connection-title .sea-ticket-rename-connection-title-cancel-btn,
+.sea-ticket-rename-connection-title .sea-ticket-rename-connection-title-submit-btn {
+  height: 28px;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1;
+}
+
+.sea-ticket-rename-connection-title .sea-ticket-rename-connection-title-cancel-btn {
+  margin: 0 10px 0 16px;
+}

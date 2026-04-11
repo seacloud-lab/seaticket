@@ -4,13 +4,14 @@ import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
+import GitHubIssuesDetails from './github-issues-details';
 import { initConnectionResourceDetails } from '../../utils';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, updateDetails }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateDetails }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -32,20 +33,6 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       return aTime - bTime;
     });
   }, [details, type, localEmailDetails]);
-
-  useEffect(() => {
-    setStatus('loading');
-    connectionsAPI.getConnectionRowDetail(projectUuid, resource.connection_id, { _pk: resource._id }).then((res) => {
-      const details = initConnectionResourceDetails(resource.type, res.data);
-      setDetails(details?.details);
-      updateDetails(details);
-      setStatus('loaded');
-    }).catch((error) => {
-      const errMessage = Utils.getErrorMsg(error);
-      setErrorMessage(errMessage);
-      setStatus('error');
-    });
-  }, [projectUuid, resource]);
 
   const handleReplyEmailSuccess = useCallback((payload) => {
     if (!payload) return;
@@ -70,6 +57,20 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     setLocalEmailDetails(prev => [...prev, nextDetail]);
   }, [connection, details]);
 
+  useEffect(() => {
+    setStatus('loading');
+    connectionsAPI.getConnectionRowDetail(projectUuid, resource.connection_id, { _pk: resource._id }).then((res) => {
+      const details = initConnectionResourceDetails(resource.type, res.data);
+      setDetails(details?.details);
+      updateDetails(details);
+      setStatus('loaded');
+    }).catch((error) => {
+      const errMessage = Utils.getErrorMsg(error);
+      setErrorMessage(errMessage);
+      setStatus('error');
+    });
+  }, [projectUuid, resource]);
+
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
 
@@ -86,6 +87,16 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
         recordId={resource._id}
         permission={permission}
         handleReplyEmailSuccess={handleReplyEmailSuccess}
+      />
+    );
+  }
+
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    return (
+      <GitHubIssuesDetails
+        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        details={details}
+        isSmallScreen={isSmallScreen}
       />
     );
   }

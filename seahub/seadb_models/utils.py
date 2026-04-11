@@ -866,22 +866,36 @@ def list_connection_record_titles(seadb_api, project_uuid, connection_id, connec
         records = []
     return records
 
-def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
-    """Query GitHub issue comments from SeaDB"""
+
+def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
-    comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-    issue_sql = f"SELECT title, author, content, created_time, issue_id, `url`, `linked_ticket`, `outdated` FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, issue_number, state, state_reason, labels, issue_type, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
-        issue_id = issue_res.get('results')[0].get('issue_id')
+        column_metadata = issue_res.get('metadata')
+    except Exception as e:
+        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+    return issue_record, column_metadata
+
+
+def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    """Query GitHub issue comments from SeaDB"""
+    comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
+    try:
+        issue_record, column_metadata = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        issue_id = issue_record.get('issue_id')
         issue_record.pop('issue_id')
-        comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+        issue_record.pop('issue_number')
+        comments_sql = f"SELECT author, content, created_time, comment_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record['comments'] = comments_record
+        issue_record['columns'] = column_metadata
     except Exception as e:
-        logger.error(f'SeaDB query error for issue details {issue_table_name} or {comments_table_name}: {e}')
+        logger.error(f'SeaDB query error for issue details {comments_table_name}: {e}')
         issue_record = {}
     return issue_record
 
@@ -1113,7 +1127,7 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
 
 def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
     notion_table_name = NotionTable.gen_table_name(connection_id)
-    sql = f"SELECT title, content, created_time, modified_time, creator, page_id FROM `{notion_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT title, content, created_time, modified_time, creator, page_id  FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)
         notion_record = notion_res.get('results')[0]

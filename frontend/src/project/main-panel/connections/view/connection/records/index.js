@@ -15,12 +15,12 @@ import {
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import {
-  getTableName, generatorRowClassName,
+  getTableName, generatorRowClassName, cascadeUpdate,
   generateAIOptions, generateMarkAsOutdatedOptions, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateCreateRelatedTicketOption,
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
 } from '../../../utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useData, useTags } from '@/project/hooks';
@@ -132,8 +132,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
             }
 
             const stateColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+            let stateColumn;
             if (stateColumnIndex > -1) {
-              const stateColumn = columns[stateColumnIndex];
+              stateColumn = columns[stateColumnIndex];
               context.setSetting('stateColumnKey', stateColumn.key);
               let options = stateColumn.data?.options || [];
               options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
@@ -145,7 +146,19 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
               const stateReasonColumn = columns[stateReasonColumnIndex];
               let options = stateReasonColumn.data?.options || [];
               options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
-              columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
+              const stateOptions = getColumnOptions(stateColumn);
+              const openStateOption = getOption(stateOptions, 'open');
+              const closeStateOption = getOption(stateOptions, 'closed');
+
+              columns[stateReasonColumnIndex].data = {
+                cascade_column_key: stateColumn.key,
+                cascade_settings: {
+                  [openStateOption?.id]: options.slice(3).map(o => o.id),
+                  [closeStateOption?.id]: options.slice(0, 3).map(o => o.id),
+                },
+                ...stateReasonColumn.data,
+                options,
+              };
             }
           }
           columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
@@ -201,7 +214,37 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
         const tableName = getTableNameByConnectionID(connectionID);
-        return modifyRow(tableName, row_id, row_update, () => connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData));
+        let api = () => connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
+        if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+          const githubOwnerAPIColumns = [
+            CONNECTION_PREDEFINED_COLUMN_NAME.TITLE,
+            CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE,
+            CONNECTION_PREDEFINED_COLUMN_NAME.LABELS,
+            CONNECTION_PREDEFINED_COLUMN_NAME.STATE,
+            CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON,
+          ];
+          let githubOwnerRowData = {};
+          let otherRowData = {};
+          let _api = () => new Promise((resolve, reject) => {
+            resolve({ data: {} });
+          });
+          Object.keys(rowData).forEach(columnName => {
+            if (githubOwnerAPIColumns.includes(columnName)) {
+              githubOwnerRowData[columnName] = rowData[columnName];
+            } else {
+              otherRowData[columnName] = rowData[columnName];
+            }
+          });
+          if (Object.keys(otherRowData).length > 0) {
+            _api = () => connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, otherRowData);
+          }
+          if (Object.keys(githubOwnerRowData).length > 0) {
+            _api = () => connectionsAPI.modifyGithubIssue(projectUuid, connectionID, row_id, githubOwnerRowData);
+          }
+          api = _api;
+        }
+
+        return modifyRow(tableName, row_id, row_update, api);
       };
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
@@ -534,15 +577,18 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
         createTag={createTag}
         toggleView={toggleView}
         expandRow={handleExpandRow}
+        cascadeUpdateCells={connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? cascadeUpdate : () => {}}
         t={t}
         notDisplayColumns={[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]}
         generatorRowClassName={(row) => generatorRowClassName(row, allColumns.current)}
+        settings={{ canClearCells: false, canPasteCells: false, canDragFillCells: false }}
       />
       {isShowRowDetailsDialog && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={currentRow}
           columns={allColumns.current}
+          permission={permission}
           switchResource={switchResource}
           onToggle={closeAll}
           createMoreOptions={createMoreOptions}
