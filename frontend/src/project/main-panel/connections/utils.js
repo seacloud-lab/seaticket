@@ -221,7 +221,7 @@ export const generatorRowClassName = (row, columns = []) => {
   return '';
 };
 
-export const generateAIOptions = ({ rows, columns, connection }, callback) => {
+export const generateAIOptions = ({ rows, columns, connection, recordId }, callback) => {
   const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
   if (!enableUseAI) return null;
 
@@ -238,7 +238,7 @@ export const generateAIOptions = ({ rows, columns, connection }, callback) => {
         if (!titleColumn) return;
         rows.forEach(row => {
           const newRow = {
-            _pk: row._id || row._pk,
+            _pk: recordId || row._id,
             title: getCellValueByColumn(row, titleColumn),
             state: getCellValueByColumn(row, stateColumn),
             url: getCellValueByColumn(row, urlColumn),
