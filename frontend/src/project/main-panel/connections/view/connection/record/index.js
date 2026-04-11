@@ -100,7 +100,14 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       _tools.push({ key: 'divider' });
       _tools.push(...outdatedOptions);
     }
-    return _tools.filter(Boolean);
+    _tools = _tools.filter(Boolean);
+    if (_tools[0]?.key === 'divider') {
+      _tools.shift();
+    }
+    if (_tools[_tools.length - 1]?.key === 'divider') {
+      _tools.pop();
+    }
+    return _tools;
   }, [details, connection, permission, cacheRecord, cacheColumns, updateAttachments, toggleBar]);
 
   const title = useMemo(() => {
