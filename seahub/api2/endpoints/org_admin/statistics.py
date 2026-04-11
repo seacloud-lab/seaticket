@@ -295,7 +295,7 @@ class OrgAdminAIStatisticsOverviewView(APIView):
                 percentage = round(item['total_credit_used'] / total_credit_used, 3)
             results.append({
                 'scenario': item.get('scenario') or '',
-                'total_credit_used': round(item['total_credit_used'], 1),
+                'total_credit_used': round(item['total_credit_used'], 0),
                 'percentage': percentage,
             })
 
@@ -321,7 +321,7 @@ class OrgAdminAIStatisticsOverviewView(APIView):
             date_range = self._get_month_range(month_start)
             results.append({
                 'month': month_start.strftime('%Y-%m'),
-                'total_credit_used': round(self._get_total_credit_used(date_range, org_id), 1),
+                'total_credit_used': round(self._get_total_credit_used(date_range, org_id), 0),
             })
         return {'results': results, 'count': len(results)}
 
@@ -340,7 +340,7 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         while current_date <= today:
             results.append({
                 'date': current_date.isoformat(),
-                'total_credit_used': round(date_to_credit.get(current_date, 0), 1),
+                'total_credit_used': round(date_to_credit.get(current_date, 0), 0),
             })
             current_date += datetime.timedelta(days=1)
 
@@ -380,7 +380,7 @@ class OrgAdminAIStatisticsOverviewView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
         return Response({
-            'current_month_credit': round(current_month_credit, 1),
-            'last_month_credit': round(last_month_credit, 1),
-            'month_on_month_change': round(month_on_month_change, 1),
+            'current_month_credit': round(current_month_credit, 0),
+            'last_month_credit': round(last_month_credit, 0),
+            'month_on_month_change': round(month_on_month_change, 0),
         })

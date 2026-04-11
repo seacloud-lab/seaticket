@@ -81,7 +81,7 @@ class OrgAdminInfo(APIView):
         info['active_members'] = active_members
         info['role'] = org_role
         info['issues_usage'] = issues_usage
-        info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
+        info['ai_credit_used'] = round(convert_cost_to_credit(get_ai_cost_by_org_id(org_id)), 0)
 
         return Response(info)
 
