@@ -33,7 +33,8 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     onClick: () => onClick && onClick(row)
   };
   switch (columnType) {
-    case CellType.TEXT: {
+    case CellType.TEXT:
+    case CellType.JSON: {
       return (
         <TextFormatter value={value} column={column} className={className} { ...props } { ...props }>
           <Empty columnType={columnType} placeholder={emptyTip} />

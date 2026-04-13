@@ -22,6 +22,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.URL]: 'url',
   [CellType.PRIORITY]: 'flag',
   [CellType.LINK]: 'link',
+  [CellType.JSON]: 'json',
 };
 
 const COLUMNS_ICON_NAME = {
@@ -45,6 +46,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.URL]: gettext('URL'),
   [CellType.PRIORITY]: gettext('Priority'),
   [CellType.LINK]: gettext('Link'),
+  [CellType.JSON]: gettext('JSON'),
 };
 
 export {

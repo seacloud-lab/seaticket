@@ -28,7 +28,8 @@ const getFilterResult = (row, filter, { username, userId, tagsData }) => {
     }
     case CellType.URL:
     case CellType.FILE_NAME:
-    case CellType.TEXT: {
+    case CellType.TEXT:
+    case CellType.JSON: {
       return textFilter(cellValue, filter, userId);
     }
     case CellType.LAST_MODIFIER:

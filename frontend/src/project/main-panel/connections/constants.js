@@ -586,6 +586,10 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Assignees'),
       type: CellType.MULTIPLE_SELECT,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS]: {
+      display_name: gettext('Others'),
+      type: CellType.JSON,
+    },
     [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
       display_name: gettext('Due date'),
       type: CellType.DATE,

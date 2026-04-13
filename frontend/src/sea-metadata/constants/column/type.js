@@ -19,6 +19,7 @@ const CellType = {
   TYPE: 'type',
   PRIORITY: 'priority',
   LINK: 'link',
+  JSON: 'json',
 };
 
 export default CellType;
