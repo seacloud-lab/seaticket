@@ -33,21 +33,19 @@ class View {
 
     // columns
     // all columns
-    this.available_columns = columns || [];
-    this.available_columns = this.available_columns.filter(c => !(notDisplayColumns.includes(c.name) || notDisplayColumns.includes(c.key)));
+    let available_columns = columns || [];
+    available_columns = available_columns.filter(c => !(notDisplayColumns.includes(c.name) || notDisplayColumns.includes(c.key)));
 
     // order display
-    this.columns = this.available_columns;
-
-    const display_available_columns = this.available_columns;
+    this.columns = available_columns;
 
     // order
     let columnsKeys = object.columns_keys || [];
     if (columnsKeys.length === 0) {
-      this.columns_keys = display_available_columns.map(c => c.key);
+      this.columns_keys = available_columns.map(c => c.key);
     } else {
-      let columns = columnsKeys.map(key => getColumnByKey(display_available_columns, key)).filter(c => c);
-      display_available_columns.forEach(column => {
+      let columns = columnsKeys.map(key => getColumnByKey(available_columns, key)).filter(c => c);
+      available_columns.forEach(column => {
         if (!getColumnByKey(columns, column.key)) {
           columns.push(column);
         }

@@ -215,7 +215,7 @@ export default function apply(data, operation) {
       const { column } = operation;
       const newColumn = new Column(column);
       data.columns.push(newColumn);
-      data.view = new View(data.view, data.columns);
+      data.view = new View(data.view, data.columns, data.not_display_columns);
       data.key_column_map[newColumn.key] = newColumn;
       return data;
     }
@@ -227,7 +227,7 @@ export default function apply(data, operation) {
       if (columnIndex !== -1) {
         newColumns.splice(columnIndex, 1);
         data.columns = newColumns;
-        data.view = new View(data.view, data.columns);
+        data.view = new View(data.view, data.columns, data.not_display_columns);
 
         // Delete invalid file attribute data
         const columnOriginName = getColumnOriginName(deletedColumn);
@@ -252,7 +252,7 @@ export default function apply(data, operation) {
         data.columns[columnIndex] = newColumn;
         data.key_column_map[column_key] = newColumn;
       }
-      data.view = new View(data.view, data.columns);
+      data.view = new View(data.view, data.columns, data.not_display_columns);
       return data;
     }
     case OPERATION_TYPE.MODIFY_COLUMN_DATA:
@@ -265,7 +265,7 @@ export default function apply(data, operation) {
         data.columns[columnIndex] = newColumn;
         data.key_column_map[column_key] = newColumn;
       }
-      data.view = new View(data.view, data.columns);
+      data.view = new View(data.view, data.columns, data.not_display_columns);
       return data;
     }
     case OPERATION_TYPE.MODIFY_COLUMN_WIDTH: {
@@ -276,12 +276,12 @@ export default function apply(data, operation) {
         const newColumn = new Column({ ...oldColumn, width: new_width });
         data.columns[columnIndex] = newColumn;
       }
-      data.view = new View(data.view, data.columns);
+      data.view = new View(data.view, data.columns, data.not_display_columns);
       return data;
     }
     case OPERATION_TYPE.MODIFY_COLUMN_ORDER: {
       const { new_columns_keys } = operation;
-      data.view = new View({ ...data.view, columns_keys: new_columns_keys }, data.columns);
+      data.view = new View({ ...data.view, columns_keys: new_columns_keys }, data.columns, data.not_display_columns);
       return data;
     }
     case OPERATION_TYPE.MODIFY_SETTINGS: {

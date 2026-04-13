@@ -245,9 +245,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                 <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
                 <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
               </div>
-              <div className="sea-qa-project-new-connection-type-right">
-                {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
-              </div>
+              {typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+                <div className="sea-qa-project-new-connection-type-right">
+                  {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
+                </div>
+              )}
             </div>
           }
         </div>
