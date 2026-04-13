@@ -111,3 +111,37 @@ export const addVerticalAnnotation = (contentWrapper, minDistanceItem, theme, ch
     .attr('y2', chartHeight - insertPadding)
     .attr('stroke', theme.XAxisColor);
 };
+
+export const checkTickOverlap = (g, axis, _chart, _chartBoundingClientRect) => {
+  const allTicks = g.selectAll('.tick').nodes();
+  if (axis === 'yAxis') {
+    allTicks.reverse();
+  }
+
+  // Hide overlapping ticks
+  for (let i = 0; i < allTicks.length; i++) {
+    const curText = d3.select(allTicks[i]).select('text').node();
+    const { right: curRight, bottom: curBottom } = curText.getBoundingClientRect();
+
+    for (let j = i + 1; j < allTicks.length; j++) {
+      const nextText = d3.select(allTicks[j]).select('text').node();
+
+      if (curText && nextText) {
+        const { left: nextLeft, top: nextTop } = nextText.getBoundingClientRect();
+
+        if (axis === 'yAxis') {
+          if (curBottom >= nextTop) {
+            i = j;
+            d3.select(nextText.parentNode).attr('opacity', 0);
+          }
+        } else {
+          if (curRight >= nextLeft) {
+            i = j;
+            d3.select(nextText.parentNode).attr('opacity', 0);
+          }
+        }
+      }
+
+    }
+  }
+};

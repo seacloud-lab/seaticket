@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart, drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation } from '../utils';
+import { initChart, destroyChart, drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation, checkTickOverlap } from '../utils';
 import { CHART_THEME_COLOR, CHART_STYLE_COLORS } from '../constants';
 import ToolTip from '../components/tooltip';
 import { gettext } from '@/constants';
@@ -90,6 +90,8 @@ const Line = ({ data }) => {
         g.selectAll('.tick line').attr('stroke', theme.XAxisColor);
         g.selectAll('text').attr('font-size', theme.fontSize);
         g.selectAll('text').attr('fill', theme.textColor);
+
+        checkTickOverlap(g, 'xAxis', chart, container.chartBoundingClientRect);
       });
 
     // Line

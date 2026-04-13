@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart, drawYaxis, addClipPath } from '../utils';
+import { initChart, destroyChart, drawYaxis, addClipPath, checkTickOverlap } from '../utils';
 import { STYLE_COLORS, CHART_THEME_COLOR } from '../constants';
 import ToolTip from '../components/tooltip';
 import { gettext } from '@/constants';
@@ -69,6 +69,8 @@ const Bar = ({ data }) => {
         g.selectAll('.tick line').attr('stroke', theme.XAxisColor);
         g.selectAll('text').attr('font-size', theme.fontSize);
         g.selectAll('text').attr('fill', theme.textColor);
+
+        checkTickOverlap(g, 'xAxis', chart, container.chartBoundingClientRect);
       });
 
     const contentWrapper = chart.append('g').attr('class', 'content-wrapper');
@@ -77,7 +79,7 @@ const Bar = ({ data }) => {
       .data(data)
       .join('rect')
       .attr('opacity', 1)
-      .attr('fill', (_, index) => STYLE_COLORS[0].colors[index % STYLE_COLORS[0].colors.length])
+      .attr('fill', () => STYLE_COLORS[0].colors[0])
       .attr('data-x', (d) => x(d.name))
       .attr('data-y', (d) => y(d.value))
       .attr('data-width', x.bandwidth())
