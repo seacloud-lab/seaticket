@@ -116,7 +116,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
                 'items_processed': run.get('items_processed', 0),
                 'error_message': run.get('error_message', ''),
                 'items': list(items_map.values()),
-                'events': json.loads(run.get('events', '[]')),
+                'events': json.loads(run.get('events') or '[]'),
             })
         
         return {'runs': enriched_runs, 'has_more': has_more}
