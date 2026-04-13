@@ -58,7 +58,7 @@ const TagsSettings = ({
       onChange(newValue);
     }
     setIsShowEditor(false);
-  }, [value, onChange]);
+  }, [value, tagsData, onChange]);
 
   const handleCreateTag = useCallback((name) => {
     const random = Math.floor(Math.random() * (SELECT_OPTION_COLORS.length - 1));
