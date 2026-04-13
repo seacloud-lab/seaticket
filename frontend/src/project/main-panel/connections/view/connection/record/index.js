@@ -29,6 +29,7 @@ import LabelsSettings from '../../../components/connection-resource-details/gith
 import StateSettings from '../../../components/connection-resource-details/github-issues-details/state-settings';
 import StateReasonSettings from '../../../components/connection-resource-details/github-issues-details/state-reason-settings';
 import Rename from './rename';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -157,10 +158,12 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
     setDetails(details?.title ? details : '');
   }, [updateConnectionInfo]);
 
-  const modifyRecord = useCallback((update, callback) => {
+  const modifyGitHubRecord = useCallback((update, callback) => {
+    const columns = details?.columns || [];
+    const localRowUpdate = convertRowToKeyValue(update, { data: { columns } });
     connectionsAPI.modifyGithubIssue(projectUuid, pageSlugId, Number(childrenPageSlugId), update).then(res => {
       const connectionTableName = getTableName(connection);
-      modifyLocalRow(connectionTableName, childrenPageSlugId, update);
+      modifyLocalRow(connectionTableName, childrenPageSlugId, localRowUpdate);
       setDetails({ ...details, ...update });
       callback && callback(false);
     }).catch(error => {
@@ -184,7 +187,7 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
           isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
           value={details?.labels}
           column={labelsColumn}
-          onChange={modifyRecord}
+          onChange={modifyGitHubRecord}
         />
         <StateSettings
           id="github-issue-state-editor-popover"
@@ -193,7 +196,7 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
           stateReason={details?.state_reason}
           stateColumn={stateColumn}
           stateReasonColumn={stateReasonColumn}
-          onChange={modifyRecord}
+          onChange={modifyGitHubRecord}
         />
         <StateReasonSettings
           id="github-issue-state-reason-editor-popover"
@@ -202,18 +205,18 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
           state={details?.state}
           stateColumn={stateColumn}
           column={stateReasonColumn}
-          onChange={modifyRecord}
+          onChange={modifyGitHubRecord}
         />
         <TypeSettings
           id="github-issue-type-editor-popover"
           isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
           value={details?.issue_type}
           column={typeColumn}
-          onChange={modifyRecord}
+          onChange={modifyGitHubRecord}
         />
       </>
     );
-  }, [details, modifyRecord]);
+  }, [details, modifyGitHubRecord]);
 
   useEffect(() => {
     if (isConnectionsPageLoading || !details) return;
@@ -239,7 +242,7 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
       <div className={classnames('sea-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
         <div className="sea-connection-record-details-header">
           {isRenaming ? (
-            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={modifyRecord} />
+            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={modifyGitHubRecord} />
           ) : (
             <>
               <div className="sea-connection-record-details-header-left">

@@ -349,7 +349,8 @@ export const DataProvider = ({
   const modifyLocalRows = useCallback((tableName, rowsUpdate = []) => {
     if (!tableName) return;
     if (!Array.isArray(rowsUpdate) || rowsUpdate.length === 0) return;
-    let table = getTableByName(tableName);
+    let table = data[tableName];
+    if (!table) return;
     let id_row_map_update = {};
     rowsUpdate.forEach(rowUpdate => {
       const { row_id, row } = rowUpdate;
@@ -365,7 +366,7 @@ export const DataProvider = ({
     });
     if (Object.keys(id_row_map_update).length === 0) return;
     updateTable(tableName, { id_row_map: { ...table.id_row_map, ...id_row_map_update } });
-  }, [getTableByName, updateTable]);
+  }, [data, updateTable]);
 
   const modifyLocalRow = useCallback((tableName, rowId, rowUpdate) => {
     modifyLocalRows(tableName, [{ row_id: rowId, row: rowUpdate }]);
