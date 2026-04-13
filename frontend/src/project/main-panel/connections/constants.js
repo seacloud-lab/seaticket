@@ -97,16 +97,16 @@ export const CONNECTION_FIELDS = {
       children: [
         {
           key: 'imap_host',
-          name: gettext('IMAP host (optional)'),
+          name: gettext('IMAP host'),
           type: CONNECTION_FIELD_TYPE.TEXT,
-          is_required: false,
+          is_required: true,
           is_display: true,
           is_custom: true,
         }, {
           key: 'imap_port',
-          name: gettext('IMAP port (optional)'),
+          name: gettext('IMAP port'),
           type: CONNECTION_FIELD_TYPE.NUMBER,
-          is_required: false,
+          is_required: true,
           is_display: true,
           is_custom: true,
           default_value: 993,
