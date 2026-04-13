@@ -23,8 +23,8 @@ def billing(request):
     if not ENABLE_EXTERNAL_BILLING_SERVICE:
         return render_error(request, 'Billing is not enabled.')
 
-    ccnet_email = request.user.username
-    profile = Profile.objects.get_profile_by_user(ccnet_email)
+    user_id = request.user.username
+    profile = Profile.objects.get_profile_by_user(user_id)
     contact_email = profile.contact_email if profile and profile.contact_email else ''
     nickname = profile.nickname if profile and profile.nickname else ''
 
@@ -44,15 +44,12 @@ def billing(request):
         "aud": billing_domain,
         "exp": exp,
         "jti": str(uuid.uuid4()),
-        "user_id": ccnet_email,
+        "user_id": user_id,
         "email": contact_email,
         "name": nickname,
         "org_id": org.org_id,
         "org_name": org.org_name
     }
-    from pprint import pprint
-    pprint(payload)
-
     token = jwt.encode(payload, BILLING_SERVICE_JWT_SECRET_KEY,
                        algorithm=BILLING_SERVICE_JWT_ALGORITHM)
 
