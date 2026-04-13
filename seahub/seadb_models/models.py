@@ -514,6 +514,7 @@ class AgentRunsTable(BaseModel):
     finished_at = MappedColumn('finished_at', PropertyTypes.DATETIME)
     items_processed = MappedColumn('items_processed', PropertyTypes.INT)
     error_message = MappedColumn('error_message', PropertyTypes.TEXT)
+    events = MappedColumn('events', PropertyTypes.TEXT)  # JSON array of event payloads that triggered this run
 
     @classmethod
     def gen_table_name(cls):

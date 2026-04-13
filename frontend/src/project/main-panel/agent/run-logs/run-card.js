@@ -141,13 +141,27 @@ const RunCardHeader = ({ item }) => {
   );
 };
 
+const getUniqueEventTypes = (events) => {
+  if (!Array.isArray(events) || events.length === 0) return [];
+  const seen = new Set();
+  return events.reduce((acc, e) => {
+    const type = e && e.type;
+    if (type && !seen.has(type)) {
+      seen.add(type);
+      acc.push(type);
+    }
+    return acc;
+  }, []);
+};
+
 const RunCard = ({
   run,
   onConfirmAction,
   onCancelAction,
   onViewContent,
 }) => {
-  const { id, started_at, items = [], actions = [] } = run;
+  const { id, started_at, items = [], actions = [], events } = run;
+  const eventTypes = getUniqueEventTypes(events);
 
   let isShowResolved;
   let isCardExpanded;
@@ -176,6 +190,9 @@ const RunCard = ({
         <div className="run-card-header-left">
           <span className="run-time">{dayjs(started_at).format('YYYY-MM-DD HH:mm')}</span>
           <span className="run-id">{gettext('Run')} #{id}</span>
+          {eventTypes.map(type => (
+            <span key={type} className="run-event-type-badge">{type}</span>
+          ))}
           {isShowResolved &&
             <span className="run-card-resolved">
               <Icon symbol="check-circle" className="mr-1" />

@@ -116,6 +116,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
                 'items_processed': run.get('items_processed', 0),
                 'error_message': run.get('error_message', ''),
                 'items': list(items_map.values()),
+                'events': json.loads(run.get('events', '[]')),
             })
         
         return {'runs': enriched_runs, 'has_more': has_more}
@@ -150,6 +151,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
             'items_processed': run.get('items_processed', 0),
             'error_message': run.get('error_message', ''),
             'items': list(items_map.values()),
+            'events': json.loads(run.get('events', '[]')),
         }
     except Exception as e:
         logger.exception(e)
