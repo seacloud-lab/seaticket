@@ -170,12 +170,6 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content">
             <div className="action-label">{gettext('Error')}</div>
-            {tool_name && (
-              <div className="action-error-trigger">
-                <span className="action-error-trigger-label">{gettext('Triggered by')}:</span>
-                <span className="action-error-trigger-value">{tool_name}</span>
-              </div>
-            )}
             <div className="action-text">
               {formatErrorMessage(content)}
             </div>
