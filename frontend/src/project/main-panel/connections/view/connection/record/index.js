@@ -44,7 +44,7 @@ const initColumns = [
   { key: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED, name: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED },
 ];
 
-const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
+const Record = ({ projectUuid, permission, toggleBar }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
   const { getRow, getTableByName, modifyRow, modifyRowLink, modifyLocalRow } = useData();
   const { connections } = useConnections();
@@ -72,22 +72,23 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
   const columns = useMemo(() => cacheRecord ? cacheColumns : initColumns, [cacheRecord, cacheColumns]);
   const tools = useMemo(() => {
     if (!details) return [];
+    const row = { ...details, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
-      generateAIOptions({ rows: [details], columns: initColumns, connection, recordId }, (attachments) => {
+      generateAIOptions({ rows: [row], columns: initColumns, connection }, (attachments) => {
         if (!Array.isArray(attachments) || attachments.length === 0) return;
         const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
         updateAttachments(newAttachments);
         toggleBar([BAR_TYPE.CHAT]);
       }),
-      isRw && generateFindRelatedIssuesOption({ row: details, connection }, () => setIsShowRelatedIssuesDialog(true)),
-      isRw && generateCreateRelatedTicketOption({ row: details, columns: initColumns, connection }, () => setTicketDialogOpen(true)),
-      isRw && generateLinkAnExistingTicketOption({ row: details, columns: initColumns, connection }, () => setIsShowTicketsDialog(true)),
+      isRw && generateFindRelatedIssuesOption({ row, connection }, () => setIsShowRelatedIssuesDialog(true)),
+      isRw && generateCreateRelatedTicketOption({ row, columns: initColumns, connection }, () => setTicketDialogOpen(true)),
+      isRw && generateLinkAnExistingTicketOption({ row, columns: initColumns, connection }, () => setIsShowTicketsDialog(true)),
       { key: 'divider' },
-      generateOpenOriginalPageOption({ row: details, columns: initColumns, connection }),
-      generateCopyOriginalLinkOption({ row: details, columns: initColumns, connection }),
+      generateOpenOriginalPageOption({ row, columns: initColumns, connection }),
+      generateCopyOriginalLinkOption({ row, columns: initColumns, connection }),
     ];
-    let outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [{ ...details, _id: childrenPageSlugId }], columns: initColumns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
+    let outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns: initColumns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
       const rowId = rowIds[0];
       const rowUpdate = idRowUpdates[rowId];
       const connectionTableName = getTableName(connection);
@@ -112,7 +113,7 @@ const Record = ({ projectUuid, permission, toggleBar, recordId }) => {
       _tools.pop();
     }
     return _tools;
-  }, [details, connection, permission, cacheRecord, cacheColumns, updateAttachments, toggleBar]);
+  }, [details, connection, permission, cacheRecord, cacheColumns, childrenPageSlugId, updateAttachments, toggleBar]);
 
   const title = useMemo(() => {
     if (details && details.title) return details.title;

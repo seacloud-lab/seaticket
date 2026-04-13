@@ -11,7 +11,7 @@ const Connection = (props) => {
   return (
     <>
       {childrenPageSlugId ? (
-        <Record { ...props } recordId={childrenPageSlugId} />
+        <Record { ...props } />
       ) : (
         <Records { ...props } onRefresh={onRefresh} />
       )}
