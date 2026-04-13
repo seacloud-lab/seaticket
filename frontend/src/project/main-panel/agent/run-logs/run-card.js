@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import ActionItem from './action-item';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
-import { ACTION_STATUS, RUN_STATUS } from './constants';
+import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
@@ -141,13 +141,27 @@ const RunCardHeader = ({ item }) => {
   );
 };
 
+const getUniqueEventTypes = (events) => {
+  if (!Array.isArray(events) || events.length === 0) return [];
+  const seen = new Set();
+  return events.reduce((acc, e) => {
+    const type = e && e.type;
+    if (type && !seen.has(type)) {
+      seen.add(type);
+      acc.push(type);
+    }
+    return acc;
+  }, []);
+};
+
 const RunCard = ({
   run,
   onConfirmAction,
   onCancelAction,
   onViewContent,
 }) => {
-  const { id, started_at, items = [], actions = [] } = run;
+  const { id, started_at, items = [], actions = [], events } = run;
+  const eventTypes = getUniqueEventTypes(events);
 
   let isShowResolved;
   let isCardExpanded;
@@ -176,6 +190,9 @@ const RunCard = ({
         <div className="run-card-header-left">
           <span className="run-time">{dayjs(started_at).format('YYYY-MM-DD HH:mm')}</span>
           <span className="run-id">{gettext('Run')} #{id}</span>
+          {eventTypes.map(type => (
+            <span key={type} className="run-event-type-badge">{type}</span>
+          ))}
           {isShowResolved &&
             <span className="run-card-resolved">
               <Icon symbol="check-circle" className="mr-1" />
@@ -212,7 +229,11 @@ const RunCard = ({
             <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
               <RunCardHeader item={item} />
               <div className="ticket-actions">
-                {(item.actions || []).map((action, actionIndex) => (
+                {(item.actions || []).filter((action, actionIndex, arr) => {
+                  if (action.type !== ACTION_TYPE.THOUGHT) return true;
+                  const nextAction = arr[actionIndex + 1];
+                  return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
+                }).map((action, actionIndex) => (
                   <ActionItem
                     key={action.id || actionIndex}
                     action={action}
@@ -229,7 +250,11 @@ const RunCard = ({
           {/* Fallback: if no items but has top-level direct actions */}
           {items.length === 0 && actions.length > 0 && (
             <div className="run-actions-direct">
-              {actions.map((action, actionIndex) => (
+              {actions.filter((action, actionIndex, arr) => {
+                if (action.type !== ACTION_TYPE.THOUGHT) return true;
+                const nextAction = arr[actionIndex + 1];
+                return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
+              }).map((action, actionIndex) => (
                 <ActionItem
                   key={action.id || actionIndex}
                   action={action}
