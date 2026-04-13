@@ -12,6 +12,24 @@ import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
+const getCompletionRetryChildren = (retries = []) => {
+  return retries
+    .filter(retry => retry?.reason)
+    .map((retry, index) => ({
+      name: `${gettext('Retry')} ${index + 1}`,
+      value: retry.error,
+    }));
+};
+
+const getToolRetryChildren = (retries = []) => {
+  return retries
+    .filter(Boolean)
+    .map((error, index) => ({
+      name: `${gettext('Retry')} ${index + 1}`,
+      value: error,
+    }));
+};
+
 const generatorUserMessage = (name, messageInfo = {}, props) => {
   const { attachments, message, raw } = messageInfo || {};
 
@@ -174,6 +192,20 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               ]
             }
           ];
+          const completionRetryChildren = getCompletionRetryChildren(action.completion_retry);
+          if (completionRetryChildren.length > 0) {
+            otherInfos.push({
+              name: gettext('Completion retry'),
+              children: completionRetryChildren,
+            });
+          }
+          const toolRetryChildren = getToolRetryChildren(action.tool_retry);
+          if (toolRetryChildren.length > 0) {
+            otherInfos.push({
+              name: gettext('Tool retry'),
+              children: toolRetryChildren,
+            });
+          }
           if (action.token_usage || action.time_usage) {
             let staticValue = [];
             if (action.time_usage) {
@@ -268,23 +300,33 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         })
       });
     }
-
+    
     // final answer
     const final_answer = propsValue?.final_answer;
-    if (final_answer && final_answer.result){
+    const finalAnswerRetryChildren = getCompletionRetryChildren(final_answer?.retry);
+    if (final_answer && (final_answer.result || finalAnswerRetryChildren.length > 0)){
       let result = final_answer.result;
       if (result && isObject(result)) {
         result = JSON.stringify(result);
       }
-      let finalAnswerValue = [{
-        name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
-        children: [
-          {
-            value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
-            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-          }
-        ]
-      }];
+      let finalAnswerValue = [];
+      if (result) {
+        finalAnswerValue.push({
+          name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
+          children: [
+            {
+              value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
+              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+            }
+          ]
+        });
+      }
+      if (finalAnswerRetryChildren.length > 0) {
+        finalAnswerValue.push({
+          name: gettext('Retry'),
+          children: finalAnswerRetryChildren,
+        });
+      }
       if (final_answer.token_usage || final_answer.time_usage) {
         let staticValue = [];
         if (final_answer.time_usage) {
