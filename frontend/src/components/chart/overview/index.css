@@ -1,0 +1,120 @@
+.overview-chart-wrapper {
+  gap: 16px;
+}
+
+.overview-chart-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.overview-chart-header .credit-header-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 8px;
+  background-image: linear-gradient(to bottom right, rgba(255, 128, 0, 0.05), rgba(255, 128, 0, 0.04), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1.5px rgba(255, 128, 0, 0.2);
+  gap: 8px;
+}
+
+.overview-chart-header .credit-header-item .title {
+  font-size: 16px;
+}
+
+.overview-chart-header .credit-header-item .icon {
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+}
+
+.overview-chart-header .credit-header-item .icon .sea-qa-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.overview-chart-header .credit-header-item .value {
+  font-size: 32px;
+}
+
+.overview-chart-header .credit-header-item.current {
+  background-image: linear-gradient(to bottom right, rgba(255, 128, 0, 0.1), rgba(255, 128, 0, 0.08), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 0 0 1.5px rgba(255, 128, 0, 0.3);
+}
+
+.overview-chart-header .credit-header-item.current .icon {
+  background-color: rgba(255, 128, 0, 0.1);
+}
+
+.overview-chart-header .credit-header-item.current .icon .sea-qa-icon-svg {
+  fill: #ff8000;
+}
+
+.overview-chart-header .credit-header-item.current .value {
+  color: #ff8000;
+}
+
+.overview-chart-header .credit-header-item.last {
+  background-image: linear-gradient(to bottom right, rgba(184, 48, 215, 0.05), rgba(184, 48, 215, 0.04), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1.5px rgba(184, 48, 215, 0.2);
+}
+
+.overview-chart-header .credit-header-item.last .icon {
+  background-color: rgba(184, 48, 215, 0.1);
+}
+
+.overview-chart-header .credit-header-item.last .icon .sea-qa-icon-svg {
+  fill: #b830d7;
+}
+
+.overview-chart-header .credit-header-item.last .value {
+  color: #b830d7;
+}
+
+.overview-chart-header .credit-header-item.month-on-month {
+  background-image: linear-gradient(to bottom right, rgba(21, 136, 252, 0.05), rgba(21, 136, 252, 0.04), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1.5px rgba(21, 136, 252, 0.2);
+}
+
+.overview-chart-header .credit-header-item.month-on-month .icon {
+  background-color: rgba(21, 136, 252, 0.1);
+}
+
+.overview-chart-header .credit-header-item.month-on-month .icon .sea-qa-icon-svg {
+  fill: #1588fc;
+}
+
+.overview-chart-header .credit-header-item.month-on-month .value {
+  color: #1588fc;
+}
+
+.overview-chart-center {
+  gap: 16px;
+}
+
+.chart-wrapper {
+  flex: 1;
+  padding: 24px;
+  box-shadow: inset 0 0 0 1.5px var(--bs-border-secondary-color);
+  border-radius: 8px;
+}
+
+.chart-wrapper .chart-name {
+  font-size: 20px;
+}
+
+.overview-chart-state {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overview-chart-state img {
+  display: none;
+}
+
+.overview-chart-state .empty-tip {
+  margin-bottom: 0px !important;
+}
