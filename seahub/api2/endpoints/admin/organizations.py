@@ -545,3 +545,93 @@ class AdminOrganizationsBaseInfo(APIView):
                 base_info.update({'org_staffs': staffs})
             orgs.append(base_info)
         return Response({'organization_list': orgs})
+
+
+class BillingOrganizationOperation(APIView):
+
+    throttle_classes = (UserRateThrottle,)
+
+    def _validate_and_get_org(self, request, org_id):
+        from seahub.utils.auth import AUTHORIZATION_PREFIX
+        from seahub.settings import BILLING_AUTH_TOKEN
+        from seahub.organizations.models import Organization
+        from seahub.settings import MULTI_TENANCY
+
+        auth = request.META.get('HTTP_AUTHORIZATION', '').split()
+        if not auth or auth[0].lower() not in AUTHORIZATION_PREFIX:
+            error_msg = 'Invalid token header. No credentials provided.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if len(auth) == 1:
+            error_msg = 'Invalid token header. No credentials provided.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        elif len(auth) > 2:
+            error_msg = 'Invalid token header. Token string should not contain spaces.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        key = auth[1]
+        if key != BILLING_AUTH_TOKEN:
+            error_msg = 'Invalid token.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not MULTI_TENANCY:
+            error_msg = 'Feature is not enabled.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            org_id = int(org_id)
+        except ValueError:
+            error_msg = 'org_id invalid.'
+            return None, api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if org_id == 0:
+            error_msg = 'org_id invalid.'
+            return None, api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        org = Organization.objects.get_org_by_id(org_id)
+        if not org:
+            error_msg = 'Organization %s not found.' % org_id
+            return None, api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        return org, None
+
+    def get(self, request, org_id):
+        """ Get base info of a organization
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        org, error = self._validate_and_get_org(request, org_id)
+        if error:
+            return error
+
+        org_info = get_org_detailed_info(org)
+        try:
+            org_info = get_org_detailed_info(org)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response(org_info)
+
+    def put(self, request, org_id):
+        """ Update base info of a organization
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        org, error = self._validate_and_get_org(request, org_id)
+        if error:
+            return error
+
+        role = request.data.get('role')
+        if role:
+            if role not in get_available_roles():
+                error_msg = 'Role %s invalid.' % role
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            OrgSettings.objects.add_or_update(org, role=role)
+            org_role_updated.send(None, org_id=org_id)
+
+        org_info = get_org_detailed_info(org)
+        return Response(org_info)
