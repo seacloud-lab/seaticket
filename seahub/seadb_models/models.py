@@ -45,6 +45,7 @@ class PropertyTypes:
     GEOLOCATION = 'geolocation'
     BUTTON = 'button'
     LIST = 'list'
+    JSON = 'json'
 
 
 class ListTypes:
@@ -482,6 +483,8 @@ class GeneralTaskTable(BaseModel):
     size = MappedColumn('size', PropertyTypes.SINGLE_SELECT)
     priority = MappedColumn('priority', PropertyTypes.SINGLE_SELECT)
     assignees = MappedColumn('assignees', PropertyTypes.MULTIPLE_SELECT)
+    participants = MappedColumn('participants', PropertyTypes.MULTIPLE_SELECT)
+    others = MappedColumn('others', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)

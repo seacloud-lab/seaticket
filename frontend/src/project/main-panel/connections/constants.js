@@ -410,6 +410,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   SIZE: 'size',
   PRIORITY: 'priority',
   ASSIGNEES: 'assignees',
+  PARTICIPANTS: 'participants',
+  OTHERS: 'others',
   DUE_DATE: 'due_date',
 };
 

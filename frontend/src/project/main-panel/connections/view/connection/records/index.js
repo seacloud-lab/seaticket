@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import copy from 'copy-to-clipboard';
+import { Modal, ModalBody } from 'reactstrap';
 import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
@@ -18,7 +19,7 @@ import {
   GENERAL_TASK_PRIORITY_NAME_MAP,
   GENERAL_TASK_SIZE_NAME_MAP,
 } from '../../../constants';
-import { toaster } from '@/components';
+import { toaster, ModalHeader, CustomizeMarkdownViewer } from '@/components';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../../hooks';
 import { getOriginalPageUrl, getTableName, generatorRowClassName } from '../../../utils';
@@ -40,6 +41,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
+  const [isShowOthersDialog, setIsShowOthersDialog] = useState(false);
+  const [othersDialogContent, setOthersDialogContent] = useState('');
 
   const { updateAttachments } = useAIChatTools();
   const { viewID, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
@@ -58,6 +61,28 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     const tableName = getTableName(connection);
     return tableName;
   }, [connections]);
+
+  const normalizeOthersToMarkdown = useCallback((value) => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') {
+      return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
+    }
+    const text = String(value || '').trim();
+    if (!text) return '';
+    try {
+      const parsed = JSON.parse(text);
+      return `\`\`\`json\n${JSON.stringify(parsed, null, 2)}\n\`\`\``;
+    } catch (e) {
+      return text;
+    }
+  }, []);
+
+  const handleOpenOthersDialog = useCallback((othersValue) => {
+    const content = normalizeOthersToMarkdown(othersValue);
+    if (!content) return;
+    setOthersDialogContent(content);
+    setIsShowOthersDialog(true);
+  }, [normalizeOthersToMarkdown]);
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -147,6 +172,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
           }
           if (type === CONNECTION_TYPE.GENERAL_TASK) {
             const statusColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATUS);
+            const othersColumn = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS);
             if (statusColumnIndex > -1) {
               const statusColumn = columns[statusColumnIndex];
               let options = statusColumn.data?.options || [];
@@ -168,6 +194,17 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
               let options = sizeColumn.data?.options || [];
               options = options.map(o => ({ ...o, display_name: GENERAL_TASK_SIZE_NAME_MAP[o.name] || o.name }));
               columns[sizeColumnIndex].data = { ...sizeColumn.data, options };
+            }
+
+            if (othersColumn) {
+              columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS] = {
+                ...(columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS] || {}),
+                display_name: gettext('Others'),
+                click: (row) => {
+                  const value = row?.[othersColumn.key] ?? row?.[CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS];
+                  handleOpenOthersDialog(value);
+                },
+              };
             }
           }
           columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
@@ -236,7 +273,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
   }, [
     projectUuid, connectionID, connection, connections, getTableNameByConnectionID,
     data, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, getMetadata,
-    modifyRows, modifyRow, toggleChildrenPageSlugId,
+    modifyRows, modifyRow, toggleChildrenPageSlugId, handleOpenOthersDialog,
   ]);
 
   const handleCreateRelatedTicket = useCallback((row) => {
@@ -631,6 +668,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     setIsShowRowDetailsDialog(false);
     setTicketDialogOpen(false);
     setIsShowRelatedIssuesDialog(false);
+    setIsShowOthersDialog(false);
+    setOthersDialogContent('');
     setCurrentRow({});
   }, []);
 
@@ -682,6 +721,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
           onClose={closeAll}
           onRowClick={handleCreateRelatedTicket}
         />
+      )}
+      {isShowOthersDialog && (
+        <Modal isOpen={true} toggle={closeAll} className="sea-qa-connection-others-dialog">
+          <ModalHeader toggle={closeAll}>{gettext('Others')}</ModalHeader>
+          <ModalBody>
+            <CustomizeMarkdownViewer value={othersDialogContent} showTOC={false} />
+          </ModalBody>
+        </Modal>
       )}
     </>
   );

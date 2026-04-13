@@ -5,3 +5,12 @@
 .sea-qa-connection-details-metadata .sea-metadata-table-row.outdated-record .table-cell-clickable .sea-metadata-ui {
   text-decoration: line-through;
 }
+
+.sea-qa-connection-others-dialog {
+  max-width: 860px;
+}
+
+.sea-qa-connection-others-dialog .modal-body {
+  max-height: 70vh;
+  overflow: auto;
+}

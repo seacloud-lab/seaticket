@@ -173,8 +173,8 @@ export const initConnectionResourceDetails = (type, {
       ['Priority', formatValue(prams.priority, GENERAL_TASK_PRIORITY_NAME_MAP)],
       ['Assignees', formatAssignees(prams.assignees)],
     ].filter(item => item[1]).map(item => `${item[0]}: ${item[1]}`).join('\n');
-    const content = prams.content ? String(prams.content) : '';
-    const mergedDetails = [details, content].filter(Boolean).join('\n\n');
+      const bodySection = content ? `Description: ${content}` : '';
+      const mergedDetails = [details, bodySection].filter(Boolean).join('\n\n');
     return {
       title,
       time: prams.modified_time,
