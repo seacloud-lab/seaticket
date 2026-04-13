@@ -26,7 +26,7 @@ const Overview = () => {
   const [creditSummaryData, setCreditSummaryData] = useState([
     {
       key: 'current',
-      name: gettext('Total Credit for this month'),
+      name: gettext('Total Credits This Month'),
       value: '--',
       icon: 'total-credit-for-this-month'
     },
@@ -187,7 +187,7 @@ const Overview = () => {
       </div>
       <div className="overview-chart-footer">
         <div className="chart-wrapper d-flex flex-column">
-          <div className="chart-name">{gettext('Daily Credit Consumption Trend This Month')}</div>
+          <div className="chart-name">{gettext('Daily Credit Usage Trend')}</div>
           {renderSectionContent(requestStatus[REQUEST_KEYS.DATE], <Line data={lineData} />)}
         </div>
       </div>
