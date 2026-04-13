@@ -24,7 +24,8 @@ class Metadata {
 
     this.hasMore = true;
     this.rowsCount = this.row_ids.length;
-    this.view = new View(object.view, this.columns, object.notDisplayColumns);
+    this.not_display_columns = object?.notDisplayColumns || [];
+    this.view = new View(object.view, this.columns, this.not_display_columns);
   }
 
 }
