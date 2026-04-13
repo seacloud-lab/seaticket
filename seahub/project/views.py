@@ -2,6 +2,7 @@
 import logging
 import json
 import base64
+from urllib.parse import unquote
 
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
@@ -107,7 +108,7 @@ def github_install(request):
 
 
 def github_installation_setup(request):
-    state = request.GET.get('state')
+    state = unquote(request.GET.get('state'))
     installation_id = request.GET.get('installation_id')
     setup_action = request.GET.get('setup_action')
 

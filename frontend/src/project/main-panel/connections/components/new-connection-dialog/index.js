@@ -56,7 +56,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, []);
 
   const installGitHubAppURL = useMemo(() => {
-    const newPath = `${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`;
+    const url = new URL(`${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`);
+    const newPath = url.href;
     return `${server}/github/install/?next=${encodeURIComponent(newPath)}&project_uuid=${projectUuid}`;
   }, [server, projectUuid]);
 
