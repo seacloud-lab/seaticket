@@ -23,7 +23,6 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
   const getConnectionRecord = useCallback(() => {
     connectionsAPI.getConnection(projectUuid, connectionId).then(res => {
       const record = new Connection(res.data.record);
-      record.status.last_indexed_count = 1;
       setTotalRecords(record.status.total_records);
       const statusData = allStatus.map(status => {
         const { last_sync_status, last_sync_count } = record.status;
