@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import ActionItem from './action-item';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
-import { ACTION_STATUS, RUN_STATUS } from './constants';
+import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
@@ -212,7 +212,11 @@ const RunCard = ({
             <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
               <RunCardHeader item={item} />
               <div className="ticket-actions">
-                {(item.actions || []).map((action, actionIndex) => (
+                {(item.actions || []).filter((action, actionIndex, arr) => {
+                  if (action.type !== ACTION_TYPE.THOUGHT) return true;
+                  const nextAction = arr[actionIndex + 1];
+                  return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
+                }).map((action, actionIndex) => (
                   <ActionItem
                     key={action.id || actionIndex}
                     action={action}
@@ -229,7 +233,11 @@ const RunCard = ({
           {/* Fallback: if no items but has top-level direct actions */}
           {items.length === 0 && actions.length > 0 && (
             <div className="run-actions-direct">
-              {actions.map((action, actionIndex) => (
+              {actions.filter((action, actionIndex, arr) => {
+                if (action.type !== ACTION_TYPE.THOUGHT) return true;
+                const nextAction = arr[actionIndex + 1];
+                return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
+              }).map((action, actionIndex) => (
                 <ActionItem
                   key={action.id || actionIndex}
                   action={action}
