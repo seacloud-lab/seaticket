@@ -600,24 +600,25 @@ class PortalIssueView(APIView):
             # Handle linked_ticket (link/unlink portal issue to/from a ticket)
             if is_update_linked_ticket:
                 current_linked_ticket = issue.get('linked_ticket')
-                if current_linked_ticket:
-                    error_msg = 'This portal issue is already linked to a ticket.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 if linked_ticket:
-                    ticket, metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
-                    if not ticket:
-                        error_msg = 'Ticket not found.'
-                        return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-                    update_row['linked_ticket'] = linked_ticket
-                    # Update ticket's linked_connection_records
-                    old_value = ticket.get('linked_connection_records', []) or []
-                    portal_key = f'portal_{issue.get("_pk")}'
-                    if portal_key not in old_value:
-                        new_value = old_value + [portal_key]
-                        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
-                            'pk': ticket.get('_pk'),
-                            'row': {'linked_connection_records': new_value}
-                        }])
+                    if current_linked_ticket and int(current_linked_ticket) != linked_ticket:
+                        error_msg = 'This portal issue is already linked to a ticket.'
+                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                    if not current_linked_ticket:
+                        ticket, metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
+                        if not ticket:
+                            error_msg = 'Ticket not found.'
+                            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                        update_row['linked_ticket'] = linked_ticket
+                        # Update ticket's linked_connection_records
+                        old_value = ticket.get('linked_connection_records', []) or []
+                        portal_key = f'portal_{issue.get("_pk")}'
+                        if portal_key not in old_value:
+                            new_value = old_value + [portal_key]
+                            seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+                                'pk': ticket.get('_pk'),
+                                'row': {'linked_connection_records': new_value}
+                            }])
                 else:
                     # Unlink portal issue from ticket
                     if current_linked_ticket:
