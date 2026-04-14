@@ -44,14 +44,15 @@ class View {
     if (columnsKeys.length === 0) {
       this.columns_keys = available_columns.map(c => c.key);
     } else {
-      let columns = columnsKeys.map(key => getColumnByKey(available_columns, key)).filter(c => c);
+      let _columns = columnsKeys.map(key => getColumnByKey(available_columns, key)).filter(c => c);
       available_columns.forEach(column => {
-        if (!getColumnByKey(columns, column.key)) {
-          columns.push(column);
+        if (!getColumnByKey(_columns, column.key)) {
+          _columns.push(column);
         }
       });
-      this.columns_keys = columns.map(c => c.key);
-      this.columns = columns;
+      _columns = _columns.sort((a, b) => (b.frozen || 0) - (a.frozen || 0));
+      this.columns_keys = _columns.map(c => c.key);
+      this.columns = _columns;
     }
 
     // settings
