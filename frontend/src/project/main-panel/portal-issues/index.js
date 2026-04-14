@@ -5,12 +5,12 @@ import TrashPortalIssues from './view/trash-portal-issues';
 import AllPortalIssueTypes from './view/portal-issue-types';
 import AllPortalIssueSubstates from './view/portal-issue-substates';
 import PortalIssuesTopBar from './components/portal-issues-top-bar';
-import { PORTAL_ISSUE_PAGE_SLUG_ID, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID } from './constants';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from './constants';
 import PortalIssueInDialog from './components/portal-issue-in-dialog';
 import { isNumber } from '@/utils/type-detection';
 import { IconButton, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import eventBus from '@/utils/event-bus';
 import context from '@/sea-metadata/context';
 import { MetadataProvider } from '@/project/main-panel/tickets/hooks';
@@ -54,7 +54,7 @@ const PortalIssueDetail = ({ issueId, onBack, onRefresh }) => {
 };
 
 const Page = ({ toggleBar, type }) => {
-  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, onRefresh } = usePortalIssuesPage();
+  const { isLoading, pageSlugId } = usePortalIssuesPage();
   if (isLoading) return <CenteredLoading />;
 
   if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES) {

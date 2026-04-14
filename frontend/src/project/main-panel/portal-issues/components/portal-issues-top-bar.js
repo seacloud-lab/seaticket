@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import TopBar from '../../top-bar';
 import { usePortalIssuesPage, useMetadata } from '../hooks';
-import { PORTAL_ISSUE_PAGE_SLUG_ID, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID } from '../constants';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { EVENT_BUS_TYPE as PROJECT_EVENT_BUS_TYPE } from '@/project/constants';
 import { IconButton, IconTextBtn } from '@/components';

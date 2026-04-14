@@ -202,8 +202,6 @@ class PortalChatMessages(models.Model):
         }
 
 
-
-
 class PortalIssueView(object):
 
     def __init__(self, name, view_type='table', config={}, folders_views_ids=None):

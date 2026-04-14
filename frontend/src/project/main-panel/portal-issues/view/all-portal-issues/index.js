@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { portalAPI } from '@/portal/api';
-import { PORTAL_ISSUE_STATUS, PORTAL_ISSUE_TYPE, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { PORTAL_ISSUE_STATUS, PORTAL_ISSUE_TYPE, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -69,7 +69,7 @@ const AllPortalIssues = ({ projectUuid, workspaceID, projectName, permission, to
   }, []);
 
   const createRowsTools = useCallback((props) => {
-    const { rows, columns, modifyRows } = props;
+    const { rows } = props;
     const tools = [];
 
     // Only show tools when a single row is selected

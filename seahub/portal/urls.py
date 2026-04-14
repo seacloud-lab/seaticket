@@ -69,9 +69,9 @@ urlpatterns = [
 
     # portal issues views API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/$', PortalIssueViewsView.as_view(), name='api-v1-portal-issues-views'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/move/$', PortalIssueViewsMoveView.as_view(), name='api-v1-portal-issues-views-move'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/duplicate/$', PortalIssueViewsDuplicateView.as_view(), name='api-v1-portal-issues-view-duplicate'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/duplicate/$', PortalIssueViewsDuplicateView.as_view(), name='api-v1-portal-issues-view-duplicate'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
 
     # portal issue types API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/types/$', PortalIssueTypesAPIView.as_view(), name='api-v1-portal-issues-types'),

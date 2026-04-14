@@ -1,10 +1,8 @@
-import logging
 from seahub.project.constants import PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 
 
 TABLE_PORTAL_ISSUES = 'portal_issues'
 TABLE_PORTAL_ISSUE_COMMENTS = 'portal_issue_comments'
-logger = logging.getLogger(__name__)
 
 
 def get_portal_issue(seadb_api, project_uuid, issue_id):

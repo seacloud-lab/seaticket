@@ -50,7 +50,7 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, children })
     const projectNameIndex = decodePathname.indexOf(part);
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
-    const [, pageIdFromURL = '', childrenPageSlugIdFromURL = ''] = params;
+    const [, pageIdFromURL = ''] = params;
     let pageSlugId = PORTAL_ISSUE_PAGE_SLUG_ID.ALL;
     let childrenPageSlugId = PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL;
 

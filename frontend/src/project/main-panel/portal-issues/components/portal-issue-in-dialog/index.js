@@ -3,11 +3,10 @@ import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { CenteredLoading, CenteredError, toaster, Icon, Option } from '@/components';
+import { CenteredLoading, CenteredError, toaster, Icon } from '@/components';
 import { gettext, lang, username, name, avatarURL, server } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import LongTextEditorUtilities from '@/utils/long-text';
+import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '@/utils/long-text';
 import { portalAPI } from '@/portal/api';
 import { Ticket as TicketModel } from '@/project/main-panel/tickets/models';
 import Comment from '@/project/main-panel/tickets/components/comment';
@@ -134,11 +133,6 @@ const PortalIssueInDialog = ({
       return newIssue;
     });
   }, [projectUuid, issueId, issue]);
-
-  // Convert ticket state ('0001'/'0002') to portal state ('open'/'closed') for backend
-  const toPortalState = (ticketState) => {
-    return ticketState === '0002' ? 'closed' : 'open';
-  };
 
   const closeIssue = useCallback(() => {
     portalAPI.updatePortalIssue(projectUuid, issueId, { state: 'closed' }).then(res => {
@@ -291,7 +285,6 @@ const PortalIssueInDialog = ({
                 <div className="sea-qa-project-ticket-footer mt-2 pl-0">
                   <UploadFilesButton onChange={(files) => {
                     if (files.length === 0) return;
-                    const editor = commentEditorRef.current.getEditor();
                     // Handle file uploads
                   }} />
                   <div className="ml-2 sea-qa-project-ticket-submit-btns">

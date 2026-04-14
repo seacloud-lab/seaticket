@@ -3,12 +3,6 @@ import { gettext, siteRoot } from '@/constants';
 import { CustomizeTabs, Icon } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
 
-const BASE_NAV_ITEMS = [
-  { key: PORTAL_PAGE.CHAT, name: gettext('Chat'), icon: 'chat' },
-  { key: PORTAL_PAGE.SUBMIT_ISSUE, name: gettext('Submit issue'), icon: 'submit-ticket' },
-  { key: PORTAL_PAGE.MY_ISSUES, name: gettext('My issues'), icon: 'my-tickets' },
-];
-
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const primaryTabs = isAnonymous
     ? (enableKB ? [{ value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }] : [])

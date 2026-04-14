@@ -9,11 +9,6 @@ const DEFAULT_PORTAL_ISSUE_TYPES = [
   { id: 'portal-issue-type-question', name: 'Question', color: '#4ea6f8', text_color: '#FFFFFF' },
 ];
 
-const DEFAULT_PORTAL_ISSUE_STATES = [
-  { id: 'open', name: 'open', display_name: 'Open', color: '#1a7f37', text_color: '#FFFFFF' },
-  { id: 'closed', name: 'closed', display_name: 'Closed', color: '#8250df', text_color: '#FFFFFF' },
-];
-
 const DEFAULT_PORTAL_TAGS = [
   { _pk: 1, name: 'General', color: '#4ea6f8', text_color: '#FFFFFF' },
   { _pk: 2, name: 'Feedback', color: '#6dbb7a', text_color: '#FFFFFF' },
@@ -279,9 +274,6 @@ class PortalAPI {
         ticketState = '0001';
       }
 
-      const stateOptions = metadataRes?.data?.states?.options?.length > 0
-        ? metadataRes.data.states.options
-        : DEFAULT_PORTAL_ISSUE_STATES;
       const substateOptions = metadataRes?.data?.substates?.options || [];
       const typeOptions = metadataRes?.data?.types?.options?.length > 0
         ? metadataRes.data.types.options
