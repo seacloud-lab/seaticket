@@ -727,6 +727,13 @@ CREATE TABLE `portal_chat_messages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
+CREATE TABLE `registration_profile` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `emailuser_id` int(11) NOT NULL,
+  `activation_key` varchar(40) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `project_github_app_installation`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(36) NOT NULL,

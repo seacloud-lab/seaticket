@@ -31,9 +31,11 @@ from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
 from seahub.options.models import UserOptions
 from seahub.api2.throttling import OrgRegisterRateThrottle
-from seahub.settings import ENABLE_MULTI_SAML, ENABLE_TWO_FACTOR_AUTH
+from seahub.settings import ENABLE_MULTI_SAML, ENABLE_TWO_FACTOR_AUTH, ACTIVATE_AFTER_REGISTRATION, REGISTRATION_SEND_MAIL
 
 from seahub.organizations.models import OrgUser
+from seahub.registration.models import RegistrationProfile
+from django.contrib.sites.shortcuts import get_current_site
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -211,7 +213,6 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
 
     login_bg_image_path = get_login_bg_image_path()
     redirect_to = request.GET.get(redirect_field_name)
-
     if request.method == 'POST':
         form = OrgRegistrationForm(request.POST)
 
@@ -232,8 +233,19 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             password = form.cleaned_data['password1']
             org_name = form.cleaned_data['org_name']
 
-            new_user = User.objects.create_user(email, password,
-                                                is_staff=False, is_active=True)
+            site = get_current_site(request)
+
+            if bool(ACTIVATE_AFTER_REGISTRATION) is True:
+                new_user = RegistrationProfile.objects.create_active_user(
+                    email, email, name, password, site,
+                    send_email=False
+                )
+            else:
+                new_user = RegistrationProfile.objects.create_inactive_user(
+                    email, email, name, password, site,
+                    send_email=REGISTRATION_SEND_MAIL
+                )
+
             create_org(org_name, url_prefix, new_user.username)
             new_org = get_org_by_url_prefix(url_prefix)
             org_created.send(sender=None, org=new_org)
@@ -246,9 +258,6 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 remote_address = x_forwarded_for.split(',')[0]
             logger.warning('Org %s register IP is: %s' % (org_name, remote_address))
 
-            if name:
-                Profile.objects.add_or_update(new_user.username, name)
-
             # Handle newsletter subscription
             newsletter_subscribed = request.POST.get('newsletter') == 'on'
             if newsletter_subscribed:
@@ -258,18 +267,28 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 except Exception as e:
                     logger.warning('Failed to save newsletter subscription status: %s' % e)
 
-            # login the user
-            new_user.backend = settings.AUTHENTICATION_BACKENDS[0]
-            login(request, new_user)
+            if bool(ACTIVATE_AFTER_REGISTRATION) is True:
+                # login the user
+                new_user.backend = settings.AUTHENTICATION_BACKENDS[0]
+                login(request, new_user)
 
-            if not redirect_to:
-                response = HttpResponseRedirect(reverse('projects_list'))
+                if not redirect_to:
+                    response = HttpResponseRedirect(reverse('projects_list'))
+                else:
+                    response = HttpResponseRedirect(redirect_to)
+
+                response.delete_cookie('REGISTRATION_SOURCE')
+                response.delete_cookie('INVITATION_TOKEN')
+                return response
             else:
-                response = HttpResponseRedirect(redirect_to)
+                if not redirect_to:
+                    response = HttpResponseRedirect(reverse('registration_complete'))
+                else:
+                    response = HttpResponseRedirect(redirect_to)
 
-            response.delete_cookie('REGISTRATION_SOURCE')
-            response.delete_cookie('INVITATION_TOKEN')
-            return response
+                response.delete_cookie('REGISTRATION_SOURCE')
+                response.delete_cookie('INVITATION_TOKEN')
+                return response
     else:
         form = OrgRegistrationForm()
 
