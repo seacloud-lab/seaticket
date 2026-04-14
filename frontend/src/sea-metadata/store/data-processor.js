@@ -79,7 +79,7 @@ class DataProcessor {
   static run(table, { collaborators, username, userId, typesData, tagsData }) {
     let rows = table.rows;
     const { filters, filter_conjunction, basic_filters, sorts, groupbys } = table.view;
-    const availableColumns = table.view.available_columns || table.columns;
+    const availableColumns = table.view.columns || table.columns;
     const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
     const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
     if (!isFilterComputedOnServer && isFilterView(table.view, availableColumns)) {
@@ -110,7 +110,7 @@ class DataProcessor {
 
   static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData, tagsData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
-    const availableColumns = table.view.available_columns || table.columns;
+    const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
     const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
@@ -144,7 +144,7 @@ class DataProcessor {
 
   static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
-    const availableColumns = table.view.available_columns || table.columns;
+    const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
     const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
@@ -178,12 +178,12 @@ class DataProcessor {
   }
 
   static updateDataWithDeleteRows(deletedRowsIds, table) {
-    const { available_columns, groupbys, groups, rows } = table.view;
+    const { columns, groupbys, groups, rows } = table.view;
     const idNeedDeletedMap = deletedRowsIds.reduce((currIdNeedDeletedMap, rowId) => ({ ...currIdNeedDeletedMap, [rowId]: true }), {});
     table.view.rows = rows.filter(rowId => !idNeedDeletedMap[rowId]);
 
     // remove row from group view
-    const _isGroupView = isGroupView({ groupbys }, available_columns);
+    const _isGroupView = isGroupView({ groupbys }, columns);
     if (_isGroupView) {
       this.deleteGroupRows(groups, idNeedDeletedMap);
       table.view.groups = this.deleteEmptyGroups(groups);
@@ -264,13 +264,13 @@ class DataProcessor {
         break;
       }
       case OPERATION_TYPE.MODIFY_ROW: {
-        const { available_columns } = table.view;
+        const { columns } = table.view;
         const { row_update, row_id } = operation;
         let relatedColumnKeyMap = {};
         let relatedColumnKeys = [...Object.keys(row_update)];
         relatedColumnKeys.forEach(columnKey => {
           if (!relatedColumnKeyMap[columnKey]) {
-            const column = getColumnByKey(available_columns, columnKey);
+            const column = getColumnByKey(columns, columnKey);
             if (column) {
               relatedColumnKeyMap[columnKey] = true;
             }
@@ -281,7 +281,7 @@ class DataProcessor {
         break;
       }
       case OPERATION_TYPE.MODIFY_ROWS: {
-        const { available_columns } = table.view;
+        const { columns } = table.view;
         const { id_row_updates, row_ids } = operation;
         let relatedColumnKeyMap = {};
         let relatedColumnKeys = [];
@@ -293,7 +293,7 @@ class DataProcessor {
         });
         relatedColumnKeys.forEach(columnKey => {
           if (!relatedColumnKeyMap[columnKey]) {
-            const column = getColumnByKey(available_columns, columnKey);
+            const column = getColumnByKey(columns, columnKey);
             if (column) {
               relatedColumnKeyMap[columnKey] = true;
             }
@@ -304,11 +304,11 @@ class DataProcessor {
         break;
       }
       case OPERATION_TYPE.MODIFY_ROW_VIA_BUTTON: {
-        const { available_columns } = table.view;
+        const { columns } = table.view;
         const { original_updates } = operation;
         const relatedColumnKeyMap = {};
         for (let columnKey in original_updates) {
-          const column = getColumnByKey(available_columns, columnKey);
+          const column = getColumnByKey(columns, columnKey);
           if (column) {
             relatedColumnKeyMap[columnKey] = true;
           }
@@ -363,8 +363,8 @@ class DataProcessor {
         break;
       }
       case OPERATION_TYPE.MODIFY_GROUPBYS: {
-        const { available_columns, groupbys, rows } = table.view;
-        if (!isGroupView({ groupbys }, available_columns)) {
+        const { columns, groupbys, rows } = table.view;
+        if (!isGroupView({ groupbys }, columns)) {
           table.view.groups = [];
           break;
         }
@@ -419,8 +419,8 @@ class DataProcessor {
           table.view.rows = viewRows;
           table.isSearchView = true;
         }
-        const { available_columns, groupbys, rows } = table.view;
-        if (!isGroupView({ groupbys }, available_columns)) {
+        const { columns, groupbys, rows } = table.view;
+        if (!isGroupView({ groupbys }, columns)) {
           table.view.groups = [];
           break;
         }
