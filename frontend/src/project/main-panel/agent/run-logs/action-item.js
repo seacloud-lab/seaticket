@@ -178,7 +178,7 @@ const ActionItem = React.memo(({
               {(isCompletedStatus) && (
                 <div className="tool-result suggestion-tool-result" style={{ background: isCompletedStatus ? '#EDF8E2' : 'transparent' }}>
                   <span className="status-completed">
-                    <Icon symbol="check-circle" />
+                    <Icon symbol="check-circle-filled" />
                   </span>
                   <span className="result-text">{result}</span>
                 </div>
