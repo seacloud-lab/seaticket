@@ -604,6 +604,10 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Created time'),
       type: CellType.CTIME,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
+      display_name: gettext('Participants'),
+      type: CellType.MULTIPLE_SELECT,
+    },
     ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
