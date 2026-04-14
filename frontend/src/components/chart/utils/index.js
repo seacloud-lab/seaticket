@@ -145,3 +145,37 @@ export const checkTickOverlap = (g, axis, _chart, _chartBoundingClientRect) => {
     }
   }
 };
+
+export const resolveSideOverlap = (items, minLabelGap, maxLabelY) => {
+  if (items.length <= 1) return;
+
+  items.sort((a, b) => a.labelY - b.labelY);
+
+  for (let i = 1; i < items.length; i++) {
+    const gap = items[i].labelY - items[i - 1].labelY;
+    if (gap < minLabelGap) {
+      items[i].labelY = items[i - 1].labelY + minLabelGap;
+    }
+  }
+
+  if (items[items.length - 1].labelY > maxLabelY) {
+    const overflow = items[items.length - 1].labelY - maxLabelY;
+    items.forEach(item => {
+      item.labelY = item.labelY - overflow;
+    });
+  }
+
+  if (items[0].labelY < -maxLabelY) {
+    const overflow = -maxLabelY - items[0].labelY;
+    items.forEach(item => {
+      item.labelY = item.labelY + overflow;
+    });
+  }
+
+  for (let i = items.length - 2; i >= 0; i--) {
+    const gap = items[i + 1].labelY - items[i].labelY;
+    if (gap < minLabelGap) {
+      items[i].labelY = items[i + 1].labelY - minLabelGap;
+    }
+  }
+};

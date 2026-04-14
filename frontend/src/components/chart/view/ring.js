@@ -1,41 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart } from '../utils';
+import { initChart, destroyChart, resolveSideOverlap } from '../utils';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
-import ToolTip from '../components/tooltip';
 
 import './index.css';
 
 const Ring = ({ data }) => {
-  const [tooltipData, setTooltipData] = useState(null);
-  const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
   const chartRef = useRef(null);
-
-  const showTooltip = (event, data, colorScale) => {
-    const { offsetX, offsetY } = event;
-    const newTooltipData = {
-      title: false,
-      items: [
-        {
-          color: colorScale(data.name),
-          name: data.name,
-          value: data.value
-        }
-      ]
-    };
-    setTooltipData(newTooltipData);
-    setToolTipPosition({ offsetX, offsetY });
-  };
-
-  const moveTooltip = (event) => {
-    const { offsetX, offsetY } = event;
-    setToolTipPosition({ offsetX, offsetY });
-  };
-
-  const hiddenTooltip = (event) => {
-    setToolTipPosition(null);
-  };
 
   const drawChart = (chart, container, data = []) => {
     const { width: chartWidth, height: chartHeight, insertPadding } = container.chartBoundingClientRect;
@@ -55,8 +27,8 @@ const Ring = ({ data }) => {
 
     const arcs = pie(data);
     const arc = d3.arc()
-      .innerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.99)
-      .outerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.6);
+      .innerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.65)
+      .outerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.45);
 
     // Draw Ring
     chart.append('g')
@@ -76,40 +48,66 @@ const Ring = ({ data }) => {
         const offsetY = ((chartHeight - insertPadding - insertPadding) - height) / 2;
         d3.select(g.node().parentNode).attr('transform', `translate(${left + offsetX}, ${top + offsetY})`);
 
-        // Draw label
-        const labelRadius = arc.outerRadius()() * 1.3;
-        const arcLabel = d3.arc()
-          .innerRadius(labelRadius)
-          .outerRadius(labelRadius);
+        const centerTranslate = `translate(${left + offsetX}, ${top + offsetY})`;
+        const labelRadius = arc.outerRadius()() * 2.15;
+        const lineRadius = arc.innerRadius()();
+        const minLabelGap = DEFAULT_LABEL_FONT_SIZE + 4;
+        const maxLabelY = labelRadius * 0.95;
+
+        const labelItems = arcs.map((d) => {
+          const midAngle = (d.startAngle + d.endAngle) / 2;
+          const cosVal = Math.cos(midAngle - Math.PI / 2);
+          const sinVal = Math.sin(midAngle - Math.PI / 2);
+          const side = cosVal >= 0 ? 1 : -1;
+
+          return {
+            data: d,
+            side,
+            startX: cosVal * lineRadius,
+            startY: sinVal * lineRadius,
+            elbowX: side * (labelRadius * 0.86),
+            labelX: side * (labelRadius + 8),
+            labelY: sinVal * labelRadius,
+          };
+        });
+
+        resolveSideOverlap(labelItems.filter(item => item.side > 0), minLabelGap, maxLabelY);
+        resolveSideOverlap(labelItems.filter(item => item.side < 0), minLabelGap, maxLabelY);
+
+        chart.append('g')
+          .attr('class', 'label-line-wrapper')
+          .attr('transform', centerTranslate)
+          .selectAll()
+          .data(labelItems)
+          .join('polyline')
+          .attr('fill', 'none')
+          .attr('stroke', DEFAULT_LABEL_COLOR)
+          .attr('stroke-dasharray', '4,2')
+          .attr('points', (item) => {
+            const endX = item.labelX - item.side * 4;
+            return `${item.startX},${item.startY} ${item.elbowX},${item.labelY} ${endX},${item.labelY}`;
+          });
 
         chart.append('g')
           .attr('class', 'label-wrapper')
-          .attr('transform', `translate(${left + offsetX}, ${top + offsetY})`)
-          .attr('text-anchor', 'middle')
+          .attr('transform', centerTranslate)
           .selectAll()
-          .data(arcs)
+          .data(labelItems)
           .join('text')
           .attr('class', 'label')
           .attr('stroke', '#fff')
           .attr('stroke-width', 1)
           .attr('paint-order', 'stroke')
-          .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
-          .text((d) => {
-            const { percentage } = d.data;
-            return percentage;
+          .attr('x', item => item.labelX)
+          .attr('y', item => item.labelY)
+          .attr('dy', '0.32em')
+          .attr('text-anchor', item => item.side > 0 ? 'start' : 'end')
+          .text((item) => {
+            const { name, percentage } = item.data.data;
+            return `${name} ${percentage}`;
           })
           .attr('fill', DEFAULT_LABEL_COLOR)
           .attr('font-size', DEFAULT_LABEL_FONT_SIZE);
-      })
-      .on('mouseenter', (event, rowData) => {
-        showTooltip(event, rowData.data, color);
-      })
-      .on('mousemove', (event) => {
-        moveTooltip(event);
-      })
-      .on('mouseleave', (event, data) => {
-        if (event.relatedTarget.getAttribute('class') === 'label') return;
-        hiddenTooltip();
       });
   };
 
@@ -131,9 +129,7 @@ const Ring = ({ data }) => {
   }, [data]);
 
   return (
-    <div className="chart-svg-wrapper flex-1" ref={ref}>
-      <ToolTip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
-    </div>
+    <div className="chart-svg-wrapper flex-1" ref={ref}></div>
   );
 };
 
