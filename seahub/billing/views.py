@@ -5,7 +5,6 @@ import json
 import logging
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.http import HttpResponse
 
 from seahub.utils import render_error, get_service_url
@@ -18,7 +17,7 @@ from seahub.billing.redis_client import get_redis_conn
 from seahub.billing.settings import ENABLE_EXTERNAL_BILLING_SERVICE, \
         BILLING_SERVICE_URL, BILLING_SERVICE_JWT_AUTH_URL, \
         BILLING_SERVICE_JWT_SECRET_KEY, BILLING_SERVICE_JWT_ALGORITHM, \
-        BILLING_SERVICE_JWT_EXPIRATION
+        BILLING_SERVICE_JWT_EXPIRATION, BILLING_REDIS_CONFIG
 
 
 logger = logging.getLogger(__name__)
@@ -105,6 +104,6 @@ def org_operation_callback(sender, **kwargs):
 
     json_data = json.dumps(payload)
     redis_conn = get_redis_conn()
-    channel = settings.BILLING_REDIS_CONFIG["channel"]
+    channel = BILLING_REDIS_CONFIG["channel"]
     redis_conn.publish(channel, json_data)
     logger.info(json_data)
