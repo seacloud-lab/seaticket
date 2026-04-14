@@ -86,10 +86,12 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         actions_by_run = {}
         if run_ids:
             run_ids_str = ','.join(str(r) for r in run_ids)
+            actions_limit = per_page * 30
             actions_sql = (
                 f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` "
                 f"WHERE `run_id` IN ({run_ids_str}) "
-                f"ORDER BY `run_id` DESC, `created_at` ASC"
+                f"ORDER BY `run_id` DESC, `created_at` ASC "
+                f"LIMIT 0, {actions_limit}"
             )
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
             all_actions = actions_result.get('results', [])
@@ -151,7 +153,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
             'items_processed': run.get('items_processed', 0),
             'error_message': run.get('error_message', ''),
             'items': list(items_map.values()),
-            'events': json.loads(run.get('events', '[]')),
+            'events': json.loads(run.get('events') or '[]'),
         }
     except Exception as e:
         logger.exception(e)
