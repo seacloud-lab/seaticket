@@ -203,15 +203,6 @@
   font-size: 14px;
 }
 
-.action-duration {
-  flex-shrink: 0;
-  margin-left: auto;
-  font-size: 11px;
-  color: #999;
-  line-height: 22px;
-  white-space: nowrap;
-}
-
 .action-content {
   flex: 1;
   font-size: 13px;
