@@ -22,7 +22,7 @@ def _read_yaml(yaml_file_path=None, component_name=None):
                         del configs['from_yaml']
                         configs.update(_read_yaml(component_config['from_yaml']))
         except Exception as e:
-            logger.error('Failure to read YAML config file: %s', e)
+            logger.warning('Failure to read YAML config file: %s', e)
         return configs
     return {}
 
