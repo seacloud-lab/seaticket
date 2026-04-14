@@ -102,8 +102,8 @@ const ActionItem = React.memo(({
       case 'suggest_modify_type': {
         return 'suitable-issue-type';
       }
-      case 'record_ticket_analysis': {
-        return 'analyze';
+      case 'suggest_add_comment': {
+        return 'comment-filled';
       }
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
