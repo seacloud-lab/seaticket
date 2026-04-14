@@ -91,6 +91,28 @@ const ActionItem = React.memo(({
     );
   };
 
+  const renderSuggestionIcon = () => {
+    switch (tool_name) {
+      case 'suggest_resolution': {
+        return 'resolution-filled';
+      }
+      case 'suggest_create_ticket': {
+        return 'ticket-filled';
+      }
+      case 'suggest_modify_type': {
+        return 'suitable-issue-type';
+      }
+      case 'record_ticket_analysis': {
+        return 'analyze';
+      }
+      case 'suggest_notify_assignee': {
+        return 'notifications-filled';
+      }
+      default:
+        return 'resolution-filled';
+    }
+  };
+
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
 
@@ -128,7 +150,7 @@ const ActionItem = React.memo(({
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
-                <Icon symbol={isCompletedStatus ? 'resolution-filled' : 'ticket-filled'} className="mr-1" />
+                <Icon symbol={renderSuggestionIcon() } className="mr-1" />
                 <span>{suggestion_text}</span>
                 {hasEditableContent && (
                   <IconTooltip
