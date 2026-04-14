@@ -293,15 +293,15 @@ class ServerOperator {
         break;
       }
       case OPERATION_TYPE.RELOAD_ROWS: {
-        const { available_columns } = table.view;
+        const { columns } = table.view;
         let relatedColumnKeyMap = {};
-        available_columns.forEach(column => {
+        columns.forEach(column => {
           const { key } = column;
           relatedColumnKeyMap[key] = true;
         });
         return {
           relatedColumnKeyMap,
-          relatedColumns: available_columns,
+          relatedColumns: columns,
         };
       }
       case OPERATION_TYPE.MODIFY_ROW_VIA_BUTTON: {
@@ -350,10 +350,10 @@ class ServerOperator {
     }
     let relatedColumnKeyMap = {};
     let relatedColumns = [];
-    const { available_columns } = table.view;
+    const { columns } = table.view;
     relatedColumnKeys.forEach(columnKey => {
       if (!relatedColumnKeyMap[columnKey]) {
-        const column = getColumnByKey(available_columns, columnKey);
+        const column = getColumnByKey(columns, columnKey);
         if (column) {
           relatedColumnKeyMap[columnKey] = true;
           relatedColumns.push(column);
