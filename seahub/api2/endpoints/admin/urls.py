@@ -7,7 +7,7 @@ from .users import AdminUsers, AdminUser, AdminUserResetPassword, \
 from .groups import AdminGroups, AdminGroup, AdminSearchGroup
 
 from .organizations import AdminOrganizations, AdminOrganization, AdminSearchOrganization, \
-    AdminOrganizationsBaseInfo, BillingOrganizationOperation
+    AdminOrganizationsBaseInfo
 from .org_users import AdminOrgUsers, AdminOrgUser
 from .org_groups import AdminOrgGroups, AdminOrgGroup
 from .license import AdminLicense
@@ -54,7 +54,6 @@ urlpatterns = [
     ## admin::organizations
     re_path(r'^organizations/$', AdminOrganizations.as_view(), name='api-v1-admin-organizations'),
     re_path(r'^organizations/(?P<org_id>\d+)/$', AdminOrganization.as_view(), name='api-v1-admin-organization'),
-    re_path(r'^organizations/(?P<org_id>\d+)/for-billing/$', BillingOrganizationOperation.as_view(), name='api-v1-admin-organization-for-billing'),
     re_path(r'^organizations/(?P<org_id>\d+)/users/$', AdminOrgUsers.as_view(), name='api-v1-admin-org-users'),
     re_path(r'^organizations/(?P<org_id>\d+)/users/(?P<email>[^/]+)/$', AdminOrgUser.as_view(), name='api-v1-admin-org-user'),
     re_path(r'^organizations/(?P<org_id>\d+)/groups/$', AdminOrgGroups.as_view(), name='api-v1-admin-org-groups'),
