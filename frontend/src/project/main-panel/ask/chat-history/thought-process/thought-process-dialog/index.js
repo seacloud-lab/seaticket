@@ -300,7 +300,6 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         })
       });
     }
-
     // final answer
     const final_answer = propsValue?.final_answer;
     const finalAnswerRetryChildren = getCompletionRetryChildren(final_answer?.retry);

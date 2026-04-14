@@ -1,10 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
+import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
-import IconTooltip from '@/components/icon-tooltip';
-import { Button } from 'reactstrap';
-import Icon from '@/components/icon';
+import { Icon, IconButton, IconTooltip } from '@/components';
 
 const ActionItem = React.memo(({
   action,
@@ -179,16 +178,13 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content">
             <div className="d-flex align-items-center justify-content-between mb-2">
-              <IconTooltip
+              <IconButton
                 icon="arrow-down"
-                tip={isThoughtExpanded ? gettext('Collapse') : gettext('Expand')}
                 className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
-                placement="bottom"
-                hoverBackground={true}
                 onClick={toggleThoughtExpand}
               >
                 <div className="action-label action-label-thought">{gettext('Thought')}</div>
-              </IconTooltip>
+              </IconButton>
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">
