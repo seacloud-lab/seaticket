@@ -38,6 +38,7 @@ export const useAgentRunLogs = () => {
   }, [isLoading, hasMore, page, loadRunLogs]);
 
   const refresh = useCallback(() => {
+    setRunLogs([]);
     loadRunLogs(1);
   }, [loadRunLogs]);
 
