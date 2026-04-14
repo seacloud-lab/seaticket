@@ -13,7 +13,7 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, content, result, tool_name, suggestion_text } = action;
+  const { id, type, status, content, result, tool_name, suggestion_text, duration_ms } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
@@ -217,6 +217,9 @@ const ActionItem = React.memo(({
       <div className="action-header" onClick={toggleExpand}>
         {renderIcon()}
         {renderContent()}
+        {duration_ms !== 0 && (
+          <span className="action-duration">{(duration_ms / 1000).toFixed(2)}s</span>
+        )}
       </div>
     </div>
   );

@@ -539,6 +539,7 @@ class AgentActionsTable(BaseModel):
     result = MappedColumn('result', PropertyTypes.TEXT)              # tool execution result
     status = MappedColumn('status', PropertyTypes.TEXT)              # pending / confirmed / cancelled / executed / completed
     suggestion_text = MappedColumn('suggestion_text', PropertyTypes.TEXT)
+    duration_ms = MappedColumn('duration_ms', PropertyTypes.INT)     # total step duration: llm call + tool execution (milliseconds)
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     executed_at = MappedColumn('executed_at', PropertyTypes.DATETIME)
 
