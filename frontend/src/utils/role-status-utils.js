@@ -20,8 +20,8 @@ const translateRole = (role) => {
       return gettext('Member');
     case 'free':
       return gettext('Free');
-    case 'start':
-      return gettext('Start');
+    case 'starter':
+      return gettext('Starter');
     case 'pro':
       return gettext('Pro');
     case 'business':

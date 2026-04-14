@@ -3,12 +3,12 @@ import seahub.settings as settings
 
 # Team (org) roles — users inherit their team's role
 TEAM_FREE = 'free'
-TEAM_START = 'start'
+TEAM_STARTER = 'starter'
 TEAM_PRO = 'pro'
 TEAM_BUSINESS = 'business'
 TEAM_ENTERPRISE = 'enterprise'
 
-TEAM_ROLES = [TEAM_FREE, TEAM_START, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE]
+TEAM_ROLES = [TEAM_FREE, TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE]
 
 # Repo status
 REPO_STATUS_NORMAL = 'normal'
