@@ -845,6 +845,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEE]: {
       display_name: gettext('Assignee'),
+      type: CellType.SINGLE_SELECT,
       is_predefined: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
