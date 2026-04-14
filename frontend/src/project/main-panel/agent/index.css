@@ -1,5 +1,5 @@
-/* Agent topbar content */
-.agent-topbar-content {
+/* Agent top-bar content */
+.agent-top-bar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -64,7 +64,6 @@
 .agent-run-logs-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   font-size: .9375rem;
   font-weight: 400;
   padding-bottom: 1rem;

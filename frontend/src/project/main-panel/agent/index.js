@@ -98,17 +98,15 @@ const Agent = ({ title }) => {
   return (
     <>
       <TopBar title={title}>
-        <div className="agent-topbar-content">
+        <div className="agent-top-bar-content">
           <div className="w-100 text-truncate">{title}</div>
         </div>
       </TopBar>
       <div className="agent-container">
         <div className="agent-run-logs-section">
           <div className="agent-run-logs-header">
-            <span>
-              {gettext('Run Logs')}
-              <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
-            </span>
+            <span>{gettext('Run Logs')}</span>
+            <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
           </div>
           <RunLogs
             runLogs={runLogs}

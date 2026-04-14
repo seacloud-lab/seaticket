@@ -1,10 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
+import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
-import IconTooltip from '@/components/icon-tooltip';
-import { Button } from 'reactstrap';
-import Icon from '@/components/icon';
+import { Icon, IconButton, IconTooltip } from '@/components';
 
 const ActionItem = React.memo(({
   action,
@@ -92,6 +91,28 @@ const ActionItem = React.memo(({
     );
   };
 
+  const renderSuggestionIcon = () => {
+    switch (tool_name) {
+      case 'suggest_resolution': {
+        return 'resolution-filled';
+      }
+      case 'suggest_create_ticket': {
+        return 'ticket-filled';
+      }
+      case 'suggest_modify_type': {
+        return 'suitable-issue-type';
+      }
+      case 'suggest_add_comment': {
+        return 'comment-filled';
+      }
+      case 'suggest_notify_assignee': {
+        return 'notifications-filled';
+      }
+      default:
+        return 'resolution-filled';
+    }
+  };
+
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
 
@@ -129,7 +150,7 @@ const ActionItem = React.memo(({
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
-                <Icon symbol={isCompletedStatus ? 'resolution-filled' : 'ticket-filled'} className="mr-1" />
+                <Icon symbol={renderSuggestionIcon() } className="mr-1" />
                 <span>{suggestion_text}</span>
                 {hasEditableContent && (
                   <IconTooltip
@@ -157,7 +178,7 @@ const ActionItem = React.memo(({
               {(isCompletedStatus) && (
                 <div className="tool-result suggestion-tool-result" style={{ background: isCompletedStatus ? '#EDF8E2' : 'transparent' }}>
                   <span className="status-completed">
-                    <Icon symbol="check-circle" />
+                    <Icon symbol="check-circle-filled" />
                   </span>
                   <span className="result-text">{result}</span>
                 </div>
@@ -179,16 +200,13 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content">
             <div className="d-flex align-items-center justify-content-between mb-2">
-              <IconTooltip
+              <IconButton
                 icon="arrow-down"
-                tip={isThoughtExpanded ? gettext('Collapse') : gettext('Expand')}
                 className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
-                placement="bottom"
-                hoverBackground={true}
                 onClick={toggleThoughtExpand}
               >
                 <div className="action-label action-label-thought">{gettext('Thought')}</div>
-              </IconTooltip>
+              </IconButton>
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">

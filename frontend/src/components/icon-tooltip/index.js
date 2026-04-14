@@ -5,7 +5,7 @@ import Tooltip from '../tooltip';
 
 import './index.css';
 
-const IconTooltip = ({ icon = 'question-circle-filled', tip, className, placement = 'right', hoverBackground = false, children, ...props }) => {
+const IconTooltip = ({ icon = 'question-circle-filled', tip, className, placement = 'right', hoverBackground = false, ...props }) => {
   const ref = useRef(null);
   return (
     <>
@@ -14,9 +14,7 @@ const IconTooltip = ({ icon = 'question-circle-filled', tip, className, placemen
         ref={ref}
         className={classnames('sea-qa-tooltip-icon-btn', { 'no-hover-bg': !hoverBackground }, className)}
         { ...props }
-      >
-        {children}
-      </IconButton>
+      />
       <Tooltip target={ref} placement={placement}>
         {tip}
       </Tooltip>
