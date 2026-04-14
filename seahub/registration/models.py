@@ -63,8 +63,9 @@ class RegistrationManager(models.Manager):
                 # Activate user
                 try:
                     user = User.objects.get(id=profile.emailuser_id)
+                    from seahub.auth.models import EmailUser
+                    EmailUser.objects.filter(id=profile.emailuser_id).update(is_active=True)
                     user.is_active = True
-                    user.save()
                     profile.activation_key = self.model.ACTIVATED
                     profile.save()
                     return user
@@ -205,6 +206,7 @@ class RegistrationProfile(models.Model):
     class Meta:
         verbose_name = _('registration profile')
         verbose_name_plural = _('registration profiles')
+        db_table = 'registration_profile'
     
     def __unicode__(self):
         return "Registration information for %s" % self.emailuser_id

@@ -157,4 +157,4 @@ class RegistrationBackend(object):
         account activation.
 
         """
-        return 'project', (), {}
+        return 'projects_list', (), {}
