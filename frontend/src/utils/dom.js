@@ -128,7 +128,7 @@ export const getTarget = (target, allElements) => {
 
 export const isInputOrEditorActive = () => {
   const activeEl = document.activeElement;
-  if (activeEl.tagName === 'INPUT' || activeEl.isContentEditable) return true;
+  if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable) return true;
   return false;
 };
 
