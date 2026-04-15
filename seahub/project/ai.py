@@ -451,7 +451,7 @@ class RelatedRecordsView(APIView):
             project_uuid=project_uuid,
             is_active=True,
             deleted=False
-        ).select_related('project')
+        )
 
         search_connection_ids = []
         for proj_conn in project_connections:
