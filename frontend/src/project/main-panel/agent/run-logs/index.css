@@ -58,12 +58,35 @@
   gap: 9px;
 }
 
+.run-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .run-card-header-right .run-card-running {
   font-size: 14px;
   line-height: 22px;
   letter-spacing: 0%;
   font-weight: 500;
   color: #666;
+}
+
+.run-card-more-dropdown {
+  display: inline-flex;
+}
+
+.run-card-more-toggle {
+  cursor: pointer;
+}
+
+.run-card-more-dropdown .dropdown-menu {
+  min-width: 160px;
+}
+
+.run-card-more-dropdown .dropdown-item {
+  font-size: 13px;
+  padding: 8px 16px;
 }
 
 .run-card-header-right .run-card-running svg {

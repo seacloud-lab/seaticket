@@ -539,6 +539,7 @@ class AgentActionsTable(BaseModel):
     result = MappedColumn('result', PropertyTypes.TEXT)              # tool execution result
     status = MappedColumn('status', PropertyTypes.TEXT)              # pending / confirmed / cancelled / executed / completed
     suggestion_text = MappedColumn('suggestion_text', PropertyTypes.TEXT)
+    statistics = MappedColumn('statistics', PropertyTypes.TEXT)      # JSON: {input_tokens, output_tokens, total_tokens, duration_ms}
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     executed_at = MappedColumn('executed_at', PropertyTypes.DATETIME)
 

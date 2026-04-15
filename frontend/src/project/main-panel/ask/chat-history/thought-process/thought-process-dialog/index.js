@@ -212,7 +212,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               staticValue.push(`${gettext('Time usage')}: ${action.time_usage?.toFixed(2) || 0} s`);
             }
             if (action.token_usage) {
-              staticValue.push(`${gettext('Token usage')}: ${action.token_usage.total_tokens} (↑${action.token_usage.total_tokens}, ↓${action.token_usage.output_tokens})`);
+              staticValue.push(`${gettext('Token usage')}: ${action.token_usage.total_tokens} (↑${action.token_usage.input_tokens}, ↓${action.token_usage.output_tokens})`);
             }
             otherInfos.push({
               name: gettext('Statistics'),
