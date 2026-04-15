@@ -635,7 +635,8 @@ class ConnectionsViewsManager(models.Manager):
                         column_name = column['name']
                         basic_filter['column_key'] = column['key']
                         if column_name in ['state', 'issue_type']:
-                            options = column.get('data', {}).get('options', [])
+                            column_data = column.get('data') or {}
+                            options = column_data.get('options', [])
                             filter_term = basic_filter.get('filter_term', [])
                             new_filter_term = []
                             for option_name in filter_term:
