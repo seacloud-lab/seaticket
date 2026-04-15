@@ -101,7 +101,7 @@ class RegistrationBackend(object):
 
     def activate(self, request, activation_key):
         """
-        Given an an activation key, look up and activate the user
+        Given an activation key, look up and activate the user
         account corresponding to that key (if possible).
 
         After successful activation, the signal
@@ -111,6 +111,10 @@ class RegistrationBackend(object):
 
         """
         activated = RegistrationProfile.objects.activate_user(activation_key)
+        if isinstance(activated, str):
+            # activation failed, return the error reason string
+            return activated
+
         if activated:
             signals.user_activated.send(sender=self.__class__,
                                         user=activated,

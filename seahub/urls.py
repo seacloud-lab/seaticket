@@ -8,6 +8,7 @@ from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
 from seahub.views.sso import *
 from seahub.group.views import group_invite
+from seahub.registration.views import resend_activation_email
 
 from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView, GroupTrashProjectsView, GroupTrashProjectView, ManagedGroupsTrashProjectsView
 from seahub.api2.endpoints.group_invite_links import GroupInviteLinks, GroupInviteLink
@@ -58,6 +59,9 @@ urlpatterns = [
 
     ## slide captcha
     re_path(r'^api/v1/slide-captcha/$', SlideCaptchaView.as_view(), name="api-v1-slide-captcha"),
+
+    ## registration
+    re_path(r'^api/v1/registration/resend-activation/$', resend_activation_email, name='api-v1-resend-activation'),
 
     ## user
     re_path(r'^api/v1/user/$', User.as_view(), name="api-v1-user"),
