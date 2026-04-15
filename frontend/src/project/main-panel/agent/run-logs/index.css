@@ -16,34 +16,34 @@
 .run-logs-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 /* Run card */
 .agent-run-card {
   background: #fff;
   border: 1px solid #eee;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .run-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #fafafa;
+  padding: 6px 16px;
+  background: #f7f7f5;
   border-bottom: 1px solid #eee;
   position: relative;
-  border-radius: 4px;
+  border-radius: 8px 8px 0 0;
 }
 
 .run-card-header::after {
   content: '';
   position: absolute;
   width: 1px;
-  height: 17px;
+  height: 16px;
   opacity: 1;
-  top: -18px;
+  top: -20px;
   left: 16px;
   background-color: #EEEEEE;
 }
@@ -178,7 +178,7 @@
   left: -20px;
   height: 1px;
   width: calc(100% + 36px);
-  top: 28px;
+  top: 33px;
   background: #eee;
 }
 
@@ -218,12 +218,14 @@
   gap: 8px;
 }
 
-.action-icon {
+.action-item-icon {
   flex-shrink: 0;
   width: 20px;
   text-align: center;
   color: #666;
   font-size: 14px;
+  /* Use default text-align center, the icon is not center with the text, so adjust margin-top to -1px */
+  margin-top: -1px;
 }
 
 .action-content {
@@ -256,6 +258,7 @@
   margin-bottom: 0;
   margin-right: 4px;
   color: #666;
+  font-weight: 400;
 }
 
 .action-card {
@@ -293,7 +296,7 @@
   line-height: 20px;
   letter-spacing: 0%;
   margin-left: 28px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
 }
 
 .action-text::after {
@@ -340,10 +343,6 @@
   color: #666;
 }
 
-.tool-result .tool-name {
-  color: #212529;
-}
-
 .tool.suggestion-tool-result {
   padding: 4px 8px;
   align-items: baseline;
@@ -379,7 +378,8 @@
 .action-buttons {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 12px;
+  margin-left: 24px;
 }
 
 .action-buttons button {
@@ -388,8 +388,10 @@
   border: 1px solid #0028641F;
   font-size: 12px;
   line-height: 20px;
-  padding: 2px 4px;
+  padding: 3px 8px;
   font-weight: 400;
+  border-radius: 4px;
+  vertical-align: middle;
 }
 
 .action-buttons button svg {

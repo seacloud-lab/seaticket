@@ -85,7 +85,7 @@ const ActionItem = React.memo(({
     let symbol = ACTION_ICON_MAPPER[type];
     if (!symbol) return null;
     return (
-      <span className="action-icon">
+      <span className="action-item-icon">
         <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
       </span>
     );
@@ -128,7 +128,7 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content">
             <div className="tool-call-header">
-              <div className="action-label">{gettext('Tool call')}:</div>
+              <div className="action-label">{gettext('Tool call')}: {tool_name}</div>
             </div>
             {result && (
               <div className="tool-result tool-call">
@@ -137,8 +137,7 @@ const ActionItem = React.memo(({
                     <Icon symbol="check-mark" />
                   </span>
                 )}
-                <div className="tool-name">{tool_name}:</div>
-                <span className="result-text">{content}</span>
+                <span style={{ background: '#f7f7f5', padding: '1px 6px', borderRadius: '4px', color: '#212529' }}>{content}</span>
               </div>
             )}
           </div>
@@ -150,9 +149,9 @@ const ActionItem = React.memo(({
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
-                <Icon symbol={renderSuggestionIcon() } className="mr-1" />
-                <span>{suggestion_text}</span>
-                {hasEditableContent && (
+                <Icon symbol={renderSuggestionIcon() } className="mr-2" />
+                <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{suggestion_text}</span>
+                {hasEditableContent && status !== ACTION_STATUS.CANCELLED && (
                   <IconTooltip
                     icon="edit"
                     tip={gettext('Edit content')}
@@ -199,7 +198,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.THOUGHT:
         return (
           <div className="action-content">
-            <div className="d-flex align-items-center justify-content-between mb-2">
+            <div className={classnames('d-flex align-items-center justify-content-between', { 'mb-1': isThoughtExpanded })}>
               <IconButton
                 icon="arrow-down"
                 className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
