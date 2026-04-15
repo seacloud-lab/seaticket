@@ -13,8 +13,9 @@
   cursor: pointer;
 }
 
-.sf-slate-viewer-container ol + .sea-ai-chat-customize-definition:first-of-type,
-.sf-slate-viewer-container ul + .sea-ai-chat-customize-definition:first-of-type {
+.sf-slate-viewer-container ol + .sea-ai-chat-customize-definition,
+.sf-slate-viewer-container ul + .sea-ai-chat-customize-definition,
+.sf-slate-viewer-container div:has(> table) + .sea-ai-chat-customize-definition {
   margin-top: 16px;
 }
 
