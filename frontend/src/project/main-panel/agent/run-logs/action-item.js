@@ -85,7 +85,7 @@ const ActionItem = React.memo(({
     let symbol = ACTION_ICON_MAPPER[type];
     if (!symbol) return null;
     return (
-      <span className="action-icon">
+      <span className="action-item-icon">
         <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
       </span>
     );
@@ -149,7 +149,7 @@ const ActionItem = React.memo(({
             <div className="action-label">{gettext('Suggestion')}:</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
-                <Icon symbol={renderSuggestionIcon() } className="mr-1" />
+                <Icon symbol={renderSuggestionIcon() } className="mr-2" />
                 <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{suggestion_text}</span>
                 {hasEditableContent && status !== ACTION_STATUS.CANCELLED && (
                   <IconTooltip
@@ -198,7 +198,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.THOUGHT:
         return (
           <div className="action-content">
-            <div className="d-flex align-items-center justify-content-between mb-1">
+            <div className={classnames('d-flex align-items-center justify-content-between', { 'mb-1': isThoughtExpanded })}>
               <IconButton
                 icon="arrow-down"
                 className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
