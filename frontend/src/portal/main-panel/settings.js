@@ -13,6 +13,8 @@ const { projectUuid } = window.app.pageOptions;
 const SETTING_TABS = {
   PORTAL_URL: 'portal_url',
   DISPLAY: 'display',
+  KNOWLEDGE_BASE: 'knowledge_base',
+  CHAT: 'chat',
 };
 
 const Settings = () => {
@@ -50,7 +52,7 @@ const Settings = () => {
       if (data.chat_allowed_sources) {
         setChatSettings({ chat_allowed_sources: data.chat_allowed_sources });
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const { showKBInPortal } = window.app.pageOptions;
@@ -202,12 +204,21 @@ const Settings = () => {
               {gettext('Open access')}
             </NavLink>
           </NavItem>
+          <NavItem className="disabled"><NavLink>{gettext('Portal settings')}</NavLink></NavItem>
           <NavItem>
             <NavLink
-              className={activeTab === SETTING_TABS.DISPLAY ? 'active' : ''}
-              onClick={() => toggle(SETTING_TABS.DISPLAY)}
+              className={`${activeTab === SETTING_TABS.KNOWLEDGE_BASE ? 'active' : ''} ml-2`}
+              onClick={() => toggle(SETTING_TABS.KNOWLEDGE_BASE)}
             >
-              {gettext('Portal settings')}
+              {gettext('Knowledge base')}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={`${activeTab === SETTING_TABS.CHAT ? 'active' : ''} ml-2`}
+              onClick={() => toggle(SETTING_TABS.CHAT)}
+            >
+              {gettext('Chat')}
             </NavLink>
           </NavItem>
         </Nav>
@@ -258,7 +269,7 @@ const Settings = () => {
                       <div className="d-flex gap-2 align-items-center">
                         <PasswordInput
                           value={'********'}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           disabled={true}
                           enableRandomGeneration={false}
                           enableCheckStrength={false}
@@ -301,42 +312,42 @@ const Settings = () => {
               </div>
             </div>
           </TabPane>
-          <TabPane tabId={SETTING_TABS.DISPLAY}>
+          <TabPane tabId={SETTING_TABS.KNOWLEDGE_BASE}>
             <div className="portal-settings-content">
-              <div className="portal-settings-section">
-                <label className="portal-settings-label">{gettext('Display')}</label>
-                <Switch
-                  checked={showKB}
-                  disabled={isSavingKB}
-                  onChange={onToggleKB}
-                  textPosition="right"
-                  placeholder={gettext('Show knowledge base')}
-                  className="portal-settings-switch"
-                />
+              <label className="portal-settings-label">{gettext('Display')}</label>
+              <Switch
+                checked={showKB}
+                disabled={isSavingKB}
+                onChange={onToggleKB}
+                textPosition="right"
+                placeholder={gettext('Show knowledge base')}
+                className="portal-settings-switch"
+              />
+            </div>
+          </TabPane>
+          <TabPane tabId={SETTING_TABS.CHAT}>
+            <div className="portal-settings-content">
+              <label className="portal-settings-label">{gettext('Chat source types')}</label>
+              <p className="portal-settings-help-text">
+                {gettext('Select which data sources can be used for AI responses in the portal.')}
+              </p>
+              <div className="portal-settings-source-list">
+                {SOURCE_TYPE_OPTIONS.map(option => (
+                  <FormGroup check key={option.value} className="mb-2">
+                    <Input
+                      type="checkbox"
+                      id={`source-${option.value}`}
+                      checked={chatSettings.chat_allowed_sources.includes(option.value)}
+                      onChange={(e) => handleSourceChange(option.value, e.target.checked)}
+                      disabled={isSavingChat}
+                    />
+                    <Label check for={`source-${option.value}`}>
+                      {option.label}
+                    </Label>
+                  </FormGroup>
+                ))}
               </div>
-              <div className="portal-settings-section">
-                <label className="portal-settings-label">{gettext('Chat source types')}</label>
-                <p className="portal-settings-help-text">
-                  {gettext('Select which data sources can be used for AI responses in the portal.')}
-                </p>
-                <div className="portal-settings-source-list">
-                  {SOURCE_TYPE_OPTIONS.map(option => (
-                    <FormGroup check key={option.value} className="mb-2">
-                      <Input
-                        type="checkbox"
-                        id={`source-${option.value}`}
-                        checked={chatSettings.chat_allowed_sources.includes(option.value)}
-                        onChange={(e) => handleSourceChange(option.value, e.target.checked)}
-                        disabled={isSavingChat}
-                      />
-                      <Label check for={`source-${option.value}`}>
-                        {option.label}
-                      </Label>
-                    </FormGroup>
-                  ))}
-                </div>
-                <button className="btn btn-primary mt-2" onClick={onSaveChatSettings} disabled={isSavingChat}>{gettext('Save')}</button>
-              </div>
+              <button className="btn btn-primary mt-2" onClick={onSaveChatSettings} disabled={isSavingChat}>{gettext('Save')}</button>
             </div>
           </TabPane>
         </TabContent>

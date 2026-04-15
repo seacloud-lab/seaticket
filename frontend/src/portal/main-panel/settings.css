@@ -15,8 +15,16 @@
   color: #666;
 }
 
+.portal-settings-dialog-side .nav-pills .nav-item.disabled .nav-link {
+  cursor: default;
+}
+
 .portal-settings-dialog-side .nav .nav-item {
   padding: 0;
+}
+
+.portal-settings-dialog-side .nav .nav-item.disabled {
+  cursor: default;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active {
@@ -28,6 +36,10 @@
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link:hover {
   background-color: #f7f7f7;
+}
+
+.portal-settings-dialog-side .nav-pills .nav-item.disabled .nav-link:hover {
+  background-color: transparent;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active::before {
@@ -89,17 +101,6 @@
 .portal-url-input {
   flex: 1;
   background-color: #f5f5f5;
-}
-
-.portal-settings-section {
-  padding-bottom: 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #eee;
-}
-
-.portal-settings-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
 }
 
 .portal-settings-help-text {
