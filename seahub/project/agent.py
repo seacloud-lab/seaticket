@@ -1,7 +1,6 @@
 import datetime
 import logging
 import json
-from email.utils import make_msgid
 
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -17,26 +16,23 @@ from seahub.utils.ai_client import (
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.models import Projects, ProjectConnections, decrypt_config
+from seahub.project.models import Projects, ProjectConnections
 from seahub.tickets.ticket_utils import get_ticket
-from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.models import (
     AgentActionsTable,
     AgentRunsTable,
     GithubIssuesTable,
-    ThreadTable,
     TicketCommentsTable,
     TicketsTable,
 )
 from seahub.utils.decorators import require_org_context
-from seahub.project.utils import check_project_permission, extract_email_addresses
+from seahub.project.utils import check_project_permission
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
     MSG_TYPE_TICKET_COMMENTED,
 )
 from seahub.tickets.signals import agent_notify_assignees, ticket_commented
 from seahub.project.constants import AIScenario
-from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +226,7 @@ class AgentRunDetailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             result = get_agent_run_detail(seadb_api, project_uuid, run_id)
         except ValueError as e:
             logger.error(f'Error getting agent run detail: {e}')
@@ -273,7 +269,7 @@ class AgentActionConfirmView(APIView):
 
         username = request.user.username
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
 
             # 1. Get action details from SeaDB
             sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
@@ -304,10 +300,6 @@ class AgentActionConfirmView(APIView):
                 )
             elif source_type == 'github_issue':
                 execution_result = self._execute_github_issue_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
-                )
-            elif source_type == 'email':
-                execution_result = self._execute_email_action(
                     seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
             else:
@@ -367,18 +359,6 @@ class AgentActionConfirmView(APIView):
             return 'Final answer acknowledged.'
         else:
             logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
-            return f'Unknown tool_name: {tool_name}'
-
-    def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
-        """Dispatch email-thread actions to the appropriate handler."""
-        if tool_name == 'suggest_resolution':
-            return self._execute_email_suggest_resolution(seadb_api, project_uuid, source_id, content)
-        elif tool_name == 'suggest_create_ticket':
-            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username)
-        elif tool_name == 'final_answer':
-            return 'Final answer acknowledged.'
-        else:
-            logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
     def _execute_github_suggest_resolution(self, source_id, resolution_content):
@@ -491,209 +471,6 @@ class AgentActionConfirmView(APIView):
 
         logger.info(f'Created ticket #{ticket_pk} from GitHub issue {source_id}')
         return f'Ticket #{ticket_pk} created from GitHub issue {source_id}.'
-
-    def _parse_connection_source_id(self, source_id, source_type):
-        try:
-            connection_id_str, record_id_str = str(source_id).split('_', 1)
-            connection_id = int(connection_id_str)
-            record_id = int(record_id_str)
-        except (ValueError, TypeError, AttributeError) as e:
-            logger.error(f'Cannot parse {source_type} source_id {source_id!r}: {e}')
-            return None, None
-        return connection_id, record_id
-
-    def _get_email_thread_context(self, seadb_api, project_uuid, source_id):
-        connection_id, thread_id = self._parse_connection_source_id(source_id, 'email')
-        if connection_id is None or thread_id is None:
-            return None, None, None, 'Invalid source_id format.'
-
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection or project_connection.type != 'email':
-            return None, None, None, f'Email connection {connection_id} not found.'
-
-        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        threads = email_seadb_api.get_thread_by_pk(connection_id, thread_id)
-        if not threads:
-            return None, None, None, f'Email thread {source_id} not found in SeaDB.'
-
-        emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
-        if not emails:
-            return None, None, None, f'No emails found for thread {source_id}.'
-
-        return project_connection, threads[0], emails, None
-
-    def _execute_email_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
-        resolution_content = (resolution_content or '').strip()
-        if not resolution_content:
-            return 'Cannot send reply email: empty content.'
-
-        project_connection, _thread, emails, error = self._get_email_thread_context(
-            seadb_api, project_uuid, source_id
-        )
-        if error:
-            return error
-
-        try:
-            config = decrypt_config(json.loads(project_connection.config))
-        except Exception as e:
-            logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
-            return 'Email connection config is invalid.'
-
-        target_email = next((email for email in reversed(emails) if not email.get('is_sender')), None)
-        if not target_email:
-            return f'No inbound email found for thread {source_id}.'
-
-        to_text = target_email.get('email_from') or ''
-        to_emails = extract_email_addresses(to_text)
-        if not to_emails:
-            logger.warning(
-              'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)',source_id, to_text, target_email.get('_pk'),
-      )
-            return f'Failed to resolve recipient for thread {source_id}.'
-
-        subject = target_email.get('title') or ''
-        if not subject:
-            return f'Cannot determine subject for thread {source_id}.'
-        if not subject.lower().startswith('re:'):
-            subject = f'Re: {subject}'
-
-        target_message_id = target_email.get('message_id')
-        if not target_message_id:
-            return f'Cannot determine reply target for thread {source_id}.'
-
-        sender_email = config.get('sender_email') or config.get('username')
-        if not sender_email:
-            return 'Email connection config is invalid.'
-
-        domain = sender_email.split('@')[1] if '@' in sender_email else None
-        message_id = make_msgid(domain=domain)
-
-        send_info = {
-            'message': resolution_content,
-            'html_message': None,
-            'send_to': to_emails,
-            'copy_to': [],
-            'subject': subject,
-            'in_reply_to': target_message_id,
-            'message_id': message_id,
-        }
-
-        try:
-            send_res = toggle_send_email(config, send_info)
-        except EmailConfigError as e:
-            logger.error('Email config error for connection %s: %s', project_connection.id, e)
-            return 'Email connection config is invalid.'
-        except EmailSendError as e:
-            logger.error('Reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
-            return 'Failed to send email.'
-
-        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        email_data = {
-            'sender_name': config.get('sender_name', ''),
-            'sender_email': sender_email,
-            'email_to': to_text,
-            'cc': '',
-            'subject': subject,
-            'content': resolution_content,
-            'html_content': None,
-            'reply_to_message_id': target_message_id,
-            'origin_thread_id': send_res.get('origin_thread_id') or target_email.get('origin_thread_id'),
-            'message_id': message_id,
-            'email_id': send_res.get('email_id'),
-        }
-
-        thread_id = target_email.get('thread_id')
-        try:
-            reply_pk = email_seadb_api.save_reply_email(project_uuid, project_connection.id, thread_id, email_data)
-        except Exception as e:
-            logger.error('Save reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
-            return 'Failed to save reply email.'
-
-        return f'Reply email sent for thread {source_id} (email record ID: {reply_pk}).'
-
-    def _build_email_thread_record_detail(self, thread, emails):
-        lines = [
-            '**Email Thread Information:**',
-            f"Subject: {thread.get('title', '')}",
-            '',
-        ]
-
-        for index, email in enumerate(emails[-10:], start=1):
-            lines.extend([
-                f'Email #{index}:',
-                f"From: {email.get('email_from', '')}",
-                f"To: {email.get('email_to', '')}",
-                f"CC: {email.get('cc', '')}",
-                f"Time: {email.get('modified_time', '')}",
-                f"Is Sender: {bool(email.get('is_sender'))}",
-                f"Content: {(email.get('content') or '')[:2000]}",
-                '',
-            ])
-
-        return '\n'.join(lines).strip()
-
-    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
-        project_connection, thread, emails, error = self._get_email_thread_context(
-            seadb_api, project_uuid, source_id
-        )
-        if error:
-            return error
-
-        record_detail = self._build_email_thread_record_detail(thread, emails)
-
-        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
-        params = {
-            'username': 'agent',
-            'record_detail': record_detail,
-            'project_uuid': project_uuid,
-            'org_id': org_id,
-            'scenario': AIScenario.RECORD_GENERATION.value,
-        }
-        try:
-            ai_title, ai_content = ai_convert_record_to_ticket(params)
-        except Exception as e:
-            logger.error(f'AI service error when creating ticket from email thread {source_id}: {e}')
-            return f'AI service error: {e}'
-
-        ticket_title = ai_title or thread.get('title', 'Email thread')
-        ticket_content = ai_content or ''
-
-        now = timezone.now().isoformat()
-        ticket_row = {
-            TicketsTable.title.name: ticket_title,
-            TicketsTable.content.name: ticket_content,
-            TicketsTable.state.name: 'open',
-            TicketsTable.priority.name: 0,
-            TicketsTable.creator.name: username,
-            TicketsTable.created_time.name: now,
-            TicketsTable.modified_time.name: now,
-            TicketsTable.deleted.name: False,
-            TicketsTable.linked_connection_records.name: [source_id],
-        }
-        try:
-            insert_result = seadb_api.insert_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_row])
-            pks = insert_result.get('pks', [])
-            if not pks:
-                raise RuntimeError('insert_rows returned no PKs')
-            ticket_pk = pks[0]
-        except Exception as e:
-            logger.error(f'Failed to insert ticket for email thread {source_id}: {e}')
-            return f'Failed to create ticket: {e}'
-
-        connection_id, thread_id = self._parse_connection_source_id(source_id, 'email')
-        try:
-            seadb_api.update_rows(
-                project_uuid,
-                ThreadTable.gen_table_name(connection_id),
-                [{'pk': thread_id, 'row': {'linked_ticket': ticket_pk, 'unread': False}}],
-            )
-        except Exception as e:
-            logger.warning(
-                f'Ticket {ticket_pk} created but failed to update linked_ticket on email thread {source_id}: {e}'
-            )
-
-        logger.info(f'Created ticket #{ticket_pk} from email thread {source_id}')
-        return f'Ticket #{ticket_pk} created from email thread {source_id}.'
 
     def _execute_notify_assignee(self, seadb_api, project, project_uuid, ticket_id, message, operator):
         """
@@ -821,7 +598,7 @@ class AgentActionUpdateView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
@@ -873,7 +650,7 @@ class AgentActionCancelView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
 
             # Get action details
             action_sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"

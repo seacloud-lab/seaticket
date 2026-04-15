@@ -397,8 +397,6 @@ def rank_vector_search_results(query_record, results, username, org_id, project_
 def convert_cost_to_credit(cost):
     return 100 * cost
 
-_ADDR_WITH_NAME_RE = re.compile(r'([^<,]*?)\s*<([^@\s>]+@[^>]+)>')
-
 # email utils
 def extract_email_addresses(address_text):
     if not address_text:
@@ -406,22 +404,10 @@ def extract_email_addresses(address_text):
 
     address_text = str(address_text).replace(';', ',')
     addresses = []
-    seen_emails = set()
     for name, email in getaddresses([address_text]):
         email = email.strip()
-        if email and email.lower() not in seen_emails:
-            seen_emails.add(email.lower())
-            addresses.append(formataddr((name, email)))
-
-    for m in _ADDR_WITH_NAME_RE.finditer(address_text):
-        display = m.group(1).strip().strip('"')
-        email = m.group(2).strip()
-        if not email or email.lower() in seen_emails:
-            continue
-        seen_emails.add(email.lower())
-        if display:
-            escaped = display.replace('\\', '\\\\').replace('"', '\\"')
-            addresses.append('"%s" <%s>' % (escaped, email))
-        else:
-            addresses.append(email)
+        if email:
+            full_address = formataddr((name, email))
+            if full_address not in addresses:
+                addresses.append(full_address)
     return addresses
