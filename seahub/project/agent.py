@@ -59,7 +59,7 @@ def _build_items_map_from_actions(actions):
             'result': action.get('result', ''),
             'status': action.get('status', ''),
             'suggestion_text': action.get('suggestion_text', ''),
-            'duration_ms': action.get('duration_ms', 0),
+            'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
         })

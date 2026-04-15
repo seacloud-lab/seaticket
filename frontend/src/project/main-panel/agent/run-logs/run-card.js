@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from 'dayjs';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import ActionItem from './action-item';
+import RunStatisticsDialog from './run-statistics-dialog';
 import { gettext, siteRoot, mediaUrl } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
@@ -179,9 +181,27 @@ const RunCard = ({
   }
 
   const [isExpanded, setIsExpanded] = useState(isCardExpanded);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
+  }, []);
+
+  const toggleDropdown = useCallback((e) => {
+    if (showStatisticsDialog) return;
+    if (e) e.stopPropagation();
+    setDropdownOpen(prev => !prev);
+  }, [showStatisticsDialog]);
+
+  const handleShowStatistics = useCallback((e) => {
+    e.stopPropagation();
+    setShowStatisticsDialog(true);
+    setDropdownOpen(false);
+  }, []);
+
+  const handleCloseStatistics = useCallback(() => {
+    setShowStatisticsDialog(false);
   }, []);
 
   return (
@@ -212,6 +232,22 @@ const RunCard = ({
               {gettext('Failed')}
             </span>
           }
+          <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown} className="run-card-more-dropdown">
+            <DropdownToggle tag="span" className="run-card-more-toggle">
+              <IconTooltip
+                icon="more"
+                tip={gettext('More options')}
+                className="sea-ticket-project-refresh-btn"
+                placement="bottom"
+                hoverBackground={true}
+              />
+            </DropdownToggle>
+            <DropdownMenu right>
+              <DropdownItem onClick={handleShowStatistics}>
+                {gettext('Running log details')}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
           <IconTooltip
             icon="arrow-down"
             tip={isExpanded ? gettext('Collapse') : gettext('Expand')}
@@ -267,6 +303,9 @@ const RunCard = ({
             </div>
           )}
         </div>
+      )}
+      {showStatisticsDialog && (
+        <RunStatisticsDialog run={run} onToggle={handleCloseStatistics} />
       )}
     </div>
   );
