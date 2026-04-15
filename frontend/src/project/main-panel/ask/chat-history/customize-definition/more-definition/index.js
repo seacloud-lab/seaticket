@@ -64,6 +64,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
         className={classnames('sea-ai-chat-customize-definition sea-ai-chat-customize-more-definition')}
         onClick={openShowMore}
         ref={moreRef}
+        style={{ marginTop: '.8em' }}
       >
         <span className="more-definition-content">
           +{count}
