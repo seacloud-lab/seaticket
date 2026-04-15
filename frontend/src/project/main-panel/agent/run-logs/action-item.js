@@ -151,8 +151,8 @@ const ActionItem = React.memo(({
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
                 <Icon symbol={renderSuggestionIcon() } className="mr-1" />
-                <span>{suggestion_text}</span>
-                {hasEditableContent && (
+                <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{suggestion_text}</span>
+                {hasEditableContent && status !== ACTION_STATUS.CANCELLED && (
                   <IconTooltip
                     icon="edit"
                     tip={gettext('Edit content')}
