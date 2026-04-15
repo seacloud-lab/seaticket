@@ -120,7 +120,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.ANALYSIS:
         return (
           <div className="action-content action-content-analysis">
-            <div className="action-label">{gettext('Analysis')}:</div>
+            <div className="action-label">{gettext('Analysis')}</div>
             <div className="action-text">{content}</div>
           </div>
         );
@@ -146,7 +146,7 @@ const ActionItem = React.memo(({
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         return (
           <div className="action-content action-content-suggestion">
-            <div className="action-label">{gettext('Suggestion')}:</div>
+            <div className="action-label">{gettext('Suggestion')}</div>
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
                 <Icon symbol={renderSuggestionIcon() } className="mr-2" />
