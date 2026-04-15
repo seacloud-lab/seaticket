@@ -111,11 +111,6 @@ class ConnectionsAPI {
     return this.req.get(url, { params: params });
   }
 
-  getConnectionRowDetail(projectUuid, connectionID, params) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
-    return this.req.get(url, { params: params });
-  }
-
   getConnectionLogs(projectUuid, connectionID) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/logs/';
     return this.req.get(url);
@@ -234,14 +229,19 @@ class ConnectionsAPI {
   }
 
   // records
-  modifyConnectionRecord(projectUuid, connectionID, row_id, rowData) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + row_id + '/';
-    return this.req.put(url, rowData);
+  getConnectionRecord(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + recordID + '/';
+    return this.req.get(url);
   }
 
-  modifyConnectionRecords(projectUuid, connectionID, rowsData) {
+  modifyConnectionRecord(projectUuid, connectionID, recordID, recordData) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + recordID + '/';
+    return this.req.put(url, recordData);
+  }
+
+  modifyConnectionRecords(projectUuid, connectionID, recordsData) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
-    return this.req.put(url, { records_data: rowsData });
+    return this.req.put(url, { records_data: recordsData });
   }
 
   deleteConnectionRecords(projectUuid, connectionID, recordIDs) {

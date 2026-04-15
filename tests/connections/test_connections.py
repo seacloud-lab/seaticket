@@ -360,52 +360,6 @@ class TestProjectConnectionDetailsView:
         list_mock.assert_called_once()
 
 
-class TestProjectConnectionRowDetailView:
-
-    def test_get_missing_pk(self, factory, project_creator, real_project, site_connection):
-        project = real_project
-        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/details/row-detail/")
-        request.user = project_creator
-
-        resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id))
-
-        assert resp.status_code == 400
-
-    def test_get_type_invalid(self, factory, project_creator, real_project, connection_factory, site_connection):
-        project = real_project
-        request = factory.get(
-            f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/details/row-detail/",
-            {'_pk': '1'}
-        )
-        request.user = project_creator
-
-        connection = connection_factory(connection_type='site')
-        connection.type = 'unknown'
-        connection.name = 'c1'
-        connection.save(update_fields=['type', 'name'])
-
-        resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=project.uuid, connection_id=str(connection.id))
-
-        assert resp.status_code == 400
-
-    def test_get_site_success_no_file(self, factory, project_creator, real_project, site_connection):
-        project = real_project
-        request = factory.get(
-            f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/details/row-detail/",
-            {'_pk': '1'}
-        )
-        request.user = project_creator
-
-        seadb = Mock()
-
-        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
-                patch('seahub.project.connections.list_site_record_details', return_value={'url': ''}):
-            resp = ProjectConnectionRowDetailView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id))
-
-        assert resp.status_code == 200
-        assert resp.data['connection_type'] == 'site'
-
-
 class TestProjectConnectionLogView:
 
     def test_get_format_log(self, factory, project_creator, real_project, connection_factory):

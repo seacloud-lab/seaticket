@@ -24,8 +24,8 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {
             avatar_url: `${mediaUrl}avatars/default.png`,
             email: detail.author,
           },
-          created_time: detail.time ? dayjs(detail.time).fromNow() : '',
-          content: detail.body,
+          created_time: detail.created_time ? dayjs(detail.created_time).fromNow() : '',
+          content: detail.content,
           comment_id: detail.comment_id,
         };
 

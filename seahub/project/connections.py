@@ -770,64 +770,6 @@ class DiscourseWebhookView(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class ProjectConnectionRowDetailView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid, connection_id):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        _pk = request.GET.get('_pk')
-        if not _pk:
-            error_msg = 'Missing _pk.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        seadb_api = SeaDBAPI()
-        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            record = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
-        elif project_connection.type == ConnectionType.SITE.value:
-            record = list_site_record_details(seadb_api, project_uuid, connection_id, _pk)
-            url = record.get('url', '')
-            if url:
-                filename = url_to_filename(url)
-                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
-                if file:
-                    record['content'] = json.loads(file.read()).get('content')
-        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            record = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
-        elif project_connection.type == ConnectionType.SEAFILE.value:
-            record = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
-        elif project_connection.type == ConnectionType.EMAIL.value:
-            record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
-        elif project_connection.type == ConnectionType.NOTION.value:
-            record = list_notion_record_details(seadb_api, project_uuid, connection_id, _pk)
-        else:
-            error_msg = 'type invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        record['connection_type'] = project_connection.type
-        record['connection_name'] = project_connection.name
-
-        return Response(record)
-
-
 class ProjectConnectionLogView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -900,6 +842,56 @@ class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, connection_id, record_id):
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        seadb_api = SeaDBAPI()
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            record, columns, linked_ticket_title = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.SITE.value:
+            record, columns, linked_ticket_title = list_site_record_details(seadb_api, project_uuid, connection_id, record_id)
+            url = record.get('url', '')
+            if url:
+                filename = url_to_filename(url)
+                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
+                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                if file:
+                    record['content'] = json.loads(file.read()).get('content')
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            record, columns, linked_ticket_title = list_github_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            record, columns, linked_ticket_title = list_seafile_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            record, columns, linked_ticket_title = list_email_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.NOTION.value:
+            record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, record_id)
+        else:
+            error_msg = 'type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        return Response({
+            'record': record,
+            'columns': columns,
+            'linked_ticket_title': linked_ticket_title
+        })
+
 
     @require_org_context
     def put(self, request, project_uuid, connection_id, record_id):

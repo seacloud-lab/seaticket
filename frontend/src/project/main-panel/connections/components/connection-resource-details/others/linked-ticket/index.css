@@ -1,0 +1,7 @@
+.link-settings-formatter.valid {
+  padding: 5px 0;
+}
+
+.link-settings-formatter.valid .link-item .link-item-name {
+  max-width: 100%;
+}

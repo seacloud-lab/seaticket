@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { EmptyTip, IconButton } from '@/components';
-import { getInfoByEmailFrom } from '../../../utils';
+import { getInfoByEmailFrom } from '../../../../utils';
 import Item from './item';
 
 import './index.css';

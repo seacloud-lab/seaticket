@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { isValidUrl } from '@/utils/validate';
-import { generatorConnectionAssetURLPrefix } from '../../../utils';
+import { generatorConnectionAssetURLPrefix } from '../../../../utils';
 
 const HTMLContent = ({
   projectUuid,

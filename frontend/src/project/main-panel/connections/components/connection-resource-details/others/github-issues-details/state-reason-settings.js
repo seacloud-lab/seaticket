@@ -5,7 +5,7 @@ import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isEsc, isShiftS } from '@/utils/hotkey';
-import { GITHUB_STATE_REASON_NAME_MAP } from '../../../constants';
+import { GITHUB_STATE_REASON_NAME_MAP } from '../../../../constants';
 
 import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';
 

@@ -9,8 +9,8 @@ import {
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   generateMarkAsOutdatedOptions,
 } from '../../../utils';
-import { useData } from '@/project/hooks';
-import ConnectionResourceDetails from '../../../components/connection-resource-details';
+import { useData, useTags } from '@/project/hooks';
+import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
 import { getResourceOriginalURL } from '@/project/utils';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
@@ -24,10 +24,6 @@ import { connectionsAPI } from '@/project/api';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
-import TypeSettings from '../../../components/connection-resource-details/github-issues-details/type-settings';
-import LabelsSettings from '../../../components/connection-resource-details/github-issues-details/labels-settings';
-import StateSettings from '../../../components/connection-resource-details/github-issues-details/state-settings';
-import StateReasonSettings from '../../../components/connection-resource-details/github-issues-details/state-reason-settings';
 import Rename from './rename';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
@@ -45,18 +41,24 @@ const initColumns = [
 ];
 
 const Record = ({ projectUuid, permission, toggleBar }) => {
-  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, updateConnectionInfo } = useConnectionsPage();
-  const { getRow, getTableByName, modifyRow, modifyRowLink, modifyLocalRow } = useData();
+  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId } = useConnectionsPage();
+  const { getRow, modifyRow, modifyRowLink, modifyLocalRow } = useData();
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
+  const { tagsData } = useTags();
+
   const [containerWidth, setContainerWidth] = useState(0);
-  const [details, setDetails] = useState(null);
+  const [record, setRecord] = useState(null);
+  const [columns, setColumns] = useState(initColumns);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
+
   const recordRef = useRef(null);
+  const linkedTicketTitle = useRef('');
+
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
   const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
@@ -65,36 +67,31 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const row = getRow(connectionTableName, childrenPageSlugId);
     return row;
   }, [connection, childrenPageSlugId, connectionTableName, getRow]);
-  const cacheColumns = useMemo(() => {
-    const table = getTableByName(connectionTableName);
-    return Object.values(table.key_column_map);
-  }, [connectionTableName, getTableByName]);
-  const columns = useMemo(() => cacheRecord ? cacheColumns : initColumns, [cacheRecord, cacheColumns]);
   const tools = useMemo(() => {
-    if (!details) return [];
-    const row = { ...details, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
+    if (!record) return [];
+    const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
-      generateAIOptions({ rows: [row], columns: initColumns, connection }, (attachments) => {
+      generateAIOptions({ rows: [row], columns, connection }, (attachments) => {
         if (!Array.isArray(attachments) || attachments.length === 0) return;
         const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
         updateAttachments(newAttachments);
         toggleBar([BAR_TYPE.CHAT]);
       }),
       isRw && generateFindRelatedIssuesOption({ row, connection }, () => setIsShowRelatedIssuesDialog(true)),
-      isRw && generateCreateRelatedTicketOption({ row, columns: initColumns, connection }, () => setTicketDialogOpen(true)),
-      isRw && generateLinkAnExistingTicketOption({ row, columns: initColumns, connection }, () => setIsShowTicketsDialog(true)),
+      isRw && generateCreateRelatedTicketOption({ row, columns, connection }, () => setTicketDialogOpen(true)),
+      isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
       { key: 'divider' },
-      generateOpenOriginalPageOption({ row, columns: initColumns, connection }),
-      generateCopyOriginalLinkOption({ row, columns: initColumns, connection }),
+      generateOpenOriginalPageOption({ row, columns, connection }),
+      generateCopyOriginalLinkOption({ row, columns, connection }),
     ];
-    let outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns: initColumns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
+    let outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
       const rowId = rowIds[0];
       const rowUpdate = idRowUpdates[rowId];
       const connectionTableName = getTableName(connection);
       let localRowUpdate = {};
       if (cacheRecord) {
-        const outdatedColumn = getColumnByName(cacheColumns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+        const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
         if (outdatedColumn) {
           localRowUpdate[outdatedColumn.key] = rowUpdate[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED];
         }
@@ -112,20 +109,27 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     if (_tools[_tools.length - 1]?.key === 'divider') {
       _tools.pop();
     }
+    _tools = _tools.reduce((acc, item, index, array) => {
+      if (item && item.key === 'divider' && index > 0 && array[index - 1] && array[index - 1].key === 'divider') {
+        return acc;
+      }
+      acc.push(item);
+      return acc;
+    }, []);
     return _tools;
-  }, [details, connection, permission, cacheRecord, cacheColumns, childrenPageSlugId, updateAttachments, toggleBar]);
+  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, updateAttachments, toggleBar]);
 
   const title = useMemo(() => {
-    if (details && details.title) return details.title;
+    if (record && record.title) return record.title;
     if (!cacheRecord) return '';
     return cacheRecord.title;
-  }, [details, cacheRecord]);
+  }, [record, cacheRecord]);
 
   const url = useMemo(() => {
     if (!connection) return '';
-    if (!details) return '';
-    return getResourceOriginalURL(connection.type, { ...details, ...resource }, connections, initColumns);
-  }, [connection, connections, resource, details]);
+    if (!record) return '';
+    return getResourceOriginalURL(connection.type, { ...record, ...resource }, connections, initColumns);
+  }, [connection, connections, resource, record]);
 
   const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
     const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
@@ -155,72 +159,35 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     });
   }, [title, columns, childrenPageSlugId, connection, modifyRowLink]);
 
-  const updateDetails = useCallback((details) => {
-    setDetails(details?.title ? details : '');
-  }, [updateConnectionInfo]);
+  const updateResource = useCallback(({ record, columns, linked_ticket_title }) => {
+    linkedTicketTitle.current = linked_ticket_title;
+    setColumns(columns);
+    setRecord(record);
+  }, []);
 
   const modifyGitHubRecord = useCallback((update, callback) => {
-    const columns = details?.columns || [];
     const localRowUpdate = convertRowToKeyValue(update, { data: { columns } });
     connectionsAPI.modifyGithubIssue(projectUuid, pageSlugId, Number(childrenPageSlugId), update).then(res => {
       const connectionTableName = getTableName(connection);
       modifyLocalRow(connectionTableName, childrenPageSlugId, localRowUpdate);
-      setDetails({ ...details, ...update });
+      setRecord({ ...record, ...update });
       callback && callback(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(true);
     });
-  }, [details, connection, projectUuid, pageSlugId, childrenPageSlugId, modifyLocalRow]);
+  }, [record, columns, connection, projectUuid, pageSlugId, childrenPageSlugId, modifyLocalRow]);
 
-  const renderGitHubSidePanel = useCallback(() => {
-    const columns = details?.columns || [];
-    const labelsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LABELS);
-    const typeColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
-    const stateColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
-    const stateReasonColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
+  const handleOthersChange = useCallback((update, callback) => {
+    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return modifyGitHubRecord(update, callback);
+    }
 
-    return (
-      <>
-        <LabelsSettings
-          id="github-issue-labels-editor-popover"
-          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
-          value={details?.labels}
-          column={labelsColumn}
-          onChange={modifyGitHubRecord}
-        />
-        <StateSettings
-          id="github-issue-state-editor-popover"
-          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
-          state={details?.state}
-          stateReason={details?.state_reason}
-          stateColumn={stateColumn}
-          stateReasonColumn={stateReasonColumn}
-          onChange={modifyGitHubRecord}
-        />
-        <StateReasonSettings
-          id="github-issue-state-reason-editor-popover"
-          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
-          value={details?.state_reason}
-          state={details?.state}
-          stateColumn={stateColumn}
-          column={stateReasonColumn}
-          onChange={modifyGitHubRecord}
-        />
-        <TypeSettings
-          id="github-issue-type-editor-popover"
-          isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
-          value={details?.issue_type}
-          column={typeColumn}
-          onChange={modifyGitHubRecord}
-        />
-      </>
-    );
-  }, [details, modifyGitHubRecord]);
+  }, [connection, modifyGitHubRecord]);
 
   useEffect(() => {
-    if (isConnectionsPageLoading || !details) return;
+    if (isConnectionsPageLoading || !record) return;
     const recordDom = recordRef.current;
     const handleResize = () => {
       if (!recordDom) return;
@@ -232,12 +199,12 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     return () => {
       recordDom && resizeObserver.unobserve(recordDom);
     };
-  }, [isConnectionsPageLoading, details]);
+  }, [isConnectionsPageLoading, record]);
 
   if (isConnectionsPageLoading) return (<CenteredLoading />);
 
   // 904: details min-width(596) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = details && containerWidth < 904;
+  const isSmallScreen = record && containerWidth < 904;
   return (
     <>
       <div className={classnames('sea-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
@@ -293,23 +260,28 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
             </>
           )}
         </div>
-        <div className={classnames('sea-connection-record-details-body', { 'empty': !details })}>
+        <div className={classnames('sea-connection-record-details-body', { 'empty': !record })}>
           <div className="sea-connection-record-details-container">
             <ConnectionResourceDetails
               resource={resource}
               connection={connection}
               projectUuid={projectUuid}
               permission={permission}
-              updateDetails={updateDetails}
+              updateResource={updateResource}
             />
           </div>
-          {details && (
+          {record && (
             <div className="sea-connection-record-details-others">
-              {connection.type === CONNECTION_TYPE.GITHUB_ISSUE && (
-                <>
-                  {renderGitHubSidePanel()}
-                </>
-              )}
+              <ConnectionResourceOtherDetails
+                connection={connection}
+                record={record}
+                columns={columns}
+                permission={permission}
+                projectUuid={projectUuid}
+                linkedTicketTitle={linkedTicketTitle.current}
+                tagsData={tagsData}
+                onChange={handleOthersChange}
+              />
             </div>
           )}
         </div>

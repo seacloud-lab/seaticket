@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { CustomizeMarkdownViewer } from '@/components';
 import { mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import { CONNECTION_TYPE } from '../../../constants';
+import { CONNECTION_TYPE } from '../../../../constants';
 
 import './index.css';
 
@@ -27,11 +27,11 @@ const CommonDetailItem = ({ type, detail }) => {
           </div>
           <div className="author-name">{detail.author}</div>
         </div>
-        <div className="author-time" title={formatWithTimezone(detail.time)}>
-          {dayjs(detail.time).format('YYYY-MM-DD HH:mm:ss')}
+        <div className="author-time" title={formatWithTimezone(detail.modified_time)}>
+          {dayjs(detail.modified_time).format('YYYY-MM-DD HH:mm:ss')}
         </div>
       </div>
-      {renderContentByType(detail.body)}
+      {renderContentByType(detail.content)}
     </div>
   );
 };

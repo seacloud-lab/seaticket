@@ -25,7 +25,7 @@ const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) =>
     getKB(projectUuid, knowledgeID).then(res => {
       const { record = {} } = res?.data || {};
       setKnowledge(record);
-      updateKB && updateKB(knowledge);
+      updateKB && updateKB(record);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrorMessage(errorMessage);
