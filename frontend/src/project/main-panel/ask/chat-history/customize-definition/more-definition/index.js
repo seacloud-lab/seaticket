@@ -8,7 +8,7 @@ import './index.css';
 
 const initDefinitionIndex = 4;
 
-const MoreDefinition = ({ element, attributes, editor, sources, settings, className, onClick, openDefinitionRecord }) => {
+const MoreDefinition = ({ element, attributes, editor, sources, settings, onClick, openDefinitionRecord }) => {
   const [isShowMore, setIsShowMore] = useState(false);
   const [definitionIndex, setDefinitionIndex] = useState(initDefinitionIndex);
   const [popoverWidth, setPopoverWidth] = useState(0);
@@ -61,7 +61,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, classN
   return (
     <>
       <div
-        className={classnames('sea-ai-chat-customize-definition sea-ai-chat-customize-more-definition', className)}
+        className={classnames('sea-ai-chat-customize-definition sea-ai-chat-customize-more-definition')}
         onClick={openShowMore}
         ref={moreRef}
       >

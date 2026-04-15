@@ -7,7 +7,7 @@ import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';
 
-const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources, disableAutoWidth = false, className }) => {
+const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources, disableAutoWidth = false }) => {
 
   const source = useMemo(() => {
     if (!element) return {};
@@ -36,7 +36,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   return (
     <div
-      className={classnames('sea-ai-chat-customize-definition', className, { 'ml-0': identifierIndex % 3 === 0 })}
+      className={classnames('sea-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
       style={definitionStyle}
       onClick={handleClick}
       data-id={element.id}
