@@ -198,3 +198,8 @@ if getattr(settings, 'ENABLE_MULTI_SAML', False):
         re_path(r'^org/custom/(?P<org_id>\d+)/saml/', include('djangosaml2.urls')),
         re_path(r'^saml/complete/$', saml_complete, name='saml_complete'),
     ]
+
+if getattr(settings, 'ENABLE_EXTERNAL_BILLING_SERVICE', False):
+    urlpatterns += [
+        re_path(r'^billing/', include('seahub.billing.urls')),
+    ]

@@ -429,6 +429,12 @@ class OrganizationManager(models.Manager):
             org_id = org.org_id
             is_staff = True
             OrgUser.objects.create_org_user(org_id, creator, is_staff)
+            from seahub.organizations.signals import org_operation_signal
+            try:
+                org_operation_signal.send(sender=None, org=org,
+                                          operation='create')
+            except Exception as e:
+                logger.error(e)
             return org
 
     def get_org_users_by_url_prefix(self, url_prefix):
@@ -449,6 +455,12 @@ class OrganizationManager(models.Manager):
             return cursor.fetchone()[0]
 
     def remove_org(self, org_id):
+        org = self.get_org_by_id(org_id)
+        from seahub.organizations.signals import org_operation_signal
+        try:
+            org_operation_signal.send(sender=None, org=org, operation='delete')
+        except Exception as e:
+            logger.error(e)
         self.filter(org_id=org_id).delete()
 
     def search_orgs(self, query_string):

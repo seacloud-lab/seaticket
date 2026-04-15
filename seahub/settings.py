@@ -215,6 +215,7 @@ INSTALLED_APPS = [
     'seahub.sysadmin_extra',
     'seahub.notifications',
     'seahub.portal',
+    'seahub.billing',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -226,6 +227,8 @@ ENABLE_CUSTOM_OAUTH = False
 ENABLE_OAUTH = False
 ENABLE_SAML = False
 ENABLE_MULTI_SAML = False
+
+ENABLE_EXTERNAL_BILLING_SERVICE = False
 
 DISABLE_SSO_USER_PWD_LOGIN = False
 

@@ -59,6 +59,7 @@ export const displayTwoFactorAuth = window.org ? window.org.pageOptions.displayT
 export const enableOrgLogo = window.org ? window.org.pageOptions.enable_org_logo : false;
 export const enableMultiSAML = window.org ? window.org.pageOptions.enableMultiSAML : false;
 export const canUseSAML = window.org ? window.org.pageOptions.canUseSAML : false;
+export const enableExternalBillingService = window.org ? window.org.pageOptions.enableExternalBillingService : false;
 
 // sys admin
 export const isShowUint = window.sysadmin ? window.sysadmin.pageOptions.is_show_unit : '';
