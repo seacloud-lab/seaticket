@@ -3,12 +3,17 @@ Views which allow users to create and activate accounts.
 
 """
 import logging
+import json
+import time
 
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.contrib.sites.shortcuts import get_current_site
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from seahub import settings
 from seahub.auth import REDIRECT_FIELD_NAME
@@ -18,6 +23,10 @@ from seahub.utils import render_error
 from seahub.organizations.models import Organization, OrgUser
 from seahub.settings import USER_STRONG_PASSWORD_REQUIRED, USER_PASSWORD_MIN_LENGTH, \
     USER_PASSWORD_STRENGTH_LEVEL
+from seahub.registration.models import RegistrationProfile
+from seahub.auth.models import EmailUser
+from seahub.base.accounts import User
+
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +93,7 @@ def activate(request, backend,
     """
     backend = get_backend(backend)
     account = backend.activate(request, **kwargs)
-
-    if account:
+    if account and not isinstance(account, str):
         if success_url is None:
             to, args, kwargs = backend.post_activation_redirect(request, account)
             return redirect(to, *args, **kwargs)
@@ -99,6 +107,21 @@ def activate(request, backend,
         context[key] = callable(value) and value() or value
 
     context.update(kwargs)
+
+    # Determine specific activation failure reason
+    if isinstance(account, str):
+        context['activation_status'] = account
+        if account == 'expired':
+            activation_key = kwargs.get('activation_key', '')
+            try:
+                profile = RegistrationProfile.objects.get(activation_key=activation_key)
+                user = User.objects.get(id=profile.emailuser_id)
+                context['resend_email'] = user.email
+            except (RegistrationProfile.DoesNotExist, User.DoesNotExist):
+                pass
+    else:
+        context['activation_status'] = 'invalid'
+
     return render(request, template_name, context=context)
 
 
@@ -313,3 +336,42 @@ def org_register(request, org_id, backend, success_url=None, form_class=None,
     context[redirect_field_name] = redirect_to or reverse('projects_list')
 
     return render(request, template_name, context)
+
+
+@csrf_exempt
+@require_POST
+def resend_activation_email(request):
+    """Resend activation email for an inactive user whose activation token has expired."""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return HttpResponse(json.dumps({'success': False, 'error': _('Invalid request.')}),
+                            content_type='application/json', status=400)
+
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return HttpResponse(json.dumps({'success': False, 'error': _('Email is invalid.')}),
+                            content_type='application/json', status=400)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return HttpResponse(json.dumps({'success': False, 'error': _('User not found.')}),
+                            content_type='application/json', status=404)
+
+    if user.is_active:
+        return HttpResponse(json.dumps({'success': False, 'error': _('This account has already been activated.')}),
+                            content_type='application/json', status=400)
+    try:
+        email_user = EmailUser.objects.get(email=email)
+        email_user.ctime = int(time.time_ns() / 1000)
+        email_user.save()
+    except EmailUser.DoesNotExist:
+        return HttpResponse(json.dumps({'success': False, 'error': _('User not found.')}),
+                            content_type='application/json', status=404)
+
+    site = get_current_site(request)
+    new_profile = RegistrationProfile.objects.refresh_profile(user)
+    new_profile.send_activation_email(site)
+
+    return HttpResponse(json.dumps({'success': True}), content_type='application/json')

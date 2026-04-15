@@ -22,6 +22,12 @@ logger = logging.getLogger(__name__)
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 
+def _generate_activation_key(username):
+    salt = hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5].encode('utf-8')
+    if isinstance(username, str):
+        username = username.encode('utf-8')
+    return hashlib.sha1(salt + username).hexdigest()
+
 
 class RegistrationManager(models.Manager):
     """
@@ -58,19 +64,19 @@ class RegistrationManager(models.Manager):
             try:
                 profile = self.get(activation_key=activation_key)
             except self.model.DoesNotExist:
+                return 'invalid'
+            if profile.activation_key_expired():
+                return 'expired'
+            try:
+                user = User.objects.get(id=profile.emailuser_id)
+                from seahub.auth.models import EmailUser
+                EmailUser.objects.filter(id=profile.emailuser_id).update(is_active=True)
+                user.is_active = True
+                profile.activation_key = self.model.ACTIVATED
+                profile.save()
+                return user
+            except User.DoesNotExist:
                 return False
-            if not profile.activation_key_expired():
-                # Activate user
-                try:
-                    user = User.objects.get(id=profile.emailuser_id)
-                    from seahub.auth.models import EmailUser
-                    EmailUser.objects.filter(id=profile.emailuser_id).update(is_active=True)
-                    user.is_active = True
-                    profile.activation_key = self.model.ACTIVATED
-                    profile.save()
-                    return user
-                except User.DoesNotExist:
-                    return False
         return False
 
     def create_email_user(self, username, email, name, password,
@@ -177,6 +183,18 @@ class RegistrationManager(models.Manager):
                         user.delete()
                 except User.DoesNotExist:
                     pass
+    
+    def refresh_profile(self, user):
+        profile = self.filter(emailuser_id=user.id).first()
+        activation_key = _generate_activation_key(user.username)
+ 
+        if profile:
+            profile.activation_key = activation_key
+            profile.save(update_fields=['activation_key'])
+            return profile
+        else:
+            return self.create(emailuser_id=user.id, activation_key=activation_key)
+
 
 
 class RegistrationProfile(models.Model):

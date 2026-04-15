@@ -3,7 +3,7 @@ import logging
 
 from django.conf import settings
 from seahub.constants import DEFAULT_ADMIN, SYSTEM_ADMIN, DAILY_ADMIN, AUDIT_ADMIN,\
-    TEAM_FREE, TEAM_START, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
+    TEAM_FREE, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE, TEAM_STARTER
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'ai_credit': -1,
         'can_use_advanced_customization': True,
     },
-    TEAM_START: {
+    TEAM_STARTER: {
         'can_add_project': True,
         'can_add_group': True,
         'can_use_saml': False,

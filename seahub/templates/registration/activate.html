@@ -1,9 +1,50 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}激活码错误{% endblock %}
+{% block title %}{% trans "Activation" %}{% endblock %}
 
 {% block main_panel %}
 <div class="text-panel">
-    <p class="error">激活码错误。</p>
+{% if activation_status == 'expired' %}
+    <p id="expired-msg" class="error">{% trans "Activation token expired." %} <a id="resend-btn" href="javascript:void(0)" onclick="resendActivationEmail()">{% trans "Re-sent" %}</a></p>
+    <p id="resend-msg" style="display:none;"></p>
+{% elif activation_status == 'already_activated' %}
+    <p>{% trans "Your account has already been activated." %} <a href="{{ SITE_ROOT }}accounts/login/">{% trans "Log in" %}</a></p>
+{% else %}
+    <p class="error">{% trans "The activation link is invalid." %}</p>
+{% endif %}
 </div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+function resendActivationEmail() {
+  var email = '{{ resend_email }}';
+  if (!email) return;
+  var btn = document.getElementById('resend-btn');
+  var msg = document.getElementById('resend-msg');
+  var expiredMsg = document.getElementById('expired-msg');
+  expiredMsg.style.display = 'none';
+  fetch('{{ SITE_ROOT }}api/v1/registration/resend-activation/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: email})
+  }).then(function(resp) { return resp.json(); }).then(function(data) {
+    msg.style.display = 'block';
+    if (data.success) {
+      msg.className = 'success';
+      msg.textContent = '{% trans "Activation email has been resent. Please check your email." %}';
+    } else {
+      msg.className = 'error';
+      msg.textContent = data.error || '{% trans "Failed to resend activation email." %}';
+      expiredMsg.style.display = '';
+    }
+  }).catch(function() {
+    msg.style.display = 'block';
+    msg.className = 'error';
+    msg.textContent = '{% trans "Failed to resend activation email." %}';
+    expiredMsg.style.display = '';
+  });
+}
+</script>
 {% endblock %}
