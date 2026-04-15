@@ -230,13 +230,13 @@ class ProjectGithubConnectionsView(APIView):
                 'repository': repository,
             }
 
-            enable_create = ProjectConnections.objects.enable_create(project, connection_type, config)
+            enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
             if not enable_create:
                 error_msg = 'Name or config is not unique'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
             try:
-                record = ProjectConnections.objects.create(request.user.username, project, connection_type, name, config)
+                record = ProjectConnections.objects.create(request.user.username, project_uuid, connection_type, name, config)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'

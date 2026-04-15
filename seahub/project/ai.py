@@ -448,7 +448,7 @@ class RelatedRecordsView(APIView):
 
         # get search connection ids
         project_connections = ProjectConnections.objects.filter(
-            project=project,
+            project_uuid=project_uuid,
             is_active=True,
             deleted=False
         ).select_related('project')
