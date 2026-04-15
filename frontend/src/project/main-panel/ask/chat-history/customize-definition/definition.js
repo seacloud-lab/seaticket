@@ -32,7 +32,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
   const { identifier, icon, title, content, mtime } = source;
 
   const identifierIndex = identifier - 1;
-  const definitionStyle = disableAutoWidth ? undefined : { width: definitionWidth };
+  const definitionStyle = disableAutoWidth ? undefined : { width: definitionWidth, marginTop: '.8em' };
 
   return (
     <div
