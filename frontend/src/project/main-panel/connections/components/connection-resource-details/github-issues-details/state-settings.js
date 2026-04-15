@@ -136,15 +136,15 @@ const StateSettings = ({
         {!isReadonly && (
           <>
             {options.length === 1 ? (
-              <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center mb-2" onClick={handleChange}>
+              <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center mb-2 text-truncate mw-100" onClick={handleChange}>
                 <Icon symbol={icon} className={`mr-2 sea-qa-project-ticket-state-${icon}-icon`} />
-                <span>{option?.label}</span>
+                <span className="text-truncate" title={option?.label}>{option?.label}</span>
               </Button>
             ) : (
-              <ButtonGroup className="mb-2">
-                <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center" onClick={handleChange}>
+              <ButtonGroup className="mb-2 mw-100">
+                <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center text-truncate" onClick={handleChange}>
                   <Icon symbol={icon} className={`mr-2 sea-qa-project-ticket-state-${icon}-icon`} />
-                  <span>{option?.label}</span>
+                  <span className="text-truncate" title={option?.label}>{option?.label}</span>
                 </Button>
                 <Button className="sea-qa-project-ticket-state-toggle-btn" innerRef={editorRef} onClick={openEditor}>
                   <Icon symbol="arrow-down" />
