@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef } from 'react';
-import { Button, ModalFooter } from 'reactstrap';
+import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import RunCard from './run-card';
-import { CenteredLoading, EmptyTip } from '@/components';
+import { CenteredLoading, EmptyTip, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -96,31 +96,24 @@ const RunLogs = ({
         </div>
       )}
 
-      {/* View/Edit content modal */}
-      {viewContentModal && (
-        <div className="view-content-modal-overlay" onClick={closeViewContentModal}>
-          <div className="view-content-modal" onClick={e => e.stopPropagation()}>
-            <div className="view-content-modal-header">
-              <span>{gettext('Edit content')}</span>
-            </div>
-            <div className="view-content-modal-body">
-              <textarea
-                className="view-content-textarea"
-                value={editContent}
-                onChange={e => setEditContent(e.target.value)}
-                placeholder={gettext('Edit content...')}
-                spellCheck={false}
-              />
-            </div>
-            <ModalFooter>
-              <Button color="secondary" onClick={closeViewContentModal}>{gettext('Cancel')}</Button>
-              <Button color="primary" onClick={handleSaveContent} disabled={isSaving || editContent === initialContentRef.current}>
-                {isSaving ? gettext('Saving...') : gettext('Save')}
-              </Button>
-            </ModalFooter>
-          </div>
-        </div>
-      )}
+      <Modal isOpen={!!viewContentModal} toggle={closeViewContentModal} className="view-content-modal" size="lg">
+        <ModalHeader toggle={closeViewContentModal}>{gettext('Edit content')}</ModalHeader>
+        <ModalBody>
+          <textarea
+            className="view-content-textarea"
+            value={editContent}
+            onChange={e => setEditContent(e.target.value)}
+            placeholder={gettext('Edit content...')}
+            spellCheck={false}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={closeViewContentModal}>{gettext('Cancel')}</Button>
+          <Button color="primary" onClick={handleSaveContent} disabled={isSaving || editContent === initialContentRef.current}>
+            {isSaving ? gettext('Saving...') : gettext('Save')}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };
