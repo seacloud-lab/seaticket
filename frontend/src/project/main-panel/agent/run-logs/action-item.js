@@ -137,7 +137,7 @@ const ActionItem = React.memo(({
                     <Icon symbol="check-mark" />
                   </span>
                 )}
-                <span style={{ background: '#f7f7f5', padding: '1px 6px', borderRadius: '4px', color: '#212529' }}>{content}</span>
+                <span className="tool-call-content">{content}</span>
               </div>
             )}
           </div>
@@ -155,8 +155,9 @@ const ActionItem = React.memo(({
                   <IconTooltip
                     icon="edit"
                     tip={gettext('Edit content')}
-                    className={classnames('sea-ticket-project-refresh-btn')}
-                    placement="bottom"
+                    tooltipClassName='action-item-edit-content-tooltip'
+                    className='sea-ticket-project-refresh-btn'
+                    placement="top"
                     hoverBackground={true}
                     onClick={handleViewContent}
                   />
@@ -174,8 +175,8 @@ const ActionItem = React.memo(({
                   </Button>
                 </div>
               )}
-              {(isCompletedStatus) && (
-                <div className="tool-result suggestion-tool-result" style={{ background: isCompletedStatus ? '#EDF8E2' : 'transparent' }}>
+              {isCompletedStatus && (
+                <div className="tool-result suggestion-tool-result" style={{ background: '#EDF8E2', marginLeft: '22px' }}>
                   <span className="status-completed">
                     <Icon symbol="check-circle-filled" />
                   </span>
