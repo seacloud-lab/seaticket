@@ -48,29 +48,20 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
 
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            web_crawl_table.url.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            web_crawl_table.modified_time.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            web_crawl_table.deleted.name,
-        ]
-    )
+    site_index_columns = [
+        web_crawl_table.url.name,
+        web_crawl_table.modified_time.name,
+        web_crawl_table.deleted.name,
+        web_crawl_table.ai_processed_time.name,
+    ]
+    for column in site_index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column,
+            ]
+        )
 
 def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
     github_issues_table = GithubIssuesTable
@@ -91,85 +82,21 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     # add columns index
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.issue_id.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.state.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.state_reason.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.labels.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.title.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.author.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.created_time.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.closed_time.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.deleted.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.linked_ticket.name
-        ],
-    )
+    issue_index_columns = [
+        github_issues_table.issue_id.name,
+        github_issues_table.state.name,
+        github_issues_table.state_reason.name,
+        github_issues_table.labels.name,
+        github_issues_table.title.name,
+        github_issues_table.author.name,
+        github_issues_table.created_time.name,
+        github_issues_table.closed_time.name,
+        github_issues_table.deleted.name,
+        github_issues_table.linked_ticket.name,
+        github_issues_table.ai_processed_time.name,
+    ]
+    for column_name in issue_index_columns:
+        seadb_api.create_column_index(project_uuid, table_id, [column_name])
 
     comments_table_name = github_issue_comments_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, comments_table_name)
@@ -216,36 +143,15 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, topics_table_id, mapped_column)
     # Create topic columns index for seadb
-    seadb_api.create_column_index(
-        project_uuid,
-        topics_table_id,
-        [
-            discourse_topics_table.topic_id.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        topics_table_id,
-        [
-            discourse_topics_table.sync_time.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        topics_table_id,
-        [
-            discourse_topics_table.deleted.name
-        ],
-    )
-    seadb_api.create_column_index(
-        project_uuid,
-        topics_table_id,
-        [
-            discourse_topics_table.linked_ticket.name
-        ]
-    )
+    topic_index_columns = [
+        discourse_topics_table.topic_id.name,
+        discourse_topics_table.sync_time.name,
+        discourse_topics_table.deleted.name,
+        discourse_topics_table.linked_ticket.name,
+        discourse_topics_table.ai_processed_time.name,
+    ]
+    for column_name in topic_index_columns:
+        seadb_api.create_column_index(project_uuid, topics_table_id, [column_name])
 
     # Create replies table
     discourse_replies_table = DiscourseRepliesTable
@@ -300,29 +206,14 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            SeafileTable.path.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            SeafileTable.title.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            SeafileTable.deleted.name,
-        ]
-    )
+    seafile_index_columns = [
+        SeafileTable.path.name,
+        SeafileTable.title.name,
+        SeafileTable.deleted.name,
+        SeafileTable.ai_processed_time.name,
+    ]
+    for column_name in seafile_index_columns:
+        seadb_api.create_column_index(project_uuid, table_id, [column_name])
 
 
 def init_ticket_seadb_table(seadb_api, project_uuid):
@@ -354,6 +245,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         TicketsTable.creator.name,
         TicketsTable.deleted.name,
         TicketsTable.due_date.name,
+        TicketsTable.ai_processed_time.name,
     ]
     for column in ticket_index_columns:
         seadb_api.create_column_index(
@@ -455,6 +347,7 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
         ThreadTable.deleted.name,
         ThreadTable.sync_time.name,
         ThreadTable.linked_ticket.name,
+        ThreadTable.ai_processed_time.name,
     ]
 
     for column_name in index_column_names:
@@ -482,7 +375,7 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
 
     index_column_names = [KnowledgeBaseTable.creator.name, KnowledgeBaseTable.created_time.name,
                           KnowledgeBaseTable.last_modifier.name, KnowledgeBaseTable.modified_time.name,
-                          KnowledgeBaseTable.deleted.name]
+                          KnowledgeBaseTable.deleted.name, KnowledgeBaseTable.ai_processed_time.name]
     for column_name in index_column_names:
         seadb_api.create_column_index(
             project_uuid,
@@ -576,6 +469,7 @@ def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
         NotionTable.deleted.name,
         NotionTable.sync_time.name,
         NotionTable.page_id.name,
+        NotionTable.ai_processed_time.name,
     ]
 
     for column_name in index_column_names:
