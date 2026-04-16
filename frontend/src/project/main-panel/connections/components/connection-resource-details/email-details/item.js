@@ -104,6 +104,17 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     });
   }, [projectUuid, connection_id, handleReplyEmailSuccess]);
 
+  const removeComments = (node) => {
+    for (let i = node.childNodes.length - 1; i >= 0; i--) {
+      const child = node.childNodes[i];
+      if (child.nodeType === Node.COMMENT_NODE) {
+        node.removeChild(child);
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        removeComments(child);
+      }
+    }
+  };
+
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
     let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
@@ -117,7 +128,14 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       initValue = '<div></div><div></div><div></div>';
       const parsed = new DOMParser().parseFromString(detailContent, 'text/html');
       let HTMLContentBody = parsed.body;
-      const quotedContent = HTMLContentBody.outerHTML;
+      HTMLContentBody.querySelectorAll('style, title').forEach(el => el.remove());
+      removeComments(HTMLContentBody);
+      let quotedContent = HTMLContentBody.outerHTML.slice(6, -7);
+      if (quotedContent.startsWith('```')) {
+        quotedContent = quotedContent.slice(3,);
+        quotedContent = '<div>```</div>' + quotedContent;
+      }
+      console.log(quotedContent);
       initValue += '<div style="outline: 0;">';
       initValue += `<div>${tip}</div>`;
       initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 2px solid rgba(0, 40, 100, .12); padding-left: 1ex;">${quotedContent}</blockquote>`;
