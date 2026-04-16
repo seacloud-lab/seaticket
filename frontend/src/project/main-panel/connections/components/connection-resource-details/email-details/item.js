@@ -135,7 +135,6 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
         quotedContent = quotedContent.slice(3,);
         quotedContent = '<div>```</div>' + quotedContent;
       }
-      console.log(quotedContent);
       initValue += '<div style="outline: 0;">';
       initValue += `<div>${tip}</div>`;
       initValue += `<blockquote style="margin: 0px 0px 0px 0.8ex; border-left: 2px solid rgba(0, 40, 100, .12); padding-left: 1ex;">${quotedContent}</blockquote>`;
