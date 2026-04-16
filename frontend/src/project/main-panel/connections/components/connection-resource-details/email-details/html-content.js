@@ -42,9 +42,13 @@ const HTMLContent = ({
     return () => observer.disconnect();
   }, []);
 
+  const parsed = new DOMParser().parseFromString(value, 'text/html');
+  const HTMLContentBody = parsed.body;
+  const content = HTMLContentBody.outerHTML;
+
   return (
     <div>
-      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} />
+      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
       <ul>
         {detail.attachments && detail.attachments.map((filename, index) => {
           let url = `${assetURLPrefix}${detail._pk}/${filename}`;
