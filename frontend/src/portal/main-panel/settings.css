@@ -15,16 +15,8 @@
   color: #666;
 }
 
-.portal-settings-dialog-side .nav-pills .nav-item.disabled .nav-link {
-  cursor: default;
-}
-
 .portal-settings-dialog-side .nav .nav-item {
   padding: 0;
-}
-
-.portal-settings-dialog-side .nav .nav-item.disabled {
-  cursor: default;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active {
@@ -36,10 +28,6 @@
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link:hover {
   background-color: #f7f7f7;
-}
-
-.portal-settings-dialog-side .nav-pills .nav-item.disabled .nav-link:hover {
-  background-color: transparent;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active::before {

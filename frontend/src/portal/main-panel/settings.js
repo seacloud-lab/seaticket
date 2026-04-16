@@ -12,7 +12,6 @@ const { projectUuid } = window.app.pageOptions;
 
 const SETTING_TABS = {
   PORTAL_URL: 'portal_url',
-  DISPLAY: 'display',
   KNOWLEDGE_BASE: 'knowledge_base',
   CHAT: 'chat',
 };
@@ -204,10 +203,9 @@ const Settings = () => {
               {gettext('Open access')}
             </NavLink>
           </NavItem>
-          <NavItem className="disabled"><NavLink>{gettext('Portal settings')}</NavLink></NavItem>
           <NavItem>
             <NavLink
-              className={`${activeTab === SETTING_TABS.KNOWLEDGE_BASE ? 'active' : ''} ml-2`}
+              className={`${activeTab === SETTING_TABS.KNOWLEDGE_BASE ? 'active' : ''}`}
               onClick={() => toggle(SETTING_TABS.KNOWLEDGE_BASE)}
             >
               {gettext('Knowledge base')}
@@ -215,7 +213,7 @@ const Settings = () => {
           </NavItem>
           <NavItem>
             <NavLink
-              className={`${activeTab === SETTING_TABS.CHAT ? 'active' : ''} ml-2`}
+              className={`${activeTab === SETTING_TABS.CHAT ? 'active' : ''}`}
               onClick={() => toggle(SETTING_TABS.CHAT)}
             >
               {gettext('Chat')}
