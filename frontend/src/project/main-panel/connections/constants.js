@@ -6,6 +6,7 @@ import { TICKET_TABLE_NAME } from '../tickets/constants';
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
   GITHUB_ISSUE: 'github_issue',
+  GITHUB_PR: 'github_pr',
   DISCOURSE_FORUM: 'discourse_forum',
   SITE: 'site',
   SEAFILE: 'seafile',
@@ -21,6 +22,7 @@ export const DOCUMENT_CONNECTION_TYPE_MAP = {
 export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
+  [CONNECTION_TYPE.GITHUB_PR]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
 };
 
@@ -161,6 +163,24 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
     },
   ],
+  [CONNECTION_TYPE.GITHUB_PR]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+    }, {
+      key: 'repository',
+      name: gettext('Repository'),
+      placeholder: gettext('Select a repository'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      can_edit_multiple_times: false,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    },
+  ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
     {
       key: 'name',
@@ -271,7 +291,11 @@ export const CONNECTION_TYPES = [
   }, {
     type: CONNECTION_TYPE.GITHUB_ISSUE,
     icon: 'github-issues',
-    name: gettext('GitHub'),
+    name: gettext('GitHub Issues'),
+  }, {
+    type: CONNECTION_TYPE.GITHUB_PR,
+    icon: 'github-issues',
+    name: gettext('GitHub Pull Requests'),
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',
@@ -389,64 +413,67 @@ const CONNECTION_PREDEFINED_COLUMN = {
   },
 };
 
-export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
-  [CONNECTION_TYPE.GITHUB_ISSUE]: {
-    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
-      display_name: gettext('Title'),
-      is_name_column: true,
-      frozen: true,
-      is_predefined: true,
-      editable: true,
-      click: (row) => {
-        if (row && row.url) {
-          window.open(row.url);
-        }
+const GITHUB_ISSUE_PREDEFINED_COLUMN_CONFIG = {
+  [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+    display_name: gettext('Title'),
+    is_name_column: true,
+    frozen: true,
+    is_predefined: true,
+    editable: true,
+    click: (row) => {
+      if (row && row.url) {
+        window.open(row.url);
       }
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
-      display_name: gettext('Author'),
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: {
-      display_name: gettext('State'),
-      is_predefined: true,
-      editable: true,
-      is_required: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: {
-      display_name: gettext('State reason'),
-      is_predefined: true,
-      editable: true,
-      is_required: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
-      display_name: gettext('Type'),
-      is_predefined: false,
-      editable: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
-      display_name: gettext('Labels'),
-      is_predefined: false,
-      editable: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENT_COUNT]: {
-      display_name: gettext('Total comments'),
-      type: CellType.NUMBER,
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.CLOSED_TIME]: {
-      display_name: gettext('Closed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
-      display_name: gettext('Created time'),
-      type: CellType.CTIME,
-      is_predefined: true,
-    },
-    ...CONNECTION_PREDEFINED_COLUMN,
+    }
   },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
+    display_name: gettext('Author'),
+    is_predefined: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: {
+    display_name: gettext('State'),
+    is_predefined: true,
+    editable: true,
+    is_required: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: {
+    display_name: gettext('State reason'),
+    is_predefined: true,
+    editable: true,
+    is_required: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
+    display_name: gettext('Type'),
+    is_predefined: false,
+    editable: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
+    display_name: gettext('Labels'),
+    is_predefined: false,
+    editable: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENT_COUNT]: {
+    display_name: gettext('Total comments'),
+    type: CellType.NUMBER,
+    is_predefined: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.CLOSED_TIME]: {
+    display_name: gettext('Closed time'),
+    type: CellType.DATE,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    is_predefined: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+    display_name: gettext('Created time'),
+    type: CellType.CTIME,
+    is_predefined: true,
+  },
+  ...CONNECTION_PREDEFINED_COLUMN,
+};
+
+export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
+  [CONNECTION_TYPE.GITHUB_ISSUE]: GITHUB_ISSUE_PREDEFINED_COLUMN_CONFIG,
+  [CONNECTION_TYPE.GITHUB_PR]: GITHUB_ISSUE_PREDEFINED_COLUMN_CONFIG,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: {
     [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Title'),
@@ -544,6 +571,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 
 export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
@@ -556,18 +584,21 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
   CONNECTION_TYPE.NOTION,
 ];
 
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
   CONNECTION_TYPE.EMAIL,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
@@ -578,11 +609,13 @@ export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
 ];
 
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GITHUB_PR,
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,

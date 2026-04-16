@@ -91,7 +91,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     );
   }
 
-  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.GITHUB_PR) {
     return (
       <GitHubIssuesDetails
         className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}

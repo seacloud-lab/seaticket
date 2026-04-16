@@ -614,7 +614,7 @@ class ConnectionsViewsManager(models.Manager):
 
     def update_init_view_details(self, project_uuid, connection, details):
         connection_type = connection.type
-        if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        if connection_type == ConnectionType.GITHUB_ISSUE.value or connection_type == ConnectionType.GITHUB_PR.value:
             from seahub.project.seadb_api import SeaDBAPI
             from seahub.seadb_models.utils import get_connection_columns
             seadb_api = SeaDBAPI()

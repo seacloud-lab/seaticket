@@ -4,9 +4,11 @@ from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.project.utils import get_current_table_metadata
-from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable
+from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GitHubIssuesTable, \
+    GitHubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, \
+    ThreadTable, \
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, GitHubPullRequestsTable, \
+    GitHubPullRequestCommentsTabel
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +75,9 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
-    github_issues_table = GithubIssuesTable
+    github_issues_table = GitHubIssuesTable
     issues_table_name = github_issues_table.gen_table_name(connection_id)
-    github_issue_comments_table = GithubIssueCommentsTable
+    github_issue_comments_table = GitHubIssueCommentsTable
     res = seadb_api.create_table(project_uuid, issues_table_name)
     table_id = res['table_id']
     for column in github_issues_table.get_fields():
@@ -587,11 +589,70 @@ def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
             ]
         )
 
+def init_github_pull_requests_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
+    comments_table= GitHubPullRequestCommentsTabel
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in GitHubPullRequestsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    index_column_names = [
+        GitHubPullRequestsTable.title.name,
+        GitHubPullRequestsTable.modified_time.name,
+        GitHubPullRequestsTable.deleted.name,
+        GitHubPullRequestsTable.sync_time.name,
+        GitHubPullRequestsTable.pr_id.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
+
+    comments_table_name = comments_table.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, comments_table_name)
+    table_id = res['table_id']
+    for column in GitHubPullRequestCommentsTabel.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            comments_table.pr_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            comments_table.comment_id.name
+        ],
+    )
+
 
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
@@ -602,6 +663,8 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = ThreadTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.NOTION.value:
         table_name = NotionTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GITHUB_PR.value:
+        table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -845,7 +908,7 @@ def list_connection_record_titles(seadb_api, project_uuid, connection_id, connec
     pks_str = ','.join([str(pk) for pk in pks])
 
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
@@ -868,7 +931,7 @@ def list_connection_record_titles(seadb_api, project_uuid, connection_id, connec
 
 
 def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
-    issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
+    issue_table_name = GitHubIssuesTable.gen_table_name(connection_id)
     issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, issue_number, state, state_reason, labels, issue_type, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
@@ -883,7 +946,7 @@ def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
 
 def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""
-    comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
+    comments_table_name = GitHubIssueCommentsTable.gen_table_name(connection_id)
     try:
         issue_record, column_metadata = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         issue_id = issue_record.get('issue_id')
@@ -1030,7 +1093,9 @@ def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_ty
 
 def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, connection_id=None):
     if source_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.GITHUB_PR.value:
+        table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
     elif source_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif source_type == ConnectionType.SITE.value:
@@ -1135,3 +1200,33 @@ def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
         logger.error(f'SeaDB query error for issue details {notion_table_name}: {e}')
         notion_record = {}
     return notion_record
+
+
+def list_github_pull_request_record_details(seadb_api, project_uuid, connection_id, _pk):
+    """Query GitHub pull request details and comments from SeaDB."""
+    pr_table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
+    comments_table_name = GitHubPullRequestCommentsTabel.gen_table_name(connection_id)
+    pr_sql = (
+        f"SELECT _pk, title, author, content, created_time, pr_id, pr_number, state, labels, "
+        f"merged, closed_time, merged_time, html_url as `url`, `outdated` "
+        f"FROM `{pr_table_name}` WHERE _pk = {_pk}"
+    )
+    try:
+        pr_res = seadb_api.query_rows(project_uuid, pr_sql)
+        pr_record = pr_res.get('results')[0]
+        column_metadata = pr_res.get('metadata')
+        pr_id = pr_record.get('pr_id')
+        pr_record.pop('pr_id', None)
+        pr_record.pop('pr_number', None)
+        comments_sql = (
+            f"SELECT author, content, created_time, comment_id "
+            f"FROM `{comments_table_name}` WHERE pr_id = {pr_id} ORDER BY comment_id ASC"
+        )
+        comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+        comments_record = comments_res.get('results', [])
+        pr_record['comments'] = comments_record
+        pr_record['columns'] = column_metadata
+    except Exception as e:
+        logger.error(f'SeaDB query error for pull request details {pr_table_name}/{comments_table_name}: {e}')
+        pr_record = {}
+    return pr_record

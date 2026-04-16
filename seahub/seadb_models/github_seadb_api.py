@@ -3,7 +3,7 @@ import datetime
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
-from seahub.seadb_models.models import GithubIssuesTable, GithubIssueCommentsTable
+from seahub.seadb_models.models import GitHubIssuesTable, GitHubIssueCommentsTable
 from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class GitHubSeaDBAPI:
 
     def get_issues_by_connection_id(self, connection_id, start, limit):
         """Retrieve all issue for the specified connection_id."""
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -25,7 +25,7 @@ class GitHubSeaDBAPI:
 
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -33,7 +33,7 @@ class GitHubSeaDBAPI:
         return []
 
     def get_comments_by_issue_id(self, connection_id, issue_id, limit=None):
-        table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
+        table_name = GitHubIssueCommentsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `issue_id` = {issue_id}"
         if limit is not None:
             sql += f" LIMIT {limit}"
@@ -44,16 +44,16 @@ class GitHubSeaDBAPI:
 
     def save_issue_update(self, project_uuid, connection_id, record_pk, issue_data):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
         update_row = {
             'pk': int(record_pk),
             'row': {
-                GithubIssuesTable.title.name: issue_data.get('title', ''),
-                GithubIssuesTable.labels.name: issue_data.get('labels', []),
-                GithubIssuesTable.issue_type.name: issue_data.get('issue_type', ''),
-                GithubIssuesTable.state.name: issue_data.get('state', ''),
-                GithubIssuesTable.state_reason.name: issue_data.get('state_reason', ''),
-                GithubIssuesTable.record_modified_time.name: now_datetime,
+                GitHubIssuesTable.title.name: issue_data.get('title', ''),
+                GitHubIssuesTable.labels.name: issue_data.get('labels', []),
+                GitHubIssuesTable.issue_type.name: issue_data.get('issue_type', ''),
+                GitHubIssuesTable.state.name: issue_data.get('state', ''),
+                GitHubIssuesTable.state_reason.name: issue_data.get('state_reason', ''),
+                GitHubIssuesTable.record_modified_time.name: now_datetime,
             }
         }
 
@@ -65,13 +65,13 @@ class GitHubSeaDBAPI:
             str(_pk)
             for _pk in _pks
         ])
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = GitHubIssuesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
     
     def get_comments_by_issue_ids(self, connection_id, issue_ids, limit_for_each_id):
-        table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
+        table_name = GitHubIssueCommentsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `issue_id` in ({', '.join(issue_ids)}) LIMIT 0, {len(issue_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         comments = response.get('results', [])

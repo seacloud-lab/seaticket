@@ -63,7 +63,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.GITHUB_PR) return _columns;
     return _columns;
   }, [type]);
 
@@ -72,7 +72,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     return c.is_custom;
   }), [columns]);
 
-  const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
+  const isGithub = useMemo(
+    () => type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.GITHUB_PR,
+    [type]
+  );
   const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
 
@@ -121,7 +124,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     setConfig(initializeConfig(newType));
     setType(newType);
 
-    if (newType === CONNECTION_TYPE.GITHUB_ISSUE) {
+    if (newType === CONNECTION_TYPE.GITHUB_ISSUE || newType === CONNECTION_TYPE.GITHUB_PR) {
       setIsLoadingRepositories(true);
       connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
         const { repositories } = res.data;
@@ -245,7 +248,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                 <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
                 <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
               </div>
-              {typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+              {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE || typeOption.type === CONNECTION_TYPE.GITHUB_PR) && (
                 <div className="sea-qa-project-new-connection-type-right">
                   {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
                 </div>
