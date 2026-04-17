@@ -108,12 +108,13 @@ def github_install(request):
 
 
 def github_installation_setup(request):
-    state = unquote(request.GET.get('state'))
+    state = request.GET.get('state')
     installation_id = request.GET.get('installation_id')
     setup_action = request.GET.get('setup_action')
 
     project_uuid = ''
     if state:
+        state = unquote(state)
         try:
             return_url, project_uuid = base64.b64decode(state).decode().rsplit('&', 1)
         except Exception:
