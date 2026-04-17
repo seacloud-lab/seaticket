@@ -2,6 +2,8 @@ import datetime
 import logging
 import json
 from email.utils import make_msgid
+import re
+import requests
 
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -9,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
+
+from urllib.parse import urlparse
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -18,6 +22,7 @@ from seahub.utils.ai_client import (
 )
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
+from seahub.project.github_issues_api import GitHubAPI
 from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -27,9 +32,11 @@ from seahub.seadb_models.models import (
     DiscourseTopicsTable,
     GithubIssuesTable,
     ThreadTable,
+    GithubIssueCommentsTable,
     TicketCommentsTable,
     TicketsTable,
 )
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.project.utils import check_project_permission, extract_email_addresses
 from seahub.notifications.signal_handler import (
@@ -306,7 +313,7 @@ class AgentActionConfirmView(APIView):
                 )
             elif source_type == ConnectionType.GITHUB_ISSUE.value:
                 execution_result = self._execute_github_issue_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                    seadb_api, project, project_uuid, source_id, tool_name, action, username
                 )
             elif source_type == ConnectionType.DISCOURSE_FORUM.value:
                 execution_result = self._execute_discourse_topic_action(
@@ -359,12 +366,14 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, action, username):
         """Dispatch GitHub issue actions to the appropriate handler."""
+        content = action.get('content', '') if isinstance(action, dict) else ''
         if tool_name == 'suggest_resolution':
-            return self._execute_github_suggest_resolution(source_id, content)
+            return self._execute_github_suggest_resolution(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_modify_type':
-            return self._execute_github_suggest_modify_type(source_id, content)
+            suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
+            return self._execute_github_suggest_modify_type(seadb_api, project_uuid, source_id, suggestion_text)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -393,24 +402,243 @@ class AgentActionConfirmView(APIView):
     def _execute_discourse_suggest_resolution(self, source_id, resolution_content):
         return f'Resolution for Discourse topic {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
 
-    def _execute_github_suggest_resolution(self, source_id, resolution_content):
-        """Confirm a resolution suggestion for a GitHub issue.
+    def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
+        try:
+            connection_id_str, record_id_str = source_id.split('_', 1)
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except (ValueError, AttributeError) as e:
+            logger.error(f'Cannot parse github_issue source_id {source_id!r}: {e}')
+            return None
 
-        Currently records the confirmation. Future enhancement: post as a GitHub comment
-        via the GitHub API.
-        """
-        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            logger.error(f'GitHub connection {connection_id} not found.')
+            return None
 
-    def _execute_github_suggest_modify_type(self, source_id, suggestion_content):
-        """Confirm an issue type suggestion for a GitHub issue.
+        config = decrypt_config(json.loads(project_connection.config))
+        installation_id = config.get('installation_id')
+        if not installation_id:
+            logger.error(f'GitHub connection {connection_id} missing installation_id.')
+            return None
 
-        This is a user-facing triage recommendation. It does not update
-        the source issue_type enum automatically.
-        """
-        return (
-            f'Issue type suggestion for GitHub issue {source_id} confirmed. '
-            f'Content: {(suggestion_content or "")[:500]}...'
-        )
+        server_url = config.get('repository')
+        try:
+            path = urlparse(server_url).path
+            parts = path.strip("/").split("/")
+            owner, repo = parts[0], parts[1]
+        except Exception as e:
+            logger.error(f'Invalid GitHub repository URL in connection {connection_id}: {e}')
+            return None
+
+        issues_table = GithubIssuesTable.gen_table_name(connection_id)
+        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        result = seadb_api.query_rows(project_uuid, sql)
+        issues = result.get('results', [])
+        if not issues:
+            logger.error(f'GitHub issue {source_id} not found in SeaDB.')
+            return None
+        issue = issues[0]
+        issue_number = issue.get('issue_number')
+        if not issue_number:
+            logger.error(f'GitHub issue {source_id} missing issue_number.')
+            return None
+
+        github_api = GitHubAPI(installation_id=installation_id)
+        return {
+            'connection_id': connection_id,
+            'record_id': record_id,
+            'github_api': github_api,
+            'owner': owner,
+            'repo': repo,
+            'author': issue.get('author'),
+            'issue_number': issue_number,
+            'issue_id': issue.get('issue_id'),
+            'comment_count': issue.get('comment_count') or 0,
+        }
+
+    def _execute_github_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
+        """Post a resolution suggestion as a GitHub comment."""
+        ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
+        if not ctx:
+            return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
+
+        if not resolution_content:
+            return f'Resolution content is empty for GitHub issue {ctx["record_id"]}.'
+
+        try:
+            result = ctx['github_api'].add_comment(
+                ctx['owner'],
+                ctx['repo'],
+                ctx['issue_number'],
+                resolution_content,
+            )
+            comment_id = result.get('id')
+            comment_created_at = result.get('created_at', '')
+            logger.info(f'Added resolution comment #{comment_id} to GitHub issue {ctx["record_id"]}')
+        except Exception as e:
+            logger.error(f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}'
+
+        now_datetime = timezone.now().isoformat()
+
+        try:
+            issues_table = GithubIssuesTable.gen_table_name(ctx['connection_id'])
+            new_comment_count = ctx['comment_count'] + 1
+            update_row = {
+                'pk': ctx['record_id'],
+                'row': {
+                    GithubIssuesTable.comment_count.name: new_comment_count,
+                    GithubIssuesTable.record_modified_time.name: now_datetime,
+                }
+            }
+            seadb_api.update_rows(project_uuid, issues_table, [update_row])
+        except Exception as e:
+            logger.warning(f'Failed to update SeaDB GithubIssuesTable for issue {ctx["record_id"]}: {e}')
+
+        try:
+            comments_table = GithubIssueCommentsTable.gen_table_name(ctx['connection_id'])
+            comment_row = {
+                GithubIssueCommentsTable.comment_id.name: comment_id,
+                GithubIssueCommentsTable.issue_id.name: ctx['issue_id'],
+                GithubIssueCommentsTable.author.name: ctx['author'],
+                GithubIssueCommentsTable.content.name: resolution_content,
+                GithubIssueCommentsTable.created_time.name: comment_created_at,
+                GithubIssueCommentsTable.modified_time.name: comment_created_at,
+            }
+            seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
+        except Exception as e:
+            logger.warning(f'Failed to insert comment into SeaDB GithubIssueCommentsTable: {e}')
+
+        return f'Resolution comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
+
+    @staticmethod
+    def _parse_suggested_type(suggestion_text):
+        if not suggestion_text:
+            return ''
+        match = re.search(r'to "(.+?)" for this GitHub issue\.', suggestion_text)
+        if match:
+            return match.group(1).strip()
+        return ''
+
+    @staticmethod
+    def _ensure_github_org_issue_type(github_api, org, type_name, description=''):
+        try:
+            existing = github_api.list_org_issue_types(org)
+        except requests.HTTPError as e:
+            status_code = getattr(e.response, 'status_code', None)
+            if status_code == 403:
+                return (
+                    False,
+                    f'GitHub rejected listing issue types for organization "{org}" (403). '
+                    f'Please grant the GitHub App "Organization administration" (write) permission, '
+                    f'or manually create the "{type_name}" issue type in the organization.'
+                )
+            if status_code == 404:
+                return (
+                    False,
+                    f'Organization "{org}" not found or not an organization (404). '
+                    f'GitHub issue types are only available at the organization level.'
+                )
+            return (False, f'Failed to list issue types for organization "{org}": {e}')
+        except Exception as e:
+            return (False, f'Failed to list issue types for organization "{org}": {e}')
+
+        target_lower = type_name.lower()
+        for item in existing:
+            if (item.get('name') or '').lower() == target_lower:
+                return (True, '')
+
+        try:
+            github_api.create_org_issue_type(org, type_name, description=description)
+            logger.info(f'Created issue type "{type_name}" in organization "{org}"')
+            return (True, '')
+        except requests.HTTPError as e:
+            status_code = getattr(e.response, 'status_code', None)
+            if status_code == 403:
+                return (
+                    False,
+                    f'GitHub rejected creating issue type "{type_name}" in organization "{org}" (403). '
+                    f'Please grant the GitHub App "Organization administration" (write) permission, '
+                    f'or manually create the "{type_name}" issue type in the organization.'
+                )
+            return (
+                False,
+                f'Failed to create issue type "{type_name}" in organization "{org}": {e}'
+            )
+        except Exception as e:
+            return (
+                False,
+                f'Failed to create issue type "{type_name}" in organization "{org}": {e}'
+            )
+
+    def _execute_github_suggest_modify_type(self, seadb_api, project_uuid, source_id, suggestion_text=''):
+        ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
+        if not ctx:
+            return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
+
+        suggested_type = self._parse_suggested_type(suggestion_text)
+        if not suggested_type:
+            logger.error(
+                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
+                f'{suggestion_text!r}'
+            )
+            return f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+
+        # Normalize to the canonical enum spelling (Bug / Feature / Question).
+        suggested_type = suggested_type.capitalize()
+
+        if suggested_type == 'Question':
+            ok, err = self._ensure_github_org_issue_type(
+                ctx['github_api'],
+                ctx['owner'],
+                'Question',
+                description='Questions and support requests from users.',
+            )
+            if not ok:
+                logger.error(
+                    f'Cannot ensure "Question" issue type for GitHub issue {ctx["record_id"]}: {err}'
+                )
+                return err
+
+        try:
+            issue_data = ctx['github_api'].update_issue(
+                ctx['owner'],
+                ctx['repo'],
+                ctx['issue_number'],
+                issue_type=suggested_type,
+            )
+            new_type = issue_data.get('issue_type', suggested_type)
+        except requests.HTTPError as e:
+            status_code = getattr(e.response, 'status_code', None)
+            if status_code == 422:
+                logger.error(
+                    f'GitHub rejected issue_type "{suggested_type}" for issue {ctx["record_id"]} (422). '
+                    f'The type may not exist in the organization.'
+                )
+                return (
+                    f'GitHub rejected issue type "{suggested_type}" (422). '
+                    f'The type may not be defined in the organization. '
+                    f'Please configure issue types in GitHub or choose an existing one.'
+                )
+            logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}'
+        except Exception as e:
+            logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}'
+
+        try:
+            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+            github_seadb_api.save_issue_update(
+                project_uuid,
+                ctx['connection_id'],
+                ctx['record_id'],
+                issue_data,
+            )
+        except Exception as e:
+            logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
+
+        return f'Issue type updated to "{new_type}" for GitHub issue {ctx["record_id"]}.'
 
     def _create_ticket_from_record_detail(
         self,

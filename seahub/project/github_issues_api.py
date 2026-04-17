@@ -119,3 +119,57 @@ class GitHubAPI:
             'state_reason': issue_data.get('state_reason', ''),
             'updated_time': issue_data.get('updated_at', ''),
         }
+
+    def add_comment(self, owner, repo, issue_number, body):
+        url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        payload = {'body': body}
+        response = requests.post(url, headers=self.headers, json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        comment_data = response.json()
+        return {
+            'id': comment_data.get('id'),
+            'author': comment_data.get('user', {}).get('login', ''),
+            'body': comment_data.get('body', ''),
+            'created_at': comment_data.get('created_at', ''),
+        }
+
+    def list_org_issue_types(self, org):
+        """List organization-level issue types. Requires the 'Organization administration' permission (read)."""
+        url = f"{self.base_url}/orgs/{org}/issue-types"
+        response = requests.get(url, headers=self.headers, timeout=self.timeout)
+        response.raise_for_status()
+        data = response.json()
+        if isinstance(data, list):
+            items = data
+        else:
+            items = data.get('issue_types') or []
+        return [
+            {
+                'id': item.get('id'),
+                'name': item.get('name', ''),
+                'description': item.get('description', ''),
+                'color': item.get('color', ''),
+                'is_enabled': item.get('is_enabled', True),
+            }
+            for item in items
+        ]
+
+    def create_org_issue_type(self, org, name, is_enabled=True, description='', color='green'):
+        """Create an organization-level issue type. Requires the 'Organization administration' permission (write)."""
+        url = f"{self.base_url}/orgs/{org}/issue-types"
+        payload = {
+            'name': name,
+            'is_enabled': is_enabled,
+            'description': description,
+            'color': color,
+        }
+        response = requests.post(url, headers=self.headers, json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        item = response.json()
+        return {
+            'id': item.get('id'),
+            'name': item.get('name', ''),
+            'description': item.get('description', ''),
+            'color': item.get('color', ''),
+            'is_enabled': item.get('is_enabled', True),
+        }
