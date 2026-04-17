@@ -1014,10 +1014,21 @@ def _filter2sql(operator):
         return operator.op_include_me()
     return ''
 
+def get_operator(column_name, column_type):
+    if column_name == 'assignees':
+        if column_type == PropertyTypes.SINGLE_SELECT:
+            return SingleSelectOperator
+        return CollaboratorOperator
+
+    name_operator = _get_operator_by_name(column_name)
+    if name_operator:
+        return name_operator
+    return _get_operator_by_name(column_name) or _get_operator_by_type(column_type)
+
 def _get_operator_by_name(column_name):
     if column_name == 'creator':
         return CreatorOperator
-    elif column_name in ['participants', 'assignees']:
+    elif column_name in ['participants']:
         return CollaboratorOperator
     return None
 
@@ -1159,7 +1170,7 @@ class SQLGenerator(object):
             column['type'] = column_type
             # Compatible with other types
             column_name = column.get('name')
-            operator_cls = _get_operator_by_name(column_name) or _get_operator_by_type(column_type)
+            operator_cls = get_operator(column_name, column_type)
             if not operator_cls:
                 raise ValueError('filter: %s not support to sql' % filter_item)
             operator = operator_cls(column, filter_item)

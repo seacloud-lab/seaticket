@@ -684,6 +684,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   _PK: '_pk',
   TITLE: 'title',
   AI_SUMMARY: 'ai_summary',
+  ASSIGNEES: 'assignees',
   AI_PROCESSED_TIME: 'ai_processed_time',
   AUTHOR: 'author',
   CREATOR: 'creator',
@@ -696,7 +697,6 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   ISSUE_KEY: 'issue_key',
   STATUS: 'status',
   PRIORITY: 'priority',
-  ASSIGNEE: 'assignee',
   DUE_DATE: 'due_date',
   LABELS: 'labels',
   COMMENT_COUNT: 'comment_count',
@@ -843,8 +843,8 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Priority'),
       is_predefined: true,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEE]: {
-      display_name: gettext('Assignee'),
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
+      display_name: gettext('Assignees'),
       type: CellType.SINGLE_SELECT,
       is_predefined: true,
     },
