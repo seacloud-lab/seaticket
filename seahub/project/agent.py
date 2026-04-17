@@ -349,8 +349,6 @@ class AgentActionConfirmView(APIView):
             return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, content, username)
         elif tool_name == 'suggest_add_comment':
             return self._execute_add_comment(seadb_api, project, project_uuid, ticket_id, content, username)
-        elif tool_name == 'final_answer':
-            return 'Final answer acknowledged.'
         else:
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
@@ -363,8 +361,6 @@ class AgentActionConfirmView(APIView):
             return self._execute_github_suggest_modify_type(source_id, content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
-        elif tool_name == 'final_answer':
-            return 'Final answer acknowledged.'
         else:
             logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
@@ -375,8 +371,6 @@ class AgentActionConfirmView(APIView):
             return self._execute_email_suggest_resolution(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username)
-        elif tool_name == 'final_answer':
-            return 'Final answer acknowledged.'
         else:
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
