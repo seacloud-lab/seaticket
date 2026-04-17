@@ -8,7 +8,6 @@ from seahub.project.connections import (
     ProjectConnectionView,
     ProjectConnectionSyncView,
     ProjectConnectionDetailsView,
-    ProjectConnectionRowDetailView,
     ProjectConnectionLogView,
     ProjectConnectionsStatusView,
     ProjectConnectionRecordView,
@@ -402,6 +401,34 @@ class TestProjectConnectionsStatusView:
 
 
 class TestProjectConnectionRecordView:
+
+    def test_get_type_invalid(self, factory, project_creator, real_project, connection_factory, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/records/1/")
+        request.user = project_creator
+
+        connection = connection_factory(connection_type='site')
+        connection.type = 'unknown'
+        connection.name = 'c1'
+        connection.save(update_fields=['type', 'name'])
+
+        resp = ProjectConnectionRecordView.as_view()(request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='1')
+
+        assert resp.status_code == 400
+
+    def test_get_site_success_no_file(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/records/1/")
+        request.user = project_creator
+
+        seadb = Mock()
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.connections.list_site_record_details', return_value={'url': ''}):
+            resp = ProjectConnectionRecordView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id), record_id='1')
+
+        assert resp.status_code == 200
+
 
     def test_put_invalid_body(self, factory, project_creator, real_project, site_connection):
         project = real_project
