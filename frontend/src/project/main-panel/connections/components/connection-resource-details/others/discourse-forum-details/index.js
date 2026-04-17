@@ -20,7 +20,7 @@ const DiscourseForumDetails = ({
   return (
     <>
       <CheckboxSettings
-        isReadonly={isReadonly}
+        isReadonly={true}
         title={gettext('Resolved')}
         className="mb-4"
         value={getCellValueByColumn(record, resolvedColumn)}

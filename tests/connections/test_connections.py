@@ -424,7 +424,7 @@ class TestProjectConnectionRecordView:
         seadb = Mock()
 
         with patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
-                patch('seahub.project.connections.list_site_record_details', return_value={'url': ''}):
+                patch('seahub.project.connections.list_site_record_details', return_value=({}, [], '')):
             resp = ProjectConnectionRecordView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id), record_id='1')
 
         assert resp.status_code == 200

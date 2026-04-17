@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react'
 import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
 import { useConnectionsPage, useConnections } from '../../../hooks';
-import { CenteredLoading, IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, toaster } from '@/components';
+import { CenteredLoading, IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, toaster, Option } from '@/components';
 import {
   getTableName, generateAIOptions, generateFindRelatedIssuesOption,
   generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption,
@@ -26,10 +26,9 @@ import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
 import Rename from './rename';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import { Option } from '@/components';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 import './index.css';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const initColumns = [
   { key: 'filename', name: 'filename' },

@@ -152,12 +152,15 @@ def get_ticket_title(seadb_api, project_uuid, ticket_id):
     if not ticket_id:
         return ''
     try:
-        ticket, columns = get_ticket(seadb_api, project_uuid, ticket_id)
+        sql = f"SELECT `title` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+        res = seadb_api.query_rows(project_uuid, sql)
+        rows = res.get('results')
+        ticket = rows[0] if rows else None
         title = ticket.get('title') or ''
     except Exception as e:
-        logger.error(f'Error querying linked ticket titles: {e}')
+        logger.error(f'Error querying ticket title: {e}')
         title = ''
-    return title  
+    return title
 
 
 def time_str_to_utc_time(time_str):
