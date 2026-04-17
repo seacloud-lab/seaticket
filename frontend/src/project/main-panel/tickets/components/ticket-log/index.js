@@ -88,13 +88,16 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     return <span>#{issue_number}</span>;
   };
 
-  const renderDiscourseTopicRef = (topic_id, slug) => {
+  const renderDiscourseTopicRef = (topic_id, topic_url) => {
     if (!topic_id) return null;
+    if (topic_url) {
+      return <a href={topic_url} target="_blank" rel="noreferrer">#{topic_id}</a>;
+    }
     return <span>#{topic_id}</span>;
   };
 
   const renderActivityMessage = useCallback(() => {
-    const { activity_type, old_value, new_value, issue_number, issue_url } = activity;
+    const { activity_type, old_value, new_value, issue_number, issue_url, topic_id, topic_url } = activity;
     const asyncCollaboratorProps = {
       className: 'mr-0',
       collaborators,
@@ -428,13 +431,11 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}{gettext('added')}</span>;
       }
       case LOG_TYPE.DISCOURSE_TOPIC_ADDED: {
-        const { topic_id, slug } = activity;
-        const ref = renderDiscourseTopicRef(topic_id, slug);
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
         return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
       }
       case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
-        const { topic_id, slug } = activity;
-        const ref = renderDiscourseTopicRef(topic_id, slug);
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
         const changeNodes = renderChangeNodes(old_value, new_value, discourseLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated Discourse topic')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -447,8 +448,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         );
       }
       case LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED: {
-        const { topic_id, slug } = activity;
-        const ref = renderDiscourseTopicRef(topic_id, slug);
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
         const count = typeof new_value === 'number' ? new_value : 1;
         return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}{gettext('added')}</span>;
       }
