@@ -31,7 +31,7 @@ import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
 
-const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }) => {
+const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
 
@@ -482,9 +482,15 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
     });
     return Promise.all(modifyPromises).then(() => {
       setIsShowRowDetailsDialog(false);
-      onRefresh();
+
+      const eventBus = context.eventBus;
+      rowIds.forEach((rowId) => {
+        const rowUpdate = idRowUpdates?.[rowId];
+        if (!rowUpdate) return;
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
+      });
     });
-  }, [api, data, onRefresh]);
+  }, [api, typesData, tagsData]);
 
   const createMoreOptions = useCallback((row) => {
     if (!row?._id) return [];
