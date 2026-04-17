@@ -78,6 +78,11 @@ export const getOriginalPageUrl = (connection, row, columns) => {
       const url = getCellValueByColumn(row, urlColumn) || '';
       return url;
     }
+    case CONNECTION_TYPE.GITHUB_PR: {
+      const urlColumn = getColumnByName(columns, 'url');
+      const url = getCellValueByColumn(row, urlColumn) || '';
+      return url;
+    }
     case CONNECTION_TYPE.SEAFILE: {
       return getSeafileOriginalPageUrl(connection, row, columns);
     }
@@ -133,7 +138,7 @@ export const initConnectionResourceDetails = (type, {
       ...prams
     };
   }
-  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.GITHUB_PR) {
     const mainPost = {
       author: author,
       time: created_time,
@@ -225,7 +230,12 @@ export const generateAIOptions = ({ rows, columns, connection }, callback) => {
   const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
   if (!enableUseAI) return null;
 
-  if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL) {
+  if (
+    connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ||
+    connection?.type === CONNECTION_TYPE.GITHUB_PR ||
+    connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM ||
+    connection?.type === CONNECTION_TYPE.EMAIL
+  ) {
     return {
       key: 'chat_issues',
       label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
@@ -328,7 +338,14 @@ export const generateLinkAnExistingTicketOption = ({ row, columns, connection },
   if (!enableCreateRelatedTicket) return null;
 
   const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-  if (!column) return null;
+  if (!column && connection?.type !== CONNECTION_TYPE.GITHUB_PR) return null;
+  if (!column && connection?.type === CONNECTION_TYPE.GITHUB_PR) {
+    return {
+      key: 'link_an_existing_ticket',
+      label: gettext('Link an existing ticket'),
+      callback: () => callback && callback(row),
+    };
+  }
   const cellValue = getCellValueByColumn(row, column);
   if (cellValue) return null;
 
@@ -344,7 +361,14 @@ export const generateCreateRelatedTicketOption = ({ row, columns, connection }, 
   if (!enableCreateRelatedTicket) return null;
 
   const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-  if (!column) return null;
+  if (!column && connection?.type !== CONNECTION_TYPE.GITHUB_PR) return null;
+  if (!column && connection?.type === CONNECTION_TYPE.GITHUB_PR) {
+    return {
+      key: 'create_related_ticket',
+      label: gettext('Create related ticket'),
+      callback: () => callback && callback(row),
+    };
+  }
   const cellValue = getCellValueByColumn(row, column);
   if (cellValue) return null;
 

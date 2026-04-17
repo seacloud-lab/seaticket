@@ -34,19 +34,20 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    init_notion_seadb_table, list_notion_record_details
+    init_notion_seadb_table, list_notion_record_details, init_github_pull_requests_seadb_table, \
+    list_github_pull_request_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GitHubIssuesTable, \
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GitHubPullRequestsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
+from seahub.project.github_issues_api import GitHubAPI
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -160,6 +161,9 @@ class ProjectConnectionsView(APIView):
                 init_email_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.NOTION.value:
                 init_notion_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.GITHUB_PR.value:
+                init_github_pull_requests_seadb_table(seadb_api, project.uuid, connection_id)
+
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -578,15 +582,19 @@ class GithubWebhookView(APIView):
         if not repository_html_url:
             error_msg = 'repository_html_url invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         if event == 'issues':
             update_data = payload.get('issue')
-            if not update_data and not update_data.get('id'):
+            if not update_data or not update_data.get('id'):
                 error_msg = 'issue_data invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        elif event == 'pull_request':
+            update_data = payload.get('pull_request')
+            if not update_data or not update_data.get('id'):
+                error_msg = 'pull_request_data invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         elif event == 'issue_comment':
             update_data = payload
-            if not update_data and not update_data.get('comment'):
+            if not update_data or not update_data.get('comment'):
                 error_msg = 'comment_data invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         elif event == 'installation' and action == 'deleted':
@@ -819,6 +827,8 @@ class ProjectConnectionRowDetailView(APIView):
             record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.NOTION.value:
             record = list_notion_record_details(seadb_api, project_uuid, connection_id, _pk)
+        elif project_connection.type == ConnectionType.GITHUB_PR.value:
+            record = list_github_pull_request_record_details(seadb_api, project_uuid, connection_id, _pk)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -936,6 +946,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GITHUB_PR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -945,7 +956,7 @@ class ProjectConnectionRecordView(APIView):
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_cls = DiscourseTopicsTable
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            table_cls = GithubIssuesTable
+            table_cls = GitHubIssuesTable
         elif project_connection.type == ConnectionType.SITE.value:
             table_cls = WebCrawlTable
         elif project_connection.type == ConnectionType.SEAFILE.value:
@@ -954,6 +965,8 @@ class ProjectConnectionRecordView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GITHUB_PR.value:
+            table_cls = GitHubPullRequestsTable
 
         update_row = {'pk': int(record_id), 'row': {}}
 
@@ -1047,6 +1060,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GITHUB_PR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1056,7 +1070,7 @@ class ProjectConnectionRecordsView(APIView):
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_cls = DiscourseTopicsTable
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            table_cls = GithubIssuesTable
+            table_cls = GitHubIssuesTable
         elif project_connection.type == ConnectionType.SITE.value:
             table_cls = WebCrawlTable
         elif project_connection.type == ConnectionType.SEAFILE.value:
@@ -1065,6 +1079,8 @@ class ProjectConnectionRecordsView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GITHUB_PR.value:
+            table_cls = GitHubPullRequestsTable
 
         update_rows = []
         for record in records_data:

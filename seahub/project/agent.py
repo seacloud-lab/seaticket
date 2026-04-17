@@ -21,7 +21,7 @@ from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.models import (
     AgentActionsTable,
     AgentRunsTable,
-    GithubIssuesTable,
+    GitHubIssuesTable,
     TicketCommentsTable,
     TicketsTable,
 )
@@ -399,7 +399,7 @@ class AgentActionConfirmView(APIView):
             return f'Invalid source_id format: {source_id}'
 
         # Fetch issue from SeaDB
-        issues_table = GithubIssuesTable.gen_table_name(connection_id)
+        issues_table = GitHubIssuesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])

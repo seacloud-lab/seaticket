@@ -26,7 +26,8 @@ from seahub.utils.indexer import vector_search
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
+from seahub.seadb_models.models import GitHubIssuesTable, DiscourseTopicsTable, ThreadTable, GitHubPullRequestsTable, \
+    GitHubPullRequestCommentsTabel
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 
@@ -135,6 +136,40 @@ class ConvertRecordToTicket(APIView):
                 comments = github_db_api.get_comments_by_issue_id(
                     connection_id, issue_id
                 )
+                for comment in comments:
+                    if not comment.get('content'):
+                        continue
+
+                    content_to_add = comment.get('content')
+                    if body_content:
+                        content_to_add = '\n\n' + content_to_add
+                    if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                        break
+                    body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Body: {body_content}
+                """
+            case ConnectionType.GITHUB_PR.value:
+                seadb_api = SeaDBAPI()
+                pr_table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
+                pr_comment_table_name = GitHubPullRequestCommentsTabel.gen_table_name(connection_id)
+                sql = f"SELECT * FROM `{pr_table_name}` WHERE `_pk` = {record_id}"
+                pr_res = seadb_api.query_rows(project_uuid, sql)
+                pr = pr_res.get('results', [])
+                title = pr[0].get('title', '') if pr else ''
+                default_title = title
+                body_content = pr[0].get('content', '') if pr else ''
+                config = json.loads(connection.config)
+                repository = config.get('repository')
+                pr_number = pr[0].get('pr_number')
+                related_url = f'{repository}/pull/' + str(pr_number)
+                pr_id = pr[0].get('pr_id')
+                comments_sql = f"SELECT * FROM `{pr_comment_table_name}` WHERE `pr_id` = {pr_id}"
+                comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+                comments = comments_res.get('results', [])
                 for comment in comments:
                     if not comment.get('content'):
                         continue
@@ -412,16 +447,16 @@ class RelatedRecordsView(APIView):
             if not connection:
                 error_msg = f'Connection {connection_id} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             current_category = ConnectionCategory.from_type(connection.type)
             if current_category == ConnectionCategory.ISSUE:
                 if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                    table_name = GithubIssuesTable.gen_table_name(connection_id)
+                    table_name = GitHubIssuesTable.gen_table_name(connection_id)
                 elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
                     table_name = DiscourseTopicsTable.gen_table_name(connection_id)
                 elif connection.type == ConnectionType.EMAIL.value:
                     table_name = ThreadTable.gen_table_name(connection_id)
-
+                elif connection.type == ConnectionType.GITHUB_PR.value:
+                    table_name = GitHubPullRequestsTable.gen_table_name(connection_id)
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

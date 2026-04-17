@@ -19,7 +19,7 @@ from seahub.project.utils import url_to_filename
 from seahub.utils.storage import get_file_from_s3_web_crawl
 from seahub.seadb_models.utils import (
     list_connection_view_records, list_discourse_forum_replies_records,
-    list_github_issue_record_details
+    list_github_issue_record_details, list_github_pull_request_record_details
 )
 
 logger = logging.getLogger(__name__)
@@ -221,6 +221,11 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 if not _pk:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
                 row_details = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
+            elif connection.type == ConnectionType.GITHUB_PR.value:
+                _pk = request.GET.get('_pk')
+                if not _pk:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
+                row_details = list_github_pull_request_record_details(seadb_api, project_uuid, connection_id, _pk)
         except Exception as e:
             logger.error('Error getting connection row details: %s', e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

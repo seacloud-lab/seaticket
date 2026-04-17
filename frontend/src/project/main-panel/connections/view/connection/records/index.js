@@ -79,6 +79,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
         Rows: gettext('GitHub issues'),
       };
     }
+    if (connectionType === CONNECTION_TYPE.GITHUB_PR) {
+      return {
+        row: gettext('GitHub pull request'),
+        rows: gettext('GitHub pull requests'),
+        Row: gettext('GitHub pull request'),
+        Rows: gettext('GitHub pull requests'),
+      };
+    }
     if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return {
         row: gettext('discourse forum'),
@@ -116,7 +124,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar, onRefresh }
             CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
           ];
           let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
-          if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+          if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.GITHUB_PR) {
             const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
             if (typeColum) {
               const options = typeColum.data?.options || [];

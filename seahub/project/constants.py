@@ -28,6 +28,7 @@ class ConnectionType(Enum):
     SITE = 'site'
     SEAFILE = 'seafile'
     NOTION = 'notion'
+    GITHUB_PR = 'github_pr'
 
     @classmethod
     def is_valid(cls, value):
@@ -198,6 +199,41 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': 'closed', 'type': 'view'}
         ]
     },
+    ConnectionType.GITHUB_PR.value: {
+        'views': [
+            {
+                '_id': 'open',
+                'name': _('Open'),
+                'type': 'table',
+                'basic_filters': [
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']}
+                ],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }, {
+                '_id': 'closed',
+                'name': _('Closed'),
+                'type': 'table',
+                'basic_filters': [
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']}
+                ],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': 'open', 'type': 'view'},
+            {'_id': 'closed', 'type': 'view'}
+        ]
+    },
     ConnectionType.SITE.value: {
         'views': [
             {
@@ -354,7 +390,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags'],
-    ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated']
+    ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
+    ConnectionType.GITHUB_PR.value: ['_pk', 'title', 'author', 'state', 'labels', 'closed_time', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 
@@ -383,6 +420,7 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.GITHUB_PR.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,

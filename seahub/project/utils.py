@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.DISCOURSE_FORUM.value,
     ConnectionType.GITHUB_ISSUE.value,
+    ConnectionType.GITHUB_PR.value,
     ConnectionType.EMAIL.value,
 ]
 

@@ -576,6 +576,31 @@ class TestGithubWebhookView:
         assert resp.status_code == 200
         update_mock.assert_called_once()
 
+    def test_post_pull_request_success_calls_update(self, factory, connection_factory):
+        payload = {
+            'action': 'opened',
+            'pull_request': {'id': 1},
+            'installation': {'id': 12345},
+            'repository': {'html_url': 'https://github.com/xxx/xxx'}
+        }
+        request = factory.post(
+            f'/webhook/github/',
+            data=payload,
+            format='json',
+            HTTP_X_GITHUB_EVENT='pull_request',
+            HTTP_X_HUB_SIGNATURE_256='sha256=ok',
+        )
+        record = Mock()
+        record.id = 11
+        record.to_dict.return_value = {'id': 11, 'config': {"html_url": "https://github.com/xxx/xxx", "installation_id": "123456"}}
+
+        request.META['HTTP_X_HUB_SIGNATURE_256'] = self._signature(GITHUB_WEBHOOK_SECRET, request.body)
+        with patch('seahub.project.connections.ProjectGithubAppInstallation.objects.get_installation_by_installation_id', return_value=record),\
+                patch('seahub.project.connections.update_github_issue_by_webhook') as update_mock:
+            resp = GithubWebhookView.as_view()(request)
+        assert resp.status_code == 200
+        update_mock.assert_called_once()
+
 
 class TestDiscourseWebhookView:
     def _signature(self, secret, body):
