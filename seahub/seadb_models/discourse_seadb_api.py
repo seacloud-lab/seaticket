@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import DiscourseTopicsTable, DiscourseRepliesTable
@@ -140,3 +141,29 @@ class DiscourseSeaDBAPI:
 
                 result.append(whole_topic_data)
         return result
+
+    def add_reply(self, project_uuid, connection_id, topic_id, reply_data):
+        now = datetime.datetime.now(datetime.UTC).isoformat()
+        replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+        topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+
+        reply_row = {
+            DiscourseRepliesTable.topic_id.name: topic_id,
+            DiscourseRepliesTable.post_number.name: reply_data.get('post_number', 0),
+            DiscourseRepliesTable.content.name: reply_data.get('content', ''),
+            DiscourseRepliesTable.author.name: reply_data.get('author', ''),
+            DiscourseRepliesTable.modified_time.name: now,
+            DiscourseRepliesTable.accepted_answer.name: False,
+        }
+
+        result = self.seadb_api.insert_rows(project_uuid, replies_table_name, [reply_row])
+        pks = result.get('pks', [])
+
+        self.seadb_api.update_rows(project_uuid, topics_table_name, [{
+            'pk': int(reply_data.get('topic_pk', 0)),
+            'row': {
+                DiscourseTopicsTable.record_modified_time.name: now,
+            }
+        }])
+
+        return pks[0] if pks else None

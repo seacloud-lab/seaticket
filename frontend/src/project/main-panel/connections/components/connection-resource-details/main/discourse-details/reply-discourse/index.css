@@ -1,0 +1,13 @@
+.sea-ticket-discourse-reply-container {
+  padding: 12px 0;
+}
+
+.sea-ticket-discourse-reply-container textarea {
+  margin-bottom: 12px;
+}
+
+.sea-ticket-discourse-reply-op-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

@@ -4,6 +4,7 @@ import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPE } from '../../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
+import DiscourseDetails from './discourse-details';
 import GitHubIssuesDetails from './github-issues-details';
 import { initConnectionResourceDetails } from '../../../utils';
 import { Utils } from '@/utils/utils';
@@ -16,6 +17,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
   const [localEmailDetails, setLocalEmailDetails] = useState([]);
+  const [localDiscourseDetails, setLocalDiscourseDetails] = useState([]);
 
   const type = useMemo(() => resource.type, [resource]);
 
@@ -56,6 +58,21 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     };
     setLocalEmailDetails(prev => [...prev, nextDetail]);
   }, [connection, details]);
+
+  const handleReplyDiscourseSuccess = useCallback((payload) => {
+    if (!payload) return;
+    const now = new Date().toISOString();
+    const nextDetail = {
+      author: payload.author,
+      content: payload.content,
+      post_number: payload.post_number,
+      modified_time: now,
+      time: now,
+      body: payload.content,
+      _pk: payload._pk,
+    };
+    setLocalDiscourseDetails(prev => [...prev, nextDetail]);
+  }, []);
 
   useEffect(() => {
     setStatus('loading');
@@ -98,6 +115,25 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
         className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
         details={details}
         isSmallScreen={isSmallScreen}
+      />
+    );
+  }
+
+  if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+    const discourseDetails = Array.isArray(details) ? details : [];
+    const mergedDiscourseDetails = [...discourseDetails, ...localDiscourseDetails];
+    if (mergedDiscourseDetails.length === 0) {
+      return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
+    }
+    return (
+      <DiscourseDetails
+        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        details={discourseDetails}
+        projectUuid={projectUuid}
+        connection_id={resource.connection_id}
+        recordId={resource._id}
+        permission={permission}
+        handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
       />
     );
   }
