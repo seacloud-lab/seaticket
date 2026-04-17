@@ -42,7 +42,7 @@ class GitHubSeaDBAPI:
             return response['results']
         return []
 
-    def save_issue_update(self, project_uuid, connection_id, record_pk, issue_data):
+    def update_issue_record(self, project_uuid, connection_id, record_pk, issue_data):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         table_name = GithubIssuesTable.gen_table_name(connection_id)
         update_row = {

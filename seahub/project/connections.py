@@ -704,7 +704,7 @@ class GithubIssueView(APIView):
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-            github_seadb_api.save_issue_update(project_uuid, connection_id, _pk, issue_data)
+            github_seadb_api.update_issue_record(project_uuid, connection_id, _pk, issue_data)
         except Exception as e:
             logger.error(f'update github issue in seadb error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
