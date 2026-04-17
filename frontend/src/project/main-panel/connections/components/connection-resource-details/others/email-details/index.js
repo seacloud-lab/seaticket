@@ -1,15 +1,16 @@
 import React from 'react';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import { PERMISSION_TYPES } from '@/constants';
 import LinkedTicket from '../linked-ticket';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import CheckboxSettings from '../checkbox-settings';
+import { gettext } from '@/constants';
 
 const EmailDetails = ({
   record,
   columns,
-  permission,
+  isReadonly,
   linkedTicketTitle,
   projectUuid,
   tagsData,
@@ -17,15 +18,23 @@ const EmailDetails = ({
 }) => {
   const tagsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
   const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+  const unreadColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
 
   return (
     <>
       <TagsSettings
         id="tags-editor-popover"
-        isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+        isReadonly={isReadonly}
         value={getCellValueByColumn(record, tagsColumn)}
         tagsData={tagsData}
-        onChange={onChange}
+        onChange={(newValue) => onChange({ [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: newValue })}
+      />
+      <CheckboxSettings
+        isReadonly={isReadonly}
+        title={gettext('unread')}
+        className="mb-4"
+        value={getCellValueByColumn(record, unreadColumn)}
+        onChange={(newValue) => onChange({ [unreadColumn.name]: newValue })}
       />
       <LinkedTicket
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}

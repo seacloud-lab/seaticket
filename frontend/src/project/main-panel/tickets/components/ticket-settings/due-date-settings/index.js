@@ -43,7 +43,7 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
   }, [translateCalendar]);
 
   return (
-    <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
+    <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="date">
         {gettext('Due date')}
       </CustomizeLabel>

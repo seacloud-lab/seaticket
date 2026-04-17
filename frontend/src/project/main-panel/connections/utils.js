@@ -214,7 +214,7 @@ export const generateMarkAsOutdatedOptions = ({ rows, columns, connection }, cal
   let activeRows = [];
   let outdatedRows = [];
   rows.forEach(row => {
-    const oldValue = row[outdatedColumn.key];
+    const oldValue = getCellValueByColumn(row, outdatedColumn);
     if (oldValue) {
       outdatedRows.push(row);
     } else {

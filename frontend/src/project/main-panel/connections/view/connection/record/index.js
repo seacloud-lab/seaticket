@@ -26,8 +26,10 @@ import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
 import Rename from './rename';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { Option } from '@/components';
 
 import './index.css';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const initColumns = [
   { key: 'filename', name: 'filename' },
@@ -85,18 +87,23 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       generateOpenOriginalPageOption({ row, columns, connection }),
       generateCopyOriginalLinkOption({ row, columns, connection }),
     ];
-    let outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
+    const outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
       const rowId = rowIds[0];
       const rowUpdate = idRowUpdates[rowId];
+      const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+      const serverRowUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]: getCellValueByColumn(rowUpdate, outdatedColumn) };
       const connectionTableName = getTableName(connection);
       let localRowUpdate = {};
       if (cacheRecord) {
-        const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
         if (outdatedColumn) {
-          localRowUpdate[outdatedColumn.key] = rowUpdate[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED];
+          localRowUpdate[outdatedColumn.key] = getCellValueByColumn(rowUpdate, outdatedColumn);
         }
       }
-      modifyRow(connectionTableName, rowId, localRowUpdate, () => connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, rowUpdate));
+      modifyRow(connectionTableName, rowId, localRowUpdate,
+        () => connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, serverRowUpdate).then(res => {
+          setRecord({ ...record, ...serverRowUpdate });
+        })
+      );
     }) : [];
     if (outdatedOptions.length > 0) {
       _tools.push({ key: 'divider' });
@@ -183,8 +190,20 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
       return modifyGitHubRecord(update, callback);
     }
-
-  }, [connection, modifyGitHubRecord]);
+    let localRowUpdate = {};
+    const recordID = Number(childrenPageSlugId);
+    Object.keys(update).forEach((name) => {
+      const column = getColumnByName(columns, name);
+      if (column) {
+        localRowUpdate[column.key] = getCellValueByColumn(update, column);
+      }
+    });
+    modifyRow(connectionTableName, recordID, localRowUpdate,
+      () => connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, recordID, update).then(res => {
+        setRecord({ ...record, ...update });
+      })
+    );
+  }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
 
   useEffect(() => {
     if (isConnectionsPageLoading || !record) return;
@@ -205,6 +224,9 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   // 904: details min-width(596) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = record && containerWidth < 904;
+  const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
+  const isOutdated = getCellValueByColumn(record, outdatedColumn);
+
   return (
     <>
       <div className={classnames('sea-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
@@ -215,6 +237,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
             <>
               <div className="sea-connection-record-details-header-left">
                 {title && (<div className="text-truncate d-inline-block" title={title}>{title}</div>)}
+                {title && isOutdated && (<Option option={{ name: gettext('Outdated'), color: '#999', text_color: '#fff' }} className="sea-connection-record-outdated-option" />)}
                 {url && (
                   <IconButton
                     className="open-in-new-tab-btn"
@@ -276,11 +299,11 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
                 connection={connection}
                 record={record}
                 columns={columns}
-                permission={permission}
                 projectUuid={projectUuid}
                 linkedTicketTitle={linkedTicketTitle.current}
                 tagsData={tagsData}
                 onChange={handleOthersChange}
+                isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
               />
             </div>
           )}

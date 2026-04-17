@@ -5,14 +5,13 @@ import StateSettings from './state-settings';
 import StateReasonSettings from './state-reason-settings';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import { PERMISSION_TYPES } from '@/constants';
 import LinkedTicket from '../linked-ticket';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const GitHubIssuesDetails = ({
   record,
   columns,
-  permission,
+  isReadonly,
   linkedTicketTitle,
   projectUuid,
   onChange,
@@ -27,14 +26,14 @@ const GitHubIssuesDetails = ({
     <>
       <LabelsSettings
         id="github-issue-labels-editor-popover"
-        isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+        isReadonly={isReadonly}
         value={getCellValueByColumn(record, labelsColumn)}
         column={labelsColumn}
         onChange={onChange}
       />
       <StateSettings
         id="github-issue-state-editor-popover"
-        isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+        isReadonly={isReadonly}
         state={getCellValueByColumn(record, stateColumn)}
         stateReason={getCellValueByColumn(record, stateReasonColumn)}
         stateColumn={stateColumn}
@@ -43,7 +42,7 @@ const GitHubIssuesDetails = ({
       />
       <StateReasonSettings
         id="github-issue-state-reason-editor-popover"
-        isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+        isReadonly={isReadonly}
         value={getCellValueByColumn(record, stateReasonColumn)}
         state={getCellValueByColumn(record, stateColumn)}
         stateColumn={stateColumn}
@@ -52,7 +51,7 @@ const GitHubIssuesDetails = ({
       />
       <TypeSettings
         id="github-issue-type-editor-popover"
-        isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+        isReadonly={isReadonly}
         value={getCellValueByColumn(record, typeColumn)}
         column={typeColumn}
         onChange={onChange}

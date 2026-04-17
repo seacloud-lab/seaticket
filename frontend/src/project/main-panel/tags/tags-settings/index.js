@@ -106,7 +106,7 @@ const TagsSettings = ({
   const selectedTags = getRowsByIds(tagsData, value).filter(tag => tag);
 
   return (
-    <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
+    <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="tag-filled">
         {gettext('Tags')}
       </CustomizeLabel>

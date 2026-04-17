@@ -63,7 +63,7 @@ const CollaboratorsSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
+      <div className={classnames('sea-ticket-settings-item', className)}>
         <CustomizeLabel icon="group">
           {title}
         </CustomizeLabel>

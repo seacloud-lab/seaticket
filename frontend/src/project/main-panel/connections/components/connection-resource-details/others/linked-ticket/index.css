@@ -1,7 +1,12 @@
-.link-settings-formatter.valid {
+.sea-ticket-link-settings-formatter {
+  padding: 6px 0;
+  margin-bottom: 8px;
+}
+
+.sea-ticket-link-settings-formatter.valid {
   padding: 5px 0;
 }
 
-.link-settings-formatter.valid .link-item .link-item-name {
+.sea-ticket-link-settings-formatter.valid .link-item .link-item-name {
   max-width: 100%;
 }

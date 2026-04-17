@@ -69,7 +69,7 @@ const StateReasonSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-qa-project-ticket-settings-item mb-4', className)}>
+      <div className={classnames('sea-ticket-settings-item mb-4', className)}>
         <CustomizeLabel icon="single-select">
           {gettext('State reason')}
         </CustomizeLabel>
