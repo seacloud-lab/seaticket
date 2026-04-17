@@ -49,6 +49,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     const newShow = typeof show === 'boolean' ? show : !isShowConnectionDialog;
     setShowConnectionDialog(newShow);
     updateUrlParams({
+      'connection-type': null,
       'connection-dialog': newShow ? 'open' : null
     });
   }, [isShowConnectionDialog, updateUrlParams]);
@@ -260,6 +261,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       handleModify,
       reloadConnections,
       loadMore,
+      updateUrlParams,
     }}>
       {children}
       {isShowConnectionDialog && (

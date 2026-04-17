@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
@@ -10,6 +10,7 @@ import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
+import { useConnections } from '../../hooks/connections';
 
 import './index.css';
 import './sea-qa-project-selected-connection.css';
@@ -46,6 +47,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [newRecord, setNewRecord] = useState(null);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
+  const { updateUrlParams } = useConnections();
+  const prevStepIndexRef = useRef(stepIndex);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -54,6 +57,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       setStepIndex(1);
     }
   }, []);
+
+  useEffect(() => {
+    if (prevStepIndexRef.current === 1 && stepIndex === 0) {
+      updateUrlParams({ 'connection-type': null });
+    }
+    prevStepIndexRef.current = stepIndex;
+  }, [stepIndex, updateUrlParams]);
 
   const installGitHubAppURL = useMemo(() => {
     const url = new URL(`${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`);
