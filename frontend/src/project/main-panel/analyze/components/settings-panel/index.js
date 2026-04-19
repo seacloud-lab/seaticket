@@ -63,7 +63,7 @@ const SettingsPanel = ({
         </FormGroup>
         {/* Date Range Setting */}
         <FormGroup className="analyze-settings-section">
-          <Label>{gettext('Date range')}</Label>
+          <Label>{gettext('Date range (By modified time)')}</Label>
           <DateRangeSetting
             startDate={startDate}
             endDate={endDate}
