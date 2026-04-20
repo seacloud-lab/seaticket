@@ -17,6 +17,8 @@ IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 
 
 GITHUB_ISSUE_ACTIVITY_TYPES = {'github_issue_added', 'github_issue_updated', 'github_issue_closed', 'github_issue_reopened', 'github_issue_comment_added'}
 
+DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_updated', 'discourse_topic_reply_added'}
+
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 

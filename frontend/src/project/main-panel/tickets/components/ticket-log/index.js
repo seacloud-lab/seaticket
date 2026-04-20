@@ -36,6 +36,10 @@ const LOG_TYPE = {
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
   GITHUB_ISSUE_REOPENED: 'github_issue_reopened',
   GITHUB_ISSUE_COMMENT_ADDED: 'github_issue_comment_added',
+
+  DISCOURSE_TOPIC_ADDED: 'discourse_topic_added',
+  DISCOURSE_TOPIC_UPDATED: 'discourse_topic_updated',
+  DISCOURSE_TOPIC_REPLY_ADDED: 'discourse_topic_reply_added',
 };
 
 const LOG_ICONS = {
@@ -59,6 +63,10 @@ const LOG_ICONS = {
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_REOPENED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED]: 'dot-circle-stroked',
+
+  [LOG_TYPE.DISCOURSE_TOPIC_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED]: 'dot-circle-stroked',
 };
 
 const diff = (newValue, oldValue) => {
@@ -80,8 +88,16 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     return <span>#{issue_number}</span>;
   };
 
+  const renderDiscourseTopicRef = (topic_id, topic_url) => {
+    if (!topic_id) return null;
+    if (topic_url) {
+      return <a href={topic_url} target="_blank" rel="noreferrer">#{topic_id}</a>;
+    }
+    return <span>#{topic_id}</span>;
+  };
+
   const renderActivityMessage = useCallback(() => {
-    const { activity_type, old_value, new_value, issue_number, issue_url } = activity;
+    const { activity_type, old_value, new_value, issue_number, issue_url, topic_id, topic_url } = activity;
     const asyncCollaboratorProps = {
       className: 'mr-0',
       collaborators,
@@ -98,19 +114,25 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       issue_type: gettext('type'),
       state_reason: gettext('reason'),
     };
-    const fmtGithubVal = (val) => {
+    const discourseLabelMap = {
+      title: gettext('title'),
+      category_id: gettext('category'),
+      resolved: gettext('resolved'),
+    };
+    const fmtVal = (val) => {
       if (val === null || val === undefined) return null;
       if (Array.isArray(val)) return val.join(', ') || null;
+      if (typeof val === 'boolean') return val ? gettext('yes') : gettext('no');
       return String(val) || null;
     };
-    const renderGithubChangeNodes = (oldVal, newVal) => {
+    const renderChangeNodes = (oldVal, newVal, labelMap) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
       const newObj = (newVal && typeof newVal === 'object') ? newVal : {};
       const allFields = [...new Set([...Object.keys(newObj), ...Object.keys(oldObj)])];
       return allFields.map(field => {
-        const label = githubLabelMap[field] || field;
-        const o = fmtGithubVal(oldObj[field]);
-        const n = fmtGithubVal(newObj[field]);
+        const label = labelMap[field] || field;
+        const o = fmtVal(oldObj[field]);
+        const n = fmtVal(newObj[field]);
         if (!o && n) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
         if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="sea-ticket-log-removed">{o}</span></span>;
         if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="sea-ticket-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
@@ -392,7 +414,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
       }
       case LOG_TYPE.GITHUB_ISSUE_UPDATED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
-        const changeNodes = renderGithubChangeNodes(old_value, new_value);
+        const changeNodes = renderChangeNodes(old_value, new_value, githubLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated GitHub issue')}{ref ? <>{' '}{ref}</> : null}</span>;
         }
@@ -408,6 +430,28 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const count = typeof new_value === 'number' ? new_value : 1;
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}{gettext('added')}</span>;
       }
+      case LOG_TYPE.DISCOURSE_TOPIC_ADDED: {
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
+        return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
+      }
+      case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
+        const changeNodes = renderChangeNodes(old_value, new_value, discourseLabelMap);
+        if (changeNodes.length === 0) {
+          return <span>{gettext('updated Discourse topic')}{ref ? <>{' '}{ref}</> : null}</span>;
+        }
+        return (
+          <>
+            {gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}
+            {changeNodes}
+          </>
+        );
+      }
+      case LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED: {
+        const ref = renderDiscourseTopicRef(topic_id, topic_url);
+        const count = typeof new_value === 'number' ? new_value : 1;
+        return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}{gettext('added')}</span>;
+      }
       default:
         return <span>{gettext('made changes')}</span>;
     }
@@ -421,7 +465,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
       </div>
       <div className="sea-ticket-log-content">
-        {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && (
+        {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && (
           <AsyncCollaborator
             value={activity.creator}
             className="sea-ticket-log-creator"
