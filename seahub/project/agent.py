@@ -394,6 +394,58 @@ class AgentActionConfirmView(APIView):
             f'Content: {(suggestion_content or "")[:500]}...'
         )
 
+    def _create_ticket_from_record_detail(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        username,
+        record_detail,
+        title,
+        source_label,
+    ):
+        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
+        params = {
+            'username': 'agent',
+            'record_detail': record_detail,
+            'project_uuid': project_uuid,
+            'org_id': org_id,
+            'scenario': AIScenario.RECORD_GENERATION.value,
+        }
+        try:
+            ai_title, ai_content = ai_convert_record_to_ticket(params)
+        except Exception as e:
+            logger.error(f'AI service error when creating ticket from {source_label} {source_id}: {e}')
+            return None, f'AI service error: {e}'
+
+        ticket_title = ai_title or title
+        ticket_content = ai_content or ''
+
+        now = timezone.now().isoformat()
+        ticket_row = {
+            TicketsTable.title.name: ticket_title,
+            TicketsTable.content.name: ticket_content,
+            TicketsTable.state.name: 'open',
+            TicketsTable.priority.name: 0,
+            TicketsTable.creator.name: username,
+            TicketsTable.created_time.name: now,
+            TicketsTable.modified_time.name: now,
+            TicketsTable.deleted.name: False,
+            TicketsTable.linked_connection_records.name: [source_id],
+        }
+        try:
+            insert_result = seadb_api.insert_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_row])
+            pks = insert_result.get('pks', [])
+            if not pks:
+                raise RuntimeError('insert_rows returned no PKs')
+            ticket_pk = pks[0]
+        except Exception as e:
+            logger.error(f'Failed to insert ticket for {source_label} {source_id}: {e}')
+            return None, f'Failed to create ticket: {e}'
+
+        return ticket_pk, None
+
     def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
         """Create an internal ticket from a GitHub issue.
 
@@ -404,12 +456,8 @@ class AgentActionConfirmView(APIView):
         4. Insert the ticket into SeaDB.
         5. Update the GitHub issue's linked_ticket field.
         """
-        try:
-            connection_id_str, record_id_str = source_id.split('_', 1)
-            connection_id = int(connection_id_str)
-            record_id = int(record_id_str)
-        except (ValueError, AttributeError) as e:
-            logger.error(f'Cannot parse github_issue source_id {source_id!r}: {e}')
+        connection_id, record_id = self._parse_connection_source_id(source_id, 'github_issue')
+        if connection_id is None or record_id is None:
             return f'Invalid source_id format: {source_id}'
 
         # Fetch issue from SeaDB
@@ -430,48 +478,19 @@ class AgentActionConfirmView(APIView):
             f"Body: {body_content[:3000]}..."
         )
 
-        # Call AI service to generate ticket title and content
-        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
-        params = {
-            'username': 'agent',
-            'record_detail': record_detail,
-            'project_uuid': project_uuid,
-            'org_id': org_id,
-            'scenario': AIScenario.RECORD_GENERATION.value,
-        }
-        try:
-            ai_title, ai_content = ai_convert_record_to_ticket(params)
-        except Exception as e:
-            logger.error(f'AI service error when creating ticket from github issue {source_id}: {e}')
-            return f'AI service error: {e}'
+        ticket_pk, error = self._create_ticket_from_record_detail(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid=project_uuid,
+            source_id=source_id,
+            username=username,
+            record_detail=record_detail,
+            title=title,
+            source_label='GitHub issue',
+        )
+        if error:
+            return error
 
-        ticket_title = ai_title or title
-        ticket_content = ai_content or ''
-
-        # Insert ticket into SeaDB
-        now = timezone.now().isoformat()
-        ticket_row = {
-            TicketsTable.title.name: ticket_title,
-            TicketsTable.content.name: ticket_content,
-            TicketsTable.state.name: 'open',
-            TicketsTable.priority.name: 0,
-            TicketsTable.creator.name: username,
-            TicketsTable.created_time.name: now,
-            TicketsTable.modified_time.name: now,
-            TicketsTable.deleted.name: False,
-            TicketsTable.linked_connection_records.name: [source_id],
-        }
-        try:
-            insert_result = seadb_api.insert_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_row])
-            pks = insert_result.get('pks', [])
-            if not pks:
-                raise RuntimeError('insert_rows returned no PKs')
-            ticket_pk = pks[0]
-        except Exception as e:
-            logger.error(f'Failed to insert ticket for github issue {source_id}: {e}')
-            return f'Failed to create ticket: {e}'
-
-        # Update linked_ticket on the GitHub issue
         try:
             seadb_api.update_rows(
                 project_uuid,
@@ -634,51 +653,26 @@ class AgentActionConfirmView(APIView):
             return error
 
         record_detail = self._build_email_thread_record_detail(thread, emails)
+        thread_table = ThreadTable.gen_table_name(project_connection.id)
+        thread_id = thread.get('_pk')
 
-        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
-        params = {
-            'username': 'agent',
-            'record_detail': record_detail,
-            'project_uuid': project_uuid,
-            'org_id': org_id,
-            'scenario': AIScenario.RECORD_GENERATION.value,
-        }
-        try:
-            ai_title, ai_content = ai_convert_record_to_ticket(params)
-        except Exception as e:
-            logger.error(f'AI service error when creating ticket from email thread {source_id}: {e}')
-            return f'AI service error: {e}'
+        ticket_pk, error = self._create_ticket_from_record_detail(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid=project_uuid,
+            source_id=source_id,
+            username=username,
+            record_detail=record_detail,
+            title=thread.get('title', ''),
+            source_label='email thread',
+        )
+        if error:
+            return error
 
-        ticket_title = ai_title or thread.get('title', 'Email thread')
-        ticket_content = ai_content or ''
-
-        now = timezone.now().isoformat()
-        ticket_row = {
-            TicketsTable.title.name: ticket_title,
-            TicketsTable.content.name: ticket_content,
-            TicketsTable.state.name: 'open',
-            TicketsTable.priority.name: 0,
-            TicketsTable.creator.name: username,
-            TicketsTable.created_time.name: now,
-            TicketsTable.modified_time.name: now,
-            TicketsTable.deleted.name: False,
-            TicketsTable.linked_connection_records.name: [source_id],
-        }
-        try:
-            insert_result = seadb_api.insert_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_row])
-            pks = insert_result.get('pks', [])
-            if not pks:
-                raise RuntimeError('insert_rows returned no PKs')
-            ticket_pk = pks[0]
-        except Exception as e:
-            logger.error(f'Failed to insert ticket for email thread {source_id}: {e}')
-            return f'Failed to create ticket: {e}'
-
-        connection_id, thread_id = self._parse_connection_source_id(source_id, 'email')
         try:
             seadb_api.update_rows(
                 project_uuid,
-                ThreadTable.gen_table_name(connection_id),
+                thread_table,
                 [{'pk': thread_id, 'row': {'linked_ticket': ticket_pk, 'unread': False}}],
             )
         except Exception as e:
