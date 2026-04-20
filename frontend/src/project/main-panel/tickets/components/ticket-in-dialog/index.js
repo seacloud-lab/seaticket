@@ -64,6 +64,7 @@ const TicketInDialog = ({
 
   if (isLoading) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
+  if (!ticket) return (<CenteredError>{gettext('Ticket not found')}</CenteredError>);
 
   const isSmallScreen = containerWidth < 780;
 

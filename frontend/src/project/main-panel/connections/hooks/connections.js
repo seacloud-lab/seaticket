@@ -68,6 +68,11 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   const activeConnectionRef = useRef(null);
   const loadTime = useRef(new Date());
 
+  const getConnection = useCallback((connectionID) => {
+    const validConnectionId = Number(connectionID);
+    return connections.find(c => c.id === validConnectionId);
+  }, [connections]);
+
   const deleteConnection = useCallback((connectionID) => {
     const activeConnectionIndex = connections.findIndex(c => c.id === Number(connectionID));
     let newConnections = connections.slice(0);
@@ -254,6 +259,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       isLoading,
       isLoadingMore,
       connections,
+      getConnection,
       modifyLocalConnectionRecord,
       modifyLocalConnectionsSyncStatus,
       modifyConnectionIsActiveStatus,
