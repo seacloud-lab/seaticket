@@ -5,6 +5,7 @@ import requests
 import jwt
 import uuid
 import time
+from copy import deepcopy
 from django.core.cache import cache
 from urllib.parse import urljoin
 from seahub.chats.constants import AI_REPLY_TIMEOUT
@@ -46,7 +47,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
     ai_result.pop('answer', None)
     ai_result.update({
         'session_uuid': session_uuid,
-        'attachments': remove_content_details_in_attachments(attachments)
+        'attachments': strip_content_details_from_attachments(attachments)
     })
 
     try:
@@ -213,10 +214,10 @@ def get_attachments(seadb_api, project_uuid, attachments):
     
     return results
 
-def remove_content_details_in_attachments(attachments):
-    for attachment in attachments:
+def strip_content_details_from_attachments(attachments):
+    new_attachments = deepcopy(attachments)
+    for attachment in new_attachments:
         attachment.pop('content', None)
         attachment.pop('comments', None)
         attachment.pop('emails', None)
-    
-    return attachments
+    return new_attachments

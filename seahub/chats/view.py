@@ -19,7 +19,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
-    record_message_to_db, process_stream_ai_reply, remove_content_details_in_attachments
+    record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -423,7 +423,7 @@ class ChatView(APIView):
         task_info = {
             'user_input': {
                 'message': query,
-                'attachments': remove_content_details_in_attachments(attachments)
+                'attachments': strip_content_details_from_attachments(attachments)
             }
         }
 
