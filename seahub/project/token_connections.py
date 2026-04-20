@@ -203,7 +203,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 _pk = request.GET.get('_pk')
                 if not _pk:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
-                row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
+                row_details, columns, linked_ticket_title = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
             elif connection.type == ConnectionType.SITE.value:
                 url = request.GET.get('url')
                 if not url:
@@ -220,7 +220,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 _pk = request.GET.get('_pk')
                 if not _pk:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
-                row_details = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
+                row_details, columns, linked_ticket_title = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
         except Exception as e:
             logger.error('Error getting connection row details: %s', e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

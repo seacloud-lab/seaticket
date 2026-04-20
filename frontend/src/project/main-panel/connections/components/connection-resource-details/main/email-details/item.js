@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dayjs from '@/utils/dayjs';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
-import DateFormatter from '../../cell-formatter/date-formatter';
-import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../utils';
+import DateFormatter from '../../../cell-formatter/date-formatter';
+import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 import { connectionsAPI } from '@/project/api';

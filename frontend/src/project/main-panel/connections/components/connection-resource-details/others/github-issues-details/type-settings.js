@@ -4,19 +4,16 @@ import { gettext } from '@/constants';
 import { Option, OptionEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
-import { isEsc, isShiftS } from '@/utils/hotkey';
-import { GITHUB_STATE_REASON_NAME_MAP } from '../../../constants';
+import { isEsc, isT } from '@/utils/hotkey';
 
 import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';
 
-const StateReasonSettings = ({
+const TypeSettings = ({
   id,
   isReadonly,
   value,
   column,
   className = 'mb-4',
-  state,
-  stateColumn,
   onChange,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
@@ -24,12 +21,8 @@ const StateReasonSettings = ({
   const editorRef = useRef(null);
 
   const options = useMemo(() => {
-    const stateOptions = getColumnOptions(stateColumn);
-    const stateOption = getOption(stateOptions, state);
-    const stateReasonOptions = getColumnOptions(column).map(o => ({ ...o, value: o.id, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] }));
-    if (stateOption.name === 'open') return stateReasonOptions.slice(3);
-    return stateReasonOptions.slice(0, 3);
-  }, [state, stateColumn, column]);
+    return getColumnOptions(column).map(o => ({ ...o, value: o.id }));
+  }, [column]);
 
   const openEditor = useCallback((event) => {
     event.preventDefault();
@@ -45,13 +38,13 @@ const StateReasonSettings = ({
   const onTypeChange = useCallback((value) => {
     const option = getOption(options, value);
     if (!option) return;
-    onChange && onChange({ state_reason: option.name });
+    onChange && onChange({ issue_type: option.name });
   }, [options, onChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
 
-    if (isShiftS(event)) {
+    if (isT(event)) {
       openEditor(event);
     } else if (isEsc(event)) {
       closeEditor();
@@ -65,16 +58,16 @@ const StateReasonSettings = ({
     };
   }, [onHotKey]);
 
-  const option = options.find(o => o.name === value);
+  const typeOption = options.find(o => o.name === value);
 
   return (
     <>
-      <div className={classnames('sea-qa-project-ticket-settings-item mb-4', className)}>
+      <div className={classnames('sea-ticket-settings-item mb-4', className)}>
         <CustomizeLabel icon="single-select">
-          {gettext('State reason')}
+          {gettext('Type')}
         </CustomizeLabel>
-        <div className={classnames('ticket-types-formatter', { 'valid': option })} onClick={openEditor} ref={editorRef}>
-          {option ? <Option option={option} /> : <div className="tip-default">{gettext('No types')}</div>}
+        <div className={classnames('ticket-types-formatter', { 'valid': typeOption })} onClick={openEditor} ref={editorRef}>
+          {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>
       {!isReadonly && isShowEditor && (
@@ -84,7 +77,7 @@ const StateReasonSettings = ({
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
-          value={option?.id}
+          value={typeOption?.id}
           placeholder={gettext('Search type')}
           emptyTip={gettext('No types')}
           options={options}
@@ -96,4 +89,4 @@ const StateReasonSettings = ({
   );
 };
 
-export default StateReasonSettings;
+export default TypeSettings;

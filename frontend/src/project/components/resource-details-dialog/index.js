@@ -36,7 +36,7 @@ const ResourceDetailsDialog = ({
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 
-  const [details, setDetails] = useState(null);
+  const [resourceDetails, setResourceDetails] = useState(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const { connections } = useConnections();
@@ -44,7 +44,7 @@ const ResourceDetailsDialog = ({
   const title = useMemo(() => {
 
     // connection
-    if (details && details.title) return details.title;
+    if (resourceDetails && resourceDetails.title) return resourceDetails.title;
     const titleColumn = getColumnByName(columns, 'title');
     let title = getCellValueByColumn(resource, titleColumn);
     if (!title && type === CONNECTION_TYPE.SEAFILE) {
@@ -52,11 +52,11 @@ const ResourceDetailsDialog = ({
       title = getCellValueByColumn(resource, filenameColumn);
     }
     return title;
-  }, [resource, details, columns]);
+  }, [resource, resourceDetails, columns]);
 
   const url = useMemo(() => {
-    return getResourceOriginalURL(type, { ...details, ...resource, url: details?.url }, connections, columns);
-  }, [type, connections, resource, details, columns]);
+    return getResourceOriginalURL(type, { ...resourceDetails, ...resource, url: resourceDetails?.url }, connections, columns);
+  }, [type, connections, resource, resourceDetails, columns]);
 
   const internalNetworkAddress = useMemo(() => {
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
@@ -66,8 +66,8 @@ const ResourceDetailsDialog = ({
     switchResource(step);
   }, [switchResource]), 300);
 
-  const updateDetails = useCallback((details) => {
-    setDetails(details);
+  const updateResourceDetails = useCallback(({ record, columns }) => {
+    setResourceDetails(record);
   }, []);
 
   return (
@@ -137,13 +137,13 @@ const ResourceDetailsDialog = ({
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (
-          <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} permission={permission} updateDetails={updateDetails} />
+          <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} permission={permission} updateResource={updateResourceDetails} />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
-          <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={updateDetails} getKB={getKB} />
+          <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={updateDetails} getTicket={getTicket} />
+          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
         )}
       </ModalBody>
     </Modal>

@@ -60,7 +60,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   }, []);
 
   return (
-    <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
+    <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="link">{gettext('Linked records')}</CustomizeLabel>
       <div className="link-settings-content">
         {validValue.map(({ key, title }) => (

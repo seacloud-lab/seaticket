@@ -98,79 +98,28 @@ export const isConnectionRecordsView = (page) => {
 };
 
 // Format data according to different connection types,site and seafile only have one detail content
-export const initConnectionResourceDetails = (type, {
-  title,
-  modified_time,
-  content,
-  author,
-  created_time,
-  comments,
-  replies,
-  emails,
-  ...prams
-}) => {
-  if (type === CONNECTION_TYPE.SITE) {
-    return {
-      title: title,
-      time: modified_time,
-      details: content,
-      ...prams
-    };
-  }
-  if (type === CONNECTION_TYPE.SEAFILE) {
-    return {
-      title: title,
-      time: modified_time,
-      details: content,
-      ...prams
-    };
-  }
-  if (type === CONNECTION_TYPE.NOTION) {
-    return {
-      title: title,
-      time: modified_time,
-      details: content,
-      ...prams
-    };
-  }
+export const initConnectionResourceDetails = (type, record) => {
+  const { content } = record;
+  if (type === CONNECTION_TYPE.SITE) return content;
+  if (type === CONNECTION_TYPE.SEAFILE) return content;
+  if (type === CONNECTION_TYPE.NOTION) return content;
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    const { author, created_time, comments } = record;
     const mainPost = {
-      author: author,
-      time: created_time,
-      body: content || '',
+      author,
+      created_time,
+      content: content || '',
     };
-    const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
-      ...detail,
-      time: detail.created_time,
-      body: detail.content || '',
-    })) : [];
-    return {
-      title,
-      details: [mainPost, ...initComments],
-      ...prams
-    };
+    const initComments = Array.isArray(comments) ? comments : [];
+    return [mainPost, ...initComments];
   }
   if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-    return {
-      title,
-      details: Array.isArray(replies) && replies.length > 0 ? replies.map(detail => ({
-        ...detail,
-        time: detail.modified_time,
-        body: detail.content || '',
-      })) : [],
-      ...prams
-    };
+    const { replies } = record;
+    return Array.isArray(replies) ? replies : [];
   }
   if (type === CONNECTION_TYPE.EMAIL) {
-    return {
-      title,
-      details: Array.isArray(emails) && emails.length > 0 ? emails.map(detail => ({
-        ...detail,
-        time: detail.modified_time,
-        body: detail.content || '',
-      })) : [],
-      ...prams
-    };
+    const { emails } = record;
+    return Array.isArray(emails) ? emails : [];
   }
 };
 
@@ -265,7 +214,7 @@ export const generateMarkAsOutdatedOptions = ({ rows, columns, connection }, cal
   let activeRows = [];
   let outdatedRows = [];
   rows.forEach(row => {
-    const oldValue = row[outdatedColumn.key];
+    const oldValue = getCellValueByColumn(row, outdatedColumn);
     if (oldValue) {
       outdatedRows.push(row);
     } else {

@@ -147,6 +147,22 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
 
     return ticket_pk_to_ticket_title
 
+
+def get_ticket_title(seadb_api, project_uuid, ticket_id):
+    if not ticket_id:
+        return ''
+    try:
+        sql = f"SELECT `title` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+        res = seadb_api.query_rows(project_uuid, sql)
+        rows = res.get('results')
+        ticket = rows[0] if rows else None
+        title = ticket.get('title') or ''
+    except Exception as e:
+        logger.error(f'Error querying ticket title: {e}')
+        title = ''
+    return title
+
+
 def time_str_to_utc_time(time_str):
     if time_str.endswith('Z'):
         # python 3.12 can convert but 3.10 not support
