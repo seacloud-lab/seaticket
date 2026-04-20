@@ -6,7 +6,6 @@
   flex-wrap: wrap;
   margin-bottom: 8px;
   border-radius: 3px;
-  cursor: pointer;
 }
 
 .ticket-types-formatter.valid {
