@@ -420,6 +420,8 @@ CREATE TABLE `projects`  (
   `knowledge_base_indexed_at` datetime(6) NULL,
   `knowledge_base_ai_indexed_at` datetime(6) NULL,
   `ticket_indexed_at` datetime(6) NULL,
+  `portal_issue_indexed_at` datetime(6) NULL,
+  `portal_issue_ai_indexed_at` datetime(6) NULL,
   `ticket_ai_indexed_at` datetime(6) NULL,
   `last_ticket_active_time` datetime(6) NULL,
   `last_agent_scanned_at` datetime(6) NULL,
