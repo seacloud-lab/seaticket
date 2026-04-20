@@ -482,7 +482,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
     return Promise.all(modifyPromises).then(() => {
       setIsShowRowDetailsDialog(false);
-
       const eventBus = context.eventBus;
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowUpdates);
     });
