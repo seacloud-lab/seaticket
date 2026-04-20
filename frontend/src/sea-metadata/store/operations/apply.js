@@ -149,7 +149,7 @@ export default function apply(data, operation) {
     }
     case OPERATION_TYPE.MODIFY_LOCAL_ROWS: {
       const { updates } = operation;
-      updateDataByModifyRows({ updates });
+      updateDataByModifyRows({ id_row_updates: updates });
       return data;
     }
     case OPERATION_TYPE.MOVE_ROW: {
