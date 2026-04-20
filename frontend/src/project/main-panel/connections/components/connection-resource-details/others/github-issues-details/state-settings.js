@@ -23,6 +23,7 @@ const StateSettings = ({
   const [isShowEditor, setIsShowEditor] = useState(false);
   const [state, setState] = useState('');
   const [stateReason, setStateReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -82,10 +83,14 @@ const StateSettings = ({
   }, []);
 
   const handleChange = useCallback(() => {
+    if (isSubmitting) return;
     const stateOption = getOption(stateOptions, state);
     const stateReasonOption = getOption(stateReasonOptions, stateReason);
-    onChange && onChange({ state: stateOption?.name, state_reason: stateReasonOption?.name });
-  }, [state, stateReason, onChange]);
+    setIsSubmitting(true);
+    onChange && onChange({ state: stateOption?.name, state_reason: stateReasonOption?.name }, () => {
+      setIsSubmitting(false);
+    });
+  }, [state, stateReason, isSubmitting, onChange]);
 
   const handleLocalChange = useCallback((newValue) => {
     if (!newValue) return;
@@ -136,13 +141,21 @@ const StateSettings = ({
         {!isReadonly && (
           <>
             {options.length === 1 ? (
-              <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center mb-2 text-truncate mw-100" onClick={handleChange}>
+              <Button
+                className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center mb-2 text-truncate mw-100"
+                disabled={isSubmitting}
+                onClick={handleChange}
+              >
                 <Icon symbol={icon} className={`mr-2 sea-qa-project-ticket-state-${icon}-icon`} />
                 <span className="text-truncate" title={option?.label}>{option?.label}</span>
               </Button>
             ) : (
               <ButtonGroup className="mb-2 mw-100">
-                <Button className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center text-truncate" onClick={handleChange}>
+                <Button
+                  className="sea-qa-project-ticket-state-toggle-btn d-flex align-items-center text-truncate"
+                  disabled={isSubmitting}
+                  onClick={handleChange}
+                >
                   <Icon symbol={icon} className={`mr-2 sea-qa-project-ticket-state-${icon}-icon`} />
                   <span className="text-truncate" title={option?.label}>{option?.label}</span>
                 </Button>
