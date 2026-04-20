@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, Fragment } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
@@ -72,21 +72,15 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
       <Modal className='sea-qa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
         <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
         <ModalBody>
-          {status === 'loading' && (
-            <CenteredLoading />
-          )}
-          {status === 'error' && (
-            <CenteredError>{errMessage}</CenteredError>
-          )}
+          {status === 'loading' && <CenteredLoading />}
+          {status === 'error' && <CenteredError>{errMessage}</CenteredError>}
           {status === 'loaded' && (
-            <Fragment>
-              {!relatedIssues.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-              {relatedIssues.length && (
+            <>
+              {relatedIssues.length ?
                 <div className='issues-list-container'>
                   {relatedIssues.map((issue, index) => {
                     const connectionType = issue.type;
                     const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
-
                     return (
                       <div className='issues-list-item' key={issue._id} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
@@ -94,8 +88,10 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>
-                            <div>
-                              <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
+                            <div className="issues-list-item-title-content-container">
+                              <span className='text-truncate issues-list-item-title-content' title={issue.title || gettext('No title')}>
+                                {issue.title || gettext('No title')}
+                              </span>
                               {issue.resolved && <ResolvedTag />}
                             </div>
                             <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
@@ -109,8 +105,10 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                     );
                   })}
                 </div>
-              )}
-            </Fragment>
+                :
+                <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} title={gettext('No related issues')}/>
+              }
+            </>
           )}
         </ModalBody>
       </Modal>
