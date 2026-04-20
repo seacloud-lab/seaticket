@@ -484,11 +484,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       setIsShowRowDetailsDialog(false);
 
       const eventBus = context.eventBus;
-      rowIds.forEach((rowId) => {
-        const rowUpdate = idRowUpdates?.[rowId];
-        if (!rowUpdate) return;
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
-      });
+      eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowUpdates);
     });
   }, [api, typesData, tagsData]);
 
