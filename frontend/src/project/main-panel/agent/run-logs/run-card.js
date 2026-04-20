@@ -1,145 +1,74 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import dayjs from 'dayjs';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import ActionItem from './action-item';
 import RunStatisticsDialog from './run-statistics-dialog';
-import { gettext, siteRoot, mediaUrl } from '@/constants';
-import { BAR_TYPE } from '@/project/constants';
+import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
 import Icon from '@/components/icon';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { ResourceDetailsDialog } from '@/project/components';
+import { getResourceIconURL } from '@/project/utils';
 
-const { workspaceID, projectName } = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 
 const RunCardHeader = ({ item }) => {
-  const { source_type, source_id, source_title } = item;
+  const [isShowDetails, setIsShowDetails] = useState(false);
 
-  if (source_type === TICKET_TYPE) {
-    return (
-      <div className="ticket-header">
-        <span className="ticket-icon">
-          <img src={`${mediaUrl}/img/ticket.png`} alt="Ticket" width={16} height={16} />
-        </span>
-        <span className="ticket-title">
-          <a
-            href={`${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${source_id}/`}
-            onClick={(event) => event.stopPropagation()}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span>{gettext('Ticket')} #{source_id}</span>
-            <span className="sea-qa-text-orange"> {source_title}</span>
-          </a>
-        </span>
-      </div>
-    );
-  }
+  const resource = useMemo(() => {
+    const { source_type, source_id, source_title } = item;
+    const icon = getResourceIconURL(source_type);
+    if (source_type === TICKET_TYPE) return { type: TICKET_TYPE, title: source_title, _id: source_id, icon };
 
-  const separatorIndex = source_id.indexOf('_');
-  const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
-  const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
-  const connectionDisplayId = recordId || source_id;
-  const href = connectionId && recordId
-    ? `${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}/${connectionId}/records/${recordId}/`
-    : '';
+    const separatorIndex = source_id.indexOf('_');
+    const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
+    const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
+    return {
+      type: source_type,
+      _id: recordId || source_id,
+      title: source_title,
+      connection_id: connectionId,
+      icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
+    };
+  }, [item]);
 
-  if (source_type === CONNECTION_TYPE.GITHUB_ISSUE) {
-    return (
-      <div className="ticket-header">
-        <span className="ticket-icon">
-          <img src={`${mediaUrl}/img/connection/github-issues.png`} alt="GitHub Issues" width={16} height={16} />
-        </span>
-        <span className="ticket-title">
-          {href ? (
-            <a
-              href={href}
-              onClick={(event) => event.stopPropagation()}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>{gettext('GitHub Issue')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </a>
-          ) : (
-            <>
-              <span>{gettext('GitHub Issue')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </>
-          )}
-        </span>
-      </div>
-    );
-  }
+  const titleTip = useMemo(() => {
+    const { type, _id } = resource;
+    if (type === TICKET_TYPE) return `${gettext('Ticket')} #${_id}`;
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return `${gettext('Github issue')} #${_id}`;
+    if (type === CONNECTION_TYPE.DISCOURSE_FORUM) return `${gettext('Discourse Forum')} #${_id}`;
+    if (type === CONNECTION_TYPE.EMAIL) return `${gettext('Email')} #${_id}`;
+    return `${gettext(type)} #${_id}:`;
+  }, [resource]);
 
-  if (source_type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-    return (
-      <div className="ticket-header">
-        <span className="ticket-icon">
-          <img src={`${mediaUrl}/img/connection/discourse-logo.png`} alt="Discourse Forum" width={16} height={16} />
-        </span>
-        <span className="ticket-title">
-          {href ? (
-            <a
-              href={href}
-              onClick={(event) => event.stopPropagation()}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>{gettext('Discourse Forum')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </a>
-          ) : (
-            <>
-              <span>{gettext('Discourse Forum')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </>
-          )}
-        </span>
-      </div>
-    );
-  }
+  const openDetails = useCallback(() => {
+    setIsShowDetails(true);
+  }, []);
 
-  if (source_type === CONNECTION_TYPE.EMAIL) {
-    return (
-      <div className="ticket-header">
-        <span className="ticket-icon">
-          <img src={`${mediaUrl}/img/connection/email.png`} alt="Email" width={16} height={16} />
-        </span>
-        <span className="ticket-title">
-          {href ? (
-            <a
-              href={href}
-              onClick={(event) => event.stopPropagation()}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>{gettext('Email')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </a>
-          ) : (
-            <>
-              <span>{gettext('Email')} #{connectionDisplayId}</span>
-              <span className="sea-qa-text-orange"> {source_title}</span>
-            </>
-          )}
-        </span>
-      </div>
-    );
-  }
+  const hasDetails = resource.type === TICKET_TYPE || (resource.connection_id && resource._id);
 
   return (
-    <div className="ticket-header">
-      <span className="ticket-icon">
-        <img src={`${mediaUrl}/img/connection/ticket.png`} alt="Ticket" width={16} height={16} />
-      </span>
-      <span className="ticket-title">
-        <span>{gettext(source_type)} #{connectionDisplayId}:</span>
-        <span className="sea-qa-text-orange"> {source_title}</span>
-      </span>
-    </div>
+    <>
+      <div className="ticket-header">
+        <span className="ticket-icon">
+          <img src={resource.icon} alt="Ticket" width={16} height={16} />
+        </span>
+        <span className={classnames('ticket-title', { 'cursor-pointer': hasDetails })} onClick={hasDetails ? openDetails : () => {}}>
+          <span>{titleTip}</span>
+          <span className="sea-qa-text-orange"> {resource.title}</span>
+        </span>
+      </div>
+      {isShowDetails && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={resource}
+          onToggle={() => setIsShowDetails(false)}
+        />
+      )}
+    </>
   );
 };
 
