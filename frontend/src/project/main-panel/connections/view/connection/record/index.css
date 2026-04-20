@@ -33,6 +33,7 @@
   display: flex;
   gap: 8px;
   flex: 1;
+  max-width: calc(100% - 32px);
 }
 
 .sea-connection-record-details .sea-connection-record-details-body {
