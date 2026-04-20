@@ -160,6 +160,7 @@ class EmailSeaDBAPI:
             EmailTable.title.name: email_data.get('subject', ''),
             EmailTable.cc.name: email_data.get('cc') or '',
             EmailTable.content.name: email_data.get('content', ''),
+            EmailTable.text_content.name: email_data.get('content', ''),
             EmailTable.html_content.name: email_data.get('html_content') or '',
             EmailTable.modified_time.name: now,
             EmailTable.reply_to_message_id.name: email_data.get('reply_to_message_id') or '',
