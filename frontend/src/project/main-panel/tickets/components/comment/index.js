@@ -100,7 +100,6 @@ const Comment = ({
   }, [content, onModify]);
 
   useEffect(() => {
-    if (comment.via_agent) return;
     if (isObject(comment.creator)) {
       setCreator(comment.creator);
       return;
@@ -114,7 +113,7 @@ const Comment = ({
       const creator = userMap[comment.creator];
       setCreator(creator);
     });
-  }, [comment.creator, comment.via_agent]);
+  }, [comment.creator, getCollaborator, queryUser]);
 
   const renderAvatar = useCallback(() => {
     return (
