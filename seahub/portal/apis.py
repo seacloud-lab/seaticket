@@ -42,7 +42,7 @@ from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_ke
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
-    TABLE_PORTAL_ISSUE_COMMENTS, TABLE_PORTAL_ISSUES
+    TABLE_PORTAL_ISSUE_COMMENTS, TABLE_PORTAL_ISSUES, send_portal_issue_update_msg
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +266,7 @@ class PortalIssuesView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_portal_issue_update_msg(project_uuid, added=1)
         return Response({'portal_issue': row}, status=status.HTTP_201_CREATED)
 
     @require_org_context
@@ -322,6 +323,9 @@ class PortalIssuesView(APIView):
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if need_delete_issue_ids:
+            send_portal_issue_update_msg(project_uuid, deleted=len(need_delete_issue_ids))
 
         return Response({
             'success': need_delete_issue_ids,
@@ -650,6 +654,7 @@ class PortalIssueView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_portal_issue_update_msg(project_uuid, updated=1)
         return Response({'success': True})
 
     @require_org_context
@@ -692,6 +697,7 @@ class PortalIssueView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_portal_issue_update_msg(project_uuid, deleted=1)
         return Response({'success': True})
 
 
@@ -1834,6 +1840,9 @@ class PortalIssueTrashAPIView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        if update_rows:
+            send_portal_issue_update_msg(project_uuid, updated=len(update_rows))
+
         return Response({'success': True})
 
     @require_org_context
@@ -1917,4 +1926,5 @@ class PortalIssueTrashAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_portal_issue_update_msg(project_uuid, deleted=len(need_delete_ids))
         return Response({'success': True}, status=status.HTTP_200_OK)

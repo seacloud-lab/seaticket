@@ -1,8 +1,13 @@
+import json
+import logging
+
 from seahub.project.constants import PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
+from seahub.utils import mq, uuid_str_to_32_chars
 
 
 TABLE_PORTAL_ISSUES = 'portal_issues'
 TABLE_PORTAL_ISSUE_COMMENTS = 'portal_issue_comments'
+logger = logging.getLogger(__name__)
 
 
 def get_portal_issue(seadb_api, project_uuid, issue_id):
@@ -65,3 +70,21 @@ def filter_portal_issues_by_select(seadb_api, project_uuid, column_name, names):
     issues = res.get('results')
     columns = res.get('metadata') or []
     return issues, columns
+
+
+def send_portal_issue_update_msg(project_uuid, added=0, deleted=0, updated=0):
+    try:
+        normalized_project_uuid = uuid_str_to_32_chars(project_uuid)
+        msg_content = json.dumps({
+            'project_uuid': normalized_project_uuid,
+            'added': int(added or 0),
+            'deleted': int(deleted or 0),
+            'updated': int(updated or 0),
+        })
+
+        if mq.publish('portal_issue_update', msg_content) > 0:
+            logger.debug('Publish portal_issue_update event: %s', msg_content)
+        else:
+            logger.info('No one subscribed to portal_issue_update channel, event (%s) has not been send', msg_content)
+    except Exception as e:
+        logger.error('send portal issue update msg failed, error: %s', e)
