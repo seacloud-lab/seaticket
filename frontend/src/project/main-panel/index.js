@@ -50,6 +50,7 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.TICKET:
     case BAR_TYPE.MY_TICKET:
+    case BAR_TYPE.NEW_TICKET:
     case BAR_TYPE.TRASH:
     case BAR_TYPE.SUBSTATES:
     case BAR_TYPE.TYPES: {

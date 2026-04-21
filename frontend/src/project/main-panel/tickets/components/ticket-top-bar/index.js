@@ -17,6 +17,7 @@ const TicketTopBar = ({ title, type, permission }) => {
   const { typesData, substatesData } = useMetadata();
 
   const renderLeftChildren = useCallback(() => {
+    if (type === BAR_TYPE.NEW_TICKET) return <div className="text-truncate" title={title}>{title}</div>;
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
       return (
         <>
@@ -105,6 +106,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     ) return null;
 
     if (type === BAR_TYPE.MY_TICKET) return null;
+    if (type === BAR_TYPE.NEW_TICKET) return null;
     if (type === BAR_TYPE.TRASH) {
       if (!isRW) return null;
       return (
