@@ -148,7 +148,7 @@ const ResourceDetailsDialog = ({
           <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={updateDetails} getTicket={(uuid, id) => portalAPI.getPortalIssueAsTicket(uuid, id)} />
+          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={(uuid, id) => portalAPI.getPortalIssueAsTicket(uuid, id)} />
         )}
       </ModalBody>
     </Modal>
