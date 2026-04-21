@@ -8,36 +8,43 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import OptionDialog from '../../../../components/option-dialog';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { TICKET_TYPE } from '../../constants';
 
-const AllSubstates = ({ projectUuid, permission }) => {
+const initColumns = [
+  {
+    type: CellType.SINGLE_SELECT,
+    key: 'name',
+    name: 'name',
+    display_name: gettext('Substate'),
+    editable: false,
+    is_name_column: true,
+    frozen: true,
+  }, {
+    type: CellType.TEXT,
+    key: 'description',
+    name: 'description',
+    display_name: gettext('Description'),
+    editable: true,
+    is_required: false,
+  }, {
+    type: CellType.NUMBER,
+    key: 'tickets_count',
+    name: 'tickets_count',
+    display_name: gettext('Tickets count'),
+    editable: false,
+  },
+];
+
+
+const AllSubstates = ({
+  projectUuid,
+  permission,
+  columns = initColumns,
+  useMetadataProvider = useMetadata,
+  type = TICKET_TYPE,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
-  const { pageSlugId, togglePageSlugId } = useTicketsPage();
-
-  const columns = useMemo(() => [
-    {
-      type: CellType.SINGLE_SELECT,
-      key: 'name',
-      name: 'name',
-      display_name: gettext('Substate'),
-      editable: false,
-      is_name_column: true,
-      frozen: true,
-    }, {
-      type: CellType.TEXT,
-      key: 'description',
-      name: 'description',
-      display_name: gettext('Description'),
-      editable: true,
-      is_required: false,
-    }, {
-      type: CellType.NUMBER,
-      key: 'tickets_count',
-      name: 'tickets_count',
-      display_name: gettext('Tickets count'),
-      editable: false,
-    },
-  ], [pageSlugId, togglePageSlugId]);
+  const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadataProvider();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -85,7 +92,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
 
   }), [columns, viewsData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, substatesData]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-substates`, [projectUuid]);
+  const localStorageName = useMemo(() => `sea-${type}-${projectUuid}-substates`, [projectUuid, type]);
 
   const t = useMemo(() => ({
     row: gettext('substate'),

@@ -63,22 +63,22 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [typesData]);
 
   const createType = useCallback((type) => {
-    return ticketsAPI.createTicketType(projectUuid, type).then(res => {
+    return api.createTicketType(projectUuid, type).then(res => {
       const type = new Option(res.data.type);
       applyCreateTypes([type]);
       return type;
     });
-  }, [projectUuid, applyCreateTypes]);
+  }, [projectUuid, applyCreateTypes, api]);
 
   const deleteType = useCallback((typeID) => {
-    return ticketsAPI.deleteTicketType(projectUuid, typeID).then(res => {
+    return api.deleteTicketType(projectUuid, typeID).then(res => {
       applyDeleteTypes([typeID]);
       return typeID;
     });
-  }, [projectUuid, applyDeleteTypes]);
+  }, [projectUuid, applyDeleteTypes, api]);
 
   const deleteTypes = useCallback((typeIDs) => {
-    return ticketsAPI.deleteTicketTypes(projectUuid, typeIDs).then(res => {
+    return api.deleteTicketTypes(projectUuid, typeIDs).then(res => {
       applyDeleteTypes(typeIDs);
       return {
         data: {
@@ -87,13 +87,13 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
         }
       };
     });
-  }, [projectUuid, applyDeleteTypes]);
+  }, [projectUuid, applyDeleteTypes, api]);
 
   const modifyType = useCallback((typeID, update) => {
-    return ticketsAPI.modifyTicketType(projectUuid, typeID, update).then(res => {
+    return api.modifyTicketType(projectUuid, typeID, update).then(res => {
       applyModifyTypes({ [typeID]: update });
     });
-  }, [projectUuid, applyModifyTypes]);
+  }, [projectUuid, applyModifyTypes, api]);
 
   const loadTypes = useCallback((callback) => {
     const username = (window.app && window.app.pageOptions && window.app.pageOptions.username) || '';
@@ -101,7 +101,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       callback && callback();
       return;
     }
-    ticketsAPI.listTicketTypes(projectUuid).then(res => {
+    api.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
       callback && callback();
@@ -110,7 +110,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [typesData]);
+  }, [typesData, api]);
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
@@ -155,22 +155,22 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [substatesData]);
 
   const createSubstate = useCallback((substate) => {
-    return ticketsAPI.createTicketSubstate(projectUuid, substate).then(res => {
+    return api.createTicketSubstate(projectUuid, substate).then(res => {
       const newSubstate = new Option({ ...res.data.substate, parent_id: substate.parent_id });
       applyCreateSubstates([newSubstate]);
       return newSubstate;
     });
-  }, [projectUuid, applyCreateSubstates]);
+  }, [projectUuid, applyCreateSubstates, api]);
 
   const deleteSubstate = useCallback((substateID) => {
-    return ticketsAPI.deleteTicketSubstate(projectUuid, substateID).then(res => {
+    return api.deleteTicketSubstate(projectUuid, substateID).then(res => {
       applyDeleteSubstates([substateID]);
       return substateID;
     });
-  }, [projectUuid, applyDeleteSubstates]);
+  }, [projectUuid, applyDeleteSubstates, api]);
 
   const deleteSubstates = useCallback((substateIDs) => {
-    return ticketsAPI.deleteTicketSubstates(projectUuid, substateIDs).then(res => {
+    return api.deleteTicketSubstates(projectUuid, substateIDs).then(res => {
       applyDeleteSubstates(substateIDs);
       return {
         data: {
@@ -179,13 +179,13 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
         }
       };
     });
-  }, [projectUuid, applyDeleteSubstates]);
+  }, [projectUuid, applyDeleteSubstates, api]);
 
   const modifySubstate = useCallback((substateID, update) => {
-    return ticketsAPI.modifyTicketSubstate(projectUuid, substateID, update).then(res => {
+    return api.modifyTicketSubstate(projectUuid, substateID, update).then(res => {
       applyModifySubstates({ [substateID]: update });
     });
-  }, [projectUuid, applyModifySubstates]);
+  }, [projectUuid, applyModifySubstates, api]);
 
   const initSubStates = useCallback((options, cascade_settings = {}, isReload = false) => {
     let substatesOptions = options || [];
@@ -208,7 +208,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       callback && callback();
       return;
     }
-    ticketsAPI.listTicketSubstates(projectUuid).then(res => {
+    api.listTicketSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);
       callback && callback();
@@ -217,7 +217,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [substatesData, initSubStates]);
+  }, [substatesData, initSubStates, api]);
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {

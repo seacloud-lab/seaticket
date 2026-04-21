@@ -15,10 +15,11 @@ const TypeSettings = ({
   value,
   className = 'mb-4',
   onChange,
+  useMetadataProvider = useMetadata,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { isLoading, typesData } = useMetadata();
+  const { isLoading, typesData } = useMetadataProvider();
 
   const editorRef = useRef(null);
 
