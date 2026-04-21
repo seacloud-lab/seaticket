@@ -1,0 +1,39 @@
+.github-issue-type-mapping-header {
+  border-bottom: 1px solid #eee;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.github-issue-type-mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.github-issue-type-agent-type {
+  width: 84px;
+  color: #666;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.github-issue-type-mapping-arrow {
+  color: #9ba3af;
+  font-size: 18px;
+  line-height: 1;
+  font-family: -apple-system, 'Segoe UI Symbol', 'Noto Sans Symbols', sans-serif;
+}
+
+.github-issue-type-selector {
+  width: 150px;
+  flex: 0 0 auto;
+}
+
+.github-issue-type-auto-hint {
+  color: #9ba3af;
+  font-size: 12px;
+  line-height: 20px;
+}

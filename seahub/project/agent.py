@@ -38,7 +38,11 @@ from seahub.seadb_models.models import (
 )
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.utils.decorators import require_org_context
-from seahub.project.utils import check_project_permission, extract_email_addresses
+from seahub.project.utils import (
+    check_project_permission,
+    extract_email_addresses,
+    collect_github_issue_type_options,
+)
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
     MSG_TYPE_TICKET_COMMENTED,
@@ -48,6 +52,20 @@ from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
 logger = logging.getLogger(__name__)
+
+AGENT_ISSUE_TYPES = ('Bug', 'Feature', 'Question')
+# Agent issue types that can auto-match to a GitHub issue type with the same
+# (case-insensitive) name when no explicit mapping is configured. "Question"
+# is intentionally excluded because GitHub's default types (Bug / Feature /
+# Task) don't include it, so users should always pick a target explicitly.
+AUTO_MATCH_AGENT_ISSUE_TYPES = ('Bug', 'Feature')
+
+
+class MappingRequiredError(Exception):
+    def __init__(self, agent_type, connection_id):
+        self.agent_type = agent_type
+        self.connection_id = connection_id
+        super().__init__(f'Mapping required for agent type: {agent_type}')
 
 
 def _build_items_map_from_actions(actions):
@@ -346,9 +364,21 @@ class AgentActionConfirmView(APIView):
                 'result': execution_result,
             }, status=status.HTTP_200_OK)
 
+        except MappingRequiredError as e:
+            return self._mapping_required_response(seadb_api, project_uuid, e)
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    def _mapping_required_response(self, seadb_api, project_uuid, error):
+        issue_types = collect_github_issue_type_options(
+            seadb_api, project_uuid, [error.connection_id]
+        )
+        return Response({
+            'error_code': 'mapping_required',
+            'agent_type': error.agent_type,
+            'github_issue_types': issue_types,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
         """Dispatch ticket-source actions to the appropriate handler."""
@@ -373,7 +403,7 @@ class AgentActionConfirmView(APIView):
             return self._execute_github_suggest_resolution(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_modify_type':
             suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
-            return self._execute_github_suggest_modify_type(seadb_api, project_uuid, source_id, suggestion_text)
+            return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, suggestion_text)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -521,58 +551,7 @@ class AgentActionConfirmView(APIView):
             return match.group(1).strip()
         return ''
 
-    @staticmethod
-    def _ensure_github_org_issue_type(github_api, org, type_name, description=''):
-        try:
-            existing = github_api.list_org_issue_types(org)
-        except requests.HTTPError as e:
-            status_code = getattr(e.response, 'status_code', None)
-            if status_code == 403:
-                return (
-                    False,
-                    f'GitHub rejected listing issue types for organization "{org}" (403). '
-                    f'Please grant the GitHub App "Organization administration" (write) permission, '
-                    f'or manually create the "{type_name}" issue type in the organization.'
-                )
-            if status_code == 404:
-                return (
-                    False,
-                    f'Organization "{org}" not found or not an organization (404). '
-                    f'GitHub issue types are only available at the organization level.'
-                )
-            return (False, f'Failed to list issue types for organization "{org}": {e}')
-        except Exception as e:
-            return (False, f'Failed to list issue types for organization "{org}": {e}')
-
-        target_lower = type_name.lower()
-        for item in existing:
-            if (item.get('name') or '').lower() == target_lower:
-                return (True, '')
-
-        try:
-            github_api.create_org_issue_type(org, type_name, description=description)
-            logger.info(f'Created issue type "{type_name}" in organization "{org}"')
-            return (True, '')
-        except requests.HTTPError as e:
-            status_code = getattr(e.response, 'status_code', None)
-            if status_code == 403:
-                return (
-                    False,
-                    f'GitHub rejected creating issue type "{type_name}" in organization "{org}" (403). '
-                    f'Please grant the GitHub App "Organization administration" (write) permission, '
-                    f'or manually create the "{type_name}" issue type in the organization.'
-                )
-            return (
-                False,
-                f'Failed to create issue type "{type_name}" in organization "{org}": {e}'
-            )
-        except Exception as e:
-            return (
-                False,
-                f'Failed to create issue type "{type_name}" in organization "{org}": {e}'
-            )
-
-    def _execute_github_suggest_modify_type(self, seadb_api, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
@@ -587,37 +566,57 @@ class AgentActionConfirmView(APIView):
 
         # Normalize to the canonical enum spelling (Bug / Feature / Question).
         suggested_type = suggested_type.capitalize()
-
-        if suggested_type == 'Question':
-            ok, err = self._ensure_github_org_issue_type(
-                ctx['github_api'],
-                ctx['owner'],
-                'Question',
-                description='Questions and support requests from users.',
+        if suggested_type not in AGENT_ISSUE_TYPES:
+            logger.error(
+                f'Unsupported suggested_type "{suggested_type}" for GitHub issue {ctx["record_id"]}'
             )
-            if not ok:
-                logger.error(
-                    f'Cannot ensure "Question" issue type for GitHub issue {ctx["record_id"]}: {err}'
-                )
-                return err
+            return f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+
+        try:
+            settings = json.loads(project.settings) if project.settings else {}
+        except (TypeError, ValueError, json.JSONDecodeError):
+            settings = {}
+
+        mapping = (settings.get('agent') or {}).get('github_issue_type_mapping') or {}
+        github_issue_type = (mapping.get(suggested_type) or '').strip()
+
+        # Fallback: for Bug/Feature, if no explicit mapping is configured,
+        # auto-match to a same-named GitHub issue type (case-insensitive) that
+        # already exists in SeaDB metadata. Question always requires an
+        # explicit mapping.
+        if not github_issue_type and suggested_type in AUTO_MATCH_AGENT_ISSUE_TYPES:
+            available = collect_github_issue_type_options(
+                seadb_api, project_uuid, [ctx['connection_id']]
+            )
+            for opt in available:
+                name = (opt.get('name') or '').strip()
+                if name.lower() == suggested_type.lower():
+                    github_issue_type = name
+                    break
+
+        if not github_issue_type:
+            raise MappingRequiredError(
+                agent_type=suggested_type,
+                connection_id=ctx['connection_id'],
+            )
 
         try:
             issue_data = ctx['github_api'].update_issue(
                 ctx['owner'],
                 ctx['repo'],
                 ctx['issue_number'],
-                issue_type=suggested_type,
+                issue_type=github_issue_type,
             )
-            new_type = issue_data.get('issue_type', suggested_type)
+            new_type = issue_data.get('issue_type', github_issue_type)
         except requests.HTTPError as e:
             status_code = getattr(e.response, 'status_code', None)
             if status_code == 422:
                 logger.error(
-                    f'GitHub rejected issue_type "{suggested_type}" for issue {ctx["record_id"]} (422). '
+                    f'GitHub rejected issue_type "{github_issue_type}" for issue {ctx["record_id"]} (422). '
                     f'The type may not exist in the organization.'
                 )
                 return (
-                    f'GitHub rejected issue type "{suggested_type}" (422). '
+                    f'GitHub rejected issue type "{github_issue_type}" (422). '
                     f'The type may not be defined in the organization. '
                     f'Please configure issue types in GitHub or choose an existing one.'
                 )
@@ -1283,6 +1282,44 @@ class AgentActionCancelView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
 
+class GithubIssueTypesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        try:
+            project = Projects.objects.get_project_by_uuid(project_uuid)
+            if not project:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+            username = request.user.username
+            if not check_project_permission(username, project.workspace.owner):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+            connections = list(ProjectConnections.objects.filter(
+                project_uuid=project_uuid,
+                type='github_issue',
+                deleted=False,
+                is_active=True
+            ).order_by('id'))
+            if not connections:
+                return Response({
+                    'issue_types': [],
+                    'warning': 'no_github_connection',
+                }, status=status.HTTP_200_OK)
+
+            seadb_api = SeaDBAPI()
+            issue_types = collect_github_issue_type_options(
+                seadb_api, project_uuid, [c.id for c in connections]
+            )
+            return Response({'issue_types': issue_types}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
 class AgentSettingsView(APIView):
     """
     Get/update agent settings for a project.
@@ -1322,12 +1359,14 @@ class AgentSettingsView(APIView):
                 'enabled': True,
                 'model': 'gemini-3-flash',
                 'notify_before_due_hours': 48,
+                'github_issue_type_mapping': {},
             })
 
             return Response({
                 'enabled': agent_settings.get('enabled'),
                 'model': agent_settings.get('model'),
                 'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
+                'github_issue_type_mapping': agent_settings.get('github_issue_type_mapping') or {},
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -1339,6 +1378,7 @@ class AgentSettingsView(APIView):
         enabled = request.data.get('enabled')
         model = request.data.get('model')
         notify_before_due_hours = request.data.get('notify_before_due_hours')
+        github_issue_type_mapping = request.data.get('github_issue_type_mapping')
 
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1362,6 +1402,20 @@ class AgentSettingsView(APIView):
                 agent_settings['model'] = str(model)
             if notify_before_due_hours is not None:
                 agent_settings['notify_before_due_hours'] = int(notify_before_due_hours)
+            if github_issue_type_mapping is not None:
+                if not isinstance(github_issue_type_mapping, dict):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'github_issue_type_mapping must be an object.')
+                normalized_mapping = {}
+                for key, value in github_issue_type_mapping.items():
+                    if key not in AGENT_ISSUE_TYPES:
+                        return api_error(status.HTTP_400_BAD_REQUEST, f'Invalid agent issue type key: {key}')
+                    if not isinstance(value, str) or not value.strip():
+                        return api_error(
+                            status.HTTP_400_BAD_REQUEST,
+                            f'github_issue_type_mapping[{key}] must be a non-empty string.',
+                        )
+                    normalized_mapping[key] = value.strip()
+                agent_settings['github_issue_type_mapping'] = normalized_mapping
 
             settings['agent'] = agent_settings
             project.settings = json.dumps(settings)
@@ -1371,6 +1425,7 @@ class AgentSettingsView(APIView):
                 'enabled': agent_settings.get('enabled'),
                 'model': agent_settings.get('model'),
                 'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
+                'github_issue_type_mapping': agent_settings.get('github_issue_type_mapping') or {},
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

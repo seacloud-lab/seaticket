@@ -31,6 +31,7 @@ from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
+from seahub.seadb_models.models import GithubIssuesTable
 
 logger = logging.getLogger(__name__)
 
@@ -425,3 +426,43 @@ def extract_email_addresses(address_text):
         else:
             addresses.append(email)
     return addresses
+
+def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
+    if not connection_ids:
+        return []
+
+    try:
+        base_metadata = seadb_api.get_base_metadata(project_uuid)
+    except Exception as e:
+        logger.warning(f'Failed to load SeaDB base metadata for {project_uuid}: {e}')
+        return []
+
+    tables = (base_metadata or {}).get('tables') or []
+    merged = []
+    seen_names = set()
+    for connection_id in connection_ids:
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_meta = get_current_table_metadata(tables, table_name)
+        if not table_meta:
+            continue
+        for column in table_meta.get('columns') or []:
+            if column.get('name') != GithubIssuesTable.issue_type.name:
+                continue
+            options = ((column.get('data') or {}).get('options')) or []
+            for option in options:
+                name = (option.get('name') or '').strip()
+                if not name:
+                    continue
+                key = name.lower()
+                if key in seen_names:
+                    continue
+                seen_names.add(key)
+                merged.append({
+                    'id': option.get('id'),
+                    'name': name,
+                    'color': option.get('color') or '',
+                    'text_color': option.get('text_color') or option.get('textColor') or '',
+                    'border_color': option.get('border_color') or option.get('borderColor') or '',
+                    'type_id': option.get('type_id') or '',
+                })
+    return merged

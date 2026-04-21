@@ -55,6 +55,11 @@ class AgentAPI {
     return this.req.put(url, settings);
   }
 
+  getGithubIssueTypes(projectUuid) {
+    const url = this.server + `/api/v1/project/${projectUuid}/github/issue-types/`;
+    return this.req.get(url);
+  }
+
   // Agent run logs
   listAgentRunLogs(projectUuid, page = 1, perPage = 20) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/?page=${page}&per_page=${perPage}`;

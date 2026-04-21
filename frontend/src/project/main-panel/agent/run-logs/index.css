@@ -500,3 +500,20 @@
   outline: none;
   border-color: #f5a623;
 }
+
+.github-type-mapping-dialog-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.github-type-mapping-dialog-label {
+  width: 100px;
+  color: #666;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.github-type-mapping-dialog-selector {
+  flex: 1;
+}
