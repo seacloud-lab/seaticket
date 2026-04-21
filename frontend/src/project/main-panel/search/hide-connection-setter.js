@@ -33,7 +33,9 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   useEffect(() => {
     if (connections.length === 0) return;
     const validConnectionIds = connections.map((c) => c.id);
-    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__');
+    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => {
+      return validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__' || id === '__portal_issue__';
+    });
     modifyHiddenConnections(newHiddenConnectionIDs);
   }, [connections]);
 
@@ -50,7 +52,8 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   const showConnectionsLen = connections.length - hiddenOnConnectionsCount;
   const kbSelected = !hiddenConnectionIDs.includes('__kb__');
   const ticketSelected = !hiddenConnectionIDs.includes('__ticket__');
-  const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0) + (ticketSelected ? 1 : 0);
+  const portalIssueSelected = !hiddenConnectionIDs.includes('__portal_issue__');
+  const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0) + (ticketSelected ? 1 : 0) + (portalIssueSelected ? 1 : 0);
 
   return (
     <>

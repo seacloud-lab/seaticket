@@ -52,6 +52,8 @@ const ListItem = ({
     altText = 'Knowledge Base';
   } else if (type === 'ticket') {
     altText = 'Ticket';
+  } else if (type === 'portal_issue') {
+    altText = 'Portal Issue';
   } else {
     altText = connectionOption ? connectionOption.name : (type || '');
   }

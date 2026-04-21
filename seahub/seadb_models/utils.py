@@ -1102,6 +1102,8 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = KnowledgeBaseTable.gen_table_name()
     elif source_type == ExtraSourceType.TICKET.value:
         table_name = TicketsTable.gen_table_name()
+    elif source_type == ExtraSourceType.PORTAL_ISSUE.value:
+        table_name = PortalIssuesTable.gen_table_name()
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}
@@ -1118,12 +1120,15 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
     conn_id_pks_map = {}
     kb_pks = []
     tk_pks = []
+    portal_issue_pks = []
 
     for result in results:
         if result['type'] == ExtraSourceType.TICKET.value:
             tk_pks.append(int(result['_id']))
         elif result['type'] == ExtraSourceType.KNOWLEDGE_BASE.value:
             kb_pks.append(int(result['_id']))
+        elif result['type'] == ExtraSourceType.PORTAL_ISSUE.value:
+            portal_issue_pks.append(int(result['_id']))
         else:
             connection_id = int(result['connection_id'])
             if connection_id not in conn_id_type_map:
@@ -1138,6 +1143,9 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
             conn_id_pk_title_summary_map[connection_id] = pk_title_summary_map
     tk_pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, ExtraSourceType.TICKET.value, list(set(tk_pks))) if tk_pks else {}
     kb_pk_title_summary_map = get_title_and_ai_summary_by_pks(seadb_api, project_uuid, ExtraSourceType.KNOWLEDGE_BASE.value, list(set(kb_pks))) if kb_pks else {}
+    portal_issue_pk_title_summary_map = get_title_and_ai_summary_by_pks(
+        seadb_api, project_uuid, ExtraSourceType.PORTAL_ISSUE.value, list(set(portal_issue_pks))
+    ) if portal_issue_pks else {}
 
     new_results_map = {}
     for result in results:
@@ -1158,6 +1166,10 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
             connection_id = ExtraSourceType.TICKET.value
             record_id = int(result['_id'])
             title_summary = tk_pk_title_summary_map[record_id]
+        elif result['type'] == ExtraSourceType.PORTAL_ISSUE.value and int(result['_id']) in portal_issue_pk_title_summary_map:
+            connection_id = ExtraSourceType.PORTAL_ISSUE.value
+            record_id = int(result['_id'])
+            title_summary = portal_issue_pk_title_summary_map[record_id]
         else:
             continue
         if connection_id not in new_results_map:

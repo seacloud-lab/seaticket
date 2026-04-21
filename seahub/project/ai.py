@@ -560,7 +560,10 @@ class RelatedRecordsView(APIView):
             'project_uuid': project_uuid,
             'count': 51,
             'connection_ids': search_connection_ids,
-            'extra_sources': [ExtraSourceType.TICKET.value] if ticket_provided or current_category == ConnectionCategory.ISSUE else [],
+            'extra_sources': (
+                [ExtraSourceType.TICKET.value, ExtraSourceType.PORTAL_ISSUE.value]
+                if ticket_provided or current_category == ConnectionCategory.ISSUE else []
+            ),
         }
 
         try:

@@ -52,7 +52,8 @@ const Search = ({ title, settings }) => {
     const hasSelectedConnections = Array.isArray(connections) && connections.some(c => !hiddenConnectionIDs.includes(c.id));
     const includeKBLocal = !hiddenConnectionIDs.includes('__kb__');
     const includeTicketLocal = !hiddenConnectionIDs.includes('__ticket__');
-    if (!hasSelectedConnections && !includeKBLocal && !includeTicketLocal) {
+    const includePortalIssueLocal = !hiddenConnectionIDs.includes('__portal_issue__');
+    if (!hasSelectedConnections && !includeKBLocal && !includeTicketLocal && !includePortalIssueLocal) {
       setValue(value);
       setResults([]);
       setSearching(false);

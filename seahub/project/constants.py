@@ -43,6 +43,7 @@ class ConnectionType(Enum):
 class ExtraSourceType(Enum):
     KNOWLEDGE_BASE = 'knowledge_base'
     TICKET = 'ticket'
+    PORTAL_ISSUE = 'portal_issue'
 
 class AIScenario(Enum):
     SUMMARY = 'summary'

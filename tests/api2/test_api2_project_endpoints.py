@@ -305,6 +305,41 @@ class TestSearchView:
         }]}
         assert Projects.objects.filter(uuid=project.uuid).exists()
 
+    def test_post_semantic_search_supports_portal_issue(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            '/api/v1/search/',
+            data={
+                'project_uuid': project.uuid,
+                'workspace_id': project.workspace.id,
+                'query': 'x',
+                'extra_sources': ['portal_issue'],
+                'search_type': 'semantic_search',
+            },
+            format='json',
+        )
+        request.user = project_creator
+
+        reranked_results = [{
+            'type': 'portal_issue',
+            '_id': 9,
+            'title': 'portal issue title',
+            'content': 'portal issue content',
+            'modified_time': '2026-03-27T17-45-00'
+        }]
+
+        with patch('seahub.api2.endpoints.project.vector_search_with_text', return_value=[{
+            'type': 'portal_issue',
+            '_id': 9,
+            'modified_time': '2026-03-27T17-45-00'
+        }]), \
+                patch('seahub.api2.endpoints.project.retrieve_vector_search_rerank_data', return_value=reranked_results), \
+                patch('seahub.api2.endpoints.project.rank_vector_search_results', return_value=reranked_results):
+            resp = SearchView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert resp.data == {'results': reranked_results}
+
 
 @pytest.mark.django_db
 class TestTrashProjectsView:
