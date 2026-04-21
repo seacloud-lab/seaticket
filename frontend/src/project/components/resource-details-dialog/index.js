@@ -14,7 +14,7 @@ import TicketInDialog from '../../main-panel/tickets/components/ticket-in-dialog
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
-import { portalAPI } from '@/portal/api';
+import IssueInDialog from '../../main-panel/portal-issues/components/issue-in-dialog';
 
 import './index.css';
 
@@ -148,7 +148,7 @@ const ResourceDetailsDialog = ({
           <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={(uuid, id) => portalAPI.getPortalIssue(uuid, id)} />
+          <IssueInDialog projectUuid={projectUuid} issueID={resource._id} updateIssue={(issue) => setResourceDetails(issue)} getIssue={getIssue} />
         )}
       </ModalBody>
     </Modal>

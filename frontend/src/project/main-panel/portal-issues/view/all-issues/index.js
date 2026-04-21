@@ -16,8 +16,8 @@ const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     moveView: (sourceViewID, targetViewID) => portalAPI.movePortalIssuesView(projectUuid, sourceViewID, targetViewID),
     duplicateView: (viewID) => portalAPI.duplicatePortalIssuesView(projectUuid, viewID),
     // row
-    modifyRow: (...params) => portalAPI.updatePortalIssue(projectUuid, ...params),
-    // modifyRows: (...params) => portalAPI.updatePortalIssues(projectUuid, ...params),
+    modifyRow: (...params) => portalAPI.modifyPortalIssue(projectUuid, ...params),
+    modifyRows: (...params) => portalAPI.modifyPortalIssues(projectUuid, ...params),
     deleteRow: (...params) => portalAPI.deletePortalIssue(projectUuid, ...params),
     deleteRows: (...params) => portalAPI.portalAPIs(projectUuid, ...params),
   }), [projectUuid]);

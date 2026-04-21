@@ -110,7 +110,7 @@ class PortalIssuesView(APIView):
             logger.error(e)
             error_msg = _('There are errors with the filters. Please correct them.')
             return Response({
-                'issues': [],
+                'records': [],
                 'columns': getattr(e, 'columns', []),
                 'error_msg': error_msg,
             })
@@ -120,7 +120,7 @@ class PortalIssuesView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'issues': issues,
+            'records': issues,
             'columns': columns,
             'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
         })
@@ -533,7 +533,7 @@ class PortalMyIssuesView(APIView):
             logger.error(e)
             error_msg = _('There are errors with the filters. Please correct them.')
             return Response({
-                'issues': [],
+                'records': [],
                 'columns': getattr(e, 'columns', []),
                 'error_msg': error_msg,
             })
@@ -543,7 +543,7 @@ class PortalMyIssuesView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'issues': issues,
+            'records': issues,
             'columns': columns,
         })
 

@@ -7,15 +7,18 @@ import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
 import { CollaboratorsSettings, TypeSettings, PrioritySettings } from '../../../tickets/components/ticket-settings';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
-import { useMetadata, useTags } from '@/project/hooks';
+import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { useMetadata, useTags, useData } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '../../constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 
-import './index.css';
+import '@/project/main-panel/connections/components/create-ticket-dialog/index.css';
 
-const CreateTicketDialog = ({ projectUuid, row, onClose }) => {
+const CreateTicketDialog = ({ projectUuid, row, columns, onClose }) => {
   const [isLoading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrMessage] = useState('');
@@ -28,6 +31,7 @@ const CreateTicketDialog = ({ projectUuid, row, onClose }) => {
 
   const { typesData, substatesData } = useMetadata();
   const { tagsData, createTag } = useTags();
+  const { insertRowByLink } = useData();
 
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -60,10 +64,20 @@ const CreateTicketDialog = ({ projectUuid, row, onClose }) => {
       substate: substateOption?.name,
       linked_connection_records: [`portal_${row._pk}`],
     };
-    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
       toaster.success(gettext('Ticket created'));
       onClose();
-      context.eventBus.dispatch('reload_data');
+      const linkedUpdateRecord = {
+        [res.data.ticket._pk]: res.data.ticket.title,
+      };
+      const linkColumn = getColumnByName(columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+      const rowUpdateData = { [linkColumn.key]: [res.data.ticket._pk] };
+      insertRowByLink(TICKET_TABLE_NAME, PORTAL_ISSUE_TABLE_NAME, linkedUpdateRecord, row._id, rowUpdateData, () => {
+        const eventBus = context.eventBus;
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row._id, rowUpdateData);
+        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
+      });
+
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrMessage(errorMessage);
@@ -141,7 +155,7 @@ const CreateTicketDialog = ({ projectUuid, row, onClose }) => {
                 createTag={createTag}
                 onChange={setTags}
               />
-              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} />
+              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} useMetadataContext={useMetadata} />
             </div>
           </div>
         )}

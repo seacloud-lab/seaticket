@@ -20,14 +20,14 @@ import {
 } from '../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-// import RelatedIssuesDialog from './related-issues-dialog';
+import CreateTicketDialog from './create-ticket-dialog';
 import { isFunction } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const Issues = ({
   viewID,
-  canFindRelatedIssues = true, isBuiltInView = false,
+  canCreateRelatedTickets = true, isBuiltInView = false,
   projectUuid, workspaceID, projectName, permission,
   toggleBar = () => {},
   api,
@@ -56,9 +56,9 @@ const Issues = ({
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
 
-  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentIssue, setCurrentIssue] = useState(null);
   const [isShowIssueDetailsDialog, setIsShowIssueDetailsDialog] = useState(false);
+  const [isShowCreateTicketDialog, setIsShowCreateTicketDialog] = useState(false);
 
   const handleExpandRow = useCallback((issue) => {
     setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
@@ -75,11 +75,11 @@ const Issues = ({
           return {
             data: {
               ...res.data,
-              linked_records: res.data?.linked_record_titles || {},
+              linked_records: res.data?.ticket_pk_to_ticket_title || {},
             }
           };
         }), isBuiltInView).then(res => {
-          const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
+          const rows = Array.isArray(res.data.records) ? res.data.records : [];
           const linked_records = res?.data?.linked_records || {};
           let columns = res?.data?.columns || [];
           const othersConfig = {
@@ -185,38 +185,39 @@ const Issues = ({
     };
   }, []);
 
-  const chatIssuesByAI = useCallback((tickets) => {
-    updateAttachments(tickets);
+  const chatIssuesByAI = useCallback((issues) => {
+    updateAttachments(issues);
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 
-  const findRelatedIssues = useCallback((ticket) => {
-    if (!ticket) return;
-    setCurrentIssue(ticket);
-    setIsShowRelatedIssuesDialog(true);
+  const createTicket = useCallback((issue) => {
+    if (!issue) return;
+    setCurrentIssue(issue);
+    setIsShowCreateTicketDialog(true);
   }, []);
 
   const createRowsTools = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, chatIssuesByAI, togglePageSlugId };
-    if (canFindRelatedIssues) {
-      params.findRelatedIssues = findRelatedIssues;
+    if (canCreateRelatedTickets) {
+      params.createTicket = createTicket;
     }
     if (isFunction(customizeCreateRowsTools)) {
       return customizeCreateRowsTools(params);
     }
     return generatorIssuesRowsTools(params);
-  }, [workspaceID, projectName, canFindRelatedIssues, chatIssuesByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId]);
+  }, [workspaceID, projectName, canCreateRelatedTickets, chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId]);
 
   const createContextMenuOptions = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, chatIssuesByAI, togglePageSlugId };
-    if (canFindRelatedIssues) {
-      params.findRelatedIssues = findRelatedIssues;
+    if (canCreateRelatedTickets) {
+      params.createTicket = createTicket;
     }
+
     if (isFunction(customizeCreateContextMenuOptions)) {
       return customizeCreateContextMenuOptions(params);
     }
     return generatorIssuesContextMenuOptions(params);
-  }, [projectName, workspaceID, canFindRelatedIssues, chatIssuesByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId]);
+  }, [projectName, workspaceID, canCreateRelatedTickets, chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId]);
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
@@ -237,9 +238,9 @@ const Issues = ({
       togglePageSlugId,
       workspaceID,
       projectName,
-      findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
+      createTicket: canCreateRelatedTickets ? createTicket : undefined,
     });
-  }, [workspaceID, projectName, canFindRelatedIssues, chatIssuesByAI, findRelatedIssues, togglePageSlugId, metadataAPI]);
+  }, [workspaceID, projectName, canCreateRelatedTickets, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
 
   const handleSwitchIssue = useCallback((step) => {
     const issuesData = metadataRef.current.getOrderRows();
@@ -257,8 +258,8 @@ const Issues = ({
     setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
   }, [currentIssue, metadataRef]);
 
-  const onCloseRelatedIssuesDialog = useCallback(() => {
-    setIsShowRelatedIssuesDialog(false);
+  const onCloseCreateTicketDialog = useCallback(() => {
+    setIsShowCreateTicketDialog(false);
     if (isShowIssueDetailsDialog) return;
     setCurrentIssue(null);
   }, [isShowIssueDetailsDialog]);
@@ -294,15 +295,14 @@ const Issues = ({
         settings={{ ...settings, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
         { ...props }
       />
-      {/* {isShowRelatedIssuesDialog && currentIssue && (
-        <RelatedIssuesDialog
+      {isShowCreateTicketDialog && currentIssue && (
+        <CreateTicketDialog
           projectUuid={projectUuid}
-          ticketId={currentIssue._id}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          onClose={onCloseRelatedIssuesDialog}
+          row={currentIssue}
+          columns={allColumns.current}
+          onClose={onCloseCreateTicketDialog}
         />
-      )} */}
+      )}
       {isShowIssueDetailsDialog && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}

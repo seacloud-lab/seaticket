@@ -100,7 +100,7 @@ const Issue = ({
       serverData[columnName] = value;
     });
 
-    return portalAPI.updatePortalIssue(projectUuid, issueID, serverData).then(res => {
+    return portalAPI.modifyPortalIssue(projectUuid, issueID, serverData).then(res => {
       let update = { ...data };
       const { participants = [] } = issue;
       if (isAutoUpdateParticipants && !participants.includes(user.email)) {

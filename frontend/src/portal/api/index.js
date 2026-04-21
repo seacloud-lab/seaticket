@@ -59,6 +59,11 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
+  getTicket(projectUuid, ticketNumber) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    return this.req.get(url);
+  }
+
   createIssue(projectUuid, data) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
     let form = new FormData();
@@ -71,22 +76,6 @@ class PortalAPI {
         form.append(key, value);
       }
     });
-    return this._sendPostRequest(url, form);
-  }
-
-
-  getTicket(projectUuid, ticketNumber) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/tickets/' + ticketNumber + '/';
-    return this.req.get(url);
-  }
-
-  listMyTickets(projectUuid, { view_id = 'open', start = 0, limit = 1000, config = {} } = {}) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/my-tickets/';
-    let form = new FormData();
-    form.append('view_id', view_id);
-    form.append('start', start);
-    form.append('limit', limit);
-    form.append('config', JSON.stringify(config));
     return this._sendPostRequest(url, form);
   }
 
@@ -187,7 +176,7 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  updatePortalIssue(projectUuid, issueId, update) {
+  modifyPortalIssue(projectUuid, issueId, update) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';
     let form = new FormData();
     Object.keys(update).forEach(key => {
@@ -203,6 +192,11 @@ class PortalAPI {
     return this.req.put(url, form);
   }
 
+  modifyPortalIssues(projectUuid, issues, isCopyPaste) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
+    return this.req.put(url, { issues_data: issues, is_copy_paste: isCopyPaste });
+  }
+
   deletePortalIssue(projectUuid, issueId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';
     return this.req.delete(url);
@@ -211,11 +205,6 @@ class PortalAPI {
   deletePortalIssues(projectUuid, issueIds) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
     return this.req.delete(url, { data: { issue_ids: issueIds } });
-  }
-
-  modifyPortalIssues(projectUuid, issues, isCopyPaste) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
-    return this.req.put(url, { issues_data: issues, is_copy_paste: isCopyPaste });
   }
 
   // Portal Issue Comments API
@@ -248,6 +237,8 @@ class PortalAPI {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/comments/' + commentId + '/';
     return this.req.delete(url);
   }
+
+  // 
 
   convertPortalIssueToTicket(projectUuid, issueId) {
     const url = this.server + '/api/v1/ai/convert-portal-issue-to-ticket/';

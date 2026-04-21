@@ -3,8 +3,7 @@ import { VIEW_TOOL } from '@/sea-metadata';
 import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
 import { portalAPI } from '../api';
-import Tickets from '@/project/main-panel/tickets/components/tickets';
-import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
+import Issues from '@/project/main-panel/portal-issues/components/issues';
 
 const viewTools = [
   VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
@@ -116,14 +115,13 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
 
   return (
     <div className="sea-qa-portal-my-issues">
-      <Tickets
+      <Issues
         projectUuid={projectUuid}
         workspaceID={workspaceID}
         projectName={projectName}
-        permission="r"
+        permission="rw"
         viewID={viewID}
         api={api}
-        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber)}
         localStorageNamePrefix={localStorageNamePrefix}
         settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
         dataDidMount={dataDidMount}
@@ -131,9 +129,6 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
         isBuiltInView={true}
         toggleView={toggleView}
         createContextMenuOptions={() => []}
-        createRowsTools={() => []}
-        tableName="portal_issues"
-        rowType={PORTAL_ISSUE_TYPE}
       />
     </div>
   );

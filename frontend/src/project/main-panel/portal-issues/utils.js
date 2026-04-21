@@ -142,14 +142,14 @@ export const generatorRowsMoreTool = ({
   };
 };
 
-export const generatorIssuesRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatIssuesByAI, findRelatedIssues, context, createTicket }) => {
+export const generatorIssuesRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatIssuesByAI, context, createTicket }) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
     const tool = generatorIssueCopyLinkTool({ issue: row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatIssuesByAI, findRelatedIssues, context, createTicket });
+  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatIssuesByAI, context, createTicket });
   tools.push(moreTool);
   return tools;
 };
@@ -174,7 +174,6 @@ export const generatorIssuesContextMenuOptions = ({
   workspaceID,
   projectName,
   permission,
-  findRelatedIssues,
   createTicket,
   canDeleteRow
 }) => {
@@ -218,7 +217,7 @@ export const generatorIssuesContextMenuOptions = ({
       );
       if (rows.length === 1 && createTicket) {
         list.push({
-          label: gettext('Create ticket'),
+          label: gettext('Create related ticket'),
           key: 'create_ticket',
           callback: () => createTicket(rows[0]),
         });
@@ -291,17 +290,9 @@ export const generatorIssuesContextMenuOptions = ({
     callback: () => handleChatIssuesByAI([row]),
   });
 
-  if (findRelatedIssues) {
-    list.push({
-      label: gettext('Find related issues'),
-      key: 'find_related_issues',
-      callback: () => findRelatedIssues(row),
-    });
-  }
-
   if (createTicket) {
     list.push({
-      label: gettext('Create ticket'),
+      label: gettext('Create related ticket'),
       key: 'create_ticket',
       callback: () => createTicket(row),
     });

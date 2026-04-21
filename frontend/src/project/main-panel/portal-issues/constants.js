@@ -1,4 +1,5 @@
 import { gettext } from '@/constants';
+import CellType from '@/sea-metadata/constants/column/type';
 
 import {
   TICKET_STATE,
@@ -10,6 +11,7 @@ import {
   TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS,
   AUTO_UPDATE_PARTICIPANTS_KEY,
+  TICKET_TABLE_NAME,
 } from '../tickets/constants';
 
 export const PORTAL_ISSUE_STATE = TICKET_STATE;
@@ -44,11 +46,21 @@ export const PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID = {
   ALL: 'all',
 };
 
-export const PREDEFINED_PORTAL_ISSUE_COLUMN_NAME = PREDEFINED_TICKET_COLUMN_NAME;
+export const PREDEFINED_PORTAL_ISSUE_COLUMN_NAME = {
+  ...PREDEFINED_TICKET_COLUMN_NAME,
+  LINKED_TICKET: 'linked_ticket'
+};
 
 export const PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG = {
   ...TICKET_PREDEFINED_COLUMN_CONFIG,
-
+  [PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET]: {
+    type: CellType.LINK,
+    display_name: gettext('Linked ticket'),
+    data: {
+      linked_table: TICKET_TABLE_NAME,
+    },
+    editable: false,
+  }
 };
 
 export const PORTAL_ISSUE_NOT_DISPLAY_COLUMNS = TICKET_NOT_DISPLAY_COLUMNS;
