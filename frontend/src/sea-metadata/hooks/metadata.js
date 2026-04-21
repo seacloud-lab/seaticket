@@ -337,6 +337,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeUpdateRows = eventBus.subscribe(EVENT_BUS_TYPE.UPDATE_TABLE_ROWS, updateMetadata);
     const unsubscribeReloadData = eventBus.subscribe(EVENT_BUS_TYPE.RELOAD_DATA, reloadMetadata);
     const unsubscribeRecalculateData = eventBus.subscribe(EVENT_BUS_TYPE.RECALCULATE_DATA, recalculateData);
+    const unsubscribeLocalRowDeleted = eventBus.subscribe(EVENT_BUS_TYPE.DELETE_ROWS, deleteLocalRows);
     const unsubscribeLocalRowChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, updateLocalRow);
     const unsubscribeLocalRowsChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, updateLocalRows);
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
@@ -355,6 +356,7 @@ export const MetadataProvider = forwardRef(({
       unsubscribeUpdateRows();
       unsubscribeReloadData();
       unsubscribeRecalculateData();
+      unsubscribeLocalRowDeleted();
       unsubscribeLocalRowChanged();
       unsubscribeLocalRowsChanged();
       unsubscribeLocalColumnChanged();
@@ -363,7 +365,7 @@ export const MetadataProvider = forwardRef(({
       unsubscribeClearData();
       unsubscribeUpdateDataAttribute();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalRows, updateLocalColumnData, moveRow, clearData, updateDataAttribute]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalRows, updateLocalColumnData, moveRow, clearData, updateDataAttribute, deleteLocalRows]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,
