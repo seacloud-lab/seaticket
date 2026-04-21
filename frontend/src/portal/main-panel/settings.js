@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Nav, NavItem, NavLink, TabContent, TabPane, Button, FormGroup, Label, Input } from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import { Icon, toaster, Switch, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '../api';
-import { SOURCE_TYPE_OPTIONS } from '../constants';
+import { connectionsAPI } from '@/project/api/connections-api';
 import { Utils } from '@/utils/utils';
+import PortalChatSourceSelector from './chat-source-selector';
 
 import './settings.css';
 
@@ -16,6 +17,31 @@ const SETTING_TABS = {
   CHAT: 'chat',
 };
 
+const CHAT_EXTRA_SOURCES = ['knowledge_base', 'ticket'];
+const EMPTY_CHAT_ALLOWED_SOURCES = { connection_ids: [], extra_sources: [] };
+
+const normalizeExtraSources = (extraSources = []) => {
+  if (!Array.isArray(extraSources)) return [];
+  return CHAT_EXTRA_SOURCES.filter((source) => extraSources.includes(source));
+};
+
+const normalizeChatAllowedSources = (rawChatAllowedSources, connections = []) => {
+  if (!rawChatAllowedSources || Array.isArray(rawChatAllowedSources) || typeof rawChatAllowedSources !== 'object') {
+    return EMPTY_CHAT_ALLOWED_SOURCES;
+  }
+
+  const rawConnectionIds = Array.isArray(rawChatAllowedSources.connection_ids) ? rawChatAllowedSources.connection_ids : [];
+  const extraSources = normalizeExtraSources(rawChatAllowedSources.extra_sources);
+
+  const rawConnectionIdSet = new Set(rawConnectionIds.map(String));
+  return {
+    connection_ids: connections
+      .filter((connection) => rawConnectionIdSet.has(String(connection.id)))
+      .map((connection) => connection.id),
+    extra_sources: extraSources,
+  };
+};
+
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(SETTING_TABS.PORTAL_URL);
   const [allowAnonymous, setAllowAnonymous] = useState(false);
@@ -24,9 +50,11 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [hasSavedPassword, setHasSavedPassword] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
-  const [chatSettings, setChatSettings] = useState({
-    chat_allowed_sources: ['site', 'seafile', 'github_issue', 'discourse_forum'],
-  });
+  const [connections, setConnections] = useState([]);
+  const [isConnectionsLoading, setIsConnectionsLoading] = useState(true);
+  const [chatSettings, setChatSettings] = useState(EMPTY_CHAT_ALLOWED_SOURCES);
+  const [serverChatAllowedSources, setServerChatAllowedSources] = useState(null);
+  const [hasLoadedPortalSettings, setHasLoadedPortalSettings] = useState(false);
   const [isSavingChat, setIsSavingChat] = useState(false);
 
   const portalUrl = useMemo(() => {
@@ -48,15 +76,37 @@ const Settings = () => {
         window.app.pageOptions.showKBInPortal = !!kbEnabled;
       }
 
-      if (data.chat_allowed_sources) {
-        setChatSettings({ chat_allowed_sources: data.chat_allowed_sources });
-      }
-    }).catch(() => { });
+      setServerChatAllowedSources(data.chat_allowed_sources || null);
+      setHasLoadedPortalSettings(true);
+    }).catch(() => {
+      setServerChatAllowedSources(null);
+      setHasLoadedPortalSettings(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    setIsConnectionsLoading(true);
+    connectionsAPI.listConnections(projectUuid, 1, 1000).then((res) => {
+      setConnections(res.data.records || []);
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      setConnections([]);
+    }).finally(() => {
+      setIsConnectionsLoading(false);
+    });
   }, []);
 
   const { showKBInPortal } = window.app.pageOptions;
   const [showKB, setShowKB] = useState(showKBInPortal === true);
   const [isSavingKB, setIsSavingKB] = useState(false);
+
+  useEffect(() => {
+    if (!hasLoadedPortalSettings || isConnectionsLoading) {
+      return;
+    }
+
+    setChatSettings(normalizeChatAllowedSources(serverChatAllowedSources, connections));
+  }, [connections, hasLoadedPortalSettings, isConnectionsLoading, serverChatAllowedSources]);
 
   const onToggleKB = useCallback(() => {
     if (isSavingKB) return;
@@ -163,25 +213,21 @@ const Settings = () => {
     });
   }, [allowAnonymous, enablePassword, password, confirmPassword, isEditingPassword, hasSavedPassword, showKB]);
 
-  const handleSourceChange = useCallback((sourceValue, checked) => {
-    setChatSettings(prev => {
-      let newAllowedSources = [...prev.chat_allowed_sources];
-      if (checked) {
-        if (!newAllowedSources.includes(sourceValue)) {
-          newAllowedSources.push(sourceValue);
-        }
-      } else {
-        newAllowedSources = newAllowedSources.filter(s => s !== sourceValue);
-      }
-      return { ...prev, chat_allowed_sources: newAllowedSources };
-    });
+  const handleSourceChange = useCallback((value) => {
+    setChatSettings(value);
   }, []);
 
   const onSaveChatSettings = useCallback(() => {
     setIsSavingChat(true);
+    const nextChatAllowedSources = {
+      connection_ids: chatSettings.connection_ids,
+      extra_sources: chatSettings.extra_sources,
+    };
+
     portalAPI.updateSettings(projectUuid, {
-      chat_allowed_sources: chatSettings.chat_allowed_sources,
+      chat_allowed_sources: nextChatAllowedSources,
     }).then(() => {
+      setServerChatAllowedSources(nextChatAllowedSources);
       toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -325,27 +371,25 @@ const Settings = () => {
           </TabPane>
           <TabPane tabId={SETTING_TABS.CHAT}>
             <div className="portal-settings-content">
-              <label className="portal-settings-label">{gettext('Chat source types')}</label>
+              <label className="portal-settings-label">{gettext('Chat sources')}</label>
               <p className="portal-settings-help-text">
                 {gettext('Select which data sources can be used for AI responses in the portal.')}
               </p>
-              <div className="portal-settings-source-list">
-                {SOURCE_TYPE_OPTIONS.map(option => (
-                  <FormGroup check key={option.value} className="mb-2">
-                    <Input
-                      type="checkbox"
-                      id={`source-${option.value}`}
-                      checked={chatSettings.chat_allowed_sources.includes(option.value)}
-                      onChange={(e) => handleSourceChange(option.value, e.target.checked)}
-                      disabled={isSavingChat}
-                    />
-                    <Label check for={`source-${option.value}`}>
-                      {option.label}
-                    </Label>
-                  </FormGroup>
-                ))}
+              <div className="portal-settings-source-selector-wrapper">
+                <PortalChatSourceSelector
+                  connections={connections}
+                  value={chatSettings}
+                  disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
+                  onChange={handleSourceChange}
+                />
               </div>
-              <button className="btn btn-primary mt-2" onClick={onSaveChatSettings} disabled={isSavingChat}>{gettext('Save')}</button>
+              <button
+                className="btn btn-primary mt-2"
+                onClick={onSaveChatSettings}
+                disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
+              >
+                {gettext('Save')}
+              </button>
             </div>
           </TabPane>
         </TabContent>
