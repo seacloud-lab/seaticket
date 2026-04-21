@@ -218,7 +218,7 @@ class TestPortalMyIssuesView:
             resp = PortalMyIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['issues'][0]['_pk'] == 1
+        assert resp.data['records'][0]['_pk'] == 1
 
 
 @pytest.mark.django_db

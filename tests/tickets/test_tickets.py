@@ -237,7 +237,7 @@ class TestTicketAPIView:
         metadata = {'columns': []}
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
-                patch('seahub.tickets.tickets.convert_ticket_select_column_name_to_option_id'), \
+                patch('seahub.tickets.tickets.convert_select_field_names_to_option_ids'), \
                 patch('seahub.tickets.tickets.get_ticket_comments', return_value=[]):
             seadb_cls_mock.return_value = Mock()
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')

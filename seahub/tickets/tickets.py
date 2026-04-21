@@ -34,7 +34,7 @@ from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, Discou
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
+    convert_select_field_names_to_option_ids, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
@@ -674,7 +674,7 @@ class TicketAPIView(APIView):
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            convert_ticket_select_column_name_to_option_id(metadata, ticket)
+            convert_select_field_names_to_option_ids(metadata, ticket)
 
             linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
 
@@ -1965,4 +1965,3 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
-

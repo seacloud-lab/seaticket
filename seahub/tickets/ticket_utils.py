@@ -389,34 +389,31 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
     return tickets, columns
 
 
-# format tickets
-def convert_ticket_select_column_name_to_option_id(columns, ticket):
-    """In-place convert ticket fields from names to ids for state/type/tags/substate."""
+# format records
+def convert_select_field_names_to_option_ids(columns, record, field_names=None):
+    """In-place convert select field values from option names to option ids."""
 
-    if not ticket:
-        return ticket
-    if ticket.get('state'):
-        column = get_column_from_columns_by_name(columns, 'state')
+    if not record:
+        return record
+
+    field_names = field_names or ('state', 'type', 'substate')
+    for field_name in field_names:
+        field_value = record.get(field_name)
+        if not field_value:
+            continue
+
+        column = get_column_from_columns_by_name(columns, field_name)
+        if not column:
+            continue
+
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
-        for opt in options:
-            if opt.get('name') == ticket.get('state'):
-                ticket['state'] = opt.get('id')
-    if ticket.get('type'):
-        column = get_column_from_columns_by_name(columns, 'type')
-        column_data = column.get('data') or {}
-        options = column_data.get('options', []) or []
-        for opt in options:
-            if opt.get('name') == ticket.get('type'):
-                ticket['type'] = opt.get('id')
-    if ticket.get('substate'):
-        column = get_column_from_columns_by_name(columns, 'substate')
-        column_data = column.get('data') or {}
-        options = column_data.get('options', []) or []
-        for opt in options:
-            if opt.get('name') == ticket.get('substate'):
-                ticket['substate'] = opt.get('id')
-    return ticket
+        for option in options:
+            if option.get('name') == field_value:
+                record[field_name] = option.get('id')
+                break
+
+    return record
 
 
 def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
