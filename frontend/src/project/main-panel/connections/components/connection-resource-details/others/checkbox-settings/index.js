@@ -21,7 +21,7 @@ const CheckboxSettings = ({
 
   return (
     <div className={classnames('sea-ticket-settings-item', className)}>
-      <CustomizeLabel icon="link">{title}</CustomizeLabel>
+      <CustomizeLabel icon="check-box">{title}</CustomizeLabel>
       <div className="sea-ticket-checkbox-settings-formatter valid">
         <div className={classnames('sea-ticket-checkbox-settings-btn', { 'cursor-pointer': !isReadonly })} onClick={handleClick} >
           {value && (<Icon symbol="check-mark" />)}
