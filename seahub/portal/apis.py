@@ -28,7 +28,8 @@ from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT
 from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
-    check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket
+    check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, \
+    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -268,6 +269,151 @@ class PortalIssuesView(APIView):
 
         send_portal_issue_update_msg(project_uuid, added=1)
         return Response({'portal_issue': row}, status=status.HTTP_201_CREATED)
+
+    @require_org_context
+    def put(self, request, project_uuid):
+        issues_data = request.data.get('issues_data')
+        if not issues_data:
+            error_msg = 'issues_data is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI()
+
+        issue_id_to_row = {}
+        for issue_data in issues_data:
+            row = issue_data.get('row', {})
+            if not row:
+                continue
+            row_id = issue_data.get('row_id', '')
+            if not row_id:
+                error_msg = 'row_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            issue_id_to_row[row_id] = row
+
+        try:
+            issue_ids = issue_id_to_row.keys()
+            issue_ids_str = ','.join(issue_ids)
+            sql = f"""
+            SELECT `_pk`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `assignees`, `participants`, `linked_ticket`
+            FROM `{TABLE_PORTAL_ISSUES}`
+            WHERE `_pk` IN ({issue_ids_str})
+            """
+            query_result = seadb_api.query_rows(project_uuid, sql)
+        except Exception as e:
+            logger.exception(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        results = query_result.get('results')
+        if not results:
+            return Response({'success': True})
+
+        update_rows = []
+        ticket_link_diff = {}
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        for issue in results:
+            updated_row = {}
+            row_data = issue_id_to_row.get(str(issue.get('_pk')))
+            if not row_data:
+                continue
+
+            if 'state' in row_data:
+                issue_state_name = row_data.get('state')
+                issue_state_name = issue_state_name.lower() if issue_state_name else ''
+                updated_row[PortalIssuesTable.state.name] = issue_state_name
+                if issue_state_name == 'closed':
+                    updated_row[PortalIssuesTable.closed_time.name] = now_datetime
+                elif issue_state_name == 'open':
+                    updated_row[PortalIssuesTable.closed_time.name] = ''
+
+            if 'substate' in row_data:
+                updated_row[PortalIssuesTable.substate.name] = row_data.get('substate') or None
+
+            if 'tags' in row_data:
+                tags_value = row_data.get('tags')
+                if tags_value is None:
+                    updated_row[PortalIssuesTable.tags.name] = []
+                else:
+                    updated_row[PortalIssuesTable.tags.name] = [int(tag_id) for tag_id in tags_value]
+
+            if 'type' in row_data:
+                updated_row[PortalIssuesTable.type.name] = row_data.get('type') or None
+
+            if 'linked_ticket' in row_data:
+                linked_ticket = row_data.get('linked_ticket')
+                current_linked_ticket = issue.get('linked_ticket')
+                if linked_ticket in (None, ''):
+                    new_linked_ticket = None
+                else:
+                    try:
+                        new_linked_ticket = int(linked_ticket)
+                    except (TypeError, ValueError):
+                        error_msg = 'linked_ticket invalid.'
+                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+                old_link_key = f'portal_{issue.get("_pk")}' if current_linked_ticket else None
+                new_link_key = f'portal_{issue.get("_pk")}' if new_linked_ticket else None
+                removed_items = [old_link_key] if old_link_key and int(current_linked_ticket) != int(new_linked_ticket or 0) else []
+                added_items = [new_link_key] if new_link_key and int(current_linked_ticket or 0) != new_linked_ticket else []
+
+                if added_items or removed_items:
+                    current_ticket_id = int(current_linked_ticket) if current_linked_ticket else None
+                    target_ticket_id = new_linked_ticket
+                    if current_ticket_id:
+                        ticket_link_diff[current_ticket_id] = (
+                            ticket_link_diff.get(current_ticket_id, ([], []))[0],
+                            ticket_link_diff.get(current_ticket_id, ([], []))[1] + removed_items,
+                        )
+                    if target_ticket_id:
+                        ticket_link_diff[target_ticket_id] = (
+                            ticket_link_diff.get(target_ticket_id, ([], []))[0] + added_items,
+                            ticket_link_diff.get(target_ticket_id, ([], []))[1],
+                        )
+                    updated_row[PortalIssuesTable.linked_ticket.name] = target_ticket_id
+
+            for key, value in row_data.items():
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_ticket'):
+                    continue
+                updated_row[key] = value
+
+            if not updated_row:
+                continue
+
+            updated_row[PortalIssuesTable.modified_time.name] = now_datetime
+            update_rows.append({
+                'pk': issue.get('_pk'),
+                'row': updated_row,
+            })
+
+        if ticket_link_diff:
+            try:
+                sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+
+        if update_rows:
+            try:
+                seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, update_rows)
+            except Exception as e:
+                logger.exception(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            send_portal_issue_update_msg(project_uuid, updated=len(update_rows))
+
+        return Response({'success': True})
 
     @require_org_context
     def delete(self, request, project_uuid):

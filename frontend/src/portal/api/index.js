@@ -213,6 +213,11 @@ class PortalAPI {
     return this.req.delete(url, { data: { issue_ids: issueIds } });
   }
 
+  modifyPortalIssues(projectUuid, issues, isCopyPaste) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
+    return this.req.put(url, { issues_data: issues, is_copy_paste: isCopyPaste });
+  }
+
   // Portal Issue Comments API
   getPortalIssueComments(projectUuid, issueId, start = 0, end = 25) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/comments/?start=' + start + '&end=' + end;
