@@ -337,7 +337,7 @@ const PortalIssueInDialog = ({
             substate={substate}
             substatesData={substatesData}
             onChange={(newState, newSubstate) => modifyIssue({ state: newState, substate: newSubstate })}
-            useMetadataProvider={usePortalIssuesMetadata}
+            useMetadataContext={usePortalIssuesMetadata}
           />
           <SubStateSettings
             isReadonly={false}
@@ -345,14 +345,14 @@ const PortalIssueInDialog = ({
             substate={substate}
             substatesData={substatesData}
             onChange={(newState, newSubstate) => modifyIssue({ substate: newSubstate })}
-            useMetadataProvider={usePortalIssuesMetadata}
+            useMetadataContext={usePortalIssuesMetadata}
           />
           <TypeSettings
             isReadonly={false}
             value={type}
             typesData={typesData}
             onChange={(value) => modifyIssue({ type: value })}
-            useMetadataProvider={usePortalIssuesMetadata}
+            useMetadataContext={usePortalIssuesMetadata}
           />
           <DueDateSettings
             isReadonly={false}

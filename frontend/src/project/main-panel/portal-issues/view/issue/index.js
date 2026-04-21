@@ -507,9 +507,9 @@ const Issue = ({
             createTag={createTag}
             onChange={onTagsChange}
           />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataProvider={usePortalIssuesMetadata} onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataProvider={usePortalIssuesMetadata} onChange={onSubstateChange} />
-          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataProvider={usePortalIssuesMetadata} onChange={onTypeChange} />
+          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
+          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
+          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />

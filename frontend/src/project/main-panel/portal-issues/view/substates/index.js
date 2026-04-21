@@ -34,7 +34,7 @@ const Substates = (props) => {
     <AllSubstates
       { ...props }
       columns={initColumns}
-      useMetadataProvider={usePortalIssuesMetadata}
+      useMetadataContext={usePortalIssuesMetadata}
     />
   );
 };

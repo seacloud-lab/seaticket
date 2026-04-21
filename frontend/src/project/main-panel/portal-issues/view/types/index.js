@@ -28,7 +28,7 @@ const Types = (props) => {
     <TypesComponent
       { ...props }
       columns={initColumns}
-      useMetadataProvider={usePortalIssuesMetadata}
+      useMetadataContext={usePortalIssuesMetadata}
     />
   );
 };
