@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { isValidUrl } from '@/utils/validate';
-import { generatorConnectionAssetURLPrefix } from '../../../../utils';
+import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
 import { Utils } from '@/utils/utils';
 import { IconButton, IconTextBtn } from '@/components';
 import { gettext } from '@/constants';
