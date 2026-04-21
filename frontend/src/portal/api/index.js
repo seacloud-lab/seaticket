@@ -203,6 +203,16 @@ class PortalAPI {
     return this.req.put(url, form);
   }
 
+  deletePortalIssue(projectUuid, issueId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';
+    return this.req.delete(url);
+  }
+
+  deletePortalIssues(projectUuid, issueIds) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
+    return this.req.delete(url, { data: { issue_ids: issueIds } });
+  }
+
   // Portal Issue Comments API
   getPortalIssueComments(projectUuid, issueId, start = 0, end = 25) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/comments/?start=' + start + '&end=' + end;
@@ -239,7 +249,7 @@ class PortalAPI {
     return this.req.post(url, { project_uuid: projectUuid, issue_id: issueId });
   }
 
-  // Portal Issues Views API (for SeaMetadata compatibility)
+  // Portal issues views API
   listPortalIssuesViews(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/portal-issues/views/';
     return this.req.get(url);
@@ -391,15 +401,6 @@ class PortalAPI {
     return this.req.put(url, { issue_ids: issueIds });
   }
 
-  deletePortalIssue(projectUuid, issueId) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';
-    return this.req.delete(url);
-  }
-
-  deletePortalIssues(projectUuid, issueIds) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/';
-    return this.req.delete(url, { data: { issue_ids: issueIds } });
-  }
 }
 
 const portalAPI = new PortalAPI();

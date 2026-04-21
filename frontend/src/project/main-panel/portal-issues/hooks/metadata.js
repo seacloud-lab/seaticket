@@ -3,7 +3,7 @@ import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { OptionsData, Option } from '../models';
-import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
+import { PREDEFINED_PORTAL_ISSUE_SUBSTATE_OPTION } from '../constants';
 import { portalAPI } from '@/portal/api';
 
 const PortalIssuesMetadataContext = React.createContext(null);
@@ -121,7 +121,7 @@ export const PortalIssuesMetadataProvider = ({
     let newData = isReload ? new OptionsData({}) : deepCopy(substatesData);
     if (Array.isArray(newSubstates) && newSubstates.length > 0) {
       newSubstates.forEach(substate => {
-        const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
+        const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_PORTAL_ISSUE_SUBSTATE_OPTION);
         newData.rows.push(newSubstate);
         newData.row_ids.push(newSubstate._id);
         newData.id_row_map[newSubstate._id] = newSubstate;

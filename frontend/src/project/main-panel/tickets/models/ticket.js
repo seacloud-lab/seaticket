@@ -11,7 +11,6 @@ class Comment {
     this.via_agent = object.via_agent === true;
 
     this.content = object.content || '';
-
     // keep original time for sorting
     this._created_time = object.created_time || '';
     this._modified_time = object.modified_time || '';

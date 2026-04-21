@@ -14,12 +14,12 @@ import Header from '@/project/main-panel/tickets/view/ticket/header';
 import UploadFilesButton from '@/project/main-panel/tickets/components/upload-files-btn';
 import {
   CollaboratorsSettings, PrioritySettings,
-  DueDateSettings, LinkSettings, StateSettings, SubStateSettings
+  DueDateSettings, LinkSettings, StateSettings, SubStateSettings, TypeSettings
 } from '@/project/main-panel/tickets/components/ticket-settings';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useTags, useMetadata } from '@/project/hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
-import PortalTypeSettings from '../portal-type-settings';
+import { usePortalIssuesMetadata } from '../../hooks';
 
 import './index.css';
 
@@ -337,6 +337,7 @@ const PortalIssueInDialog = ({
             substate={substate}
             substatesData={substatesData}
             onChange={(newState, newSubstate) => modifyIssue({ state: newState, substate: newSubstate })}
+            useMetadataProvider={usePortalIssuesMetadata}
           />
           <SubStateSettings
             isReadonly={false}
@@ -344,12 +345,14 @@ const PortalIssueInDialog = ({
             substate={substate}
             substatesData={substatesData}
             onChange={(newState, newSubstate) => modifyIssue({ substate: newSubstate })}
+            useMetadataProvider={usePortalIssuesMetadata}
           />
-          <PortalTypeSettings
+          <TypeSettings
             isReadonly={false}
             value={type}
             typesData={typesData}
             onChange={(value) => modifyIssue({ type: value })}
+            useMetadataProvider={usePortalIssuesMetadata}
           />
           <DueDateSettings
             isReadonly={false}

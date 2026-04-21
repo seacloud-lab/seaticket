@@ -34,7 +34,7 @@ const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
   switchResource, onToggle,
   createMoreOptions,
-  getTicket, getKB,
+  getTicket, getKB, getIssue,
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 

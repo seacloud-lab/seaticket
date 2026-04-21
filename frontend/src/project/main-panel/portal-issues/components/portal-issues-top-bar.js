@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import TopBar from '../../top-bar';
-import { usePortalIssuesPage, useMetadata } from '../hooks';
+import { usePortalIssuesPage, usePortalIssuesMetadata } from '../hooks';
 import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { EVENT_BUS_TYPE as PROJECT_EVENT_BUS_TYPE } from '@/project/constants';
@@ -11,7 +11,7 @@ import { RefreshBtn } from '@/project/components';
 
 const PortalIssuesTopBar = ({ title, permission }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = usePortalIssuesPage();
-  const { typesData, substatesData } = useMetadata();
+  const { typesData, substatesData } = usePortalIssuesMetadata();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {

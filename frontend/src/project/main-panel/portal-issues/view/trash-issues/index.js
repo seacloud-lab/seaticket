@@ -6,17 +6,16 @@ import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import CleanPortalIssues from './clean-portal-issues';
-import Tickets from '@/project/main-panel/tickets/components/tickets';
+import Issues from '../../components/issues';
 import { useData } from '@/project/hooks';
-import { PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG } from '../../constants';
-import { usePortalIssuesPage, useMetadata } from '../../hooks';
+import { PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { usePortalIssuesPage } from '../../hooks';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
   const { clearViewRows, restoreRows } = useData();
   const { isLoading, toggleView, togglePageSlugId } = usePortalIssuesPage();
-  const metadata = useMetadata();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -84,7 +83,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
     }),
   }), [projectUuid, viewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-deleted-portal-issues`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-deleted-portal-issues`, [projectUuid]);
 
   const handleRestorePortalIssues = useCallback((issueIds, { deleteLocalRows, selectNone }) => {
     portalAPI.restorePortalIssues(projectUuid, issueIds).then(res => {
@@ -193,7 +192,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
 
   return (
     <>
-      <Tickets
+      <Issues
         localStorageNamePrefix={localStorageNamePrefix}
         projectUuid={projectUuid}
         workspaceID={workspaceID}
@@ -210,10 +209,6 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
         toggleView={toggleView}
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
-        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber)}
-        tableName="portal_issues"
-        rowType={PORTAL_ISSUE_TYPE}
-        metadata={metadata}
       />
       <CleanPortalIssues cleanPortalIssues={cleanPortalIssues} />
     </>
