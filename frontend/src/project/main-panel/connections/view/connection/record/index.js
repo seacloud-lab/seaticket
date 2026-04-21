@@ -200,7 +200,12 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     modifyRow(connectionTableName, recordID, localRowUpdate,
       () => connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, recordID, update).then(res => {
         setRecord({ ...record, ...update });
-      })
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(true);
+      }),
     );
   }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
 

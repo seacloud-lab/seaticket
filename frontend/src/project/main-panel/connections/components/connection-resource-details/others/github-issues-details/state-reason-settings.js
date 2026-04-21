@@ -73,7 +73,7 @@ const StateReasonSettings = ({
         <CustomizeLabel icon="single-select">
           {gettext('State reason')}
         </CustomizeLabel>
-        <div className={classnames('ticket-types-formatter', { 'valid': option })} onClick={openEditor} ref={editorRef}>
+        <div className={classnames('ticket-types-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
           {option ? <Option option={option} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>

@@ -43,6 +43,10 @@ const LabelsSettings = ({
     setIsShowEditor(true);
   }, [isReadonly]);
 
+  const handleChange = useCallback((labels) => {
+    onChange && onChange({ labels });
+  }, [onChange]);
+
   const closeEditor = useCallback(() => {
     let newValue = optionEditorContainerRef.current.getValue();
     if (isCellValueChanged(value, newValue)) {
@@ -50,10 +54,10 @@ const LabelsSettings = ({
         newValue = newValue.map(v => getOption(options, v)).filter(Boolean);
         newValue = newValue.map(o => o.name);
       }
-      onChange && onChange({ labels: newValue });
+      handleChange(newValue);
     }
     setIsShowEditor(false);
-  }, [options, value]);
+  }, [options, value, handleChange]);
 
   const handleRemove = useCallback((event, optionId) => {
     if (isShowEditor) return;
@@ -62,11 +66,10 @@ const LabelsSettings = ({
     let newValue = value.filter(i => i !== optionId);
     if (newValue.length > 0) {
       newValue = newValue.map(v => getOption(options, v)).filter(Boolean);
-      console.log(newValue);
       newValue = newValue.map(o => o.name);
     }
-    onChange && onChange({ labels: newValue });
-  }, [isShowEditor, value, options, onChange]);
+    handleChange(newValue);
+  }, [isShowEditor, value, options, handleChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
@@ -94,7 +97,7 @@ const LabelsSettings = ({
           {gettext('Labels')}
         </CustomizeLabel>
         <div
-          className={classnames('tags-formatter', { 'valid': labels.length > 0 })}
+          className={classnames('tags-formatter', { 'valid': labels.length > 0, 'cursor-pointer': !isReadonly })}
           onClick={openEditor}
           ref={editorRef}
         >
@@ -103,14 +106,16 @@ const LabelsSettings = ({
               {labels.map(label => {
                 return (
                   <Option option={label} key={label.id} className="sea-metadata-multiple-select-editor-option">
-                    <IconButton
-                      icon="close"
-                      onClick={(event) => handleRemove(event, label.id)}
-                      className="sea-metadata-select-remove-btn no-hover-bg"
-                      size={{ btn: 14, icon: 10 }}
-                      style={{ margin: '0 -2px 0 2px', cursor: 'pointer' }}
-                      iconStyle={{ color: label.text_color }}
-                    />
+                    {!isReadonly && (
+                      <IconButton
+                        icon="close"
+                        onClick={(event) => handleRemove(event, label.id)}
+                        className="sea-metadata-select-remove-btn no-hover-bg cursor-pointer"
+                        size={{ btn: 14, icon: 10 }}
+                        style={{ margin: '0 -2px 0 2px' }}
+                        iconStyle={{ color: label.text_color }}
+                      />
+                    )}
                   </Option>
                 );
               })}

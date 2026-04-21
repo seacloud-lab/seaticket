@@ -34,7 +34,7 @@ const EmailDetails = ({
         title={gettext('unread')}
         className="mb-4"
         value={getCellValueByColumn(record, unreadColumn)}
-        onChange={(newValue) => onChange({ [unreadColumn.name]: newValue })}
+        onChange={(newValue, callback) => onChange({ [unreadColumn.name]: newValue }, callback)}
       />
       <LinkedTicket
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}

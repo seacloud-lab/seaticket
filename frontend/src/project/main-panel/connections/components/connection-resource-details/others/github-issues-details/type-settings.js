@@ -66,7 +66,7 @@ const TypeSettings = ({
         <CustomizeLabel icon="single-select">
           {gettext('Type')}
         </CustomizeLabel>
-        <div className={classnames('ticket-types-formatter', { 'valid': typeOption })} onClick={openEditor} ref={editorRef}>
+        <div className={classnames('ticket-types-formatter', { 'valid': typeOption, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
           {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>
