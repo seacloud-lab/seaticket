@@ -60,6 +60,11 @@ class AgentAPI {
     return this.req.get(url);
   }
 
+  syncGithubIssueTypes(projectUuid) {
+    const url = this.server + `/api/v1/project/${projectUuid}/github/issue-types/`;
+    return this.req.post(url);
+  }
+
   // Agent run logs
   listAgentRunLogs(projectUuid, page = 1, perPage = 20) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/?page=${page}&per_page=${perPage}`;

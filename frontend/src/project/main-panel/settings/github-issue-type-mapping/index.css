@@ -6,6 +6,14 @@
   margin-bottom: 0.75rem;
 }
 
+.github-issue-type-mapping-actions {
+  margin-top: 12px;
+}
+
+.github-issue-type-mapping-sync-btn {
+  display: inline-flex;
+}
+
 .github-issue-type-mapping-row {
   display: flex;
   align-items: center;

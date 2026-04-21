@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { CustomizeSelect, Option } from '@/components';
+import SecondaryBtn from '@/components/btn/secondary-btn';
+import toaster from '@/components/toaster';
 import { agentAPI } from '@/project/api';
 import { gettext } from '@/constants';
 
@@ -16,6 +18,7 @@ const GithubIssueTypeMappingSettings = ({ className, agentSettings, onChange }) 
   const [githubIssueTypes, setGithubIssueTypes] = useState([]);
   const [warningCode, setWarningCode] = useState('');
   const [errorCode, setErrorCode] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     agentAPI.getGithubIssueTypes(projectUuid).then((res) => {
@@ -28,6 +31,39 @@ const GithubIssueTypeMappingSettings = ({ className, agentSettings, onChange }) 
       setErrorCode(err?.response?.data?.error_code || 'request_failed');
     });
   }, []);
+
+  const handleSync = useCallback(() => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    agentAPI.syncGithubIssueTypes(projectUuid).then((res) => {
+      const data = res.data || {};
+      setGithubIssueTypes(data.issue_types || []);
+      setWarningCode('');
+      setErrorCode('');
+      const added = data.added || 0;
+      const updated = data.updated || 0;
+      const deleted = data.deleted || 0;
+      if (added + updated + deleted === 0) {
+        toaster.success(gettext('GitHub issue types are up to date.'));
+      } else {
+        const parts = [];
+        if (added) parts.push(gettext('added {n}').replace('{n}', added));
+        if (updated) parts.push(gettext('updated {n}').replace('{n}', updated));
+        if (deleted) parts.push(gettext('deleted {n}').replace('{n}', deleted));
+        toaster.success(
+          gettext('GitHub issue types synced: {summary}.').replace(
+            '{summary}', parts.join(', ')
+          )
+        );
+      }
+    }).catch((err) => {
+      const msg = err?.response?.data?.error_msg
+        || gettext('Failed to sync GitHub issue types.');
+      toaster.danger(msg);
+    }).then(() => {
+      setIsSyncing(false);
+    });
+  }, [isSyncing]);
 
   const options = useMemo(() => {
     return (githubIssueTypes || [])
@@ -117,6 +153,15 @@ const GithubIssueTypeMappingSettings = ({ className, agentSettings, onChange }) 
             </div>
           );
         })}
+        <div className="github-issue-type-mapping-actions">
+          <SecondaryBtn
+            className="github-issue-type-mapping-sync-btn"
+            text={gettext('Sync GitHub issue types')}
+            onClick={handleSync}
+            disabled={isSyncing}
+            isSmall
+          />
+        </div>
         {warningText && (
           <p className="tip-default tip m-0 mt-2">
             {warningText}

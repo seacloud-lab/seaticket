@@ -42,6 +42,7 @@ from seahub.project.utils import (
     check_project_permission,
     extract_email_addresses,
     collect_github_issue_type_options,
+    get_current_table_metadata,
 )
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
@@ -1318,6 +1319,283 @@ class GithubIssueTypesView(APIView):
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        """Pull the latest issue types from GitHub for the first active GitHub connection."""
+        try:
+            project = Projects.objects.get_project_by_uuid(project_uuid)
+            if not project:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+            username = request.user.username
+            if not check_project_permission(username, project.workspace.owner):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+            connections = list(ProjectConnections.objects.filter(
+                project_uuid=project_uuid,
+                type='github_issue',
+                deleted=False,
+                is_active=True
+            ).order_by('id'))
+            if not connections:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'No active GitHub connection found for this project.'
+                )
+
+            connection = connections[0]
+            try:
+                config = decrypt_config(json.loads(connection.config))
+            except Exception as e:
+                logger.warning(f'Invalid config for connection {connection.id}: {e}')
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub connection config.'
+                )
+            installation_id = config.get('installation_id')
+            repository = config.get('repository')
+            if not installation_id or not repository:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub connection config.'
+                )
+            try:
+                path = urlparse(repository).path
+                parts = path.strip('/').split('/')
+                owner, repo = parts[0], parts[1]
+            except Exception as e:
+                logger.warning(
+                    f'Invalid GitHub repository URL for connection {connection.id}: {e}'
+                )
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub repository URL.'
+                )
+
+            seadb_api = SeaDBAPI()
+            github_api = GitHubAPI(installation_id=installation_id)
+            try:
+                added, added_names, updated, deleted = _sync_issue_type_column_options(
+                    seadb_api, project_uuid, connection.id, github_api, owner, repo
+                )
+            except requests.HTTPError as e:
+                logger.warning(
+                    f'Failed to fetch issue types from GitHub for connection '
+                    f'{connection.id}: {e}'
+                )
+                return api_error(
+                    status.HTTP_502_BAD_GATEWAY,
+                    f'Failed to fetch issue types from GitHub: {e}'
+                )
+
+            issue_types = collect_github_issue_type_options(
+                seadb_api, project_uuid, [c.id for c in connections]
+            )
+            return Response({
+                'added': added,
+                'added_names': added_names,
+                'updated': updated,
+                'deleted': deleted,
+                'issue_types': issue_types,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+_GITHUB_ISSUE_TYPE_COLOR_MAP = {
+    'gray': '#5A5F66',
+    'blue': '#E0F0FF',
+    'green': '#E0F9E5',
+    'yellow': '#FFF9D0',
+    'orange': '#FFE8D6',
+    'red': '#FFE8E8',
+    'pink': '#FADADD',
+    'purple': '#F3E5F5',
+}
+
+def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, github_api, owner, repo):
+    """Mirror the seaqa-indexer's `add_or_update_issue_type_column_options`."""
+    github_issue_types = github_api.get_all_issue_types(owner, repo)
+
+    base_metadata = seadb_api.get_base_metadata(project_uuid)
+    tables = (base_metadata or {}).get('tables') or []
+    table_name = GithubIssuesTable.gen_table_name(connection_id)
+    table_meta = get_current_table_metadata(tables, table_name)
+    if not table_meta:
+        return 0, [], 0, 0
+
+    issue_type_column = None
+    for column in table_meta.get('columns') or []:
+        if column.get('name') == GithubIssuesTable.issue_type.name:
+            issue_type_column = column
+            break
+    if not issue_type_column:
+        return 0, [], 0, 0
+
+    table_id = table_meta.get('id')
+    column_key = issue_type_column.get('key')
+    existing_options = ((issue_type_column.get('data') or {}).get('options')) or []
+    old_type_id_to_option = {}
+    old_type_names = set()
+    for opt in existing_options:
+        type_id = opt.get('type_id')
+        type_name = opt.get('name')
+        if type_name:
+            old_type_names.add(type_name)
+        if type_id:
+            old_type_id_to_option[type_id] = opt
+
+    new_type_ids = set()
+    need_added_options = []
+    # Each entry: (option_id, new_name_or_None, update_option_data_or_None, old_name)
+    need_updated_options = []
+    for gh_type in github_issue_types or []:
+        gh_type_id = gh_type.get('id')
+        gh_type_name = (gh_type.get('name') or '').strip()
+        if not gh_type_id or not gh_type_name:
+            continue
+        gh_color_name = (gh_type.get('color') or '').lower()
+        new_type_ids.add(gh_type_id)
+
+        old_option = old_type_id_to_option.get(gh_type_id)
+        if not old_option:
+            need_added_options.append({
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_name': gh_type_name,
+                'option_data': {
+                    'color': _GITHUB_ISSUE_TYPE_COLOR_MAP.get(gh_color_name),
+                    'type_id': gh_type_id,
+                },
+            })
+            continue
+
+        old_name = old_option.get('name')
+        old_color = old_option.get('color')
+        option_id = old_option.get('id')
+        new_color = _GITHUB_ISSUE_TYPE_COLOR_MAP.get(gh_color_name)
+        name_changed = gh_type_name != old_name
+        color_changed = new_color != old_color
+        if not name_changed and not color_changed:
+            continue
+        update_option_data = {
+            'color': new_color,
+            'type_id': gh_type_id,
+        } if color_changed else None
+        new_name = gh_type_name if name_changed else None
+        need_updated_options.append(
+            (option_id, new_name, update_option_data, old_name)
+        )
+
+    # Delete options whose type_id no longer exists on GitHub. Done first so
+    # their names free up for any renames that would otherwise collide.
+    deleted = 0
+    need_deleted_type_ids = set(old_type_id_to_option.keys()) - new_type_ids
+    if need_deleted_type_ids:
+        deleted_option_ids = [
+            old_type_id_to_option[tid].get('id') for tid in need_deleted_type_ids
+        ]
+        deleted_option_names = {
+            old_type_id_to_option[tid].get('name') for tid in need_deleted_type_ids
+        }
+        old_type_names = old_type_names - deleted_option_names
+        try:
+            seadb_api.delete_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_ids': deleted_option_ids,
+            })
+            deleted = len(deleted_option_ids)
+        except Exception as e:
+            logger.warning(
+                f'Failed to delete stale GitHub issue type options '
+                f'(connection {connection_id}): {e}'
+            )
+
+    # Straight-forward updates first; rename collisions deferred.
+    updated = 0
+    conflict_updates = []
+    for updated_option in need_updated_options:
+        option_id, new_name, update_option_data, old_name = updated_option
+        if new_name and new_name in old_type_names:
+            conflict_updates.append(updated_option)
+            continue
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_id': option_id,
+                'new_option_name': new_name,
+                'update_option_data': update_option_data,
+            })
+            updated += 1
+        except Exception as e:
+            logger.warning(
+                f'Failed to update GitHub issue type option "{old_name}" '
+                f'(connection {connection_id}): {e}'
+            )
+
+    # Handle rename cycles (e.g. A->B, B->A) via a temporary name pass,
+    # mirroring the indexer. For each conflicting rename, first rename the
+    # option to a unique temp name, then to its final name in a second pass.
+    temp_prefix = 'tmp'
+    already_renamed = set()
+    pending_final_renames = []
+    for updated_option in conflict_updates:
+        option_id, new_name, update_option_data, old_name = updated_option
+        if new_name in already_renamed or old_name in already_renamed:
+            # The other side of the cycle already went through the temp-name
+            # dance; its final rename will reuse this slot.
+            pending_final_renames.append(updated_option)
+            continue
+        temp_name = f'{temp_prefix}{option_id}'
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_name': new_name,
+                'new_option_name': temp_name,
+                'update_option_data': update_option_data,
+            })
+            already_renamed.add(new_name)
+            pending_final_renames.append(updated_option)
+        except Exception as e:
+            logger.warning(
+                f'Failed to stage rename for GitHub issue type option '
+                f'"{new_name}" (connection {connection_id}): {e}'
+            )
+
+    for updated_option in pending_final_renames:
+        option_id, new_name, _update_option_data, old_name = updated_option
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_id': option_id,
+                'new_option_name': new_name,
+            })
+            updated += 1
+        except Exception as e:
+            logger.warning(
+                f'Failed to finalize rename for GitHub issue type option '
+                f'"{old_name}" -> "{new_name}" (connection {connection_id}): {e}'
+            )
+
+    added = 0
+    added_names = []
+    for option_payload in need_added_options:
+        try:
+            seadb_api.add_column_option(project_uuid, option_payload)
+            added += 1
+            added_names.append(option_payload['option_name'])
+        except Exception as e:
+            logger.warning(
+                f'Failed to add GitHub issue type "{option_payload["option_name"]}" '
+                f'to SeaDB (connection {connection_id}): {e}'
+            )
+
+    return added, added_names, updated, deleted
 
 
 class AgentSettingsView(APIView):
