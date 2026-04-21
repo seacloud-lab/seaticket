@@ -26,6 +26,7 @@ import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const Tickets = ({
   viewID, canFindRelatedIssues = true, isBuiltInView = false,
@@ -258,7 +259,7 @@ const Tickets = ({
         metadataAPI.deleteRow(rowId);
         setIsShowTicketDetailsDialog(false);
         toaster.success(context.translate('{Row} deleted'));
-        onRefresh();
+        context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [row._id]);
       },
       rowGetterByIndex: () => row,
       context,
