@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
@@ -35,16 +34,15 @@ const initColumns = [
   },
 ];
 
-
 const AllSubstates = ({
   projectUuid,
   permission,
   columns = initColumns,
-  useMetadataProvider = useMetadata,
+  useMetadataContext,
   type = TICKET_TYPE,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadataProvider();
+  const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadataContext();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

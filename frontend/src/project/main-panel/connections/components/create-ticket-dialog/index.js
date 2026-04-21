@@ -155,7 +155,7 @@ const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) 
                 createTag={createTag}
                 onChange={setTags}
               />
-              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} />
+              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} useMetadataContext={useMetadata} />
             </div>
           </div>
         )}

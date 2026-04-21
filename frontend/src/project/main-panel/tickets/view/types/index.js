@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMetadata } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import OptionDialog from '../../../../components/option-dialog';
@@ -32,11 +31,11 @@ const AllTypes = ({
   projectUuid,
   permission,
   columns = initColumns,
-  useMetadataProvider = useMetadata,
+  useMetadataContext,
   type = TICKET_TYPE,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadataProvider();
+  const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadataContext();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

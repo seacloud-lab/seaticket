@@ -15,11 +15,11 @@ const SubStateSettings = ({
   substate,
   className = 'mb-4',
   onChange,
-  useMetadataProvider = useMetadata,
+  useMetadataContext = useMetadata,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { isLoading, substatesData } = useMetadataProvider();
+  const { isLoading, substatesData } = useMetadataContext();
 
   const editorRef = useRef(null);
 

@@ -579,9 +579,9 @@ const Ticket = ({
             createTag={createTag}
             onChange={onTagsChange}
           />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
-          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
+          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onStateChange} />
+          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onSubstateChange} />
+          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
