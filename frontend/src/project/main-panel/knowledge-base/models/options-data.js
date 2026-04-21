@@ -1,4 +1,4 @@
-import { OptionsData, Option as BaseOption } from '../../tickets/models';
+import { OptionsData, Option as BaseOption } from '@/project/main-panel/tickets/models';
 
 class Option extends BaseOption {
   constructor(object) {

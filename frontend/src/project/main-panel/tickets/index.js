@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TicketsPageProvider, useTicketsPage } from './hooks';
+import { TicketsPageProvider, useMetadata, useTicketsPage } from './hooks';
 import Types from './view/types';
 import TypeTickets from './view/type-tickets';
 import Substates from './view/substates';
@@ -33,11 +33,15 @@ const Page = ({ toggleBar, type }) => {
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, onRefresh } = useTicketsPage();
   if (isLoading) return null;
   if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
-    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
+    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+      return (<Types projectUuid={projectUuid} permission={permission} useMetadataContext={useMetadata} />);
+    }
     return (<TypeTickets { ...props } typeID={childrenPageSlugId}/>);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES) {
-    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Substates projectUuid={projectUuid} permission={permission} />);
+    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+      return (<Substates projectUuid={projectUuid} permission={permission} useMetadataContext={useMetadata} />);
+    }
     return (<SubstateTickets { ...props } substateID={childrenPageSlugId}/>);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {

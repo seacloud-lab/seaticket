@@ -206,7 +206,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               createTag={createTag}
               onChange={setTags}
             />
-            <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} onChange={setType} />
+            <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} useMetadataContext={useMetadata} onChange={setType} />
             <DueDateSettings isReadonly={isSubmitting} value={due_date} onChange={setDueDate} />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}

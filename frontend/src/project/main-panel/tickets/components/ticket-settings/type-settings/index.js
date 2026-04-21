@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor, CustomizeLabel } from '@/components';
-import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftT } from '@/utils/hotkey';
@@ -15,10 +14,11 @@ const TypeSettings = ({
   value,
   className = 'mb-4',
   onChange,
+  useMetadataContext,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { isLoading, typesData } = useMetadata();
+  const { isLoading, typesData } = useMetadataContext();
 
   const editorRef = useRef(null);
 

@@ -4,7 +4,7 @@ import { Ticket as TicketModel } from '../../models';
 import { Utils } from '@/utils/utils';
 import { CenteredError, CenteredLoading } from '@/components';
 import { gettext, lang } from '@/constants';
-import { useTags } from '@/project/hooks';
+import { useTags, useMetadata } from '@/project/hooks';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings, LinkSettings
@@ -101,9 +101,9 @@ const TicketInDialog = ({
             value={tags}
             tagsData={tagsData}
           />
-          <StateSettings isReadonly={true} state={state} substate={substate} />
-          <SubStateSettings isReadonly={true} state={state} substate={substate} />
-          <TypeSettings isReadonly={true} value={type} />
+          <StateSettings isReadonly={true} state={state} substate={substate} useMetadataContext={useMetadata} />
+          <SubStateSettings isReadonly={true} state={state} substate={substate} useMetadataContext={useMetadata} />
+          <TypeSettings isReadonly={true} value={type} useMetadataContext={useMetadata} />
           <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />

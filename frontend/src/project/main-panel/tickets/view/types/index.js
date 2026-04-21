@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTicketsPage, useMetadata } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import OptionDialog from '../../../../components/option-dialog';
@@ -7,30 +6,36 @@ import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
+import { TICKET_TYPE } from '../../constants';
 
-const AllTypes = ({ projectUuid, permission }) => {
+const initColumns = [
+  {
+    type: CellType.SINGLE_SELECT,
+    key: 'name',
+    name: 'name',
+    display_name: gettext('Type'),
+    editable: false,
+    is_name_column: true,
+    frozen: true,
+  },
+  {
+    type: CellType.NUMBER,
+    key: 'tickets_count',
+    name: 'tickets_count',
+    display_name: gettext('Tickets count'),
+    editable: false,
+  },
+];
+
+const AllTypes = ({
+  projectUuid,
+  permission,
+  columns = initColumns,
+  useMetadataContext,
+  type = TICKET_TYPE,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
-  const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
-  const { pageSlugId, togglePageSlugId } = useTicketsPage();
-
-  const columns = useMemo(() => [
-    {
-      type: CellType.SINGLE_SELECT,
-      key: 'name',
-      name: 'name',
-      display_name: gettext('Type'),
-      editable: false,
-      is_name_column: true,
-      frozen: true,
-    },
-    {
-      type: CellType.NUMBER,
-      key: 'tickets_count',
-      name: 'tickets_count',
-      display_name: gettext('Tickets count'),
-      editable: false,
-    },
-  ], [pageSlugId, togglePageSlugId]);
+  const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadataContext();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -188,7 +193,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     return list;
   }, []);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-types`, [projectUuid]);
+  const localStorageName = useMemo(() => `sea-${type}-${projectUuid}-types`, [projectUuid, type]);
 
   const t = useMemo(() => {
     return {
