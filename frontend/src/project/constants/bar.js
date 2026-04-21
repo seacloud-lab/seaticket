@@ -6,6 +6,7 @@ export const BAR_TYPE = {
   SEARCH: 'search',
   TICKET: 'tickets',
   MY_TICKET: 'my-tickets',
+  NEW_TICKET: 'new-ticket',
   TRASH: 'tickets/trash',
   CONNECTION: 'connections',
   SETTINGS: 'settings',
@@ -74,6 +75,11 @@ export const BAR_TYPE_CONFIG = {
     key: BAR_TYPE.MY_TICKET,
     name: gettext('My tickets'),
     icon: 'my-tickets'
+  },
+  [BAR_TYPE.NEW_TICKET]: {
+    key: BAR_TYPE.NEW_TICKET,
+    name: gettext('New ticket'),
+    icon: 'new-ticket'
   },
   [BAR_TYPE.TRASH]: {
     key: BAR_TYPE.TRASH,

@@ -36,6 +36,12 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       return;
     }
 
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.NEW_TICKET) {
+      const newTicketURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.NEW_TICKET}/`;
+      history.replaceState(null, null, newTicketURL);
+      return;
+    }
+
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
