@@ -123,7 +123,7 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
         permission="r"
         viewID={viewID}
         api={api}
-        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssueAsTicket(uuid, issueNumber)}
+        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber)}
         localStorageNamePrefix={localStorageNamePrefix}
         settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
         dataDidMount={dataDidMount}

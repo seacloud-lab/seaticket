@@ -2,14 +2,17 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { ticketsAPI } from '../../../api';
 import { OptionsData, Option } from '../models';
 import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
-import { isFunction } from '@/utils/type-detection';
+import { portalAPI } from '@/portal/api';
 
-const MetadataContext = React.createContext(null);
+const PortalIssuesMetadataContext = React.createContext(null);
 
-export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) => {
+export const PortalIssuesMetadataProvider = ({
+  projectUuid,
+  api = portalAPI,
+  children,
+}) => {
   const [isLoading, setLoading] = useState(true);
 
   const [substatesData, setSubstatesData] = useState(new OptionsData());
@@ -64,7 +67,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [typesData]);
 
   const createType = useCallback((type) => {
-    return api.createTicketType(projectUuid, type).then(res => {
+    return api.createPortalIssueType(projectUuid, type).then(res => {
       const type = new Option(res.data.type);
       applyCreateTypes([type]);
       return type;
@@ -72,14 +75,14 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [projectUuid, applyCreateTypes, api]);
 
   const deleteType = useCallback((typeID) => {
-    return api.deleteTicketType(projectUuid, typeID).then(res => {
+    return api.deletePortalIssueType(projectUuid, typeID).then(res => {
       applyDeleteTypes([typeID]);
       return typeID;
     });
   }, [projectUuid, applyDeleteTypes, api]);
 
   const deleteTypes = useCallback((typeIDs) => {
-    return api.deleteTicketTypes(projectUuid, typeIDs).then(res => {
+    return api.deletePortalIssueTypes(projectUuid, typeIDs).then(res => {
       applyDeleteTypes(typeIDs);
       return {
         data: {
@@ -91,7 +94,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [projectUuid, applyDeleteTypes, api]);
 
   const modifyType = useCallback((typeID, update) => {
-    return api.modifyTicketType(projectUuid, typeID, update).then(res => {
+    return api.modifyPortalIssueType(projectUuid, typeID, update).then(res => {
       applyModifyTypes({ [typeID]: update });
     });
   }, [projectUuid, applyModifyTypes, api]);
@@ -102,7 +105,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       callback && callback();
       return;
     }
-    api.listTicketTypes(projectUuid).then(res => {
+    api.listPortalIssueTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
       callback && callback();
@@ -156,7 +159,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [substatesData]);
 
   const createSubstate = useCallback((substate) => {
-    return api.createTicketSubstate(projectUuid, substate).then(res => {
+    return api.createPortalIssueSubstate(projectUuid, substate).then(res => {
       const newSubstate = new Option({ ...res.data.substate, parent_id: substate.parent_id });
       applyCreateSubstates([newSubstate]);
       return newSubstate;
@@ -164,14 +167,14 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [projectUuid, applyCreateSubstates, api]);
 
   const deleteSubstate = useCallback((substateID) => {
-    return api.deleteTicketSubstate(projectUuid, substateID).then(res => {
+    return api.deletePortalIssueSubstate(projectUuid, substateID).then(res => {
       applyDeleteSubstates([substateID]);
       return substateID;
     });
   }, [projectUuid, applyDeleteSubstates, api]);
 
   const deleteSubstates = useCallback((substateIDs) => {
-    return api.deleteTicketSubstates(projectUuid, substateIDs).then(res => {
+    return api.deletePortalIssueSubstates(projectUuid, substateIDs).then(res => {
       applyDeleteSubstates(substateIDs);
       return {
         data: {
@@ -183,7 +186,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [projectUuid, applyDeleteSubstates, api]);
 
   const modifySubstate = useCallback((substateID, update) => {
-    return api.modifyTicketSubstate(projectUuid, substateID, update).then(res => {
+    return api.modifyPortalIssueSubstate(projectUuid, substateID, update).then(res => {
       applyModifySubstates({ [substateID]: update });
     });
   }, [projectUuid, applyModifySubstates, api]);
@@ -209,7 +212,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       callback && callback();
       return;
     }
-    api.listTicketSubstates(projectUuid).then(res => {
+    api.listPortalIssueSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);
       callback && callback();
@@ -235,11 +238,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [statesData]);
 
   useEffect(() => {
-    if (!isFunction(api.getTicketMetadata)) {
-      setLoading(false);
-      return;
-    }
-    api.getTicketMetadata(projectUuid).then(res => {
+    api.getPortalIssueMetadata(projectUuid).then(res => {
       const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
       applyCreateTypes(types?.options);
@@ -253,7 +252,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, []);
 
   return (
-    <MetadataContext.Provider value={{
+    <PortalIssuesMetadataContext.Provider value={{
       isLoading,
 
       typesData,
@@ -272,14 +271,14 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       loadSubStates,
     }}>
       {children}
-    </MetadataContext.Provider>
+    </PortalIssuesMetadataContext.Provider>
   );
 };
 
-export const useMetadata = () => {
-  const context = useContext(MetadataContext);
+export const usePortalIssuesMetadata = () => {
+  const context = useContext(PortalIssuesMetadataContext);
   if (!context) {
-    throw new Error('\'MetadataContext\' is null');
+    throw new Error('\'PortalIssuesMetadataContext\' is null');
   }
   return context;
 };

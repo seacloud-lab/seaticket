@@ -146,7 +146,7 @@ const AllPortalIssues = ({ projectUuid, workspaceID, projectName, permission, to
         toggleView={toggleView}
         togglePageSlugId={togglePageSlugId}
         onRefresh={onRefresh}
-        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssueAsTicket(uuid, issueNumber)}
+        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber)}
         localStorageNamePrefix={`sea-qa-${projectUuid}-portal-issues`}
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}

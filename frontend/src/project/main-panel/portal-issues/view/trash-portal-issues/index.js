@@ -210,7 +210,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
         toggleView={toggleView}
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
-        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssueAsTicket(uuid, issueNumber)}
+        getTicket={(uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber)}
         tableName="portal_issues"
         rowType={PORTAL_ISSUE_TYPE}
         metadata={metadata}

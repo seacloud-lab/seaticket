@@ -48,7 +48,7 @@ const PortalIssueInDialog = ({
   useEffect(() => {
     setLoading(true);
     setIssue(null);
-    portalAPI.getPortalIssueAsTicket(projectUuid, issueId).then(res => {
+    portalAPI.getPortalIssue(projectUuid, issueId).then(res => {
       const issue = new TicketModel(res.data.ticket);
       setIssue(issue);
       updateIssue(issue);

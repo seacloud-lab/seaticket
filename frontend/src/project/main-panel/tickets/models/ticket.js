@@ -10,13 +10,8 @@ class Comment {
 
     this.via_agent = object.via_agent === true;
 
-    // Handle content as object (with text property) or string
-    const rawContent = object.content;
-    if (rawContent && typeof rawContent === 'object' && rawContent.text) {
-      this.content = rawContent.text;
-    } else {
-      this.content = rawContent || '';
-    }
+    this.content = object.content || '';
+
     // keep original time for sorting
     this._created_time = object.created_time || '';
     this._modified_time = object.modified_time || '';
@@ -46,13 +41,7 @@ class Ticket {
     this._pk = object._pk || '';
 
     this.title = object.title || '';
-    // Handle content as object (with text property) or string
-    const rawContent = object.content;
-    if (rawContent && typeof rawContent === 'object' && rawContent.text) {
-      this.content = rawContent.text;
-    } else {
-      this.content = rawContent || '';
-    }
+    this.content = object.content || '';
     this.state = object.state || TICKET_STATE.OPEN;
     this.substate = object.substate || '';
     this.type = object.type || '';

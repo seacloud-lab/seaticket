@@ -3,24 +3,7 @@ import FormData from 'form-data';
 import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
-const DEFAULT_PORTAL_ISSUE_TYPES = [
-  { id: 'portal-issue-type-bug', name: 'Bug', color: '#f26a67', text_color: '#FFFFFF' },
-  { id: 'portal-issue-type-feature', name: 'Feature', color: '#f3c26b', text_color: '#FFFFFF' },
-  { id: 'portal-issue-type-question', name: 'Question', color: '#4ea6f8', text_color: '#FFFFFF' },
-];
-
-const DEFAULT_PORTAL_TAGS = [
-  { _pk: 1, name: 'General', color: '#4ea6f8', text_color: '#FFFFFF' },
-  { _pk: 2, name: 'Feedback', color: '#6dbb7a', text_color: '#FFFFFF' },
-  { _pk: 3, name: 'Need follow-up', color: '#f3c26b', text_color: '#FFFFFF' },
-];
-
 class PortalAPI {
-  constructor() {
-    this._metadataCache = new Map();
-    this._tagsCache = new Map();
-  }
-
   initForUsage({ siteRoot, xcsrfHeaders }) {
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
@@ -125,45 +108,7 @@ class PortalAPI {
 
   listTags(projectUuid) {
     let url = this.server + '/api/v1/portal/' + projectUuid + '/tags/';
-    return this.req.get(url).then((res) => {
-      const tags = Array.isArray(res?.data?.tags) ? res.data.tags : [];
-      if (tags.length > 0) {
-        return res;
-      }
-
-      return {
-        ...res,
-        data: {
-          ...(res?.data || {}),
-          tags: DEFAULT_PORTAL_TAGS,
-        },
-      };
-    });
-  }
-
-  listTicketTags(projectUuid) {
-    return this.listTags(projectUuid);
-  }
-
-  getTicketMetadata(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/issue/metadata/';
-    return this.req.get(url).then((res) => {
-      const types = res?.data?.types || {};
-      const typeOptions = Array.isArray(types?.options) ? types.options : [];
-      const formattedTypes = typeOptions.map(option => ({
-        ...option,
-        value: option.id,
-      }));
-      return {
-        data: {
-          ...res.data,
-          types: {
-            ...types,
-            options: formattedTypes,
-          },
-        },
-      };
-    });
+    return this.req.get(url);
   }
 
   getPortalIssueMetadata(projectUuid) {
@@ -240,93 +185,6 @@ class PortalAPI {
   getPortalIssue(projectUuid, issueId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';
     return this.req.get(url);
-  }
-
-  getPortalIssueAsTicket(projectUuid, issueId) {
-    // Use cached metadata and tags if available
-    const metadataPromise = this._metadataCache.has(projectUuid)
-      ? Promise.resolve(this._metadataCache.get(projectUuid))
-      : this.getPortalIssueMetadata(projectUuid).then(res => {
-        this._metadataCache.set(projectUuid, res);
-        return res;
-      });
-
-    const tagsPromise = this._tagsCache.has(projectUuid)
-      ? Promise.resolve(this._tagsCache.get(projectUuid))
-      : this.listTags(projectUuid).then(res => {
-        this._tagsCache.set(projectUuid, res);
-        return res;
-      });
-
-    return Promise.all([
-      this.getPortalIssue(projectUuid, issueId),
-      metadataPromise,
-      tagsPromise,
-    ]).then(([issueRes, metadataRes, tagsRes]) => {
-      const issue = issueRes?.data?.issue || {};
-
-      // Convert portal issue state ('open'/'closed') to ticket state format ('0001'/'0002')
-      const stateValue = issue.state;
-      let ticketState = '0001'; // default to open
-      if (stateValue === 'closed' || stateValue === '0002') {
-        ticketState = '0002';
-      } else if (stateValue === 'open' || stateValue === '0001') {
-        ticketState = '0001';
-      }
-
-      const substateOptions = metadataRes?.data?.substates?.options || [];
-      const typeOptions = metadataRes?.data?.types?.options?.length > 0
-        ? metadataRes.data.types.options
-        : DEFAULT_PORTAL_ISSUE_TYPES;
-      const tagRows = tagsRes?.data?.tags?.length > 0
-        ? tagsRes.data.tags
-        : DEFAULT_PORTAL_TAGS;
-
-      const matchOptionId = (options = [], value) => {
-        if (!value && value !== 0) return '';
-        const valueString = String(value).toLowerCase();
-        const matched = options.find((opt) => {
-          const id = opt?.id;
-          const name = opt?.name;
-          const originName = opt?.origin_name;
-          return (
-            String(id) === String(value) ||
-            String(name || '').toLowerCase() === valueString ||
-            String(originName || '').toLowerCase() === valueString
-          );
-        });
-        return matched ? matched.id : '';
-      };
-
-      const typeValue = issue.type;
-      const matchedType = typeOptions.find((opt) => opt.id === typeValue || opt.name === typeValue);
-
-      const tags = Array.isArray(issue.tags) ? issue.tags : [];
-      const normalizedTags = tags.map((tag) => {
-        const matchedTag = tagRows.find((row) => String(row._pk) === String(tag) || row.name === tag);
-        return matchedTag ? String(matchedTag._pk) : tag;
-      });
-
-      return {
-        data: {
-          ticket: {
-            ...issue,
-            _pk: issue._pk || issueId,
-            state: ticketState,
-            substate: matchOptionId(substateOptions, issue.substate),
-            type: matchedType ? matchedType.id : (typeValue || ''),
-            tags: normalizedTags,
-            comments: Array.isArray(issue.comments) ? issue.comments : [],
-            assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
-            participants: Array.isArray(issue.participants) ? issue.participants : [],
-            linked_connection_records: Array.isArray(issue.linked_connection_records) ? issue.linked_connection_records : [],
-            priority: issue.priority ?? 0,
-            due_date: issue.due_date || '',
-          },
-          linked_record_titles: issueRes?.data?.linked_record_titles || {},
-        },
-      };
-    });
   }
 
   updatePortalIssue(projectUuid, issueId, update) {
