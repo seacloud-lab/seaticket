@@ -84,15 +84,20 @@ const RunLogs = ({
         ))}
       </div>
 
-      {hasMore && (
+      {hasMore ? (
         <div className="load-more-container">
-          <button
+          <Button
             className="load-more-btn"
+            color="outline-primary"
             onClick={loadMore}
             disabled={isLoading}
           >
             {isLoading ? gettext('Loading...') : gettext('Load more')}
-          </button>
+          </Button>
+        </div>
+      ) : (
+        <div className="load-more-container">
+          <div className="no-more-content">{gettext('No more content')}</div>
         </div>
       )}
 

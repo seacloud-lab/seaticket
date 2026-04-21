@@ -32,7 +32,6 @@
   align-items: center;
   padding: 6px 16px;
   background: #f7f7f5;
-  border-bottom: 1px solid #eee;
   position: relative;
   border-radius: 8px 8px 0 0;
 }
@@ -46,10 +45,6 @@
   top: -20px;
   left: 16px;
   background-color: #EEEEEE;
-}
-
-.run-card-collapsed .run-card-header {
-  border-bottom: none;
 }
 
 .run-card-header-left {
@@ -180,6 +175,14 @@
   width: calc(100% + 36px);
   top: 33px;
   background: #eee;
+}
+
+.run-card-collapsed .run-card-body {
+  padding-bottom: 4px;
+}
+
+.run-card-collapsed .ticket-header::after {
+  display: none;
 }
 
 .ticket-icon {
@@ -428,25 +431,31 @@
   padding: 16px 0;
 }
 
-.load-more-btn {
-  background: #fff;
-  border: 1px solid #ddd;
+/* No more content */
+.no-more-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   color: #666;
-  border-radius: 4px;
-  padding: 8px 24px;
-  cursor: pointer;
   font-size: 13px;
+  height: 40px;
 }
 
-.load-more-btn:hover:not(:disabled) {
-  background: #fafafa;
-  border-color: #f5a623;
-  color: #f5a623;
+.no-more-content::before,
+.no-more-content::after {
+  content: '';
+  width: 200px;
+  height: 1px;
+  background-color: #eeeeee;
 }
 
-.load-more-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.no-more-content::before {
+  margin-right: 100px;
+}
+
+.no-more-content::after {
+  margin-left: 100px;
 }
 
 /* View content modal */

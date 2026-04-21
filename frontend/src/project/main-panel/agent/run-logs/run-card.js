@@ -259,7 +259,7 @@ const RunCard = ({
         </div>
       </div>
 
-      {isExpanded && (
+      {isExpanded ? (
         <div className="run-card-body">
           {items.map((item, index) => (
             <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
@@ -303,7 +303,16 @@ const RunCard = ({
             </div>
           )}
         </div>
-      )}
+      )
+        :
+        <div className="run-card-body">
+          {items.map((item, index) => (
+            <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
+              <RunCardHeader item={item} />
+            </div>
+          ))}
+        </div>
+      }
       {showStatisticsDialog && (
         <RunStatisticsDialog run={run} onToggle={handleCloseStatistics} />
       )}
