@@ -20,7 +20,6 @@ const StateReasonSettings = ({
   onChange,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -35,9 +34,9 @@ const StateReasonSettings = ({
   const openEditor = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (isReadonly || isSubmitting) return;
+    if (isReadonly) return;
     setIsShowEditor(true);
-  }, [isReadonly, isSubmitting]);
+  }, [isReadonly]);
 
   const closeEditor = useCallback(() => {
     setIsShowEditor(false);
@@ -46,12 +45,8 @@ const StateReasonSettings = ({
   const onTypeChange = useCallback((value) => {
     const option = getOption(options, value);
     if (!option) return;
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    onChange && onChange({ state_reason: option.name }, () => {
-      setIsSubmitting(false);
-    });
-  }, [isSubmitting, options, onChange]);
+    onChange && onChange({ state_reason: option.name });
+  }, [options, onChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
@@ -78,7 +73,7 @@ const StateReasonSettings = ({
         <CustomizeLabel icon="single-select">
           {gettext('State reason')}
         </CustomizeLabel>
-        <div className={classnames('ticket-types-formatter', { 'valid': option, 'cursor-pointer': !isReadonly && !isSubmitting })} onClick={openEditor} ref={editorRef}>
+        <div className={classnames('ticket-types-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
           {option ? <Option option={option} /> : <div className="tip-default">{gettext('No types')}</div>}
         </div>
       </div>

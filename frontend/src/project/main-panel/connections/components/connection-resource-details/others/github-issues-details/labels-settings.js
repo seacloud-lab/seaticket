@@ -20,7 +20,6 @@ const LabelsSettings = ({
   onChange,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
@@ -40,17 +39,13 @@ const LabelsSettings = ({
   const openEditor = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (isReadonly || isSubmitting) return;
+    if (isReadonly) return;
     setIsShowEditor(true);
-  }, [isReadonly, isSubmitting]);
+  }, [isReadonly]);
 
   const handleChange = useCallback((labels) => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    onChange && onChange({ labels }, () => {
-      setIsSubmitting(false);
-    });
-  }, [isSubmitting, onChange]);
+    onChange && onChange({ labels });
+  }, [onChange]);
 
   const closeEditor = useCallback(() => {
     let newValue = optionEditorContainerRef.current.getValue();
@@ -65,7 +60,7 @@ const LabelsSettings = ({
   }, [options, value, handleChange]);
 
   const handleRemove = useCallback((event, optionId) => {
-    if (isShowEditor || isSubmitting) return;
+    if (isShowEditor) return;
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
     let newValue = value.filter(i => i !== optionId);
@@ -74,7 +69,7 @@ const LabelsSettings = ({
       newValue = newValue.map(o => o.name);
     }
     handleChange(newValue);
-  }, [isShowEditor, isSubmitting, value, options, handleChange]);
+  }, [isShowEditor, value, options, handleChange]);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover(id)) return;
@@ -115,7 +110,7 @@ const LabelsSettings = ({
                       <IconButton
                         icon="close"
                         onClick={(event) => handleRemove(event, label.id)}
-                        className={classnames('sea-metadata-select-remove-btn no-hover-bg', { 'cursor-pointer': !isSubmitting })}
+                        className="sea-metadata-select-remove-btn no-hover-bg cursor-pointer"
                         size={{ btn: 14, icon: 10 }}
                         style={{ margin: '0 -2px 0 2px' }}
                         iconStyle={{ color: label.text_color }}

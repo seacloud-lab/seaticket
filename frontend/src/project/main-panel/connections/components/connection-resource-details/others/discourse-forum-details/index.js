@@ -24,7 +24,7 @@ const DiscourseForumDetails = ({
         title={gettext('Resolved')}
         className="mb-4"
         value={getCellValueByColumn(record, resolvedColumn)}
-        onChange={(newValue) => onChange({ [resolvedColumn.name]: newValue })}
+        onChange={(newValue, callback) => onChange({ [resolvedColumn.name]: newValue }, callback)}
       />
       <LinkedTicket
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}

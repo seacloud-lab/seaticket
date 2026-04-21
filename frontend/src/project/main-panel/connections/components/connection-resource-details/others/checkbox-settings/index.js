@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import { CustomizeLabel, Icon } from '@/components';
 
@@ -11,19 +11,23 @@ const CheckboxSettings = ({
   value,
   onChange,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
-    if (isReadonly) return;
-    onChange && onChange(!value);
-  }, [isReadonly, value, onChange]);
+    if (isReadonly || isSubmitting) return;
+    setIsSubmitting(true);
+    onChange && onChange(!value, () => {
+      setIsSubmitting(false);
+    });
+  }, [isReadonly, isSubmitting, value, onChange]);
 
   return (
     <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="check-box">{title}</CustomizeLabel>
       <div className="sea-ticket-checkbox-settings-formatter valid">
-        <div className={classnames('sea-ticket-checkbox-settings-btn', { 'cursor-pointer': !isReadonly })} onClick={handleClick} >
+        <div className={classnames('sea-ticket-checkbox-settings-btn', { 'cursor-pointer': !isReadonly && !isSubmitting })} onClick={handleClick} >
           {value && (<Icon symbol="check-mark" />)}
         </div>
       </div>
