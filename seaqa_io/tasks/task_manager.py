@@ -65,6 +65,11 @@ class IoTaskManager(object):
 
         return self._submit_task(preview_import_kb_from_excel, (project_uuid, file_name))
 
+    def add_zip_email_attachments_task(self, project_uuid, connection_id, pk):
+        from seaqa_io.tasks import download_email_attachments
+
+        return self._submit_task(download_email_attachments, (project_uuid, connection_id, pk))
+
     def handle_task(self):
         while True:
             try:

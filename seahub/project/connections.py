@@ -5,6 +5,7 @@ import logging
 import json
 import datetime
 import sys
+import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
 
@@ -38,7 +39,8 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
-from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
+from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
+    EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
     SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
@@ -51,6 +53,7 @@ from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
+from seahub.utils.io import zip_email_attachments, query_io_task_status
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -1422,5 +1425,133 @@ class ConnectionFileView(APIView):
         response = FileResponse(file)
         response['Cache-Control'] = 'max-age=604800, public'
         response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
+        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        return response
+
+
+class ZipEmailAttachments(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id, email_id):
+        """
+        Permission:
+        1. group member
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
+        if not target_email:
+            error_msg = 'email_id not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        attachments = target_email.get('attachments')
+        if not attachments:
+            error_msg = 'attachments not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        params = {
+            'project_uuid': str(project_uuid),
+            'connection_id': connection_id,
+            'pk': email_id,
+        }
+
+        try:
+            task_id = zip_email_attachments(params)
+        except Exception as e:
+            logger.exception('zip email attachments task error: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'task_id': task_id})
+
+
+class QueryIOStatus(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request):
+        task_id = request.GET.get('task_id', '')
+        if not task_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'task_id invalid.')
+
+        resp = query_io_task_status(task_id)
+        try:
+            resp_json = resp.json()
+        except Exception:
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        error_msg = resp_json.get('error_msg')
+        if resp.status_code == 500 and error_msg:
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        if not resp.ok:
+            return api_error(resp.status_code, error_msg)
+
+        return Response(resp_json)
+
+
+class DownloadEmailAttachments(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, connection_id, email_id):
+        """
+        Permission:
+        1. group member
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
+        if not target_email:
+            error_msg = 'email_id not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        attachments = target_email.get('attachments')
+        if not attachments:
+            error_msg = 'attachments not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project_uuid = uuid_str_to_32_chars(project_uuid)
+
+        os.makedirs(EMAIL_ATTACHMENT_TEMP_DIR, exist_ok=True)
+        local_zip_path = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(email_id), EMAIL_ATTACHMENTS_ZIP_NAME)
+
+        response = FileResponse(
+            open(local_zip_path, "rb"),
+            content_type="application/zip",
+            as_attachment=True,
+            filename=EMAIL_ATTACHMENTS_ZIP_NAME
+        )
+        response['Cache-Control'] = 'max-age=604800, public'
+        response['ETag'] = '"' + str(os.path.getsize(local_zip_path)) + '"'
         response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response

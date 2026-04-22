@@ -19,7 +19,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.settings import TEMP_EXPORT_VIEW_DIR
-from seahub.knowledge_base.utils import convert_kb_view_to_excel, query_kb_task_status, import_kb_from_excel
+from seahub.utils.io import convert_kb_view_to_excel, query_io_task_status, import_kb_from_excel
 
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ class KnowledgeBaseIOStatus(APIView):
         if not task_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'task_id invalid.')
 
-        resp = query_kb_task_status(task_id)
+        resp = query_io_task_status(task_id)
         try:
             resp_json = resp.json()
         except Exception:

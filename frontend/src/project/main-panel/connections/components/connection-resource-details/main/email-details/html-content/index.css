@@ -1,0 +1,78 @@
+.sea-ticket-email-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  height: fit-content;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment {
+  height: 52px;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 4px;
+  padding: 6px;
+  background-color: var(--bs-bg-color);
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-icon {
+  height: 32px;
+  width: 32px;
+  margin-right: 6px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-name {
+  color: var(--bs-body-color);
+  font-size: 14px;
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-name:hover {
+  text-decoration: underline;
+}
+
+/* .sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-size {
+  font-size: 12px;
+  height: 12px;
+} */
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-divider {
+  height: 32px;
+  width: 1px;
+  border-left: 1px solid var(--bs-border-color);
+  margin: 0 10px;
+}
+
+.sea-ticket-email-attachments .sea-ticket-email-attachment .sea-ticket-email-attachment-download-btn:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sea-ticket-email-attachments-download-btn {
+  margin-top: 12px;
+  background-color: #F7F7F5;
+  color: var(--bs-body-color);
+}
+
+.sea-ticket-email-attachments-download-btn:not(.cursor-pointer) {
+  cursor: default;
+}
+
+.sea-ticket-email-attachments-download-btn:hover {
+  background-color: #EDEDEB;
+}
+
+.sea-ticket-email-attachments-download-btn .sea-qa-icon-svg-download {
+  color: var(--bs-icon-color);
+}

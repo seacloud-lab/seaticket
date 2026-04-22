@@ -1,6 +1,6 @@
 import React from 'react';
 import toaster from '../components/toaster';
-import { gettext } from '../constants/config';
+import { gettext, mediaUrl, siteRoot, FILEEXT_ICON_MAP } from '../constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
 import { canUseDOM } from './dom';
 
@@ -100,6 +100,29 @@ export const Utils = {
     } else {
       return pathA + '/' + pathB;
     }
+  },
+
+  // check if a file is an image
+  imageCheck: function (filename) {
+    // no file ext
+    if (filename.lastIndexOf('.') === -1) {
+      return false;
+    }
+    const file_ext = filename.substr(filename.lastIndexOf('.') + 1).toLowerCase();
+    const image_exts = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp', 'svg'];
+    return image_exts.includes(file_ext);
+  },
+
+  getFileIconUrl: function (filename) {
+    let validMediaUrl = `${siteRoot}${mediaUrl}`;
+    validMediaUrl = validMediaUrl.replace('//', '/');
+    if (filename.lastIndexOf('.') === -1) {
+      return `${validMediaUrl}img/file/${FILEEXT_ICON_MAP['default']}`;
+    }
+    const fileext = filename.substr(filename.lastIndexOf('.') + 1).toLowerCase();
+    const fileIcon = FILEEXT_ICON_MAP[fileext];
+    if (fileIcon) return `${validMediaUrl}img/file/${fileIcon}`;
+    return `${validMediaUrl}img/file/${FILEEXT_ICON_MAP['default']}`;
   },
 
   isIEBrowser: function () { // is ie <= ie11 not include Edge

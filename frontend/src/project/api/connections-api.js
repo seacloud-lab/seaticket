@@ -277,6 +277,19 @@ class ConnectionsAPI {
     return this.req.post(url, payload);
   }
 
+  zipEmailAttachments(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/email/' + recordID + '/zip-attachments/';
+    return this.req.post(url);
+  }
+
+  queryTaskStatus(task_id) {
+    const url = this.server + '/api/v1/query-io-status/';
+    const params = {
+      task_id: task_id,
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

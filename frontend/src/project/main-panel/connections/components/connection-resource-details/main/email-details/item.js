@@ -21,6 +21,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
   const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
+  const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
@@ -193,7 +194,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
               <div className="email-record-info-to">
                 {gettext('To')}: {emailTo}
               </div>
-              {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+              {!isReadonly && !isShowReply && (
                 <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
               )}
             </div>
@@ -220,7 +221,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <div className="email-record-info-to">
               {gettext('To')}: {emailTo}
             </div>
-            {permission === PERMISSION_TYPES.READ_WRITE && !isShowReply && (
+            {!isReadonly && !isShowReply && (
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}
           </div>
@@ -228,7 +229,15 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       </div>
       <div className="email-body" ref={ref}>
         {isHTMLContent ? (
-          <HTMLContentWrapper projectUuid={projectUuid} connection_id={connection_id} detail={detail} value={detailContent} className="email-content-detail" />
+          <HTMLContentWrapper
+            projectUuid={projectUuid}
+            connectionId={connection_id}
+            recordId={detail._pk}
+            detail={detail}
+            value={detailContent}
+            isReadonly={isReadonly}
+            className="email-content-detail"
+          />
         ) : (
           <CustomizeMarkdownViewer value={detailContent} />
         )}

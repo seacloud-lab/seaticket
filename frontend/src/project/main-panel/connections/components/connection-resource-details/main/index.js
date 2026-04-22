@@ -48,7 +48,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     const nextDetail = {
       email_from: emailFrom,
       email_to: emailTo,
-      title: payload.subject || details?.title || '',
+      title: payload.subject || details[0]?.title || '',
       cc: payload.cc || '',
       content: payload.content || '',
       html_content: payload.html_content || '',

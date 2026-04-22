@@ -28,8 +28,8 @@ def convert_kb_view_to_excel(params):
     return resp.json().get('task_id')
 
 
-def query_kb_task_status(task_id):
-    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/kb-task-status')
+def query_io_task_status(task_id):
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/io-task-status')
     headers = {"Authorization": "Token %s" % _sign_auth_token()}
     resp = requests.get(url, params={'task_id': task_id}, headers=headers)
     return resp
@@ -42,4 +42,14 @@ def import_kb_from_excel(params):
     if not resp.ok:
         logger.error(resp.text)
         raise Exception('import kb from excel error')
+    return resp.json().get('task_id')
+
+
+def zip_email_attachments(params):
+    url = urljoin(SEAQA_IO_LOCAL_SERVER_URL, '/zip-email-attachments')
+    headers = {"Authorization": "Token %s" % _sign_auth_token()}
+    resp = requests.post(url, json=params, headers=headers)
+    if not resp.ok:
+        logger.error(resp.text)
+        raise Exception('zip email attachments error')
     return resp.json().get('task_id')

@@ -113,7 +113,7 @@ class Application:
                 start_response('200 OK', headers_out)
                 return [body]
 
-            if path == '/kb-task-status':
+            if path == '/io-task-status':
                 task_id = (qs.get('task_id') or [''])[0]
                 if not self.io_task_manager.is_valid_task_id(task_id):
                     status_code, headers_out, body = self._json_response(404, {'error_msg': 'task_id not found.'})
@@ -258,6 +258,41 @@ class Application:
                     else:
                         task_id = self.io_task_manager.add_import_kb_from_excel_task(
                             project_uuid, username, file_name)
+                except Exception as e:
+                    logger.exception(e)
+                    status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})
+                    start_response('500 Internal Server Error', headers_out)
+                    return [body]
+
+                status_code, headers_out, body = self._json_response(200, {'task_id': task_id})
+                start_response('200 OK', headers_out)
+                return [body]
+
+            if path == '/zip-email-attachments':
+                if self.io_task_manager.tasks_queue.full():
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'tasks server busy.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                project_uuid = context.get('project_uuid')
+                connection_id = context.get('connection_id')
+                pk = context.get('pk')
+
+                if not project_uuid:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'project_uuid is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not connection_id:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'connection_id is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+                if not pk:
+                    status_code, headers_out, body = self._json_response(400, {'error_msg': 'pk is required.'})
+                    start_response('400 Bad Request', headers_out)
+                    return [body]
+
+                try:
+                    task_id = self.io_task_manager.add_zip_email_attachments_task(project_uuid, connection_id, pk)
                 except Exception as e:
                     logger.exception(e)
                     status_code, headers_out, body = self._json_response(500, {'error_msg': str(e)})
