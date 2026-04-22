@@ -524,9 +524,9 @@ class FilterItem extends React.Component {
             label: (
               <>
                 <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="option-editor-option-check-btn no-hover-bg mr-2" />
-                <div className="option-editor-option-content">
+                <div className="option-editor-option-content w-100">
                   {priority.icon && (<IconButton icon={priority.icon} size={16} className="no-hover-bg option-editor-option-icon mr-2 ml-0" />)}
-                  <div className="sea-ticket-priority-editor-option-name-hotkey">
+                  <div className="sea-ticket-priority-editor-option-name-hotkey d-flex justify-content-between w-100">
                     <div className="sea-ticket-priority-editor-option-name">{priority.name}</div>
                     <div className="sea-ticket-priority-editor-option-hotkey">{priority.hotKey}</div>
                   </div>
