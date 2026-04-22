@@ -214,9 +214,7 @@ const ActionItem = React.memo(({
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">
-                {content.split('\n').map((item, index) => (
-                  <p key={index}>{item}</p>
-                ))}
+                {content}
               </div>
             }
           </div>
