@@ -689,8 +689,15 @@ else:
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
-# Available AI Models for user selection
-LLM_MODELS = validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS))
+# Available AI Models (not hidden) for user selection
+LLM_MODELS = [
+    {
+        'type': model.get('type', 'openai'),
+        'model': model['model'],
+        'label': model['label']
+    }
+    for model in validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS)) if not model.get('hidden', False)
+]
 
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
