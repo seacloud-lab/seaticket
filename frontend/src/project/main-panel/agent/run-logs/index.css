@@ -293,6 +293,7 @@
   font-size: 14px;
   line-height: 22px;
   position: relative;
+  white-space: pre-line;
 }
 
 .action-text-thought p {

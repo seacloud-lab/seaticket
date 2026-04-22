@@ -121,11 +121,7 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}</div>
-            <div className="action-text">
-              {content.split('\n').map((item, index) => (
-                <p key={index}>{item}</p>
-              ))}
-            </div>
+            <div className="action-text">{content}</div>
           </div>
         );
       case ACTION_TYPE.TOOL_CALL:
@@ -214,9 +210,7 @@ const ActionItem = React.memo(({
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">
-                {content.split('\n').map((item, index) => (
-                  <p key={index}>{item}</p>
-                ))}
+                {content}
               </div>
             }
           </div>
