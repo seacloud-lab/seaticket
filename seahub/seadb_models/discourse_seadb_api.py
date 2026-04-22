@@ -28,9 +28,10 @@ class DiscourseSeaDBAPI:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
-        if response and 'results' in response:
-            return response['results']
-        return []
+        if response and 'results' in response and len(response['results']) > 0:
+            topic = response['results'][0]
+            return topic
+        return {}
 
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""

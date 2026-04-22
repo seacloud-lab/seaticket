@@ -1353,7 +1353,7 @@ class ProjectConnectionReplyDiscourseView(APIView):
             error_msg = 'Topic not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        topic_id = topic[0].get('topic_id')
+        topic_id = topic.get('topic_id')
 
         discourse_api = DiscourseForumAPI(discourse_url, api_key, api_username)
         try:
