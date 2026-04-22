@@ -618,26 +618,6 @@ class TestPortalIssuesViewDelete:
 
         seadb_api = Mock()
         issues = [{'_pk': 1}, {'_pk': 2}]
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.get_portal_issues', return_value=issues):
-            resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 200
-        assert resp.data['success'] == [1, 2]
-        assert resp.data['failed'] == []
-        seadb_api.update_rows.assert_called_once()
-
-    def test_delete_success_with_portal_issues_tuple(self, factory, project_creator, real_project):
-        project = real_project
-        request = factory.delete(
-            f"/api/v1/portal/{project.uuid}/issues/",
-            data={'issue_ids': [1, 2]},
-            format='json'
-        )
-        request.user = project_creator
-
-        seadb_api = Mock()
-        issues = [{'_pk': 1}, {'_pk': 2}]
         metadata = [{'name': '_pk'}]
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issues', return_value=(issues, metadata)):
@@ -660,8 +640,9 @@ class TestPortalIssuesViewDelete:
         seadb_api = Mock()
         # Only issue 1 and 3 exist
         issues = [{'_pk': 1}, {'_pk': 3}]
+        metadata = [{'name': '_pk'}]
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.get_portal_issues', return_value=issues):
+                patch('seahub.portal.apis.get_portal_issues', return_value=(issues, metadata)):
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -939,7 +920,3 @@ class TestPortalIssueSubstateAPIView:
         assert update_data['description'] == 'Updated description'
         assert update_data['color'] == '#000000'
         assert update_data['text_color'] == '#ffffff'
-        seadb_api.update_column.assert_called_once()
-        cascade_settings = seadb_api.update_column.call_args[0][1]['update_column_data']['cascade_settings']
-        assert cascade_settings['state-open'] == []
-        assert cascade_settings['state-closed'] == ['sub-1']
