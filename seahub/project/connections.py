@@ -37,6 +37,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_notion_seadb_table, list_notion_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
+from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
@@ -49,6 +50,7 @@ from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -1290,6 +1292,97 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response(email_data, status=status.HTTP_200_OK)
+
+
+class ProjectConnectionReplyDiscourseView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.DISCOURSE_FORUM.value:
+            error_msg = f'Connection type {project_connection.type} does not support replying to Discourse topic.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        content = (request.data.get('content') or '').strip()
+        if not content:
+            error_msg = 'content is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if len(content) < 6:
+            error_msg = 'The content is too short, at least 6 characters.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        _pk = request.data.get('_pk')
+        if not _pk:
+            error_msg = '_pk is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            _pk = int(_pk)
+        except (TypeError, ValueError):
+            error_msg = '_pk invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        config = decrypt_config(json.loads(project_connection.config))
+        discourse_url = config.get('url')
+        api_key = config.get('api_key')
+        api_username = config.get('api_username')
+
+        if not discourse_url or not api_key or not api_username:
+            error_msg = 'Discourse connection config is incomplete.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
+
+        topic = discourse_seadb_api.get_topic_by_pk(connection_id, _pk)
+        if not topic:
+            error_msg = 'Topic not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        topic_id = topic.get('topic_id')
+
+        discourse_api = DiscourseForumAPI(discourse_url, api_key, api_username)
+        try:
+            post_data = discourse_api.create_post(topic_id, content)
+        except DiscourseForumAPIException as e:
+            logger.error('reply discourse topic failed, connection_id: %s, topic_id: %s, error: %s', connection_id, topic_id, e)
+            error_msg = 'Failed to reply to Discourse topic.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        post_number = post_data.get('post_number', 0)
+        reply_data = {
+            'post_number': post_number,
+            'content': content,
+            'author': api_username,
+            'topic_pk': _pk,
+        }
+        try:
+            pk = discourse_seadb_api.add_reply(project_uuid, connection_id, topic_id, reply_data)
+            reply_data['_pk'] = pk
+        except Exception as e:
+            logger.error('save reply to discourse seadb failed, connection_id: %s, topic_id: %s, error: %s', connection_id, topic_id, e)
+            error_msg = 'Failed to save reply.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response(reply_data, status=status.HTTP_200_OK)
 
 
 class ConnectionFileView(APIView):

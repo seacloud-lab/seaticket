@@ -88,12 +88,12 @@ class ConvertRecordToTicket(APIView):
         match connection.type:
             case ConnectionType.DISCOURSE_FORUM.value:
                 discourse_db_api = DiscourseSeaDBAPI(project_uuid)
-                topics = discourse_db_api.get_topic_by_pk(
+                topic = discourse_db_api.get_topic_by_pk(
                     connection_id, record_id
                 )
-                title = topics[0].get('title', '') if topics else ''
-                topic_id = topics[0].get('topic_id') if topics else ''
-                slug = topics[0].get('slug') if topics else ''
+                title = topic.get('title', '') if topic else ''
+                topic_id = topic.get('topic_id') if topic else ''
+                slug = topic.get('slug') if topic else ''
                 config = json.loads(connection.config)
                 discourse_forum_url = config.get('url')
                 related_url = discourse_forum_url.rstrip('/') + '/t/' + slug + '/' + str(topic_id)

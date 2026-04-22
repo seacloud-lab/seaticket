@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import DiscourseTopicsTable, DiscourseRepliesTable
@@ -25,11 +26,11 @@ class DiscourseSeaDBAPI:
 
     def get_topic_by_pk(self, connection_id, _pk):
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = f"SELECT title, topic_id, slug FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
-        if response and 'results' in response:
-            return response['results']
-        return []
+        if response and 'results' in response and response['results']:
+            return response['results'][0]
+        return {}
 
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""
@@ -140,3 +141,29 @@ class DiscourseSeaDBAPI:
 
                 result.append(whole_topic_data)
         return result
+
+    def add_reply(self, project_uuid, connection_id, topic_id, reply_data):
+        now = datetime.datetime.now(datetime.UTC).isoformat()
+        replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+        topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+
+        reply_row = {
+            DiscourseRepliesTable.topic_id.name: topic_id,
+            DiscourseRepliesTable.post_number.name: reply_data.get('post_number', 0),
+            DiscourseRepliesTable.content.name: reply_data.get('content', ''),
+            DiscourseRepliesTable.author.name: reply_data.get('author', ''),
+            DiscourseRepliesTable.modified_time.name: now,
+            DiscourseRepliesTable.accepted_answer.name: False,
+        }
+
+        result = self.seadb_api.insert_rows(project_uuid, replies_table_name, [reply_row])
+        pks = result.get('pks', [])
+
+        self.seadb_api.update_rows(project_uuid, topics_table_name, [{
+            'pk': int(reply_data.get('topic_pk', 0)),
+            'row': {
+                DiscourseTopicsTable.record_modified_time.name: now,
+            }
+        }])
+
+        return pks[0] if pks else None
