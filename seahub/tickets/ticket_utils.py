@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from seahub.seadb_models.models import TicketActivitiesTable
+from seahub.seadb_models.models import TicketActivitiesTable, TicketsTable
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
@@ -220,7 +220,10 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+    column_names = TicketsTable.gen_query_record_column_names()
+    column_names = [f'`{column_name}`' for column_name in column_names]
+    column_names_str = ', '.join(column_names)
+    sql = f"SELECT {column_names_str} FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
