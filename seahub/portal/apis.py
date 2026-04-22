@@ -299,11 +299,16 @@ class PortalIssuesView(APIView):
             if not row_id:
                 error_msg = 'row_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            try:
+                row_id = int(row_id)
+            except (TypeError, ValueError):
+                error_msg = 'row_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             issue_id_to_row[row_id] = row
 
         try:
             issue_ids = issue_id_to_row.keys()
-            issue_ids_str = ','.join(issue_ids)
+            issue_ids_str = ','.join(str(issue_id) for issue_id in issue_ids)
             sql = f"""
             SELECT `_pk`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `assignees`, `participants`, `linked_ticket`
             FROM `{TABLE_PORTAL_ISSUES}`
@@ -324,7 +329,7 @@ class PortalIssuesView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for issue in results:
             updated_row = {}
-            row_data = issue_id_to_row.get(str(issue.get('_pk')))
+            row_data = issue_id_to_row.get(issue.get('_pk'))
             if not row_data:
                 continue
 
@@ -437,7 +442,7 @@ class PortalIssuesView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            issues = get_portal_issues(seadb_api, project_uuid, issue_ids)
+            issues, _metadata = get_portal_issues(seadb_api, project_uuid, issue_ids)
             exist_issue_ids = [issue.get('_pk') for issue in issues]
             fail_issue_ids = []
             for issue_id in issue_ids:

@@ -15,6 +15,8 @@ from seahub.portal.apis import (
     PortalIssueTrashAPIView,
     SQLGeneratorOptionInvalidError,
 )
+from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
+from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
 
 
 def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
@@ -625,6 +627,27 @@ class TestPortalIssuesViewDelete:
         assert resp.data['failed'] == []
         seadb_api.update_rows.assert_called_once()
 
+    def test_delete_success_with_portal_issues_tuple(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.delete(
+            f"/api/v1/portal/{project.uuid}/issues/",
+            data={'issue_ids': [1, 2]},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        issues = [{'_pk': 1}, {'_pk': 2}]
+        metadata = [{'name': '_pk'}]
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issues', return_value=(issues, metadata)):
+            resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['success'] == [1, 2]
+        assert resp.data['failed'] == []
+        seadb_api.update_rows.assert_called_once()
+
     def test_delete_partial_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.delete(
@@ -819,3 +842,104 @@ class TestPortalIssueViewPut:
         portal_update = seadb_api.update_rows.call_args_list[-1]
         portal_rows = portal_update[0][2]
         assert any(r['row'].get('linked_ticket') is None for r in portal_rows)
+
+
+@pytest.mark.django_db
+class TestPortalIssuesViewPut:
+
+    def test_put_invalid_row_id(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/issues/",
+            data={'issues_data': [{'row_id': 'abc', 'row': {'state': 'closed'}}]},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'row_id invalid.'
+
+
+@pytest.mark.django_db
+class TestPortalIssueTypeAPIView:
+
+    def test_put_updates_color_from_request_data(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/portal-issues/types/type-1/",
+            data={'color': '#000000', 'text_color': '#ffffff'},
+            format='multipart'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        base_metadata = {
+            'tables': [{
+                'id': 'table1',
+                'columns': [{
+                    'name': 'type',
+                    'key': 'type_key',
+                    'data': {'options': [{'id': 'type-1', 'name': 'Bug'}]},
+                }],
+            }]
+        }
+
+        with patch('seahub.portal.portal_issue_types.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.portal_issue_types.get_current_table_metadata', return_value=base_metadata['tables'][0]), \
+                patch('seahub.portal.portal_issue_types.update_select_option') as mock_update_select_option:
+            seadb_api.get_base_metadata.return_value = base_metadata
+            resp = PortalIssueTypeAPIView.as_view()(request, project_uuid=str(project.uuid), type_id='type-1')
+
+        assert resp.status_code == 200
+        update_data = mock_update_select_option.call_args[0][-1]
+        assert update_data['color'] == '#000000'
+        assert update_data['text_color'] == '#ffffff'
+
+
+@pytest.mark.django_db
+class TestPortalIssueSubstateAPIView:
+
+    def test_put_updates_fields_from_request_data(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/portal/{project.uuid}/portal-issues/substates/sub-1/",
+            data={
+                'description': 'Updated description',
+                'color': '#000000',
+                'text_color': '#ffffff',
+                'parent_id': 'state-closed',
+            },
+            format='multipart'
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        table_meta = {
+            'id': 'table1',
+            'columns': [{
+                'name': 'substate',
+                'key': 'substate_key',
+                'data': {
+                    'options': [{'id': 'sub-1', 'name': 'New'}],
+                    'cascade_settings': {'state-open': ['sub-1'], 'state-closed': []},
+                },
+            }],
+        }
+
+        with patch('seahub.portal.portal_issue_substates.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.portal_issue_substates.get_current_table_metadata', return_value=table_meta), \
+                patch('seahub.portal.portal_issue_substates.update_select_option') as mock_update_select_option:
+            seadb_api.get_base_metadata.return_value = {'tables': [table_meta]}
+            resp = PortalIssueSubstateAPIView.as_view()(request, project_uuid=str(project.uuid), substate_id='sub-1')
+
+        assert resp.status_code == 200
+        update_data = mock_update_select_option.call_args[0][-1]
+        assert update_data['description'] == 'Updated description'
+        assert update_data['color'] == '#000000'
+        assert update_data['text_color'] == '#ffffff'
+        seadb_api.update_column.assert_called_once()
+        cascade_settings = seadb_api.update_column.call_args[0][1]['update_column_data']['cascade_settings']
+        assert cascade_settings['state-open'] == []
+        assert cascade_settings['state-closed'] == ['sub-1']

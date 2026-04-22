@@ -224,8 +224,8 @@ class PortalIssueTypeAPIView(APIView):
         """
         # argument check
         name = request.data.get('name')
-        color = request.POST.get('color')
-        text_color = request.POST.get('text_color')
+        color = request.data.get('color')
+        text_color = request.data.get('text_color')
         if 'name' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
