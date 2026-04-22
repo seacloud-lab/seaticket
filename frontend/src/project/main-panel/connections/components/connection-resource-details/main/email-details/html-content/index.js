@@ -1,26 +1,73 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isValidUrl } from '@/utils/validate';
 import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
 import { Utils } from '@/utils/utils';
-import { IconButton, IconTextBtn } from '@/components';
-import { gettext } from '@/constants';
+import { IconButton, IconTextBtn, toaster } from '@/components';
+import { gettext, server, siteRoot } from '@/constants';
 import { downloadFile } from '@/utils/download';
+import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
 const HTMLContent = ({
   projectUuid,
-  connection_id,
+  connectionId,
+  recordId,
   className,
   value,
-  detail
+  detail,
+  isReadonly,
 }) => {
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+
   const ref = useRef(null);
-  const assetURLPrefix = useMemo(() => generatorConnectionAssetURLPrefix(projectUuid, connection_id), [projectUuid, connection_id]);
+  const downloadAllTimer = useRef(null);
+  const queryComplete = useRef(false);
+
+  const assetURLPrefix = useMemo(() => generatorConnectionAssetURLPrefix(projectUuid, connectionId), [projectUuid, connectionId]);
 
   const handDownload = useCallback((url) => {
     downloadFile(url);
   }, []);
+
+  const handDownloadAll = useCallback(() => {
+    if (isDownloadingAll) return;
+    setIsDownloadingAll(true);
+    connectionsAPI.zipEmailAttachments(projectUuid, connectionId, recordId).then(res => {
+      const taskId = res.data.task_id;
+      downloadAllTimer.current = setInterval(() => {
+        if (queryComplete.current) return;
+        queryComplete.current = true;
+        connectionsAPI.queryTaskStatus(taskId).then(res => {
+          queryComplete.current = false;
+          if (res.data && res.data.is_finished === true) {
+            clearInterval(downloadAllTimer.current);
+            downloadAllTimer.current = null;
+            const url = `${server}${siteRoot}api/v1/project/${projectUuid}/connections/${connectionId}/email/${recordId}/download-attachments/`;
+            downloadFile(url);
+            setIsDownloadingAll(false);
+          }
+        }).catch(error => {
+          clearInterval(downloadAllTimer.current);
+          downloadAllTimer.current = null;
+          queryComplete.current = false;
+          setIsDownloadingAll(false);
+          const errMessage = Utils.getErrorMsg(error);
+          toaster.danger(errMessage);
+        });
+      }, 1000);
+    }).catch((error) => {
+      setIsDownloadingAll(false);
+      if (error.response && error.response.status === 500) {
+        toaster.danger(gettext('Internal server error'));
+      } else {
+        const errMsg = Utils.getErrorMsg(error, true);
+        if (!error.response || error.response.status !== 403) {
+          toaster.danger(errMsg);
+        }
+      }
+    });
+  }, [isDownloadingAll, projectUuid, connectionId, recordId]);
 
   useEffect(() => {
     const handleImgSrc = () => {
@@ -52,7 +99,18 @@ const HTMLContent = ({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (!downloadAllTimer.current) return;
+      clearInterval(downloadAllTimer.current);
+      downloadAllTimer.current = null;
+    };
+  }, []);
+
   const attachments = detail.attachments;
+  const downloadAllTip = gettext('{download} all {n} attachments')
+    .replace('{download}', isDownloadingAll ? gettext('Downloading') : gettext('Download'))
+    .replace('{n}', attachments.length);
 
   return (
     <>
@@ -61,8 +119,9 @@ const HTMLContent = ({
         <div className="sea-ticket-email-attachments">
           {attachments.map((attachment, index) => {
             const url = `${assetURLPrefix}${detail._pk}/${attachment}`;
+            const Tag = isReadonly ? 'span' : 'a';
             return (
-              <div className="sea-ticket-email-attachment">
+              <div className="sea-ticket-email-attachment" key={index}>
                 <div className="sea-ticket-email-attachment-icon">
                   <img
                     src={Utils.imageCheck(attachment) ? url : Utils.getFileIconUrl(attachment)}
@@ -72,34 +131,39 @@ const HTMLContent = ({
                   />
                 </div>
                 <div className="sea-ticket-email-attachment-info">
-                  <a
+                  <Tag
                     className="sea-ticket-email-attachment-name"
-                    href={url}
+                    href={isReadonly ? '' : url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {attachment}
-                  </a>
+                  </Tag>
                   {/* <div className="sea-ticket-email-attachment-size">{''}</div> */}
                 </div>
                 <div className="sea-ticket-email-attachment-divider"></div>
-                <IconButton
-                  icon="download"
-                  title={gettext('Download')}
-                  className="sea-ticket-email-attachment-download-btn no-hover-bg"
-                  size={{ btn: 32, icon: 16 }}
-                  onClick={() => handDownload(url)}
-                />
+                {!isReadonly && (
+                  <IconButton
+                    icon="download"
+                    title={gettext('Download')}
+                    className="sea-ticket-email-attachment-download-btn no-hover-bg"
+                    size={{ btn: 32, icon: 16 }}
+                    onClick={() => handDownload(url)}
+                  />
+                )}
               </div>
             );
           })}
         </div>
       )}
-      {Array.isArray(attachments) && attachments.length > 1 && (
+      {!isReadonly && Array.isArray(attachments) && attachments.length > 1 && (
         <IconTextBtn
-          icon="download"
+          icon={isDownloadingAll ? '' : 'download'}
           className="sea-ticket-email-attachments-download-btn"
-          text={gettext('Download all {n} attachments').replace('{n}', attachments.length)}
+          text={downloadAllTip}
+          disabled={isDownloadingAll}
+          isLoading={isDownloadingAll}
+          onClick={handDownloadAll}
         />
       )}
     </>

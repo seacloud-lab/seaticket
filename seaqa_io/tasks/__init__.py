@@ -349,8 +349,9 @@ def download_email_attachments(project_uuid, connection_id, pk):
         raise Exception('Email not found.')
     target_email = response['results'][0]
 
-    os.makedirs(EMAIL_ATTACHMENT_TEMP_DIR, exist_ok=True)
-    local_zip_path = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(pk), EMAIL_ATTACHMENTS_ZIP_NAME)
+    local_dir = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(pk))
+    os.makedirs(local_dir, exist_ok=True)
+    local_zip_path = os.path.join(local_dir, EMAIL_ATTACHMENTS_ZIP_NAME)
 
     attachments = target_email.get('attachments')
     if not attachments:

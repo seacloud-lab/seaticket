@@ -277,13 +277,8 @@ class ConnectionsAPI {
     return this.req.post(url, payload);
   }
 
-  downloadEmailAttachments(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/email/' + recordID + '/zip-attachments/';
-    return this.req.get(url);
-  }
-
   zipEmailAttachments(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/email/' + recordID + '/download-attachments/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/email/' + recordID + '/zip-attachments/';
     return this.req.post(url);
   }
 

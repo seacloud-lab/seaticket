@@ -65,6 +65,10 @@
   color: var(--bs-body-color);
 }
 
+.sea-ticket-email-attachments-download-btn:not(.cursor-pointer) {
+  cursor: default;
+}
+
 .sea-ticket-email-attachments-download-btn:hover {
   background-color: #EDEDEB;
 }
