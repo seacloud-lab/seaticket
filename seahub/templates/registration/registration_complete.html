@@ -3,10 +3,22 @@
 
 {% block title %}{% trans "Registration complete" %}{% endblock %}
 
+{% block extra_style %}
+<style>
+#header {
+    border-bottom: none;
+    background: transparent;
+    padding-top: 12px;
+    padding-left: 24px;
+}
+</style>
+{% endblock %}
+
 {% block main_content %}
-<div class="text-panel">
+<div class="d-flex flex-column align-items-center justify-content-center h-100" style="font-size: 16px;">
 {% if enable_signup %}
     {% if send_mail %}
+    <img src="{{ MEDIA_URL }}img/sign-up-complete.png" alt="sign-up-complete" width="400" height="240" style="margin-bottom: 24px;" />
     <p>{% trans "An activation email has been sent. Please check your email and click on the link to activate your account." %}</p>
     {% else %}
     <p>{% trans "Registration complete, please wait for administrator to activate your account." %}</p>
