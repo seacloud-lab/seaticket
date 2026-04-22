@@ -6,7 +6,7 @@
 
 {% autoescape off %}
 
-<p style="color:#121214;font-size:14px;">{% trans "Hi," %}</p>
+<p style="color:#212529;font-size:14px;">{% trans "Hi," %}</p>
 
 <p style="font-size:14px;color:#434144;">
 {% blocktrans with escaped_nickname=user|email2nickname|escape %}{{ escaped_nickname }} invited you to join {{ site_name }}.{% endblocktrans%}
