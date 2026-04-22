@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
-import { Icon, IconButton, IconTooltip } from '@/components';
+import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
 
 const ActionItem = React.memo(({
   action,
@@ -121,11 +121,7 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}</div>
-            <div className="action-text">
-              {content.split('\n').map((item, index) => (
-                <p key={index}>{item}</p>
-              ))}
-            </div>
+            {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
           </div>
         );
       case ACTION_TYPE.TOOL_CALL:
@@ -214,7 +210,7 @@ const ActionItem = React.memo(({
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">
-                {content}
+                {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
               </div>
             }
           </div>
