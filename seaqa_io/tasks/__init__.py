@@ -365,7 +365,6 @@ def download_email_attachments(project_uuid, connection_id, pk):
                 zip_file.writestr(file_name, file.read())
 
             except Exception as e:
-                logger.exception(e)
                 if os.path.exists(local_zip_path):
                     os.remove(local_zip_path)
                 raise Exception(e)
