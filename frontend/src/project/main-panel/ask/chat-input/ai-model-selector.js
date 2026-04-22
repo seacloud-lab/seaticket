@@ -4,26 +4,46 @@ import { Selector } from '../components';
 
 const LLM_MODELS = window.app?.pageOptions?.llmModels || [];
 const LLM_MODEL_ICON = {
-  'qwen': `${mediaUrl}img/llm-providers/qwen.png`,
-  'dashscope': `${mediaUrl}img/llm-providers/qwen.png`,
+  'openai': `${mediaUrl}img/llm-providers/openai.png`,
+  'dashscope': `${mediaUrl}img/llm-providers/dashscope.png`,
+  'anthropic': `${mediaUrl}img/llm-providers/anthropic.png`,
+  'deepseek': `${mediaUrl}img/llm-providers/deepkseek.png`,
   'gemini': `${mediaUrl}img/llm-providers/gemini.png`,
-  'gpt': `${mediaUrl}img/llm-providers/gpt.png`,
   'unknown': `${mediaUrl}img/llm-providers/unknown.png`,
+};
+
+const getModelType = (model) => {
+  let type = model?.type || '';
+  type = type.toLowerCase();
+  if (!type || type === 'openai' || type === 'azure') return 'openai';
+  if (type === 'dashscope' || type === 'qwen') return 'dashscope';
+  if (type === 'anthropic') return type;
+  if (type === 'deepseek') return type;
+  if (type === 'gemini') return type;
+  if (type === 'other' || type === 'hosted_vllm') {
+    let _model = model?.model || '';
+    _model = _model.toLowerCase();
+    if (_model.startsWith('google') || _model.startsWith('gemini')) return 'gemini';
+    if (_model.startsWith('qwen') || _model.startsWith('dashscope')) return 'dashscope';
+    if (_model.startsWith('claude')) return 'anthropic';
+    if (_model.startsWith('deepseek')) return 'deepseek';
+    if (_model.startsWith('openai') || _model.startsWith('gpt') || /^o\d/.test(_model)) return 'openai';
+  }
+  return 'unknown';
 };
 
 const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
 
   const options = useMemo(() => {
     return LLM_MODELS.map(model => {
-      let type = model?.type || model?.model?.split('-')[0] || 'unknown';
-      type = type.toLowerCase();
+      const type = getModelType(model);
       return {
         name: model.label,
         value: model.model,
         default: model.default,
         label: model.label,
         simple_label: model.label,
-        img: LLM_MODEL_ICON[type] || LLM_MODEL_ICON['unknown']
+        img: LLM_MODEL_ICON[type],
       };
     });
   }, []);
