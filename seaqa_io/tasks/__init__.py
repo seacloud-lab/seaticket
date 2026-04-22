@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import zipfile
 
 import numpy as np
 from dateutil import parser
@@ -9,7 +10,7 @@ from sklearn.manifold import TSNE
 from sqlalchemy import text
 
 from seaqa_io.config import TEMP_EXPORT_VIEW_DIR, configs
-from seaqa_io.constants import ConnectionType, MAX_EMBEDDING_ANALYSIS_RECORDS
+from seaqa_io.constants import ConnectionType, MAX_EMBEDDING_ANALYSIS_RECORDS, EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
 from seaqa_io.db.db import init_db_session_class
 from seaqa_io.db.seaqa_db import SeaqaDB
 from seaqa_io.db.seadb_api import SeaDBAPI
@@ -17,6 +18,7 @@ from seaqa_io.log import setup_logger
 from seaqa_io.sql_view import filter_display_columns, view_data_2_sql
 from seaqa_io.utils import uuid_str_to_32_chars
 from seaqa_io.utils.knowledge_base_utils import send_knowledge_base_update_msg
+from seaqa_io.utils.storage import get_file_from_s3_web_crawl
 
 
 logger = setup_logger('seaqa_io', propagate=False)
@@ -334,3 +336,35 @@ def generate_embeddings_2d_with_tsne(vectors):
         result.append(coords)
 
     return result
+
+
+def download_email_attachments(project_uuid, connection_id, pk):
+    project_uuid = uuid_str_to_32_chars(project_uuid)
+    seadb_api = SeaDBAPI()
+
+    table_name = ConnectionType.EMAIL.value + '_' + str(connection_id)
+    sql = f"SELECT attachments FROM `{table_name}` WHERE `_pk` = {pk}"
+    response = seadb_api.query_rows(project_uuid, sql)
+    if not response['results']:
+        raise Exception('Email not found.')
+    target_email = response['results'][0]
+
+    os.makedirs(EMAIL_ATTACHMENT_TEMP_DIR, exist_ok=True)
+    local_zip_path = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(pk), EMAIL_ATTACHMENTS_ZIP_NAME)
+
+    attachments = target_email.get('attachments')
+    if not attachments:
+        raise Exception('attachments not exist.')
+
+    with zipfile.ZipFile(local_zip_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for file_name in attachments:
+            relative_path = str(pk) + '/' + file_name
+            try:
+                file = get_file_from_s3_web_crawl(project_uuid, str(connection_id), relative_path)
+                zip_file.writestr(file_name, file.read())
+
+            except Exception as e:
+                logger.exception(e)
+                if os.path.exists(local_zip_path):
+                    os.remove(local_zip_path)
+                raise Exception(e)

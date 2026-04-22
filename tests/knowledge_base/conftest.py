@@ -282,7 +282,7 @@ def mock_convert_kb_view_to_excel():
 def mock_query_kb_task_status():
     """Mock query_kb_task_status helper."""
     with patch(
-        'seahub.knowledge_base.knowledge_base_excel.query_kb_task_status'
+        'seahub.knowledge_base.knowledge_base_excel.query_io_task_status'
     ) as mock:
         yield mock
 

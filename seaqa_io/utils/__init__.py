@@ -1,8 +1,9 @@
 import uuid
 import logging
+import boto3
 
 from seaqa_io.constants import ConnectionType
-from seaqa_io.config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+from seaqa_io.config import REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, S3_HOST, S3_KEY_ID, S3_SECRET_KEY
 from seaqa_io.utils.mq import get_mq
 
 
@@ -10,6 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
+
+
+try:
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=S3_HOST,
+        aws_access_key_id=S3_KEY_ID,
+        aws_secret_access_key=S3_SECRET_KEY,
+    )
+except Exception as e:
+    logger.warning(e)
+    s3_client = None
 
 
 def uuid_str_to_36_chars(project_uuid):

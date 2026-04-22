@@ -12,3 +12,6 @@ class ConnectionType(Enum):
 MAX_EMBEDDING_ANALYSIS_RECORDS = 100000
 
 KB_DISPLAY_ALL_COLUMNS = ['title', 'content', 'creator', 'created_time', 'last_modifier', 'modified_time']
+
+EMAIL_ATTACHMENT_TEMP_DIR = '/tmp/seaqa-io/email-attachment/'
+EMAIL_ATTACHMENTS_ZIP_NAME = 'attachments.zip'

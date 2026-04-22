@@ -7,7 +7,8 @@ from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithub
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
-    ProjectConnectionReplyEmailView, ProjectConnectionReplyDiscourseView, ConnectionFileView, GithubIssueView
+    ProjectConnectionReplyEmailView, ProjectConnectionReplyDiscourseView, ConnectionFileView, GithubIssueView, \
+    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -110,6 +111,9 @@ urlpatterns = [
 
 # files, must at last
 urlpatterns += [
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/zip-attachments/$', ZipEmailAttachments.as_view(), name='api-v1-zip-attachments'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/download-attachments/$', DownloadEmailAttachments.as_view(), name='api-v1-download-attachments'),
+    re_path(r'^api/v1/query-io-status/$', QueryIOStatus.as_view(), name='api-v1-query-io-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/upload-file/$', ProjectUploadFileAPIView.as_view(), name='api-v1-project-upload-file'),
     re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v1-get-project-upload-file'),
 
