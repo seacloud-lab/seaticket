@@ -1,22 +1,16 @@
 import React from 'react';
-import classnames from 'classnames';
 import IconButton from '../icon-button';
+import { gettext } from '@/constants';
 
 import './index.css';
 
-const ClearIconButton = ({
-  useTooltip = false,
-  title = '',
-  className,
-  ...params
-}) => {
-  const _className = classnames('sea-ticket-clear-icon-button no-hover-bg', className);
+const ClearIconButton = ({ ...props }) => {
   return (
     <IconButton
-      className={_className}
-      icon="close-circle-filled"
-      title={title}
-      { ...params }
+      className='sea-ticket-clear-icon-button no-hover-bg'
+      icon="close"
+      title={gettext('Clear search')}
+      { ...props }
     />
   );
 

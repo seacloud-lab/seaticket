@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
 import ClearIconButton from '@/components/clear-icon-button';
-import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -104,18 +103,15 @@ class GlobalSearchInput extends Component {
     if (!isFunction(onClear) || !searchValue) return null;
     const clearButtonSize = 14;
     const verticalOffset = (size - clearButtonSize) / 2;
-    const clearButtonStyle = {
-      height: clearButtonSize,
-      width: clearButtonSize,
-      top: verticalOffset,
-      right: verticalOffset
-    };
     return (
       <ClearIconButton
-        title={gettext('Clear search')}
-        className="position-absolute"
         onClick={this.onClear}
-        style={clearButtonStyle}
+        style={{
+          height: clearButtonSize,
+          width: clearButtonSize,
+          top: verticalOffset,
+          right: verticalOffset
+        }}
       />
     );
   };
