@@ -23,7 +23,6 @@ export const DataProvider = ({
   projectUuid,
   projectName,
   workspaceID,
-  collaborators,
   activeBar,
   api,
   enablePortal,
@@ -633,7 +632,7 @@ export const DataProvider = ({
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
-          <CollaboratorsProvider collaborators={collaborators} listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
+          <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
