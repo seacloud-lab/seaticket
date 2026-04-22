@@ -107,7 +107,7 @@ const HTMLContent = ({
     };
   }, []);
 
-  const attachments = detail.attachments;
+  const attachments = Array.isArray(detail.attachments) ? detail.attachments : [];
   const downloadAllTip = gettext('{download} all {n} attachments')
     .replace('{download}', isDownloadingAll ? gettext('Downloading') : gettext('Download'))
     .replace('{n}', attachments.length);
@@ -115,7 +115,7 @@ const HTMLContent = ({
   return (
     <>
       <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} />
-      {Array.isArray(attachments) && attachments.length > 0 && (
+      {attachments.length > 0 && (
         <div className="sea-ticket-email-attachments">
           {attachments.map((attachment, index) => {
             const url = `${assetURLPrefix}${detail._pk}/${attachment}`;
@@ -156,7 +156,7 @@ const HTMLContent = ({
           })}
         </div>
       )}
-      {!isReadonly && Array.isArray(attachments) && attachments.length > 1 && (
+      {!isReadonly && attachments.length > 1 && (
         <IconTextBtn
           icon={isDownloadingAll ? '' : 'download'}
           className="sea-ticket-email-attachments-download-btn"
