@@ -126,7 +126,7 @@ class ConvertRecordToTicket(APIView):
                 )
                 title = issue[0].get('title', '') if issue else ''
                 default_title = title
-                body_content = issue[0].get('content', '') if issue else ''
+                body_content = (issue[0].get('content') or '') if issue else ''
                 config = json.loads(connection.config)
                 repository = config.get('repository')
                 issue_number = issue[0].get('issue_number')
