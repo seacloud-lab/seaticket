@@ -1326,6 +1326,10 @@ class ProjectConnectionReplyDiscourseView(APIView):
             error_msg = 'content is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        if len(content) < 6:
+            error_msg = 'The content is too short, at least 6 characters.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         _pk = request.data.get('_pk')
         if not _pk:
             error_msg = '_pk is required.'

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Input } from 'reactstrap';
-import { gettext,  } from '@constants';
-import { Loading } from '@/components';
+import { gettext } from '@constants';
+import { Loading, toaster } from '@/components';
 
 import './index.css';
 
@@ -18,6 +18,10 @@ const ReplyDiscourse = ({ onToggle, onSubmit }) => {
   }, []);
 
   const handleSubmit = useCallback(() => {
+    if (content.length < 6) {
+      toaster.danger(gettext('The content is too short, at least 6 characters.'));
+      return;
+    }
     setIsSubmitting(true);
     onSubmit({ content: content.trim() }, (error) => {
       if (error) {

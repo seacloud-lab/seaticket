@@ -128,7 +128,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     return (
       <DiscourseDetails
         className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
-        details={discourseDetails}
+        details={mergedDiscourseDetails}
         projectUuid={projectUuid}
         connection_id={resource.connection_id}
         recordId={resource._id}
