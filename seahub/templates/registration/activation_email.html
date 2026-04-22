@@ -6,15 +6,16 @@
 
 {% autoescape off %}
 
-<p style="font-size:14px;line-height: 22px;">{% trans "Hi," %}</p>
+<p style="font-size:14px;line-height: 22px;margin: 0;margin-bottom: 12px;">{% trans "Hi," %}</p>
 
-<p style="font-size:14px;line-height: 22px;">
+<p style="font-size:14px;line-height: 22px;margin: 0;margin-bottom: 8px;">
 {% blocktrans %}You (or someone pretending to be you) have asked to register an account at {{ site_name }}. If this wasn't you, please ignore this email and your address will be removed from our records.{% endblocktrans %}
-<br />
+</p>
+<p style="font-size:14px;line-height: 22px;margin: 0px;margin-bottom: 48px;">
 {% blocktrans %}To activate this account, please click the following link within the next {{ expiration_days }} days: {% endblocktrans %}
 </p>
 
-<p>
+<p style="margin: 0;">
 <a href="" style="color:#ED7109; font-size: 16px; font-weight: bold;">{% trans "Sign up" %}</a>
 </p>
 

@@ -3,11 +3,22 @@
 
 {% block title %}{% trans "Activation" %}{% endblock %}
 
+{% block extra_style %}
+<style>
+#header {
+    border-bottom: none;
+    background: transparent;
+    padding-top: 12px;
+    padding-left: 24px;
+}
+</style>
+{% endblock %}
+
 {% block main_content %}
 <div class="d-flex flex-column align-items-center justify-content-center h-100" style="font-size: 16px;">
 {% if activation_status == 'expired' %}
     <img src="{{ MEDIA_URL }}img/token-expired.png" alt="token-expired" width="88" height="88" style="margin-bottom: 24px;" />
-    <p id="expired-msg">{% trans "Activation token expired." %} <a id="resend-btn" href="javascript:void(0)" onclick="resendActivationEmail()">{% trans "Re-sent" %}</a></p>
+    <p id="expired-msg">{% trans "Activation token expired." %} <a id="resend-btn" href="javascript:void(0)" onclick="resendActivationEmail()">{% trans "Re-send" %}</a></p>
     <p id="resend-msg" style="display:none;"></p>
 {% elif activation_status == 'already_activated' %}
     <p>{% trans "Your account has already been activated." %} <a href="{{ SITE_ROOT }}accounts/login/">{% trans "Log in" %}</a></p>
