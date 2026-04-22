@@ -19,7 +19,7 @@ const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     modifyRow: (...params) => portalAPI.modifyPortalIssue(projectUuid, ...params),
     modifyRows: (...params) => portalAPI.modifyPortalIssues(projectUuid, ...params),
     deleteRow: (...params) => portalAPI.deletePortalIssue(projectUuid, ...params),
-    deleteRows: (...params) => portalAPI.portalAPIs(projectUuid, ...params),
+    deleteRows: (...params) => portalAPI.deletePortalIssues(projectUuid, ...params),
   }), [projectUuid]);
 
   return (

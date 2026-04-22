@@ -178,24 +178,22 @@ const Project = () => {
   }, []);
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <div className="sea-qa-project">
-        {isLoading ? (
-          <CenteredLoading />
-        ) : (
-          <>
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
-            <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-          </>
-        )}
-      </div>
-    </I18nextProvider>
+    <DataProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} enablePortal={settings?.portal?.enable_portal}>
+      <I18nextProvider i18n={i18n}>
+        <div className="sea-qa-project">
+          {isLoading ? (
+            <CenteredLoading />
+          ) : (
+            <>
+              <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
+              <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+            </>
+          )}
+        </div>
+      </I18nextProvider>
+    </DataProvider>
   );
 };
 
 const root = createRoot(document.getElementById('wrapper'));
-root.render(
-  <DataProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID}>
-    <Project />
-  </DataProvider>
-);
+root.render(<Project />);

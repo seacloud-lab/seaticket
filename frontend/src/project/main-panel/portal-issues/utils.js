@@ -45,8 +45,10 @@ export const generatorRowsMoreTool = ({
   const priorityColumn = getColumnByName(columns, 'priority');
   const stateColumnOptions = getColumnOptions(stateColumn);
 
-  let children = [
-    {
+  let children = [];
+
+  if (chatIssuesByAI) {
+    children.push({
       label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
       key: 'chat_issues',
       callback: () => {
@@ -62,8 +64,8 @@ export const generatorRowsMoreTool = ({
         });
         chatIssuesByAI(newRows);
       },
-    }
-  ];
+    });
+  }
 
   // Add "Find related issues" option only for single row selection
   if (rows.length === 1 && findRelatedIssues) {
@@ -208,13 +210,16 @@ export const generatorIssuesContextMenuOptions = ({
     }
 
     if (rows.length > 0) {
-      list.push(
-        {
-          label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
-          key: 'chat_issues',
-          callback: () => handleChatIssuesByAI(rows),
-        },
-      );
+      if (chatIssuesByAI) {
+        list.push(
+          {
+            label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
+            key: 'chat_issues',
+            callback: () => handleChatIssuesByAI(rows),
+          },
+        );
+      }
+
       if (rows.length === 1 && createTicket) {
         list.push({
           label: gettext('Create related ticket'),
@@ -256,12 +261,13 @@ export const generatorIssuesContextMenuOptions = ({
     });
 
     if (rows.length === 0) return list;
-
-    list.push({
-      label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
-      key: 'chat_issues',
-      callback: () => handleChatIssuesByAI(rows),
-    });
+    if (chatIssuesByAI) {
+      list.push({
+        label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
+        key: 'chat_issues',
+        callback: () => handleChatIssuesByAI(rows),
+      });
+    }
 
     if (context.canDeleteRows()) {
       list.push('Divider');
@@ -283,12 +289,13 @@ export const generatorIssuesContextMenuOptions = ({
   const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
   const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
   if (!row) return list;
-
-  list.push({
-    label: gettext('Chat issue'),
-    key: 'chat_issues',
-    callback: () => handleChatIssuesByAI([row]),
-  });
+  if (chatIssuesByAI) {
+    list.push({
+      label: gettext('Chat issue'),
+      key: 'chat_issues',
+      callback: () => handleChatIssuesByAI([row]),
+    });
+  }
 
   if (createTicket) {
     list.push({

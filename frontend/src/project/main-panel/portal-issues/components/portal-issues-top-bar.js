@@ -3,11 +3,10 @@ import TopBar from '../../top-bar';
 import { usePortalIssuesPage, usePortalIssuesMetadata } from '../hooks';
 import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import { EVENT_BUS_TYPE as PROJECT_EVENT_BUS_TYPE } from '@/project/constants';
 import { IconButton, IconTextBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import eventBus from '@/utils/event-bus';
-import { RefreshBtn } from '@/project/components';
+import { AddButton, RefreshBtn } from '@/project/components';
 
 const PortalIssuesTopBar = ({ title, permission, type }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = usePortalIssuesPage();
@@ -93,7 +92,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
       if (!isRW) return null;
       return (
-        <IconTextBtn icon="" onClick={() => eventBus.dispatch(PROJECT_EVENT_BUS_TYPE.CLEAN_DELETED_PORTAL_ISSUES)} text={gettext('Clean')} />
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.CLEAN_DELETED_PORTAL_ISSUES)} text={gettext('Clean')} icon="" />
       );
     }
     return null;

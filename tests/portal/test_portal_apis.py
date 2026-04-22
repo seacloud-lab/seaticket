@@ -466,7 +466,7 @@ class TestPortalIssueTrashAPIView:
             resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert 'issues' in resp.data
+        assert 'records' in resp.data
 
     def test_get_internal_error(self, factory, project_creator, real_project):
         project = real_project

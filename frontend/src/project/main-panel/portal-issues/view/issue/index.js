@@ -30,12 +30,14 @@ import { useData, useTags } from '@/project/hooks';
 import { usePortalIssuesMetadata } from '../../hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import Header from '@/project/main-panel/tickets/view/ticket/header';
+import { isObject } from '@/utils/type-detection';
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
-  toggleBar, togglePageSlugId
+  canChatWithAI = false,
+  toggleBar, togglePageSlugId,
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
@@ -176,11 +178,15 @@ const Issue = ({
           });
       },
       rowGetterByIndex: () => row,
-      chatIssuesByAI,
+      chatIssuesByAI: canChatWithAI ? chatIssuesByAI : undefined,
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
-    }).filter(item => item.key !== 'open_issue');
+    });
+    options = options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
+    if (options[0] === 'Divider') {
+      options.shift();
+    }
     if (options[options.length - 1] !== 'Divider') {
       options.push('Divider');
     }
@@ -190,7 +196,7 @@ const Issue = ({
       callback: () => setIsShowKeyboardShortcuts(true),
     });
     return options;
-  }, [issue, getTableByName, deleteRow, chatIssuesByAI, projectUuid, workspaceID, projectName]);
+  }, [issue, getTableByName, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName]);
 
   const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {

@@ -85,13 +85,18 @@ class PortalAPI {
     return this.req.get(url, { params });
   }
 
-  listMyIssues(projectUuid, { view_id = 'open', start = 0, limit = 1000, config = {} } = {}) {
+  listMyIssues(projectUuid, { view_id = 'open', start = 0, limit = 1000, filters, filter_conjunction, basic_filters, sorts } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/my-issues/';
     let form = new FormData();
     form.append('view_id', view_id);
     form.append('start', start);
     form.append('limit', limit);
-    form.append('config', JSON.stringify(config));
+    form.append('config', JSON.stringify({
+      filters: filters || [],
+      filter_conjunction: filter_conjunction || 'And',
+      basic_filters: basic_filters || [],
+      sorts: sorts || []
+    }));
     return this._sendPostRequest(url, form);
   }
 

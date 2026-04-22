@@ -16,7 +16,7 @@ from seahub.utils import normalize_cache_key
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX
+from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
 from seahub.tickets.ticket_utils import update_select_option, get_column_from_columns_by_name, \
     add_select_option, batch_delete_select_option
 from seahub.utils.decorators import require_org_context
@@ -141,7 +141,7 @@ class PortalIssueSubstatesAPIView(APIView):
             substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column_key, name, option_data)
             substate_option_id = substate_option.get('id', '')
 
-            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cache.delete(cache_key)
 
             # update cascade_settings
@@ -200,7 +200,7 @@ class PortalIssueSubstatesAPIView(APIView):
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_PORTAL_ISSUES)
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
-            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cache.delete(cache_key)
         except Exception as e:
             logger.error(e)
@@ -331,7 +331,7 @@ class PortalIssueSubstateAPIView(APIView):
             column_key = column.get('key')
             update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
 
-            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cache.delete(cache_key)
 
             # update cascade_settings
@@ -417,7 +417,7 @@ class PortalIssueSubstateAPIView(APIView):
                     }
                     seadb_api.update_column(project_uuid, column_data)
 
-            cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cache.delete(cache_key)
         except Exception as e:
             logger.error(e)

@@ -34,32 +34,7 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
       const filters = context.localStorage.getItem('filters') || [];
       const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
       const basic_filters = context.localStorage.getItem('basic_filters') || [];
-      return portalAPI.listMyIssues(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts }).then((res) => {
-        const columns = Array.isArray(res?.data?.columns) ? res.data.columns : [];
-        const issues = Array.isArray(res?.data?.issues) ? res.data.issues : [];
-        const normalizedIssues = issues.map((row) => {
-          if (!row || typeof row !== 'object') return row;
-          const nextRow = { ...row, _id: row._pk };
-          columns.forEach((column) => {
-            const columnName = column?.name;
-            const columnKey = column?.key;
-            if (!columnName || !columnKey || columnName === columnKey) return;
-            if (nextRow[columnName] !== undefined && nextRow[columnKey] === undefined) {
-              nextRow[columnKey] = nextRow[columnName];
-            }
-          });
-          return nextRow;
-        });
-
-        return {
-          ...res,
-          data: {
-            ...res.data,
-            tickets: normalizedIssues,
-            linked_record_titles: res.data?.linked_record_titles || {},
-          },
-        };
-      });
+      return portalAPI.listMyIssues(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts });
     },
 
     getViews: () => new Promise((resolve, reject) => resolve({ data: myIssueViewsData })),

@@ -28,7 +28,7 @@ import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const Issues = ({
   viewID,
-  canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true,
+  canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false,
   projectUuid, workspaceID, projectName, permission,
   toggleBar = () => {},
   api,
@@ -198,27 +198,33 @@ const Issues = ({
   }, []);
 
   const createRowsTools = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatIssuesByAI, togglePageSlugId };
+    let params = { ...props, projectName, workspaceID, togglePageSlugId };
     if (canCreateRelatedTickets) {
       params.createTicket = createTicket;
+    }
+    if (canChatWithAI) {
+      params.chatIssuesByAI = chatIssuesByAI;
     }
     if (isFunction(customizeCreateRowsTools)) {
       return customizeCreateRowsTools(params);
     }
     return generatorIssuesRowsTools(params);
-  }, [workspaceID, projectName, canCreateRelatedTickets, chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId]);
+  }, [workspaceID, projectName, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId]);
 
   const createContextMenuOptions = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatIssuesByAI, togglePageSlugId };
+    let params = { ...props, projectName, workspaceID, togglePageSlugId };
     if (canCreateRelatedTickets) {
       params.createTicket = createTicket;
+    }
+    if (canChatWithAI) {
+      params.chatIssuesByAI = chatIssuesByAI;
     }
 
     if (isFunction(customizeCreateContextMenuOptions)) {
       return customizeCreateContextMenuOptions(params);
     }
     return generatorIssuesContextMenuOptions(params);
-  }, [projectName, workspaceID, canCreateRelatedTickets, chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId]);
+  }, [projectName, workspaceID, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId]);
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
@@ -235,7 +241,7 @@ const Issues = ({
       },
       rowGetterByIndex: () => row,
       context,
-      chatIssuesByAI,
+      chatIssuesByAI: canChatWithAI ? chatIssuesByAI : undefined,
       togglePageSlugId,
       workspaceID,
       projectName,
@@ -259,7 +265,7 @@ const Issues = ({
       return acc;
     }, []);
     return _options;
-  }, [workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
+  }, [workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
 
   const handleSwitchIssue = useCallback((step) => {
     const issuesData = metadataRef.current.getOrderRows();

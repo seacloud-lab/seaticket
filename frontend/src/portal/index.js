@@ -196,7 +196,7 @@ const Portal = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID}>
+          <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true} collaborators={[user]}>
             {isEditMode && <LeftBar />}
             <div className="sea-qa-portal-body">
               <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>

@@ -17,7 +17,6 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
     let base = Array.isArray(connections) ? [...connections] : [];
     base.push({ id: '__kb__', key: '__kb__', name: gettext('Knowledge Base') });
     base.push({ id: '__ticket__', key: '__ticket__', name: gettext('Ticket') });
-    base.push({ id: '__portal_issue__', key: '__portal_issue__', name: gettext('Portal Issue') });
     return base;
   }, [connections]);
 

@@ -10,7 +10,7 @@ const PortalIssuesMetadataContext = React.createContext(null);
 
 export const PortalIssuesMetadataProvider = ({
   projectUuid,
-  api = portalAPI,
+  enablePortal,
   children,
 }) => {
   const [isLoading, setLoading] = useState(true);
@@ -67,22 +67,22 @@ export const PortalIssuesMetadataProvider = ({
   }, [typesData]);
 
   const createType = useCallback((type) => {
-    return api.createPortalIssueType(projectUuid, type).then(res => {
+    return portalAPI.createPortalIssueType(projectUuid, type).then(res => {
       const type = new Option(res.data.type);
       applyCreateTypes([type]);
       return type;
     });
-  }, [projectUuid, applyCreateTypes, api]);
+  }, [projectUuid, applyCreateTypes]);
 
   const deleteType = useCallback((typeID) => {
-    return api.deletePortalIssueType(projectUuid, typeID).then(res => {
+    return portalAPI.deletePortalIssueType(projectUuid, typeID).then(res => {
       applyDeleteTypes([typeID]);
       return typeID;
     });
-  }, [projectUuid, applyDeleteTypes, api]);
+  }, [projectUuid, applyDeleteTypes]);
 
   const deleteTypes = useCallback((typeIDs) => {
-    return api.deletePortalIssueTypes(projectUuid, typeIDs).then(res => {
+    return portalAPI.deletePortalIssueTypes(projectUuid, typeIDs).then(res => {
       applyDeleteTypes(typeIDs);
       return {
         data: {
@@ -91,13 +91,13 @@ export const PortalIssuesMetadataProvider = ({
         }
       };
     });
-  }, [projectUuid, applyDeleteTypes, api]);
+  }, [projectUuid, applyDeleteTypes]);
 
   const modifyType = useCallback((typeID, update) => {
-    return api.modifyPortalIssueType(projectUuid, typeID, update).then(res => {
+    return portalAPI.modifyPortalIssueType(projectUuid, typeID, update).then(res => {
       applyModifyTypes({ [typeID]: update });
     });
-  }, [projectUuid, applyModifyTypes, api]);
+  }, [projectUuid, applyModifyTypes]);
 
   const loadTypes = useCallback((callback) => {
     const username = (window.app && window.app.pageOptions && window.app.pageOptions.username) || '';
@@ -105,7 +105,7 @@ export const PortalIssuesMetadataProvider = ({
       callback && callback();
       return;
     }
-    api.listPortalIssueTypes(projectUuid).then(res => {
+    portalAPI.listPortalIssueTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
       callback && callback();
@@ -114,7 +114,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [typesData, api]);
+  }, [typesData]);
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
@@ -159,22 +159,22 @@ export const PortalIssuesMetadataProvider = ({
   }, [substatesData]);
 
   const createSubstate = useCallback((substate) => {
-    return api.createPortalIssueSubstate(projectUuid, substate).then(res => {
+    return portalAPI.createPortalIssueSubstate(projectUuid, substate).then(res => {
       const newSubstate = new Option({ ...res.data.substate, parent_id: substate.parent_id });
       applyCreateSubstates([newSubstate]);
       return newSubstate;
     });
-  }, [projectUuid, applyCreateSubstates, api]);
+  }, [projectUuid, applyCreateSubstates]);
 
   const deleteSubstate = useCallback((substateID) => {
-    return api.deletePortalIssueSubstate(projectUuid, substateID).then(res => {
+    return portalAPI.deletePortalIssueSubstate(projectUuid, substateID).then(res => {
       applyDeleteSubstates([substateID]);
       return substateID;
     });
-  }, [projectUuid, applyDeleteSubstates, api]);
+  }, [projectUuid, applyDeleteSubstates]);
 
   const deleteSubstates = useCallback((substateIDs) => {
-    return api.deletePortalIssueSubstates(projectUuid, substateIDs).then(res => {
+    return portalAPI.deletePortalIssueSubstates(projectUuid, substateIDs).then(res => {
       applyDeleteSubstates(substateIDs);
       return {
         data: {
@@ -183,13 +183,13 @@ export const PortalIssuesMetadataProvider = ({
         }
       };
     });
-  }, [projectUuid, applyDeleteSubstates, api]);
+  }, [projectUuid, applyDeleteSubstates]);
 
   const modifySubstate = useCallback((substateID, update) => {
-    return api.modifyPortalIssueSubstate(projectUuid, substateID, update).then(res => {
+    return portalAPI.modifyPortalIssueSubstate(projectUuid, substateID, update).then(res => {
       applyModifySubstates({ [substateID]: update });
     });
-  }, [projectUuid, applyModifySubstates, api]);
+  }, [projectUuid, applyModifySubstates]);
 
   const initSubStates = useCallback((options, cascade_settings = {}, isReload = false) => {
     let substatesOptions = options || [];
@@ -212,7 +212,7 @@ export const PortalIssuesMetadataProvider = ({
       callback && callback();
       return;
     }
-    api.listPortalIssueSubstates(projectUuid).then(res => {
+    portalAPI.listPortalIssueSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);
       callback && callback();
@@ -221,7 +221,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [substatesData, initSubStates, api]);
+  }, [substatesData, initSubStates]);
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
@@ -238,7 +238,11 @@ export const PortalIssuesMetadataProvider = ({
   }, [statesData]);
 
   useEffect(() => {
-    api.getPortalIssueMetadata(projectUuid).then(res => {
+    if (!enablePortal) {
+      setLoading(false);
+      return;
+    }
+    portalAPI.getPortalIssueMetadata(projectUuid).then(res => {
       const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
       applyCreateTypes(types?.options);
@@ -249,7 +253,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, []);
+  }, [enablePortal]);
 
   return (
     <PortalIssuesMetadataContext.Provider value={{

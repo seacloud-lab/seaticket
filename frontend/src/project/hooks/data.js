@@ -23,8 +23,10 @@ export const DataProvider = ({
   projectUuid,
   projectName,
   workspaceID,
+  collaborators,
   activeBar,
   api,
+  enablePortal,
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
@@ -631,11 +633,11 @@ export const DataProvider = ({
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
-          <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
+          <CollaboratorsProvider collaborators={collaborators} listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
-                  <PortalIssuesMetadataProvider projectUuid={projectUuid} >
+                  <PortalIssuesMetadataProvider projectUuid={projectUuid} enablePortal={enablePortal}>
                     <AnalyzeTaskProvider>
                       {children}
                     </AnalyzeTaskProvider>
