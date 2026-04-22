@@ -58,11 +58,6 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     if not permission:
         return render_error(request, _('Permission denied'))
 
-    valid_llm_models = [
-        llm_model
-        for llm_model in LLM_MODELS if not llm_model.get('hidden', False)
-    ]
-
     portal_settings = _get_portal_settings(project)
     enable_portal = portal_settings.get('enable_portal', False)
 
@@ -81,7 +76,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         'settings': project_settings,
         'is_project_admin': is_project_admin,
         'permission': permission if permission else PERMISSION_READ,
-        'llm_models': json.dumps(valid_llm_models),
+        'llm_models': json.dumps(LLM_MODELS),
     }
     return render(request, 'project_view_react.html', return_dict)
 
