@@ -76,6 +76,8 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       if (childrenPageSlugIdFromURL !== PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL) {
         childrenPageSlugId = childrenPageSlugIdFromURL || PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL;
       }
+    } else if (pageIdFromURL === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
+      pageSlugId = PORTAL_ISSUE_PAGE_SLUG_ID.TRASH;
     } else {
       const ticketNumber = Number(pageIdFromURL);
       pageSlugId = pageIdFromURL && isNumber(ticketNumber) ? ticketNumber : PORTAL_ISSUE_PAGE_SLUG_ID.ALL;

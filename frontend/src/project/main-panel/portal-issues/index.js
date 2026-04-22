@@ -10,7 +10,6 @@ import TopBar from './components/portal-issues-top-bar';
 import { ticketsAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
-import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -34,8 +33,10 @@ const Page = ({ toggleBar, type }) => {
   if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES) {
     return (<Substates projectUuid={projectUuid} permission={permission} />);
   }
+  if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
+    return (<TrashIssues { ...props } />);
+  }
   if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
-    if (type === BAR_TYPE.TRASH) return (<TrashIssues { ...props } />);
     return (<AllIssues { ...props } />);
   }
   return (<Issue { ...props } issueID={pageSlugId} editorAPI={longtextAPI} onRefresh={onRefresh} togglePageSlugId={togglePageSlugId} />);

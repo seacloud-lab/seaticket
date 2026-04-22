@@ -7,9 +7,10 @@ import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '
 import { CenteredLoading, toaster, Option, OptionEditor } from '@/components';
 import { portalAPI } from '../api';
 import { PORTAL_PAGE } from '../constants';
-import { useMetadata } from '@/project/hooks';
+import { useData, usePortalIssuesMetadata } from '@/project/hooks';
+import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 
-import './submit-ticket.css';
+import './submit-issue.css';
 
 const IssueTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
@@ -65,7 +66,7 @@ const IssueTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
 };
 
 const SubmitIssue = ({ projectUuid, onPageChange }) => {
-  const { typesData } = useMetadata();
+  const { typesData } = usePortalIssuesMetadata();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState('');
@@ -73,6 +74,8 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const issueRef = useRef(null);
+
+  const { insertRow } = useData();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)
@@ -145,7 +148,8 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
       setTitle('');
       setContent('');
       setType('');
-      onPageChange(PORTAL_PAGE.MY_ISSUES);
+      insertRow(PORTAL_ISSUE_TABLE_NAME);
+      setTimeout(() => onPageChange(PORTAL_PAGE.MY_ISSUES), 1);
     }).catch(error => {
       const errorMessage = error.response?.data?.error_msg || gettext('Failed to submit issue');
       toaster.danger(errorMessage);
@@ -165,8 +169,8 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
   const isSmallScreen = containerWidth < 800;
 
   return (
-    <div className="sea-qa-portal-new-ticket-container" ref={issueRef}>
-      <div className={classnames('sea-qa-portal-new-ticket', { 'small': isSmallScreen })}>
+    <div className="sea-qa-portal-new-issue-container" ref={issueRef}>
+      <div className={classnames('sea-qa-portal-new-issue', { 'small': isSmallScreen })}>
         <div className="sea-qa-portal-ticket-settings">
           <div className="sea-qa-portal-ticket-settings-container d-flex">
             <div className="sea-qa-portal-ticket-content-settings">

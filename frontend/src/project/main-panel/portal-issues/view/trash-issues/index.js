@@ -8,7 +8,7 @@ import context from '@/sea-metadata/context';
 import CleanPortalIssues from './clean-portal-issues';
 import Issues from '../../components/issues';
 import { useData } from '@/project/hooks';
-import { PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { PORTAL_ISSUE_TABLE_NAME } from '../../constants';
 import { usePortalIssuesPage } from '../../hooks';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
@@ -28,39 +28,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
   }), []);
 
   const api = useMemo(() => ({
-    getMetadata: (...params) => portalAPI.listPortalIssuesTrash(projectUuid, ...params).then((res) => {
-      const columns = Array.isArray(res?.data?.columns) ? res.data.columns : [];
-      const issues = Array.isArray(res?.data?.issues) ? res.data.issues : [];
-      const normalizedIssues = issues.map((row) => {
-        if (!row || typeof row !== 'object') return row;
-        const nextRow = { ...row, _id: row._pk };
-        columns.forEach((column) => {
-          const columnName = column?.name;
-          const columnKey = column?.key;
-          if (!columnName || !columnKey || columnName === columnKey) return;
-          if (nextRow[columnName] !== undefined && nextRow[columnKey] === undefined) {
-            nextRow[columnKey] = nextRow[columnName];
-          }
-        });
-        return nextRow;
-      });
-
-      // Apply portal issue predefined column config
-      const normalizedColumns = columns.map(c => {
-        const config = PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG[c.name];
-        return config ? { ...c, ...config } : c;
-      });
-
-      return {
-        ...res,
-        data: {
-          ...res.data,
-          tickets: normalizedIssues,
-          columns: normalizedColumns,
-          linked_record_titles: res.data?.ticket_pk_to_ticket_title || {},
-        },
-      };
-    }),
+    getMetadata: (...params) => portalAPI.listPortalIssuesTrash(projectUuid, ...params),
 
     getViews: () => new Promise((resolve, reject) => resolve({ data: viewsData })),
 

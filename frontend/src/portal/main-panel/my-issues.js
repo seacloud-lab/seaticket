@@ -96,7 +96,7 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
   }), [projectUuid, myIssueViewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-my-issues`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-my-issues`, [projectUuid]);
 
   const [viewID, setViewID] = useState('open');
 
@@ -126,7 +126,9 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
         settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
         dataDidMount={dataDidMount}
         viewTools={viewTools}
+        canCreateRelatedTickets={false}
         isBuiltInView={true}
+        canOpenIssue={false}
         toggleView={toggleView}
         createContextMenuOptions={() => []}
       />

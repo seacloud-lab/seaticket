@@ -238,8 +238,7 @@ class PortalAPI {
     return this.req.delete(url);
   }
 
-  // 
-
+  // convert issue to ticket
   convertPortalIssueToTicket(projectUuid, issueId) {
     const url = this.server + '/api/v1/ai/convert-portal-issue-to-ticket/';
     return this.req.post(url, { project_uuid: projectUuid, issue_id: issueId });

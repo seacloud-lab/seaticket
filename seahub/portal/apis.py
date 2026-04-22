@@ -1940,7 +1940,7 @@ class PortalIssueTrashAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         ticket_pk_to_ticket_title = build_linked_ticket_titles_map(seadb_api, project_uuid, issues, columns, 'linked_ticket')
         return Response({
-            'issues': issues,
+            'records': issues,
             'columns': columns,
             'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
         })

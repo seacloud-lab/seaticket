@@ -3,6 +3,7 @@ import { usePortalIssuesMetadata } from '../../hooks';
 import AllSubstates from '@/project/main-panel/tickets/view/substates';
 import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
+import { PORTAL_ISSUE_TYPE } from '../../constants';
 
 const initColumns = [
   {
@@ -33,6 +34,7 @@ const Substates = (props) => {
   return (
     <AllSubstates
       { ...props }
+      type={PORTAL_ISSUE_TYPE}
       columns={initColumns}
       useMetadataContext={usePortalIssuesMetadata}
     />

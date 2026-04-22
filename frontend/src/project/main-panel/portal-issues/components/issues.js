@@ -21,13 +21,14 @@ import {
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import CreateTicketDialog from './create-ticket-dialog';
-import { isFunction } from '@/utils/type-detection';
+import { isFunction, isObject } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const Issues = ({
   viewID,
-  canCreateRelatedTickets = true, isBuiltInView = false,
+  canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true,
   projectUuid, workspaceID, projectName, permission,
   toggleBar = () => {},
   api,
@@ -221,7 +222,7 @@ const Issues = ({
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
-    return generatorIssuesContextMenuOptions({
+    let _options = generatorIssuesContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
@@ -230,7 +231,7 @@ const Issues = ({
         metadataAPI.deleteRow(rowId);
         setIsShowIssueDetailsDialog(false);
         toaster.success(context.translate('{Row} deleted'));
-        onRefresh();
+        context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [row._id]);
       },
       rowGetterByIndex: () => row,
       context,
@@ -240,7 +241,25 @@ const Issues = ({
       projectName,
       createTicket: canCreateRelatedTickets ? createTicket : undefined,
     });
-  }, [workspaceID, projectName, canCreateRelatedTickets, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
+    _options = _options.filter(Boolean);
+    if (!canOpenIssue) {
+      _options = _options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
+    }
+    if (_options[0] === 'Divider') {
+      _options.shift();
+    }
+    if (_options[_options.length - 1] === 'Divider') {
+      _options.pop();
+    }
+    _options = _options.reduce((acc, item, index, array) => {
+      if (item && item === 'Divider' && index > 0 && array[index - 1] && array[index - 1] === 'Divider') {
+        return acc;
+      }
+      acc.push(item);
+      return acc;
+    }, []);
+    return _options;
+  }, [workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
 
   const handleSwitchIssue = useCallback((step) => {
     const issuesData = metadataRef.current.getOrderRows();

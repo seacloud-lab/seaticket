@@ -3,6 +3,7 @@ import { usePortalIssuesMetadata } from '../../hooks';
 import TypesComponent from '@/project/main-panel/tickets/view/types';
 import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
+import { PORTAL_ISSUE_TYPE } from '../../constants';
 
 const initColumns = [
   {
@@ -27,6 +28,7 @@ const Types = (props) => {
   return (
     <TypesComponent
       { ...props }
+      type={PORTAL_ISSUE_TYPE}
       columns={initColumns}
       useMetadataContext={usePortalIssuesMetadata}
     />

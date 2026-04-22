@@ -9,7 +9,7 @@ import { gettext, PERMISSION_TYPES } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { RefreshBtn } from '@/project/components';
 
-const PortalIssuesTopBar = ({ title, permission }) => {
+const PortalIssuesTopBar = ({ title, permission, type }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = usePortalIssuesPage();
   const { typesData, substatesData } = usePortalIssuesMetadata();
 

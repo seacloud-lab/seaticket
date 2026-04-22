@@ -125,10 +125,10 @@ const Issue = ({
 
   const createComment = useCallback((issueID, comment) => {
     return portalAPI.createPortalIssueComment(projectUuid, issueID, comment).then(res => {
-      let newIssue = issue._create_comment(res.data.ticket_comment);
+      let newIssue = issue._create_comment(res.data.comment);
       handleUpdateParticipants(newIssue);
       setIssue(deepCopy(newIssue));
-      return res.data.ticket_comment;
+      return res.data.comment;
     });
   }, [projectUuid, issue, handleUpdateParticipants]);
 
@@ -320,6 +320,7 @@ const Issue = ({
         setIsSubmitting(false);
       }, 1);
     }).catch(error => {
+      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
