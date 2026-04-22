@@ -5,7 +5,7 @@
 .sea-qa-select.custom-select {
   display: flex;
   padding: 0 10px;
-  border-radius: 3px;
+  border-radius: 4px;
   align-items: center;
   justify-content: space-between;
   max-width: 900px;
@@ -81,7 +81,7 @@
 .sea-qa-select.selector-group .selected-option .selected-group {
   padding: 0 2px;
   background: #eceff4;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .sea-qa-select .selected-option-show {
