@@ -376,9 +376,9 @@ export const generatorTicketsContextMenuOptions = ({
       toaster.success(gettext('The ticket link has been copied'));
     }
   });
-  list.push('Divider');
 
   if (canDeleteRow || context.canDeleteRow()) {
+    list.push('Divider');
     list.push({
       label: gettext('Delete ticket'),
       key: 'delete_row',
