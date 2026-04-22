@@ -390,7 +390,7 @@ class TicketsTable(BaseModel):
         return 'tickets'
     
     @classmethod
-    def gen_query_column_names(cls):
+    def gen_query_record_column_names(cls):
         return [
             '_pk',
             TicketsTable.title.name,

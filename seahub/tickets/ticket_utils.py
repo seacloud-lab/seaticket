@@ -220,7 +220,7 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    column_names = TicketsTable.gen_query_column_names()
+    column_names = TicketsTable.gen_query_record_column_names()
     column_names = [f'`{column_name}`' for column_name in column_names]
     column_names_str = ', '.join(column_names)
     sql = f"SELECT {column_names_str} FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
