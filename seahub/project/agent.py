@@ -19,10 +19,12 @@ from seahub.utils.ai_client import (
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
 from seahub.tickets.ticket_utils import get_ticket
+from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.models import (
     AgentActionsTable,
     AgentRunsTable,
+    DiscourseTopicsTable,
     GithubIssuesTable,
     ThreadTable,
     TicketCommentsTable,
@@ -35,7 +37,7 @@ from seahub.notifications.signal_handler import (
     MSG_TYPE_TICKET_COMMENTED,
 )
 from seahub.tickets.signals import agent_notify_assignees, ticket_commented
-from seahub.project.constants import AIScenario
+from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
 logger = logging.getLogger(__name__)
@@ -302,11 +304,15 @@ class AgentActionConfirmView(APIView):
                 execution_result = self._execute_ticket_action(
                     seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
-            elif source_type == 'github_issue':
+            elif source_type == ConnectionType.GITHUB_ISSUE.value:
                 execution_result = self._execute_github_issue_action(
                     seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
-            elif source_type == 'email':
+            elif source_type == ConnectionType.DISCOURSE_FORUM.value:
+                execution_result = self._execute_discourse_topic_action(
+                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                )
+            elif source_type == ConnectionType.EMAIL.value:
                 execution_result = self._execute_email_action(
                     seadb_api, project, project_uuid, source_id, tool_name, content, username
                 )
@@ -365,6 +371,15 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
+    def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+        if tool_name == 'suggest_resolution':
+            return self._execute_discourse_suggest_resolution(source_id, content)
+        elif tool_name == 'suggest_create_ticket':
+            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username)
+        else:
+            logger.warning(f'Unknown discourse_topic tool_name: {tool_name!r}')
+            return f'Unknown tool_name: {tool_name}'
+
     def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
         """Dispatch email-thread actions to the appropriate handler."""
         if tool_name == 'suggest_resolution':
@@ -374,6 +389,9 @@ class AgentActionConfirmView(APIView):
         else:
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
+
+    def _execute_discourse_suggest_resolution(self, source_id, resolution_content):
+        return f'Resolution for Discourse topic {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
 
     def _execute_github_suggest_resolution(self, source_id, resolution_content):
         """Confirm a resolution suggestion for a GitHub issue.
@@ -427,6 +445,7 @@ class AgentActionConfirmView(APIView):
             TicketsTable.title.name: ticket_title,
             TicketsTable.content.name: ticket_content,
             TicketsTable.state.name: 'open',
+            TicketsTable.substate.name: 'New',
             TicketsTable.priority.name: 0,
             TicketsTable.creator.name: username,
             TicketsTable.created_time.name: now,
@@ -456,7 +475,7 @@ class AgentActionConfirmView(APIView):
         4. Insert the ticket into SeaDB.
         5. Update the GitHub issue's linked_ticket field.
         """
-        connection_id, record_id = self._parse_connection_source_id(source_id, 'github_issue')
+        connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.GITHUB_ISSUE.value)
         if connection_id is None or record_id is None:
             return f'Invalid source_id format: {source_id}'
 
@@ -468,6 +487,10 @@ class AgentActionConfirmView(APIView):
         if not issues:
             return f'GitHub issue {source_id} not found in SeaDB.'
         issue = issues[0]
+
+        linked_ticket = issue.get('linked_ticket')
+        if linked_ticket:
+            return f'GitHub issue #{record_id} is already linked to ticket #{linked_ticket}.'
 
         title = issue.get('title', '')
         body_content = (issue.get('content') or '').strip()
@@ -486,7 +509,7 @@ class AgentActionConfirmView(APIView):
             username=username,
             record_detail=record_detail,
             title=title,
-            source_label='GitHub issue',
+            source_label=ConnectionType.GITHUB_ISSUE.value,
         )
         if error:
             return error
@@ -503,7 +526,7 @@ class AgentActionConfirmView(APIView):
             )
 
         logger.info(f'Created ticket #{ticket_pk} from GitHub issue {source_id}')
-        return f'Ticket #{ticket_pk} created from GitHub issue {source_id}.'
+        return f'Ticket #{ticket_pk} created from GitHub issue #{record_id}.'
 
     def _parse_connection_source_id(self, source_id, source_type):
         try:
@@ -515,33 +538,49 @@ class AgentActionConfirmView(APIView):
             return None, None
         return connection_id, record_id
 
-    def _get_email_thread_context(self, seadb_api, project_uuid, source_id):
-        connection_id, thread_id = self._parse_connection_source_id(source_id, 'email')
-        if connection_id is None or thread_id is None:
-            return None, None, None, 'Invalid source_id format.'
-
+    def _get_email_thread_context(self, seadb_api, project_uuid, connection_id, thread_id):
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection or project_connection.type != 'email':
+        if not project_connection or project_connection.type != ConnectionType.EMAIL.value:
             return None, None, None, f'Email connection {connection_id} not found.'
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         threads = email_seadb_api.get_thread_by_pk(connection_id, thread_id)
         if not threads:
-            return None, None, None, f'Email thread {source_id} not found in SeaDB.'
+            return None, None, None, f'Email thread #{thread_id} not found in SeaDB.'
 
         emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
         if not emails:
-            return None, None, None, f'No emails found for thread {source_id}.'
+            return None, None, None, f'No emails found for thread #{thread_id}.'
 
         return project_connection, threads[0], emails, None
+
+    def _get_discourse_topic_context(self, seadb_api, project_uuid, connection_id, topic_pk):
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection or project_connection.type != ConnectionType.DISCOURSE_FORUM.value:
+            return None, None, None, f'Discourse connection {connection_id} not found.'
+
+        discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        topics = discourse_seadb_api.get_topic_by_pk(connection_id, topic_pk)
+        if not topics:
+            return None, None, None, f'Discourse topic #{topic_pk} not found in SeaDB.'
+
+        topic = topics[0]
+        topic_id = topic.get('topic_id')
+        replies = discourse_seadb_api.get_replies_by_topic_id(connection_id, topic_id) if topic_id else []
+
+        return project_connection, topic, replies, None
 
     def _execute_email_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
         resolution_content = (resolution_content or '').strip()
         if not resolution_content:
             return 'Cannot send reply email: empty content.'
 
+        connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
+        if connection_id is None or thread_id is None:
+            return f'Invalid source_id format: {source_id}'
+
         project_connection, _thread, emails, error = self._get_email_thread_context(
-            seadb_api, project_uuid, source_id
+            seadb_api, project_uuid, connection_id, thread_id
         )
         if error:
             return error
@@ -622,7 +661,7 @@ class AgentActionConfirmView(APIView):
             logger.error('Save reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
             return 'Failed to save reply email.'
 
-        return f'Reply email sent for thread {source_id} (email record ID: {reply_pk}).'
+        return f'Reply email sent for thread #{thread_id} (email record ID: {reply_pk}).'
 
     def _build_email_thread_record_detail(self, thread, emails):
         lines = [
@@ -645,12 +684,81 @@ class AgentActionConfirmView(APIView):
 
         return '\n'.join(lines).strip()
 
+    def _build_discourse_topic_record_detail(self, project_connection, topic, replies):
+        topic_id = topic.get('topic_id')
+        slug = topic.get('slug', '')
+        topic_url = ''
+        try:
+            config = decrypt_config(json.loads(project_connection.config))
+            discourse_forum_url = config.get('url', '').rstrip('/')
+            if discourse_forum_url and topic_id:
+                topic_url = f'{discourse_forum_url}/t/{slug}/{topic_id}'
+        except Exception as e:
+            logger.warning(
+                'Failed to parse discourse connection config for %s when building record detail: %s',
+                project_connection.id, e
+            )
+
+        ordered_replies = sorted(
+            replies or [],
+            key=lambda reply: (reply.get('post_number') is None, reply.get('post_number', 0))
+        )
+
+        lines = [
+            '**Discourse Topic Information:**',
+            f"Title: {topic.get('title', '')}",
+            f"Topic ID: {topic_id or ''}",
+            f"Slug: {slug}",
+            f"Created Time: {topic.get('created_time', '')}",
+            f"Resolved: {bool(topic.get('resolved'))}",
+        ]
+        if topic_url:
+            lines.append(f'Topic URL: {topic_url}')
+        lines.append('')
+
+        # The first reply is the topic's original post and serves
+        # as the topic content, so always include it separately from later replies.
+        original_post = ordered_replies[0] if ordered_replies else None
+        subsequent_replies = ordered_replies[1:] if ordered_replies else []
+
+        if original_post:
+            lines.extend([
+                'Original Post:',
+                f"Author: {original_post.get('author', '')}",
+                f"Post Number: {original_post.get('post_number', '')}",
+                f"Time: {original_post.get('modified_time', '')}",
+                f"Accepted Answer: {bool(original_post.get('accepted_answer'))}",
+                f"Content: {(original_post.get('content') or '')[:2000]}",
+                '',
+            ])
+
+        for index, reply in enumerate(subsequent_replies[-10:], start=1):
+            lines.extend([
+                f'Reply #{index}:',
+                f"Author: {reply.get('author', '')}",
+                f"Post Number: {reply.get('post_number', '')}",
+                f"Time: {reply.get('modified_time', '')}",
+                f"Accepted Answer: {bool(reply.get('accepted_answer'))}",
+                f"Content: {(reply.get('content') or '')[:2000]}",
+                '',
+            ])
+
+        return '\n'.join(lines).strip()
+
     def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+        connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
+        if connection_id is None or thread_id is None:
+            return f'Invalid source_id format: {source_id}'
+
         project_connection, thread, emails, error = self._get_email_thread_context(
-            seadb_api, project_uuid, source_id
+            seadb_api, project_uuid, connection_id, thread_id
         )
         if error:
             return error
+
+        linked_ticket = thread.get('linked_ticket')
+        if linked_ticket:
+            return f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.'
 
         record_detail = self._build_email_thread_record_detail(thread, emails)
         thread_table = ThreadTable.gen_table_name(project_connection.id)
@@ -664,7 +772,7 @@ class AgentActionConfirmView(APIView):
             username=username,
             record_detail=record_detail,
             title=thread.get('title', ''),
-            source_label='email thread',
+            source_label=ConnectionType.EMAIL.value,
         )
         if error:
             return error
@@ -681,7 +789,53 @@ class AgentActionConfirmView(APIView):
             )
 
         logger.info(f'Created ticket #{ticket_pk} from email thread {source_id}')
-        return f'Ticket #{ticket_pk} created from email thread {source_id}.'
+        return f'Ticket #{ticket_pk} created from email thread #{thread_id}.'
+
+    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+        connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
+        if connection_id is None or topic_pk is None:
+            return f'Invalid source_id format: {source_id}'
+
+        project_connection, topic, replies, error = self._get_discourse_topic_context(
+            seadb_api, project_uuid, connection_id, topic_pk
+        )
+        if error:
+            return error
+
+        linked_ticket = topic.get('linked_ticket')
+        if linked_ticket:
+            return f'Discourse topic #{topic_pk} is already linked to ticket #{linked_ticket}.'
+
+        record_detail = self._build_discourse_topic_record_detail(project_connection, topic, replies)
+        topic_table = DiscourseTopicsTable.gen_table_name(project_connection.id)
+        topic_pk = topic.get('_pk')
+
+        ticket_pk, error = self._create_ticket_from_record_detail(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid=project_uuid,
+            source_id=source_id,
+            username=username,
+            record_detail=record_detail,
+            title=topic.get('title', ''),
+            source_label=ConnectionType.DISCOURSE_FORUM.value,
+        )
+        if error:
+            return error
+
+        try:
+            seadb_api.update_rows(
+                project_uuid,
+                topic_table,
+                [{'pk': topic_pk, 'row': {'linked_ticket': ticket_pk}}],
+            )
+        except Exception as e:
+            logger.warning(
+                f'Ticket {ticket_pk} created but failed to update linked_ticket on discourse topic {source_id}: {e}'
+            )
+
+        logger.info(f'Created ticket #{ticket_pk} from discourse topic {source_id}')
+        return f'Ticket #{ticket_pk} created from discourse topic #{topic_pk}.'
 
     def _execute_notify_assignee(self, seadb_api, project, project_uuid, ticket_id, message, operator):
         """
