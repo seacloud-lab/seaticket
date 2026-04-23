@@ -29,6 +29,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 import { Utils } from '@/utils/utils';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 import './index.css';
 
@@ -514,16 +515,17 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const connectionLinkedUpdate = {
       [ticket.id]: ticket.title,
     };
+    const titleColumn = getColumnByName(allColumns.current, CONNECTION_PREDEFINED_COLUMN_NAME.TITLE);
     modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket.id),
       rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connectionID}_${rowId}`] },
-      linked_records: { [`${connectionID}_${rowId}`]: currentRow.title }
+      linkedRecords: { [`${connectionID}_${rowId}`]: getCellValueByColumn(currentRow, titleColumn) }
     }, {
       tableName: getTableNameByConnectionID(connectionID),
       rowId: rowId,
       rowUpdate: rowUpdate,
-      linked_records: connectionLinkedUpdate
+      linkedRecords: connectionLinkedUpdate
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
         const eventBus = context.eventBus;

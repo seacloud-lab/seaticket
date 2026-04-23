@@ -30,6 +30,7 @@ import { TICKET_TABLE_NAME } from '../../tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { Utils } from '@/utils/utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const Issues = ({
   viewID,
@@ -213,24 +214,23 @@ const Issues = ({
     const linkedTicketColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
     const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
     const rowId = currentIssue._id;
-    const connectionLinkedUpdate = {
-      [ticket.id]: ticket.title,
-    };
+    const issueLinkedUpdate = { [ticket.id]: ticket.title };
+    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE);
     modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket.id),
       rowUpdate: { [linkedConnectionRecordsColumn.key]: [`portal_${rowId}`] },
-      linked_records: { [`portal_${rowId}`]: currentIssue.title }
+      linkedRecords: { [`portal_${rowId}`]: getCellValueByColumn(currentIssue, titleColumn) }
     }, {
       tableName: PORTAL_ISSUE_TABLE_NAME,
       rowId: rowId,
       rowUpdate: rowUpdate,
-      linked_records: connectionLinkedUpdate
+      linkedRecords: issueLinkedUpdate
     }, () => {
       return portalAPI.modifyPortalIssue(projectUuid, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
         const eventBus = context.eventBus;
         eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
-        eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: connectionLinkedUpdate }, false);
+        eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: issueLinkedUpdate }, false);
         callback && callback();
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);

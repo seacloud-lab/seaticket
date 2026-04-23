@@ -141,19 +141,17 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
     const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
     const rowId = childrenPageSlugId;
-    const connectionLinkedUpdate = {
-      [ticket.id]: ticket.title,
-    };
+    const connectionLinkedUpdate = { [ticket.id]: ticket.title };
     modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket.id),
       rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connection?.id}_${rowId}`] },
-      linked_records: { [`${connection?.id}_${rowId}`]: title }
+      linkedRecords: { [`${connection?.id}_${rowId}`]: title }
     }, {
       tableName: connectionTableName,
       rowId: rowId,
       rowUpdate: rowUpdate,
-      linked_records: connectionLinkedUpdate
+      linkedRecords: connectionLinkedUpdate
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
         callback && callback();
