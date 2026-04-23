@@ -839,6 +839,37 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
         records = []
     return records
 
+def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
+    issues_table_name = PortalIssuesTable.gen_table_name()
+    comments_table_name = PortalIssueCommentsTable.gen_table_name()
+    issues_sql = f"SELECT * FROM `{issues_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    try:
+        from seahub.tickets.ticket_utils import get_ticket_title
+        issues_res = seadb_api.query_rows(project_uuid, issues_sql)
+        issue = issues_res.get('results')[0]
+        column_metadata = issues_res.get('metadata')
+        comments_sql = f"SELECT _pk, content, created_time, modified_time, creator FROM `{comments_table_name}` WHERE issue_id = {_pk} AND deleted = False ORDER BY _pk ASC"
+        comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+        comments_records = comments_res.get('results', [])
+        issue['comments'] = []
+        for comment in comments_records:
+            issue['comments'].append({
+                'id': comment.get('_pk'),
+                'number': comment.get('_pk'),
+                'content': comment.get('content'),
+                'created_time': comment.get('created_time'),
+                'modified_time': comment.get('modified_time'),
+                'creator': comment.get('creator'),
+            })
+        linked_ticket = issue.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        issue = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for portal issues {issues_table_name}: {e}')
+    return issue, column_metadata, linked_ticket_title
+
 
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
     topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)

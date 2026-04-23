@@ -26,7 +26,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
 from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable
-from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues
+from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, \
     convert_select_field_names_to_option_ids, check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, get_ticket_title
@@ -566,37 +566,17 @@ class PortalIssueView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
+            issue, columns, linked_ticket_title = list_portal_issue_comments_records(seadb_api, project_uuid, issue_id)
             if not issue:
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            start = 0
-            end = 25
-            convert_select_field_names_to_option_ids(metadata, issue)
-            issue_comments = get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end)
-
-            for issue_comment in issue_comments:
-                result = {
-                    'id': issue_comment.get('_pk'),
-                    'number': issue_comment.get('_pk'),
-                    'content': issue_comment.get('content'),
-                    'created_time': issue_comment.get('created_time'),
-                    'modified_time': issue_comment.get('modified_time'),
-                    'creator': issue_comment.get('creator'),
-                }
-                if not issue.get('comments'):
-                    issue['comments'] = []
-                issue['comments'].append(result)
+            convert_select_field_names_to_option_ids(columns, issue)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        linked_ticket_title = ''
-        if issue.get('linked_ticket'):
-            linked_ticket_title = get_ticket_title(seadb_api, project_uuid, issue.get('linked_ticket'))
-        return Response({'issue': issue, 'linked_ticket_title': linked_ticket_title})
+        return Response({'issue': issue, 'columns': columns, 'linked_ticket_title': linked_ticket_title})
 
 
     def put(self, request, project_uuid, issue_id):
