@@ -68,7 +68,10 @@ const TicketInDialog = ({
 
   const isSmallScreen = containerWidth < 780;
 
-  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
+  const {
+    state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date,
+    linked_connection_records, linked_record_connection_types, linked_record_states,
+  } = ticket;
   return (
     <div className={classnames('sea-qa-project-ticket sea-qa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
       <div className="sea-qa-project-ticket-content-wrapper">
@@ -106,7 +109,7 @@ const TicketInDialog = ({
           <TypeSettings isReadonly={true} value={type} useMetadataContext={useMetadata} />
           <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
-          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
+          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} linked_record_connection_types={linked_record_connection_types} linked_record_states={linked_record_states} />
         </div>
       </div>
     </div>

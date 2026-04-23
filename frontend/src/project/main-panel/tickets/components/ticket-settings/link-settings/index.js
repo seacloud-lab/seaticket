@@ -1,23 +1,30 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { CustomizeLabel } from '@/components';
+import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TABLE_NAME, TICKET_TYPE, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
+const LinkSettings = ({ value, className = 'mb-4', linkedRecords, linked_record_connection_types, linked_record_states }) => {
 
   const { connections } = useConnections();
   const [isShowDetailsDialog, setIsShowDetailsDialog] = useState(false);
   const [currentLinkItem, setCurrentLinkItem] = useState(null);
 
   const validValue = useMemo(() => {
-    return value.map(v => ({ key: v, title: linkedRecords[v] })).filter(item => item.title);
+    return value.map(v => ({
+      key: v,
+      title: linkedRecords[v],
+      type: linked_record_connection_types[v],
+      state: linked_record_states[v]
+    })).filter(item => item.title);
   }, [value, linkedRecords]);
 
   const initLinkItem = useCallback((linkItem) => {
@@ -59,13 +66,24 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
     setIsShowDetailsDialog(false);
   }, []);
 
+  const renderStateIcon = (state) => {
+    if (!state) return null;
+    return state === TICKET_STATE.OPEN ? (
+      <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
+    ) : (
+      <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />
+    );
+  };
+
   return (
     <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="link">{gettext('Linked records')}</CustomizeLabel>
       <div className="link-settings-content">
-        {validValue.map(({ key, title }) => (
-          <div className="link-item" key={key}>
-            <span className="link-item-name" title={title} onClick={() => handleExpand(key)}>{title}</span>
+        {validValue.map(({ key, title, type, state }) => (
+          <div className="link-item" key={key} onClick={() => handleExpand(key)}>
+            <img src={getConnectionIcon(type)} alt="" className="connection-icon" />
+            <span className="link-item-name" title={title}>{title}</span>
+            {renderStateIcon(state)}
           </div>
         ))}
       </div>

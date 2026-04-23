@@ -461,7 +461,11 @@ const Ticket = ({
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
+  const {
+    id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date,
+    linked_connection_records, linked_record_connection_types, linked_record_states
+  } = ticket;
+  console.log('ticket', ticket);
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -585,7 +589,7 @@ const Ticket = ({
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
-          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
+          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} linked_record_connection_types={linked_record_connection_types} linked_record_states={linked_record_states} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (

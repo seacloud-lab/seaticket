@@ -27,10 +27,10 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
-    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES
+    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, ConnectionType
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
-from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
+from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable, GithubIssuesTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
@@ -672,6 +672,47 @@ class TicketAPIView(APIView):
             convert_ticket_select_column_name_to_option_id(metadata, ticket)
 
             linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+            linked_record_connection_types = {}
+            linked_record_states = {}
+            github_issue_record_ids_map = {}
+            for linked_key in linked_connection_records:
+                if not isinstance(linked_key, str) or '_' not in linked_key:
+                    continue
+                connection_id_str, record_id_str = linked_key.split('_', 1)
+                if not connection_id_str or not record_id_str:
+                    continue
+                try:
+                    connection_id = int(connection_id_str)
+                    record_id = int(record_id_str)
+                except Exception:
+                    continue
+
+                connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+                if not connection:
+                    continue
+
+                linked_record_connection_types[linked_key] = connection.type
+                linked_record_states[linked_key] = ''
+                if connection.type == ConnectionType.GITHUB_ISSUE.value:
+                    github_issue_record_ids_map.setdefault(connection_id, set()).add(record_id)
+
+            for connection_id, record_ids in github_issue_record_ids_map.items():
+                if not record_ids:
+                    continue
+                pks_str = ','.join([str(pk) for pk in record_ids])
+                issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
+                sql = f"SELECT _pk, state FROM `{issue_table_name}` WHERE _pk IN ({pks_str})"
+                issue_rows = seadb_api.query_rows(project_uuid, sql).get('results', [])
+                for issue_row in issue_rows:
+                    issue_pk = issue_row.get('_pk')
+                    if issue_pk is None:
+                        continue
+                    linked_key = f'{connection_id}_{issue_pk}'
+                    linked_record_states[linked_key] = issue_row.get('state') or ''
+
+            ticket['linked_record_connection_types'] = linked_record_connection_types
+            ticket['linked_record_states'] = linked_record_states
+
             linked_record_titles = build_linked_record_titles_map_for_keys(
                 seadb_api, project_uuid, linked_connection_records
             )

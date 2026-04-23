@@ -62,6 +62,8 @@ class Ticket {
     this.modified_time = object.modified_time || '';
 
     this.linked_connection_records = object.linked_connection_records || [];
+    this.linked_record_connection_types = object.linked_record_connection_types || {};
+    this.linked_record_states = object.linked_record_states || {};
 
     // format date
     if (this.created_time) {
