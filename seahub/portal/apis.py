@@ -29,7 +29,7 @@ from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueC
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, \
-    convert_select_field_names_to_option_ids, check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
+    convert_select_field_names_to_option_ids, check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, get_ticket_title
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -593,7 +593,10 @@ class PortalIssueView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'issue': issue})
+        linked_ticket_title = ''
+        if issue.get('linked_ticket'):
+            linked_ticket_title = get_ticket_title(seadb_api, project_uuid, issue.get('linked_ticket'))
+        return Response({'issue': issue, 'linked_ticket_title': linked_ticket_title})
 
 
     def put(self, request, project_uuid, issue_id):
