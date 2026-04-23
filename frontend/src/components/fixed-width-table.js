@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { isNumber } from '@/utils/type-detection';
 
 const FixedWidthTable = ({ className, columns: propsColumns, theadOptions = {}, children }) => {
+
   const [containerWidth, setContainerWidth] = useState(0);
+
   const columns = useMemo(() => {
     return propsColumns.map(c => {
       if (c.isFixed) return c;
@@ -12,6 +14,7 @@ const FixedWidthTable = ({ className, columns: propsColumns, theadOptions = {}, 
       return c;
     });
   }, [propsColumns]);
+
   const fixedWidth = useMemo(() => columns.reduce((pre, cur) => cur.isFixed ? cur.width + pre : pre, 0), [columns]);
 
   const containerRef = useRef(null);

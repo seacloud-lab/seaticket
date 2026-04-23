@@ -35,6 +35,18 @@ const User = ({
   const [opType, setOpType] = useState('');
   const { selectedUsers, toggleUser } = useSelectedUsers();
 
+  const statusOptions = useMemo(() => {
+    return getStatusOptions(['active', 'inactive']);
+  }, []);
+
+  const roleOptions = useMemo(() => {
+    return getRoleOptions(availableRoles);
+  }, []);
+
+  const adminOptions = useMemo(() => {
+    return getRoleOptions(availableAdminRoles);
+  }, []);
+
   const ops = useMemo(() => {
     let _ops = [];
     if (onDelete) {
@@ -176,7 +188,6 @@ const User = ({
           if (key === 'is_active' || key === 'active') {
             const value = user[key];
             const currentStatus = value ? 'active' : 'inactive';
-            const statusOptions = getStatusOptions(['active', 'inactive']);
             const statusOption = statusOptions.find(item => item.value === currentStatus) || {};
             return (
               <td key={key}>
@@ -193,9 +204,7 @@ const User = ({
             );
           }
           if (key === 'role') {
-            const roleOptions = getRoleOptions(availableRoles);
             const roleOption = roleOptions.find(option => option.value === user.role) || {};
-            const adminOptions = getRoleOptions(availableAdminRoles);
             const adminOption = adminOptions.find(option => option.value === user.admin_role) || {};
 
             return (
