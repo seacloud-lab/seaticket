@@ -1,24 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { ticketsAPI, connectionsAPI } from '@/project/api';
+import { ticketsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
 import { CollaboratorsSettings, TypeSettings, PrioritySettings } from '../../../tickets/components/ticket-settings';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
-import { useData, useMetadata, useTags } from '@/project/hooks';
+import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { getTableName } from '../../utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '../../constants';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 
-const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) => {
+const CreateTicketDialog = ({
+  projectUuid, row, linkedRecordPrefix,
+  useMetadataContext,
+  onClose, onSubmitCallback, convertToTicket
+}) => {
   const [isLoading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrMessage] = useState('');
@@ -29,9 +28,8 @@ const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) 
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { typesData, substatesData } = useMetadata();
+  const { typesData, substatesData } = useMetadataContext();
   const { tagsData, createTag } = useTags();
-  const { insertRowByLink } = useData();
 
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -62,22 +60,12 @@ const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) 
       tags,
       priority,
       substate: substateOption?.name,
-      linked_connection_records: [`${connection.id}_${row._id}`],
+      linked_connection_records: [`${linkedRecordPrefix}_${row._id}`],
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
       toaster.success(gettext('Ticket created'));
       onClose();
-      const tableName = getTableName(connection);
-      const linkedUpdateRecord = {
-        [res.data.ticket._pk]: res.data.ticket.title,
-      };
-      const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-      const rowUpdateData = { [linkColumn.key]: [res.data.ticket._pk] };
-      insertRowByLink(TICKET_TABLE_NAME, tableName, linkedUpdateRecord, row._id, rowUpdateData, () => {
-        const eventBus = context.eventBus;
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row._id, rowUpdateData);
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
-      });
+      onSubmitCallback && onSubmitCallback(res.data.ticket);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrMessage(errorMessage);
@@ -88,7 +76,7 @@ const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) 
 
   useEffect(() => {
     setLoading(true);
-    connectionsAPI.convertRecordToTicket(projectUuid, connection.id, row._id).then(res => {
+    convertToTicket(projectUuid, row._id).then(res => {
       let { title, content, assignees, type, tags, priority, related_url } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, related_url: '', ...res?.data };
       const suffix = `${gettext('Related record')}: ${related_url || ''}`;
       const initContent = content ? `${content}\n\n${suffix}` : suffix;
@@ -155,7 +143,7 @@ const CreateTicketDialog = ({ projectUuid, row, connection, columns, onClose }) 
                 createTag={createTag}
                 onChange={setTags}
               />
-              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} useMetadataContext={useMetadata} />
+              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} useMetadataContext={useMetadataContext} />
             </div>
           </div>
         )}

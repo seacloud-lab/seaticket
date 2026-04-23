@@ -4,6 +4,8 @@ import { PORTAL_ISSUE_TYPE } from '../constants';
 class Issue extends Ticket {
   constructor(object) {
     super(object);
+    this.linked_ticket = object.linked_ticket || null;
+    delete this['linked_connection_records'];
   }
 }
 

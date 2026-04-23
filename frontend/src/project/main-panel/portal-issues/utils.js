@@ -8,6 +8,7 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from './constants';
 import { IssueForAI } from './models';
 import { cascadeUpdate } from '../tickets/utils';
+import { normalizeContextMenuOptions, normalizeRowsMoreTools } from '@/project/utils';
 
 export const generatorIssueURL = ({ issue, workspaceID, projectName }) => {
   const { origin } = location;
@@ -17,7 +18,85 @@ export const generatorIssueURL = ({ issue, workspaceID, projectName }) => {
   return urlObject.href;
 };
 
-export const generatorIssueCopyLinkTool = ({ issue, workspaceID, projectName }) => {
+export const generateOpenIssueOption = (issue, callback) => {
+  if (!issue || !callback) return;
+  return {
+    key: 'open_issue',
+    label: gettext('Open issue'),
+    callback: () => callback(issue._id),
+  };
+};
+
+export const generateCopyLinkOption = ({ row, workspaceID, projectName }) => {
+  return {
+    label: gettext('Copy link'),
+    key: 'copy_link',
+    callback: () => {
+      const url = generatorIssueURL({ issue: row, workspaceID, projectName });
+      copy(url);
+      toaster.success(gettext('The issue link has been copied'));
+    }
+  };
+};
+
+export const generateChatIssuesByAIOption = ({ rows, columns }, callback) => {
+  if (!Array.isArray(rows) || rows.length === 0 || !callback) return null;
+  return {
+    label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
+    key: 'chat_issues',
+    callback: () => {
+      const titleColumn = getColumnByName(columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE);
+      if (!titleColumn) return;
+      let newRows = [];
+      rows.forEach(row => {
+        const newRow = {
+          [PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+          _pk: row._id,
+        };
+        newRows.push(new IssueForAI(newRow));
+      });
+      callback(newRows);
+    },
+  };
+};
+
+export const generateCreateTicketOption = ({ row, columns }, callback) => {
+  const column = getColumnByName(columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+  if (!column) return null;
+  const cellValue = getCellValueByColumn(row, column);
+  if (cellValue) return null;
+  if (!callback) return null;
+  return {
+    key: 'create_ticket',
+    label: gettext('Create related ticket'),
+    callback: () => callback && callback(row),
+  };
+};
+
+export const generateLinkAnExistingTicketOption = ({ row, columns }, callback) => {
+  const column = getColumnByName(columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+  if (!column) return null;
+  const cellValue = getCellValueByColumn(row, column);
+  if (cellValue) return null;
+  if (!callback) return null;
+
+  return {
+    key: 'link_an_existing_ticket',
+    label: gettext('Link an existing ticket'),
+    callback: () => callback && callback(row),
+  };
+};
+
+export const generateDeleteIssueOption = ({ row }, callback) => {
+  if (!callback) return null;
+  return {
+    label: gettext('Delete issue'),
+    key: 'delete_row',
+    callback: () => callback(row._id)
+  };
+};
+
+export const generatorIssueCopyLinkTool = ({ row, workspaceID, projectName }) => {
   return {
     key: 'copy',
     icon: 'copy',
@@ -25,7 +104,7 @@ export const generatorIssueCopyLinkTool = ({ issue, workspaceID, projectName }) 
     callback: (event) => {
       event && event.stopPropagation();
       event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
-      const url = generatorIssueURL({ issue, workspaceID, projectName });
+      const url = generatorIssueURL({ issue: row, workspaceID, projectName });
       copy(url);
       toaster.success(gettext('The issue link has been copied'));
     },
@@ -39,33 +118,15 @@ export const generatorRowsMoreTool = ({
   chatIssuesByAI,
   findRelatedIssues,
   context,
-  createTicket
+  createTicket,
+  linkAnExistingTicket,
 }) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
   const stateColumnOptions = getColumnOptions(stateColumn);
 
   let children = [];
-
-  if (chatIssuesByAI) {
-    children.push({
-      label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
-      key: 'chat_issues',
-      callback: () => {
-        const titleColumn = getColumnByName(columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE);
-        if (!titleColumn) return;
-        let newRows = [];
-        rows.forEach(row => {
-          const newRow = {
-            [PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
-            _pk: row._id,
-          };
-          newRows.push(new IssueForAI(newRow));
-        });
-        chatIssuesByAI(newRows);
-      },
-    });
-  }
+  children.push(generateChatIssuesByAIOption({ rows, columns }, chatIssuesByAI));
 
   // Add "Find related issues" option only for single row selection
   if (rows.length === 1 && findRelatedIssues) {
@@ -77,11 +138,9 @@ export const generatorRowsMoreTool = ({
   }
 
   if (rows.length === 1 && createTicket) {
-    children.push({
-      label: gettext('Create knowledge base record'),
-      key: 'create_kb_record',
-      callback: () => createTicket(rows[0]),
-    });
+    const row = rows[0];
+    children.push(generateCreateTicketOption({ row, columns: columns }, createTicket));
+    children.push(generateLinkAnExistingTicketOption({ row, columns: columns }, linkAnExistingTicket));
   }
 
   if (context.canModifyRows()) {
@@ -140,18 +199,18 @@ export const generatorRowsMoreTool = ({
   return {
     key: 'more',
     icon: 'more',
-    children
+    children: normalizeRowsMoreTools(children)
   };
 };
 
-export const generatorIssuesRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatIssuesByAI, context, createTicket }) => {
+export const generatorIssuesRowsTools = ({ rows, workspaceID, projectName, ...props }) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
-    const tool = generatorIssueCopyLinkTool({ issue: row, workspaceID, projectName });
+    const tool = generatorIssueCopyLinkTool({ row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatIssuesByAI, context, createTicket });
+  const moreTool = generatorRowsMoreTool({ rows, workspaceID, projectName, ...props });
   tools.push(moreTool);
   return tools;
 };
@@ -177,27 +236,13 @@ export const generatorIssuesContextMenuOptions = ({
   projectName,
   permission,
   createTicket,
-  canDeleteRow
+  linkAnExistingTicket,
+  canDeleteRow,
 }) => {
   let list = [];
 
-  const handleChatIssuesByAI = (rows) => {
-    const titleColumn = getColumnByName(table.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE);
-    if (!titleColumn) return;
-    let newRows = [];
-    rows.forEach(row => {
-      const newRow = {
-        [PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
-        _pk: row._id,
-      };
-      newRows.push(new IssueForAI(newRow));
-    });
-    chatIssuesByAI(newRows);
-  };
-
   // handle selected multiple cells
   if (selectedRange) {
-
     const { topLeft, bottomRight } = selectedRange;
     let rows = [];
     let currentGroupRowIndex = topLeft.groupRowIndex;
@@ -210,22 +255,11 @@ export const generatorIssuesContextMenuOptions = ({
     }
 
     if (rows.length > 0) {
-      if (chatIssuesByAI) {
-        list.push(
-          {
-            label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
-            key: 'chat_issues',
-            callback: () => handleChatIssuesByAI(rows),
-          },
-        );
-      }
-
-      if (rows.length === 1 && createTicket) {
-        list.push({
-          label: gettext('Create related ticket'),
-          key: 'create_ticket',
-          callback: () => createTicket(rows[0]),
-        });
+      list.push(generateChatIssuesByAIOption({ rows, columns: table.columns }, chatIssuesByAI));
+      if (rows.length === 1) {
+        const row = rows[0];
+        list.push(generateCreateTicketOption({ row, columns: table.columns }, createTicket));
+        list.push(generateLinkAnExistingTicketOption({ row, columns: table.columns }, linkAnExistingTicket));
       }
       list.push('Divider');
     }
@@ -246,7 +280,7 @@ export const generatorIssuesContextMenuOptions = ({
         }
       });
     }
-    return list;
+    return normalizeContextMenuOptions(list);
   }
 
   // handle selected rows
@@ -261,13 +295,7 @@ export const generatorIssuesContextMenuOptions = ({
     });
 
     if (rows.length === 0) return list;
-    if (chatIssuesByAI) {
-      list.push({
-        label: rows.length > 1 ? gettext('Chat issues') : gettext('Chat issue'),
-        key: 'chat_issues',
-        callback: () => handleChatIssuesByAI(rows),
-      });
-    }
+    list.push(generateChatIssuesByAIOption({ rows, columns: table.columns }, chatIssuesByAI));
 
     if (context.canDeleteRows()) {
       list.push('Divider');
@@ -280,8 +308,7 @@ export const generatorIssuesContextMenuOptions = ({
         }
       });
     }
-
-    return list;
+    return normalizeContextMenuOptions(list);
   }
 
   // handle selected cell
@@ -289,48 +316,17 @@ export const generatorIssuesContextMenuOptions = ({
   const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
   const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
   if (!row) return list;
-  if (chatIssuesByAI) {
-    list.push({
-      label: gettext('Chat issue'),
-      key: 'chat_issues',
-      callback: () => handleChatIssuesByAI([row]),
-    });
-  }
-
-  if (createTicket) {
-    list.push({
-      label: gettext('Create related ticket'),
-      key: 'create_ticket',
-      callback: () => createTicket(row),
-    });
-  }
+  list.push(generateChatIssuesByAIOption({ rows: [row], columns: table.columns }, chatIssuesByAI));
+  list.push(generateCreateTicketOption({ row, columns: table.columns }, createTicket));
+  list.push(generateLinkAnExistingTicketOption({ row, columns: table.columns }, linkAnExistingTicket));
   list.push('Divider');
-
-  list.push({
-    label: gettext('Open issue'),
-    callback: () => togglePageSlugId(row._id),
-    key: 'open_issue',
-  });
-  list.push({
-    label: gettext('Copy link'),
-    key: 'copy_link',
-    callback: () => {
-      const url = generatorIssueURL({ issue: row, workspaceID, projectName });
-      copy(url);
-      toaster.success(gettext('The issue link has been copied'));
-    }
-  });
-  list.push('Divider');
-
+  list.push(generateOpenIssueOption(row, togglePageSlugId));
+  list.push(generateCopyLinkOption({ row, workspaceID, projectName }));
   if (canDeleteRow || context.canDeleteRow()) {
-    list.push({
-      label: gettext('Delete issue'),
-      key: 'delete_row',
-      callback: () => deleteRow && deleteRow(row._id)
-    });
+    list.push('Divider');
+    list.push(generateDeleteIssueOption({ row }, deleteRow));
   }
-
-  return list;
+  return normalizeContextMenuOptions(list);
 };
 
 export {

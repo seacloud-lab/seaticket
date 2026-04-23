@@ -23,11 +23,12 @@ import {
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
-import { useData, useTags } from '@/project/hooks';
+import { useData, useTags, useMetadata } from '@/project/hooks';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { Utils } from '@/utils/utils';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { normalizeContextMenuOptions } from '@/project/utils';
 
 import './index.css';
 
@@ -49,7 +50,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRows, modifyRowLink,
+    getMetadata, modifyRow, modifyRows, deleteRows, modifyRowLink, insertRowByLink,
   } = useData();
   const { tagsData, createTag } = useTags();
 
@@ -447,30 +448,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       'Divider',
       generateOpenOriginalPageOption({ row, columns: allColumns.current, connection }),
       generateCopyOriginalLinkOption({ row, columns: allColumns.current, connection }),
-    ].filter(Boolean);
-    list = list.reduce((acc, item, index, array) => {
-      if (item === 'Divider' && index > 0 && array[index - 1] === 'Divider') {
-        return acc;
-      }
-      acc.push(item);
-      return acc;
-    }, []);
-    if (list.length > 0) {
-      if (list[0] === 'Divider') {
-        list.shift();
-      }
-      if (list.length > 0 && list[list.length - 1] === 'Divider') {
-        list.pop();
-      }
-    }
-
+    ];
     const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], columns: allColumns.current, connection }, modifyRows);
     if (markAsOutdatedOptions.length > 0) {
       list.push('Divider');
       list.push(...markAsOutdatedOptions);
     }
 
-    return list.filter(Boolean);
+    return normalizeContextMenuOptions(list);
   }, [connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {
@@ -553,6 +538,20 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, [currentRow, getTableNameByConnectionID, connectionID, modifyRowLink]);
 
+  const createTicketCallback = useCallback((ticket, currentRow) => {
+    const tableName = getTableNameByConnectionID(connectionID);
+    const linkedUpdateRecord = {
+      [ticket._pk]: ticket.title,
+    };
+    const linkColumn = getColumnByName(allColumns.current, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
+    insertRowByLink(TICKET_TABLE_NAME, tableName, linkedUpdateRecord, currentRow._id, rowUpdateData, () => {
+      const eventBus = context.eventBus;
+      eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentRow._id, rowUpdateData);
+      eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
+    });
+  }, [getTableNameByConnectionID, connectionID]);
+
   const closeAll = useCallback(() => {
     setIsShowRowDetailsDialog(false);
     setTicketDialogOpen(false);
@@ -599,9 +598,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={currentRow}
-          connection={connection}
-          columns={allColumns.current}
+          linkedRecordPrefix={connection.id}
+          useMetadataContext={useMetadata}
           onClose={closeAll}
+          convertToTicket={() => connectionsAPI.convertRecordToTicket(projectUuid, connection.id, currentRow._id)}
+          onSubmitCallback={(ticket) => createTicketCallback(ticket, currentRow)}
         />
       )}
       {isShowRelatedIssuesDialog && (

@@ -10,7 +10,7 @@ import {
   PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
 import { BAR_TYPE } from '@/project/constants';
-import { gettext } from '@/constants';
+import { gettext, server, siteRoot } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import toaster from '@/components/toaster';
@@ -20,11 +20,16 @@ import {
 } from '../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import CreateTicketDialog from './create-ticket-dialog';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import { isFunction, isObject } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { TICKET_TABLE_NAME } from '../../tickets/constants';
+import { normalizeContextMenuOptions } from '@/project/utils';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import { Utils } from '@/utils/utils';
 
 const Issues = ({
   viewID,
@@ -51,7 +56,7 @@ const Issues = ({
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink, modifyRowLink,
   } = useData();
 
   const metadataRef = useRef(null);
@@ -60,6 +65,7 @@ const Issues = ({
   const [currentIssue, setCurrentIssue] = useState(null);
   const [isShowIssueDetailsDialog, setIsShowIssueDetailsDialog] = useState(false);
   const [isShowCreateTicketDialog, setIsShowCreateTicketDialog] = useState(false);
+  const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
   const handleExpandRow = useCallback((issue) => {
     setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
@@ -197,10 +203,48 @@ const Issues = ({
     setIsShowCreateTicketDialog(true);
   }, []);
 
+  const handleLinkAnExistingTicket = useCallback((issue) => {
+    if (!issue) return;
+    setCurrentIssue(issue);
+    setIsShowTicketsDialog(true);
+  }, []);
+
+  const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
+    const linkedTicketColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
+    const rowId = currentIssue._id;
+    const connectionLinkedUpdate = {
+      [ticket.id]: ticket.title,
+    };
+    modifyRowLink({
+      tableName: TICKET_TABLE_NAME,
+      rowId: String(ticket.id),
+      rowUpdate: { [linkedConnectionRecordsColumn.key]: [`portal_${rowId}`] },
+      linked_records: { [`portal_${rowId}`]: currentIssue.title }
+    }, {
+      tableName: PORTAL_ISSUE_TABLE_NAME,
+      rowId: rowId,
+      rowUpdate: rowUpdate,
+      linked_records: connectionLinkedUpdate
+    }, () => {
+      return portalAPI.modifyPortalIssue(projectUuid, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
+        const eventBus = context.eventBus;
+        eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
+        eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: connectionLinkedUpdate }, false);
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(true);
+      });
+    });
+  }, [currentIssue, modifyRowLink]);
+
   const createRowsTools = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, togglePageSlugId };
     if (canCreateRelatedTickets) {
       params.createTicket = createTicket;
+      params.linkAnExistingTicket = handleLinkAnExistingTicket;
     }
     if (canChatWithAI) {
       params.chatIssuesByAI = chatIssuesByAI;
@@ -209,12 +253,17 @@ const Issues = ({
       return customizeCreateRowsTools(params);
     }
     return generatorIssuesRowsTools(params);
-  }, [workspaceID, projectName, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId]);
+  }, [
+    workspaceID, projectName, canCreateRelatedTickets, canChatWithAI,
+    chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId,
+    handleLinkAnExistingTicket,
+  ]);
 
   const createContextMenuOptions = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, togglePageSlugId };
     if (canCreateRelatedTickets) {
       params.createTicket = createTicket;
+      params.linkAnExistingTicket = handleLinkAnExistingTicket;
     }
     if (canChatWithAI) {
       params.chatIssuesByAI = chatIssuesByAI;
@@ -224,11 +273,15 @@ const Issues = ({
       return customizeCreateContextMenuOptions(params);
     }
     return generatorIssuesContextMenuOptions(params);
-  }, [projectName, workspaceID, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId]);
+  }, [
+    projectName, workspaceID, canCreateRelatedTickets, canChatWithAI,
+    chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId,
+    handleLinkAnExistingTicket,
+  ]);
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
-    let _options = generatorIssuesContextMenuOptions({
+    let options = generatorIssuesContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
@@ -246,26 +299,16 @@ const Issues = ({
       workspaceID,
       projectName,
       createTicket: canCreateRelatedTickets ? createTicket : undefined,
+      linkAnExistingTicket: canCreateRelatedTickets ? handleLinkAnExistingTicket : undefined,
     });
-    _options = _options.filter(Boolean);
     if (!canOpenIssue) {
-      _options = _options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
+      options = options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
     }
-    if (_options[0] === 'Divider') {
-      _options.shift();
-    }
-    if (_options[_options.length - 1] === 'Divider') {
-      _options.pop();
-    }
-    _options = _options.reduce((acc, item, index, array) => {
-      if (item && item === 'Divider' && index > 0 && array[index - 1] && array[index - 1] === 'Divider') {
-        return acc;
-      }
-      acc.push(item);
-      return acc;
-    }, []);
-    return _options;
-  }, [workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, canChatWithAI, chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI]);
+    return normalizeContextMenuOptions(options);
+  }, [
+    workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, canChatWithAI,
+    chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI, handleLinkAnExistingTicket
+  ]);
 
   const handleSwitchIssue = useCallback((step) => {
     const issuesData = metadataRef.current.getOrderRows();
@@ -288,6 +331,19 @@ const Issues = ({
     if (isShowIssueDetailsDialog) return;
     setCurrentIssue(null);
   }, [isShowIssueDetailsDialog]);
+
+  const createTicketCallback = useCallback((ticket, currentRow) => {
+    const linkedUpdateRecord = {
+      [ticket._pk]: ticket.title,
+    };
+    const linkColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
+    insertRowByLink(TICKET_TABLE_NAME, PORTAL_ISSUE_TABLE_NAME, linkedUpdateRecord, currentRow._id, rowUpdateData, () => {
+      const eventBus = context.eventBus;
+      eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentRow._id, rowUpdateData);
+      eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
+    });
+  }, []);
 
   if (isLoading) return (<CenteredLoading />);
 
@@ -324,8 +380,21 @@ const Issues = ({
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={currentIssue}
-          columns={allColumns.current}
+          linkedRecordPrefix="portal"
+          useMetadataContext={usePortalIssuesMetadata}
           onClose={onCloseCreateTicketDialog}
+          convertToTicket={() => {
+            return portalAPI.convertPortalIssueToTicket(projectUuid, currentIssue._id).then(res => {
+              const relatedUrl = `${server}${siteRoot}`;
+              return {
+                data: {
+                  ...res?.data,
+                  related_url: relatedUrl + (res?.data?.related_url || '').slice(1)
+                }
+              };
+            });
+          }}
+          onSubmitCallback={(ticket) => createTicketCallback(ticket, currentIssue)}
         />
       )}
       {isShowIssueDetailsDialog && (
@@ -337,6 +406,18 @@ const Issues = ({
           onToggle={() => setIsShowIssueDetailsDialog(false)}
           getIssue={getIssue}
           createMoreOptions={createMoreOptions}
+        />
+      )}
+      {isShowTicketsDialog && (
+        <TicketsDialog
+          projectUuid={projectUuid}
+          onSubmit={linkAnExistingTicket}
+          onToggle={() => {
+            setIsShowTicketsDialog(false);
+            if (!isShowIssueDetailsDialog) {
+              setCurrentIssue(null);
+            }
+          }}
         />
       )}
     </>

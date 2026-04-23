@@ -63,3 +63,41 @@ export const shouldReload = (timestamp = 0) => {
   if (!timestamp) return true;
   return Date.now() - timestamp > 3600000;
 };
+
+export const normalizeContextMenuOptions = (oldOptions = []) => {
+  let options = oldOptions.slice(0);
+  options = options.filter(Boolean);
+  if (options[0] === 'Divider') {
+    options.shift();
+  }
+  if (options.length > 0 && options[options.length - 1] === 'Divider') {
+    options.pop();
+  }
+  options = options.reduce((acc, item, index, array) => {
+    if (item === 'Divider' && index > 0 && array[index - 1] === 'Divider') {
+      return acc;
+    }
+    acc.push(item);
+    return acc;
+  }, []);
+  return options;
+};
+
+export const normalizeRowsMoreTools = (oldTools = []) => {
+  let tools = oldTools.slice(0);
+  tools = tools.filter(Boolean);
+  if (tools[0]?.key === 'divider') {
+    tools.shift();
+  }
+  if (tools[tools.length - 1]?.key === 'divider') {
+    tools.pop();
+  }
+  tools = tools.reduce((acc, item, index, array) => {
+    if (item && item.key === 'divider' && index > 0 && array[index - 1] && array[index - 1].key === 'divider') {
+      return acc;
+    }
+    acc.push(item);
+    return acc;
+  }, []);
+  return tools;
+};

@@ -14,7 +14,7 @@ import { generatorIssuesContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
-  PERMISSION_TYPES
+  PERMISSION_TYPES, server, siteRoot,
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
@@ -31,6 +31,10 @@ import { usePortalIssuesMetadata } from '../../hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import Header from '@/project/main-panel/tickets/view/ticket/header';
 import { isObject } from '@/utils/type-detection';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
@@ -48,13 +52,16 @@ const Issue = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
+  const [isShowCreateTicketDialog, setIsShowCreateTicketDialog] = useState(false);
+  const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
   const { typesData, statesData, substatesData } = usePortalIssuesMetadata();
-  const { modifyLocalRow, getTableByName, deleteRow } = useData();
+  const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink, modifyRowLink } = useData();
   const { tagsData, createTag } = useTags();
   const { updateAttachments } = useAIChatTools();
 
   const lastIssueID = useRef('');
+  const allColumns = useRef([]);
 
   const user = useMemo(() => {
     return {
@@ -360,6 +367,44 @@ const Issue = ({
     });
   }, [issue, modifyComment]);
 
+  const createTicketCallback = useCallback((ticket) => {
+    const linkedUpdateRecord = { [ticket._pk]: ticket.title };
+    const linkColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
+    insertRowByLink(TICKET_TABLE_NAME, PORTAL_ISSUE_TABLE_NAME, linkedUpdateRecord, issueID, rowUpdateData, () => {
+      setIssue({ ...issue, ...rowUpdateData });
+      setLinkedRecords(linkedUpdateRecord);
+    });
+  }, [issue, issueID, insertRowByLink]);
+
+  const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
+    const linkedTicketColumn = getColumnByName(allColumns.current, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
+    const linkedUpdateRecord = { [ticket._pk]: ticket.title };
+    const rowId = issue._id;
+    modifyRowLink({
+      tableName: TICKET_TABLE_NAME,
+      rowId: String(ticket.id),
+      rowUpdate: { [linkedConnectionRecordsColumn.key]: [`portal_${rowId}`] },
+      linked_records: { [`portal_${rowId}`]: issue.title }
+    }, {
+      tableName: PORTAL_ISSUE_TABLE_NAME,
+      rowId: rowId,
+      rowUpdate: rowUpdate,
+      linked_records: linkedUpdateRecord,
+    }, () => {
+      return portalAPI.modifyPortalIssue(projectUuid, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
+        setIssue({ ...issue, [linkedTicketColumn.name]: ticket.id });
+        setLinkedRecords(linkedUpdateRecord);
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(true);
+      });
+    });
+  }, [issue, modifyRowLink]);
+
   useEffect(() => {
     if (lastIssueID.current === issueID) return;
     lastIssueID.current = issueID;
@@ -369,10 +414,11 @@ const Issue = ({
 
     portalAPI.getPortalIssue(projectUuid, issueID).then(res => {
       handleUpdateRowsCacheData(issueID, res.data.issue);
+      allColumns.current = res.data?.columns || [];
       const issue = new IssusModel(res.data.issue);
       setLoadError(res.data?.error_msg || '');
       setIssue(issue);
-      setLinkedRecords(res.data?.linked_record_titles || {});
+      setLinkedRecords({ [issue.linked_ticket || '']: res.data?.linked_ticket_title || '' });
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -407,7 +453,7 @@ const Issue = ({
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = issue;
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_ticket } = issue;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = PORTAL_ISSUE_STATE_CONFIG[state];
@@ -519,11 +565,39 @@ const Issue = ({
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
-          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
+          <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
+      )}
+      {isShowCreateTicketDialog && (
+        <CreateTicketDialog
+          projectUuid={projectUuid}
+          row={issue}
+          linkedRecordPrefix="portal"
+          useMetadataContext={usePortalIssuesMetadata}
+          onClose={() => setIsShowCreateTicketDialog(false)}
+          convertToTicket={() => {
+            return portalAPI.convertPortalIssueToTicket(projectUuid, issueID).then(res => {
+              const relatedUrl = `${server}${siteRoot}`;
+              return {
+                data: {
+                  ...res?.data,
+                  related_url: relatedUrl + (res?.data?.related_url || '').slice(1)
+                }
+              };
+            });
+          }}
+          onSubmitCallback={(ticket) => createTicketCallback(ticket, issue)}
+        />
+      )}
+      {isShowTicketsDialog && (
+        <TicketsDialog
+          projectUuid={projectUuid}
+          onSubmit={linkAnExistingTicket}
+          onToggle={setIsShowTicketsDialog(false)}
+        />
       )}
     </div>
   );

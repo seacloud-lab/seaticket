@@ -4,8 +4,9 @@ import { gettext } from '@/constants';
 import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
+import { isNumber } from '@/utils/type-detection';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
@@ -19,6 +20,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   const [currentLinkItem, setCurrentLinkItem] = useState(null);
 
   const validValue = useMemo(() => {
+    if (!Array.isArray(value)) return [];
     return value.map(v => {
       const { title, connection_type, state } = linkedRecords[v] || {};
       return {
@@ -33,8 +35,8 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   const initLinkItem = useCallback((linkItem) => {
     if (!linkItem) return false;
 
-    // Ticket links are plain ids; connection links use "{connection_id}_{record_id}".
-    if (!String(linkItem).includes('_')) {
+    // ticket type connection
+    if (isNumber(linkItem)) {
       setCurrentLinkItem({ _id: linkItem, connection_id: '', type: TICKET_TYPE, key: linkItem });
       return true;
     }
