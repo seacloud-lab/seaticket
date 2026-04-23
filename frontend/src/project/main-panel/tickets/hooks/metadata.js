@@ -5,6 +5,7 @@ import { toaster } from '@/components';
 import { ticketsAPI } from '../../../api';
 import { OptionsData, Option } from '../models';
 import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
+import { isFunction } from '@/utils/type-detection';
 
 const MetadataContext = React.createContext(null);
 
@@ -234,6 +235,10 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   }, [statesData]);
 
   useEffect(() => {
+    if (!isFunction(api.getTicketMetadata)) {
+      setLoading(false);
+      return;
+    }
     api.getTicketMetadata(projectUuid).then(res => {
       const { states, substates, types } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);

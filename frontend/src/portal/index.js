@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
@@ -9,7 +9,8 @@ import { CenteredLoading } from '../components';
 import { PORTAL_PAGE } from './constants';
 import { DataProvider } from '@/project/hooks';
 import { portalAPI } from './api';
-import { gettext } from '@/constants';
+import { gettext, name, username, avatarURL } from '@/constants';
+import User from '@/models/user';
 
 import './index.css';
 
@@ -33,6 +34,8 @@ const Portal = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+
+  const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
   const onPageChange = useCallback((page) => {
     if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_TICKET || page === PORTAL_PAGE.MY_TICKETS || page === PORTAL_PAGE.CHAT)) {
@@ -71,7 +74,7 @@ const Portal = () => {
       APIRef.current.listProjectRelatedUsers = (projectUuid) => {
         return new Promise((resolve, reject) => {
           resolve({
-            data: { user_list: [] }
+            data: { user_list: [user] }
           });
         });
       };
@@ -79,7 +82,7 @@ const Portal = () => {
         APIRef.current.listUserInfo = (userIdList) => {
           return new Promise((resolve, reject) => {
             resolve({
-              data: { user_list: [] }
+              data: { user_list: [user] }
             });
           });
         };
