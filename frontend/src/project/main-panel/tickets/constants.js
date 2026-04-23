@@ -147,7 +147,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     op_name: gettext('substate'),
     editable: true,
     is_predefined: false,
-    modify_data_able: true,
+    modify_data_able: false,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.TYPE]: {
     type: CellType.TYPE,

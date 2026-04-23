@@ -5,7 +5,7 @@ import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import OptionDialog from '../../../../components/option-dialog';
+import OptionDialog from '@/project/components/option-dialog';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { TICKET_TYPE } from '../../constants';
 

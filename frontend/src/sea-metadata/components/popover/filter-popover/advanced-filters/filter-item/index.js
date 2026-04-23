@@ -539,7 +539,7 @@ class FilterItem extends React.Component {
         return (
           <CustomizeSelect
             disabled={readOnly}
-            className="sea-metadata-selector-priority"
+            className="sea-metadata-selector-priority sea-ticket-priority-editor-popover"
             value={{ label: <PriorityFormatter value={Number(filter_term)} showName={true} className={readOnly ? '' : 'cursor-pointer'} /> }}
             options={options || []}
             onChange={this.onChangePriority}
