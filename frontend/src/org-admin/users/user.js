@@ -21,8 +21,7 @@ class User extends React.Component {
       isDeleteDialogShow: false,
       isShowInactiveDialog: false,
     };
-
-    this.statusArray = ['active', 'inactive'];
+    this.statusOptions = getStatusOptions(['active', 'inactive']);
   }
 
   onMouseEnter = () => {
@@ -140,8 +139,7 @@ class User extends React.Component {
     const { currentStatus } = this.state;
     let href = siteRoot + 'org/users/info/' + encodeURIComponent(user.email) + '/';
     let isOperationMenuShow = (user.email !== username) && this.state.showMenu;
-    const statusOptions = getStatusOptions(this.statusArray);
-    const statusOption = statusOptions.find(option => option.value === currentStatus) || {};
+    const statusOption = this.statusOptions.find(option => option.value === currentStatus) || {};
 
     return (
       <Fragment>
@@ -163,7 +161,7 @@ class User extends React.Component {
                     <ActiveStatusEditor
                       isShowDropdownIcon={isOperationMenuShow}
                       currentOption={statusOption}
-                      menuOptions={statusOptions}
+                      menuOptions={this.statusOptions}
                       onChangeOption={this.onChangeOption}
                       closeShowDropdownIcon={this.onMouseLeave}
                     />
