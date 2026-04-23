@@ -294,7 +294,7 @@ const Issues = ({
   return (
     <>
       <SeaMetadata
-        className="sea-tickets-metadata"
+        className="sea-ticket-issues-metadata"
         ref={metadataRef}
         viewID={viewID}
         api={metadataAPI}

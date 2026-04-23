@@ -89,25 +89,23 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
   }, []);
 
   return (
-    <div className="sea-qa-portal-my-issues">
-      <Issues
-        projectUuid={projectUuid}
-        workspaceID={workspaceID}
-        projectName={projectName}
-        permission="rw"
-        viewID={viewID}
-        api={api}
-        localStorageNamePrefix={localStorageNamePrefix}
-        settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
-        dataDidMount={dataDidMount}
-        viewTools={viewTools}
-        canCreateRelatedTickets={false}
-        isBuiltInView={true}
-        canOpenIssue={false}
-        toggleView={toggleView}
-        createContextMenuOptions={() => []}
-      />
-    </div>
+    <Issues
+      projectUuid={projectUuid}
+      workspaceID={workspaceID}
+      projectName={projectName}
+      permission="rw"
+      viewID={viewID}
+      api={api}
+      localStorageNamePrefix={localStorageNamePrefix}
+      settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
+      dataDidMount={dataDidMount}
+      viewTools={viewTools}
+      canCreateRelatedTickets={false}
+      isBuiltInView={true}
+      canOpenIssue={false}
+      toggleView={toggleView}
+      createContextMenuOptions={() => []}
+    />
   );
 };
 
