@@ -19,6 +19,8 @@ GITHUB_ISSUE_ACTIVITY_TYPES = {'github_issue_added', 'github_issue_updated', 'gi
 
 DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_updated', 'discourse_topic_reply_added'}
 
+EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
+
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
