@@ -11,8 +11,6 @@ import { ticketsAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
 
-import './index.css';
-
 const {
   projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
