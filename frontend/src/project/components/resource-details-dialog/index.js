@@ -55,7 +55,7 @@ const ResourceDetailsDialog = ({
   }, [resource, resourceDetails, columns]);
 
   const url = useMemo(() => {
-    return getResourceOriginalURL(type, { ...resourceDetails, ...resource, url: resourceDetails?.url }, connections, columns);
+    return getResourceOriginalURL(type, { ...resource, ...resourceDetails, url: resourceDetails?.url }, connections, columns);
   }, [type, connections, resource, resourceDetails, columns]);
 
   const internalNetworkAddress = useMemo(() => {
