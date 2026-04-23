@@ -3,9 +3,9 @@ import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
 import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
 import { TICKET_TYPE } from './main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from './main-panel/portal-issues/constants';
-import { BAR_TYPE } from './constants';
 import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/utils';
 import { generatorTicketURL } from './main-panel/tickets/utils';
+import { generatorIssueURL } from './main-panel/portal-issues/utils';
 
 export const getResourceIconURL = (type) => {
   const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
@@ -26,21 +26,13 @@ export const getResourceIconURL = (type) => {
   }
 };
 
-const generatorPortalIssueURL = ({ issue, workspaceID, projectName }) => {
-  const { origin } = location;
-  const issueId = issue._id || issue.id;
-  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.PORTAL_ISSUES}/${issueId}/`;
-  const urlObject = new URL(url);
-  return urlObject.href;
-};
-
 export const getInternalNetworkAddress = (type, resourceID, { workspaceID, projectName, connectionID }) => {
   switch (type) {
     case TICKET_TYPE: {
       return generatorTicketURL({ ticket: { _id: resourceID, }, workspaceID, projectName });
     }
     case PORTAL_ISSUE_TYPE: {
-      return generatorPortalIssueURL({ issue: { _id: resourceID, }, workspaceID, projectName });
+      return generatorIssueURL({ issue: { _id: resourceID, }, workspaceID, projectName });
     }
     case KNOWLEDGE_BASE_TYPE: {
       return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
