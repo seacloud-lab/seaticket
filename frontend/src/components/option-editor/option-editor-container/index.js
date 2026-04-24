@@ -11,7 +11,8 @@ import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
-const SEARCH_SIZE = 30;
+// whole search input height is 32px, bottom border is 1px, so the inner height is 31px
+const SEARCH_HEIGHT = 31;
 
 const OptionEditorContainer = forwardRef(({
   id,
@@ -96,7 +97,8 @@ const OptionEditorContainer = forwardRef(({
   const showCreateBtn = isFunction(onCreate) && searchValue.trim() && !options.find(o => o.name === searchValue.trim());
   let validMaxHeight = maxHeight - (isSearchEnabled ? 26 : 18); // 26: padding-top(12/8) + padding-bottom(12/8) + border(2)
   if (displayOptions.length > 0) {
-    validMaxHeight = Math.min(validMaxHeight, displayOptions.length * (isNumber(optionHeight) ? optionHeight : 32));
+    // 16px is the padding top and bottom of the options
+    validMaxHeight = Math.min(validMaxHeight, displayOptions.length * (isNumber(optionHeight) ? optionHeight : 32) + 16);
   }
 
   return (
@@ -106,7 +108,7 @@ const OptionEditorContainer = forwardRef(({
         'search-enabled': isSearchEnabled,
         'selected-value-display': children,
         'add-search-result-enabled': isSearchEnabled && showCreateBtn,
-        'small-size-option': SEARCH_SIZE <= 30
+        'small-size-option': SEARCH_HEIGHT <= 30
       })}
     >
       {children && (
@@ -120,7 +122,7 @@ const OptionEditorContainer = forwardRef(({
             isShowSearchIcon={false}
             autoFocus={true}
             value={searchValue}
-            size={SEARCH_SIZE}
+            size={SEARCH_HEIGHT}
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}

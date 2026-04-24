@@ -5,6 +5,7 @@
   line-height: 14px;
   display: inline-flex;
   cursor: pointer;
+  position: absolute;
 }
 
 .sea-ticket-clear-icon-button.sea-qa-icon-btn .sea-qa-icon-svg {

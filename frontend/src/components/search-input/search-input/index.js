@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
 import ClearIconButton from '../../clear-icon-button';
-import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -88,8 +87,6 @@ class SearchInput extends Component {
     return (
       <ClearIconButton
         onClick={this.onClear}
-        className="position-absolute"
-        title={gettext('Clear search')}
         style={{ height: 14, width: 14, top: (size - 14) / 2, right: 12 }}
       />
     );

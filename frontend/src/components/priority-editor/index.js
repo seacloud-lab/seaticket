@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import classnames from 'classnames';
-import PriorityIconBtn from './priority-icon';
 import OptionsEditor from '../option-editor';
 
 import './index.css';
@@ -25,7 +24,7 @@ const PriorityEditor = ({
         icon: priority.icon,
         name: priority.name,
         label: (
-          <div className="sea-ticket-priority-editor-option-name-hotkey">
+          <div className="sea-ticket-priority-editor-option-name-hotkey d-flex justify-content-between w-100" >
             <div className="sea-ticket-priority-editor-option-name">{priority.name}</div>
             <div className="sea-ticket-priority-editor-option-hotkey">{priority.hotKey}</div>
           </div>
@@ -51,6 +50,3 @@ const PriorityEditor = ({
 };
 
 export default PriorityEditor;
-export {
-  PriorityIconBtn,
-};

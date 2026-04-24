@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { PriorityEditor, PriorityIconBtn } from '@/components';
+import { PriorityEditor, IconButton } from '@/components';
 import { PRIORITIES, PRIORITY_MAP } from '../../../constants/column';
 
 import './index.css';
@@ -52,7 +52,12 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
   return (
     <>
       <div className="sea-metadata-priority-editor d-flex w-100 h-100" onClick={() => setIsOpen(!isOpen)} ref={ref}>
-        <PriorityIconBtn priority={PRIORITY_MAP[value + '']} />
+        <IconButton
+          size={16}
+          className="no-hover-bg"
+          icon={PRIORITY_MAP[value + ''].icon}
+          title={PRIORITY_MAP[value + ''].name}
+        />
       </div>
       {isOpen && (
         <PriorityEditor

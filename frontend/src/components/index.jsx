@@ -58,7 +58,7 @@ import RadioGroup from './radio-group';
 import ClearIconButton from './clear-icon-button';
 import CustomizeTabs from './customize-tabs';
 import Tooltip from './tooltip';
-import PriorityEditor, { PriorityIconBtn } from './priority-editor';
+import PriorityEditor from './priority-editor';
 import PathRedirection from './path-redirection';
 import CustomizeLabel from './customize-label';
 import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
@@ -127,7 +127,6 @@ export {
   CustomizeTabs,
   Tooltip,
   PriorityEditor,
-  PriorityIconBtn,
   PathRedirection,
   CustomizeLabel,
   IconTextBtn,
