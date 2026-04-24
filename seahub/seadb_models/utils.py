@@ -461,6 +461,17 @@ def init_portal_issues_seadb_table(seadb_api, project_uuid):
             [column],
         )
 
+def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+
+    portal_issues_table_name = PortalIssuesTable.gen_table_name()
+
+    portal_issues_table = get_current_table_metadata(tables_metadata, portal_issues_table_name)
+
+    if not portal_issues_table:
+        init_portal_issues_seadb_table(seadb_api, project_uuid)
+
 def init_agent_seadb_table(seadb_api, project_uuid):
     """Initialize SeaDB tables for Agent runs and actions"""
     # Create agent_runs table

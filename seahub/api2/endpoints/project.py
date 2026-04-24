@@ -23,7 +23,7 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
     rank_vector_search_results
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, init_portal_issues_seadb_table, retrieve_vector_search_rerank_data
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, init_tag_seadb_table, init_agent_seadb_table, ensure_portal_issues_seadb_table, retrieve_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import keyword_search, vector_search_with_text
@@ -210,7 +210,6 @@ class ProjectsView(APIView):
             init_knowledge_base_seadb_table(seadb_api, project.uuid)
             init_tag_seadb_table(seadb_api, project.uuid)
             init_agent_seadb_table(seadb_api, project.uuid)
-            init_portal_issues_seadb_table(seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()
@@ -302,6 +301,7 @@ class ProjectView(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
+            should_init_portal_issues = False
             if new_project_name:
                 project.name = new_project_name
             if target_workspace_id:
@@ -318,11 +318,17 @@ class ProjectView(APIView):
                 else:
                     project_settings = {}
                 update_settings = json.loads(settings)
+                old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 for k,v in update_settings.items():
                     project_settings[k] = v
+                new_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
+                should_init_portal_issues = not old_enable_portal and new_enable_portal
                 project.settings = json.dumps(project_settings)
             project.modifier = username
             project.save()
+            if should_init_portal_issues:
+                seadb_api = SeaDBAPI()
+                ensure_portal_issues_seadb_table(seadb_api, project.uuid)
         except OperationalError:
             error_msg = _('Project name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
