@@ -18,6 +18,7 @@ const ALL_SCENARIOS = [
   { value: 'summary', label: 'Summary' },
   { value: 'agent', label: 'Agent' },
   { value: 'chat', label: 'Chat' },
+  { value: 'portal-chat', label: 'Portal Chat' },
   { value: 'search', label: 'Search' },
   { value: 'record_generation', label: 'Record generation' },
 ];
