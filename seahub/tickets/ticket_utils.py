@@ -109,6 +109,7 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
         )
         for record in (records or []):
             record_pk = record.get('_pk')
+            record['connection_type'] = connection.type
             linked_records_info[f'{connection_id}_{record_pk}'] = record
 
     return linked_records_info

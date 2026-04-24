@@ -737,7 +737,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
     sql = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = GithubIssuesTable.gen_table_name(connection_id)
-        sql = f"SELECT _pk, title, state, issue_type FROM `{table_name}` WHERE _pk IN ({pks_str})"
+        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
