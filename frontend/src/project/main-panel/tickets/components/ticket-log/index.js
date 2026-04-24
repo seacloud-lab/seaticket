@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
 import { IconButton, Option, AsyncCollaborator } from '@/components';
-import { gettext, projectName, workspaceID, siteRoot } from '@/constants';
+import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
@@ -12,6 +12,8 @@ import RemoveLog from './remove-log';
 import Tag from '@/sea-metadata/components/tag';
 import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import { getRowById } from '@/sea-metadata/utils/row';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
@@ -77,15 +79,21 @@ const diff = (newValue, oldValue) => {
 
 export const getTicketLogAnchorId = (activityId) => `ticket-log-${activityId}`;
 
-const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
+const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, className }) => {
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
+  const [selectedEmailThread, setSelectedEmailThread] = useState(null);
 
-  const buildEmailThreadPath = useCallback((connectionId, threadId) => {
-    if (!connectionId || !threadId) return '';
-    return `${siteRoot}workspace/${workspaceID}/project/${projectName}/connections/${connectionId}/records/${threadId}/`;
-  }, []);
+  const openEmailThread = useCallback((connectionId, threadId, threadTitle) => {
+    if (!projectUuid || !connectionId || !threadId) return;
+    setSelectedEmailThread({
+      _id: threadId,
+      connection_id: connectionId,
+      type: CONNECTION_TYPE.EMAIL,
+      title: threadTitle,
+    });
+  }, [projectUuid]);
 
   const renderGithubIssueRef = (issue_number, issue_url) => {
     if (!issue_number) return null;
@@ -105,10 +113,17 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
 
   const renderEmailThreadRef = (connection_id, thread_id, thread_title) => {
     if (!thread_id) return thread_title ? <span>{thread_title}</span> : null;
-    const href = buildEmailThreadPath(connection_id, thread_id);
     const label = thread_title || `#${thread_id}`;
-    if (href) {
-      return <a href={href}>{label}</a>;
+    if (projectUuid && connection_id) {
+      return (
+        <button
+          type="button"
+          className="sea-ticket-log-inline-link"
+          onClick={() => openEmailThread(connection_id, thread_id, thread_title)}
+        >
+          {label}
+        </button>
+      );
     }
     if (thread_title) {
       return <span>{thread_title}</span>;
@@ -468,17 +483,11 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}{gettext('added')}</span>;
       }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
-        const href = buildEmailThreadPath(connection_id, thread_id);
         const count = typeof new_value === 'number' ? new_value : 1;
         return (
           <span>
             {gettext('Email thread')}
-            {thread_id && (
-              <>
-                {' '}
-                {href ? <a href={href}>#{thread_id}</a> : <span>#{thread_id}</span>}
-              </>
-            )}
+            {thread_id && <>{' '}{renderEmailThreadRef(connection_id, thread_id)}</>}
             {thread_title && <span> {thread_title}</span>}
             {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
           </span>
@@ -492,28 +501,38 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
 
   return (
-    <div
-      id={getTicketLogAnchorId(activity.id)}
-      className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}
-    >
-      <div className="sea-ticket-log-type-container">
-        <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
+    <>
+      <div
+        id={getTicketLogAnchorId(activity.id)}
+        className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}
+      >
+        <div className="sea-ticket-log-type-container">
+          <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
+        </div>
+        <div className="sea-ticket-log-content">
+          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && (
+            <AsyncCollaborator
+              value={activity.creator}
+              className="sea-ticket-log-creator"
+              collaborators={collaborators}
+              collaboratorsCache={collaboratorsCache}
+              updateCollaboratorsCache={updateCollaboratorsCache}
+              api={queryUser}
+            />
+          )}
+          {renderActivityMessage()}
+          <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
+        </div>
       </div>
-      <div className="sea-ticket-log-content">
-        {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && (
-          <AsyncCollaborator
-            value={activity.creator}
-            className="sea-ticket-log-creator"
-            collaborators={collaborators}
-            collaboratorsCache={collaboratorsCache}
-            updateCollaboratorsCache={updateCollaboratorsCache}
-            api={queryUser}
-          />
-        )}
-        {renderActivityMessage()}
-        <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
-      </div>
-    </div>
+      {selectedEmailThread && (
+        <ResourceDetailsDialog
+          projectUuid={projectUuid}
+          resource={selectedEmailThread}
+          isShowIcon={true}
+          onToggle={() => setSelectedEmailThread(null)}
+        />
+      )}
+    </>
   );
 };
 

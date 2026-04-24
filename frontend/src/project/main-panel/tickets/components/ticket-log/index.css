@@ -80,3 +80,16 @@
 .sea-ticket-log-removed {
   opacity: .65;
 }
+
+.sea-ticket-log-inline-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bs-link-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sea-ticket-log-inline-link:hover {
+  color: var(--bs-link-hover-color);
+}
