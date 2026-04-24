@@ -499,7 +499,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
   const operationContent = renderOperation && renderOperation();
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'small-page': isSmall, 'has-header': sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={wrapperRef}>
+    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty && sessionId === ASK_PAGE_SLUG_ID.NEW, 'small-page': isSmall, 'has-header': sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={wrapperRef}>
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
@@ -517,7 +517,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
         </div>
       )}
       <div className="sea-qa-ai-ask-chats-body">
-        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
+        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip">
               <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
