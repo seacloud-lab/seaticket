@@ -85,6 +85,15 @@ const getUniqueEventTypes = (events) => {
   }, []);
 };
 
+const collectRunActions = (run) => {
+  const { items = [], actions = [] } = run;
+  const fromItems = items.flatMap(item => item.actions || []);
+  return [...fromItems, ...actions];
+};
+
+const runHasSuggestionAction = (run) =>
+  collectRunActions(run).some(a => a && a.type === ACTION_TYPE.SUGGESTION);
+
 const RunCard = ({
   run,
   onConfirmAction,
@@ -94,19 +103,25 @@ const RunCard = ({
   const { id, started_at, items = [], actions = [], events } = run;
   const eventTypes = getUniqueEventTypes(events);
 
-  let isShowResolved;
+  let isShowDone;
+  let isShowNoActionNeeded;
   let isCardExpanded;
   if (run.status === RUN_STATUS.FAILED) {
-    isShowResolved = false;
+    isShowDone = false;
+    isShowNoActionNeeded = false;
     isCardExpanded = false;
   }
   else if (run.status === RUN_STATUS.RUNNING) {
-    isShowResolved = false;
+    isShowDone = false;
+    isShowNoActionNeeded = false;
     isCardExpanded = true;
   }
   else if (run.status === RUN_STATUS.COMPLETED) {
-    isShowResolved = !items.some(item => item.actions.some(action => action.status === ACTION_STATUS.PENDING));
-    isCardExpanded = !isShowResolved;
+    const noPending = !items.some(item => (item.actions || []).some(action => action.status === ACTION_STATUS.PENDING));
+    const hasSuggestion = runHasSuggestionAction(run);
+    isShowDone = noPending && hasSuggestion;
+    isShowNoActionNeeded = noPending && !hasSuggestion;
+    isCardExpanded = !noPending;
   }
 
   const [isExpanded, setIsExpanded] = useState(isCardExpanded);
@@ -142,10 +157,15 @@ const RunCard = ({
           {eventTypes.map(type => (
             <span key={type} className="run-event-type-badge">{type}</span>
           ))}
-          {isShowResolved &&
-            <span className="run-card-resolved">
+          {isShowDone &&
+            <span className="run-card-done">
               <Icon symbol="check-circle" className="mr-1" />
-              {gettext('Resolved')}
+              {gettext('Done')}
+            </span>
+          }
+          {isShowNoActionNeeded &&
+            <span className="run-card-no-action-needed">
+              {gettext('No action needed')}
             </span>
           }
         </div>
