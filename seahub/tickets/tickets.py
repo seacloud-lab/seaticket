@@ -37,7 +37,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
-    build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
+    build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
@@ -672,50 +672,8 @@ class TicketAPIView(APIView):
             convert_ticket_select_column_name_to_option_id(metadata, ticket)
 
             linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
-            linked_record_connection_types = {}
-            linked_record_states = {}
-            github_issue_record_ids_map = {}
-            for linked_key in linked_connection_records:
-                if not isinstance(linked_key, str) or '_' not in linked_key:
-                    continue
-                connection_id_str, record_id_str = linked_key.split('_', 1)
-                if not connection_id_str or not record_id_str:
-                    continue
-                try:
-                    connection_id = int(connection_id_str)
-                    record_id = int(record_id_str)
-                except Exception:
-                    continue
 
-                connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-                if not connection:
-                    continue
-
-                linked_record_connection_types[linked_key] = connection.type
-                linked_record_states[linked_key] = ''
-                if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                    github_issue_record_ids_map.setdefault(connection_id, set()).add(record_id)
-
-            for connection_id, record_ids in github_issue_record_ids_map.items():
-                if not record_ids:
-                    continue
-                pks_str = ','.join([str(pk) for pk in record_ids])
-                issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
-                sql = f"SELECT _pk, state FROM `{issue_table_name}` WHERE _pk IN ({pks_str})"
-                issue_rows = seadb_api.query_rows(project_uuid, sql).get('results', [])
-                for issue_row in issue_rows:
-                    issue_pk = issue_row.get('_pk')
-                    if issue_pk is None:
-                        continue
-                    linked_key = f'{connection_id}_{issue_pk}'
-                    linked_record_states[linked_key] = issue_row.get('state') or ''
-
-            ticket['linked_record_connection_types'] = linked_record_connection_types
-            ticket['linked_record_states'] = linked_record_states
-
-            linked_record_titles = build_linked_record_titles_map_for_keys(
-                seadb_api, project_uuid, linked_connection_records
-            )
+            linked_records_info = build_linked_records_info_for_keys(seadb_api, project_uuid, linked_connection_records)
 
             start = 0
             end = 25
@@ -738,7 +696,7 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'ticket': ticket, 'linked_record_titles': linked_record_titles})
+        return Response({'ticket': ticket, 'linked_records_info': linked_records_info})
 
     @require_org_context
     def put(self, request, project_uuid, ticket_id):

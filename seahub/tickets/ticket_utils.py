@@ -11,7 +11,7 @@ from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_CO
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars
-from seahub.seadb_models.utils import list_connection_record_titles
+from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
@@ -68,35 +68,50 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
 
     conn_id_to_record_ids = {}
     for linked_key in keys:
-        if not isinstance(linked_key, str) or '_' not in linked_key:
-            continue
         connection_id_str, record_id_str = linked_key.split('_', 1)
-        if not connection_id_str or not record_id_str:
-            continue
-        try:
-            connection_id = int(connection_id_str)
-            record_id = int(record_id_str)
-        except Exception:
-            continue
+        connection_id = int(connection_id_str)
+        record_id = int(record_id_str)
         conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
-
-    if not conn_id_to_record_ids:
-        return linked_record_titles
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             continue
-        records = list_connection_record_titles(
+        records = get_connection_records_by_pks(
             seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
         )
         for record in (records or []):
             record_pk = record.get('_pk')
-            if record_pk is None:
-                continue
             linked_record_titles[f'{connection_id}_{record_pk}'] = record.get('title') or ''
 
     return linked_record_titles
+
+
+def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
+    linked_records_info = {}
+    keys = lcr_keys or []
+    if not isinstance(keys, list) or not keys:
+        return linked_records_info
+
+    conn_id_to_record_ids = {}
+    for linked_key in keys:
+        connection_id_str, record_id_str = linked_key.split('_', 1)
+        connection_id = int(connection_id_str)
+        record_id = int(record_id_str)
+        conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+
+    for connection_id, record_ids_set in conn_id_to_record_ids.items():
+        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not connection:
+            continue
+        records = get_connection_records_by_pks(
+            seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
+        )
+        for record in (records or []):
+            record_pk = record.get('_pk')
+            linked_records_info[f'{connection_id}_{record_pk}'] = record
+
+    return linked_records_info
 
 def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, column_name='linked_ticket'):
     """
