@@ -497,13 +497,14 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
   const isEmpty = chatHistories.length === 0 && !loading;
   const _isReply = loading || isReply;
   const operationContent = renderOperation && renderOperation();
+  const isNewChat = sessionId === ASK_PAGE_SLUG_ID.NEW;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty && sessionId === ASK_PAGE_SLUG_ID.NEW, 'small-page': isSmall, 'has-header': sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={wrapperRef}>
+    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })} ref={wrapperRef}>
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
-      {sessionId !== ASK_PAGE_SLUG_ID.NEW && (
+      {!isNewChat && (
         <div className="sea-qa-ai-ask-chats-header">
           <ChatHeader
             isReply={_isReply}
@@ -517,7 +518,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
         </div>
       )}
       <div className="sea-qa-ai-ask-chats-body">
-        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && sessionId !== ASK_PAGE_SLUG_ID.NEW })} ref={chatHistoryContentRef}>
+        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && !isNewChat })} ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip">
               <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
