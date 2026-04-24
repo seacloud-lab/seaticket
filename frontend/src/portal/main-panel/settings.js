@@ -19,6 +19,7 @@ const SETTING_TABS = {
 
 const CHAT_EXTRA_SOURCES = ['knowledge_base', 'ticket'];
 const EMPTY_CHAT_ALLOWED_SOURCES = { connection_ids: [], extra_sources: [] };
+const isConnectionActive = (connection) => !!connection?.is_active;
 
 const normalizeExtraSources = (extraSources = []) => {
   if (!Array.isArray(extraSources)) return [];
@@ -36,7 +37,7 @@ const normalizeChatAllowedSources = (rawChatAllowedSources, connections = []) =>
   const rawConnectionIdSet = new Set(rawConnectionIds.map(String));
   return {
     connection_ids: connections
-      .filter((connection) => rawConnectionIdSet.has(String(connection.id)))
+      .filter((connection) => isConnectionActive(connection) && rawConnectionIdSet.has(String(connection.id)))
       .map((connection) => connection.id),
     extra_sources: extraSources,
   };
@@ -87,7 +88,7 @@ const Settings = () => {
   useEffect(() => {
     setIsConnectionsLoading(true);
     connectionsAPI.listConnections(projectUuid, 1, 1000).then((res) => {
-      setConnections(res.data.records || []);
+      setConnections((res.data.records || []).filter(isConnectionActive));
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
       setConnections([]);
