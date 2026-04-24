@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isValidUrl } from '@/utils/validate';
+import { isValidEmail, isValidUrl } from '@/utils/validate';
 import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
 import { Utils } from '@/utils/utils';
 import { IconButton, IconTextBtn, toaster } from '@/components';
@@ -17,6 +17,7 @@ const HTMLContent = ({
   value,
   detail,
   isReadonly,
+  openReplyByEmail,
 }) => {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
@@ -86,17 +87,43 @@ const HTMLContent = ({
       });
     };
 
-    handleImgSrc();
+    const handleLink = () => {
+      if (!ref.current) return;
+      const links = ref.current.querySelectorAll('a');
+      links.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href.startsWith('mailto:') && isValidEmail(href.slice(7))) {
+          const email = href.slice(7);
+          link.setAttribute('title', `${gettext('Send email to')} ${email}`);
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            openReplyByEmail(email);
+          });
+        }
+      });
+    };
 
-    const observer = new MutationObserver(handleImgSrc);
+    handleImgSrc();
+    handleLink();
+
+    const imgObserver = new MutationObserver(handleImgSrc);
+    const linkObserver = new MutationObserver(handleLink);
     if (ref.current) {
-      observer.observe(ref.current, {
+      imgObserver.observe(ref.current, {
+        childList: true,
+        subtree: true,
+      });
+      linkObserver.observe(ref.current, {
         childList: true,
         subtree: true,
       });
     }
 
-    return () => observer.disconnect();
+    return () => {
+      if (!ref.current) return;
+      imgObserver.disconnect();
+      linkObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
