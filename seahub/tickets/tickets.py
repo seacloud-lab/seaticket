@@ -1568,6 +1568,7 @@ class TicketActivitiesAPIView(APIView):
                 topic_url = detail.get('topic_url', '')
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 field_key = activity_type
+                connection_id = detail.get('connection_id')
                 thread_id = detail.get('thread_id')
                 thread_title = detail.get('thread_title', '')
             elif field_name == 'state_substate':
@@ -1641,6 +1642,7 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
             elif activity_type in EMAIL_ACTIVITY_TYPES:
+                activity_item['connection_id'] = connection_id
                 activity_item['thread_id'] = thread_id
                 activity_item['thread_title'] = thread_title
             activities_list.append(activity_item)

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
 import { IconButton, Option, AsyncCollaborator } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, projectName, workspaceID, siteRoot } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
@@ -31,17 +31,14 @@ const LOG_TYPE = {
   ASSIGNEES_REMOVED: 'assignees_removed',
   ASSIGNEES_CHANGED: 'assignees_changed',
 
-  GITHUB_ISSUE_ADDED: 'github_issue_added',
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
   GITHUB_ISSUE_REOPENED: 'github_issue_reopened',
   GITHUB_ISSUE_COMMENT_ADDED: 'github_issue_comment_added',
 
-  DISCOURSE_TOPIC_ADDED: 'discourse_topic_added',
   DISCOURSE_TOPIC_UPDATED: 'discourse_topic_updated',
   DISCOURSE_TOPIC_REPLY_ADDED: 'discourse_topic_reply_added',
 
-  EMAIL_THREAD_ADDED: 'email_thread_added',
   EMAIL_MESSAGE_ADDED: 'email_message_added',
 };
 
@@ -61,17 +58,14 @@ const LOG_ICONS = {
   [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
 
-  [LOG_TYPE.GITHUB_ISSUE_ADDED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_REOPENED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED]: 'dot-circle-stroked',
 
-  [LOG_TYPE.DISCOURSE_TOPIC_ADDED]: 'dot-circle-stroked',
   [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED]: 'dot-circle-stroked',
 
-  [LOG_TYPE.EMAIL_THREAD_ADDED]: 'dot-circle-stroked',
   [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'dot-circle-stroked',
 };
 
@@ -81,10 +75,17 @@ const diff = (newValue, oldValue) => {
   return { removed, added };
 };
 
+export const getTicketLogAnchorId = (activityId) => `ticket-log-${activityId}`;
+
 const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
+
+  const buildEmailThreadPath = useCallback((connectionId, threadId) => {
+    if (!connectionId || !threadId) return '';
+    return `${siteRoot}workspace/${workspaceID}/project/${projectName}/connections/${connectionId}/records/${threadId}/`;
+  }, []);
 
   const renderGithubIssueRef = (issue_number, issue_url) => {
     if (!issue_number) return null;
@@ -102,7 +103,13 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
     return <span>#{topic_id}</span>;
   };
 
-  const renderEmailThreadRef = (thread_id, thread_title) => {
+  const renderEmailThreadRef = (connection_id, thread_id, thread_title) => {
+    if (!thread_id) return thread_title ? <span>{thread_title}</span> : null;
+    const href = buildEmailThreadPath(connection_id, thread_id);
+    const label = thread_title || `#${thread_id}`;
+    if (href) {
+      return <a href={href}>{label}</a>;
+    }
     if (thread_title) {
       return <span>{thread_title}</span>;
     }
@@ -113,7 +120,7 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
   };
 
   const renderActivityMessage = useCallback(() => {
-    const { activity_type, old_value, new_value, issue_number, issue_url, topic_id, topic_url, thread_id, thread_title } = activity;
+    const { activity_type, old_value, new_value, issue_number, issue_url, topic_id, topic_url, thread_id, thread_title, connection_id } = activity;
     const asyncCollaboratorProps = {
       className: 'mr-0',
       collaborators,
@@ -416,10 +423,6 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
           </>
         );
       }
-      case LOG_TYPE.GITHUB_ISSUE_ADDED: {
-        const ref = renderGithubIssueRef(issue_number, issue_url);
-        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
-      }
       case LOG_TYPE.GITHUB_ISSUE_CLOSED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('closed')}</span>;
@@ -446,10 +449,6 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const count = typeof new_value === 'number' ? new_value : 1;
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}{gettext('added')}</span>;
       }
-      case LOG_TYPE.DISCOURSE_TOPIC_ADDED: {
-        const ref = renderDiscourseTopicRef(topic_id, topic_url);
-        return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
-      }
       case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
         const ref = renderDiscourseTopicRef(topic_id, topic_url);
         const changeNodes = renderChangeNodes(old_value, new_value, discourseLabelMap);
@@ -468,24 +467,35 @@ const TicketLog = ({ log: activity, isSmallScreen = false, className }) => {
         const count = typeof new_value === 'number' ? new_value : 1;
         return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}{gettext('added')}</span>;
       }
-      case LOG_TYPE.EMAIL_THREAD_ADDED: {
-        const ref = renderEmailThreadRef(thread_id, thread_title);
-        return <span>{gettext('Email thread')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>;
-      }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
-        const ref = renderEmailThreadRef(thread_id, thread_title);
+        const href = buildEmailThreadPath(connection_id, thread_id);
         const count = typeof new_value === 'number' ? new_value : 1;
-        return <span>{gettext('Email thread')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}</span>;
+        return (
+          <span>
+            {gettext('Email thread')}
+            {thread_id && (
+              <>
+                {' '}
+                {href ? <a href={href}>#{thread_id}</a> : <span>#{thread_id}</span>}
+              </>
+            )}
+            {thread_title && <span> {thread_title}</span>}
+            {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
+          </span>
+        );
       }
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity]);
+  }, [activity, renderEmailThreadRef]);
 
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
 
   return (
-    <div className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}>
+    <div
+      id={getTicketLogAnchorId(activity.id)}
+      className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}
+    >
       <div className="sea-ticket-log-type-container">
         <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
       </div>
