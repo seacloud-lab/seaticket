@@ -202,6 +202,15 @@
   margin-bottom: auto;
 }
 
+.sea-qa-portal-content .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-header {
+  width: calc(100% - 32px);
+  margin-left: 0px;
+}
+
+.sea-qa-portal-content .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-body {
+  padding: 16px 16px 0 16px;
+}
+
 .sea-qa-portal-content .sea-metadata {
   padding-left: 16px;
   padding-right: 16px;
