@@ -413,7 +413,7 @@ const Ticket = ({
       const ticket = new TicketModel(res.data.ticket);
       setLoadError(res.data?.error_msg || '');
       setTicket(ticket);
-      setLinkedRecords(res.data?.linked_record_titles || {});
+      setLinkedRecords(res.data?.linked_records_info || {});
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -461,11 +461,7 @@ const Ticket = ({
     );
   }
 
-  const {
-    id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date,
-    linked_connection_records, linked_record_connection_types, linked_record_states
-  } = ticket;
-  console.log('ticket', ticket);
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -589,7 +585,7 @@ const Ticket = ({
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
-          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} linked_record_connection_types={linked_record_connection_types} linked_record_states={linked_record_states} />
+          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (

@@ -6,25 +6,27 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { TICKET_TABLE_NAME, TICKET_TYPE, TICKET_STATE } from '@/project/main-panel/tickets/constants';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const LinkSettings = ({ value, className = 'mb-4', linkedRecords, linked_record_connection_types, linked_record_states }) => {
+const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const { connections } = useConnections();
   const [isShowDetailsDialog, setIsShowDetailsDialog] = useState(false);
   const [currentLinkItem, setCurrentLinkItem] = useState(null);
 
   const validValue = useMemo(() => {
-    return value.map(v => ({
-      key: v,
-      title: linkedRecords[v],
-      type: linked_record_connection_types[v],
-      state: linked_record_states[v]
-    })).filter(item => item.title);
+    return value.map(v => {
+      const { title, issue_type, state } = linkedRecords[v] || {};
+      return {
+        key: v,
+        title,
+        type: issue_type,
+        state
+      };
+    }).filter(item => item.title);
   }, [value, linkedRecords]);
 
   const initLinkItem = useCallback((linkItem) => {
@@ -66,6 +68,13 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords, linked_record_
     setIsShowDetailsDialog(false);
   }, []);
 
+  const renderTypeImage = (type) => {
+    if (!type) return null;
+    return (
+      <img src={getConnectionIcon(type)} alt="" className="connection-icon" />
+    );
+  };
+
   const renderStateIcon = (state) => {
     if (!state) return null;
     return state === TICKET_STATE.OPEN ? (
@@ -81,7 +90,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords, linked_record_
       <div className="link-settings-content">
         {validValue.map(({ key, title, type, state }) => (
           <div className="link-item" key={key} onClick={() => handleExpand(key)}>
-            <img src={getConnectionIcon(type)} alt="" className="connection-icon" />
+            {renderTypeImage(type)}
             <span className="link-item-name" title={title}>{title}</span>
             {renderStateIcon(state)}
           </div>
