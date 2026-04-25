@@ -20,7 +20,7 @@ const ALL_SCENARIOS = [
   { value: 'chat', label: 'Chat' },
   { value: 'portal-chat', label: 'Portal Chat' },
   { value: 'search', label: 'Search' },
-  { value: 'record_generation', label: 'Record generation' },
+  { value: 'record-generation', label: 'Record generation' },
 ];
 
 class TokenCreditUsedDetailDialog extends Component {
@@ -159,7 +159,7 @@ class TokenCreditUsedDetailDialog extends Component {
           this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCreditUsed }, isLoading: false });
         }
       });
-    }).catch (error => {
+    }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
       this.setState({ isLoading: false });
@@ -229,7 +229,7 @@ class TokenCreditUsedDetailDialog extends Component {
         label: (
           <div className="d-flex align-items-center">
             <div className="flex-1 text-truncate">{v.label}</div>
-            <IconButton className="no-hover-bg ml-3" icon={v.value === groupBy ? 'check-mark-option' : '' } size={14} />
+            <IconButton className="no-hover-bg ml-3" icon={v.value === groupBy ? 'check-mark-option' : ''} size={14} />
           </div>
         )
       };
