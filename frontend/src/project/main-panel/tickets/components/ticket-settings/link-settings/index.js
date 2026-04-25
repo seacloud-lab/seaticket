@@ -19,11 +19,11 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const validValue = useMemo(() => {
     return value.map(v => {
-      const { title, issue_type, state } = linkedRecords[v] || {};
+      const { title, connection_type, state } = linkedRecords[v] || {};
       return {
         key: v,
         title,
-        type: issue_type,
+        type: connection_type,
         state
       };
     }).filter(item => item.title);
