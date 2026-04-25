@@ -1,13 +1,38 @@
-.sea-ticket-discourse-reply-container {
-  padding: 12px 0;
-}
-
-.sea-ticket-discourse-reply-container textarea {
-  margin-bottom: 12px;
-}
-
-.sea-ticket-discourse-reply-op-btns {
+.sea-ticket-discourse-reply-container .sea-ticket-discourse-reply-op-btns {
+  margin-top: 12px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.sea-ticket-discourse-reply-container .content-editor-wrapper {
+  margin-top: 12px;
+  margin-left: 42px;
+}
+
+.sea-ticket-discourse-reply-container .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: #3E84F7;
+}
+
+.sea-ticket-discourse-reply-container .author-info-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sea-ticket-discourse-reply-container .author-info-wrapper .author-info-left {
+  display: flex;
+}
+
+.sea-ticket-discourse-reply-container .author-info-wrapper .author-info-left .author-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.sea-ticket-discourse-reply-container .author-info-wrapper .author-info-left .author-avatar img {
+  border-radius: 50%;
+}
+
+.sea-ticket-discourse-reply-container .author-info-wrapper .author-info-left .author-name {
+  padding-left: 10px;
+  font-weight: 500;
 }
