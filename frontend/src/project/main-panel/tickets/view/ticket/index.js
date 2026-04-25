@@ -512,6 +512,7 @@ const Ticket = ({
                 <TicketLog
                   key={`ticket-log-${item.id}`}
                   log={item}
+                  projectUuid={projectUuid}
                   className={className}
                   isSmallScreen={isSmallScreen}
                 />
