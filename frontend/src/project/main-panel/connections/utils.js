@@ -45,17 +45,17 @@ const getSeafileOriginalPageUrl = (connection, row, columns) => {
   return originalPageUrl;
 };
 
-const getEmailOriginalPageUrl = (row) => {
-  let details = row.details ? row.details : [];
-  if (details.length === 0) {
-    return '';
+const getEmailOriginalPageUrl = (connection, row) => {
+  const smtpHost = connection?.config?.smtp_host || '';
+  if (smtpHost.includes('fastmail')) {
+    const emails = row.emails ? row.emails : [];
+    if (emails.length === 0) return '';
+    const email = emails[0];
+    const { email_id, origin_thread_id } = email;
+    if (!email_id || ! origin_thread_id) return '';
+    return 'https://app.fastmail.com/mail/all/' + origin_thread_id + '.' + email_id;
   }
-  const email_id = details[0].email_id;
-  const origin_thread_id = details[0].origin_thread_id;
-  if (!email_id || ! origin_thread_id) {
-    return '';
-  }
-  return 'https://app.fastmail.com/mail/all/' + origin_thread_id + '.' + email_id;
+  return '';
 };
 
 const getNotionOriginalPageUrl = (row, columns) => {
@@ -82,7 +82,7 @@ export const getOriginalPageUrl = (connection, row, columns) => {
       return getSeafileOriginalPageUrl(connection, row, columns);
     }
     case CONNECTION_TYPE.EMAIL: {
-      return getEmailOriginalPageUrl(row);
+      return getEmailOriginalPageUrl(connection, row);
     }
     case CONNECTION_TYPE.NOTION: {
       return getNotionOriginalPageUrl(row, columns);
