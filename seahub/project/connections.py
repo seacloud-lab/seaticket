@@ -705,6 +705,10 @@ class GithubIssueView(APIView):
             )
         except Exception as e:
             logger.error(f'github issue update error: {e}')
+            response = getattr(e, 'response', None)
+            if response is not None and response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
+                error_msg = 'Too many requests.'
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
@@ -712,6 +716,9 @@ class GithubIssueView(APIView):
             github_seadb_api.update_issue_record(project_uuid, connection_id, _pk, issue_data)
         except Exception as e:
             logger.error(f'update github issue in seadb error: {e}')
+            if e.args and e.args[0] == 409:
+                error_msg = 'Conflict with another transaction'
+                return api_error(status.HTTP_409_CONFLICT, error_msg)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'issue': issue_data}, status=status.HTTP_200_OK)
