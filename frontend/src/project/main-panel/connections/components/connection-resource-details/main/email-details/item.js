@@ -167,6 +167,15 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     );
   }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
 
+  const onLinkClick = useCallback((link) => {
+    if (link.startsWith('mailto:')) {
+      const email = link.slice(7);
+      openReplyByEmail(email);
+      return;
+    }
+    window.open(link);
+  }, [openReplyByEmail]);
+
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
     if (HTMLContent) {
@@ -251,7 +260,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             openReplyByEmail={openReplyByEmail}
           />
         ) : (
-          <CustomizeMarkdownViewer value={detailContent} />
+          <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />
         )}
       </div>
     </div>
