@@ -16,7 +16,7 @@
 </p>
 
 <p style="margin: 0;">
-<a href="" style="color:#ED7109; font-size: 16px; font-weight: bold;">{% trans "Sign up" %}</a>
+<a href="{{ url_base }}{% url 'registration_activate' activation_key %}" style="color:#ED7109; font-size: 16px; font-weight: bold;">{% trans "Sign up" %}</a>
 </p>
 
 {% endautoescape %}
