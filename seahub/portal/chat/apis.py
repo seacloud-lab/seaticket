@@ -24,10 +24,6 @@ from seahub.chats.constants import AI_REPLY_TIMEOUT
 logger = logging.getLogger(__name__)
 
 
-# Default chat allowed source types for portal
-DEFAULT_CHAT_ALLOWED_SOURCES = ['site', 'seafile', 'github_issue', 'discourse_forum']
-
-
 def get_portal_settings(project):
     settings = project.settings or '{}'
     if isinstance(settings, str):
@@ -36,8 +32,14 @@ def get_portal_settings(project):
         except:
             settings = {}
     portal_settings = settings.get('portal', {})
+    chat_allowed_sources = portal_settings.get('chat_allowed_sources')
+    if not isinstance(chat_allowed_sources, dict):
+        chat_allowed_sources = {}
     return {
-        'chat_allowed_sources': portal_settings.get('chat_allowed_sources', DEFAULT_CHAT_ALLOWED_SOURCES),
+        'chat_allowed_sources': {
+            'connection_ids': chat_allowed_sources.get('connection_ids') or [],
+            'extra_sources': chat_allowed_sources.get('extra_sources') or [],
+        },
     }
 
 
@@ -352,7 +354,7 @@ class PortalChatView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
         portal_settings = get_portal_settings(project)
-        allowed_sources = portal_settings['chat_allowed_sources']
+        chat_sources = portal_settings['chat_allowed_sources']
 
         chat_task_id_info = gen_portal_chat_task_id(session.session_uuid)
         if cache.get(chat_task_id_info) is not None:
@@ -366,7 +368,8 @@ class PortalChatView(APIView):
             'attachments': [],
             'username': username,
             'org_id': org_id,
-            'allowed_sources': allowed_sources,
+            'connection_ids': chat_sources['connection_ids'],
+            'extra_sources': chat_sources['extra_sources'],
             'is_external_portal': True,
             'stream': stream,
         }

@@ -542,8 +542,12 @@ class PortalSettingsView(APIView):
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
 
-        chat_allowed_sources = portal_settings.get('chat_allowed_sources',
-            ['site', 'seafile', 'github_issue', 'discourse_forum'])
+        chat_allowed_sources = portal_settings.get('chat_allowed_sources')
+        if not isinstance(chat_allowed_sources, dict):
+            chat_allowed_sources = {
+                'connection_ids': [],
+                'extra_sources': [],
+            }
 
         return Response({
             'allow_anonymous': allow_anonymous,
@@ -594,7 +598,10 @@ class PortalSettingsView(APIView):
             portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
 
         chat_allowed_sources = request.data.get('chat_allowed_sources')
-        if chat_allowed_sources is not None and isinstance(chat_allowed_sources, list):
+        if chat_allowed_sources is not None:
+            if not isinstance(chat_allowed_sources, dict):
+                error_msg = 'chat_allowed_sources invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             portal_settings['chat_allowed_sources'] = chat_allowed_sources
 
         if enable_password_protection:

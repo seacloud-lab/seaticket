@@ -100,3 +100,7 @@
 .portal-settings-source-list {
   padding-left: 4px;
 }
+
+.portal-settings-source-selector-wrapper {
+  width: 100%;
+}
