@@ -403,3 +403,55 @@ def password_reset_done(request, template_name='registration/password_reset_done
     return render(request, template_name, {
         'login_bg_image_path': login_bg_image_path,
     })
+
+
+@csrf_protect
+@never_cache
+def password_reset_confirm(request, uidb36=None, token=None,
+        template_name='registration/password_reset_confirm.html',
+        token_generator=default_token_generator,
+        set_password_form=SetPasswordForm,
+        post_reset_redirect=None,
+        extra_context=None):
+
+    if post_reset_redirect is None:
+        post_reset_redirect = reverse('auth_password_reset_complete')
+
+    user = None
+    try:
+        uid_int = base36_to_int(uidb36)
+        user = User.objects.get(id=uid_int)
+    except (TypeError, ValueError, User.DoesNotExist):
+        pass
+
+    validlink = bool(user and token_generator.check_token(user, token))
+    form = None
+    if validlink:
+        if request.method == 'POST':
+            form = set_password_form(user, request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(post_reset_redirect)
+        else:
+            form = set_password_form(user)
+
+    login_bg_image_path = get_login_bg_image_path()
+    context = {
+        'form': form,
+        'validlink': validlink,
+        'login_bg_image_path': login_bg_image_path,
+        'strong_pwd_required': int(USER_STRONG_PASSWORD_REQUIRED),
+    }
+    if extra_context is not None:
+        context.update(extra_context)
+
+    return render(request, template_name, context)
+
+
+def password_reset_complete(request, template_name='registration/password_reset_complete.html'):
+
+    login_bg_image_path = get_login_bg_image_path()
+
+    return render(request, template_name, {
+        'login_bg_image_path': login_bg_image_path,
+    })
