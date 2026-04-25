@@ -16,6 +16,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const [isShowReply, setIsShowReply] = useState(false);
 
   const ref = useRef(null);
+  const replySendTo = useRef('');
 
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
@@ -89,6 +90,11 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     setIsShowReply(true);
   }, []);
 
+  const openReplyByEmail = useCallback((sendTo = '') => {
+    replySendTo.current = sendTo;
+    setIsShowReply(true);
+  }, []);
+
   const onSubmit = useCallback(({ to, cc, content }, callback) => {
     const payload = {
       html_content: content,
@@ -151,7 +157,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
 
     return (
       <ReplyEmail
-        emailTo={[detail['email_from']]}
+        emailTo={[replySendTo.current || detail['email_from']]}
         initValue={initValue}
         onToggle={() => setIsShowReply(false)}
         onSubmit={onSubmit}
@@ -160,6 +166,15 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       />
     );
   }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
+
+  const onLinkClick = useCallback((link) => {
+    if (link.startsWith('mailto:')) {
+      const email = link.slice(7);
+      openReplyByEmail(email);
+      return;
+    }
+    window.open(link);
+  }, [openReplyByEmail]);
 
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
@@ -176,6 +191,11 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     if (!isLast) return;
     setIsLastExpanded(isExpanded);
   }, [isLast, isExpanded]);
+
+  useEffect(() => {
+    if (isShowReply) return;
+    replySendTo.current = '';
+  }, [isShowReply]);
 
   if (!isExpanded || isShowReply) {
     return (
@@ -237,9 +257,10 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             value={detailContent}
             isReadonly={isReadonly}
             className="email-content-detail"
+            openReplyByEmail={openReplyByEmail}
           />
         ) : (
-          <CustomizeMarkdownViewer value={detailContent} />
+          <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />
         )}
       </div>
     </div>
