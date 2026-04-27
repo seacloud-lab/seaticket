@@ -4,7 +4,7 @@ import { gettext } from '@/constants';
 import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TABLE_NAME, TICKET_TYPE, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
@@ -30,19 +30,24 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   }, [value, linkedRecords]);
 
   const initLinkItem = useCallback((linkItem) => {
-    // ticket type connection
-    if (linkedRecords[linkItem]?.includes(TICKET_TABLE_NAME)) {
+    if (!linkItem) return false;
+
+    // Ticket links are plain ids; connection links use "{connection_id}_{record_id}".
+    if (!String(linkItem).includes('_')) {
       setCurrentLinkItem({ _id: linkItem, connection_id: '', type: TICKET_TYPE, key: linkItem });
-      return;
+      return true;
     }
+
     // other type connection
     const [connectionId, record_id] = linkItem.split('_');
-    let validConnectionId = Number(connectionId);
+    const validConnectionId = Number(connectionId);
     const connection = connections.find(c => c.id === validConnectionId);
     if (connection) {
       setCurrentLinkItem({ _id: record_id, connection_id: connection.id, type: connection.type, key: linkItem });
+      return true;
     }
-  }, [connections, linkedRecords]);
+    return false;
+  }, [connections]);
 
   const switchLinkItem = useCallback((step) => {
     if (!currentLinkItem || validValue.length <= 1) return;
@@ -59,8 +64,10 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   }, [validValue, currentLinkItem, initLinkItem]);
 
   const handleExpand = useCallback((linkItem) => {
-    initLinkItem(linkItem);
-    setIsShowDetailsDialog(true);
+    const hasValidLinkItem = initLinkItem(linkItem);
+    if (hasValidLinkItem) {
+      setIsShowDetailsDialog(true);
+    }
   }, [initLinkItem]);
 
   const handleCloseExpand = useCallback(() => {
@@ -77,11 +84,10 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const renderStateIcon = (state) => {
     if (!state) return null;
-    return state === TICKET_STATE.OPEN ? (
-      <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
-    ) : (
-      <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />
-    );
+    // Special handling: The state returned by the API here is open or close, while the state returned elsewhere is 0001 or 0002
+    if (state === 'open') return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
+    if (state === 'closed') return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
+    return null;
   };
 
   return (
