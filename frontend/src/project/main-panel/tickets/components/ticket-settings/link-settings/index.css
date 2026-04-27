@@ -15,7 +15,7 @@
 }
 
 .sea-ticket-settings-item .link-settings-content .link-item:hover {
-  background-color: var(--sea-email-th-quartus-bg);
+  background-color: #ededed;
 }
 
 .sea-ticket-settings-item .link-settings-content .link-item .link-item-name {
@@ -39,10 +39,10 @@
 }
 
 .sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-check-circle-stroked {
-  color: var(--ticket-close-color)
+  color: var(--ticket-close-color);
 }
 
 .sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-dot-circle-stroked {
-  color: var(--ticket-open-color)
+  color: var(--ticket-open-color);
 }
 
