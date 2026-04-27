@@ -89,22 +89,26 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
 
     // task
     if (hasOwnProperty(propsValue, 'task') && propsValue.task) {
-      const { system_prompt, user_input } = propsValue.task || {};
+      const { system_prompts, user_input } = propsValue.task || {};
+      let TaskInfo = [];
+      if (system_prompts && Array.isArray(system_prompts) && system_prompts.length > 0) {
+        const allSystemPrompts = system_prompts.map((system_prompt) => {
+          return {
+            value: system_prompt ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: system_prompt } : null,
+            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />)
+          };
+        });
+        TaskInfo.push({
+          name: gettext('System prompts'),
+          children: allSystemPrompts
+        });
+      }
+
+      TaskInfo.push(generatorUserMessage(gettext('User input'), user_input, customizeMDProps));
 
       value.push({
         name: gettext('Task step'),
-        children: [
-          {
-            name: gettext('System prompt'),
-            children: [
-              {
-                value: system_prompt ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: system_prompt } : null,
-                formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-              }
-            ]
-          },
-          generatorUserMessage(gettext('User input'), user_input, customizeMDProps),
-        ]
+        children: TaskInfo
       });
     }
 
