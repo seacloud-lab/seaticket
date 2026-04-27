@@ -38,13 +38,14 @@ const ProcessDetails = ({ value, isPrimaryContainer }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
+    const { isPrimaryContainer, name, icon } = value;
     return (
       <>
         {isPrimaryContainer && (
           <div className={classnames('sea-qa-ai-thought-process-order', 'primary-container')} onClick={toggle}>
             <span className="sea-qa-ai-thought-process-order-title">
-              <Icon symbol="more" />
-              {value.name}
+              <Icon symbol={icon} />
+              {name}
             </span>
             <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
           </div>
@@ -53,7 +54,7 @@ const ProcessDetails = ({ value, isPrimaryContainer }) => {
           <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
             <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
             <span className="sea-qa-ai-thought-process-order-title">
-              {value.name}
+              {name}
             </span>
           </div>
         )}
