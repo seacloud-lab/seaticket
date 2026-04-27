@@ -85,6 +85,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const renderStateIcon = (state) => {
     if (!state) return null;
+    // Special handling: The state returned by the API here is open or close, while the state returned elsewhere is 0001 or 0002
     if (state === 'open') return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
     if (state === 'closed') return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
     return null;
