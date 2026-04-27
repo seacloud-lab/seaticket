@@ -31,7 +31,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const initLinkItem = useCallback((linkItem) => {
     // ticket type connection
-    if (linkedRecords[linkItem]?.includes(TICKET_TABLE_NAME)) {
+    if (linkItem?.includes(TICKET_TABLE_NAME)) {
       setCurrentLinkItem({ _id: linkItem, connection_id: '', type: TICKET_TYPE, key: linkItem });
       return;
     }
@@ -42,7 +42,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
     if (connection) {
       setCurrentLinkItem({ _id: record_id, connection_id: connection.id, type: connection.type, key: linkItem });
     }
-  }, [connections, linkedRecords]);
+  }, [connections]);
 
   const switchLinkItem = useCallback((step) => {
     if (!currentLinkItem || validValue.length <= 1) return;
@@ -77,7 +77,7 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const renderStateIcon = (state) => {
     if (!state) return null;
-    return state === TICKET_STATE.OPEN ? (
+    return state !== TICKET_STATE.OPEN ? (
       <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
     ) : (
       <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />
