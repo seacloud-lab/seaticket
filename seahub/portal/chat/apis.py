@@ -16,6 +16,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects
+from seahub.project.constants import AIScenario
 from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import get_ai_reply
@@ -342,8 +343,8 @@ class PortalChatView(APIView):
         if clear_context:
             PortalChatMessages.objects.clear_context(session_uuid)
 
-        # Check AI quota
-        org_id = request.user.org.org_id if hasattr(request.user, 'org') and request.user.org else -1
+        # Check AI quota of org
+        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
         if check_ai_limit(username, org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 
@@ -372,6 +373,7 @@ class PortalChatView(APIView):
             'extra_sources': chat_sources['extra_sources'],
             'is_external_portal': True,
             'stream': stream,
+            'scenario': AIScenario.PORTAL_CHAT.value,
         }
 
         task_info = {
