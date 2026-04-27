@@ -85,8 +85,8 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
 
   const renderStateIcon = (state) => {
     if (!state) return null;
-    if (state === TICKET_STATE.OPEN) return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
-    if (state === TICKET_STATE.CLOSED) return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
+    if (state === 'open') return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
+    if (state === 'closed') return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
     return null;
   };
 
