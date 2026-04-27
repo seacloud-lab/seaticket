@@ -4,7 +4,7 @@ import { gettext } from '@/constants';
 import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TYPE, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
@@ -46,7 +46,6 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
       setCurrentLinkItem({ _id: record_id, connection_id: connection.id, type: connection.type, key: linkItem });
       return true;
     }
-
     return false;
   }, [connections]);
 
