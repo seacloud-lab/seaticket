@@ -10,6 +10,44 @@ from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
+EMAIL_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{EmailTable.thread_id.name}`',
+    f'`{EmailTable.title.name}`',
+    f'`{EmailTable.email_from.name}`',
+    f'`{EmailTable.email_to.name}`',
+    f'`{EmailTable.cc.name}`',
+    f'`{EmailTable.content.name}`',
+    f'`{EmailTable.modified_time.name}`',
+    f'`{EmailTable.is_sender.name}`',
+    f'`{EmailTable.message_id.name}`',
+    f'`{EmailTable.reply_to_message_id.name}`',
+    f'`{EmailTable.origin_thread_id.name}`',
+    f'`{EmailTable.email_id.name}`',
+    f'`{EmailTable.deleted.name}`',
+])
+THREAD_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{ThreadTable.title.name}`',
+    f'`{ThreadTable.modified_time.name}`',
+    f'`{ThreadTable.unread.name}`',
+    f'`{ThreadTable.tags.name}`',
+    f'`{ThreadTable.linked_ticket.name}`',
+    f'`{ThreadTable.deleted.name}`',
+])
+THREAD_ATTACHMENT_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{ThreadTable.title.name}`',
+    f'`{ThreadTable.modified_time.name}`',
+])
+EMAIL_ATTACHMENT_QUERY_COLUMNS = ', '.join([
+    f'`{EmailTable.thread_id.name}`',
+    f'`{EmailTable.email_from.name}`',
+    f'`{EmailTable.email_to.name}`',
+    f'`{EmailTable.content.name}`',
+    f'`{EmailTable.modified_time.name}`',
+])
+
 
 class EmailSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
@@ -19,7 +57,7 @@ class EmailSeaDBAPI:
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"
+        sql = f"SELECT {EMAIL_QUERY_COLUMNS} FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -32,7 +70,10 @@ class EmailSeaDBAPI:
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY {EmailTable.modified_time.name} ASC "
+        sql = (
+            f"SELECT {EMAIL_QUERY_COLUMNS} FROM `{table_name}` "
+            f"WHERE `thread_id` = {thread_id} ORDER BY {EmailTable.modified_time.name} ASC "
+        )
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -42,7 +83,7 @@ class EmailSeaDBAPI:
 
     def get_thread_by_pk(self, connection_id, _pk):
         table_name = ThreadTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"
+        sql = f"SELECT {THREAD_QUERY_COLUMNS} FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -54,7 +95,7 @@ class EmailSeaDBAPI:
             for _pk in _pks
         ])
         table_name = ThreadTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
+        sql = f"SELECT {THREAD_ATTACHMENT_QUERY_COLUMNS} FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
@@ -64,7 +105,11 @@ class EmailSeaDBAPI:
             for thread_id in thread_ids
         ])
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY {EmailTable.modified_time.name} ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
+        sql = (
+            f"SELECT {EMAIL_ATTACHMENT_QUERY_COLUMNS} FROM `{table_name}` "
+            f"WHERE `thread_id` in ({thread_ids_str}) "
+            f"ORDER BY {EmailTable.modified_time.name} ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
+        )
         response = self.seadb_api.query_rows(self.base_id, sql)
         emails = response.get('results', [])
         result = {}

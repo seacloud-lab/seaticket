@@ -12,10 +12,33 @@ from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 logger = logging.getLogger(__name__)
 
 TABLE_KNOWLEDGE_BASE = KnowledgeBaseTable.gen_table_name()
+KNOWLEDGE_BASE_DETAIL_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{KnowledgeBaseTable.title.name}`',
+    f'`{KnowledgeBaseTable.content.name}`',
+    f'`{KnowledgeBaseTable.tags.name}`',
+    f'`{KnowledgeBaseTable.ai_summary.name}`',
+    f'`{KnowledgeBaseTable.creator.name}`',
+    f'`{KnowledgeBaseTable.last_modifier.name}`',
+    f'`{KnowledgeBaseTable.created_time.name}`',
+    f'`{KnowledgeBaseTable.modified_time.name}`',
+    f'`{KnowledgeBaseTable.deleted.name}`',
+    f'`{KnowledgeBaseTable.ai_processed_time.name}`',
+])
+KNOWLEDGE_BASE_ATTACHMENT_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{KnowledgeBaseTable.title.name}`',
+    f'`{KnowledgeBaseTable.content.name}`',
+    f'`{KnowledgeBaseTable.tags.name}`',
+    f'`{KnowledgeBaseTable.creator.name}`',
+    f'`{KnowledgeBaseTable.last_modifier.name}`',
+    f'`{KnowledgeBaseTable.created_time.name}`',
+    f'`{KnowledgeBaseTable.modified_time.name}`',
+])
 
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
-    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
+    sql = f"SELECT {KNOWLEDGE_BASE_DETAIL_QUERY_COLUMNS} FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     columns = res.get('metadata') or []
@@ -26,7 +49,11 @@ def get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids):
         str(record_id)
         for record_id in record_ids
     ])
-    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` IN ({record_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = (
+        f"SELECT {KNOWLEDGE_BASE_ATTACHMENT_QUERY_COLUMNS} "
+        f"FROM `{TABLE_KNOWLEDGE_BASE}` "
+        f"WHERE `_pk` IN ({record_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+    )
     return seadb_api.query_rows(project_uuid, sql).get('results', [])
 
 

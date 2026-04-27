@@ -9,6 +9,35 @@ from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
+DISCOURSE_TOPIC_LIST_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{DiscourseTopicsTable.topic_id.name}`',
+    f'`{DiscourseTopicsTable.title.name}`',
+    f'`{DiscourseTopicsTable.slug.name}`',
+    f'`{DiscourseTopicsTable.views.name}`',
+    f'`{DiscourseTopicsTable.modified_time.name}`',
+    f'`{DiscourseTopicsTable.created_time.name}`',
+    f'`{DiscourseTopicsTable.resolved.name}`',
+    f'`{DiscourseTopicsTable.linked_ticket.name}`',
+    f'`{DiscourseTopicsTable.deleted.name}`',
+    f'`{DiscourseTopicsTable.outdated.name}`',
+])
+DISCOURSE_REPLY_QUERY_COLUMNS = ', '.join([
+    f'`{DiscourseRepliesTable.topic_id.name}`',
+    f'`{DiscourseRepliesTable.post_number.name}`',
+    f'`{DiscourseRepliesTable.content.name}`',
+    f'`{DiscourseRepliesTable.author.name}`',
+    f'`{DiscourseRepliesTable.modified_time.name}`',
+    f'`{DiscourseRepliesTable.accepted_answer.name}`',
+])
+DISCOURSE_TOPIC_ATTACHMENT_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{DiscourseTopicsTable.topic_id.name}`',
+    f'`{DiscourseTopicsTable.title.name}`',
+    f'`{DiscourseTopicsTable.slug.name}`',
+    f'`{DiscourseTopicsTable.created_time.name}`',
+])
+
 
 class DiscourseSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
@@ -18,7 +47,10 @@ class DiscourseSeaDBAPI:
     def get_topics_by_connection_id(self, connection_id, start, limit):
         """Retrieve all topics for the specified connection_id."""
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
+        sql = (
+            f"SELECT {DISCOURSE_TOPIC_LIST_QUERY_COLUMNS} FROM `{table_name}` "
+            f"WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
+        )
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -35,7 +67,7 @@ class DiscourseSeaDBAPI:
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id}"
+        sql = f"SELECT {DISCOURSE_REPLY_QUERY_COLUMNS} FROM `{table_name}` WHERE `topic_id` = {topic_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -47,13 +79,19 @@ class DiscourseSeaDBAPI:
             for _pk in _pks
         ])
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = (
+            f"SELECT {DISCOURSE_TOPIC_ATTACHMENT_QUERY_COLUMNS} FROM `{table_name}` "
+            f"WHERE `_pk` in ({_pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+        )
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
     def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
+        sql = (
+            f"SELECT {DISCOURSE_REPLY_QUERY_COLUMNS} FROM `{table_name}` "
+            f"WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
+        )
         response = self.seadb_api.query_rows(self.base_id, sql)
         replies = response.get('results', [])
         result = {}

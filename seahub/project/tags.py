@@ -21,6 +21,14 @@ from seahub.seadb_models.models import TagTable
 
 logger = logging.getLogger(__name__)
 
+TAG_QUERY_COLUMNS = ', '.join([
+    '`_pk`',
+    f'`{TagTable.name.name}`',
+    f'`{TagTable.color.name}`',
+    f'`{TagTable.text_color.name}`',
+    f'`{TagTable.description.name}`',
+])
+
 
 class TagsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -68,7 +76,7 @@ class TagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             table_name = TagTable.gen_table_name()
-            sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
+            sql = f"SELECT {TAG_QUERY_COLUMNS} FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)
