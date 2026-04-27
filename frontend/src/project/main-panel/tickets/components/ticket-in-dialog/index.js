@@ -38,7 +38,7 @@ const TicketInDialog = ({
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
       updateTicket(ticket);
-      setLinkedRecords(res.data?.linked_record_titles || {});
+      setLinkedRecords(res.data?.linked_records_info || {});
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrorMessage(errorMessage);

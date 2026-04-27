@@ -27,17 +27,17 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
-    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES
+    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, ConnectionType
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
-from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable
+from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable, GithubIssuesTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
-    build_linked_record_titles_map, build_linked_record_titles_map_for_keys, \
+    build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
@@ -672,9 +672,8 @@ class TicketAPIView(APIView):
             convert_ticket_select_column_name_to_option_id(metadata, ticket)
 
             linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
-            linked_record_titles = build_linked_record_titles_map_for_keys(
-                seadb_api, project_uuid, linked_connection_records
-            )
+
+            linked_records_info = build_linked_records_info_for_keys(seadb_api, project_uuid, linked_connection_records)
 
             start = 0
             end = 25
@@ -697,7 +696,7 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'ticket': ticket, 'linked_record_titles': linked_record_titles})
+        return Response({'ticket': ticket, 'linked_records_info': linked_records_info})
 
     @require_org_context
     def put(self, request, project_uuid, ticket_id):

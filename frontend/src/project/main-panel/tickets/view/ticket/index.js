@@ -413,7 +413,7 @@ const Ticket = ({
       const ticket = new TicketModel(res.data.ticket);
       setLoadError(res.data?.error_msg || '');
       setTicket(ticket);
-      setLinkedRecords(res.data?.linked_record_titles || {});
+      setLinkedRecords(res.data?.linked_records_info || {});
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

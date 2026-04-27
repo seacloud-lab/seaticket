@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { CustomizeLabel } from '@/components';
+import { CustomizeLabel, IconTooltip } from '@/components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { TICKET_TABLE_NAME, TICKET_TYPE, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
@@ -17,7 +18,15 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
   const [currentLinkItem, setCurrentLinkItem] = useState(null);
 
   const validValue = useMemo(() => {
-    return value.map(v => ({ key: v, title: linkedRecords[v] })).filter(item => item.title);
+    return value.map(v => {
+      const { title, connection_type, state } = linkedRecords[v] || {};
+      return {
+        key: v,
+        title,
+        type: connection_type,
+        state
+      };
+    }).filter(item => item.title);
   }, [value, linkedRecords]);
 
   const initLinkItem = useCallback((linkItem) => {
@@ -59,13 +68,31 @@ const LinkSettings = ({ value, className = 'mb-4', linkedRecords }) => {
     setIsShowDetailsDialog(false);
   }, []);
 
+  const renderTypeImage = (type) => {
+    if (!type) return null;
+    return (
+      <img src={getConnectionIcon(type)} alt="" className="connection-icon" />
+    );
+  };
+
+  const renderStateIcon = (state) => {
+    if (!state) return null;
+    return state === TICKET_STATE.OPEN ? (
+      <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
+    ) : (
+      <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />
+    );
+  };
+
   return (
     <div className={classnames('sea-ticket-settings-item', className)}>
       <CustomizeLabel icon="link">{gettext('Linked records')}</CustomizeLabel>
       <div className="link-settings-content">
-        {validValue.map(({ key, title }) => (
-          <div className="link-item" key={key}>
-            <span className="link-item-name" title={title} onClick={() => handleExpand(key)}>{title}</span>
+        {validValue.map(({ key, title, type, state }) => (
+          <div className="link-item" key={key} onClick={() => handleExpand(key)}>
+            {renderTypeImage(type)}
+            <span className="link-item-name" title={title}>{title}</span>
+            {renderStateIcon(state)}
           </div>
         ))}
       </div>

@@ -1,4 +1,48 @@
 .sea-ticket-settings-item .link-settings-content {
   padding: 6px 0;
   margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.sea-ticket-settings-item .link-settings-content .link-item {
+  background-color: #f7f7f5;
+  height: 32px;
+  gap: 8px;
+  padding: 0px 8px;
+  border-radius: 6px;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item:hover {
+  background-color: #ededed;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .link-item-name {
+  padding: 0px;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .connection-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn {
+  width: 16px;
+  height: 16px;
+  margin-right: 0px;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-check-circle-stroked {
+  color: var(--ticket-close-color);
+}
+
+.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-dot-circle-stroked {
+  color: var(--ticket-open-color);
+}
+

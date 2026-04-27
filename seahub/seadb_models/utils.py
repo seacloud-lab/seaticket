@@ -728,14 +728,16 @@ def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
     return topics_records
 
 
-def list_connection_record_titles(seadb_api, project_uuid, connection_id, connection_type, pks):
+def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connection_type, pks):
     if not pks:
         return []
 
     pks_str = ','.join([str(pk) for pk in pks])
 
+    sql = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = GithubIssuesTable.gen_table_name(connection_id)
+        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
@@ -747,7 +749,8 @@ def list_connection_record_titles(seadb_api, project_uuid, connection_id, connec
     else:
         return []
 
-    sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
+    if not sql:
+        sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
