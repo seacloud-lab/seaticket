@@ -7,6 +7,18 @@
   overflow: hidden;
 }
 
+.sea-qa-ai-thought-process .sea-qa-ai-thought-process-order.primary-container {
+  justify-content: space-between;
+  background-color: #f7f7f5;
+  border-radius: 8px;
+  border: 1px solid var(--sea-email-border-secondary-color);
+  padding: 0px 16px;
+}
+
+.sea-qa-ai-thought-process .sea-qa-ai-thought-process-order.primary-container:not(:first-child) {
+  margin-top: 24px;
+}
+
 .sea-qa-ai-thought-process .sea-qa-ai-thought-process-order .sea-qa-icon-btn {
   height: 10px;
   width: 10px;

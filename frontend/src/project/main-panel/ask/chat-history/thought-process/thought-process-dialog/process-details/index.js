@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, RadioGroup } from '@/components';
+import { IconButton, RadioGroup, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { getType } from '@/utils/type-detection';
@@ -13,7 +13,7 @@ const rawOptions = [
   { value: 'raw', label: gettext('Raw') },
 ];
 
-const ProcessDetails = ({ value }) => {
+const ProcessDetails = ({ value, isPrimaryContainer }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [displayType, setDisplayType] = useState('normal');
 
@@ -40,12 +40,24 @@ const ProcessDetails = ({ value }) => {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
     return (
       <>
-        <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
-          <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })}/>
-          <span className="sea-qa-ai-thought-process-order-title">
-            {value.name}
-          </span>
-        </div>
+        {isPrimaryContainer && (
+          <div className={classnames('sea-qa-ai-thought-process-order', 'primary-container')} onClick={toggle}>
+            <span className="sea-qa-ai-thought-process-order-title">
+              <Icon symbol="more" />
+              {value.name}
+            </span>
+            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
+          </div>
+        )}
+        {!isPrimaryContainer && (
+          <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
+            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
+            <span className="sea-qa-ai-thought-process-order-title">
+              {value.name}
+            </span>
+          </div>
+        )}
+
         {isShowDetails && (
           <div className="sea-qa-ai-thought-process-content">
             {hasRawChildren && (

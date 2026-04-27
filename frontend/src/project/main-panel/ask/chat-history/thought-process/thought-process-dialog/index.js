@@ -82,6 +82,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
 const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...props }) => {
   const [isLoading, setLoading] = useState(true);
   const [value, setValue] = useState([]);
+  console.log('propsValue', propsValue);
 
   useEffect(() => {
     let value = [];
@@ -375,6 +376,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     setValue(value);
     setLoading(false);
   }, [propsValue]);
+  console.log('value', value);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="sea-qa-ai-thought-process-dialog">
@@ -383,7 +385,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         {!isLoading && (
           <div className="sea-qa-ai-thought-process">
             {value.map((v, index) => {
-              return (<ProcessDetails value={v} key={index} />);
+              return (<ProcessDetails value={v} key={index} isPrimaryContainer={true} />);
             })}
           </div>
         )}
