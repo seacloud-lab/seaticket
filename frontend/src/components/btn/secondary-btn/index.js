@@ -1,10 +1,11 @@
 import React from 'react';
 import classnames from 'classnames';
 import Icon from '../../icon';
+import Loading from '@/components/loading';
 
 import './index.css';
 
-const SecondaryBtn = ({ icon, text, isSmall, disabled, className, onClick, ...rest }) => {
+const SecondaryBtn = ({ icon, text, isSmall, disabled, doing, className, onClick, ...rest }) => {
   const handleKeyDown = (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
       e.preventDefault();
@@ -20,17 +21,22 @@ const SecondaryBtn = ({ icon, text, isSmall, disabled, className, onClick, ...re
         'sea-ticket-secondary-icon-btn': icon,
         'sea-ticket-secondary-small-btn': isSmall,
         'disabled': disabled,
+        'doing': doing,
       })}
       title={text}
       aria-label={text}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
-      onClick={disabled ? undefined : onClick}
-      onKeyDown={disabled ? undefined : handleKeyDown}
+      onClick={disabled || doing ? undefined : onClick}
+      onKeyDown={disabled || doing ? undefined : handleKeyDown}
       { ...rest }
     >
-      {icon && (<Icon symbol={icon} className="mr-2" aria-hidden="true" />)}
+      {icon && (
+        <>
+          {icon === 'loading' ? (<Loading />) : (<Icon symbol={icon} aria-hidden="true" />)}
+        </>
+      )}
       <span>{text}</span>
     </div>
   );

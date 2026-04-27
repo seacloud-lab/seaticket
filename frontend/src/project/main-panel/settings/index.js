@@ -4,7 +4,7 @@ import SwitchSettingsItem from './switch-settings-item';
 import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
 import PromptSettings from './prompt-settings';
-import GithubIssueTypeMappingSettings from './github-issue-type-mapping';
+import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
 
 const Settings = ({
   title,
@@ -30,11 +30,11 @@ const Settings = ({
         value={settings.agent?.enabled}
         onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
       />
-      <GithubIssueTypeMappingSettings
+      <GitHubIssueTypeMappingSettings
         className="mb-4"
-        agentSettings={settings.agent || {}}
-        onChange={(github_issue_type_mapping, callback) => modifySettings({
-          agent: Object.assign({}, settings.agent, { github_issue_type_mapping }),
+        value={settings?.agent?.github_issue_type_mapping || {}}
+        onChange={(value, callback) => modifySettings({
+          agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
         }, callback)}
       />
       <SwitchSettingsItem

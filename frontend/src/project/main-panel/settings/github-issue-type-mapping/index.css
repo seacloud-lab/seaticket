@@ -1,47 +1,133 @@
+.github-issue-type-mapping-settings {
+  padding-bottom: 10px;
+}
+
 .github-issue-type-mapping-header {
-  border-bottom: 1px solid #eee;
-  font-size: 0.9375rem;
   line-height: 1.5;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
 }
 
-.github-issue-type-mapping-actions {
-  margin-top: 12px;
+.github-issue-type-mapping-body {
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 8px;
 }
 
-.github-issue-type-mapping-sync-btn {
-  display: inline-flex;
+.github-issue-type-mapping-table {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
-.github-issue-type-mapping-row {
+.github-issue-type-mapping-table::after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 160px;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background-color: var(--bs-border-secondary-color);
+}
+
+.github-issue-type-mapping-table-row {
+  display: flex;
+  width: 100%;
+  height: 38px;
+}
+
+.github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  padding: 0 16px;
 }
 
-.github-issue-type-agent-type {
-  width: 84px;
-  color: #666;
+.github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell:first-child {
+  width: 160px;
+  background-color: rgba(247, 247, 245, 0.6);
+}
+
+.github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell:last-child {
+  width: 408px;
+  background-color: rgba(247, 247, 245, 0.3);
+}
+
+.github-issue-type-mapping-table-header.github-issue-type-mapping-table-row  {
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  height: 41px;
+}
+
+.github-issue-type-mapping-table-header .github-issue-type-mapping-table-cell {
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+}
+
+.github-issue-type-mapping-table-header .github-issue-type-mapping-table-cell:last-child {
+  justify-content: space-between;
+}
+
+.github-issue-type-mapping-table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row {
+  height: 50px;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row:first-child {
+  height: 56px;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row:last-child {
+  height: 60px;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell {
+  padding-top: 6px;
+  padding-bottom: 6px;;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row:first-child .github-issue-type-mapping-table-cell {
+  padding-top: 12px;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row:last-child .github-issue-type-mapping-table-cell {
+  padding-bottom: 16px;
+}
+
+.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell:first-child {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.github-issue-type-mapping-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
-  line-height: 20px;
 }
 
-.github-issue-type-mapping-arrow {
-  color: #9ba3af;
-  font-size: 18px;
-  line-height: 1;
-  font-family: -apple-system, 'Segoe UI Symbol', 'Noto Sans Symbols', sans-serif;
+.github-issue-type-mapping-title-icon {
+  height: 14px;
+  width: 14px;
 }
 
-.github-issue-type-selector {
-  width: 150px;
-  flex: 0 0 auto;
+.github-issue-type-agent-type.sea-qa-ui-option  {
+  width: 100%;
+  height: 26px;
+  border-radius: 13px;
+  line-height: 26px !important;
+  font-size: 14px;
+  border: 1px solid var(--bs-border-tertiary-color) !important;
+  text-align: center;
 }
 
-.github-issue-type-auto-hint {
-  color: #9ba3af;
-  font-size: 12px;
-  line-height: 20px;
+.github-issue-type-mapping-sync-btn.sea-ticket-secondary-btn {
+  width: 166px;
+}
+
+.github-issue-type-selector.sea-qa-select .selected-option {
+  background: inherit;
 }
