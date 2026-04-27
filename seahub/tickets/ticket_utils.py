@@ -15,7 +15,8 @@ from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.seadb_models.utils import get_connection_table_name
-from seahub.portal.portal_utils import get_portal_issue, TABLE_PORTAL_ISSUES
+from seahub.portal.portal_utils import get_portal_issue
+from seahub.seadb_models.models import PortalIssuesTable
 
 
 
@@ -37,6 +38,29 @@ class TicketLinkSyncPlan:
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
 logger = logging.getLogger(__name__)
+
+
+def validate_linked_connection_records(linked_connection_records):
+    if not linked_connection_records:
+        return
+    for record in linked_connection_records:
+        if not isinstance(record, str):
+            raise TicketLinkValidationError('linked_connection_records invalid.')
+        parts = record.split('_', 1)
+        if len(parts) != 2:
+            raise TicketLinkValidationError('linked_connection_records invalid.')
+        connection_id, record_id = parts
+        if not connection_id or not record_id:
+            raise TicketLinkValidationError('linked_connection_records invalid.')
+        if connection_id != 'portal':
+            try:
+                int(connection_id)
+            except Exception:
+                raise TicketLinkValidationError('linked_connection_records invalid.')
+        try:
+            int(record_id)
+        except Exception:
+            raise TicketLinkValidationError('linked_connection_records invalid.')
 
 
 def build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns):
@@ -91,7 +115,7 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
     if portal_issue_ids:
         try:
             ids_str = ','.join([str(i) for i in portal_issue_ids])
-            sql = f"SELECT _pk, title FROM `{TABLE_PORTAL_ISSUES}` WHERE `_pk` IN ({ids_str})"
+            sql = f"SELECT _pk, title FROM `{PortalIssuesTable.gen_table_name()}` WHERE `_pk` IN ({ids_str})"
             res = seadb_api.query_rows(project_uuid, sql)
             for row in (res.get('results') or []):
                 _pk = row.get('_pk')
@@ -249,20 +273,18 @@ def check_ticket_creation_interval(seadb_api, project_uuid, username, deleted=Fa
 def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket_id, deleted=False):
     """Limit ticket comment creation to once every 30 seconds per creator per ticket."""
     previous_ticket_comment_sql = (
-        f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `creator` = '{username}' "
+        f"SELECT created_time FROM `{TABLE_TICKET_COMMENTS}` WHERE `creator` = '{username}' "
         f"AND `ticket_id` = {ticket_id} AND `deleted` = {deleted} "
         f"ORDER BY `_pk` DESC LIMIT 1"
     )
     previous_ticket_comment = seadb_api.query_rows(project_uuid, previous_ticket_comment_sql).get('results')
-
     if previous_ticket_comment:
-        created_at = previous_ticket_comment[0].get('created_at')
+        created_at = previous_ticket_comment[0].get('created_time')
         created_at = time_str_to_utc_time(created_at) if created_at else None
         if created_at and created_at > timezone.now() - relativedelta(seconds=30):
             return False
 
     return True
-
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
     column_names = TicketsTable.gen_query_record_column_names()
@@ -913,7 +935,7 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     if not portal_issue.get('linked_ticket'):
                         ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                         if ticket_id:
-                            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [{
+                            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [{
                                 'pk': int(portal_issue_id),
                                 'row': {
                                     'linked_ticket': int(ticket_id),
@@ -933,7 +955,7 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     if portal_issue.get('linked_ticket'):
                         actual_linked = int(portal_issue.get('linked_ticket'))
                         if actual_linked == expected_ticket_id:
-                            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [{
+                            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [{
                                 'pk': int(portal_issue_id),
                                 'row': {
                                     'linked_ticket': None,

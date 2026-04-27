@@ -428,6 +428,8 @@ def init_portal_issues_seadb_table(seadb_api, project_uuid):
         PortalIssuesTable.creator.name,
         PortalIssuesTable.deleted.name,
         PortalIssuesTable.due_date.name,
+        PortalIssuesTable.ai_processed_time.name,
+        PortalIssuesTable.modified_time.name
     ]
     for column in portal_issues_index_columns:
         seadb_api.create_column_index(

@@ -25,12 +25,12 @@ from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
-from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable
+from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable, PortalIssuesTable, PortalIssueCommentsTable
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, \
     init_portal_issues_seadb_table
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
-    check_ticket_comment_creation_interval, build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, \
-    convert_select_field_names_to_option_ids, check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
+    build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
+    convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -44,8 +44,7 @@ from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_ke
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
-    TABLE_PORTAL_ISSUE_COMMENTS, TABLE_PORTAL_ISSUES, send_portal_issue_update_msg
-
+    send_portal_issue_update_msg, check_portal_issue_comment_creation_interval
 logger = logging.getLogger(__name__)
 
 
@@ -199,12 +198,13 @@ class PortalIssuesView(APIView):
             default_substate = ''
             cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cached_default_substate = cache.get(cache_key, None)
+            portal_issues_table_name = PortalIssuesTable.gen_table_name()
             if cached_default_substate is not None:
                 default_substate = cached_default_substate
             else:
                 try:
                     base_metadata = seadb_api.get_base_metadata(project_uuid)
-                    issue_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_PORTAL_ISSUES) if base_metadata else None
+                    issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name) if base_metadata else None
                     table_columns = (issue_meta or {}).get('columns') or []
 
                     substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
@@ -234,7 +234,7 @@ class PortalIssuesView(APIView):
                 PortalIssuesTable.deleted.name: False,
                 PortalIssuesTable.due_date.name: due_date,
             }
-            res = seadb_api.insert_rows(project_uuid, TABLE_PORTAL_ISSUES, [row])
+            res = seadb_api.insert_rows(project_uuid, portal_issues_table_name, [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
@@ -247,7 +247,7 @@ class PortalIssuesView(APIView):
                     new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
-                        seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [{
+                        seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
                             'pk': int(portal_issue_pk),
                             'row': {
                                 PortalIssuesTable.content.name: updated_content,
@@ -257,7 +257,7 @@ class PortalIssuesView(APIView):
                 except Exception as e:
                     logger.error(e)
                     try:
-                        seadb_api.delete_rows(project_uuid, TABLE_PORTAL_ISSUES, [int(portal_issue_pk)])
+                        seadb_api.delete_rows(project_uuid, portal_issues_table_name, [int(portal_issue_pk)])
                     except Exception as e:
                         logger.error(e)
                     error_msg = 'Upload files failed.'
@@ -308,11 +308,12 @@ class PortalIssuesView(APIView):
             issue_id_to_row[row_id] = row
 
         try:
+            portal_issues_table_name = PortalIssuesTable.gen_table_name()
             issue_ids = issue_id_to_row.keys()
             issue_ids_str = ','.join(str(issue_id) for issue_id in issue_ids)
             sql = f"""
             SELECT `_pk`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `assignees`, `participants`, `linked_ticket`
-            FROM `{TABLE_PORTAL_ISSUES}`
+            FROM `{portal_issues_table_name}`
             WHERE `_pk` IN ({issue_ids_str})
             """
             query_result = seadb_api.query_rows(project_uuid, sql)
@@ -356,40 +357,8 @@ class PortalIssuesView(APIView):
             if 'type' in row_data:
                 updated_row[PortalIssuesTable.type.name] = row_data.get('type') or None
 
-            if 'linked_ticket' in row_data:
-                linked_ticket = row_data.get('linked_ticket')
-                current_linked_ticket = issue.get('linked_ticket')
-                if linked_ticket in (None, ''):
-                    new_linked_ticket = None
-                else:
-                    try:
-                        new_linked_ticket = int(linked_ticket)
-                    except (TypeError, ValueError):
-                        error_msg = 'linked_ticket invalid.'
-                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-                old_link_key = f'portal_{issue.get("_pk")}' if current_linked_ticket else None
-                new_link_key = f'portal_{issue.get("_pk")}' if new_linked_ticket else None
-                removed_items = [old_link_key] if old_link_key and int(current_linked_ticket) != int(new_linked_ticket or 0) else []
-                added_items = [new_link_key] if new_link_key and int(current_linked_ticket or 0) != new_linked_ticket else []
-
-                if added_items or removed_items:
-                    current_ticket_id = int(current_linked_ticket) if current_linked_ticket else None
-                    target_ticket_id = new_linked_ticket
-                    if current_ticket_id:
-                        ticket_link_diff[current_ticket_id] = (
-                            ticket_link_diff.get(current_ticket_id, ([], []))[0],
-                            ticket_link_diff.get(current_ticket_id, ([], []))[1] + removed_items,
-                        )
-                    if target_ticket_id:
-                        ticket_link_diff[target_ticket_id] = (
-                            ticket_link_diff.get(target_ticket_id, ([], []))[0] + added_items,
-                            ticket_link_diff.get(target_ticket_id, ([], []))[1],
-                        )
-                    updated_row[PortalIssuesTable.linked_ticket.name] = target_ticket_id
-
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_ticket'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
                     continue
                 updated_row[key] = value
 
@@ -411,7 +380,7 @@ class PortalIssuesView(APIView):
 
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, update_rows)
+                seadb_api.update_rows(project_uuid, portal_issues_table_name, update_rows)
             except Exception as e:
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
@@ -470,7 +439,7 @@ class PortalIssuesView(APIView):
 
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, update_rows)
+                seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), update_rows)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -783,7 +752,7 @@ class PortalIssueView(APIView):
                     'row': update_row
                 }
             ]
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, update_rows)
+            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -826,7 +795,7 @@ class PortalIssueView(APIView):
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 }
             }
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [update_row])
+            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [update_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -911,7 +880,7 @@ class PortalIssueCommentsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         
-        if not check_ticket_comment_creation_interval(seadb_api, project_uuid, username, issue.get('_pk')):
+        if not check_portal_issue_comment_creation_interval(seadb_api, project_uuid, username, issue.get('_pk')):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -936,14 +905,15 @@ class PortalIssueCommentsView(APIView):
                 PortalIssueCommentsTable.modified_time.name: now_datetime,
                 PortalIssueCommentsTable.deleted.name: False,
             }
-            res = seadb_api.insert_rows(project_uuid, TABLE_PORTAL_ISSUE_COMMENTS, [row])
+            portal_issue_comment_table_name = PortalIssueCommentsTable.gen_table_name()
+            res = seadb_api.insert_rows(project_uuid, portal_issue_comment_table_name, [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
             row.update({'number': pk, 'via_agent': False})
-            issue_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `{TABLE_PORTAL_ISSUE_COMMENTS}` WHERE `issue_id` = {issue.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
+            issue_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `{portal_issue_comment_table_name}` WHERE `issue_id` = {issue.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_issue = {
                 'pk': issue.get('_pk'),
                 'row': {
@@ -955,7 +925,7 @@ class PortalIssueCommentsView(APIView):
             if username not in participants:
                 participants.append(username)
             update_issue['row']['participants'] = participants
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [update_issue])
+            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [update_issue])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1024,9 +994,8 @@ class PortalIssueCommentView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         
         modified_time = issue_comment_data.get('modified_time')
-        if modified_time:
-            modified_time = datetime.datetime.fromisoformat(modified_time)
-        if modified_time and modified_time > timezone.now() - relativedelta(seconds=10):
+        modified_time = datetime.datetime.fromisoformat(modified_time)
+        if modified_time > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -1049,7 +1018,7 @@ class PortalIssueCommentView(APIView):
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUE_COMMENTS, [issue_comment_update])
+            seadb_api.update_rows(project_uuid, PortalIssueCommentsTable.gen_table_name(), [issue_comment_update])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1057,7 +1026,7 @@ class PortalIssueCommentView(APIView):
 
         try:
             update_row = {
-                'modified_time': issue_comment_data.get('modified_time'),
+                'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
             participants = issue.get('participants') or []
             if username not in participants:
@@ -1067,7 +1036,7 @@ class PortalIssueCommentView(APIView):
                 'pk': issue.get('_pk'),
                 'row': update_row,
             }
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [issue_update])
+            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [issue_update])
         except Exception as e:
             logger.error(e)
 
@@ -1109,7 +1078,7 @@ class PortalIssueCommentView(APIView):
                     'delete_time': now_datetime,
                 },
             }
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUE_COMMENTS, [update_issue_comment])
+            seadb_api.update_rows(project_uuid, PortalIssueCommentsTable.gen_table_name(), [update_issue_comment])
 
             update_issue = {
                 'pk': issue.get('_pk'),
@@ -1122,7 +1091,7 @@ class PortalIssueCommentView(APIView):
             if username not in participants:
                 participants.append(username)
                 update_issue['row']['participants'] = participants
-            seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, [update_issue])
+            seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [update_issue])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1316,8 +1285,9 @@ class PortalIssueMetadataView(APIView):
     def get(self, request, project_uuid):
         seadb_api = SeaDBAPI()
         try:
+            portal_issues_table_name = PortalIssuesTable.gen_table_name()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_PORTAL_ISSUES)
+            portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             protal_issue_column_name_to_return_name = {
                 PortalIssuesTable.substate.name: 'substates',
                 PortalIssuesTable.type.name: 'types',
@@ -1326,7 +1296,7 @@ class PortalIssueMetadataView(APIView):
             if not portal_issue_meta:
                 init_portal_issues_seadb_table(seadb_api, project_uuid)
                 base_metadata = seadb_api.get_base_metadata(project_uuid)
-                portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_PORTAL_ISSUES)
+                portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
                 column_name = column.get('name')
@@ -1973,7 +1943,7 @@ class PortalIssueTrashAPIView(APIView):
 
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, TABLE_PORTAL_ISSUES, update_rows)
+                seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), update_rows)
             except Exception as e:
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
@@ -2000,8 +1970,9 @@ class PortalIssueTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            portal_issues_table_name = PortalIssuesTable.gen_table_name()
             seadb_api = SeaDBAPI()
-            sql = f"SELECT _pk, `linked_ticket` FROM `{TABLE_PORTAL_ISSUES}` WHERE `deleted` = True"
+            sql = f"SELECT _pk, `linked_ticket` FROM `{portal_issues_table_name}` WHERE `deleted` = True"
             res = seadb_api.query_rows(project_uuid, sql)
             deleted_issues = res.get('results', [])
             need_delete_ids = [row.get('_pk') for row in deleted_issues]
@@ -2055,11 +2026,11 @@ class PortalIssueTrashAPIView(APIView):
 
             # Delete portal issue comments
             for issue_id in need_delete_ids:
-                comment_sql = f"DELETE FROM `{TABLE_PORTAL_ISSUE_COMMENTS}` WHERE `issue_id` = {int(issue_id)}"
+                comment_sql = f"DELETE FROM `{PortalIssueCommentsTable.gen_table_name}` WHERE `issue_id` = {int(issue_id)}"
                 seadb_api.query_rows(project_uuid, comment_sql)
 
             # Hard delete portal issues
-            seadb_api.delete_rows(project_uuid, TABLE_PORTAL_ISSUES, need_delete_ids)
+            seadb_api.delete_rows(project_uuid, portal_issues_table_name, need_delete_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

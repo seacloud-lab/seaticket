@@ -39,7 +39,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg
+    get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
+    validate_linked_connection_records
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -274,20 +275,10 @@ class TicketsAPIView(APIView):
             error_msg = 'linked_connection_records invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         # check linked connection records
-        if linked_connection_records:
-            for connection_record in linked_connection_records:
-                try:
-                    parts = connection_record.split('_', 1)
-                    if len(parts) != 2:
-                        raise ValueError()
-                    connection_id, record_id = parts
-                    # Support both numeric connection_id and 'portal' prefix
-                    if connection_id != 'portal':
-                        connection_id = int(connection_id)
-                    record_id = int(record_id)
-                except Exception:
-                    error_msg = 'linked_connection_records invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            validate_linked_connection_records(linked_connection_records)
+        except TicketLinkValidationError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         # main
         try:
             ticket_state = 'open'
@@ -491,6 +482,10 @@ class TicketsAPIView(APIView):
                     if any((not isinstance(x, str)) for x in new_lcr):
                         error_msg = 'linked_connection_records invalid.'
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                    try:
+                        validate_linked_connection_records(new_lcr)
+                    except TicketLinkValidationError as e:
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     updated_row[TicketsTable.linked_connection_records.name] = list(set(new_lcr))
                 else:
                     error_msg = 'linked_connection_records invalid.'
@@ -842,6 +837,11 @@ class TicketAPIView(APIView):
             ):
                 error_msg = 'linked_connection_records invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            try:
+                validate_linked_connection_records(new_linked_connection_records)
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
             # handle diff
             new_linked_connection_records = list(set([x for x in new_linked_connection_records if x]))
@@ -1410,7 +1410,7 @@ class TicketCommentAPIView(APIView):
 
         try:
             update_row = {
-                'modified_time': ticket_comment_data.get('modified_time'),
+                'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
             participants = ticket.get('participants') or []
             if username not in participants:
