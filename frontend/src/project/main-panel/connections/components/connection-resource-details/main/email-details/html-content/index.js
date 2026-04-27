@@ -91,7 +91,7 @@ const HTMLContent = ({
       if (!ref.current) return;
       const links = ref.current.querySelectorAll('a');
       links.forEach(link => {
-        const href = link.getAttribute('href');
+        const href = link.getAttribute('href') || '';
         if (href.startsWith('mailto:') && isValidEmail(href.slice(7))) {
           const email = href.slice(7);
           link.setAttribute('title', `${gettext('Send email to')} ${email}`);
