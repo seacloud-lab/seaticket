@@ -20,6 +20,7 @@
 
 .sea-ticket-settings-item .link-settings-content .link-item .link-item-name {
   padding: 0px;
+  max-width: 100%;
 }
 
 .sea-ticket-settings-item .link-settings-content .link-item .connection-icon {
@@ -45,4 +46,3 @@
 .sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-dot-circle-stroked {
   color: var(--ticket-open-color);
 }
-
