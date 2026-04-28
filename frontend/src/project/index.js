@@ -121,7 +121,7 @@ const Project = () => {
   }, []);
 
   const modifySettings = useCallback((update, callback) => {
-    projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
+    return projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
       setSettings({ ...settings, ...update });
       callback && callback();
     }).catch(error => {
