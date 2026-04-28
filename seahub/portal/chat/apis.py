@@ -18,6 +18,12 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects
 from seahub.project.constants import AIScenario
 from seahub.project.utils import check_ai_limit, delete_portal_sessions
+from seahub.portal.chat.utils import (
+    check_external_chat_rate_limit,
+    get_portal_external_username,
+    get_project_portal_chat_credit_used,
+    mark_external_chat_rate_limit,
+)
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import get_ai_reply
 from seahub.chats.constants import AI_REPLY_TIMEOUT
@@ -36,11 +42,19 @@ def get_portal_settings(project):
     chat_allowed_sources = portal_settings.get('chat_allowed_sources')
     if not isinstance(chat_allowed_sources, dict):
         chat_allowed_sources = {}
+    daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
+    try:
+        daily_chat_credit_limit = int(daily_chat_credit_limit)
+    except (TypeError, ValueError):
+        daily_chat_credit_limit = 50
+    if daily_chat_credit_limit < 0:
+        daily_chat_credit_limit = 50
     return {
         'chat_allowed_sources': {
             'connection_ids': chat_allowed_sources.get('connection_ids') or [],
             'extra_sources': chat_allowed_sources.get('extra_sources') or [],
         },
+        'daily_chat_credit_limit': daily_chat_credit_limit,
     }
 
 
@@ -335,6 +349,18 @@ class PortalChatView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid stream')
             stream = stream_from_request
 
+        portal_settings = get_portal_settings(project)
+        external_username = get_portal_external_username(request, project_uuid)
+        is_external_user = bool(external_username)
+        if is_external_user:
+            rate_limit_error = check_external_chat_rate_limit(project_uuid, external_username)
+            if rate_limit_error:
+                return rate_limit_error
+
+        project_credit_used = get_project_portal_chat_credit_used(project_uuid)
+        if project_credit_used >= portal_settings['daily_chat_credit_limit']:
+            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Portal chat daily quota exceeded.')
+
         username = request.user.username
         session, error = get_session_or_error(session_uuid, username)
         if error:
@@ -354,7 +380,6 @@ class PortalChatView(APIView):
             logger.exception(f'Failure to generate message id: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
-        portal_settings = get_portal_settings(project)
         chat_sources = portal_settings['chat_allowed_sources']
 
         chat_task_id_info = gen_portal_chat_task_id(session.session_uuid)
@@ -376,6 +401,9 @@ class PortalChatView(APIView):
             'scenario': AIScenario.PORTAL_CHAT.value,
         }
 
+        if is_external_user:
+            mark_external_chat_rate_limit(project_uuid, external_username)
+
         task_info = {
             'user_input': {
                 'message': query,
@@ -395,6 +423,7 @@ class PortalChatView(APIView):
                 )
             except Exception as e:
                 logger.exception(f'Failure to make portal stream: {e}')
+                cache.delete(chat_task_id_info)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
         try:

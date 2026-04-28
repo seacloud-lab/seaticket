@@ -4,6 +4,8 @@ import logging
 import json
 
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth.hashers import check_password, make_password
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -35,6 +37,21 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission
 from seahub.portal.models import ProjectExternalUser
+from seahub.portal.utils import (
+    PORTAL_EXTERNAL_LOGIN_CODE_TTL,
+    PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN,
+    PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT,
+    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL,
+    clear_portal_external_login_code,
+    clear_portal_external_login_state,
+    get_portal_external_login_code_key,
+    get_portal_external_login_cooldown_key,
+    get_portal_external_login_fail_key,
+    get_portal_external_login_lock_key,
+    incr_portal_external_login_fail,
+    is_portal_external_login_locked,
+    normalize_external_login_email,
+)
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -1334,12 +1351,20 @@ class PortalSettingsView(APIView):
                 'connection_ids': [],
                 'extra_sources': [],
             }
+        daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
+        try:
+            daily_chat_credit_limit = int(daily_chat_credit_limit)
+        except (TypeError, ValueError):
+            daily_chat_credit_limit = 50
+        if daily_chat_credit_limit < 0:
+            daily_chat_credit_limit = 50
 
         return Response({
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'show_knowledge_base': show_knowledge_base,
             'chat_allowed_sources': chat_allowed_sources,
+            'daily_chat_credit_limit': daily_chat_credit_limit,
         })
 
     @require_org_context
@@ -1357,14 +1382,21 @@ class PortalSettingsView(APIView):
         enable_password_protection = request.data.get('enable_password_protection', 0)
         password = request.data.get('password', '')
         show_knowledge_base = request.data.get('show_knowledge_base', None)
+        daily_chat_credit_limit = request.data.get('daily_chat_credit_limit', None)
 
         try:
             allow_anonymous = int(allow_anonymous)
             enable_password_protection = int(enable_password_protection)
             if show_knowledge_base is not None:
                 show_knowledge_base = int(show_knowledge_base)
+            if daily_chat_credit_limit is not None:
+                daily_chat_credit_limit = int(daily_chat_credit_limit)
         except Exception:
             error_msg = 'Invalid params.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if daily_chat_credit_limit is not None and daily_chat_credit_limit < 0:
+            error_msg = 'daily_chat_credit_limit invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         if enable_password_protection:
@@ -1389,6 +1421,8 @@ class PortalSettingsView(APIView):
                 error_msg = 'chat_allowed_sources invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             portal_settings['chat_allowed_sources'] = chat_allowed_sources
+        if daily_chat_credit_limit is not None:
+            portal_settings['daily_chat_credit_limit'] = daily_chat_credit_limit
 
         if enable_password_protection:
             if password:
@@ -1570,23 +1604,51 @@ class PortalExternalLoginSendCodeView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
-        email = request.data.get('email')
+        email = normalize_external_login_email(request.data.get('email'))
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
-        if not ProjectExternalUser.objects.filter(email=email, project_uuid=project_uuid).exists():
-            err_resp = {'error_msg': 'External user not found', 'detail': _('External user not found. Please use the invitation link first.')}
-            return Response(err_resp, status=status.HTTP_404_NOT_FOUND)
+        response_data = {
+            'success': True,
+            'detail': _('If the email is eligible, a login code has been sent.'),
+        }
+
+        ext_user_exists = ProjectExternalUser.objects.filter(email=email, project_uuid=project_uuid).exists()
+        if not ext_user_exists:
+            logger.info('Portal external login send-code skipped for non-invited email: project=%s email=%s',
+                        project_uuid, email)
+            return Response(response_data)
+
+        if is_portal_external_login_locked(project_uuid, email):
+            return Response(response_data)
+
+        cooldown_key = get_portal_external_login_cooldown_key(project_uuid, email)
+        if cache.get(cooldown_key):
+            return Response(response_data)
 
         try:
             code = get_random_code()
-            cache_key = f"portal_email_login:{project_uuid}:{email}"
-            cache.set(cache_key, code, 600)
-            send_html_email_with_dj_template(email, _('Your login code'), 'portal/email_login_code.html', context={'code': code, 'project_uuid': project_uuid})
+            cache.set(
+                get_portal_external_login_code_key(project_uuid, email),
+                make_password(code),
+                PORTAL_EXTERNAL_LOGIN_CODE_TTL
+            )
+            cache.set(cooldown_key, timezone.now().isoformat(), PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN)
+            sent = send_html_email_with_dj_template(
+                email,
+                _('Your login code'),
+                'portal/email_login_code.html',
+                context={'code': code, 'project_uuid': project_uuid}
+            )
+            if not sent:
+                logger.warning('Failed to send portal login code: project=%s email=%s', project_uuid, email)
+                clear_portal_external_login_code(project_uuid, email)
+                return Response(response_data)
         except Exception as e:
-            logger.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-        return Response({'success': True})
+            logger.exception('Failed to generate or send portal login code: project=%s email=%s', project_uuid, email)
+            clear_portal_external_login_code(project_uuid, email)
+            return Response(response_data)
+        return Response(response_data)
 
 
 class PortalExternalLoginVerifyCodeView(APIView):
@@ -1595,15 +1657,27 @@ class PortalExternalLoginVerifyCodeView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
-        email = request.data.get('email')
-        code = request.data.get('code')
+        email = normalize_external_login_email(request.data.get('email'))
+        code = (request.data.get('code') or '').strip()
         if not email or not code:
             return api_error(status.HTTP_400_BAD_REQUEST, 'param invalid.')
-        cache_key = f"portal_email_login:{project_uuid}:{email}"
-        cached = cache.get(cache_key)
-        if cached != code:
+
+        if is_portal_external_login_locked(project_uuid, email):
+            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many attempts, please try again later.')
+
+        cache_key = get_portal_external_login_code_key(project_uuid, email)
+        cached_code_hash = cache.get(cache_key)
+        if not cached_code_hash or not check_password(code, cached_code_hash):
+            attempts = incr_portal_external_login_fail(project_uuid, email)
+            if attempts >= PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT:
+                cache.set(
+                    get_portal_external_login_lock_key(project_uuid, email),
+                    timezone.now().isoformat(),
+                    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL
+                )
+                cache.delete(get_portal_external_login_fail_key(project_uuid, email))
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many attempts, please try again later.')
             return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
-        cache.delete(cache_key)
 
         try:
             ext_user = ProjectExternalUser.objects.get(email=email, project_uuid=project_uuid)
@@ -1611,9 +1685,10 @@ class PortalExternalLoginVerifyCodeView(APIView):
                 ext_user.activated = True
                 ext_user.save(update_fields=['activated'])
         except ProjectExternalUser.DoesNotExist:
-            return api_error(status.HTTP_404_NOT_FOUND, 'External user record not found. Please use the invitation link first.')
+            return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
 
         # Set session to log the user in as an external collaborator
+        clear_portal_external_login_state(project_uuid, email)
         request.session['portal_external_username'] = ext_user.username
         request.session['portal_external_project_uuid'] = project_uuid
         return Response({'success': True})
