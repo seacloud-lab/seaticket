@@ -1196,7 +1196,6 @@ input.short-input {
 }
 
 .confirm-password-panel,
-.reset-password-tip-panel,
 .login-panel {
   background: #fff;
   border-radius: 3px;
@@ -1207,7 +1206,6 @@ input.short-input {
 }
 
 .confirm-password-panel .confirm-password-panel-hd,
-.reset-password-tip-panel .reset-password-tip-panel-hd,
 .login-panel .login-panel-hd {
   margin: 0 0 16px;
   line-height: 1.5rem;
@@ -1240,7 +1238,6 @@ input.short-input {
 }
 
 .confirm-password-panel .submit,
-.reset-password-tip-panel .submit,
 .login-panel .submit {
   margin: 0px 0 12px;
   background-image: none;
@@ -1248,7 +1245,6 @@ input.short-input {
 }
 
 .confirm-password-panel .submit:focus,
-.reset-password-tip-panel .submit:focus,
 .login-panel .submit:focus {
   border-color: #fff;
 }

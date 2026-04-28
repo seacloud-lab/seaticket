@@ -62,7 +62,6 @@
 .run-card-header-right .run-card-running {
   font-size: 14px;
   line-height: 22px;
-  letter-spacing: 0%;
   font-weight: 500;
   color: #666;
 }
@@ -95,7 +94,6 @@
   font-weight: 500;
   font-size: 14px;
   line-height: 22px;
-  letter-spacing: 0%;
 }
 
 .run-time {
@@ -118,7 +116,6 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 12px;
-  letter-spacing: 0%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -275,7 +272,6 @@
 .action-label {
   font-size: 14px;
   line-height: 22px;
-  letter-spacing: 0%;
   font-weight: 500;
   color: #212925;
   margin-bottom: 12px;
@@ -322,7 +318,6 @@
   font-style: Italic;
   font-size: 13px;
   line-height: 20px;
-  letter-spacing: 0%;
   margin-left: 28px;
   margin-bottom: 0px;
 }
@@ -405,7 +400,6 @@
 .suggestion-tool-result .result-text {
   font-size: 12px;
   line-height: 20px;
-  letter-spacing: 0%;
   font-weight: 400;
   color: #212529;
 }
