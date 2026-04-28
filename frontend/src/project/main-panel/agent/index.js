@@ -1,11 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import TopBar from '../top-bar';
 import RunLogs from './run-logs';
 import RefreshBtn from '@/project/components/refresh-btn';
-import { useAgentSettings } from './hooks/useAgentSettings';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI } from '@/project/api';
-import { CenteredLoading, toaster } from '@/components';
+import { toaster } from '@/components';
 import { gettext } from '@/constants';
 import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
 
@@ -13,9 +12,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const Agent = ({ title }) => {
-  const { isLoading: isSettingsLoading, settings } = useAgentSettings();
-  const enabledAgent = settings.agent.enabled;
+const Agent = ({ title, settings, modifySettings }) => {
   const [pendingMapping, setPendingMapping] = useState(null);
   const {
     runLogs,
@@ -25,6 +22,8 @@ const Agent = ({ title }) => {
     refresh,
     updateRunLog,
   } = useAgentRunLogs();
+
+  const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
 
   const getRunIdByActionId = useCallback((actionId) => {
     for (const run of runLogs) {
@@ -108,15 +107,14 @@ const Agent = ({ title }) => {
     if (!pendingMapping?.agentType || !pendingMapping?.actionId || !pendingMapping?.runId) return;
 
     const { runId, actionId, agentType } = pendingMapping;
-    return agentAPI.getAgentSettings(projectUuid).then((res) => {
-      const existingMapping = res?.data?.github_issue_type_mapping || {};
-      return agentAPI.updateAgentSettings(projectUuid, {
-        github_issue_type_mapping: {
-          ...existingMapping,
-          [agentType]: selectedGithubType,
-        },
-      });
-    }).then(() => {
+    const newAgentSettings = {
+      ...settings?.agent,
+      github_issue_type_mapping: {
+        ...settings?.agent?.github_issue_type_mapping,
+        [agentType]: selectedGithubType,
+      },
+    };
+    modifySettings({ agent: newAgentSettings }).then((res) => {
       setPendingMapping(null);
       return agentAPI.confirmAgentAction(projectUuid, runId, actionId);
     }).then(() => {
@@ -129,20 +127,7 @@ const Agent = ({ title }) => {
       callback && callback(true);
       throw err;
     });
-  }, [pendingMapping, updateRunLog]);
-
-  if (isSettingsLoading) {
-    return (
-      <>
-        <TopBar title={title}>
-          <div className="w-100 text-truncate">{title}</div>
-        </TopBar>
-        <div className="flex-1 w-100">
-          <CenteredLoading />
-        </div>
-      </>
-    );
-  }
+  }, [pendingMapping, settings, updateRunLog, modifySettings]);
 
   return (
     <>
