@@ -17,10 +17,8 @@ from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, rank_vector_search_results
-from seahub.utils.ai_client import (
-    convert_record_to_ticket,
-    convert_ticket_to_kb_record
-)
+from seahub.utils.ai_client import convert_record_to_ticket, convert_ticket_to_kb_record
+from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments
 from seahub.utils.events import submit_embedding_analysis_task, get_embedding_analysis_task_status, TaskConflictError
 from seahub.utils.indexer import vector_search
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
@@ -204,6 +202,104 @@ class ConvertRecordToTicket(APIView):
             'content': ai_content,
             'related_url': related_url,
             'linked_connection_records': [f'{connection_id}_{record_id}'],
+        })
+
+
+class ConvertPortalIssueToTicket(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request):
+        project_uuid = request.data.get('project_uuid')
+        issue_id = request.data.get('issue_id')
+        
+        if not project_uuid or not issue_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Missing project_uuid or issue_id.')
+        
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        workspace = project.workspace
+        if not workspace:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Workspace not found.')
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        # Check AI quota
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
+
+        try:
+            seadb_api = SeaDBAPI()
+            issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
+            if not issue:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Issue not found.')
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        if issue.get('linked_ticket'):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'A ticket has already been created for this issue.')
+
+        # Get issue details
+        title = issue.get('title', '')
+        default_title = title
+        body_content = issue.get('content', '')
+
+        # Get issue comments
+        try:
+            comments = get_portal_issue_comments(seadb_api, project_uuid, issue_id, 0, 100)
+            for comment in comments:
+                comment_content = comment.get('content', '')
+                if not comment_content:
+                    continue
+                content_to_add = comment_content
+                if body_content:
+                    content_to_add = '\n\n' + content_to_add
+                if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                    break
+                body_content += content_to_add
+        except Exception as e:
+            logger.error(f'Failed to get portal issue comments: {e}')
+
+        record_detail = f"""
+            **Issue Information:**
+            Title: {title}
+            Body: {body_content}
+        """
+
+        # AI conversion
+        params = {
+            'username': username,
+            'record_detail': record_detail,
+            'project_uuid': project_uuid,
+            'org_id': org_id,
+            'scenario': AIScenario.RECORD_GENERATION.value,
+        }
+
+        try:
+            ai_title, ai_content = convert_record_to_ticket(params)
+            if not ai_title:
+                ai_title = default_title
+        except Exception as e:
+            logger.error(f'AI service error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'AI service error.')
+
+        # Build related URL (portal issue link)
+        related_url = f'/portal/{project_uuid}/issue/{issue_id}'
+
+        return Response({
+            'title': ai_title,
+            'content': ai_content,
+            'related_url': related_url,
+            'linked_connection_records': [f'portal_{issue_id}'],
         })
 
 
@@ -464,7 +560,10 @@ class RelatedRecordsView(APIView):
             'project_uuid': project_uuid,
             'count': 51,
             'connection_ids': search_connection_ids,
-            'extra_sources': [ExtraSourceType.TICKET.value] if ticket_provided or current_category == ConnectionCategory.ISSUE else [],
+            'extra_sources': (
+                [ExtraSourceType.TICKET.value, ExtraSourceType.PORTAL_ISSUE.value]
+                if ticket_provided or current_category == ConnectionCategory.ISSUE else []
+            ),
         }
 
         try:

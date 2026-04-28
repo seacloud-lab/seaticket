@@ -1,0 +1,427 @@
+# -*- coding: utf-8 -*-
+import logging
+from django.utils.translation import gettext as _
+from django.core.cache import cache
+
+from rest_framework.views import APIView
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+
+from seahub.api2.authentication import TokenAuthentication
+from seahub.api2.throttling import UserRateThrottle
+from seahub.api2.utils import api_error
+from seahub.utils import normalize_cache_key
+from seahub.project.models import Projects
+from seahub.project.utils import check_project_permission, get_current_table_metadata
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
+from seahub.tickets.ticket_utils import update_select_option, get_column_from_columns_by_name, \
+    add_select_option, batch_delete_select_option
+from seahub.utils.decorators import require_org_context
+from seahub.portal.portal_utils import get_portal_issue_counts_group_by_column_name, filter_portal_issues_by_select
+from seahub.seadb_models.models import PortalIssuesTable
+
+
+logger = logging.getLogger(__name__)
+
+
+class PortalIssueSubstatesAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        state_id = request.GET.get('state_id')  # optional: filter substates by state id
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI()
+
+        try:
+            substate_options, substate_column = get_portal_issue_counts_group_by_column_name(seadb_api, project_uuid, 'substate')
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        # substate_column = PortalIssuesTable.substate.data
+        column_data = substate_column.get('data') or {}
+        cascade_settings = column_data.get('cascade_settings') or {}
+        cascade_column_key = column_data.get('cascade_column_key')
+        if state_id:
+            allowed_ids = set(cascade_settings.get(state_id, []))
+            substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]
+
+        return Response({
+            'substates': substate_options,
+            'cascade_column_key': cascade_column_key,
+            'cascade_settings': cascade_settings,
+        })
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        name = request.POST.get('name')
+        if not name:
+            error_msg = 'name invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        color = request.POST.get('color')
+        if not color:
+            error_msg = 'color invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        text_color = request.POST.get('text_color')
+        if not text_color:
+            error_msg = 'text_color invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        description = request.POST.get('description')
+        parent_id = request.POST.get('parent_id')
+        if not parent_id:
+            error_msg = 'parent_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI()
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_id = table_meta.get('id')
+            substate_column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
+            substate_column_key = substate_column.get('key')
+            column_data = substate_column.get('data') or {}
+            existing_options = column_data.get('options', []) or []
+
+            if any(opt.get('name') == name for opt in (existing_options or [])):
+                error_msg = 'substate already exists.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            option_data = {'color': color, 'text_color': text_color}
+            if description:
+                option_data['description'] = description
+            substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column_key, name, option_data)
+            substate_option_id = substate_option.get('id', '')
+
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+
+            # update cascade_settings
+            cascade_settings = column_data.get('cascade_settings')
+            if cascade_settings:
+                for state_id, substate_options in cascade_settings.items():
+                    if not substate_options:
+                        substate_options = []
+                    if state_id == parent_id:
+                        substate_options.append(substate_option_id)
+                column_data = {
+                    'table_id': table_meta.get('id'),
+                    'column_key': substate_column_key,
+                    'update_column_data': {
+                        'cascade_settings': cascade_settings,
+                    },
+                }
+                seadb_api.update_column(project_uuid, column_data)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'substate': substate_option}, status=status.HTTP_201_CREATED)
+
+    @require_org_context
+    def delete(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        substate_ids = request.data.get('substate_ids', [])
+        if not substate_ids:
+            error_msg = 'substate_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI()
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
+            batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class PortalIssueSubstateAPIView(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid, substate_id):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            substate_option = None
+            seadb_api = SeaDBAPI()
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_columns = table_meta.get('columns')
+            column = get_column_from_columns_by_name(table_columns, 'substate')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            for opt in options:
+                if opt.get('id') == substate_id:
+                    substate_option = opt
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not substate_option:
+            error_msg = 'Project substate not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # main
+        try:
+            issues, columns = filter_portal_issues_by_select(seadb_api, project_uuid, 'substate', [substate_option.get('name')])
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'issues': issues,
+            'columns': columns,
+        })
+
+    @require_org_context
+    def put(self, request, project_uuid, substate_id):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        name = request.data.get('name')
+        description = request.data.get('description')
+        color = request.data.get('color')
+        text_color = request.data.get('text_color')
+        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
+            error_msg = 'argument invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        parent_id = request.data.get('parent_id')
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        substate_option = None
+        seadb_api = SeaDBAPI()
+        base_metadata = seadb_api.get_base_metadata(project_uuid)
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+        column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
+        column_data = column.get('data') or {}
+        options = column_data.get('options', []) or []
+        for opt in options:
+            if opt.get('id') == substate_id:
+                substate_option = opt
+
+        if not substate_option:
+            error_msg = 'Project substate not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # main
+        try:
+            update_data = {}
+            if name:
+                update_data['name'] = name
+            if 'description' in request.data:
+                update_data['description'] = description
+            if color:
+                update_data['color'] = color
+            if text_color:
+                update_data['text_color'] = text_color
+            table_id = table_meta.get('id')
+            column_key = column.get('key')
+            update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
+
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+
+            # update cascade_settings
+            if parent_id:
+                cascade_settings = column_data.get('cascade_settings')
+                if cascade_settings:
+                    for state_id, substate_options in cascade_settings.items():
+                        if not substate_options:
+                            substate_options = []
+                        if substate_id in substate_options:
+                            substate_options.remove(substate_id)
+                        if state_id == parent_id:
+                            substate_options.append(substate_id)
+                    column_data = {
+                        'table_id': table_meta.get('id'),
+                        'column_key': column_key,
+                        'update_column_data': {
+                            'cascade_settings': cascade_settings,
+                        },
+                    }
+                    seadb_api.update_column(project_uuid, column_data)
+
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+    @require_org_context
+    def delete(self, request, project_uuid, substate_id):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI()
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
+            column_key = column.get('key')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            option = None
+            for opt in options:
+                if opt.get('id') == substate_id:
+                    option = opt
+            if not option:
+                error_msg = 'substate not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            option_data = {
+                'table_id': table_meta.get('id'),
+                'column_key': column_key,
+                'option_id': substate_id,
+            }
+            seadb_api.delete_column_option(project_uuid, option_data)
+            # delete substate id in cascade settings
+            cascade_settings = column_data.get('cascade_settings')
+            if cascade_settings:
+                for status_id, substate_ids in cascade_settings.items():
+                    if substate_id in substate_ids:
+                        substate_ids.remove(substate_id)
+                    column_data = {
+                        'table_id': table_meta.get('id'),
+                        'column_key': column_key,
+                        'update_column_data': {
+                            'cascade_settings': cascade_settings,
+                        },
+                    }
+                    seadb_api.update_column(project_uuid, column_data)
+
+            cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
+            cache.delete(cache_key)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})

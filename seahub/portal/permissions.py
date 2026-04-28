@@ -69,7 +69,7 @@ class PortalKnowledgeBasePermission(BasePermission):
         return False
 
 
-class PortalTicketPermission(BasePermission):
+class PortalIssuePermission(BasePermission):
     def has_permission(self, request, view):
         project_uuid, project, portal_settings = _get_project_and_settings(request, view)
         if not project:

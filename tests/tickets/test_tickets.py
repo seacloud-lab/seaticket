@@ -237,7 +237,7 @@ class TestTicketAPIView:
         metadata = {'columns': []}
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
-                patch('seahub.tickets.tickets.convert_ticket_select_column_name_to_option_id'), \
+                patch('seahub.tickets.tickets.convert_select_field_names_to_option_ids'), \
                 patch('seahub.tickets.tickets.get_ticket_comments', return_value=[]):
             seadb_cls_mock.return_value = Mock()
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
@@ -418,6 +418,59 @@ class TestTicketTrashAPIView:
         assert resp.status_code == 200
         assert resp.data['success'] is True
         assert seadb_api.delete_rows.call_count == 0
+
+    def test_delete_with_portal_issue_links(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.delete(f"/api/v1/projects/{project.uuid}/tickets/trash/", data={}, format='json')
+        request.user = project_creator
+
+        seadb_api = Mock()
+        # Portal issues query returns issue with linked_ticket pointing to deleted ticket
+        seadb_api.query_rows.return_value = {'results': [{'_pk': 5, 'linked_ticket': 1}]}
+        deleted_tickets = [{'ticket_id': 1, 'linked_connection_records': ['portal_5']}]
+
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.get_deleted_tickets', return_value=deleted_tickets), \
+                patch('seahub.tickets.tickets.delete_record_attachments_from_s3'), \
+                patch('seahub.tickets.tickets.delete_ticket_comments_by_ids'), \
+                patch('seahub.tickets.tickets.delete_ticket_activities_by_ids'):
+            resp = TicketTrashAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 200
+        assert resp.data['success'] is True
+        # Should update portal issues to clear linked_ticket
+        portal_update_call = seadb_api.update_rows.call_args_list[0]
+        update_row = portal_update_call[0][2][0]
+        assert update_row['pk'] == 5
+        assert update_row['row']['linked_ticket'] is None
+        seadb_api.delete_rows.assert_called_once()
+
+    def test_delete_with_connection_and_portal_links(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.delete(f"/api/v1/projects/{project.uuid}/tickets/trash/", data={}, format='json')
+        request.user = project_creator
+
+        seadb_api = Mock()
+        # Portal issues query
+        seadb_api.query_rows.return_value = {'results': [{'_pk': 5, 'linked_ticket': 1}]}
+        deleted_tickets = [{'ticket_id': 1, 'linked_connection_records': ['1_100', 'portal_5']}]
+
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.get_deleted_tickets', return_value=deleted_tickets), \
+                patch('seahub.tickets.tickets.delete_record_attachments_from_s3'), \
+                patch('seahub.tickets.tickets.delete_ticket_comments_by_ids'), \
+                patch('seahub.tickets.tickets.delete_ticket_activities_by_ids'), \
+                patch('seahub.tickets.tickets.ProjectConnections') as mock_conn_cls:
+            # Need to mock connection lookup
+            mock_conn = Mock()
+            mock_conn.id = 1
+            mock_conn.type = 'discourse'
+            mock_conn_cls.objects.filter.return_value = [mock_conn]
+            with patch('seahub.tickets.tickets.get_connection_table_name', return_value='discourse_1'):
+                resp = TicketTrashAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 200
+        assert resp.data['success'] is True
 
 
 class TestTicketCommentsAPIView:

@@ -6,6 +6,7 @@ import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
 import KnowledgeMoreNav from './nav/knowledge-more-nav';
+import PortalIssuesMoreNav from './nav/portal-issues-more-nav';
 import DefaultMoreNav from './nav/default-more-nav';
 import InboxNav from './nav/inbox-nav';
 import { gettext } from '@/constants';
@@ -45,9 +46,6 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} {...commonProps} />
-            {settings?.portal?.enable_portal && (
-              <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
-            )}
             {isProjectAdmin &&
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }
@@ -60,6 +58,14 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
             <div className="sea-qa-project-side-panel-subtitle">{gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
             <KnowledgeMoreNav { ...commonProps } />
+            {settings?.portal?.enable_portal && (
+              <>
+                <div className="sea-qa-project-side-panel-subtitle">{gettext('Support portal')}</div>
+                <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
+                <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES]} {...commonProps} />
+                <PortalIssuesMoreNav onClick={toggleBar} />
+              </>
+            )}
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />

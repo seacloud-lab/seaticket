@@ -12,5 +12,7 @@ export const EVENT_BUS_TYPE = {
   NEW_SUBSTATE: 'new_substate',
   OPEN_CONNECTION_EMBEDDING_VISUALIZATION: 'open_connection_embedding_visualization',
   CLEAN_DELETED_TICKETS: 'clean_deleted_tickets',
+  CLEAN_DELETED_PORTAL_ISSUES: 'clean_deleted_portal_issues',
   IMPORT_KB_XLSX: 'import_kb_xlsx',
+  PORTAL_ISSUES_PAGE: 'portal_issues_page',
 };

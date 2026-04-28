@@ -8,6 +8,7 @@ import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
 import { MetadataProvider } from '../main-panel/tickets/hooks';
+import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks';
 import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
 import projectAPI from '../api/project-api';
@@ -24,6 +25,7 @@ export const DataProvider = ({
   workspaceID,
   activeBar,
   api,
+  enablePortal,
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
@@ -634,9 +636,11 @@ export const DataProvider = ({
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
-                  <AnalyzeTaskProvider>
-                    {children}
-                  </AnalyzeTaskProvider>
+                  <PortalIssuesMetadataProvider projectUuid={projectUuid} enablePortal={enablePortal}>
+                    <AnalyzeTaskProvider>
+                      {children}
+                    </AnalyzeTaskProvider>
+                  </PortalIssuesMetadataProvider>
                 </ConnectionsProvider>
               </MetadataProvider>
             </TagsProvider>

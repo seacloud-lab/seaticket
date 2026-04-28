@@ -10,12 +10,12 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
       ? [...BASE_PRIMARY_TABS, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
       : BASE_PRIMARY_TABS);
 
-  const isTicketsPage = activePage === PORTAL_PAGE.SUBMIT_TICKET || activePage === PORTAL_PAGE.MY_TICKETS;
-  const activePrimaryTab = isTicketsPage ? TICKETS_TAB : activePage;
+  const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
+  const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
 
   const onPrimaryTabChange = (value) => {
     if (value === TICKETS_TAB) {
-      const targetPage = isTicketsPage ? activePage : PORTAL_PAGE.SUBMIT_TICKET;
+      const targetPage = isIssuesPage ? activePage : PORTAL_PAGE.SUBMIT_ISSUE;
       onPageChange(targetPage);
       return;
     }

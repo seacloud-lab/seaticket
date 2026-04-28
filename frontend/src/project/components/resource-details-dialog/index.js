@@ -13,6 +13,8 @@ import { KBInDialog } from '../../main-panel/knowledge-base/components';
 import TicketInDialog from '../../main-panel/tickets/components/ticket-in-dialog';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
+import { portalAPI } from '@/portal/api';
 
 import './index.css';
 
@@ -32,7 +34,9 @@ const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
   switchResource, onToggle,
   createMoreOptions,
-  getTicket, getKB,
+  getTicket,
+  getKB,
+  getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
 }) => {
   const type = useMemo(() => resource?.type, [resource]);
 
@@ -144,6 +148,9 @@ const ResourceDetailsDialog = ({
         )}
         {type === TICKET_TYPE && (
           <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
+        )}
+        {type === PORTAL_ISSUE_TYPE && (
+          <TicketInDialog projectUuid={projectUuid} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={getIssue} />
         )}
       </ModalBody>
     </Modal>

@@ -11,6 +11,10 @@ export const BAR_TYPE = {
   CONNECTION: 'connections',
   SETTINGS: 'settings',
   SUPPORT_PORTAL: 'support-portal',
+  PORTAL_ISSUES: 'portal-issues',
+  PORTAL_ISSUES_TRASH: 'portal-issues/trash',
+  PORTAL_ISSUE_TYPES: 'portal-issues/types',
+  PORTAL_ISSUE_SUBSTATES: 'portal-issues/substates',
   INBOX: 'inbox',
   KNOWLEDGE: 'knowledge-base',
   KNOWLEDGE_TRASH: 'knowledge/trash',
@@ -48,8 +52,25 @@ export const BAR_TYPE_CONFIG = {
   },
   [BAR_TYPE.SUPPORT_PORTAL]: {
     key: BAR_TYPE.SUPPORT_PORTAL,
-    name: gettext('Support portal'),
+    name: gettext('Home'),
     icon: 'support-portal'
+  },
+  [BAR_TYPE.PORTAL_ISSUES]: {
+    key: BAR_TYPE.PORTAL_ISSUES,
+    name: gettext('Issues from portal'),
+    icon: 'all-tickets'
+  },
+  [BAR_TYPE.PORTAL_ISSUES_TRASH]: {
+    key: BAR_TYPE.PORTAL_ISSUES_TRASH,
+    name: gettext('Trash')
+  },
+  [BAR_TYPE.PORTAL_ISSUE_TYPES]: {
+    key: BAR_TYPE.PORTAL_ISSUE_TYPES,
+    name: gettext('Manage types')
+  },
+  [BAR_TYPE.PORTAL_ISSUE_SUBSTATES]: {
+    key: BAR_TYPE.PORTAL_ISSUE_SUBSTATES,
+    name: gettext('Manage substates')
   },
   [BAR_TYPE.ANALYZE]: {
     key: BAR_TYPE.ANALYZE,

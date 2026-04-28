@@ -13,7 +13,8 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import ConvertRecordToTicket, ConvertTicketToKnowledgeBaseRecord, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, RelatedRecordsView
+from .ai import ConvertRecordToTicket, ConvertTicketToKnowledgeBaseRecord, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, \
+    RelatedRecordsView, ConvertPortalIssueToTicket
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
@@ -92,6 +93,7 @@ urlpatterns = [
 
     re_path(r'^api/v1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v1-ai-create-ticket'),
     re_path(r'^api/v1/ai/convert-ticket-to-knowledge-base/$', ConvertTicketToKnowledgeBaseRecord.as_view(), name='api-v1-ai-convert-ticket-to-kb-record'),
+    re_path(r'^api/v1/ai/convert-portal-issue-to-ticket/$', ConvertPortalIssueToTicket.as_view(), name='api-v1-ai-convert-portal-issue-to-ticket'),
     re_path(r'^api/v1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v1-ai-embedding-analysis'),
     re_path(r'^api/v1/ai/embedding-analysis-task-status/(?P<task_id>[-0-9a-zA-Z]+)/$', EmbeddingAnalysisTaskStatusView.as_view(), name='api-v1-ai-embedding-analysis-task-status'),
     re_path(r'^api/v1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v1-ai-related-records'),
@@ -107,6 +109,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/$', AgentActionUpdateView.as_view(), name='api-v1-project-agent-action-update'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/settings/$', AgentSettingsView.as_view(), name='api-v1-project-agent-settings'),
+
 ]
 
 # files, must at last

@@ -420,6 +420,8 @@ CREATE TABLE `projects`  (
   `knowledge_base_indexed_at` datetime(6) NULL,
   `knowledge_base_ai_indexed_at` datetime(6) NULL,
   `ticket_indexed_at` datetime(6) NULL,
+  `portal_issue_indexed_at` datetime(6) NULL,
+  `portal_issue_ai_indexed_at` datetime(6) NULL,
   `ticket_ai_indexed_at` datetime(6) NULL,
   `last_ticket_active_time` datetime(6) NULL,
   `last_agent_scanned_at` datetime(6) NULL,
@@ -483,6 +485,14 @@ CREATE TABLE `connection_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `connection_views_connection_id`(`connection_id`)
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `portal_issue_views`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  `details` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `portal_issue_views_project_uuid`(`project_uuid`)
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `options_useroptions`  (

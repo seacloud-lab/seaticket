@@ -34,12 +34,13 @@ from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, Discou
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
+    convert_select_field_names_to_option_ids, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, delete_ticket_activities_by_ids, get_deleted_tickets, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg
+    get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
+    validate_linked_connection_records
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -274,15 +275,10 @@ class TicketsAPIView(APIView):
             error_msg = 'linked_connection_records invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         # check linked connection records
-        if linked_connection_records:
-            for connection_record in linked_connection_records:
-                try:
-                    connection_id, record_id = connection_record.split('_', 1)
-                    connection_id = int(connection_id)
-                    record_id = int(record_id)
-                except Exception:
-                    error_msg = 'linked_connection_records invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            validate_linked_connection_records(linked_connection_records)
+        except TicketLinkValidationError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         # main
         try:
             ticket_state = 'open'
@@ -338,7 +334,7 @@ class TicketsAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-            # sync reverse link to discourse topics
+            # sync reverse link to discourse topics and portal issues
             if linked_connection_records:
                 ticket_link_diff = {
                     int(ticket_pk): (set(row.get(TicketsTable.linked_connection_records.name) or []), set())
@@ -346,7 +342,7 @@ class TicketsAPIView(APIView):
                 try:
                     sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
                 except TicketLinkValidationError as e:
-                    # rollback ticket creation if discourse topic already claimed
+                    # rollback ticket creation if discourse topic already claimed or portal issue already linked
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
@@ -486,6 +482,10 @@ class TicketsAPIView(APIView):
                     if any((not isinstance(x, str)) for x in new_lcr):
                         error_msg = 'linked_connection_records invalid.'
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                    try:
+                        validate_linked_connection_records(new_lcr)
+                    except TicketLinkValidationError as e:
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     updated_row[TicketsTable.linked_connection_records.name] = list(set(new_lcr))
                 else:
                     error_msg = 'linked_connection_records invalid.'
@@ -669,7 +669,7 @@ class TicketAPIView(APIView):
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            convert_ticket_select_column_name_to_option_id(metadata, ticket)
+            convert_select_field_names_to_option_ids(metadata, ticket)
 
             linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
 
@@ -837,6 +837,11 @@ class TicketAPIView(APIView):
             ):
                 error_msg = 'linked_connection_records invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            try:
+                validate_linked_connection_records(new_linked_connection_records)
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
             # handle diff
             new_linked_connection_records = list(set([x for x in new_linked_connection_records if x]))
@@ -1405,7 +1410,7 @@ class TicketCommentAPIView(APIView):
 
         try:
             update_row = {
-                'modified_time': ticket_comment_data.get('modified_time'),
+                'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
             participants = ticket.get('participants') or []
             if username not in participants:
@@ -1893,8 +1898,15 @@ class TicketTrashAPIView(APIView):
 
             need_update_connection_records = [ticket['linked_connection_records'] for ticket in need_delete_tickets if ticket['linked_connection_records']]
             update_connection_ids = set()
+            portal_issue_ids_to_unlink = set()
             for ticket_linked in need_update_connection_records:
-                update_connection_ids.update([int(record.split('_')[0]) for record in ticket_linked if record])
+                for record in ticket_linked:
+                    if not record:
+                        continue
+                    if record.startswith('portal_'):
+                        portal_issue_ids_to_unlink.add(int(record.split('_', 1)[1]))
+                    else:
+                        update_connection_ids.add(int(record.split('_')[0]))
 
             # Get connection types for each connection_id
             connections = ProjectConnections.objects.filter(id__in=update_connection_ids)
@@ -1923,6 +1935,27 @@ class TicketTrashAPIView(APIView):
                 if update_rows:
                     seadb_api.update_rows(project_uuid, table_name, update_rows)
 
+            # Clear linked_ticket on portal issues linked to the deleted tickets
+            if portal_issue_ids_to_unlink:
+                portal_ids_str = ','.join(str(pid) for pid in portal_issue_ids_to_unlink)
+                portal_sql = f"SELECT _pk, `linked_ticket` FROM `portal_issues` WHERE _pk IN ({portal_ids_str})"
+                portal_res = seadb_api.query_rows(project_uuid, portal_sql)
+                portal_rows = portal_res.get('results', [])
+                now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+                portal_update_rows = []
+                for portal_row in portal_rows:
+                    linked_ticket = portal_row.get('linked_ticket')
+                    if linked_ticket and int(linked_ticket) in need_delete_ticket_ids:
+                        portal_update_rows.append({
+                            'pk': int(portal_row.get('_pk')),
+                            'row': {
+                                'linked_ticket': None,
+                                'modified_time': now_datetime,
+                            }
+                        })
+                if portal_update_rows:
+                    seadb_api.update_rows(project_uuid, 'portal_issues', portal_update_rows)
+
             delete_ticket_comments_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             delete_ticket_activities_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             seadb_api.delete_rows(project_uuid, 'tickets', need_delete_ticket_ids)
@@ -1932,4 +1965,3 @@ class TicketTrashAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
-

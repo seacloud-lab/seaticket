@@ -9,7 +9,7 @@ import {
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   generateMarkAsOutdatedOptions,
 } from '../../../utils';
-import { useData, useTags } from '@/project/hooks';
+import { useData, useMetadata, useTags } from '@/project/hooks';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
 import { getResourceOriginalURL } from '@/project/utils';
 import { gettext, PERMISSION_TYPES } from '@/constants';
@@ -43,7 +43,7 @@ const initColumns = [
 
 const Record = ({ projectUuid, permission, toggleBar }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId } = useConnectionsPage();
-  const { getRow, modifyRow, modifyRowLink, modifyLocalRow } = useData();
+  const { getRow, modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink } = useData();
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
   const { tagsData } = useTags();
@@ -141,19 +141,17 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
     const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
     const rowId = childrenPageSlugId;
-    const connectionLinkedUpdate = {
-      [ticket.id]: ticket.title,
-    };
+    const connectionLinkedUpdate = { [ticket.id]: ticket.title };
     modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket.id),
       rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connection?.id}_${rowId}`] },
-      linked_records: { [`${connection?.id}_${rowId}`]: title }
+      linkedRecords: { [`${connection?.id}_${rowId}`]: title }
     }, {
       tableName: connectionTableName,
       rowId: rowId,
       rowUpdate: rowUpdate,
-      linked_records: connectionLinkedUpdate
+      linkedRecords: connectionLinkedUpdate
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
         callback && callback();
@@ -208,6 +206,18 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       }),
     );
   }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
+
+  const createTicketCallback = useCallback((ticket) => {
+    const linkedUpdateRecord = {
+      [ticket._pk]: ticket.title,
+    };
+    const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
+    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
+    insertRowByLink(TICKET_TABLE_NAME, connectionTableName, linkedUpdateRecord, childrenPageSlugId, rowUpdateData, () => {
+      setRecord({ ...record, [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk });
+      linkedTicketTitle.current = ticket.title;
+    });
+  }, [columns, childrenPageSlugId]);
 
   useEffect(() => {
     if (isConnectionsPageLoading || !record) return;
@@ -325,9 +335,11 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={{ _id: childrenPageSlugId }}
-          connection={connection}
-          columns={columns}
+          linkedRecordPrefix={connection.id}
+          useMetadataContext={useMetadata}
           onClose={() => setTicketDialogOpen(false)}
+          convertToTicket={() => connectionsAPI.convertRecordToTicket(projectUuid, connection.id, childrenPageSlugId)}
+          onSubmitCallback={createTicketCallback}
         />
       )}
       {isShowTicketsDialog && (

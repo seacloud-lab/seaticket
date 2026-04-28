@@ -1,18 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { gettext, PERMISSION_TYPES } from '@/constants';
+import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
 import { portalAPI } from '../api';
-import Tickets from '@/project/main-panel/tickets/components/tickets';
+import Issues from '@/project/main-panel/portal-issues/components/issues';
 
 const viewTools = [
   VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
   VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
+const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
 
-  const myTicketViewsData = useMemo(() => ({
+  const myIssueViewsData = useMemo(() => ({
     navigation: [
       { _id: 'open', type: 'view' },
       { _id: 'closed', type: 'view' },
@@ -34,15 +34,15 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
       const filters = context.localStorage.getItem('filters') || [];
       const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
       const basic_filters = context.localStorage.getItem('basic_filters') || [];
-      return portalAPI.listMyTickets(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts });
+      return portalAPI.listMyIssues(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts });
     },
 
-    getViews: () => new Promise((resolve, reject) => resolve({ data: myTicketViewsData })),
+    getViews: () => new Promise((resolve, reject) => resolve({ data: myIssueViewsData })),
 
     // view
     getView: (viewID) => {
       return new Promise((resolve, reject) => {
-        const view = myTicketViewsData.views[0];
+        const view = myIssueViewsData.views.find(v => v._id === viewID) || myIssueViewsData.views[0];
         resolve({
           data: {
             view: {
@@ -69,9 +69,9 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
 
     // file
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
-  }), [projectUuid, myTicketViewsData]);
+  }), [projectUuid, myIssueViewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-my-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-my-issues`, [projectUuid]);
 
   const [viewID, setViewID] = useState('open');
 
@@ -89,24 +89,24 @@ const MyTickets = ({ projectUuid, projectName, workspaceID }) => {
   }, []);
 
   return (
-    <Tickets
+    <Issues
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}
-      permission={PERMISSION_TYPES.READ_WRITE}
+      permission="rw"
       viewID={viewID}
       api={api}
-      getTicket={(uuid, ticketNumber) => portalAPI.getTicket(uuid, ticketNumber)}
       localStorageNamePrefix={localStorageNamePrefix}
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}
       viewTools={viewTools}
+      canCreateRelatedTickets={false}
       isBuiltInView={true}
+      canOpenIssue={false}
       toggleView={toggleView}
       createContextMenuOptions={() => []}
-      createRowsTools={() => []}
     />
   );
 };
 
-export default MyTickets;
+export default MyIssues;
