@@ -32,8 +32,8 @@
 
 .sea-metadata-column-popover .sea-metadata-column-type.sea-metadata-column-type-focus {
   background: var(--bs-body-bg);
-  border-color: #1991eb;
-  box-shadow: 0 0 0 2px #467fcf40;
+  border-color: var(--bs-custom-select-focus-border-color);
+  box-shadow: none;
   color: #495057;
   outline: 0;
 }
