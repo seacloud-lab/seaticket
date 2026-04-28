@@ -4,7 +4,7 @@ import Issues from '../../components/issues';
 import { usePortalIssuesPage } from '../../hooks';
 
 const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
-  const { viewID, toggleView, isLoading, togglePageSlugId, onRefresh } = usePortalIssuesPage();
+  const { isLoading, togglePageSlugId, onRefresh } = usePortalIssuesPage();
 
   const api = useMemo(() => ({
     getMetadata: (...params) => portalAPI.listIssues(projectUuid, ...params),
@@ -28,10 +28,8 @@ const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBa
       workspaceID={workspaceID}
       projectName={projectName}
       permission={permission}
-      viewID={viewID}
       toggleBar={toggleBar}
       api={api}
-      toggleView={toggleView}
       isLoading={isLoading}
       togglePageSlugId={togglePageSlugId}
       onRefresh={onRefresh}

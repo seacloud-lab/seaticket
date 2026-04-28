@@ -226,10 +226,10 @@ const Tags = ({ projectUuid, permission }) => {
 
   return (
     <SeaMetadata
-      viewID="0000"
       className="sea-tags-metadata"
       fixedColumnCount={2}
       api={api}
+      isShowViewInURL={false}
       localStorageNamePrefix={localStorageName}
       permission={permission}
       createContextMenuOptions={createContextMenuOptions}

@@ -97,8 +97,8 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
 
   return (
     <SeaMetadata
-      viewID="0000"
       api={api}
+      isShowViewInURL={false}
       settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
       permission={permission}
       localStorageNamePrefix={localStorageName}

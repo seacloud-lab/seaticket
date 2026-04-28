@@ -30,12 +30,11 @@ const Main = forwardRef(({
   createSubstate,
   toggleAllSubstates,
   expandRow,
-  toggleView,
   createRowsTools,
   children,
   ...params
 }, ref) => {
-  const { isLoading } = useViewsData();
+  const { isLoading, viewID, toggleView } = useViewsData();
   const metadataRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -62,7 +61,7 @@ const Main = forwardRef(({
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
         <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
           <SelectedRowsProvider>
-            <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
+            <MetadataProvider ref={metadataRef} viewID={viewID} tagsData={tagsData} typesData={typesData} { ...params }>
               <div className={classnames('sea-metadata', className)}>
                 <ViewToolBar
                   fixedColumnCount={fixedColumnCount}
@@ -83,11 +82,11 @@ const Main = forwardRef(({
 const SeaMetadata = forwardRef(({
   toggleView,
   api,
-  viewID,
   metadataID,
   permission = PERMISSION_TYPES.READ_ONLY,
   settings,
   t,
+  isShowViewInURL = true,
   ...params
 }, ref) => {
   const [isLoading, setLoading] = useState(true);
@@ -140,8 +139,8 @@ const SeaMetadata = forwardRef(({
   if (isLoading) return null;
 
   return (
-    <ViewsDataProvider ref={viewsDataRef} viewID={viewID} toggleView={toggleView}>
-      <Main ref={mainRef} viewID={viewID} toggleView={toggleView} { ...params } />
+    <ViewsDataProvider ref={viewsDataRef} isShowViewInURL={isShowViewInURL}>
+      <Main ref={mainRef} { ...params } />
     </ViewsDataProvider>
   );
 });

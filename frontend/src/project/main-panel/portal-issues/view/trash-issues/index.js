@@ -15,13 +15,13 @@ const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW
 
 const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
   const { clearViewRows, restoreRows } = useData();
-  const { isLoading, toggleView, togglePageSlugId } = usePortalIssuesPage();
+  const { isLoading, togglePageSlugId } = usePortalIssuesPage();
 
   const viewsData = useMemo(() => ({
-    navigation: [{ _id: 'all', type: 'view' }],
+    navigation: [{ _id: 'trash', type: 'view' }],
     views: [
       {
-        _id: 'all',
+        _id: 'trash',
         name: gettext('All'),
       }
     ]
@@ -166,7 +166,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
         workspaceID={workspaceID}
         projectName={projectName}
         permission={permission}
-        viewID='trash'
+        isShowViewInURL={false}
         toggleBar={toggleBar}
         api={api}
         settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
@@ -174,7 +174,6 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         isBuiltInView={true}
-        toggleView={toggleView}
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
       />

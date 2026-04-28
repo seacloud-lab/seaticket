@@ -46,7 +46,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
-  const { viewID, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
+  const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
   const {
     data,
@@ -566,7 +566,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     <>
       <SeaMetadata
         metadataID={connectionID}
-        viewID={viewID}
         api={api}
         ref={seaMetaDataRef}
         className="sea-qa-connection-details-metadata"
@@ -577,7 +576,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         typesData={typesData}
         tagsData={tagsData}
         createTag={createTag}
-        toggleView={toggleView}
         expandRow={handleExpandRow}
         cascadeUpdateCells={connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? cascadeUpdate : () => {}}
         t={t}

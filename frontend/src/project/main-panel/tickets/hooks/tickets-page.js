@@ -14,18 +14,17 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
-  const [viewID, toggleView] = useState('');
 
-  const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
+  const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
       let myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
-      if (viewID) {
-        myTicketsViewURL = myTicketsViewURL + '?view=' + viewID;
-      }
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const queryString = currentUrlParams.toString();
+      myTicketsViewURL = myTicketsViewURL + (queryString ? '?' + queryString : '');
       history.replaceState(null, null, myTicketsViewURL);
       return;
     }
@@ -42,8 +41,10 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       return;
     }
 
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
-      urlPart = urlPart + '?view=' + viewID;
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const queryString = currentUrlParams.toString();
+      urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + childrenPageSlugId + '/';
@@ -95,13 +96,9 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       const ticketNumber = Number(pageIdFromURL);
       pageSlugId = pageIdFromURL && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_SLUG_ID.ALL;
     }
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
-      const searchParams = Utils.getUrlSearches();
-      const viewID = searchParams?.view || '';
-      toggleView(viewID);
-    }
     setChildrenPageSlugId(childrenPageSlugId);
     setPageSlugId(pageSlugId);
+    // resetURL(pageSlugId, childrenPageSlugId, type);
     setLoading(false);
   }, [projectName]);
 
@@ -113,18 +110,16 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   }, [togglePageSlugId]);
 
   useEffect(() => {
-    resetURL(pageSlugId, childrenPageSlugId, viewID);
-  }, [pageSlugId, childrenPageSlugId, viewID, resetURL]);
+    resetURL(pageSlugId, childrenPageSlugId);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   return (
     <TicketsPageContext.Provider value={{
       pageSlugId,
-      viewID,
       childrenPageSlugId,
       isLoading,
       togglePageSlugId,
       onRefresh,
-      toggleView,
     }}>
       {children}
     </TicketsPageContext.Provider>

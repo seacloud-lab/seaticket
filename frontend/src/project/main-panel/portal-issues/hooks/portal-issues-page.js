@@ -14,9 +14,8 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(PORTAL_ISSUE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL);
-  const [viewID, toggleView] = useState('');
 
-  const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
+  const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.PORTAL_ISSUES}`;
     let urlPart = pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
@@ -27,8 +26,10 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       return;
     }
 
-    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL && viewID) {
-      urlPart = urlPart + '?view=' + viewID;
+    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const queryString = currentUrlParams.toString();
+      urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + childrenPageSlugId + '/';
@@ -82,11 +83,6 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       const ticketNumber = Number(pageIdFromURL);
       pageSlugId = pageIdFromURL && isNumber(ticketNumber) ? ticketNumber : PORTAL_ISSUE_PAGE_SLUG_ID.ALL;
     }
-    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
-      const searchParams = Utils.getUrlSearches();
-      const viewID = searchParams?.view || '';
-      toggleView(viewID);
-    }
     setChildrenPageSlugId(childrenPageSlugId);
     setPageSlugId(pageSlugId);
     setLoading(false);
@@ -100,18 +96,16 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
   }, [togglePageSlugId]);
 
   useEffect(() => {
-    resetURL(pageSlugId, childrenPageSlugId, viewID);
-  }, [pageSlugId, childrenPageSlugId, viewID, resetURL]);
+    resetURL(pageSlugId, childrenPageSlugId);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   return (
     <PortalIssuesPageContext.Provider value={{
       pageSlugId,
-      viewID,
       childrenPageSlugId,
       isLoading,
       togglePageSlugId,
       onRefresh,
-      toggleView,
     }}>
       {children}
     </PortalIssuesPageContext.Provider>

@@ -14,15 +14,16 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
-  const [viewID, toggleView] = useState('');
   const [isKBRecordPreview, toggleKBRecordPreview] = useState(true);
 
-  const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
+  const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}`;
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL && viewID) {
-      urlPart = urlPart + '?view=' + viewID;
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const queryString = currentUrlParams.toString();
+      urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       urlPart = '/trash/';
@@ -63,11 +64,6 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       const ticketNumber = Number(pageIdFromURL);
       pageSlugId = pageIdFromURL && isNumber(ticketNumber) ? ticketNumber : KNOWLEDGE_PAGE_SLUG_ID.ALL;
     }
-    const searchParams = Utils.getUrlSearches();
-    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-      const viewID = searchParams?.view || '';
-      toggleView(viewID);
-    }
     setChildrenPageSlugId(childrenPageSlugId);
     setPageSlugId(pageSlugId);
     setLoading(false);
@@ -86,19 +82,17 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   }, [pageSlugId]);
 
   useEffect(() => {
-    resetURL(pageSlugId, childrenPageSlugId, viewID);
-  }, [pageSlugId, childrenPageSlugId, viewID, resetURL]);
+    resetURL(pageSlugId, childrenPageSlugId);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   return (
     <KnowledgePageContext.Provider value={{
       pageSlugId,
-      viewID,
       childrenPageSlugId,
       isLoading,
       isKBRecordPreview,
       toggleKBRecordPreview,
       togglePageSlugId,
-      toggleView,
       onRefresh,
     }}>
       {children}

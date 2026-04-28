@@ -33,8 +33,7 @@ import { Utils } from '@/utils/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const Issues = ({
-  viewID,
-  canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false,
+  canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false, isShowViewInURL = true,
   projectUuid, workspaceID, projectName, permission,
   toggleBar = () => {},
   api,
@@ -42,7 +41,6 @@ const Issues = ({
   createContextMenuOptions: customizeCreateContextMenuOptions,
   createRowsTools: customizeCreateRowsTools,
   togglePageSlugId = () => {},
-  toggleView,
   isLoading = false,
   settings = {},
   getIssue = (uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber),
@@ -352,7 +350,7 @@ const Issues = ({
       <SeaMetadata
         className="sea-ticket-issues-metadata"
         ref={metadataRef}
-        viewID={viewID}
+        isShowViewInURL={isShowViewInURL}
         api={metadataAPI}
         t={t}
         fixedColumnCount={2}
@@ -361,7 +359,6 @@ const Issues = ({
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}
         expandRow={handleExpandRow}
-        toggleView={toggleView}
         cascadeUpdateCells={cascadeUpdate}
         columnOrderRules={PORTAL_ISSUE_COLUMNS_ORDER_CONFIG}
         columnWidthRules={PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG}

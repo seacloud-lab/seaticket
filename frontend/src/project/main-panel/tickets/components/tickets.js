@@ -29,7 +29,7 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const Tickets = ({
-  viewID, canFindRelatedIssues = true, isBuiltInView = false,
+  canFindRelatedIssues = true, isBuiltInView = false,
   projectUuid, workspaceID, projectName, permission,
   toggleBar = () => {},
   api,
@@ -37,8 +37,8 @@ const Tickets = ({
   createContextMenuOptions: customizeCreateContextMenuOptions,
   createRowsTools: customizeCreateRowsTools,
   togglePageSlugId = () => {},
-  toggleView,
   isLoading = false,
+  isShowViewInURL = true,
   settings = {},
   getTicket,
   onRefresh,
@@ -301,16 +301,15 @@ const Tickets = ({
       <SeaMetadata
         className="sea-tickets-metadata"
         ref={metadataRef}
-        viewID={viewID}
         api={metadataAPI}
         t={t}
+        isShowViewInURL={isShowViewInURL}
         fixedColumnCount={2}
         localStorageNamePrefix={localStorageName}
         permission={permission}
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}
         expandRow={handleExpandRow}
-        toggleView={toggleView}
         cascadeUpdateCells={cascadeUpdate}
         columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
         columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
