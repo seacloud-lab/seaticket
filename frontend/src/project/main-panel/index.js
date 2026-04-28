@@ -44,7 +44,7 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
       return (<Ask title={title} settings={settings}/>);
     }
     case BAR_TYPE.AGENT: {
-      return (<Agent title={title} />);
+      return (<Agent title={title} settings={settings} modifySettings={modifySettings} />);
     }
     case BAR_TYPE.SEARCH: {
       return (<Search title={title} settings={settings} />);

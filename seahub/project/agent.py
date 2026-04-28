@@ -2,6 +2,8 @@ import datetime
 import logging
 import json
 from email.utils import make_msgid
+import re
+import requests
 
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -9,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
+
+from urllib.parse import urlparse
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -18,6 +22,7 @@ from seahub.utils.ai_client import (
 )
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
+from seahub.project.github_issues_api import GitHubAPI
 from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -27,11 +32,18 @@ from seahub.seadb_models.models import (
     DiscourseTopicsTable,
     GithubIssuesTable,
     ThreadTable,
+    GithubIssueCommentsTable,
     TicketCommentsTable,
     TicketsTable,
 )
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.utils.decorators import require_org_context
-from seahub.project.utils import check_project_permission, extract_email_addresses
+from seahub.project.utils import (
+    check_project_permission,
+    extract_email_addresses,
+    collect_github_issue_type_options,
+    get_current_table_metadata,
+)
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
     MSG_TYPE_TICKET_COMMENTED,
@@ -41,6 +53,20 @@ from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
 logger = logging.getLogger(__name__)
+
+AGENT_ISSUE_TYPES = ('Bug', 'Feature', 'Question')
+# Agent issue types that can auto-match to a GitHub issue type with the same
+# (case-insensitive) name when no explicit mapping is configured. "Question"
+# is intentionally excluded because GitHub's default types (Bug / Feature /
+# Task) don't include it, so users should always pick a target explicitly.
+AUTO_MATCH_AGENT_ISSUE_TYPES = ('Bug', 'Feature')
+
+
+class MappingRequiredError(Exception):
+    def __init__(self, agent_type, connection_id):
+        self.agent_type = agent_type
+        self.connection_id = connection_id
+        super().__init__(f'Mapping required for agent type: {agent_type}')
 
 
 def _build_items_map_from_actions(actions):
@@ -306,7 +332,7 @@ class AgentActionConfirmView(APIView):
                 )
             elif source_type == ConnectionType.GITHUB_ISSUE.value:
                 execution_result = self._execute_github_issue_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                    seadb_api, project, project_uuid, source_id, tool_name, action, username
                 )
             elif source_type == ConnectionType.DISCOURSE_FORUM.value:
                 execution_result = self._execute_discourse_topic_action(
@@ -339,9 +365,21 @@ class AgentActionConfirmView(APIView):
                 'result': execution_result,
             }, status=status.HTTP_200_OK)
 
+        except MappingRequiredError as e:
+            return self._mapping_required_response(seadb_api, project_uuid, e)
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    def _mapping_required_response(self, seadb_api, project_uuid, error):
+        issue_types = collect_github_issue_type_options(
+            seadb_api, project_uuid, [error.connection_id]
+        )
+        return Response({
+            'error_code': 'mapping_required',
+            'agent_type': error.agent_type,
+            'github_issue_types': issue_types,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
         """Dispatch ticket-source actions to the appropriate handler."""
@@ -359,12 +397,14 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, action, username):
         """Dispatch GitHub issue actions to the appropriate handler."""
+        content = action.get('content', '') if isinstance(action, dict) else ''
         if tool_name == 'suggest_resolution':
-            return self._execute_github_suggest_resolution(source_id, content)
+            return self._execute_github_suggest_resolution(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_modify_type':
-            return self._execute_github_suggest_modify_type(source_id, content)
+            suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
+            return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, suggestion_text)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -393,24 +433,212 @@ class AgentActionConfirmView(APIView):
     def _execute_discourse_suggest_resolution(self, source_id, resolution_content):
         return f'Resolution for Discourse topic {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
 
-    def _execute_github_suggest_resolution(self, source_id, resolution_content):
-        """Confirm a resolution suggestion for a GitHub issue.
+    def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
+        try:
+            connection_id_str, record_id_str = source_id.split('_', 1)
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except (ValueError, AttributeError) as e:
+            logger.error(f'Cannot parse github_issue source_id {source_id!r}: {e}')
+            return None
 
-        Currently records the confirmation. Future enhancement: post as a GitHub comment
-        via the GitHub API.
-        """
-        return f'Resolution for GitHub issue {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            logger.error(f'GitHub connection {connection_id} not found.')
+            return None
 
-    def _execute_github_suggest_modify_type(self, source_id, suggestion_content):
-        """Confirm an issue type suggestion for a GitHub issue.
+        config = decrypt_config(json.loads(project_connection.config))
+        installation_id = config.get('installation_id')
+        if not installation_id:
+            logger.error(f'GitHub connection {connection_id} missing installation_id.')
+            return None
 
-        This is a user-facing triage recommendation. It does not update
-        the source issue_type enum automatically.
-        """
-        return (
-            f'Issue type suggestion for GitHub issue {source_id} confirmed. '
-            f'Content: {(suggestion_content or "")[:500]}...'
-        )
+        server_url = config.get('repository')
+        try:
+            path = urlparse(server_url).path
+            parts = path.strip("/").split("/")
+            owner, repo = parts[0], parts[1]
+        except Exception as e:
+            logger.error(f'Invalid GitHub repository URL in connection {connection_id}: {e}')
+            return None
+
+        issues_table = GithubIssuesTable.gen_table_name(connection_id)
+        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        result = seadb_api.query_rows(project_uuid, sql)
+        issues = result.get('results', [])
+        if not issues:
+            logger.error(f'GitHub issue {source_id} not found in SeaDB.')
+            return None
+        issue = issues[0]
+        issue_number = issue.get('issue_number')
+        if not issue_number:
+            logger.error(f'GitHub issue {source_id} missing issue_number.')
+            return None
+
+        github_api = GitHubAPI(installation_id=installation_id)
+        return {
+            'connection_id': connection_id,
+            'record_id': record_id,
+            'github_api': github_api,
+            'owner': owner,
+            'repo': repo,
+            'author': issue.get('author'),
+            'issue_number': issue_number,
+            'issue_id': issue.get('issue_id'),
+            'comment_count': issue.get('comment_count') or 0,
+        }
+
+    def _execute_github_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
+        """Post a resolution suggestion as a GitHub comment."""
+        ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
+        if not ctx:
+            return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
+
+        if not resolution_content:
+            return f'Resolution content is empty for GitHub issue {ctx["record_id"]}.'
+
+        try:
+            result = ctx['github_api'].add_comment(
+                ctx['owner'],
+                ctx['repo'],
+                ctx['issue_number'],
+                resolution_content,
+            )
+            comment_id = result.get('id')
+            comment_created_at = result.get('created_at', '')
+            logger.info(f'Added resolution comment #{comment_id} to GitHub issue {ctx["record_id"]}')
+        except Exception as e:
+            logger.error(f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}'
+
+        now_datetime = timezone.now().isoformat()
+
+        try:
+            issues_table = GithubIssuesTable.gen_table_name(ctx['connection_id'])
+            new_comment_count = ctx['comment_count'] + 1
+            update_row = {
+                'pk': ctx['record_id'],
+                'row': {
+                    GithubIssuesTable.comment_count.name: new_comment_count,
+                    GithubIssuesTable.record_modified_time.name: now_datetime,
+                }
+            }
+            seadb_api.update_rows(project_uuid, issues_table, [update_row])
+        except Exception as e:
+            logger.warning(f'Failed to update SeaDB GithubIssuesTable for issue {ctx["record_id"]}: {e}')
+
+        try:
+            comments_table = GithubIssueCommentsTable.gen_table_name(ctx['connection_id'])
+            comment_row = {
+                GithubIssueCommentsTable.comment_id.name: comment_id,
+                GithubIssueCommentsTable.issue_id.name: ctx['issue_id'],
+                GithubIssueCommentsTable.author.name: ctx['author'],
+                GithubIssueCommentsTable.content.name: resolution_content,
+                GithubIssueCommentsTable.created_time.name: comment_created_at,
+                GithubIssueCommentsTable.modified_time.name: comment_created_at,
+            }
+            seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
+        except Exception as e:
+            logger.warning(f'Failed to insert comment into SeaDB GithubIssueCommentsTable: {e}')
+
+        return f'Resolution comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
+
+    @staticmethod
+    def _parse_suggested_type(suggestion_text):
+        if not suggestion_text:
+            return ''
+        match = re.search(r'to "(.+?)" for this GitHub issue\.', suggestion_text)
+        if match:
+            return match.group(1).strip()
+        return ''
+
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
+        ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
+        if not ctx:
+            return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
+
+        suggested_type = self._parse_suggested_type(suggestion_text)
+        if not suggested_type:
+            logger.error(
+                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
+                f'{suggestion_text!r}'
+            )
+            return f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+
+        # Normalize to the canonical enum spelling (Bug / Feature / Question).
+        suggested_type = suggested_type.capitalize()
+        if suggested_type not in AGENT_ISSUE_TYPES:
+            logger.error(
+                f'Unsupported suggested_type "{suggested_type}" for GitHub issue {ctx["record_id"]}'
+            )
+            return f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+
+        try:
+            settings = json.loads(project.settings) if project.settings else {}
+        except (TypeError, ValueError, json.JSONDecodeError):
+            settings = {}
+
+        mapping = (settings.get('agent') or {}).get('github_issue_type_mapping') or {}
+        github_issue_type = (mapping.get(suggested_type) or '').strip()
+
+        # Fallback: for Bug/Feature, if no explicit mapping is configured,
+        # auto-match to a same-named GitHub issue type (case-insensitive) that
+        # already exists in SeaDB metadata. Question always requires an
+        # explicit mapping.
+        if not github_issue_type and suggested_type in AUTO_MATCH_AGENT_ISSUE_TYPES:
+            available = collect_github_issue_type_options(
+                seadb_api, project_uuid, [ctx['connection_id']]
+            )
+            for opt in available:
+                name = (opt.get('name') or '').strip()
+                if name.lower() == suggested_type.lower():
+                    github_issue_type = name
+                    break
+
+        if not github_issue_type:
+            raise MappingRequiredError(
+                agent_type=suggested_type,
+                connection_id=ctx['connection_id'],
+            )
+
+        try:
+            issue_data = ctx['github_api'].update_issue(
+                ctx['owner'],
+                ctx['repo'],
+                ctx['issue_number'],
+                issue_type=github_issue_type,
+            )
+            new_type = issue_data.get('issue_type', github_issue_type)
+        except requests.HTTPError as e:
+            status_code = getattr(e.response, 'status_code', None)
+            if status_code == 422:
+                logger.error(
+                    f'GitHub rejected issue_type "{github_issue_type}" for issue {ctx["record_id"]} (422). '
+                    f'The type may not exist in the organization.'
+                )
+                return (
+                    f'GitHub rejected issue type "{github_issue_type}" (422). '
+                    f'The type may not be defined in the organization. '
+                    f'Please configure issue types in GitHub or choose an existing one.'
+                )
+            logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}'
+        except Exception as e:
+            logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}'
+
+        try:
+            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+            github_seadb_api.save_issue_update(
+                project_uuid,
+                ctx['connection_id'],
+                ctx['record_id'],
+                issue_data,
+            )
+        except Exception as e:
+            logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
+
+        return f'Issue type updated to "{new_type}" for GitHub issue {ctx["record_id"]}.'
 
     def _create_ticket_from_record_detail(
         self,
@@ -1055,21 +1283,7 @@ class AgentActionCancelView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
 
-class AgentSettingsView(APIView):
-    """
-    Get/update agent settings for a project.
-    GET /api/v1/project/<project_uuid>/agent/settings/
-    PUT /api/v1/project/<project_uuid>/agent/settings/
-    
-    Settings are stored in the project's settings JSON field as:
-    {
-      "agent": {
-        "enabled": false,
-        "model": "gemini-3-flash",
-        "notify_before_due_hours": 48
-      }
-    }
-    """
+class GithubIssueTypesView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -1085,33 +1299,30 @@ class AgentSettingsView(APIView):
             if not check_project_permission(username, project.workspace.owner):
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-            try:
-                settings = json.loads(project.settings) if project.settings else {}
-            except (json.JSONDecodeError, ValueError):
-                settings = {}
+            connections = list(ProjectConnections.objects.filter(
+                project_uuid=project_uuid,
+                type='github_issue',
+                deleted=False,
+                is_active=True
+            ).order_by('id'))
+            if not connections:
+                return Response({
+                    'issue_types': [],
+                    'warning': 'no_github_connection',
+                }, status=status.HTTP_200_OK)
 
-            agent_settings = settings.get('agent', {
-                'enabled': True,
-                'model': 'gemini-3-flash',
-                'notify_before_due_hours': 48,
-            })
-
-            return Response({
-                'enabled': agent_settings.get('enabled'),
-                'model': agent_settings.get('model'),
-                'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
-            }, status=status.HTTP_200_OK)
-
+            seadb_api = SeaDBAPI()
+            issue_types = collect_github_issue_type_options(
+                seadb_api, project_uuid, [c.id for c in connections]
+            )
+            return Response({'issue_types': issue_types}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
     @require_org_context
-    def put(self, request, project_uuid):
-        enabled = request.data.get('enabled')
-        model = request.data.get('model')
-        notify_before_due_hours = request.data.get('notify_before_due_hours')
-
+    def post(self, request, project_uuid):
+        """Pull the latest issue types from GitHub for the first active GitHub connection."""
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
             if not project:
@@ -1121,30 +1332,267 @@ class AgentSettingsView(APIView):
             if not check_project_permission(username, project.workspace.owner):
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
+            connections = list(ProjectConnections.objects.filter(
+                project_uuid=project_uuid,
+                type='github_issue',
+                deleted=False,
+                is_active=True
+            ).order_by('id'))
+            if not connections:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'No active GitHub connection found for this project.'
+                )
+
+            connection = connections[0]
             try:
-                settings = json.loads(project.settings) if project.settings else {}
-            except (json.JSONDecodeError, ValueError):
-                settings = {}
+                config = decrypt_config(json.loads(connection.config))
+            except Exception as e:
+                logger.warning(f'Invalid config for connection {connection.id}: {e}')
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub connection config.'
+                )
+            installation_id = config.get('installation_id')
+            repository = config.get('repository')
+            if not installation_id or not repository:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub connection config.'
+                )
+            try:
+                path = urlparse(repository).path
+                parts = path.strip('/').split('/')
+                owner, repo = parts[0], parts[1]
+            except Exception as e:
+                logger.warning(
+                    f'Invalid GitHub repository URL for connection {connection.id}: {e}'
+                )
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'Invalid GitHub repository URL.'
+                )
 
-            agent_settings = settings.get('agent', {})
+            seadb_api = SeaDBAPI()
+            github_api = GitHubAPI(installation_id=installation_id)
+            try:
+                added, added_names, updated, deleted = _sync_issue_type_column_options(
+                    seadb_api, project_uuid, connection.id, github_api, owner, repo
+                )
+            except requests.HTTPError as e:
+                logger.warning(
+                    f'Failed to fetch issue types from GitHub for connection '
+                    f'{connection.id}: {e}'
+                )
+                return api_error(
+                    status.HTTP_502_BAD_GATEWAY,
+                    f'Failed to fetch issue types from GitHub: {e}'
+                )
 
-            if enabled is not None:
-                agent_settings['enabled'] = bool(enabled)
-            if model is not None:
-                agent_settings['model'] = str(model)
-            if notify_before_due_hours is not None:
-                agent_settings['notify_before_due_hours'] = int(notify_before_due_hours)
-
-            settings['agent'] = agent_settings
-            project.settings = json.dumps(settings)
-            project.save()
-
+            issue_types = collect_github_issue_type_options(
+                seadb_api, project_uuid, [c.id for c in connections]
+            )
             return Response({
-                'enabled': agent_settings.get('enabled'),
-                'model': agent_settings.get('model'),
-                'notify_before_due_hours': agent_settings.get('notify_before_due_hours'),
+                'added': added,
+                'added_names': added_names,
+                'updated': updated,
+                'deleted': deleted,
+                'issue_types': issue_types,
             }, status=status.HTTP_200_OK)
-
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+_GITHUB_ISSUE_TYPE_COLOR_MAP = {
+    'gray': '#5A5F66',
+    'blue': '#E0F0FF',
+    'green': '#E0F9E5',
+    'yellow': '#FFF9D0',
+    'orange': '#FFE8D6',
+    'red': '#FFE8E8',
+    'pink': '#FADADD',
+    'purple': '#F3E5F5',
+}
+
+def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, github_api, owner, repo):
+    """Mirror the seaqa-indexer's `add_or_update_issue_type_column_options`."""
+    github_issue_types = github_api.get_all_issue_types(owner, repo)
+
+    base_metadata = seadb_api.get_base_metadata(project_uuid)
+    tables = (base_metadata or {}).get('tables') or []
+    table_name = GithubIssuesTable.gen_table_name(connection_id)
+    table_meta = get_current_table_metadata(tables, table_name)
+    if not table_meta:
+        return 0, [], 0, 0
+
+    issue_type_column = None
+    for column in table_meta.get('columns') or []:
+        if column.get('name') == GithubIssuesTable.issue_type.name:
+            issue_type_column = column
+            break
+    if not issue_type_column:
+        return 0, [], 0, 0
+
+    table_id = table_meta.get('id')
+    column_key = issue_type_column.get('key')
+    existing_options = ((issue_type_column.get('data') or {}).get('options')) or []
+    old_type_id_to_option = {}
+    old_type_names = set()
+    for opt in existing_options:
+        type_id = opt.get('type_id')
+        type_name = opt.get('name')
+        if type_name:
+            old_type_names.add(type_name)
+        if type_id:
+            old_type_id_to_option[type_id] = opt
+
+    new_type_ids = set()
+    need_added_options = []
+    # Each entry: (option_id, new_name_or_None, update_option_data_or_None, old_name)
+    need_updated_options = []
+    for gh_type in github_issue_types or []:
+        gh_type_id = gh_type.get('id')
+        gh_type_name = (gh_type.get('name') or '').strip()
+        if not gh_type_id or not gh_type_name:
+            continue
+        gh_color_name = (gh_type.get('color') or '').lower()
+        new_type_ids.add(gh_type_id)
+
+        old_option = old_type_id_to_option.get(gh_type_id)
+        if not old_option:
+            need_added_options.append({
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_name': gh_type_name,
+                'option_data': {
+                    'color': _GITHUB_ISSUE_TYPE_COLOR_MAP.get(gh_color_name),
+                    'type_id': gh_type_id,
+                },
+            })
+            continue
+
+        old_name = old_option.get('name')
+        old_color = old_option.get('color')
+        option_id = old_option.get('id')
+        new_color = _GITHUB_ISSUE_TYPE_COLOR_MAP.get(gh_color_name)
+        name_changed = gh_type_name != old_name
+        color_changed = new_color != old_color
+        if not name_changed and not color_changed:
+            continue
+        update_option_data = {
+            'color': new_color,
+            'type_id': gh_type_id,
+        } if color_changed else None
+        new_name = gh_type_name if name_changed else None
+        need_updated_options.append(
+            (option_id, new_name, update_option_data, old_name)
+        )
+
+    # Delete options whose type_id no longer exists on GitHub. Done first so
+    # their names free up for any renames that would otherwise collide.
+    deleted = 0
+    need_deleted_type_ids = set(old_type_id_to_option.keys()) - new_type_ids
+    if need_deleted_type_ids:
+        deleted_option_ids = [
+            old_type_id_to_option[tid].get('id') for tid in need_deleted_type_ids
+        ]
+        deleted_option_names = {
+            old_type_id_to_option[tid].get('name') for tid in need_deleted_type_ids
+        }
+        old_type_names = old_type_names - deleted_option_names
+        try:
+            seadb_api.delete_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_ids': deleted_option_ids,
+            })
+            deleted = len(deleted_option_ids)
+        except Exception as e:
+            logger.warning(
+                f'Failed to delete stale GitHub issue type options '
+                f'(connection {connection_id}): {e}'
+            )
+
+    # Straight-forward updates first; rename collisions deferred.
+    updated = 0
+    conflict_updates = []
+    for updated_option in need_updated_options:
+        option_id, new_name, update_option_data, old_name = updated_option
+        if new_name and new_name in old_type_names:
+            conflict_updates.append(updated_option)
+            continue
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_id': option_id,
+                'new_option_name': new_name,
+                'update_option_data': update_option_data,
+            })
+            updated += 1
+        except Exception as e:
+            logger.warning(
+                f'Failed to update GitHub issue type option "{old_name}" '
+                f'(connection {connection_id}): {e}'
+            )
+
+    # Handle rename cycles (e.g. A->B, B->A) via a temporary name pass,
+    # mirroring the indexer. For each conflicting rename, first rename the
+    # option to a unique temp name, then to its final name in a second pass.
+    temp_prefix = 'tmp'
+    already_renamed = set()
+    pending_final_renames = []
+    for updated_option in conflict_updates:
+        option_id, new_name, update_option_data, old_name = updated_option
+        if new_name in already_renamed or old_name in already_renamed:
+            # The other side of the cycle already went through the temp-name
+            # dance; its final rename will reuse this slot.
+            pending_final_renames.append(updated_option)
+            continue
+        temp_name = f'{temp_prefix}{option_id}'
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_name': new_name,
+                'new_option_name': temp_name,
+                'update_option_data': update_option_data,
+            })
+            already_renamed.add(new_name)
+            pending_final_renames.append(updated_option)
+        except Exception as e:
+            logger.warning(
+                f'Failed to stage rename for GitHub issue type option '
+                f'"{new_name}" (connection {connection_id}): {e}'
+            )
+
+    for updated_option in pending_final_renames:
+        option_id, new_name, _update_option_data, old_name = updated_option
+        try:
+            seadb_api.update_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_id': option_id,
+                'new_option_name': new_name,
+            })
+            updated += 1
+        except Exception as e:
+            logger.warning(
+                f'Failed to finalize rename for GitHub issue type option '
+                f'"{old_name}" -> "{new_name}" (connection {connection_id}): {e}'
+            )
+
+    added = 0
+    added_names = []
+    for option_payload in need_added_options:
+        try:
+            seadb_api.add_column_option(project_uuid, option_payload)
+            added += 1
+            added_names.append(option_payload['option_name'])
+        except Exception as e:
+            logger.warning(
+                f'Failed to add GitHub issue type "{option_payload["option_name"]}" '
+                f'to SeaDB (connection {connection_id}): {e}'
+            )
+
+    return added, added_names, updated, deleted

@@ -119,3 +119,51 @@ class GitHubAPI:
             'state_reason': issue_data.get('state_reason', ''),
             'updated_time': issue_data.get('updated_at', ''),
         }
+
+    def add_comment(self, owner, repo, issue_number, body):
+        url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}/comments"
+        payload = {'body': body}
+        response = requests.post(url, headers=self.headers, json=payload, timeout=self.timeout)
+        response.raise_for_status()
+        comment_data = response.json()
+        return {
+            'id': comment_data.get('id'),
+            'author': comment_data.get('user', {}).get('login', ''),
+            'body': comment_data.get('body', ''),
+            'created_at': comment_data.get('created_at', ''),
+        }
+
+    def get_all_issue_types(self, repo_owner, repo_name):
+        """Copy from seaqa-indexer/seaqa_indexer/utils/github_issues_api.py
+        
+        Returns a list of ``{id, name, color}`` dicts. For personal repos
+        (no issueTypes) an empty list is returned.
+        """
+        url = f"{self.base_url}/graphql"
+        query = """
+        query($owner: String!, $repo: String!) {
+          repository(owner: $owner, name: $repo) {
+            issueTypes(first: 100) {
+              nodes {
+                id
+                name
+                color
+              }
+            }
+          }
+        }
+        """
+        variables = {'owner': repo_owner, 'repo': repo_name}
+        response = requests.post(
+            url,
+            headers=self.headers,
+            json={'query': query, 'variables': variables},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        result = response.json()
+        repository = (result.get('data') or {}).get('repository') or {}
+        issue_types_obj = repository.get('issueTypes')
+        if not issue_types_obj:
+            return []
+        return issue_types_obj.get('nodes') or []

@@ -44,15 +44,14 @@ class AgentAPI {
     }
   }
 
-  // Agent settings
-  getAgentSettings(projectUuid) {
-    const url = this.server + `/api/v1/project/${projectUuid}/agent/settings/`;
+  getGithubIssueTypes(projectUuid) {
+    const url = this.server + `/api/v1/project/${projectUuid}/github/issue-types/`;
     return this.req.get(url);
   }
 
-  updateAgentSettings(projectUuid, settings) {
-    const url = this.server + `/api/v1/project/${projectUuid}/agent/settings/`;
-    return this.req.put(url, settings);
+  syncGithubIssueTypes(projectUuid) {
+    const url = this.server + `/api/v1/project/${projectUuid}/github/issue-types/`;
+    return this.req.post(url);
   }
 
   // Agent run logs

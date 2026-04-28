@@ -1,0 +1,36 @@
+.agent-type-mapping-github-type-modal {
+  width: 602px;
+  max-width: 602px;
+}
+
+.agent-type-mapping-github-type-modal .modal-header,
+.agent-type-mapping-github-type-modal .modal-footer {
+  border-color: var(--bs-border-tertiary-color);
+}
+
+.agent-type-mapping-github-type-modal .modal-content {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.agent-type-mapping-github-type-modal .sea-qa-tip-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.agent-type-mapping-github-type-modal .sea-qa-tip-default {
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto 24px auto;
+}
+
+.agent-type-mapping-github-type-modal .github-issue-type-mapping-table {
+  margin-bottom: 24px;
+}

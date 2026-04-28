@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import _ from 'lodash';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -120,7 +121,7 @@ const Project = () => {
   }, []);
 
   const modifySettings = useCallback((update, callback) => {
-    projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
+    return projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
       setSettings({ ...settings, ...update });
       callback && callback();
     }).catch(error => {
@@ -174,7 +175,7 @@ const Project = () => {
         settings = {};
       }
     }
-    setSettings({ ...PROJECT_DEFAULT_SETTINGS, ...settings });
+    setSettings(_.merge({}, PROJECT_DEFAULT_SETTINGS, settings));
   }, []);
 
   return (
