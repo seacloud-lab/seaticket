@@ -1,7 +1,6 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import RunCard from './run-card';
-import GithubTypeMappingDialog from './github-type-mapping-dialog';
 import { CenteredLoading, EmptyTip, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 
@@ -16,9 +15,6 @@ const RunLogs = ({
   onCancelAction,
   onUpdateContent,
   enabledAgent,
-  pendingMapping,
-  onDismissMapping,
-  onSubmitMappingAndRetry,
 }) => {
   const [viewContentModal, setViewContentModal] = useState(null);
   const [editContent, setEditContent] = useState('');
@@ -123,13 +119,6 @@ const RunLogs = ({
           </Button>
         </ModalFooter>
       </Modal>
-      <GithubTypeMappingDialog
-        isOpen={!!pendingMapping}
-        agentType={pendingMapping?.agentType || ''}
-        githubIssueTypes={pendingMapping?.githubIssueTypes || []}
-        onCancel={onDismissMapping}
-        onConfirm={onSubmitMappingAndRetry}
-      />
     </div>
   );
 };

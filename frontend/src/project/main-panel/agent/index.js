@@ -5,9 +5,9 @@ import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentSettings } from './hooks/useAgentSettings';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI } from '@/project/api';
-import { CenteredLoading } from '@/components';
-import toaster from '@/components/toaster';
+import { CenteredLoading, toaster } from '@/components';
 import { gettext } from '@/constants';
+import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
 
 import './index.css';
 
@@ -26,30 +26,24 @@ const Agent = ({ title }) => {
     updateRunLog,
   } = useAgentRunLogs();
 
-  const findRunIdByActionId = useCallback((actionId) => {
+  const getRunIdByActionId = useCallback((actionId) => {
     for (const run of runLogs) {
       const items = run.items || [];
       for (const item of items) {
         const actions = item.actions || [];
         const action = actions.find(a => a.id === actionId);
-        if (action) {
-          return run.id;
-        }
+        if (action) return run.id;
       }
       const directActions = run.actions || [];
       const directAction = directActions.find(a => a.id === actionId);
-      if (directAction) {
-        return run.id;
-      }
+      if (directAction) return run.id;
     }
     return null;
   }, [runLogs]);
 
   const handleConfirmAction = useCallback((actionId) => {
-    const runId = findRunIdByActionId(actionId);
-    if (!runId) {
-      return Promise.resolve();
-    }
+    const runId = getRunIdByActionId(actionId);
+    if (!runId) return '';
 
     return agentAPI.confirmAgentAction(projectUuid, runId, actionId).then(() => {
       updateRunLog(runId);
@@ -69,9 +63,8 @@ const Agent = ({ title }) => {
         return;
       }
       toaster.danger(gettext('Failed to confirm action'));
-      throw err;
     });
-  }, [findRunIdByActionId, updateRunLog]);
+  }, [getRunIdByActionId, updateRunLog]);
 
   const handleUpdateContent = useCallback((runId, actionId, content) => {
     return agentAPI.updateAgentAction(projectUuid, runId, actionId, { content }).then(() => {
@@ -111,10 +104,8 @@ const Agent = ({ title }) => {
     setPendingMapping(null);
   }, []);
 
-  const submitMappingAndRetry = useCallback((selectedGithubType) => {
-    if (!pendingMapping?.agentType || !pendingMapping?.actionId || !pendingMapping?.runId) {
-      return Promise.resolve();
-    }
+  const submitMappingAndRetry = useCallback((selectedGithubType, callback) => {
+    if (!pendingMapping?.agentType || !pendingMapping?.actionId || !pendingMapping?.runId) return;
 
     const { runId, actionId, agentType } = pendingMapping;
     return agentAPI.getAgentSettings(projectUuid).then((res) => {
@@ -131,9 +122,11 @@ const Agent = ({ title }) => {
     }).then(() => {
       updateRunLog(runId);
       toaster.success(gettext('Action confirmed'));
+      callback && callback();
     }).catch((err) => {
       console.error('Failed to save mapping and confirm action:', err);
       toaster.danger(gettext('Failed to confirm action'));
+      callback && callback(true);
       throw err;
     });
   }, [pendingMapping, updateRunLog]);
@@ -173,12 +166,17 @@ const Agent = ({ title }) => {
             onCancelAction={handleCancelAction}
             onUpdateContent={handleUpdateContent}
             enabledAgent={enabledAgent}
-            pendingMapping={pendingMapping}
-            onDismissMapping={dismissMapping}
-            onSubmitMappingAndRetry={submitMappingAndRetry}
           />
         </div>
       </div>
+      {pendingMapping && (
+        <AgentType2GithubTypeMappingDialog
+          agentType={pendingMapping?.agentType || ''}
+          githubIssueTypes={pendingMapping?.githubIssueTypes || []}
+          onCancel={dismissMapping}
+          onConfirm={submitMappingAndRetry}
+        />
+      )}
     </>
   );
 };

@@ -6,17 +6,14 @@
   line-height: 1.5;
 }
 
-.github-issue-type-mapping-body {
-  border: 1px solid var(--bs-border-tertiary-color);
-  border-radius: 8px;
-}
-
 .github-issue-type-mapping-table {
   width: fit-content;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 8px;
 }
 
 .github-issue-type-mapping-table::after {
@@ -27,7 +24,7 @@
   top: 0;
   height: 100%;
   width: 1px;
-  background-color: var(--bs-border-secondary-color);
+  background-color: var(--bs-border-tertiary-color);
 }
 
 .github-issue-type-mapping-table-row {
@@ -53,7 +50,7 @@
 }
 
 .github-issue-type-mapping-table-header.github-issue-type-mapping-table-row  {
-  border-bottom: 1px solid var(--bs-border-secondary-color);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
   height: 41px;
 }
 
@@ -97,11 +94,6 @@
   padding-bottom: 16px;
 }
 
-.github-issue-type-mapping-table-body .github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell:first-child {
-  padding-left: 8px;
-  padding-right: 8px;
-}
-
 .github-issue-type-mapping-title {
   display: flex;
   align-items: center;
@@ -126,6 +118,10 @@
 
 .github-issue-type-mapping-sync-btn.sea-ticket-secondary-btn {
   width: 166px;
+}
+
+.github-issue-type-selector.sea-qa-select {
+  background-color: var(--bs-body-bg);
 }
 
 .github-issue-type-selector.sea-qa-select .selected-option {

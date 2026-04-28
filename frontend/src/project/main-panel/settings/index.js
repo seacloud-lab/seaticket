@@ -30,13 +30,15 @@ const Settings = ({
         value={settings.agent?.enabled}
         onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
       />
-      <GitHubIssueTypeMappingSettings
-        className="mb-4"
-        value={settings?.agent?.github_issue_type_mapping || {}}
-        onChange={(value, callback) => modifySettings({
-          agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
-        }, callback)}
-      />
+      {settings.agent?.enabled && (
+        <GitHubIssueTypeMappingSettings
+          className="mb-4"
+          value={settings?.agent?.github_issue_type_mapping || {}}
+          onChange={(value, callback) => modifySettings({
+            agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
+          }, callback)}
+        />
+      )}
       <SwitchSettingsItem
         title={gettext('Chat')}
         placeholder={gettext('Streaming response')}

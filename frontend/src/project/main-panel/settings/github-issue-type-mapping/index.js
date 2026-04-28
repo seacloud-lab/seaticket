@@ -154,6 +154,7 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
                     placeholder={gettext('Please select')}
                     onChange={(selected) => handleChange(agentType, selected)}
                     disabled={options.length === 0}
+                    isInModal={true}
                   />
                 </div>
               </div>
