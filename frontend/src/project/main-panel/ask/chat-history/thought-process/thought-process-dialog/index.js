@@ -62,7 +62,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
         children: [
           {
             value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-            formatter: () => (< Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
           },
         ]
       },
@@ -236,7 +236,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                   children: [
                     {
                       value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps} />),
+                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                     }
                   ]
                 },
@@ -319,7 +319,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           children: [
             {
               value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
-              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps} />),
+              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
             }
           ]
         });
