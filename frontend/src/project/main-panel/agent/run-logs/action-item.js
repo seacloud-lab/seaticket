@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
@@ -15,6 +15,13 @@ const ActionItem = React.memo(({
   const { id, type, status, content, result, tool_name, suggestion_text } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  useEffect(() => {
+    if (status !== ACTION_STATUS.PENDING) {
+      setIsConfirming(false);
+    }
+  }, [status]);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -27,8 +34,14 @@ const ActionItem = React.memo(({
 
   const handleConfirm = useCallback((e) => {
     e.stopPropagation();
-    onConfirm && onConfirm(id);
-  }, [id, onConfirm]);
+    if (isConfirming || !onConfirm) return;
+
+    setIsConfirming(true);
+    const confirmResult = onConfirm(id);
+    if (confirmResult && typeof confirmResult.finally === 'function') {
+      confirmResult.finally(() => setIsConfirming(false));
+    }
+  }, [id, isConfirming, onConfirm]);
 
   const handleCancel = useCallback((e) => {
     e.stopPropagation();
@@ -165,7 +178,7 @@ const ActionItem = React.memo(({
               </div>
               {status === ACTION_STATUS.PENDING && (
                 <div className="action-buttons">
-                  <Button color="secondary" onClick={handleConfirm} size="sm">
+                  <Button color="secondary" onClick={handleConfirm} size="sm" disabled={isConfirming}>
                     <Icon symbol="approve" className="mr-1" />
                     {gettext('Approve')}
                   </Button>
