@@ -356,16 +356,15 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       const { token_usage, time_usage } = statistics;
       let staticValue = [];
       if (time_usage) {
-        staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0} s (${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0} s, ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0} s)`);
+        staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0} s / ${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0} s / ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0} s`);
       }
       if (token_usage) {
-        staticValue.push({
-          name: `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0})`,
-          children: [
-            `${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0})`,
-            `${gettext('Answer generation')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0})`
-          ]
-        });
+        staticValue.push(
+          `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0}) /
+          ${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0}) /
+          ${gettext('Answer generation')}: ${token_usage.total_tokens?.answer_generation || 0} (↑${token_usage.input_tokens?.answer_generation || 0}, ↓${token_usage.output_tokens?.answer_generation || 0})
+          `
+        );
       }
       value.push({
         ...THOUGHT_PROCESS_TYPE.STATISTICS,

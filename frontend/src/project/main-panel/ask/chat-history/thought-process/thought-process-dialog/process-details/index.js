@@ -5,6 +5,7 @@ import { IconButton, RadioGroup, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { getType } from '@/utils/type-detection';
+import { THOUGHT_PROCESS_TYPE } from '../../../../constants';
 
 import './index.css';
 
@@ -13,7 +14,7 @@ const rawOptions = [
   { value: 'raw', label: gettext('Raw') },
 ];
 
-const ProcessDetails = ({ value, isPrimaryContainer }) => {
+const ProcessDetails = ({ value, primaryKey }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [displayType, setDisplayType] = useState('normal');
 
@@ -26,6 +27,18 @@ const ProcessDetails = ({ value, isPrimaryContainer }) => {
   const valueType = getType(value);
 
   if (valueType === 'String') {
+    if (primaryKey === THOUGHT_PROCESS_TYPE.STATISTICS.key) {
+      const children = value.split('/').map((item, index) => {
+        const child = item.split(':');
+        return (
+          <Label key={index} className="sea-qa-ai-thought-process-content-title">
+            <span className="description">{child[0]}:</span>
+            <span className="value">{child[1]}</span>
+          </Label>
+        );
+      });
+      return <div className="d-flex">{children}</div>;
+    }
     return (
       <Label className="sea-qa-ai-thought-process-content-title">{value}</Label>
     );
@@ -38,21 +51,21 @@ const ProcessDetails = ({ value, isPrimaryContainer }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
-    const { isPrimaryContainer, name, icon } = value;
+    const { isPrimaryContainer, name, icon, key } = value;
     return (
       <>
         {isPrimaryContainer && (
-          <div className={classnames('sea-qa-ai-thought-process-order', 'primary-container')} onClick={toggle}>
+          <div className={classnames('sea-qa-ai-thought-process-order', 'primary-order-container', { 'has-content': isShowDetails }, key)} onClick={toggle}>
             <span className="sea-qa-ai-thought-process-order-title">
               <Icon symbol={icon} />
               {name}
             </span>
-            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
+            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails })} />
           </div>
         )}
         {!isPrimaryContainer && (
           <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
-            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })} />
+            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails })} />
             <span className="sea-qa-ai-thought-process-order-title">
               {name}
             </span>
@@ -60,12 +73,12 @@ const ProcessDetails = ({ value, isPrimaryContainer }) => {
         )}
 
         {isShowDetails && (
-          <div className="sea-qa-ai-thought-process-content">
+          <div className={classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, key)}>
             {hasRawChildren && (
               <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
             )}
             {children.map((child, childIndex) => (
-              <ProcessDetails value={child} key={childIndex} />
+              <ProcessDetails value={child} key={childIndex} primaryKey={key} />
             ))}
           </div>
         )}
