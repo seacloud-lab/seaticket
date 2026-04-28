@@ -13,7 +13,7 @@ const ConnectionsPageContext = React.createContext(null);
 export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
-  const [childrenPageSlugId, toggleChildrenPageSlugId] = useState('');
+  const [childrenPageSlugId, setChildrenPageSlugId] = useState('');
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
@@ -35,10 +35,15 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const togglePageSlugId = useCallback((pageSlugId, childrenPageSlugId = '') => {
     setLoading(true);
     setPageSlugId(pageSlugId);
-    toggleChildrenPageSlugId(childrenPageSlugId);
+    setChildrenPageSlugId(childrenPageSlugId);
     resetURL(pageSlugId, childrenPageSlugId);
     setTimeout(() => setLoading(false), 1);
   }, [resetURL]);
+
+  const toggleChildrenPageSlugId = useCallback((childrenPageSlugId) => {
+    setChildrenPageSlugId(childrenPageSlugId);
+    resetURL(pageSlugId, childrenPageSlugId);
+  }, [pageSlugId, resetURL]);
 
   const onRefresh = useCallback(() => {
     const eventBus = context.eventBus;
