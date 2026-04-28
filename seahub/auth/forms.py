@@ -194,13 +194,13 @@ class SetPasswordForm(forms.Form):
             if bool(is_password_strength_valid(pwd)) is True:
                 return pwd
             else:
-                password_strength_requirments = get_password_strength_requirements()
+                password_strength_requirements = get_password_strength_requirements()
                 raise forms.ValidationError(
                     _(("%(pwd_len)s characters or more, include "
                         "%(num_types)s types or more of these: "
                         "letters(case sensitive), numbers, and symbols")) %
-                    {'pwd_len': password_strength_requirments.get('min_len'),
-                        'num_types': len(password_strength_requirments.get('char_types'))})
+                    {'pwd_len': password_strength_requirements.get('min_len'),
+                        'num_types': len(password_strength_requirements.get('char_types'))})
 
     def clean_new_password2(self):
         password1 = self.cleaned_data.get('new_password1')
