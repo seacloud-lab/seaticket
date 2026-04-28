@@ -22,7 +22,7 @@ from .search import SearchTicketsView, SearchTicketsAndDocumentsView
 from .tags import TagsAPIView, TagAPIView
 from .agent import (
     AgentRunsView, AgentRunDetailView,
-    AgentActionConfirmView, AgentActionCancelView, AgentActionUpdateView, AgentSettingsView,
+    AgentActionConfirmView, AgentActionCancelView, AgentActionUpdateView,
     GithubIssueTypesView,
 )
 
@@ -109,7 +109,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/confirm/$', AgentActionConfirmView.as_view(), name='api-v1-project-agent-action-confirm'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/$', AgentActionUpdateView.as_view(), name='api-v1-project-agent-action-update'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/settings/$', AgentSettingsView.as_view(), name='api-v1-project-agent-settings'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/github/issue-types/$', GithubIssueTypesView.as_view(), name='api-v1-project-github-issue-types'),
 ]
 
