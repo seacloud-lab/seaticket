@@ -7,6 +7,7 @@ import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 import { connectionsAPI } from '@/project/api';
+import { sanitizeHTMLContent } from '@/utils/dom';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
@@ -111,17 +112,6 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     });
   }, [projectUuid, connection_id, handleReplyEmailSuccess]);
 
-  const removeComments = (node) => {
-    for (let i = node.childNodes.length - 1; i >= 0; i--) {
-      const child = node.childNodes[i];
-      if (child.nodeType === Node.COMMENT_NODE) {
-        node.removeChild(child);
-      } else if (child.nodeType === Node.ELEMENT_NODE) {
-        removeComments(child);
-      }
-    }
-  };
-
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
     let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
@@ -133,11 +123,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     let initValue = '';
     if (isHTMLContent) {
       initValue = '<div></div><div></div><div></div>';
-      const parsed = new DOMParser().parseFromString(detailContent, 'text/html');
-      let HTMLContentBody = parsed.body;
-      HTMLContentBody.querySelectorAll('style, title').forEach(el => el.remove());
-      removeComments(HTMLContentBody);
-      let quotedContent = HTMLContentBody.outerHTML.slice(6, -7);
+      let quotedContent = sanitizeHTMLContent(detailContent);
       if (quotedContent.startsWith('```')) {
         quotedContent = quotedContent.slice(3,);
         quotedContent = '<div>```</div>' + quotedContent;
