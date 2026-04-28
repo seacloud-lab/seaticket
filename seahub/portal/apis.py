@@ -26,8 +26,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
 from seahub.seadb_models.models import TagTable, PortalIssuesTable, PortalIssueCommentsTable, PortalIssuesTable, PortalIssueCommentsTable
-from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, \
-    init_portal_issues_seadb_table
+from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
@@ -1293,10 +1292,6 @@ class PortalIssueMetadataView(APIView):
                 PortalIssuesTable.type.name: 'types',
                 PortalIssuesTable.state.name: 'states'
             }
-            if not portal_issue_meta:
-                init_portal_issues_seadb_table(seadb_api, project_uuid)
-                base_metadata = seadb_api.get_base_metadata(project_uuid)
-                portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
                 column_name = column.get('name')

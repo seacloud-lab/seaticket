@@ -7,18 +7,11 @@ from dateutil.relativedelta import relativedelta
 
 from seahub.project.constants import PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import PortalIssuesTable, PortalIssueCommentsTable
-from seahub.utils import mq, uuid_str_to_32_chars
+from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 
 
 PORTAL_ISSUE_COMMENT_COLUMNS = ['_pk', 'issue_id', 'content', 'creator', 'created_time', 'modified_time', 'deleted']
 logger = logging.getLogger(__name__)
-
-
-def _time_str_to_utc_time(time_str):
-    if time_str.endswith('Z'):
-        time_str = time_str[:-1] + '+00:00'
-    dt = datetime.fromisoformat(time_str)
-    return dt.astimezone(timezone.utc)
 
 
 def get_portal_issue(seadb_api, project_uuid, issue_id):
@@ -97,7 +90,7 @@ def check_portal_issue_comment_creation_interval(seadb_api, project_uuid, userna
     previous_comment = seadb_api.query_rows(project_uuid, previous_comment_sql).get('results')
     if previous_comment:
         created_at = previous_comment[0].get('created_time')
-        created_at = _time_str_to_utc_time(created_at) if created_at else None
+        created_at = time_str_to_utc_time(created_at) if created_at else None
         if created_at and created_at > timezone.now() - relativedelta(seconds=30):
             return False
 

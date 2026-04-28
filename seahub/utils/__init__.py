@@ -3,25 +3,22 @@
 from functools import partial
 import os
 import re
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.parse
+import urllib.request, urllib.parse
 import uuid
 import logging
 import hashlib
 import tempfile
-import locale
-import configparser
 import unicodedata
 from datetime import datetime
 from urllib.parse import urlparse
 import boto3
 
-from django.utils import translation
-
 from django.urls import reverse
 from django.core.mail import EmailMessage
 from django.shortcuts import render
-from django.template import Context, loader
+from django.template import loader
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect
 from urllib.parse import quote
@@ -29,7 +26,7 @@ from django.utils.html import escape
 from rest_framework.authentication import SessionAuthentication
 
 from seahub.auth import REDIRECT_FIELD_NAME
-from seahub.api2.models import Token, TokenV2
+from seahub.api2.models import Token
 import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
     MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
@@ -496,6 +493,12 @@ def is_valid_org_id(org_id):
     else:
         return False
 
+def time_str_to_utc_time(time_str):
+    if time_str.endswith('Z'):
+        # python 3.12 can convert but 3.10 not support
+        time_str = time_str[:-1] + '+00:00'
+    dt = datetime.fromisoformat(time_str)
+    return dt.astimezone(timezone.utc)
 
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)

@@ -10,7 +10,7 @@ from seahub.seadb_models.models import TicketActivitiesTable, TicketsTable
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
-from seahub.utils import mq, uuid_str_to_32_chars
+from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
@@ -230,14 +230,6 @@ def get_ticket_title(seadb_api, project_uuid, ticket_id):
         logger.error(f'Error querying ticket title: {e}')
         title = ''
     return title
-
-
-def time_str_to_utc_time(time_str):
-    if time_str.endswith('Z'):
-        # python 3.12 can convert but 3.10 not support
-        time_str = time_str[:-1] + '+00:00'
-    dt = datetime.fromisoformat(time_str)
-    return dt.astimezone(timezone.utc)
 
 
 def generator_base64_code(length=4):
