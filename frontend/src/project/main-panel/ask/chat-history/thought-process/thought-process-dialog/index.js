@@ -40,7 +40,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
       children: [
         {
           value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
-          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...props} />),
+          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
         }
       ]
     };
@@ -54,7 +54,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
         children: [
           {
             value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
-            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...props} />),
+            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
           },
         ]
       }, {
@@ -62,7 +62,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
         children: [
           {
             value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-            formatter: () => (<Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+            formatter: () => (< Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
           },
         ]
       },
@@ -72,7 +72,7 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
     userMessage.rawChildren = [
       {
         value: raw ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: raw } : null,
-        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...props} />),
+        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
       }
     ];
   }
@@ -82,7 +82,6 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
 const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...props }) => {
   const [isLoading, setLoading] = useState(true);
   const [value, setValue] = useState([]);
-  console.log('propsValue', propsValue);
 
   useEffect(() => {
     let value = [];
@@ -142,7 +141,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                           [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
                           [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
                         },
-                        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+                        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                       }
                     ]
                   }
@@ -184,7 +183,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                 {
                   name: gettext('Step output'),
                   value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
-                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                 },
               ]
             } : {
@@ -192,7 +191,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               children: [
                 {
                   value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
-                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                 }
               ]
             }
@@ -237,7 +236,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                   children: [
                     {
                       value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps} />),
                     }
                   ]
                 },
@@ -259,7 +258,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
             };
           }
           let stepChildren = [];
-          if (action.tool_calls.length > 1) {
+          if (action.tool_calls.length > 1){
             stepChildren.push({
               name: gettext('Substep'),
               children: action.tool_calls.map((too_call, toolIndex) => {
@@ -274,7 +273,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                       children: [
                         {
                           value: too_call.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                         }
                       ]
                     },
@@ -308,7 +307,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     // final answer
     const final_answer = propsValue?.final_answer;
     const finalAnswerRetryChildren = getCompletionRetryChildren(final_answer?.retry);
-    if (final_answer && (final_answer.result || finalAnswerRetryChildren.length > 0)) {
+    if (final_answer && (final_answer.result || finalAnswerRetryChildren.length > 0)){
       let result = final_answer.result;
       if (result && isObject(result)) {
         result = JSON.stringify(result);
@@ -320,7 +319,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           children: [
             {
               value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
-              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} {...customizeMDProps} />),
+              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps} />),
             }
           ]
         });
@@ -334,7 +333,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       if (final_answer.token_usage || final_answer.time_usage) {
         let staticValue = [];
         if (final_answer.time_usage) {
-          staticValue.push(`${gettext('Time usage')}: ${final_answer.time_usage?.toFixed(2) || 0} s`);
+          staticValue.push(`${gettext('Time usage')}: ${final_answer.time_usage?.toFixed(2) || 0 } s`);
         }
         if (final_answer.token_usage) {
           staticValue.push(`${gettext('Token usage')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0})`);
@@ -375,7 +374,6 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     setValue(value);
     setLoading(false);
   }, [propsValue]);
-  console.log('value', value);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="sea-qa-ai-thought-process-dialog">
