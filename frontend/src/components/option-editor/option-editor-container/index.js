@@ -105,6 +105,8 @@ const OptionEditorContainer = forwardRef(({
     <div
       id={id}
       className={classnames('option-editor-container', className, {
+        'option-editor-container-multiple': isMultiple,
+        'option-editor-container-single': !isMultiple,
         'search-enabled': isSearchEnabled,
         'selected-value-display': children,
         'add-search-result-enabled': isSearchEnabled && showCreateBtn,
