@@ -35,6 +35,7 @@
   const projectUuid = "{{ project_uuid }}";
   let countdownTimer = null;
   const resendInTemplate = '{% blocktrans with sec="__SEC__" %}Resend in {{ sec }}s{% endblocktrans %}';
+  const sendCodeSuccessMsg = '{% trans "If the email is eligible, a login code has been sent." %}';
 
   const emailInput = document.getElementById('portal-email');
   const codeInput = document.getElementById('code');
@@ -48,6 +49,10 @@
     if (!el) return;
     el.textContent = text || '';
     el.style.color = isError ? '#ff0000' : '#666';
+  }
+
+  function getErrorMessage(error, fallback) {
+    return (error && (error.error_msg || error.detail)) || fallback;
   }
 
   function sendCode(email) {
@@ -75,13 +80,13 @@
 
     sendCode(email)
       .then(() => {
-        startCountdown(30);
-        showMsg(promptCode, '{% trans "Code sent, please check your email" %}');
+        startCountdown(60);
+        showMsg(promptCode, sendCodeSuccessMsg);
       })
-      .catch(e => showMsg(promptCode, '{% trans "External user not found. Please use the invitation link first." %}', true));
+      .catch(e => showMsg(promptCode, getErrorMessage(e, '{% trans "Send failed" %}'), true));
   }
 
-  function startCountdown(seconds = 30) {
+  function startCountdown(seconds = 60) {
     if (!countdownWrapper) return;
 
     if (countdownTimer) {
@@ -105,7 +110,6 @@
         countdownWrapper.style.color = '#ed7109';
         countdownWrapper.style.cursor = 'pointer';
         countdownWrapper.textContent = '{% trans "Resend login code" %}';
-        console.log('countdownWrapper', countdownWrapper, resendCode)
         countdownWrapper.onclick = resendCode;
         return;
       }
@@ -124,10 +128,10 @@
     sendCode(email)
       .then(() => {
         showVerifyStep();
-        startCountdown(30);
-        showMsg(promptCode, '{% trans "Code sent, please check your email" %}');
+        startCountdown(60);
+        showMsg(promptCode, sendCodeSuccessMsg);
       })
-      .catch(e => showMsg(promptEmail, '{% trans "External user not found. Please use the invitation link first." %}', true));
+      .catch(e => showMsg(promptEmail, getErrorMessage(e, '{% trans "Send failed" %}'), true));
   };
 
   // Login button
@@ -145,7 +149,7 @@
       body: JSON.stringify({ email, code })
     }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
       .then(() => { window.location.href = `/portal/${projectUuid}/`; })
-      .catch(e => showMsg(promptCode, '{% trans "Verify failed" %}', true));
+      .catch(e => showMsg(promptCode, getErrorMessage(e, '{% trans "Verify failed" %}'), true));
   };
 </script>
 {% endblock %}
