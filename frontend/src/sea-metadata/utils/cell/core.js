@@ -23,7 +23,7 @@ export const getCellValueByColumn = (row, column, { tagsData } = {}) => {
   if (!row || !column) return null;
   const { key, name } = column;
   if (Object.prototype.hasOwnProperty.call(row, key) || Object.prototype.hasOwnProperty.call(row, name)) {
-    const cellValue = row[key] || row[name];
+    const cellValue = row[key] ?? row[name];
     if (column.type === CellType.TAGS && Array.isArray(cellValue) && tagsData) {
       return cellValue.filter(tagID => getRowById(tagsData, tagID + ''));
     }
