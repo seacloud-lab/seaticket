@@ -53,7 +53,7 @@
 }
 
 .sea-qa-project-ticket .sf-long-text-inline-editor-container:has(*:focus) {
-  border-color: #1991eb;
+  border-color: var(--bs-custom-select-focus-border-color);
 }
 
 .sea-qa-project-ticket .sf-slate-viewer-scroll-container {

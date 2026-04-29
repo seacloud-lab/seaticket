@@ -131,10 +131,6 @@ li {
   text-decoration: underline;
 }
 
-.cursor-pointer {
-  cursor: pointer;
-}
-
 .sea-qa-icon-svg-gold {
   color: #ffad5c;
 }
@@ -705,7 +701,7 @@ table td {
   background-color: #f2f4f6 !important;
 }
 
-/* project-item reanme-component */
+/* project-item rename-component */
 .rename-container input {
   box-sizing: content-box;
   padding: 2px 3px;
@@ -720,9 +716,8 @@ table td {
 
 .rename-container input:focus {
   background-color: #fff;
-  border-color: #1991eb;
+  border-color: var(--bs-custom-select-focus-border-color);
   outline: 0;
-  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
 }
 
 .rename-container button {

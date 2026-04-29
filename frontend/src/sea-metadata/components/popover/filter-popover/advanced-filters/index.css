@@ -155,15 +155,14 @@
 }
 
 .sea-metadata-filters-list .filter-term input:hover:focus {
-  border-color: #1991eb;
+  border-color: var(--bs-custom-select-focus-border-color);;
 }
 
 .sea-metadata-filters-list .filter-term input:focus {
   color: #495057;
   background: var(--bs-body-bg);
-  border-color: #1991eb;
+  border-color: var(--bs-custom-select-focus-border-color);;
   outline: 0;
-  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
 }
 
 .sea-metadata-filters-list .filter-term .date-picker-container input:focus {

@@ -17,7 +17,7 @@
 }
 
 .sea-qa-search-input-wrapper .sea-qa-search-input:focus {
-  border-color: #0094F2;
+  border-color: var(--bs-custom-select-focus-border-color);
   box-shadow: none;
 }
 

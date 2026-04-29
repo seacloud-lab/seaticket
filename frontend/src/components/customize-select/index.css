@@ -19,8 +19,7 @@
 
 .sea-qa-select.custom-select:focus,
 .sea-qa-select.custom-select.focus {
-  border-color: #1991eb !important;
-  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
+  border-color: var(--bs-custom-select-focus-border-color) !important; 
 }
 
 .sea-qa-select.custom-select.disabled:focus,

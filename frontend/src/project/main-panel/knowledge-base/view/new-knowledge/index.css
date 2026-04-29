@@ -69,7 +69,7 @@
 }
 
 .sea-qa-project-new-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
-  border-color: #1991eb;
+  border-color: var(--bs-custom-select-focus-border-color);
 }
 
 .sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-settings-container {
