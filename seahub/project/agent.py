@@ -840,11 +840,10 @@ class AgentActionConfirmView(APIView):
             return None, None, None, f'Discourse connection {connection_id} not found.'
 
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        topics = discourse_seadb_api.get_topic_by_pk(connection_id, topic_pk)
-        if not topics:
+        topic = discourse_seadb_api.get_topic_by_pk(connection_id, topic_pk)
+        if not topic:
             return None, None, None, f'Discourse topic #{topic_pk} not found in SeaDB.'
 
-        topic = topics[0]
         topic_id = topic.get('topic_id')
         replies = discourse_seadb_api.get_replies_by_topic_id(connection_id, topic_id) if topic_id else []
 
