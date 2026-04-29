@@ -94,8 +94,8 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
       serverData[columnName] = value;
     });
     knowledgeBaseAPI.createRecord(projectUuid, serverData).then(res => {
-      togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
       insertRow(KB_TABLE_NAME, res.data.row._pk, res.data.row);
+      togglePageSlugId(res.data.row._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
