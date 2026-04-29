@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { parseAndCleanHTML } from '@seafile/sea-email-editor/dist/utils/dom';
 import { isValidEmail, isValidUrl } from '@/utils/validate';
 import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
 import { Utils } from '@/utils/utils';
@@ -28,6 +29,10 @@ const HTMLContent = ({
   const imageTimersRef = useRef([]);
 
   const assetURLPrefix = useMemo(() => generatorConnectionAssetURLPrefix(projectUuid, connectionId), [projectUuid, connectionId]);
+  const content = useMemo(() => {
+    const HTMLContentBody = parseAndCleanHTML(value);
+    return HTMLContentBody.innerHTML;
+  }, [value]);
 
   const handDownload = useCallback((url) => {
     downloadFile(url);
@@ -163,7 +168,7 @@ const HTMLContent = ({
 
   return (
     <>
-      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} onClick={handleClick} />
+      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: content }} onClick={handleClick} />
       {attachments.length > 0 && (
         <div className="sea-ticket-email-attachments">
           {attachments.map((attachment, index) => {
