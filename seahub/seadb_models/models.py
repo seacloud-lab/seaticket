@@ -388,27 +388,7 @@ class TicketsTable(BaseModel):
     @classmethod
     def gen_table_name(cls):
         return 'tickets'
-    
-    @classmethod
-    def gen_query_record_column_names(cls):
-        return [
-            '_pk',
-            TicketsTable.title.name,
-            TicketsTable.content.name,
-            TicketsTable.state.name,
-            TicketsTable.substate.name,
-            TicketsTable.type.name,
-            TicketsTable.tags.name,
-            TicketsTable.assignees.name,
-            TicketsTable.participants.name,
-            TicketsTable.linked_connection_records.name,
-            TicketsTable.priority.name,
-            TicketsTable.creator.name,
-            TicketsTable.created_time.name,
-            TicketsTable.modified_time.name,
-            TicketsTable.closed_time.name,
-            TicketsTable.due_date.name,
-        ]
+
 
 class TicketCommentsTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
