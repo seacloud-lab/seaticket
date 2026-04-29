@@ -1254,7 +1254,7 @@ class PortalIssueMetadataView(APIView):
             portal_issues_table_name = PortalIssuesTable.gen_table_name()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
-            protal_issue_column_name_to_return_name = {
+            portal_issue_column_name_to_return_name = {
                 PortalIssuesTable.substate.name: 'substates',
                 PortalIssuesTable.type.name: 'types',
                 PortalIssuesTable.state.name: 'states'
@@ -1262,7 +1262,7 @@ class PortalIssueMetadataView(APIView):
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
                 column_name = column.get('name')
-                return_name = protal_issue_column_name_to_return_name.get(column_name)
+                return_name = portal_issue_column_name_to_return_name.get(column_name)
                 if return_name:
                     column_data = column.get('data', {}) or {}
                     select_option_metadata[return_name] = column_data
