@@ -2045,7 +2045,7 @@ class PortalIssueTrashAPIView(APIView):
 
             # Delete portal issue comments
             for issue_id in need_delete_ids:
-                comment_sql = f"DELETE FROM `{PortalIssueCommentsTable.gen_table_name}` WHERE `issue_id` = {int(issue_id)}"
+                comment_sql = f"DELETE FROM `{PortalIssueCommentsTable.gen_table_name()}` WHERE `issue_id` = {int(issue_id)}"
                 seadb_api.query_rows(project_uuid, comment_sql)
 
             # Hard delete portal issues
