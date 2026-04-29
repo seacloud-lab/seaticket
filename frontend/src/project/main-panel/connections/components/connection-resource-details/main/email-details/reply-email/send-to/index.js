@@ -1,19 +1,24 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { Input } from 'reactstrap';
 import { ClickOutside, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
+import { isString } from '@/utils/type-detection';
 
 import './index.css';
 
 const SendTo = ({
-  value = [],
+  value: propsValue = [],
   readonly = false,
   className,
   onChange,
 }) => {
   const [focus, setFocus] = useState(false);
   const [email, setEmail] = useState('');
+  const value = useMemo(() => {
+    if (!Array.isArray(propsValue) || propsValue.length === 0) return [];
+    return propsValue.filter(email => email && isString(email));
+  }, [propsValue]);
 
   const handleRemove = useCallback((email) => {
     const newValue = value.filter(item => item !== email);
@@ -24,8 +29,8 @@ const SendTo = ({
     const newValue = event.target.value;
     if (newValue === email) return;
     if (newValue.endsWith(',') || newValue.endsWith('，')) {
-      const newEmail = newValue.slice(0, -1);
-      if (value.includes(newEmail)) return;
+      const newEmail = newValue.slice(0, -1).trim();
+      if (!newEmail || value.includes(newEmail)) return;
       const newEmails = [...value, newEmail];
       onChange(newEmails);
       setEmail('');
@@ -64,6 +69,7 @@ const SendTo = ({
             className="sea-ticket-email-to-user-input"
             value={email}
             onChange={onEmailChange}
+            onFocus={() => setFocus(true)}
           />
         )}
       </div>

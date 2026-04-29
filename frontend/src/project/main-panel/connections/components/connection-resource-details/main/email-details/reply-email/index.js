@@ -18,7 +18,7 @@ const ReplyEmail = ({
   const [emailContent, setEmailContent] = useState(initValue || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const ableSubmitting = useMemo(() => {
+  const ableSubmit = useMemo(() => {
     if (emailTo.length === 0 || !emailContent || isSubmitting || initValue === emailContent) return false;
     return true;
   }, [emailTo, emailContent, initValue, isSubmitting]);
@@ -33,11 +33,11 @@ const ReplyEmail = ({
 
   const onReplyChange = useCallback((value) => {
     if (value === emailContent) return;
-    console.log(value);
     setEmailContent(value);
   }, [emailContent]);
 
   const handleSubmit = useCallback(() => {
+    if (!ableSubmit) return;
     setIsSubmitting(true);
     onSubmit({
       to: emailTo,
@@ -50,7 +50,7 @@ const ReplyEmail = ({
       }
       onToggle();
     });
-  }, [emailTo, emailCC, emailContent, onToggle, onSubmit]);
+  }, [ableSubmit, emailTo, emailCC, emailContent, onToggle, onSubmit]);
 
   return (
     <div className="sea-ticket-email-replay-container">
@@ -72,7 +72,7 @@ const ReplyEmail = ({
       />
       <div className="sea-ticket-email-replay-op-btns">
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" disabled={!ableSubmitting} onClick={handleSubmit}>
+        <Button color="primary" disabled={!ableSubmit} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<>{gettext('Submit')}</>)}
         </Button>
       </div>

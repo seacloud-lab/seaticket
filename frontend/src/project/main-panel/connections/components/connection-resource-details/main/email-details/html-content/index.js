@@ -6,6 +6,7 @@ import { IconButton, IconTextBtn, toaster } from '@/components';
 import { gettext, server, siteRoot } from '@/constants';
 import { downloadFile } from '@/utils/download';
 import { connectionsAPI } from '@/project/api';
+import { isString } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -23,7 +24,8 @@ const HTMLContent = ({
 
   const ref = useRef(null);
   const downloadAllTimer = useRef(null);
-  const queryComplete = useRef(false);
+  const isUnmounted = useRef(false);
+  const imageTimersRef = useRef([]);
 
   const assetURLPrefix = useMemo(() => generatorConnectionAssetURLPrefix(projectUuid, connectionId), [projectUuid, connectionId]);
 
@@ -35,29 +37,33 @@ const HTMLContent = ({
     if (isDownloadingAll) return;
     setIsDownloadingAll(true);
     connectionsAPI.zipEmailAttachments(projectUuid, connectionId, recordId).then(res => {
+      if (isUnmounted.current) return;
       const taskId = res.data.task_id;
-      downloadAllTimer.current = setInterval(() => {
-        if (queryComplete.current) return;
-        queryComplete.current = true;
+      const pollTaskStatus = () => {
+        if (isUnmounted.current) return;
         connectionsAPI.queryTaskStatus(taskId).then(res => {
-          queryComplete.current = false;
+          if (isUnmounted.current) return;
           if (res.data && res.data.is_finished === true) {
-            clearInterval(downloadAllTimer.current);
             downloadAllTimer.current = null;
             const url = `${server}${siteRoot}api/v1/project/${projectUuid}/connections/${connectionId}/email/${recordId}/download-attachments/`;
             downloadFile(url);
             setIsDownloadingAll(false);
+            downloadAllTimer.current = null;
+            return;
           }
+          downloadAllTimer.current = setTimeout(pollTaskStatus, 1000);
         }).catch(error => {
-          clearInterval(downloadAllTimer.current);
           downloadAllTimer.current = null;
-          queryComplete.current = false;
+          if (isUnmounted.current) return;
           setIsDownloadingAll(false);
           const errMessage = Utils.getErrorMsg(error);
           toaster.danger(errMessage);
         });
-      }, 1000);
+      };
+
+      downloadAllTimer.current = setTimeout(pollTaskStatus, 1000);
     }).catch((error) => {
+      if (isUnmounted.current) return;
       setIsDownloadingAll(false);
       if (error.response && error.response.status === 500) {
         toaster.danger(gettext('Internal server error'));
@@ -70,6 +76,20 @@ const HTMLContent = ({
     });
   }, [isDownloadingAll, projectUuid, connectionId, recordId]);
 
+  const handleClick = useCallback((event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest('a');
+    if (!link || !ref.current?.contains(link)) return;
+    const href = link.getAttribute('href') || '';
+    if (!href) return;
+    if (!href.startsWith('mailto:')) return;
+    const email = href.slice(7);
+    if (!isValidEmail(email)) return;
+    event.preventDefault();
+    openReplyByEmail(email);
+  }, [openReplyByEmail]);
+
   useEffect(() => {
     const handleImgSrc = () => {
       if (!ref.current) return;
@@ -80,14 +100,16 @@ const HTMLContent = ({
           img.setAttribute('sea-data-processed', 'true');
           const newSrc = `${assetURLPrefix}${detail._pk}/${originalSrc}`;
           img.removeAttribute('src');
-          setTimeout(() => {
+          const timer = setTimeout(() => {
+            if (isUnmounted.current) return;
             img.setAttribute('src', newSrc);
           }, 0);
+          imageTimersRef.current.push(timer);
         }
       });
     };
 
-    const handleLink = () => {
+    const decorateMailtoLinks = () => {
       if (!ref.current) return;
       const links = ref.current.querySelectorAll('a');
       links.forEach(link => {
@@ -95,19 +117,15 @@ const HTMLContent = ({
         if (href.startsWith('mailto:') && isValidEmail(href.slice(7))) {
           const email = href.slice(7);
           link.setAttribute('title', `${gettext('Send email to')} ${email}`);
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            openReplyByEmail(email);
-          });
         }
       });
     };
 
     handleImgSrc();
-    handleLink();
+    decorateMailtoLinks();
 
     const imgObserver = new MutationObserver(handleImgSrc);
-    const linkObserver = new MutationObserver(handleLink);
+    const linkObserver = new MutationObserver(decorateMailtoLinks);
     if (ref.current) {
       imgObserver.observe(ref.current, {
         childList: true,
@@ -120,7 +138,8 @@ const HTMLContent = ({
     }
 
     return () => {
-      if (!ref.current) return;
+      imageTimersRef.current.forEach(timer => clearTimeout(timer));
+      imageTimersRef.current = [];
       imgObserver.disconnect();
       linkObserver.disconnect();
     };
@@ -128,8 +147,11 @@ const HTMLContent = ({
 
   useEffect(() => {
     return () => {
+      isUnmounted.current = true;
+      imageTimersRef.current.forEach(timer => clearTimeout(timer));
+      imageTimersRef.current = [];
       if (!downloadAllTimer.current) return;
-      clearInterval(downloadAllTimer.current);
+      clearTimeout(downloadAllTimer.current);
       downloadAllTimer.current = null;
     };
   }, []);
@@ -141,17 +163,19 @@ const HTMLContent = ({
 
   return (
     <>
-      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} />
+      <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: value }} onClick={handleClick} />
       {attachments.length > 0 && (
         <div className="sea-ticket-email-attachments">
           {attachments.map((attachment, index) => {
-            const url = `${assetURLPrefix}${detail._pk}/${attachment}`;
+            const attachmentName = isString(attachment) ? attachment : '';
+            const url = attachmentName ? `${assetURLPrefix}${detail._pk}/${attachmentName}` : '';
             const Tag = isReadonly ? 'span' : 'a';
+            const canDownload = !isReadonly && Boolean(url);
             return (
               <div className="sea-ticket-email-attachment" key={index}>
                 <div className="sea-ticket-email-attachment-icon">
                   <img
-                    src={Utils.imageCheck(attachment) ? url : Utils.getFileIconUrl(attachment)}
+                    src={attachmentName && Utils.imageCheck(attachmentName) ? url : Utils.getFileIconUrl(attachmentName)}
                     alt=""
                     height={32}
                     width={32}
@@ -160,16 +184,16 @@ const HTMLContent = ({
                 <div className="sea-ticket-email-attachment-info">
                   <Tag
                     className="sea-ticket-email-attachment-name"
-                    href={isReadonly ? '' : url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={canDownload ? url : undefined}
+                    target={canDownload ? '_blank' : undefined}
+                    rel={canDownload ? 'noopener noreferrer' : undefined}
                   >
-                    {attachment}
+                    {attachmentName || gettext('Unnamed attachment')}
                   </Tag>
                   {/* <div className="sea-ticket-email-attachment-size">{''}</div> */}
                 </div>
                 <div className="sea-ticket-email-attachment-divider"></div>
-                {!isReadonly && (
+                {canDownload && (
                   <IconButton
                     icon="download"
                     title={gettext('Download')}

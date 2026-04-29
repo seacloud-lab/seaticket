@@ -163,26 +163,3 @@ export const isNearBottom = (element, threshold = 50) => {
   const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
   return distanceToBottom <= threshold;
 };
-
-const removeCommentNodes = (node) => {
-  for (let i = node.childNodes.length - 1; i >= 0; i--) {
-    const child = node.childNodes[i];
-    if (child.nodeType === Node.COMMENT_NODE) {
-      node.removeChild(child);
-    } else if (child.nodeType === Node.ELEMENT_NODE) {
-      removeCommentNodes(child);
-    }
-  }
-};
-
-export const sanitizeHTMLContent = (html = '') => {
-  const sanitizedHTML = html
-    .replace(/<!--([\s\S]*?)-->/g, '')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '');
-  const parsed = new DOMParser().parseFromString(sanitizedHTML, 'text/html');
-  const body = parsed.body;
-  body.querySelectorAll('style, title').forEach(el => el.remove());
-  removeCommentNodes(body);
-  return body.innerHTML;
-};

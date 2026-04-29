@@ -11,8 +11,6 @@ const EmailDetails = ({ details, className, ...props }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5);
   const [isLastExpand, setIsLastExpanded] = useState(false);
 
-  const { email } = getInfoByEmailFrom(details[0]['email_from']);
-
   if (details.length === 0) {
     return (
       <div className={classnames('sea-ticket-connection-email-record empty', className)}>
@@ -20,6 +18,8 @@ const EmailDetails = ({ details, className, ...props }) => {
       </div>
     );
   }
+
+  const { email } = getInfoByEmailFrom(details[0]?.email_from);
 
   return (
     <div className={classnames('sea-ticket-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
