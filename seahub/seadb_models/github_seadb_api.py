@@ -18,7 +18,7 @@ class GitHubSeaDBAPI:
         """Retrieve all issue for the specified connection_id."""
         table_name = GithubIssuesTable.gen_table_name(connection_id)
         sql = "SELECT `_pk`, `issue_id`, `issue_number`, `title`, `content`, `state`, `state_reason`, " \
-            f"`labels`, `issue_type`, `author`, `url`, `created_time`, `modified_time`, `comment_count`, `linked_ticket`, `deleted` FROM `{table_name}` LIMIT {limit} OFFSET {start}"
+            f"`labels`, `issue_type`, `author`, `url`, `created_time`, `modified_time`, `comment_count` FROM `{table_name}` LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -27,7 +27,7 @@ class GitHubSeaDBAPI:
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
         table_name = GithubIssuesTable.gen_table_name(connection_id)
-        sql = "SELECT `_pk`, `issue_id`, `issue_number`, `title`, `content`, `linked_ticket` " \
+        sql = "SELECT `_pk`, `issue_id`, `issue_number`, `title`, `content` " \
             f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -36,7 +36,7 @@ class GitHubSeaDBAPI:
 
     def get_comments_by_issue_id(self, connection_id, issue_id, limit=None):
         table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-        sql = "SELECT `issue_id`, `author`, `content`, `created_time` " \
+        sql = "SELECT `issue_id`, `content` " \
             f"FROM `{table_name}` WHERE `issue_id` = {issue_id}"
         if limit is not None:
             sql += f" LIMIT {limit}"

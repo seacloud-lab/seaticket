@@ -17,7 +17,7 @@ class DiscourseSeaDBAPI:
     def get_topics_by_connection_id(self, connection_id, start, limit):
         """Retrieve all topics for the specified connection_id."""
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `views`, `modified_time`, `created_time`, `resolved`, `linked_ticket`, `deleted`, `outdated` FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
+        sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `modified_time`, `created_time`, `resolved`, `linked_ticket` FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -25,7 +25,7 @@ class DiscourseSeaDBAPI:
 
     def get_topic_by_pk(self, connection_id, _pk):
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT `title`, `topic_id`, `slug` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = f"SELECT `title`, `topic_id`, `slug`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response and response['results']:
             return response['results'][0]
