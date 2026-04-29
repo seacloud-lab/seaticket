@@ -22,7 +22,6 @@ const PortalAllKnowledge = ({ projectUuid }) => {
   const { togglePageSlugId } = usePortalKnowledgePage();
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
-  const [viewID, setViewID] = useState('0000');
   const [currentKB, setCurrentKB] = useState(null);
   const [isShowKBDetailsDialog, setIsShowKBDetailsDialog] = useState(false);
 
@@ -78,7 +77,7 @@ const PortalAllKnowledge = ({ projectUuid }) => {
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, viewID, getMetadata]);
+  }), [projectUuid, getMetadata]);
 
   const localStorageName = useMemo(() => `sea-qa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
 
@@ -88,10 +87,6 @@ const PortalAllKnowledge = ({ projectUuid }) => {
     Row: gettext('Record'),
     Rows: gettext('Records'),
   }), []);
-
-  const toggleView = useCallback((newViewID) => {
-    setViewID(newViewID);
-  }, []);
 
   const handleExpandRow = useCallback((kb) => {
     setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
@@ -118,12 +113,10 @@ const PortalAllKnowledge = ({ projectUuid }) => {
     <>
       <SeaMetadata
         ref={metadataRef}
-        viewID={viewID}
         api={api}
         t={t}
         localStorageNamePrefix={localStorageName}
         permission={{ isAdmin: false, canEdit: false }}
-        toggleView={toggleView}
         settings={{
           isFilterComputedOnServer: false,
           isSortComputedOnServer: false,

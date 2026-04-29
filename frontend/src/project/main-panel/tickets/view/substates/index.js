@@ -229,9 +229,9 @@ const AllSubstates = ({
   return (
     <>
       <SeaMetadata
-        viewID="0000"
         className="sea-substates-metadata"
         api={api}
+        isShowViewInURL={false}
         permission={permission}
         localStorageNamePrefix={localStorageName}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}

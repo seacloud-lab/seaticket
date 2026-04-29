@@ -122,13 +122,12 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
   return (
     <SeaMetadata
       className="sea-kb-metadata"
-      viewID="all"
       api={api}
+      isShowViewInURL={false}
       permission={permission}
       localStorageNamePrefix={`sea-qa-${projectUuid}-kb-trash`}
       createContextMenuOptions={createContextMenuOptions}
       createRowsTools={createRowsTools}
-      toggleView={() => {}}
       settings={{
         canManageView: false,
       }}

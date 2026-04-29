@@ -14,7 +14,7 @@ import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
-  const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
+  const { togglePageSlugId } = useKnowledgePage();
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
@@ -121,13 +121,11 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     <>
       <SeaMetadata
         className="sea-kb-metadata"
-        viewID={viewID}
         api={api}
         ref={metadataRef}
         permission={permission}
         settings={{ enableExportAndImportXlsx: true, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
         localStorageNamePrefix={localStorageName}
-        toggleView={toggleView}
         expandRow={handleExpandRow}
         t={t}
         createContextMenuOptions={createContextMenuOptions}

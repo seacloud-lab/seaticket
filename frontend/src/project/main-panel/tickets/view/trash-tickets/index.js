@@ -16,7 +16,7 @@ const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { clearViewRows, restoreRows } = useData();
-  const { isLoading, toggleView, togglePageSlugId } = useTicketsPage();
+  const { isLoading, togglePageSlugId } = useTicketsPage();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: 'all', type: 'view' }],
@@ -167,7 +167,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         workspaceID={workspaceID}
         projectName={projectName}
         permission={permission}
-        viewID='trash'
+        isShowViewInURL={false}
         toggleBar={toggleBar}
         api={api}
         settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
@@ -175,7 +175,6 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         isBuiltInView={true}
-        toggleView={toggleView}
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
       />

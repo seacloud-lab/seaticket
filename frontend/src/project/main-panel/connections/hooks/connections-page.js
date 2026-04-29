@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import eventBus from '@/utils/event-bus';
-import { Utils } from '@/utils/utils';
 import context from '@/sea-metadata/context';
 import { CONNECTION_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
@@ -14,39 +13,37 @@ const ConnectionsPageContext = React.createContext(null);
 export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
-  const [childrenPageSlugId, toggleChildrenPageSlugId] = useState('');
-  const [viewID, toggleView] = useState('');
+  const [childrenPageSlugId, setChildrenPageSlugId] = useState('');
 
-  const resetURL = useCallback((pageSlugId, viewID, childrenPageSlugId) => {
+  const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
-    const currentUrlParams = new URLSearchParams(window.location.search);
+    let queryString = '';
     if (isConnectionRecordsView(pageSlugId)) {
       if (childrenPageSlugId) {
         urlPart = urlPart + 'records/' + childrenPageSlugId + '/';
       } else {
-        if (viewID) {
-          currentUrlParams.set('view', viewID);
-        } else {
-          currentUrlParams.delete('view');
-        }
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        queryString = currentUrlParams.toString();
       }
-    } else {
-      currentUrlParams.delete('view');
     }
-    const queryString = currentUrlParams.toString();
     const fullUrl = url + urlPart + (queryString ? '?' + queryString : '');
     history.replaceState(null, null, fullUrl);
   }, [workspaceID, projectName]);
 
-  const togglePageSlugId = useCallback((pageSlugId, viewID = '', childrenPageSlugId = '') => {
+  const togglePageSlugId = useCallback((pageSlugId, childrenPageSlugId = '') => {
     setLoading(true);
-    toggleView(viewID);
     setPageSlugId(pageSlugId);
-    toggleChildrenPageSlugId(childrenPageSlugId);
+    setChildrenPageSlugId(childrenPageSlugId);
+    resetURL(pageSlugId, childrenPageSlugId);
     setTimeout(() => setLoading(false), 1);
-  }, []);
+  }, [resetURL]);
+
+  const toggleChildrenPageSlugId = useCallback((childrenPageSlugId) => {
+    setChildrenPageSlugId(childrenPageSlugId);
+    resetURL(pageSlugId, childrenPageSlugId);
+  }, [pageSlugId, resetURL]);
 
   const onRefresh = useCallback(() => {
     const eventBus = context.eventBus;
@@ -76,13 +73,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       }
     }
 
-    let viewID = '';
-    if (isNumber(pageSlugId)) {
-      const searchParams = Utils.getUrlSearches();
-      viewID = searchParams?.view || '';
-    }
-
-    togglePageSlugId(pageSlugId, viewID, childrenPageSlugId);
+    togglePageSlugId(pageSlugId, childrenPageSlugId);
     setLoading(false);
   }, [projectName]);
 
@@ -93,18 +84,12 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     };
   }, []);
 
-  useEffect(() => {
-    resetURL(pageSlugId, viewID, childrenPageSlugId);
-  }, [pageSlugId, viewID, childrenPageSlugId]);
-
   return (
     <ConnectionsPageContext.Provider value={{
-      viewID,
       pageSlugId,
       childrenPageSlugId,
       isLoading,
       togglePageSlugId,
-      toggleView,
       onRefresh,
       toggleChildrenPageSlugId,
     }}>
