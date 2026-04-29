@@ -460,7 +460,7 @@ class AgentActionConfirmView(APIView):
             return None
 
         issues_table = GithubIssuesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        sql = f"SELECT issue_number, author, issue_id, comment_count FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])
         if not issues:
