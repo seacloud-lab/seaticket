@@ -23,6 +23,7 @@ from seahub.utils.ai_client import (
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI
+from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -413,7 +414,7 @@ class AgentActionConfirmView(APIView):
 
     def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
         if tool_name == 'suggest_resolution':
-            return self._execute_discourse_suggest_resolution(source_id, content)
+            return self._execute_discourse_suggest_resolution(seadb_api, project, project_uuid, source_id, content, username)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -430,8 +431,59 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_discourse_suggest_resolution(self, source_id, resolution_content):
-        return f'Resolution for Discourse topic {source_id} confirmed. Content: {(resolution_content or "")[:500]}...'
+    def _execute_discourse_suggest_resolution(self, seadb_api, project, project_uuid, source_id, resolution_content, username):
+        resolution_content = (resolution_content or '').strip()
+        if not resolution_content:
+            return 'Cannot create Discourse reply: empty content.'
+
+        connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
+        if connection_id is None or topic_pk is None:
+            return f'Invalid source_id format: {source_id}'
+
+        project_connection, topic, _replies, error = self._get_discourse_topic_context(
+            seadb_api, project_uuid, connection_id, topic_pk
+        )
+        if error:
+            return error
+
+        topic_id = topic.get('topic_id')
+        if not topic_id:
+            return f'Discourse topic {source_id} has no topic_id.'
+
+        try:
+            config = decrypt_config(json.loads(project_connection.config))
+        except Exception as e:
+            logger.error(f'Invalid discourse connection config for {project_connection.id}: {e}')
+            return 'Discourse connection config is invalid.'
+
+        discourse_url = config.get('url', '').rstrip('/')
+        api_key = config.get('api_key', '')
+        api_username = config.get('api_username', '')
+
+        if not discourse_url or not api_key:
+            return 'Discourse connection config is missing required fields (url, api_key).'
+
+        try:
+            discourse_api = DiscourseForumAPI(discourse_url, api_key, api_username)
+            result = discourse_api.create_post(topic_id, resolution_content)
+            post_number = result.get('post_number', 0)
+        except DiscourseForumAPIException as e:
+            logger.error(f'Failed to create Discourse reply for topic #{topic_id}: {e}')
+            return f'Failed to post reply to Discourse: {e}'
+
+        discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        reply_data = {
+            'post_number': post_number,
+            'content': resolution_content,
+            'author': api_username,
+            'topic_pk': topic_pk,
+        }
+        try:
+            discourse_seadb_api.add_reply(project_uuid, connection_id, topic_id, reply_data)
+        except Exception as e:
+            logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_id}: {e}')
+
+        return f'Reply #{post_number} posted to Discourse topic #{topic_id}.'
 
     def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
         try:
