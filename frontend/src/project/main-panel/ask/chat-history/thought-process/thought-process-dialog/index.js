@@ -30,16 +30,37 @@ const getToolRetryChildren = (retries = []) => {
     }));
 };
 
-const generatorUserMessage = (name, messageInfo = {}, props) => {
+const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildren = false } = {}) => {
   const { attachments, message, raw } = messageInfo || {};
+  const messageValue = message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null;
+  const messageNode = flattenLeafChildren ? {
+    name: gettext('Message'),
+    value: messageValue,
+    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+  } : {
+    name: gettext('Message'),
+    children: [
+      {
+        value: messageValue,
+        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+      },
+    ],
+  };
 
   const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
   if (!hasAttachments) {
+    if (flattenLeafChildren) {
+      return {
+        name,
+        children: [messageNode]
+      };
+    }
+
     return {
       name,
       children: [
         {
-          value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
+          value: messageValue,
           formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
         }
       ]
@@ -49,22 +70,19 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
   let userMessage = {
     name,
     children: [
-      {
-        name: gettext('Message'),
-        children: [
-          {
-            value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
-            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
-          },
-        ]
-      }, {
+      messageNode, {
         name: gettext('Attachments'),
-        children: [
-          {
-            value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-          },
-        ]
+        ...(flattenLeafChildren ? {
+          value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+          formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+        } : {
+          children: [
+            {
+              value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+              formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+            },
+          ]
+        })
       },
     ],
   };
@@ -129,21 +147,17 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               </>
             ),
             children: [
-              generatorUserMessage(gettext('User message'), record.user_input, customizeMDProps),
+              generatorUserMessage(gettext('User message'), record.user_input, customizeMDProps, { flattenLeafChildren: true }),
               {
                 name: gettext('Assistant response'),
                 children: record.assistant_response.length <= 1 ? [
                   {
                     name: gettext('Answer'),
-                    children: [
-                      {
-                        value: {
-                          [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
-                          [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
-                        },
-                        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-                      }
-                    ]
+                    value: {
+                      [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
+                      [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
+                    },
+                    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
                   return {
@@ -157,9 +171,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                         {')'}
                       </>
                     ),
-                    children: [
-                      { value: responseContent }
-                    ]
+                    value: responseContent
                   };
                 })
               }

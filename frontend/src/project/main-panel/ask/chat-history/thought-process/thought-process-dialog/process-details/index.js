@@ -51,34 +51,29 @@ const ProcessDetails = ({ value, primaryKey }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
-    const { isPrimaryContainer, name, icon, key } = value;
+    const { isPrimaryContainer, name, icon, key: primaryKey } = value;
+    const orderClassName = classnames('sea-qa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
+    const arrowClassName = classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails });
+    const contentClassName = classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
+
     return (
       <>
-        {isPrimaryContainer && (
-          <div className={classnames('sea-qa-ai-thought-process-order', 'primary-order-container', { 'has-content': isShowDetails }, key)} onClick={toggle}>
-            <span className="sea-qa-ai-thought-process-order-title">
-              <Icon symbol={icon} />
-              {name}
-            </span>
-            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails })} />
-          </div>
-        )}
-        {!isPrimaryContainer && (
-          <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
-            <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails })} />
-            <span className="sea-qa-ai-thought-process-order-title">
-              {name}
-            </span>
-          </div>
-        )}
+        <div className={orderClassName} onClick={toggle} >
+          {!isPrimaryContainer && <IconButton icon="arrow-down" className={arrowClassName} />}
+          <span className="sea-qa-ai-thought-process-order-title">
+            {isPrimaryContainer && <Icon symbol={icon} />}
+            {name}
+          </span>
+          {isPrimaryContainer && <IconButton icon="arrow-down" className={arrowClassName} />}
+        </div>
 
         {isShowDetails && (
-          <div className={classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, key)}>
+          <div className={contentClassName}>
             {hasRawChildren && (
               <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
             )}
             {children.map((child, childIndex) => (
-              <ProcessDetails value={child} key={childIndex} primaryKey={key} />
+              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} />
             ))}
           </div>
         )}

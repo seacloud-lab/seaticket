@@ -129,6 +129,32 @@
   margin-bottom: 0px !important;
 }
 
+/* context - primary-content-container */
+.sea-qa-ai-thought-process-content.primary-content-container.context > .sea-qa-ai-thought-process-content .sea-qa-ai-thought-process-order {
+  height: 22px;
+  margin-top: 12px;
+}
+
+.sea-qa-ai-thought-process-content.primary-content-container.context > .sea-qa-ai-thought-process-content > .sea-qa-ai-thought-process-order > .sea-qa-icon-btn {
+  display: none;
+}
+
+.sea-qa-ai-thought-process-content.primary-content-container.context > .sea-qa-ai-thought-process-content > .sea-qa-ai-thought-process-order::before {
+  content: "•";
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+.sea-qa-ai-thought-process-content.primary-content-container.context > .sea-qa-ai-thought-process-content > .sea-qa-ai-thought-process-content > div {
+  margin-bottom: 0px !important;
+  margin-top: 8px;
+}
+
+.sea-qa-ai-thought-process-content.primary-content-container.context > .sea-qa-ai-thought-process-content > .sea-qa-ai-thought-process-content > div > label {
+  color: var(--bs-body-secondary-color);
+  line-height: 22px;
+}
+
 /* action_steps - primary-content-container */
 .sea-qa-ai-thought-process-content.primary-content-container.action_steps > .sea-qa-ai-thought-process-content > .sea-qa-ai-thought-process-order {
   height: 22px;
