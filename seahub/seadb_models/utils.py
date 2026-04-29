@@ -423,11 +423,8 @@ def init_portal_issues_seadb_table(seadb_api, project_uuid):
         PortalIssuesTable.state.name,
         PortalIssuesTable.substate.name,
         PortalIssuesTable.type.name,
-        PortalIssuesTable.assignees.name,
-        PortalIssuesTable.participants.name,
         PortalIssuesTable.creator.name,
         PortalIssuesTable.deleted.name,
-        PortalIssuesTable.due_date.name,
         PortalIssuesTable.ai_processed_time.name,
         PortalIssuesTable.modified_time.name
     ]
@@ -743,10 +740,6 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
     if not basic_filters:
         basic_filters = []
     basic_filters.append({
-        'column_name': PortalIssuesTable.participants.name,
-        'filter_predicate': 'include_me',
-    })
-    basic_filters.append({
         'column_name': PortalIssuesTable.state.name,
         'filter_predicate': 'is',
         'filter_term': '0001' if issue_state == 'open' else '0002',
@@ -761,7 +754,7 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
 
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        records = res.get('results')
+        records = res.get('results') or []
     except Exception as e:
         logger.error(f'SeaDB query error for portal issues: {e}')
         records = []
@@ -855,7 +848,8 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
 def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
     issues_table_name = PortalIssuesTable.gen_table_name()
     comments_table_name = PortalIssueCommentsTable.gen_table_name()
-    issues_sql = f"SELECT * FROM `{issues_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    issue_query_fields = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
+    issues_sql = f"SELECT {issue_query_fields} FROM `{issues_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         from seahub.tickets.ticket_utils import get_ticket_title
         issues_res = seadb_api.query_rows(project_uuid, issues_sql)

@@ -181,8 +181,6 @@ class PortalIssuesView(APIView):
         if not isinstance(tag_ids, list):
             tag_ids = []
 
-        due_date = request.POST.get('due_date', '')
-
         username = request.user.username
         seadb_api = SeaDBAPI()
 
@@ -223,15 +221,12 @@ class PortalIssuesView(APIView):
                 PortalIssuesTable.type.name: type_name if type_name else None,
                 PortalIssuesTable.substate.name: default_substate,
                 PortalIssuesTable.priority.name: priority,
-                PortalIssuesTable.assignees.name: [],
-                PortalIssuesTable.participants.name: [username],
                 PortalIssuesTable.tags.name: tag_ids,
                 PortalIssuesTable.creator.name: username,
                 PortalIssuesTable.comment_count.name: 0,
                 PortalIssuesTable.created_time.name: now_datetime,
                 PortalIssuesTable.modified_time.name: now_datetime,
                 PortalIssuesTable.deleted.name: False,
-                PortalIssuesTable.due_date.name: due_date,
             }
             res = seadb_api.insert_rows(project_uuid, portal_issues_table_name, [row])
             pks = res.get('pks', [])
@@ -311,7 +306,7 @@ class PortalIssuesView(APIView):
             issue_ids = issue_id_to_row.keys()
             issue_ids_str = ','.join(str(issue_id) for issue_id in issue_ids)
             sql = f"""
-            SELECT `_pk`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `assignees`, `participants`, `linked_ticket`
+            SELECT `_pk`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `linked_ticket`
             FROM `{portal_issues_table_name}`
             WHERE `_pk` IN ({issue_ids_str})
             """
@@ -614,24 +609,6 @@ class PortalIssueView(APIView):
             elif priority > 5:
                 priority = 5
 
-        is_update_assignees = 'assignees' in request.data
-        assignees = request.data.get('assignees')
-        if is_update_assignees and assignees is not None:
-            assignees = assignees if assignees else '[]'
-            try:
-                assignees = json.loads(assignees)
-            except:
-                error_msg = 'assignees invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if not isinstance(assignees, list):
-                error_msg = 'assignees invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            assignees = list(set(assignees))
-
-        is_update_due_date = 'due_date' in request.data
-        due_date = request.data.get('due_date')
-
         is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
         if is_update_tags and tags is not None:
@@ -655,12 +632,6 @@ class PortalIssueView(APIView):
             except (ValueError, TypeError):
                 error_msg = 'linked_ticket invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if assignees:
-            for assignee in assignees:
-                if not check_project_permission(assignee, workspace.owner):
-                    error_msg = 'assignees invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # upload files
         if file_urls:
@@ -687,14 +658,6 @@ class PortalIssueView(APIView):
                 update_row[PortalIssuesTable.tags.name] = tags
             if is_update_priority:
                 update_row[PortalIssuesTable.priority.name] = priority
-            if is_update_assignees:
-                update_row[PortalIssuesTable.assignees.name] = assignees
-            if is_update_due_date:
-                update_row[PortalIssuesTable.due_date.name] = due_date or ''
-            
-            participants = issue.get('participants') or []
-            if username not in participants:
-                participants.append(username)
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if issue_state_name or issue_state_name == '':
                 issue_state_name = issue_state_name.lower()
@@ -743,7 +706,6 @@ class PortalIssueView(APIView):
                     else:
                         update_row['linked_ticket'] = None
 
-            update_row[PortalIssuesTable.participants.name] = participants
             update_row[PortalIssuesTable.modified_time.name] = now_datetime
             update_rows = [
                 {
@@ -920,10 +882,6 @@ class PortalIssueCommentsView(APIView):
                     'modified_time': now_datetime,
                     },
                 }
-            participants = issue.get('participants') or []
-            if username not in participants:
-                participants.append(username)
-            update_issue['row']['participants'] = participants
             seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [update_issue])
         except Exception as e:
             logger.error(e)
@@ -1027,10 +985,6 @@ class PortalIssueCommentView(APIView):
             update_row = {
                 'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
-            participants = issue.get('participants') or []
-            if username not in participants:
-                participants.append(username)
-                update_row['participants'] = participants
             issue_update = {
                 'pk': issue.get('_pk'),
                 'row': update_row,
@@ -1085,11 +1039,6 @@ class PortalIssueCommentView(APIView):
                     'modified_time': now_datetime,
                 }
             }
-
-            participants = issue.get('participants') or []
-            if username not in participants:
-                participants.append(username)
-                update_issue['row']['participants'] = participants
             seadb_api.update_rows(project_uuid, PortalIssuesTable.gen_table_name(), [update_issue])
         except Exception as e:
             logger.error(e)

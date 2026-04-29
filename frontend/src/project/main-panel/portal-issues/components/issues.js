@@ -7,7 +7,7 @@ import {
   PORTAL_ISSUE_PAGE_SLUG_ID, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG,
   PORTAL_ISSUE_NOT_DISPLAY_COLUMNS, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
   PORTAL_ISSUE_COLUMNS_ORDER_CONFIG, PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG,
-  PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
+  PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE,
 } from '../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext, server, siteRoot } from '@/constants';
@@ -156,9 +156,6 @@ const Issues = ({
     if (isFunction(api.modifyRow)) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         let rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
-        if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
-          delete rowData[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.PARTICIPANTS];
-        }
         return modifyRow(PORTAL_ISSUE_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste));
       };
     }
