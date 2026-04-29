@@ -5,7 +5,7 @@ import Loading from '@/components/loading';
 
 import './index.css';
 
-const SecondaryBtn = ({ icon, text, isSmall, disabled, doing, className, onClick, ...rest }) => {
+const SecondaryBtn = ({ icon = '', text, isSmall, disabled, doing, className = '', onClick, ...rest }) => {
   const handleKeyDown = (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
       e.preventDefault();

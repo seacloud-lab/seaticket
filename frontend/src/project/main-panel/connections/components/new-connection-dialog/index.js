@@ -3,9 +3,8 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, ModalHeader, Loading, CopyInput, SecondaryBtn, toaster } from '@/components';
-import { STEP, STEPS } from './constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS } from '../../constants';
+import { ModalHeader, Loading, SecondaryBtn, toaster } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
@@ -13,7 +12,6 @@ import { Utils } from '@/utils/utils';
 import { useConnections } from '../../hooks/connections';
 
 import './index.css';
-import './sea-qa-project-selected-connection.css';
 
 const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
 
@@ -44,7 +42,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [name, setName] = useState('');
   const [config, setConfig] = useState(initializeConfig(INIT_TYPE));
   const [isSubmitting, setSubmitting] = useState(false);
-  const [newRecord, setNewRecord] = useState(null);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
   const { updateUrlParams } = useConnections();
@@ -83,28 +80,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }), [columns]);
 
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
-  const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
 
-  const customSteps = useMemo(() => {
-    if (isGithub) {
-      return [
-        STEPS[0], // TYPE
-        STEPS[1], // CONFIG
-        // STEPS[2] // GITHUB
-      ];
-    }
-    if (isDiscourse) {
-      return [
-        STEPS[0], // TYPE
-        STEPS[1], // CONFIG
-        // STEPS[3] // DISCOURSE
-      ];
-    }
-    return STEPS.slice(0, 2);
-  }, [isGithub, isDiscourse]);
-
-  const step = useMemo(() => customSteps[stepIndex], [customSteps, stepIndex]);
+  const step = useMemo(() => {
+    return STEPS[stepIndex];
+  }, [STEPS, stepIndex]);
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
@@ -155,73 +135,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
     let _config = { ...config };
-
     if (isGithub) {
       const repository = _config.repository.repository;
       delete _config['repository'];
       _config['repository'] = repository['html_url'];
       _config['installation_id'] = repository['installation_id'];
     }
-
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
-    // if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-    //   if (!config.webhook_secret) {
-    //     onToggle();
-    //     return;
-    //   }
-    //   modifyConnection({ name: name.trim(), config }, () => {
-    //     setSubmitting(false);
-    //   },
-    //   newRecord.id
-    //   );
-    //   return;
-    // }
-    // if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-    //   if (newRecord) {
-    //     if (!config.webhook_secret) {
-    //       onToggle();
-    //       return;
-    //     }
-    //     modifyConnection({ name: name.trim(), config }, () => {
-    //       setSubmitting(false);
-    //     },
-    //     newRecord.id
-    //     );
-    //     return;
-    //   }
-    // }
-  }, [name, type, config, onSubmit, onToggle, newRecord, modifyConnection]);
-
-  // eslint-disable-next-line no-unused-vars
-  const handleSubmitGithub = useCallback(() => {
-    setSubmitting(true);
-    onSubmit({ type, name: name.trim(), config }, () => {
-      setSubmitting(false);
-    },
-    true,
-    (newRecord) => {
-      setStepIndex(stepIndex + 1);
-      setNewRecord(newRecord);
-    }
-    );
-  }, [name, type, config, onSubmit, onToggle]);
-
-  // eslint-disable-next-line no-unused-vars
-  const handleSubmitDiscourse = useCallback(() => {
-    setSubmitting(true);
-    onSubmit({ type, name: name.trim(), config }, () => {
-      setSubmitting(false);
-    },
-    true,
-    (newRecord) => {
-      setStepIndex(stepIndex + 1);
-      setNewRecord(newRecord);
-    }
-    );
-  }, [name, type, config, onSubmit, stepIndex]);
+  }, [name, type, config, onSubmit, onToggle, modifyConnection]);
 
   const listGitHubRepositories = useCallback(() => {
     return connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
@@ -250,17 +174,23 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           {stepIndex === 0 ?
             <div className="sea-qa-project-selected-no-type">{gettext('Select connection type')}</div>
             :
-            <div className='sea-qa-project-new-connection-type'>
-              <div className="sea-qa-project-new-connection-type-left d-flex align-items-center">
-                <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
-                <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
+            <>
+              <div className='sea-qa-project-connection-help'>
+                {typeOption.help_text}
+                <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
               </div>
-              {typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && (
-                <div className="sea-qa-project-new-connection-type-right">
-                  {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
+              <div className='sea-qa-project-new-connection-type'>
+                <div className="sea-qa-project-new-connection-type-left d-flex align-items-center">
+                  <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
+                  <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
                 </div>
-              )}
-            </div>
+                {typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+                  <div className="sea-qa-project-new-connection-type-right">
+                    {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
+                  </div>
+                )}
+              </div>
+            </>
           }
         </div>
         {step.key === STEP.TYPE && (
@@ -376,55 +306,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
             })}
           </div>
         )}
-        {isGithub && step.key === STEP.GITHUB && (
-          <div className="sea-qa-project-new-connection-config">
-            <FormGroup>
-              <Label>{gettext('Connection URL')}</Label>
-              <CopyInput value={`${server}/webhook/github/?connection_id=${newRecord.id}`} />
-            </FormGroup>
-            <FormGroup>
-              <Label>{gettext('Webhook secret (optional)')}</Label>
-              <TextInput value={config['webhook_secret']} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
-            </FormGroup>
-          </div>
-        )}
-        {isDiscourse && step.key === STEP.DISCOURSE && (
-          <div className="sea-qa-project-new-connection-config">
-            <FormGroup>
-              <Label>{gettext('Webhook URL')}</Label>
-              <CopyInput value={newRecord ? `${server}/webhook/discourse/?connection_id=${newRecord.id}` : gettext('Loading...')} />
-            </FormGroup>
-            <FormGroup>
-              <Label>{gettext('Webhook secret (optional)')}</Label>
-              <TextInput value={config['webhook_secret'] || ''} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
-            </FormGroup>
-          </div>
-        )}
       </ModalBody>
-      {isGithub && (
+      {stepIndex === 0 && (
         <ModalFooter>
-          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-          {/* {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>} */}
-          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}disabled={isSubmitting || !isValid || !name} >{gettext('Submit')}</Button>}
+          <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
+          <Button color="primary" onClick={() => setStepIndex(1)}>{gettext('Next')}</Button>
         </ModalFooter>
       )}
-      {isDiscourse && (
+      {stepIndex === 1 && (
         <ModalFooter>
-          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-          {/* {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting}>{gettext('Next')}</Button>} */}
-          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
-        </ModalFooter>
-      )}
-      {!isGithub && !isDiscourse && (
-        <ModalFooter>
-          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-          {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
-          {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
+          <Button color="secondary" onClick={() => setStepIndex(0)}>{gettext('Previous')}</Button>
+          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>
         </ModalFooter>
       )}
     </Modal>
