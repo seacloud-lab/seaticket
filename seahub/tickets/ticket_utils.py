@@ -98,17 +98,13 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
     portal_issue_ids = []
     for linked_key in keys:
         connection_id_str, record_id_str = linked_key.split('_', 1)
-        if not connection_id_str or not record_id_str:
-            continue
         # Handle portal_ prefix
         if connection_id_str == 'portal':
             portal_issue_ids.append(int(record_id_str))
             continue
-        try:
-            connection_id = int(connection_id_str)
-            record_id = int(record_id_str)
-        except Exception:
-            continue
+
+        connection_id = int(connection_id_str)
+        record_id = int(record_id_str)
         conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
 
     # Query portal issue titles
@@ -123,8 +119,6 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
         except Exception as e:
             logger.error(f'Error querying portal issue titles: {e}')
 
-    if not conn_id_to_record_ids:
-        return linked_record_titles
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
@@ -147,11 +141,28 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
         return linked_records_info
 
     conn_id_to_record_ids = {}
+    portal_issue_ids = []
     for linked_key in keys:
         connection_id_str, record_id_str = linked_key.split('_', 1)
+        # Handle portal_ prefix
+        if connection_id_str == 'portal':
+            portal_issue_ids.append(int(record_id_str))
+            continue
         connection_id = int(connection_id_str)
         record_id = int(record_id_str)
         conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+    
+    # Query portal issue titles
+    if portal_issue_ids:
+        try:
+            ids_str = ','.join([str(i) for i in portal_issue_ids])
+            sql = f"SELECT _pk, title FROM `{PortalIssuesTable.gen_table_name()}` WHERE `_pk` IN ({ids_str})"
+            res = seadb_api.query_rows(project_uuid, sql)
+            for row in (res.get('results') or []):
+                _pk = row.get('_pk')
+                linked_records_info[f'portal_{_pk}'] = row
+        except Exception as e:
+            logger.error(f'Error querying portal issue titles: {e}')
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
