@@ -147,6 +147,9 @@ class TestPortalIssuesView:
 
         assert resp.status_code == 201
         assert resp.data['portal_issue']['_pk'] == 1
+        insert_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert 'assignees' not in insert_row
+        assert 'due_date' not in insert_row
 
 
 class TestPortalMyIssuesView:
@@ -681,7 +684,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': None}
         ticket = {'_pk': 10, 'linked_connection_records': []}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
@@ -694,6 +697,9 @@ class TestPortalIssueViewPut:
         portal_update = seadb_api.update_rows.call_args_list[-1]
         portal_rows = portal_update[0][2]
         assert any(r['row'].get('linked_ticket') == 10 for r in portal_rows)
+        assert all('participants' not in r['row'] for r in portal_rows)
+        assert all('assignees' not in r['row'] for r in portal_rows)
+        assert all('due_date' not in r['row'] for r in portal_rows)
         # Should update ticket's linked_connection_records
         ticket_update = seadb_api.update_rows.call_args_list[0]
         ticket_rows = ticket_update[0][2]
@@ -709,7 +715,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': 10}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
             resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
@@ -727,7 +733,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': 10}
         ticket = {'_pk': 10, 'linked_connection_records': ['portal_1']}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
@@ -750,7 +756,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': None}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
             resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
@@ -767,7 +773,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': None}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
                 patch('seahub.portal.apis.get_ticket', return_value=(None, {})):
@@ -785,7 +791,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': 10, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': 10}
         ticket = {'_pk': 10, 'linked_connection_records': ['portal_1', '1_100']}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
@@ -813,7 +819,7 @@ class TestPortalIssueViewPut:
         request.user = project_creator
 
         seadb_api = Mock()
-        issue = {'_pk': 1, 'linked_ticket': None, 'participants': [project_creator.username]}
+        issue = {'_pk': 1, 'linked_ticket': None}
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})):
             resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)

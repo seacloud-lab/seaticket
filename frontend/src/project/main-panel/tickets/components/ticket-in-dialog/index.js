@@ -71,6 +71,7 @@ const TicketInDialog = ({
   if (!ticket) return (<CenteredError>{ticketType === TICKET_TYPE ? gettext('Ticket not found') : gettext('Issue not found')}</CenteredError>);
 
   const isSmallScreen = containerWidth < 780;
+  const isPortalIssue = ticketType !== TICKET_TYPE;
 
   const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   const useMetadata = ticketType === TICKET_TYPE ? useTicketMetadata : usePortalIssuesMetadata;
@@ -99,7 +100,9 @@ const TicketInDialog = ({
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <PrioritySettings isReadonly={true} value={priority} />
-          <CollaboratorsSettings isReadonly={true} title={gettext('Assignees')} value={assignees} />
+          {!isPortalIssue && (
+            <CollaboratorsSettings isReadonly={true} title={gettext('Assignees')} value={assignees} />
+          )}
           <TagsSettings
             id="tags-editor-popover"
             isReadonly={true}
@@ -109,8 +112,12 @@ const TicketInDialog = ({
           <StateSettings isReadonly={true} state={state} substate={substate} useMetadataContext={useMetadata} />
           <SubStateSettings isReadonly={true} state={state} substate={substate} useMetadataContext={useMetadata} />
           <TypeSettings isReadonly={true} value={type} useMetadataContext={useMetadata} />
-          <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
-          <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
+          {!isPortalIssue && (
+            <DueDateSettings isReadonly={true} value={due_date} onChange={() => {}} />
+          )}
+          {!isPortalIssue && (
+            <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
+          )}
           <LinkSettings
             value={ticketType === TICKET_TYPE ? ticket.linked_connection_records : [ticket.linked_ticket]}
             linkedRecords={linkedRecords}

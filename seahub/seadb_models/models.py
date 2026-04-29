@@ -580,8 +580,6 @@ class PortalIssuesTable(BaseModel):
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_type)
     tags = MappedColumn('tags', PropertyTypes.LIST, ListTypes.int)
-    assignees = MappedColumn('assignees', PropertyTypes.LIST)
-    participants = MappedColumn('participants', PropertyTypes.LIST)
     priority = MappedColumn('priority', PropertyTypes.INT)
     linked_ticket = MappedColumn('linked_ticket', PropertyTypes.INT)
     comment_count = MappedColumn('comment_count', PropertyTypes.INT)
@@ -589,7 +587,6 @@ class PortalIssuesTable(BaseModel):
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
-    due_date = MappedColumn('due_date', PropertyTypes.DATETIME)
 
     @classmethod
     def gen_table_name(cls):

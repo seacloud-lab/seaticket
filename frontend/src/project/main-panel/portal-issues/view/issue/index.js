@@ -7,7 +7,6 @@ import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
 import {
   PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
-  AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { generatorIssuesContextMenuOptions } from '../../utils';
@@ -18,8 +17,8 @@ import {
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
-  CollaboratorsSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
+  TypeSettings, PrioritySettings,
+  StateSettings, SubStateSettings, LinkSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
 import { Comment, KeyboardShortcuts, UploadFilesButton } from '@/project/main-panel/tickets/components';
 import StatusToggleButton from '@/project/main-panel/tickets/view/ticket/status-toggle-btn';
@@ -93,10 +92,8 @@ const Issue = ({
   // api
   const modifyIssue = useCallback((issueID, data) => {
     let serverData = {};
-    const dataKeys = Object.keys(data);
-    const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
 
-    dataKeys.filter(key => key !== AUTO_UPDATE_PARTICIPANTS_KEY).forEach(columnName => {
+    Object.keys(data).forEach(columnName => {
       let value = data[columnName];
       if (columnName === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
@@ -110,54 +107,37 @@ const Issue = ({
     });
 
     return portalAPI.modifyPortalIssue(projectUuid, issueID, serverData).then(res => {
-      let update = { ...data };
-      const { participants = [] } = issue;
-      if (isAutoUpdateParticipants && !participants.includes(user.email)) {
-        update['participants'] = [...participants, user.email];
-      }
-      const newIssue = issue._update(update);
-      handleUpdateRowsCacheData(issueID, update);
+      const newIssue = issue._update(data);
+      handleUpdateRowsCacheData(issueID, data);
       setIssue(deepCopy(newIssue));
 
       return data;
     });
-  }, [projectUuid, issue, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
-
-  const handleUpdateParticipants = useCallback((issue) => {
-    const { participants = [] } = issue;
-    if (!participants.includes(user.email)) {
-      const update = { 'participants': [...participants, user.email] };
-      issue = issue._update(update);
-      handleUpdateRowsCacheData(issue._id, update);
-    }
-  }, [user, handleUpdateRowsCacheData]);
+  }, [projectUuid, issue, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
   const createComment = useCallback((issueID, comment) => {
     return portalAPI.createPortalIssueComment(projectUuid, issueID, comment).then(res => {
       let newIssue = issue._create_comment(res.data.comment);
-      handleUpdateParticipants(newIssue);
       setIssue(deepCopy(newIssue));
       return res.data.comment;
     });
-  }, [projectUuid, issue, handleUpdateParticipants]);
+  }, [projectUuid, issue]);
 
   const modifyComment = useCallback((issueID, commentID, comment) => {
     return portalAPI.modifyPortalIssueComment(projectUuid, issueID, commentID, comment).then(res => {
       let newIssue = issue._modify_comment(commentID, comment);
-      handleUpdateParticipants(newIssue);
       setIssue(deepCopy(newIssue));
       return newIssue;
     });
-  }, [projectUuid, issue, handleUpdateParticipants]);
+  }, [projectUuid, issue]);
 
   const deleteComment = useCallback((issueID, commentID) => {
     return portalAPI.deletePortalIssueComment(projectUuid, issueID, commentID).then(res => {
       let newIssue = issue._delete_comment(commentID);
-      handleUpdateParticipants(newIssue);
       setIssue(deepCopy(newIssue));
       return newIssue;
     });
-  }, [projectUuid, issue, handleUpdateParticipants]);
+  }, [projectUuid, issue]);
 
   const chatIssuesByAI = useCallback((issues) => {
     updateAttachments(issues);
@@ -213,7 +193,7 @@ const Issue = ({
     });
     return options;
   }, [
-    issue, getTableByName, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName,
+    issue, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName,
     createTicket, handleLinkAnExistingTicket,
   ]);
 
@@ -228,15 +208,6 @@ const Issue = ({
 
   const onPriorityChange = useCallback((priority = 0) => {
     modifyIssue(issue.id, { priority }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onAssigneesChange = useCallback((assignees = []) => {
-    modifyIssue(issue.id, { assignees }).then(res => {
       // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -298,24 +269,6 @@ const Issue = ({
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(error);
-    });
-  }, [issue, modifyIssue]);
-
-  const onDueDateChange = useCallback((due_date = '') => {
-    modifyIssue(issue.id, { due_date }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onParticipantsChange = useCallback((participants = []) => {
-    modifyIssue(issue.id, { participants, [AUTO_UPDATE_PARTICIPANTS_KEY]: true }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
     });
   }, [issue, modifyIssue]);
 
@@ -385,10 +338,6 @@ const Issue = ({
     const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
     insertRowByLink(TICKET_TABLE_NAME, PORTAL_ISSUE_TABLE_NAME, linkedUpdateRecord, issueID, rowUpdateData, () => {
       let update = { [linkColumn.name]: ticket._pk };
-      const { participants = [] } = issue;
-      if (!participants.includes(user.email)) {
-        update['participants'] = [...participants, user.email];
-      }
       const newIssue = issue._update(update);
       handleUpdateRowsCacheData(issueID, rowUpdateData);
       setIssue(deepCopy(newIssue));
@@ -471,7 +420,7 @@ const Issue = ({
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_ticket } = issue;
+  const { id, state, title, creator, type, tags, priority, substate, linked_ticket } = issue;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = PORTAL_ISSUE_STATE_CONFIG[state];
@@ -569,7 +518,6 @@ const Issue = ({
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings
             id="tags-editor-popover"
             isReadonly={!editable}
@@ -581,8 +529,6 @@ const Issue = ({
           <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
-          <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
           <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
         </div>
       </div>
