@@ -46,14 +46,6 @@ from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_commen
     send_portal_issue_update_msg, check_portal_issue_comment_creation_interval
 logger = logging.getLogger(__name__)
 
-TAG_QUERY_COLUMNS = ', '.join([
-    '`_pk`',
-    f'`{TagTable.name.name}`',
-    f'`{TagTable.color.name}`',
-    f'`{TagTable.text_color.name}`',
-    f'`{TagTable.description.name}`',
-])
-
 
 MAX_LENGTH = 10000
 
@@ -1134,7 +1126,8 @@ class PortalTagsView(APIView):
         try:
             seadb_api = SeaDBAPI()
             table_name = TagTable.gen_table_name()
-            sql = f"SELECT {TAG_QUERY_COLUMNS} FROM `{table_name}` LIMIT {start}, {limit}"
+            sql = "SELECT `_pk`, `name`, `color`, `text_color`, `description` " \
+                f"FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)

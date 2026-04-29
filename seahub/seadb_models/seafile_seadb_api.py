@@ -7,12 +7,6 @@ from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
 logger = logging.getLogger(__name__)
 
-SEAFILE_ATTACHMENT_QUERY_COLUMNS = ', '.join([
-    '`_pk`',
-    f'`{SeafileTable.title.name}`',
-    f'`{SeafileTable.content.name}`',
-])
-
 
 class SeafileSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
@@ -26,10 +20,8 @@ class SeafileSeaDBAPI:
             str(pk)
             for pk in pks
         ])
-        sql = (
-            f"SELECT {SEAFILE_ATTACHMENT_QUERY_COLUMNS} FROM `{table_name}` "
-            f"WHERE `_pk` in ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
-        )
+        sql = "SELECT `_pk`, `title`, `content` " \
+            f"FROM `{table_name}` WHERE `_pk` in ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
