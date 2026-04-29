@@ -19,7 +19,8 @@ class EmailSeaDBAPI:
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"
+        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `message_id`, `origin_thread_id` " \
+            f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -32,7 +33,8 @@ class EmailSeaDBAPI:
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY {EmailTable.modified_time.name} ASC "
+        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
+            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id` FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY `modified_time` ASC"
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -42,7 +44,8 @@ class EmailSeaDBAPI:
 
     def get_thread_by_pk(self, connection_id, _pk):
         table_name = ThreadTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` = {_pk}"
+        sql = "SELECT `_pk`, `title`, `linked_ticket` " \
+            f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -54,7 +57,8 @@ class EmailSeaDBAPI:
             for _pk in _pks
         ])
         table_name = ThreadTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
+        sql = "SELECT `_pk`, `title`, `modified_time` " \
+            f"FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
@@ -64,7 +68,8 @@ class EmailSeaDBAPI:
             for thread_id in thread_ids
         ])
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY {EmailTable.modified_time.name} ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
+        sql = "SELECT `thread_id`, `email_from`, `email_to`, `content`, `modified_time` " \
+            f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY `modified_time` ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         emails = response.get('results', [])
         result = {}

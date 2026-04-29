@@ -15,7 +15,8 @@ TABLE_KNOWLEDGE_BASE = KnowledgeBaseTable.gen_table_name()
 
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
-    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
+    sql = "SELECT `_pk`, `title`, `content`, `tags`, `creator`, `last_modifier`, " \
+        f"`created_time`, `modified_time` FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     columns = res.get('metadata') or []
@@ -26,7 +27,8 @@ def get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids):
         str(record_id)
         for record_id in record_ids
     ])
-    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` IN ({record_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = "SELECT `_pk`, `title`, `content`, `tags`, `creator`, `last_modifier`, `created_time`, " \
+        f"`modified_time` FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` IN ({record_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
     return seadb_api.query_rows(project_uuid, sql).get('results', [])
 
 

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from seahub.seadb_models.models import TicketActivitiesTable, TicketsTable
+from seahub.seadb_models.models import TicketActivitiesTable, TicketCommentsTable, TicketsTable
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
@@ -35,8 +35,8 @@ class TicketLinkSyncPlan:
     portal_issue_ids: List[int] = field(default_factory=list)
 
 
-TABLE_TICKETS = 'tickets'
-TABLE_TICKET_COMMENTS = 'ticket_comments'
+TABLE_TICKETS = TicketsTable.gen_table_name()
+TABLE_TICKET_COMMENTS = TicketCommentsTable.gen_table_name()
 logger = logging.getLogger(__name__)
 
 
@@ -259,10 +259,7 @@ def gen_unique_id(id_set, length=4):
 
 def check_ticket_creation_interval(seadb_api, project_uuid, username, deleted=False):
     """Limit ticket creation to once every 30 seconds per creator."""
-    previous_ticket_sql = (
-        f"SELECT * FROM `{TABLE_TICKETS}` WHERE `creator` = '{username}' "
-        f"AND `deleted` = {deleted} ORDER BY _pk DESC LIMIT 1"
-    )
+    previous_ticket_sql = f"SELECT `_pk`, `created_time` FROM `{TABLE_TICKETS}` WHERE `creator` = '{username}' AND `deleted` = {deleted} ORDER BY `_pk` DESC LIMIT 1"
     previous_ticket = seadb_api.query_rows(project_uuid, previous_ticket_sql).get('results')
 
     if previous_ticket:
@@ -275,11 +272,7 @@ def check_ticket_creation_interval(seadb_api, project_uuid, username, deleted=Fa
 
 def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket_id, deleted=False):
     """Limit ticket comment creation to once every 30 seconds per creator per ticket."""
-    previous_ticket_comment_sql = (
-        f"SELECT created_time FROM `{TABLE_TICKET_COMMENTS}` WHERE `creator` = '{username}' "
-        f"AND `ticket_id` = {ticket_id} AND `deleted` = {deleted} "
-        f"ORDER BY `_pk` DESC LIMIT 1"
-    )
+    previous_ticket_comment_sql = f"SELECT `_pk`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` WHERE `creator` = '{username}' AND `ticket_id` = {ticket_id} AND `deleted` = {deleted} ORDER BY `_pk` DESC LIMIT 1"
     previous_ticket_comment = seadb_api.query_rows(project_uuid, previous_ticket_comment_sql).get('results')
     if previous_ticket_comment:
         created_at = previous_ticket_comment[0].get('created_time')
@@ -290,23 +283,20 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
     return True
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    column_names = TicketsTable.gen_query_record_column_names()
-    column_names = [f'`{column_name}`' for column_name in column_names]
-    column_names_str = ', '.join(column_names)
-    sql = f"SELECT {column_names_str} FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
 
 
 def get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end):
-    ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
+    ticket_comments_sql = f"SELECT `_pk`, `content`, `creator`, `created_time`, `modified_time`, `via_agent` FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
     ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
     return ticket_comments_data
 
 
 def get_ticket_comment_by_pk(seadb_api, project_uuid, ticket_id, ticket_comment_number):
-    sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `_pk` = {ticket_comment_number}"
+    sql = f"SELECT `_pk`, `content`, `creator`, `created_time`, `modified_time`, `via_agent` FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `_pk` = {ticket_comment_number}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
@@ -446,7 +436,7 @@ def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
         str(ticket_id)
         for ticket_id in ticket_ids
     ])
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL)"
+    sql = f"SELECT `_pk`, `state`, `title`, `content`, `created_time` FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL)"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
 
@@ -455,7 +445,7 @@ def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records
         str(ticket_id)
         for ticket_id in ticket_ids
     ])
-    ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
+    ticket_comments_sql = f"SELECT `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
     ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
     result = {}
     for ticket_comment in ticket_comments_data:
@@ -485,10 +475,7 @@ def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
 
 def delete_ticket_activities_by_ids(seadb_api, project_uuid, ticket_ids):
     ticket_ids_str = ", ".join(map(str, ticket_ids))
-    sql = (
-        f"DELETE FROM `{TicketActivitiesTable.gen_table_name()}` "
-        f"WHERE `ticket_id` IN ({ticket_ids_str})"
-    )
+    sql = f"DELETE FROM `{TicketActivitiesTable.gen_table_name()}` WHERE `ticket_id` IN ({ticket_ids_str})"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
 
@@ -720,12 +707,7 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
 
 
 def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50):
-    sql = (
-        f"SELECT * FROM `{TicketActivitiesTable.gen_table_name()}` "
-        f"WHERE `ticket_id` = {ticket_id} "
-        f"ORDER BY `created_time` ASC "
-        f"LIMIT {limit} OFFSET {start}"
-    )
+    sql = f"SELECT `_pk`, `activity_type`, `detail`, `creator`, `created_time` FROM `{TicketActivitiesTable.gen_table_name()}` WHERE `ticket_id` = {ticket_id} ORDER BY `created_time` ASC LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql)
     return res.get('results', [])
 

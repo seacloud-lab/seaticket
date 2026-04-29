@@ -69,7 +69,6 @@ class MappingRequiredError(Exception):
         self.connection_id = connection_id
         super().__init__(f'Mapping required for agent type: {agent_type}')
 
-
 def _build_items_map_from_actions(actions):
     """build the items map from actions"""
     items_map = {}
@@ -103,11 +102,9 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
     offset = (page - 1) * per_page
     
     try:
-        runs_sql = (
-            f"SELECT * FROM `{AgentRunsTable.gen_table_name()}` "
-            f"ORDER BY `started_at` DESC "
-            f"LIMIT {offset}, {per_page + 1}"
-        )
+        runs_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
+            f"`error_message`, `events` FROM `{AgentRunsTable.gen_table_name()}` " \
+            f"ORDER BY `started_at` DESC LIMIT {offset}, {per_page + 1}"
         runs_result = seadb_api.query_rows(project_uuid, runs_sql)
         runs = runs_result.get('results', [])
         
@@ -121,12 +118,11 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         if run_ids:
             run_ids_str = ','.join(str(r) for r in run_ids)
             actions_limit = per_page * 30
-            actions_sql = (
-                f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` "
-                f"WHERE `run_id` IN ({run_ids_str}) "
-                f"ORDER BY `run_id` DESC, `created_at` ASC "
+            actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
+                f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
+                f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+                f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
-            )
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
             all_actions = actions_result.get('results', [])
             
@@ -163,18 +159,18 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
 
 def get_agent_run_detail(seadb_api, project_uuid, run_id):
     try:
-        run_sql = f"SELECT * FROM `{AgentRunsTable.gen_table_name()}` WHERE `_pk` = {run_id}"
+        run_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
+            f"`error_message`, `events` FROM `{AgentRunsTable.gen_table_name()}` WHERE `_pk` = {run_id}"
         run_result = seadb_api.query_rows(project_uuid, run_sql)
         runs = run_result.get('results', [])
         if not runs:
             raise ValueError('Run not found.')
         run = runs[0]
         
-        actions_sql = (
-            f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` "
-            f"WHERE `run_id` = {run_id} "
-            f"ORDER BY `created_at` ASC"
-        )
+        actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
+            f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
+            f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+            f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
         items_map = _build_items_map_from_actions(actions)
@@ -305,7 +301,8 @@ class AgentActionConfirmView(APIView):
             seadb_api = SeaDBAPI(username)
 
             # 1. Get action details from SeaDB
-            sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
+            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `content` " \
+                f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
 
@@ -515,7 +512,7 @@ class AgentActionConfirmView(APIView):
             return None
 
         issues_table = GithubIssuesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        sql = f"SELECT issue_number, author, issue_id, comment_count FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])
         if not issues:
@@ -761,7 +758,8 @@ class AgentActionConfirmView(APIView):
 
         # Fetch issue from SeaDB
         issues_table = GithubIssuesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        sql = "SELECT `_pk`, `title`, `content`, `linked_ticket` " \
+            f"FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])
         if not issues:
@@ -1243,7 +1241,8 @@ class AgentActionUpdateView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
+            sql = "SELECT `run_id`, `status` " \
+                f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
 
@@ -1297,7 +1296,8 @@ class AgentActionCancelView(APIView):
             seadb_api = SeaDBAPI(username)
 
             # Get action details
-            action_sql = f"SELECT * FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
+            action_sql = "SELECT `run_id`, `status` " \
+                f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, action_sql)
             actions = result.get('results', [])
 

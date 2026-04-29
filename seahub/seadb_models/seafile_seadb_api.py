@@ -20,7 +20,8 @@ class SeafileSeaDBAPI:
             str(pk)
             for pk in pks
         ])
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = "SELECT `_pk`, `title`, `content` " \
+            f"FROM `{table_name}` WHERE `_pk` in ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']

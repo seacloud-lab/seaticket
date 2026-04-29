@@ -68,7 +68,8 @@ class TagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             table_name = TagTable.gen_table_name()
-            sql = f"SELECT * FROM `{table_name}` LIMIT {start}, {limit}"
+            sql = "SELECT `_pk`, `name`, `color`, `text_color`, `description` " \
+                f"FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         except Exception as e:
             logger.error(e)

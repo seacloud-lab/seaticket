@@ -9,7 +9,6 @@ from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
-
 class DiscourseSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
         self.base_id = base_id
@@ -18,7 +17,7 @@ class DiscourseSeaDBAPI:
     def get_topics_by_connection_id(self, connection_id, start, limit):
         """Retrieve all topics for the specified connection_id."""
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
+        sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `modified_time`, `created_time`, `resolved`, `linked_ticket` FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -26,7 +25,7 @@ class DiscourseSeaDBAPI:
 
     def get_topic_by_pk(self, connection_id, _pk):
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT title, topic_id, slug FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = f"SELECT `title`, `topic_id`, `slug`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response and response['results']:
             return response['results'][0]
@@ -35,7 +34,7 @@ class DiscourseSeaDBAPI:
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id}"
+        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -47,13 +46,13 @@ class DiscourseSeaDBAPI:
             for _pk in _pks
         ])
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `created_time` FROM `{table_name}` WHERE `_pk` in ({_pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
     def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
+        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         replies = response.get('results', [])
         result = {}
