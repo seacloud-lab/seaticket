@@ -1467,6 +1467,10 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        if _get_portal_team_login_redirect(project_uuid, email):
+            error_msg = _('Cannot invite a team user to the external portal.')
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         if not IS_EMAIL_CONFIGURED:
             error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
