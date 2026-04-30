@@ -15,6 +15,7 @@ const RunLogs = ({
   onCancelAction,
   onUpdateContent,
   enabledAgent,
+  developerMode,
 }) => {
   const [viewContentModal, setViewContentModal] = useState(null);
   const [editContent, setEditContent] = useState('');
@@ -80,6 +81,7 @@ const RunLogs = ({
             onConfirmAction={onConfirmAction}
             onCancelAction={onCancelAction}
             onViewContent={handleViewContent}
+            developerMode={developerMode}
           />
         ))}
       </div>

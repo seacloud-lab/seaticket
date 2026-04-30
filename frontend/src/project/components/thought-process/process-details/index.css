@@ -206,11 +206,11 @@
 }
 
 .seaqa-ai-thought-process-content.primary-content-container.statistics > div:not(:first-child) {
-  margin-top: 16px !important; 
+  margin-top: 16px !important;
 }
 
 .seaqa-ai-thought-process-content.primary-content-container.statistics > div > label {
-  margin-bottom: 0px !important; 
+  margin-bottom: 0px !important;
 }
 
 .seaqa-ai-thought-process-content.primary-content-container.statistics > div > label > .description {

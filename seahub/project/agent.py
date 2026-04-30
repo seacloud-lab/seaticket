@@ -83,8 +83,19 @@ def _parse_action_sources(raw_sources):
         return []
     return sources if isinstance(sources, list) else []
 
+def _parse_action_details(details):
+    if not details:
+        return {}
+    if isinstance(details, dict):
+        return details
+    try:
+        parsed = json.loads(details)
+        return parsed if isinstance(parsed, dict) else {}
+    except Exception:
+        return {}
 
-def _build_items_map_from_actions(actions):
+
+def _build_items_map_from_actions(actions, include_details=False):
     """build the items map from actions"""
     items_map = {}
     for action in actions:
@@ -98,7 +109,7 @@ def _build_items_map_from_actions(actions):
                 'source_title': action.get('source_title', ''),
                 'actions': [],
             }
-        items_map[key]['actions'].append({
+        action_data = {
             'id': action['_pk'],
             'type': action.get('action_type', ''),
             'tool_name': action.get('tool_name', ''),
@@ -110,11 +121,16 @@ def _build_items_map_from_actions(actions):
             'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
-        })
+        }
+        if include_details:
+            details = _parse_action_details(action.get('details', ''))
+            if details:
+                action_data['details'] = details
+        items_map[key]['actions'].append(action_data)
     return items_map
 
 
-def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
+def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_details=False):
     offset = (page - 1) * per_page
     
     try:
@@ -134,9 +150,10 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         if run_ids:
             run_ids_str = ','.join(str(r) for r in run_ids)
             actions_limit = per_page * 30
+            details_field = ', `details`' if include_details else ''
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-                f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
+                f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -154,7 +171,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         for run in runs:
             run_pk = run['_pk']
             actions = actions_by_run.get(run_pk, [])
-            items_map = _build_items_map_from_actions(actions)
+            items_map = _build_items_map_from_actions(actions, include_details=include_details)
             
             enriched_runs.append({
                 'id': run_pk,
@@ -173,7 +190,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
         raise
 
 
-def get_agent_run_detail(seadb_api, project_uuid, run_id):
+def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False):
     try:
         run_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
             f"`error_message`, `events` FROM `{AgentRunsTable.gen_table_name()}` WHERE `_pk` = {run_id}"
@@ -183,13 +200,14 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
             raise ValueError('Run not found.')
         run = runs[0]
         
+        details_field = ', `details`' if include_details else ''
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-            f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
+            f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
-        items_map = _build_items_map_from_actions(actions)
+        items_map = _build_items_map_from_actions(actions, include_details=include_details)
         
         return {
             'id': run['_pk'],
@@ -239,7 +257,7 @@ class AgentRunsView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            result = list_agent_runs(seadb_api, project_uuid, page, per_page)
+            result = list_agent_runs(seadb_api, project_uuid, page, per_page, include_details=False)
         except Exception as e:
             logger.error(f'Error listing agent runs: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -271,8 +289,10 @@ class AgentRunDetailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI()
-            result = get_agent_run_detail(seadb_api, project_uuid, run_id)
+            seadb_api = SeaDBAPI(username)
+            settings = project.to_dict().get('settings', {})
+            include_details = settings.get('developer_mode', False) and request.GET.get('include_details') == 'true'
+            result = get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=include_details)
         except ValueError as e:
             logger.error(f'Error getting agent run detail: {e}')
             return api_error(status.HTTP_404_NOT_FOUND, str(e))

@@ -5,7 +5,6 @@ import { IconButton, RadioGroup, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { getType } from '@/utils/type-detection';
-import { THOUGHT_PROCESS_TYPE } from '../../../../constants';
 
 import './index.css';
 
@@ -14,8 +13,13 @@ const rawOptions = [
   { value: 'raw', label: gettext('Raw') },
 ];
 
-const ProcessDetails = ({ value, primaryKey }) => {
-  const [isShowDetails, setIsShowDetails] = useState(false);
+const ProcessDetails = ({
+  value,
+  primaryKey,
+  defaultExpandPrimary = false,
+  statisticsPrimaryKey = 'statistics',
+}) => {
+  const [isShowDetails, setIsShowDetails] = useState(defaultExpandPrimary && value?.isPrimaryContainer);
   const [displayType, setDisplayType] = useState('normal');
 
   const toggle = useCallback(() => {
@@ -27,7 +31,7 @@ const ProcessDetails = ({ value, primaryKey }) => {
   const valueType = getType(value);
 
   if (valueType === 'String') {
-    if (primaryKey === THOUGHT_PROCESS_TYPE.STATISTICS.key) {
+    if (primaryKey === statisticsPrimaryKey) {
       const children = value.split('/').map((item, index) => {
         const child = item.split(':');
         return (
@@ -51,10 +55,10 @@ const ProcessDetails = ({ value, primaryKey }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
-    const { isPrimaryContainer, name, icon, key: primaryKey, defaultShowDetails } = value;
-    const orderClassName = classnames('seaqa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
+    const { isPrimaryContainer, name, icon, key: childPrimaryKey, defaultShowDetails } = value;
+    const orderClassName = classnames('seaqa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, childPrimaryKey);
     const arrowClassName = classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails });
-    const contentClassName = classnames('seaqa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
+    const contentClassName = classnames('seaqa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, childPrimaryKey);
 
     return (
       <>
@@ -73,7 +77,12 @@ const ProcessDetails = ({ value, primaryKey }) => {
               <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
             )}
             {children.map((child, childIndex) => (
-              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} defaultShowDetails={defaultShowDetails} />
+              <ProcessDetails
+                value={child}
+                key={childIndex}
+                primaryKey={childPrimaryKey}
+                statisticsPrimaryKey={statisticsPrimaryKey}
+              />
             ))}
           </div>
         )}

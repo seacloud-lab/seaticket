@@ -60,9 +60,11 @@ class AgentAPI {
     return this.req.get(url);
   }
 
-  getAgentRunDetails(projectUuid, runId) {
+  getAgentRunDetails(projectUuid, runId, options = {}) {
+    const { includeDetails = false } = options;
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/`;
-    return this.req.get(url);
+    const params = includeDetails ? { include_details: true } : undefined;
+    return this.req.get(url, { params });
   }
 
   // Agent action operations

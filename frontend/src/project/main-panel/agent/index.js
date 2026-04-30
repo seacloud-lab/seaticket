@@ -151,6 +151,7 @@ const Agent = ({ title, settings, modifySettings }) => {
             onCancelAction={handleCancelAction}
             onUpdateContent={handleUpdateContent}
             enabledAgent={enabledAgent}
+            developerMode={Boolean(settings?.developer_mode)}
           />
         </div>
       </div>

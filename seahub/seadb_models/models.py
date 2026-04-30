@@ -558,6 +558,7 @@ class AgentActionsTable(BaseModel):
     status = MappedColumn('status', PropertyTypes.TEXT)              # pending / confirmed / cancelled / executed / completed
     suggestion_text = MappedColumn('suggestion_text', PropertyTypes.TEXT)
     sources = MappedColumn('sources', PropertyTypes.TEXT)            # JSON array of references used by analysis action
+    details = MappedColumn('details', PropertyTypes.TEXT)            # JSON: structured action trace details (thought process) for tool/action execution
     statistics = MappedColumn('statistics', PropertyTypes.TEXT)      # JSON: {input_tokens, output_tokens, total_tokens, duration_ms}
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     executed_at = MappedColumn('executed_at', PropertyTypes.DATETIME)

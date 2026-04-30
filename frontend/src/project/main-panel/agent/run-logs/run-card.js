@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import ActionItem from './action-item';
 import RunStatisticsDialog from './run-statistics-dialog';
+import ThoughtProcessDialog from './thought-process-dialog';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
@@ -115,6 +116,7 @@ const RunCard = ({
   onConfirmAction,
   onCancelAction,
   onViewContent,
+  developerMode,
 }) => {
   const { id, started_at, items = [], actions = [], events } = run;
   const eventTypes = getUniqueEventTypes(events);
@@ -143,6 +145,7 @@ const RunCard = ({
   const [isExpanded, setIsExpanded] = useState(isCardExpanded);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
+  const [showThoughtProcessDialog, setShowThoughtProcessDialog] = useState(false);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -162,6 +165,16 @@ const RunCard = ({
 
   const handleCloseStatistics = useCallback(() => {
     setShowStatisticsDialog(false);
+  }, []);
+
+  const handleShowThoughtProcess = useCallback((e) => {
+    e.stopPropagation();
+    setShowThoughtProcessDialog(true);
+    setDropdownOpen(false);
+  }, []);
+
+  const handleCloseThoughtProcess = useCallback(() => {
+    setShowThoughtProcessDialog(false);
   }, []);
 
   return (
@@ -211,6 +224,11 @@ const RunCard = ({
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>
+              {developerMode && (
+                <DropdownItem onClick={handleShowThoughtProcess}>
+                  {gettext('Thought process')}
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
           <IconTooltip
@@ -242,6 +260,7 @@ const RunCard = ({
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}
+                    developerMode={developerMode}
                   />
                 ))}
               </div>
@@ -263,6 +282,7 @@ const RunCard = ({
                   onConfirm={onConfirmAction}
                   onCancel={onCancelAction}
                   onViewContent={onViewContent}
+                  developerMode={developerMode}
                 />
               ))}
             </div>
@@ -280,6 +300,9 @@ const RunCard = ({
       }
       {showStatisticsDialog && (
         <RunStatisticsDialog run={run} onToggle={handleCloseStatistics} />
+      )}
+      {showThoughtProcessDialog && (
+        <ThoughtProcessDialog runId={id} onToggle={handleCloseThoughtProcess} />
       )}
     </div>
   );
