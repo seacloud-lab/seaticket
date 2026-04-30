@@ -822,15 +822,15 @@ class AgentActionConfirmView(APIView):
             return None, None, None, f'Email connection {connection_id} not found.'
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        threads = email_seadb_api.get_thread_by_pk(connection_id, thread_id)
-        if not threads:
+        thread = email_seadb_api.get_thread_by_pk(connection_id, thread_id)
+        if not thread:
             return None, None, None, f'Email thread #{thread_id} not found in SeaDB.'
 
         emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
         if not emails:
             return None, None, None, f'No emails found for thread #{thread_id}.'
 
-        return project_connection, threads[0], emails, None
+        return project_connection, thread, emails, None
 
     def _get_discourse_topic_context(self, seadb_api, project_uuid, connection_id, topic_pk):
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)

@@ -16,20 +16,13 @@ class EmailSeaDBAPI:
         self.base_id = base_id
         self.seadb_api = seadb_api or SeaDBAPI(timeout=timeout)
 
-    def get_issue_by_pk(self, connection_id, _pk):
-        """Retrieve issue for the specified _pk."""
-        table_name = EmailTable.gen_table_name(connection_id)
-        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `message_id`, `origin_thread_id` " \
-            f"FROM `{table_name}` WHERE `_pk` = {_pk}"
-        response = self.seadb_api.query_rows(self.base_id, sql)
-        if response and 'results' in response:
-            return response['results']
-        return []
-
     def get_email_by_pk(self, connection_id, _pk):
-        """Retrieve email by _pk (alias for get_issue_by_pk for clarity)."""
-        emails = self.get_issue_by_pk(connection_id, _pk)
-        return emails[0] if emails else None
+        table_name = EmailTable.gen_table_name(connection_id)
+        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `message_id`, `origin_thread_id`, attachments " \
+              f"FROM `{table_name}` WHERE `_pk` = {_pk}"
+        response = self.seadb_api.query_rows(self.base_id, sql)
+        result = response.get('results', [])
+        return result[0] if result else {}
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = EmailTable.gen_table_name(connection_id)
@@ -47,9 +40,8 @@ class EmailSeaDBAPI:
         sql = "SELECT `_pk`, `title`, `linked_ticket` " \
             f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
-        if response and 'results' in response:
-            return response['results']
-        return []
+        result = response.get('results', [])
+        return result[0] if result else {}
 
     def get_threads_by_pks(self, connection_id, _pks):
         _pks_str = ', '.join([
