@@ -8,6 +8,7 @@ import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
+import { isString } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -49,6 +50,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
 
   const addQuoteToggleBtn = useCallback(() => {
+    if (!ref.current || ref.current.querySelector('.email-item-toggle-btn')) return;
     const quotedEmails = ref.current.getElementsByTagName('blockquote');
     if (quotedEmails.length) {
       let qt = quotedEmails[0];
@@ -65,6 +67,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       btn.innerHTML = `<svg t="1751443664495" class="sea-qa-icon-svg" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7016" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
         <path d="M768 512c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 41.6-96 96z m-352 0c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 41.6-96 96z m-352 6.4c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 44.8-96 96z" p-id="7017"></path>
       </svg>`;
+      if (!qt?.parentNode) return;
       qt.parentNode.insertBefore(btn, qtPrev);
       qt.style.display = 'none';
       qtPrev.style.display = 'none';
@@ -111,17 +114,6 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     });
   }, [projectUuid, connection_id, handleReplyEmailSuccess]);
 
-  const removeComments = (node) => {
-    for (let i = node.childNodes.length - 1; i >= 0; i--) {
-      const child = node.childNodes[i];
-      if (child.nodeType === Node.COMMENT_NODE) {
-        node.removeChild(child);
-      } else if (child.nodeType === Node.ELEMENT_NODE) {
-        removeComments(child);
-      }
-    }
-  };
-
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
     let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
@@ -134,10 +126,8 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     if (isHTMLContent) {
       initValue = '<div></div><div></div><div></div>';
       const parsed = new DOMParser().parseFromString(detailContent, 'text/html');
-      let HTMLContentBody = parsed.body;
-      HTMLContentBody.querySelectorAll('style, title').forEach(el => el.remove());
-      removeComments(HTMLContentBody);
-      let quotedContent = HTMLContentBody.outerHTML.slice(6, -7);
+      const body = parsed.body;
+      let quotedContent = body.innerHTML;
       if (quotedContent.startsWith('```')) {
         quotedContent = quotedContent.slice(3,);
         quotedContent = '<div>```</div>' + quotedContent;
@@ -168,23 +158,29 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
 
   const onLinkClick = useCallback((link) => {
+    if (!link || !isString(link)) return;
     if (link.startsWith('mailto:')) {
       const email = link.slice(7);
       openReplyByEmail(email);
       return;
     }
-    window.open(link);
+    window.open(link, '_blank', 'noopener,noreferrer');
   }, [openReplyByEmail]);
 
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
+    let timer = null;
     if (HTMLContent) {
       addQuoteToggleBtn();
     } else {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         addQuoteToggleBtn();
+        timer = null;
       });
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isExpanded, isShowReply]);
 
   useEffect(() => {
