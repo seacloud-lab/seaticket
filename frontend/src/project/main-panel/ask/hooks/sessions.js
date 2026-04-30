@@ -9,7 +9,7 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, localStorageKey, children }) => {
+export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
@@ -83,7 +83,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, loca
       attachments: attachments,
       model: model,
       clear_context: clearContext,
-      stream: settings?.streaming_response,
+      stream: true,
     };
 
     const currentController = new AbortController();
@@ -106,21 +106,12 @@ export const SessionsProvider = ({ projectUuid, workspaceID, settings, api, loca
       delete sendMessageRequestController.current[sessionId];
     };
 
-    if (!settings?.streaming_response) {
-      api.sendChatMessage(params, options).then(res => {
-        eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);
-      }).catch(error => {
-        eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
-      });
-      return;
-    }
-
     api.sendChatMessageByStream(params, options).then((res) => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
     });
-  }, [projectUuid, workspaceID, sessions, settings, api]);
+  }, [projectUuid, sessions, api]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     setSessions(sessions => {

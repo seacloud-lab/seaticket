@@ -40,14 +40,6 @@ const Settings = ({
         />
       )}
       <SwitchSettingsItem
-        title={gettext('Chat')}
-        placeholder={gettext('Streaming response')}
-        tip={gettext('Enable streaming response')}
-        className="mb-4"
-        value={settings.streaming_response || false}
-        onChange={(value, callback) => modifySettings({ streaming_response: value }, callback)}
-      />
-      <SwitchSettingsItem
         title={gettext('Developer mode')}
         placeholder={gettext('Developer mode')}
         tip={gettext('Enable developer mode to show advanced features for development and debugging purposes.')}
