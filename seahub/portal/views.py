@@ -76,7 +76,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None):
 
     has_ticket_access = ext_is_valid or same_org
     is_logged_in = is_authenticated_user or ext_is_valid
-    is_external_user = bool(ext_is_valid and (not is_authenticated_user))
+    # Treat invited users from other orgs as external portal users even when
+    # they also have a normal site login in the current browser.
+    is_external_user = bool(ext_is_valid and not same_org)
 
     if not allow_anonymous:
         if not is_logged_in or (not same_org and not ext_is_valid):
@@ -89,7 +91,12 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None):
     is_anonymous = allow_anonymous and (not has_ticket_access)
 
     if has_ticket_access:
-        username = request.user.username if is_authenticated_user else ext_username
+        if is_external_user:
+            username = ext_username
+        elif is_authenticated_user:
+            username = request.user.username
+        else:
+            username = ext_username
     else:
         username = ''
 
@@ -136,9 +143,6 @@ def portal_login_view(request, project_uuid):
 
 
 def portal_external_logout_view(request, project_uuid):
-    if getattr(request, 'user', None) and request.user.is_authenticated:
-        return redirect(f"/portal/{project_uuid}/")
-
     ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
     if ext_username and ext_is_valid:
         request.session.pop('portal_external_username', None)
