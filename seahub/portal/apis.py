@@ -2,10 +2,11 @@
 import datetime
 import logging
 import json
+from urllib.parse import quote
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.hashers import check_password, make_password
-from django.utils import timezone
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -33,6 +34,9 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_colu
     build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
+from seahub.auth.models import EmailUser
+from seahub.organizations.models import OrgUser
+from seahub.profile.models import Profile
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission
@@ -65,6 +69,31 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+
+
+def _get_portal_team_login_redirect(project_uuid, login_str):
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return None
+
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id == -1:
+        return None
+
+    username = Profile.objects.convert_login_str_to_username((login_str or '').strip())
+    if not username:
+        return None
+
+    user = EmailUser.objects.get_user_by_email(username)
+    if not user or not user.is_active:
+        return None
+
+    if not OrgUser.objects.org_user_exists(org_id, username):
+        return None
+
+    next_url = f'/portal/{project_uuid}/'
+    login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
+    return f'{login_url}?next={quote(next_url)}'
 
 
 class PortalIssuesView(APIView):
@@ -1557,6 +1586,14 @@ class PortalExternalLoginSendCodeView(APIView):
         email = normalize_external_login_email(request.data.get('email'))
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+        
+        team_login_redirect = _get_portal_team_login_redirect(project_uuid, email)
+        if team_login_redirect:
+            return Response({
+                'success': True,
+                'login_type': 'team',
+                'redirect_url': team_login_redirect,
+            })
 
         response_data = {
             'success': True,
