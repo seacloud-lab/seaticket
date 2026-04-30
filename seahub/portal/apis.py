@@ -1468,7 +1468,7 @@ class PortalExternalInvitationsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if _get_portal_team_login_redirect(project_uuid, email):
-            error_msg = _('Cannot invite a team user to the external portal.')
+            error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         if not IS_EMAIL_CONFIGURED:
