@@ -98,7 +98,7 @@ const Ask = ({ title, settings }) => {
 
   return (
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
-      <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} settings={settings} api={chatAPI} >
+      <SessionsProvider projectUuid={projectUuid} api={chatAPI} >
         <DocumentsProvider>
           <Main title={title} settings={settings} />
         </DocumentsProvider>
