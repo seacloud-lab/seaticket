@@ -71,29 +71,24 @@ logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
 
-def _get_portal_team_login_redirect(project_uuid, login_str):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
-    if not project:
-        return None
-
+def is_user_in_the_same_team(project, email):
     org_id = getattr(project.workspace, 'org_id', -1)
     if org_id == -1:
-        return None
+        return False
 
-    username = Profile.objects.convert_login_str_to_username((login_str or '').strip())
+    username = Profile.objects.convert_login_str_to_username((email or '').strip())
     if not username:
-        return None
+        return False
 
     user = EmailUser.objects.get_user_by_email(username)
     if not user or not user.is_active:
-        return None
+        return False
 
     if not OrgUser.objects.org_user_exists(org_id, username):
-        return None
+        return False
+    
+    return True
 
-    next_url = f'/portal/{project_uuid}/'
-    login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
-    return f'{login_url}?next={quote(next_url)}'
 
 
 class PortalIssuesView(APIView):
@@ -1467,7 +1462,7 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if _get_portal_team_login_redirect(project_uuid, email):
+        if is_user_in_the_same_team(project, email):
             error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1590,13 +1585,19 @@ class PortalExternalLoginSendCodeView(APIView):
         email = normalize_external_login_email(request.data.get('email'))
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
-        
-        team_login_redirect = _get_portal_team_login_redirect(project_uuid, email)
-        if team_login_redirect:
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if is_user_in_the_same_team(project, email):
+            next_url = f'/portal/{project_uuid}/'
+            login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
             return Response({
                 'success': True,
                 'login_type': 'team',
-                'redirect_url': team_login_redirect,
+                'redirect_url': f'{login_url}?next={quote(next_url)}',
             })
 
         response_data = {
