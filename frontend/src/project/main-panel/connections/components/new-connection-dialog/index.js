@@ -180,14 +180,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                 <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
               </div>
               <div className='sea-qa-project-new-connection-type'>
-                <div className="sea-qa-project-new-connection-type-left d-flex align-items-center">
-                  <img src={getConnectionIcon(typeOption.type)} alt={typeOption.name} className="sea-qa-project-new-connection-icon" />
+                <div className="d-flex align-items-center">
+                  <img
+                    src={getConnectionIcon(typeOption.type)}
+                    alt={typeOption.name}
+                    className="sea-qa-project-new-connection-icon"
+                    style={{ width: 20, height: 20 }}
+                  />
                   <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
                 </div>
-                {typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && (
-                  <div className="sea-qa-project-new-connection-type-right">
-                    {githubRepositories.length > 0 && <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />}
-                  </div>
+                {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
+                  <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
                 )}
               </div>
             </>
