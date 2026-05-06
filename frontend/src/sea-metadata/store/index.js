@@ -86,7 +86,7 @@ class Store {
       });
       data.view.rows = data.row_ids;
       const loadedCount = rows.length;
-      data.hasMore = loadedCount >= limit;
+      data.hasMore = Boolean(res?.data?.has_more);
       this.data = data;
       this.startIndex += loadedCount;
       if (isFunction(this.dataDidMount)) {
@@ -115,7 +115,7 @@ class Store {
     const linked_records = res?.data?.linked_records || {};
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
-      this.hasMore = false;
+      this.data.hasMore = false;
       return;
     }
     rows = rows.map(r => new Row(r));
@@ -128,7 +128,7 @@ class Store {
       this.data.id_row_map[row._id] = row;
     });
     const loadedCount = rows.length;
-    this.data.hasMore = loadedCount === limit;
+    this.data.hasMore = Boolean(res?.data?.has_more);
     this.data.rowsCount = this.data.row_ids.length;
     this.data.linked_records = { ...this.data.linked_records, ...linked_records };
     this.startIndex = this.startIndex + loadedCount;

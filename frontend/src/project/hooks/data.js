@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useState } from 'react';
 import deepcopy from 'deep-copy';
+import _ from 'lodash';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { EMPTY_TABLE } from '../constants';
 import { shouldReload } from '../utils';
@@ -260,7 +261,7 @@ export const DataProvider = ({
     });
   }, [data, updateData]);
 
-  const getMetadata = useCallback((tableName, { view_id, start, is_reload = false }, api, isBuiltIn = false) => {
+  const getMetadata = useCallback((tableName, { view_id, start, limit, is_reload = false }, api, isBuiltIn = false) => {
     let table = getTableByName(tableName);
     const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
     const view = table[viewMapName][view_id] || {};
@@ -289,11 +290,17 @@ export const DataProvider = ({
       columns.forEach(c => {
         key_column_map[c.key] = c;
       });
-      view_map[view_id] = { ...view, rows: rowIds, columns: columns.map(c => c.key), timestamp: Date.now() };
+      view_map[view_id] = {
+        ...view,
+        rows: rowIds,
+        columns: columns.map(c => c.key),
+        timestamp: Date.now(),
+        has_more: rows.length >= limit,
+      };
       setData(data => {
         const newData = deepcopy(data);
-        let table = newData[tableName] || deepcopy(EMPTY_TABLE);
-        newData[tableName] = { ...table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records };
+        let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
+        newData[tableName] = { ..._table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records };
 
         if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
           const ticketTable = newData[TICKET_TABLE_NAME];
@@ -310,7 +317,7 @@ export const DataProvider = ({
         newData.version = newData.version + 1;
         return newData;
       });
-      return res;
+      return _.merge(res, { data: { has_more: rows.length >= limit } });
     });
 
     if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
@@ -332,6 +339,7 @@ export const DataProvider = ({
             [recordsName]: view.rows.map(rId => table.id_row_map[rId]).filter(Boolean),
             columns: view.columns.map(cKey => table.key_column_map[cKey]).filter(Boolean),
             linked_records: table.linked_records,
+            has_more: view.has_more,
           }
         });
       });
