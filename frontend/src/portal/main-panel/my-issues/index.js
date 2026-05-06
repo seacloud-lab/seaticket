@@ -1,16 +1,27 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { gettext } from '@/constants';
+import { server, gettext, PERMISSION_TYPES } from '@/constants';
 import context from '@/sea-metadata/context';
-import { portalAPI } from '../api';
+import { portalAPI } from '../../api';
 import Issues from '@/project/main-panel/portal-issues/components/issues';
+import Issue from '@/project/main-panel/portal-issues/view/issue';
+import { default as LongTextEditorUtilities } from '@/utils/long-text';
+import { PORTAL_PAGE } from '../../constants';
+import TopBar from '@/project/main-panel/top-bar';
+import { IconButton, CenteredLoading } from '@/components';
+
+import './index.css';
 
 const viewTools = [
   VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
   VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
+const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
+  const [expandIssueID, setExpandIssueId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const currentViewID = useRef(null);
 
   const myIssueViewsData = useMemo(() => ({
     navigation: [
@@ -73,11 +84,9 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
 
   const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-my-issues`, [projectUuid]);
 
-  const [viewID, setViewID] = useState('open');
-
-  const toggleView = useCallback((newViewID) => {
-    setViewID(newViewID);
-  }, []);
+  const longTextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
+    uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)
+  } }), [projectUuid]);
 
   const dataDidMount = useCallback((data) => {
     if (data.view.basic_filters.length !== 2) {
@@ -88,13 +97,71 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
     }
   }, []);
 
+  const openIssue = useCallback((issueID) => {
+    const { search } = window.location;
+    const currentUrlParams = new URLSearchParams(search);
+    currentViewID.current = currentUrlParams.get('view');
+    const basePath = isEditMode ? 'portal-edit' : 'portal';
+    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${issueID}/`;
+    history.replaceState(null, null, url);
+    setExpandIssueId(issueID);
+  }, [isEditMode, projectUuid]);
+
+  const closeIssue = useCallback(() => {
+    const basePath = isEditMode ? 'portal-edit' : 'portal';
+    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/?view=${currentViewID.current || ''} `;
+    history.replaceState(null, null, url);
+    currentViewID.current = null;
+    setExpandIssueId(null);
+  }, []);
+
+  useEffect(() => {
+    const { pathname } = window.location;
+    if (pathname.endsWith('/my-issues/')) {
+      setIsLoading(false);
+      return;
+    }
+    const issueID = pathname.split('/my-issues/')[1].replace('/', '');
+    openIssue(issueID);
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) return (<CenteredLoading />);
+
+  if (expandIssueID) {
+    return (
+      <>
+        <TopBar className="sea-qa-portal-issue-header" >
+          <>
+            <IconButton
+              icon="arrow-down"
+              className="rotate-icon-90 sea-qa-portal-toggle-knowledge-btn"
+              onClick={closeIssue}
+            />
+            <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
+          </>
+        </TopBar>
+        <Issue
+          editorAPI={longTextAPI}
+          projectUuid={projectUuid}
+          issueID={expandIssueID}
+          permission={PERMISSION_TYPES.READ_WRITE}
+          isAdmin={false}
+          projectName={projectName}
+          workspaceID={workspaceID}
+          togglePageSlugId={closeIssue}
+          generatorIssuesContextMenuOptions={() => []}
+        />
+      </>
+    );
+  }
+
   return (
     <Issues
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}
-      permission="rw"
-      viewID={viewID}
+      permission={PERMISSION_TYPES.READ_WRITE}
       api={api}
       localStorageNamePrefix={localStorageNamePrefix}
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
@@ -103,8 +170,8 @@ const MyIssues = ({ projectUuid, projectName, workspaceID }) => {
       canCreateRelatedTickets={false}
       isBuiltInView={true}
       canOpenIssue={false}
-      toggleView={toggleView}
       createContextMenuOptions={() => []}
+      togglePageSlugId={openIssue}
     />
   );
 };

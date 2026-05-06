@@ -1,5 +1,28 @@
 @import url('../project/main-panel/tickets/index.css');
 
+body {
+  --ticket-open-color: #1a7f37;
+  --ticket-close-color: #8250df;
+  --ticket-invalid-color: #59636e;
+  overflow-y: auto;
+}
+
+/* icon color */
+.sea-qa-project-ticket-state-check-circle-stroked-icon {
+  color: var(--ticket-close-color);
+}
+
+.sea-qa-project-ticket-state-dot-circle-stroked-icon,
+.sea-qa-project-ticket-state-loop-dot-icon {
+  color: var(--ticket-open-color);
+  flex-shrink: 0;
+}
+
+.sea-qa-project-ticket-state-circle-invalid-icon {
+  color: var(--ticket-invalid-color);
+  flex-shrink: 0;
+}
+
 .sea-qa-portal {
   display: flex;
   height: 100vh;
@@ -222,43 +245,4 @@
 
 .sea-qa-portal-content .sea-metadata .sea-metadata-view-tools {
   padding-right: 0;
-}
-
-/* Submit ticket form */
-.sea-qa-portal-submit-ticket {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.sea-qa-portal-submit-ticket .form-group {
-  margin-bottom: 20px;
-}
-
-.sea-qa-portal-submit-ticket .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #212529;
-}
-
-.sea-qa-portal-submit-ticket .required-tip {
-  color: #dc3545;
-  margin-left: 4px;
-}
-
-.sea-qa-portal-submit-ticket .form-control {
-  width: 100%;
-}
-
-.sea-qa-portal-submit-ticket .content-editor {
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  min-height: 200px;
-}
-
-.sea-qa-portal-submit-ticket .submit-btns {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
 }

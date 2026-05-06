@@ -49,7 +49,7 @@ def _get_external_session_user(request, project_uuid):
     return ext_username, ext_is_valid
 
 
-def portal_view(request, project_uuid, children_id=None, session_uuid=None):
+def portal_view(request, project_uuid, children_id=None, session_uuid=None, issue_id=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))

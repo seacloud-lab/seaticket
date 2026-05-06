@@ -2,6 +2,7 @@
 .sea-qa-portal-main-panel .sea-qa-project-main-panel-header {
   height: 40px !important;
   padding: 0 16px !important;
+  flex-shrink: 0;
 }
 
 .sea-qa-project-main-panel .sea-qa-project-main-panel-header-content,

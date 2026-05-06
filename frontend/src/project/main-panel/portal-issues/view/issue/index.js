@@ -29,7 +29,7 @@ import { useData, useTags } from '@/project/hooks';
 import { usePortalIssuesMetadata } from '../../hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import Header from '@/project/main-panel/tickets/view/ticket/header';
-import { isObject } from '@/utils/type-detection';
+import { isFunction, isObject } from '@/utils/type-detection';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
@@ -40,7 +40,9 @@ import '@/project/main-panel/tickets/view/ticket/index.css';
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
   canChatWithAI = false,
-  toggleBar, togglePageSlugId,
+  toggleBar = () => {},
+  togglePageSlugId = () => {},
+  generatorIssuesContextMenuOptions: customGeneratorIssuesContextMenuOptions,
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
@@ -155,7 +157,7 @@ const Issue = ({
   const createMoreOptions = useCallback(() => {
     if (!issue) return [];
     const row = issue;
-    let options = generatorIssuesContextMenuOptions({
+    const params = {
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row.id]: row }, columns: allColumns.current },
@@ -178,11 +180,14 @@ const Issue = ({
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
-    });
-    options = options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
-    if (options[0] === 'Divider') {
-      options.shift();
+    };
+    let options = [];
+    if (isFunction(customGeneratorIssuesContextMenuOptions)) {
+      options = customGeneratorIssuesContextMenuOptions(params);
+    } else {
+      options = generatorIssuesContextMenuOptions(params);
     }
+    options = options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
     if (options[options.length - 1] !== 'Divider') {
       options.push('Divider');
     }
@@ -191,10 +196,13 @@ const Issue = ({
       key: 'open_keyboard_shortcuts',
       callback: () => setIsShowKeyboardShortcuts(true),
     });
+    if (options[0] === 'Divider') {
+      options.shift();
+    }
     return options;
   }, [
     issue, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName,
-    createTicket, handleLinkAnExistingTicket,
+    createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions,
   ]);
 
   const onCommentChange = useCallback((value) => {
@@ -458,7 +466,7 @@ const Issue = ({
             isSmallScreen={isSmallScreen}
             comment={issue}
             isShowStatus={true}
-            className="d-none-after"
+            className={classnames({ 'd-none-after': comments.length === 0 })}
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
@@ -471,7 +479,7 @@ const Issue = ({
                 isSmallScreen={isSmallScreen}
                 readonly={!(comment.creator === user.email || isAdmin)}
                 comment={comment}
-                className="d-none-after"
+                className={classnames({ 'd-none-after': index === comments.length - 1 })}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
                 onDelete={(comment) => deleteComment(id, comment.id)}
@@ -504,7 +512,14 @@ const Issue = ({
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton className="mt-4" onChange={handleFiles} />
             <div className="sea-qa-project-ticket-submit-btns ml-2">
-              <StatusToggleButton state={state} substate={substate} comment={comment?.text} disabled={isSubmitting} onChange={toggleState} />
+              <StatusToggleButton
+                state={state}
+                substate={substate}
+                comment={comment?.text}
+                disabled={isSubmitting}
+                useMetadataContext={usePortalIssuesMetadata}
+                onChange={toggleState}
+              />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
                 disabled={!comment.text || isSubmitting}

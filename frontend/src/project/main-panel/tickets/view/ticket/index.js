@@ -557,7 +557,14 @@ const Ticket = ({
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton className="mt-4" onChange={handleFiles} />
             <div className="sea-qa-project-ticket-submit-btns ml-2">
-              <StatusToggleButton state={state} substate={substate} comment={comment?.text} disabled={isSubmitting} onChange={toggleState} />
+              <StatusToggleButton
+                state={state}
+                substate={substate}
+                comment={comment?.text}
+                disabled={isSubmitting}
+                useMetadataContext={useMetadata}
+                onChange={toggleState}
+              />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
                 disabled={!comment.text || isSubmitting}
