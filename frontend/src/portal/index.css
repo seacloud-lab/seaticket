@@ -115,7 +115,7 @@
   height: 40px;
   display: flex;
   align-items: center;
-  /* 191 = 175px (side panel actions width) + 16px (left padding) (.sea-qa-portal-side-panel-actions) */
+  /* 191 = 175px (side panel actions width) + 16px (left padding) */
   padding: 0 191px 0px 16px; 
   border-bottom: 1px solid var(--bs-border-secondary-color);
   justify-content: center;
@@ -123,13 +123,6 @@
 
 .sea-qa-portal-secondary-tabs {
   padding-left: 32px;
-}
-
-.sea-qa-portal-side-panel-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 175px;
 }
 
 .sea-qa-portal-nav-item {
