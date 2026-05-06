@@ -60,7 +60,14 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email })
-    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
+      .then(data => {
+        if (data && data.redirect_url) {
+          window.location.href = data.redirect_url;
+          return null;
+        }
+        return data;
+      });
   }
 
   function showVerifyStep() {
@@ -79,7 +86,8 @@
     }
 
     sendCode(email)
-      .then(() => {
+      .then((data) => {
+        if (!data) return;
         startCountdown(60);
         showMsg(promptCode, sendCodeSuccessMsg);
       })
@@ -126,7 +134,8 @@
     }
 
     sendCode(email)
-      .then(() => {
+      .then((data) => {
+        if (!data) return;
         showVerifyStep();
         startCountdown(60);
         showMsg(promptCode, sendCodeSuccessMsg);

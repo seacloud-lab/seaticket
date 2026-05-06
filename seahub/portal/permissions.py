@@ -98,9 +98,9 @@ class PortalChatPermission(BasePermission):
 
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):
-            return check_same_org_permission(user, project.workspace)
+            if check_same_org_permission(user, project.workspace):
+                return True
 
         if _is_external_member(request, project_uuid):
             return True
-
         return False
