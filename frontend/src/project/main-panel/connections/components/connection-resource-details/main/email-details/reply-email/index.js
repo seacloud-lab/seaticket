@@ -10,6 +10,8 @@ import './index.css';
 const ReplyEmail = ({
   emailTo: propsEmailTo,
   initValue,
+  isHtmlValue,
+  assetURLPrefix,
   onToggle,
   onSubmit,
 }) => {
@@ -68,6 +70,8 @@ const ReplyEmail = ({
       </div>
       <SeaEmailEditor
         value={emailContent}
+        isHtmlValue={isHtmlValue}
+        assetURLPrefix={assetURLPrefix}
         onChange={onReplyChange}
       />
       <div className="sea-ticket-email-replay-op-btns">
