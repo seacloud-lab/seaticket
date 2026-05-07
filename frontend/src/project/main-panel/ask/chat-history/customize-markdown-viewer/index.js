@@ -65,7 +65,7 @@ const CustomizeMarkdownViewer = forwardRef(({ chatId, message, projectUuid, proj
       // Render seaqa-kb-entry as a direct link to the created KB record
       const kbEntryRegex = /<seaqa-kb-entry\s+id=(?:["'])(\d+)(?:["'])\s+title=(?:["'])(.*?)(?:["'])\s*\/>/g;
       value = value.replace(kbEntryRegex, (match, kbId, title) => {
-        const kbUrl = generatorKnowledgeBaseURL({ kb: kbId, workspaceID, projectName });
+        const kbUrl = generatorKnowledgeBaseURL({ kb: { _id: kbId }, workspaceID, projectName });
         return `[${title}](${kbUrl})`;
       });
       aiReplyForCopy = value;
