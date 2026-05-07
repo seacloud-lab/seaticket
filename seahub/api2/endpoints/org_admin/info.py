@@ -17,7 +17,13 @@ from django.db.models import Sum
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.project.models import ProjectIssuesStatistics, Projects
-from seahub.project.utils import convert_cost_to_credit, get_ai_cost_by_org_id
+from seahub.project.utils import (
+    convert_cost_to_credit,
+    get_additional_credits_by_org_id,
+    get_ai_cost_by_org_id,
+    get_ai_credit_by_org_id,
+    get_total_ai_credit_by_org_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +87,9 @@ class OrgAdminInfo(APIView):
         info['active_members'] = active_members
         info['role'] = org_role
         info['issues_usage'] = issues_usage
+        info['ai_monthly_credit'] = get_ai_credit_by_org_id(org_id)
+        info['additional_ai_credit'] = get_additional_credits_by_org_id(org_id)
+        info['ai_credit_limit'] = get_total_ai_credit_by_org_id(org_id)
         info['ai_credit_used'] = round(convert_cost_to_credit(get_ai_cost_by_org_id(org_id)), 0)
 
         return Response(info)

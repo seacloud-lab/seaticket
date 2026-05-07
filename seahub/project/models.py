@@ -952,6 +952,15 @@ class AIUsageStatistics(models.Model):
         ]
 
 
+class AdditionalCredits(models.Model):
+    org_id = models.IntegerField(unique=True, db_index=True)
+    credits = models.FloatField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'additional_credits'
+
+
 class ProjectGithubAppInstallationManager(models.Manager):
     def get_installations_by_project_uuid(self, project_uuid):
         return self.filter(project_uuid=project_uuid)

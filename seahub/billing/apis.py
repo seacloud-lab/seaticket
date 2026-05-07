@@ -1,5 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
+import json
+import redis
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -18,7 +20,7 @@ from seahub.role_permissions.utils import get_available_roles
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 
-from seahub.settings import BILLING_AUTH_TOKEN, MULTI_TENANCY
+from seahub.settings import BILLING_AUTH_TOKEN, MULTI_TENANCY, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, ADDITIONAL_CREDITS_REDIS_CHANNEL
 
 logger = logging.getLogger(__name__)
 
@@ -118,3 +120,45 @@ class BillingOrganizationOperation(APIView):
 
         org_info = get_org_info(org)
         return Response(org_info)
+
+
+class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
+
+    def post(self, request, org_id):
+        org, error = self._validate_and_get_org(request, org_id)
+        if error:
+            return error
+
+        credits = request.data.get('credits')
+        try:
+            credits = float(credits)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'credits invalid.')
+
+        if credits <= 0:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'credits invalid.')
+
+        channel = ADDITIONAL_CREDITS_REDIS_CHANNEL
+        try:
+            redis_conn = redis.Redis(
+                host=REDIS_HOST,
+                port=REDIS_PORT,
+                db=0,
+                password=REDIS_PASSWORD,
+                decode_responses=True,
+            )
+            redis_conn.publish(channel, json.dumps({
+                'operation': 'add_additional_credits',
+                'org_id': int(org.org_id),
+                'credits': credits,
+            }))
+        except Exception as e:
+            logger.error('Failed to publish additional credits to redis, org_id=%s credits=%s error=%s', org.org_id, credits, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to publish additional credits.')
+
+        return Response({
+            'success': True,
+            'org_id': int(org.org_id),
+            'credits': credits,
+        })
+
