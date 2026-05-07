@@ -91,8 +91,8 @@ const ActionItem = React.memo(({
     return <div>{errorContent}</div>;
   };
 
-  // Don't render SUMMARY type action
-  if (type === ACTION_TYPE.SUMMARY) return null;
+  // Don't render SUMMARY and TOOL_CALL type actions
+  if (type === ACTION_TYPE.SUMMARY || type === ACTION_TYPE.TOOL_CALL) return null;
 
   const renderIcon = () => {
     let symbol = ACTION_ICON_MAPPER[type];
