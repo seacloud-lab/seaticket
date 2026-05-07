@@ -147,10 +147,10 @@ const ResourceDetailsDialog = ({
           <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
+          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={getIssue} />
+          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={getIssue} />
         )}
       </ModalBody>
     </Modal>
