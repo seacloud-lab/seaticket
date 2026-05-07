@@ -462,6 +462,23 @@ class TestPortalLogoView:
         assert resp['Cache-Control'] == 'max-age=604800, public'
         assert resp['ETag'] == '"abc123"'
 
+    def test_get_uses_relative_portal_logo_path(self, factory, real_project):
+        project = real_project
+        request = factory.get(f"/portal-logo/{project.uuid}/logo.png")
+        metadata = {
+            'ContentType': 'image/png',
+            'ETag': '"abc123"',
+            'LastModified': datetime(2026, 5, 1, tzinfo=timezone.utc),
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid), logo_filename='logo.png')
+
+        assert resp.status_code == 200
+        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo.png')
+        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo.png')
+
 
 @pytest.mark.django_db
 class TestPortalIssueTrashAPIView:

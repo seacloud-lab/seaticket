@@ -18,6 +18,8 @@ def gen_s3_file_path(project_uuid, file_path):
 def gen_s3_web_crawl_file_path(project_uuid, site_id, filename):
     return f"{project_uuid}/{site_id}/" + filename
 
+def gen_portal_logo_file_path(filename):
+    return f'attachments/portal-logo/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
@@ -88,7 +90,7 @@ def get_s3_file_metadata(s3_file_path):
 
 def upload_portal_logo_file_to_s3(project_uuid, file, username):
     filename = os.path.basename(file.name)
-    final_file_path = f'attachments/portal-logo/{project_uuid}/{filename}'
+    final_file_path = gen_portal_logo_file_path(filename)
     s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
 
     # Calculate local MD5 first

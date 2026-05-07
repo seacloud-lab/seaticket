@@ -25,7 +25,8 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, get_file_from_s3, get_file_metadata_from_s3, upload_portal_logo_file_to_s3
+from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, get_file_from_s3, get_file_metadata_from_s3, \
+    upload_portal_logo_file_to_s3, gen_portal_logo_file_path
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -141,7 +142,7 @@ class PortalLogoView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        file_path = f'attachments/portal-logo/{project_uuid}/{logo_filename}'
+        file_path = gen_portal_logo_file_path(logo_filename)
         try:
             metadata = get_file_metadata_from_s3(project_uuid, file_path)
             file = get_file_from_s3(project_uuid, file_path)
@@ -347,7 +348,7 @@ class PortalIssuesView(APIView):
 
             if file_urls:
                 try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(portal_issue_pk))
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
@@ -745,7 +746,7 @@ class PortalIssueView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -957,7 +958,7 @@ class PortalIssueCommentsView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1069,7 +1070,7 @@ class PortalIssueCommentView(APIView):
          # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
