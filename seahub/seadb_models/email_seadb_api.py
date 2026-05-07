@@ -127,7 +127,7 @@ class EmailSeaDBAPI:
 
                 total_content_size = 0
                 for email in threads_emails_map.get(thread_data['_pk'], []):
-                    content = email.get('content', '')
+                    content = email.get('content', '') or ''
                     total_content_size += len(content)
 
                     # break if exceed maximum content size
