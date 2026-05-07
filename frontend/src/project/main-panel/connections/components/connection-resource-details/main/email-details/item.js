@@ -139,7 +139,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     } else {
       initValue = '\n\n\n';
       initValue += `${tip}\n`;
-      initValue += `> ${detailContent.replace(/\n/g, '\n> ')}`;
+      initValue += `> ${detailContent.replace(/\r\n/g, '\n\n​').replace(/\n/g, '\n> ')}`;
     }
 
     let assetURLPrefix = generatorConnectionAssetURLPrefix(projectUuid, connection_id);
