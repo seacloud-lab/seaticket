@@ -25,7 +25,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
     onPageChange(value);
   };
 
-  const { projectUuid } = window.app.pageOptions;
+  const { projectUuid, isExternalUser } = window.app.pageOptions;
 
   return (
     <div className="sea-qa-portal-side-panel">
@@ -44,7 +44,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
           />
         </div>
         <div>
-          {isAnonymous ? (
+          {isAnonymous && (
             <Button
               color="outline-primary"
               onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
@@ -53,7 +53,20 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             >
               {gettext('Login')}
             </Button>
-          ) : <Account />}
+          )}
+          {!isAnonymous && isExternalUser && (
+            <Button
+              color="outline-primary"
+              onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
+              title={gettext('Log out')}
+              size="sm"
+            >
+              {gettext('Log out')}
+            </Button>
+          )}
+          {!isAnonymous && !isExternalUser && (
+            <Account />
+          )}
         </div>
       </div>
     </div>
