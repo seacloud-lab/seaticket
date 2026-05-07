@@ -1,7 +1,7 @@
 .option-editor-content {
   max-height: 200px;
   overflow: auto;
-  padding: 8px;
+  padding: 0 12px;
 }
 
 .option-editor-add-search-result {
