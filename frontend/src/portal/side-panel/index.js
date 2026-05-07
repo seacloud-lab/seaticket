@@ -4,6 +4,7 @@ import { gettext, siteRoot } from '@/constants';
 import { CustomizeTabs } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
 import Account from '@/components/account';
+import ExternalUserAccount from '@/components/account/external-user-account';
 
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const primaryTabs = isAnonymous
@@ -54,19 +55,8 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
               {gettext('Login')}
             </Button>
           )}
-          {!isAnonymous && isExternalUser && (
-            <Button
-              color="outline-primary"
-              onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
-              title={gettext('Log out')}
-              size="sm"
-            >
-              {gettext('Log out')}
-            </Button>
-          )}
-          {!isAnonymous && !isExternalUser && (
-            <Account />
-          )}
+          {!isAnonymous && isExternalUser && <ExternalUserAccount />}
+          {!isAnonymous && !isExternalUser && <Account />}
         </div>
       </div>
     </div>
