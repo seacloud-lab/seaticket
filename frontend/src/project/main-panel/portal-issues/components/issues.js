@@ -117,10 +117,10 @@ const Issues = ({
           allColumns.current = columns;
           return {
             data: {
+              ...res?.data,
               rows,
               columns,
               linked_records,
-              error_msg: res?.data?.error_msg,
             }
           };
         });

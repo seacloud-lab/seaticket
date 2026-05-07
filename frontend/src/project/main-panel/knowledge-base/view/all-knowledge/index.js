@@ -55,7 +55,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
-          return { data: { rows, columns } };
+          return { data: { ...res?.data, rows, columns } };
         });
       },
       getViews: () => getTableViews(KB_TABLE_NAME, () => knowledgeBaseAPI.listViews(projectUuid)),

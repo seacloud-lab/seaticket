@@ -174,10 +174,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           }
           return {
             data: {
+              ...res?.data,
               rows,
               columns: columns,
               linked_records,
-              error_msg: res?.data?.error_msg,
             }
           };
         });
