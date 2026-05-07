@@ -7,7 +7,7 @@ import { isObject } from '@/utils/type-detection';
 import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 import { Attachments } from '../../../components';
 import CustomizeMarkdownViewer from '../../customize-markdown-viewer';
-import { CHAT_MESSAGE_TYPE } from '../../../constants';
+import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
@@ -30,16 +30,37 @@ const getToolRetryChildren = (retries = []) => {
     }));
 };
 
-const generatorUserMessage = (name, messageInfo = {}, props) => {
+const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildren = false } = {}) => {
   const { attachments, message, raw } = messageInfo || {};
+  const messageValue = message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null;
+  const messageNode = flattenLeafChildren ? {
+    name: gettext('Message'),
+    value: messageValue,
+    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+  } : {
+    name: gettext('Message'),
+    children: [
+      {
+        value: messageValue,
+        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+      },
+    ],
+  };
 
   const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
   if (!hasAttachments) {
+    if (flattenLeafChildren) {
+      return {
+        name,
+        children: [messageNode]
+      };
+    }
+
     return {
       name,
       children: [
         {
-          value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
+          value: messageValue,
           formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
         }
       ]
@@ -49,22 +70,19 @@ const generatorUserMessage = (name, messageInfo = {}, props) => {
   let userMessage = {
     name,
     children: [
-      {
-        name: gettext('Message'),
-        children: [
-          {
-            value: message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null,
-            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
-          },
-        ]
-      }, {
+      messageNode, {
         name: gettext('Attachments'),
-        children: [
-          {
-            value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-            formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-          },
-        ]
+        ...(flattenLeafChildren ? {
+          value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+          formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+        } : {
+          children: [
+            {
+              value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+              formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+            },
+          ]
+        })
       },
     ],
   };
@@ -107,7 +125,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       TaskInfo.push(generatorUserMessage(gettext('User input'), user_input, customizeMDProps));
 
       value.push({
-        name: gettext('Task step'),
+        ...THOUGHT_PROCESS_TYPE.TASK_STEP,
         children: TaskInfo
       });
     }
@@ -116,7 +134,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     if (hasOwnProperty(propsValue, 'context') && Array.isArray(propsValue?.context) && propsValue?.context.length > 0) {
       const contextValue = propsValue?.context;
       value.push({
-        name: gettext('Context'),
+        ...THOUGHT_PROCESS_TYPE.CONTEXT,
         children: contextValue.map(record => {
           return {
             name: (
@@ -129,21 +147,17 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               </>
             ),
             children: [
-              generatorUserMessage(gettext('User message'), record.user_input, customizeMDProps),
+              generatorUserMessage(gettext('User message'), record.user_input, customizeMDProps, { flattenLeafChildren: true }),
               {
                 name: gettext('Assistant response'),
                 children: record.assistant_response.length <= 1 ? [
                   {
                     name: gettext('Answer'),
-                    children: [
-                      {
-                        value: {
-                          [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
-                          [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
-                        },
-                        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-                      }
-                    ]
+                    value: {
+                      [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
+                      [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
+                    },
+                    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
                   return {
@@ -157,9 +171,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                         {')'}
                       </>
                     ),
-                    children: [
-                      { value: responseContent }
-                    ]
+                    value: responseContent
                   };
                 })
               }
@@ -172,7 +184,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     // action
     if (Array.isArray(propsValue.actions) && propsValue.actions.length > 0) {
       value.push({
-        name: gettext('Action steps'),
+        ...THOUGHT_PROCESS_TYPE.ACTION_STEPS,
         children: propsValue.actions.map((action, stepNumber) => {
           let otherInfos = [
             action.error ? {
@@ -344,7 +356,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         });
       }
       value.push({
-        name: gettext('Answer generation'),
+        ...THOUGHT_PROCESS_TYPE.ANSWER_GENERATION,
         children: finalAnswerValue
       });
     }
@@ -355,19 +367,18 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       const { token_usage, time_usage } = statistics;
       let staticValue = [];
       if (time_usage) {
-        staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0 } s (${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0 } s, ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0 } s)`);
+        staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0} s / ${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0} s / ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0} s`);
       }
       if (token_usage) {
-        staticValue.push({
-          name: `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0})`,
-          children: [
-            `${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0})`,
-            `${gettext('Answer generation')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0})`
-          ]
-        });
+        staticValue.push(
+          `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0}) /
+          ${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0}) /
+          ${gettext('Answer generation')}: ${token_usage.total_tokens?.answer_generation || 0} (↑${token_usage.input_tokens?.answer_generation || 0}, ↓${token_usage.output_tokens?.answer_generation || 0})
+          `
+        );
       }
       value.push({
-        name: gettext('Statistics'),
+        ...THOUGHT_PROCESS_TYPE.STATISTICS,
         children: staticValue
       });
     }
