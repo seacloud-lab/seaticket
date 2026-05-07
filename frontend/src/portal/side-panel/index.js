@@ -1,7 +1,10 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import { gettext, siteRoot } from '@/constants';
-import { CustomizeTabs, Icon } from '@/components';
+import { CustomizeTabs } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
+import Account from '@/components/account';
+import ExternalUserAccount from '@/components/account/external-user-account';
 
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const primaryTabs = isAnonymous
@@ -23,7 +26,7 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
     onPageChange(value);
   };
 
-  const { isEditMode, projectUuid, isExternalUser, username } = window.app.pageOptions;
+  const { projectUuid, isExternalUser } = window.app.pageOptions;
 
   return (
     <div className="sea-qa-portal-side-panel">
@@ -41,27 +44,19 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
             onChange={onPrimaryTabChange}
           />
         </div>
-        <div className="sea-qa-portal-side-panel-actions">
-          {!isEditMode && isAnonymous && (
-            <div
-              className="sea-qa-portal-nav-item"
+        <div>
+          {isAnonymous && (
+            <Button
+              color="outline-primary"
               onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
-              title={gettext('Log in')}
+              title={gettext('Login')}
+              size="sm"
             >
-              <Icon symbol="support-portal" className="sea-qa-portal-nav-item-icon" />
-              <span className="sea-qa-portal-nav-item-name">{gettext('Log in')}</span>
-            </div>
+              {gettext('Login')}
+            </Button>
           )}
-          {!isEditMode && isExternalUser && !!username && (
-            <div
-              className="sea-qa-portal-nav-item"
-              onClick={() => { window.location.href = siteRoot + `portal-external/logout/${projectUuid}/`; }}
-              title={gettext('Log out')}
-            >
-              <Icon symbol="logout" className="sea-qa-portal-nav-item-icon" />
-              <span className="sea-qa-portal-nav-item-name">{gettext('Log out')}</span>
-            </div>
-          )}
+          {!isAnonymous && isExternalUser && <ExternalUserAccount />}
+          {!isAnonymous && !isExternalUser && <Account />}
         </div>
       </div>
     </div>
