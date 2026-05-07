@@ -2,18 +2,24 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, ButtonGroup, } from 'reactstrap';
 import { TICKET_STATE } from '../../../constants';
 import { Icon, OptionEditor } from '@/components';
-import { useMetadata } from '../../../hooks';
 import { gettext } from '@/constants';
 
 import './index.css';
 
-const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, comment, onChange }) => {
+const StatusToggleButton = ({
+  state: oldState,
+  substate: oldSubState,
+  useMetadataContext,
+  disabled,
+  comment,
+  onChange,
+}) => {
   const [state, setState] = useState('');
   const [substate, setSubState] = useState('');
   const [isShowPopover, setIsShowPopover] = useState(false);
   const downBtn = useRef(null);
 
-  const { substatesData } = useMetadata();
+  const { substatesData } = useMetadataContext();
 
   const openOptions = useMemo(() => {
     return substatesData.rows
