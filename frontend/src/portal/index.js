@@ -160,7 +160,7 @@ const Portal = () => {
 
 
   if (needPasswordState) {
-    const displayName = portalName || projectName || 'Portal';
+    const displayName = portalName || projectName;
     return (
       <I18nextProvider i18n={i18n}>
         <div className="sea-qa-portal">

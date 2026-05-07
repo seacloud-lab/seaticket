@@ -12,7 +12,7 @@
           {% if portal_logo %}
           <img src="{{ portal_logo }}" alt="" class="login-panel-logo" width="48" height="48">
           {% endif %}
-          <div class="portal-login-title text-truncate" title="{{ portal_name|default:project_name }}">{{ portal_name|default:project_name }}</div>
+          <div class="portal-login-title text-truncate" title="{{ portal_name|default:project_name }} - {% trans 'Portal' %}">{{ portal_name|default:project_name }} - {% trans "Portal" %}</div>
         </div>
       </div>
       <div class="login-form-wrapper">
