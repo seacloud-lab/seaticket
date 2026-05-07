@@ -51,10 +51,11 @@ const ProcessDetails = ({ value, primaryKey }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
-    const { isPrimaryContainer, name, icon, key: primaryKey } = value;
+    const { isPrimaryContainer, name, icon, key: primaryKey, thirdKey } = value;
     const orderClassName = classnames('sea-qa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
     const arrowClassName = classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails });
     const contentClassName = classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
+    const defaultShowDetails = thirdKey === 'unordered-list';
 
     return (
       <>
@@ -67,13 +68,13 @@ const ProcessDetails = ({ value, primaryKey }) => {
           {isPrimaryContainer && <IconButton icon="arrow-down" className={arrowClassName} />}
         </div>
 
-        {isShowDetails && (
+        {(isShowDetails || defaultShowDetails) && (
           <div className={contentClassName}>
             {hasRawChildren && (
               <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
             )}
             {children.map((child, childIndex) => (
-              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} />
+              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} thirdKey={thirdKey} />
             ))}
           </div>
         )}
