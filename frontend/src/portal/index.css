@@ -115,6 +115,24 @@ body {
   font-size: 16px;
 }
 
+.sea-qa-portal-side-panel-custom-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sea-qa-portal-side-panel-custom-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .sea-qa-portal-side-panel-header h3 {
   margin: 0;
   font-size: 16px;

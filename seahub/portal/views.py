@@ -38,6 +38,8 @@ def _get_portal_settings(project):
         'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
         'password': portal_settings.get('password'),
         'streaming_response': streaming_response,
+        'portal_name': portal_settings.get('portal_name', ''),
+        'portal_logo': portal_settings.get('portal_logo', ''),
     }
 
 
@@ -88,6 +90,8 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             return render(request, 'portal_login.html', {
                 'project_uuid': project_uuid,
                 'project_name': project.name,
+                'portal_name': portal_settings.get('portal_name', ''),
+                'portal_logo': portal_settings.get('portal_logo', ''),
                 'media_url': MEDIA_URL,
             })
 
@@ -118,6 +122,8 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'enable_password_protection': enable_password_protection,
             'show_kb_in_portal': show_kb_in_portal,
             'streaming_response': streaming_response,
+            'portal_name': portal_settings.get('portal_name', ''),
+            'portal_logo': portal_settings.get('portal_logo', ''),
         },
     }
     if not is_logged_in or (not same_org and not ext_is_valid):
@@ -142,9 +148,12 @@ def portal_login_view(request, project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
+    portal_settings = _get_portal_settings(project)
     return render(request, 'portal_login.html', {
         'project_uuid': project_uuid,
         'project_name': project.name,
+        'portal_name': portal_settings.get('portal_name', ''),
+        'portal_logo': portal_settings.get('portal_logo', ''),
         'media_url': MEDIA_URL,
     })
 
@@ -197,6 +206,8 @@ def portal_anonymous_validate(request, project_uuid):
             'portal': {
                 'allow_anonymous': allow_anonymous,
                 'enable_password_protection': enable_password_protection,
+                'portal_name': portal_settings.get('portal_name', ''),
+                'portal_logo': portal_settings.get('portal_logo', ''),
             },
             'need_password': True,
         }
@@ -296,7 +307,9 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
         'is_external_user': False,
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
-            'streaming_response': streaming_response
+            'streaming_response': streaming_response,
+            'portal_name': portal_settings.get('portal_name', ''),
+            'portal_logo': portal_settings.get('portal_logo', ''),
         },
     }
     return render(request, 'portal_view_react.html', return_dict)

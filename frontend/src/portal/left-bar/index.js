@@ -5,12 +5,14 @@ import { Icon } from '../../components';
 import { gettext } from '@/constants';
 import Settings from '../main-panel/settings';
 import UserManagement from '../main-panel/user-management';
+import PortalCustomizationDialog from './portal-customization-dialog';
 
 import './index.css';
 
-const LeftBar = () => {
+const LeftBar = ({ portalName, portalLogo, onPortalUpdate }) => {
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [isShowInvite, setIsShowInvite] = useState(false);
+  const [isShowCustomization, setIsShowCustomization] = useState(false);
 
   const openSettings = useCallback(() => {
     setIsShowSettings(true);
@@ -27,6 +29,14 @@ const LeftBar = () => {
     setIsShowInvite(false);
   }, []);
 
+  const openCustomization = useCallback(() => {
+    setIsShowCustomization(true);
+  }, []);
+
+  const closeCustomization = useCallback(() => {
+    setIsShowCustomization(false);
+  }, []);
+
   const goToApp = useCallback(() => {
     const { projectUuid } = window.app.pageOptions;
     window.open(`/portal/${projectUuid}/`, '_blank');
@@ -35,6 +45,13 @@ const LeftBar = () => {
   return (
     <>
       <div className="sea-qa-portal-left-bar">
+        <div
+          className="sea-qa-portal-left-bar-item"
+          onClick={openCustomization}
+          title={gettext('Portal customization')}
+        >
+          <Icon symbol="edit" />
+        </div>
         <div
           className="sea-qa-portal-left-bar-item"
           onClick={openSettings}
@@ -57,6 +74,14 @@ const LeftBar = () => {
           <Icon symbol="manage-members" />
         </div>
       </div>
+      {isShowCustomization && (
+        <PortalCustomizationDialog
+          toggle={closeCustomization}
+          portalName={portalName}
+          portalLogo={portalLogo}
+          onUpdate={onPortalUpdate}
+        />
+      )}
       {isShowSettings && (
         <Modal isOpen={true} toggle={closeSettings} className="portal-settings-dialog">
           <CustomModalHeader toggle={closeSettings}>{gettext('Settings')}</CustomModalHeader>

@@ -16,7 +16,7 @@ import './index.css';
 
 const {
   projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
-  isAnonymous, workspaceID, isExternalUser,
+  isAnonymous, workspaceID, isExternalUser, portalName: initialPortalName, portalLogo: initialPortalLogo,
 } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
@@ -34,6 +34,9 @@ const Portal = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+
+  const [portalName, setPortalName] = useState(initialPortalName || '');
+  const [portalLogo, setPortalLogo] = useState(initialPortalLogo || '');
 
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
@@ -101,6 +104,11 @@ const Portal = () => {
     return () => window.removeEventListener('portal:kb-visibility', handler);
   }, []);
 
+  const onPortalUpdate = useCallback((name, logo) => {
+    setPortalName(name);
+    setPortalLogo(logo);
+  }, []);
+
   const onPasswordSubmit = useCallback(async (event) => {
     event.preventDefault();
     if (!passwordInput.trim()) {
@@ -152,12 +160,13 @@ const Portal = () => {
 
 
   if (needPasswordState) {
+    const displayName = portalName || projectName || 'Portal';
     return (
       <I18nextProvider i18n={i18n}>
         <div className="sea-qa-portal">
           <div className="portal-password-panel">
             <div className="portal-password-header">
-              <div className="portal-password-title">{projectName || 'Portal'}</div>
+              <div className="portal-password-title">{displayName}</div>
             </div>
             <form method="post" action={`/portal/${projectUuid}/anonymous-validate/`} onSubmit={onPasswordSubmit}>
               <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
@@ -197,9 +206,9 @@ const Portal = () => {
           <CenteredLoading />
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true}>
-            {isEditMode && <LeftBar />}
+            {isEditMode && <LeftBar portalName={portalName} portalLogo={portalLogo} onPortalUpdate={onPortalUpdate} />}
             <div className="sea-qa-portal-body">
-              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
+              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser} portalName={portalName} portalLogo={portalLogo}/>
               <MainPanel
                 isEditMode={isEditMode}
                 activePage={activePage}

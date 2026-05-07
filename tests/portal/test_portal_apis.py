@@ -1,4 +1,6 @@
 import json
+from datetime import datetime, timezone
+from io import BytesIO
 from unittest.mock import Mock, patch
 
 import pytest
@@ -6,6 +8,7 @@ import pytest
 from seahub.portal.apis import (
     PortalKnowledgeBaseRecordsView,
     PortalKnowledgeBaseViewsView,
+    PortalLogoView,
     PortalSettingsView,
     PortalTagsView,
     PortalIssuesView,
@@ -436,6 +439,28 @@ class TestPortalSettingsView:
         assert portal_settings.get('enable_password_protection') is False
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
+
+
+@pytest.mark.django_db
+class TestPortalLogoView:
+
+    def test_get_success_includes_image_content_type(self, factory, real_project):
+        project = real_project
+        request = factory.get(f"/portal-logo/{project.uuid}/logo.png")
+        metadata = {
+            'ContentType': 'image/png',
+            'ETag': '"abc123"',
+            'LastModified': datetime(2026, 5, 1, tzinfo=timezone.utc),
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
+                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')):
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid), logo_filename='logo.png')
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'] == 'image/png'
+        assert resp['Cache-Control'] == 'max-age=604800, public'
+        assert resp['ETag'] == '"abc123"'
 
 
 @pytest.mark.django_db

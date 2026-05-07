@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
-<title>{{ project_name }} - {% trans "Portal" %}</title>
+<title>{{ portal.portal_name|default:project_name }} - {% trans "Portal" %}</title>
 {% progressive_web_app_meta %}
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 {% if request.is_mobile or request.is_tablet %}
@@ -54,6 +54,8 @@
             needPassword: {% if need_password %}true{% else %}false{% endif %},
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
+            portalName: '{{ portal.portal_name|escapejs }}',
+            portalLogo: '{{ portal.portal_logo|escapejs }}',
         }
      };
 </script>
