@@ -14,11 +14,6 @@
   margin-right: 6px;
 }
 
-.sea-qa-ai-thought-process .sea-qa-ai-thought-process-order .sea-qa-icon-btn .sea-qa-icon-svg-arrow-down {
-  height: 10px !important;
-  width: 10px !important;
-}
-
 .sea-qa-ai-thought-process .sea-qa-ai-thought-process-content {
   width: 100%;
   display: flex;
@@ -28,7 +23,7 @@
 
 .sea-qa-ai-thought-process .sea-qa-ai-thought-process-content-value {
   padding: 16px;
-  background-color: #F5F5F5;
+  background-color: #fbfbfa;
   border-radius: 3px;
 }
 
@@ -75,6 +70,8 @@
 .sea-qa-ai-thought-process-order.primary-order-container > .sea-qa-ai-thought-process-order-title {
   font-size: 16px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
 }
 
 .sea-qa-ai-thought-process-order.primary-order-container > .sea-qa-ai-thought-process-order-title > .sea-qa-icon-svg {

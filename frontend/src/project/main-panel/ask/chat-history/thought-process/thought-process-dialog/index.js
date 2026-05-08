@@ -97,29 +97,6 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
   return userMessage;
 };
 
-const getFormatValueByActionSteps = (value = []) => {
-  return value.map(item => {
-    if (item.key !== THOUGHT_PROCESS_TYPE.ACTION_STEPS.key || !Array.isArray(item.children)) {
-      return item;
-    }
-
-    return {
-      ...item,
-      children: item.children.map(child => {
-        if (!Array.isArray(child.children)) return child;
-
-        return {
-          ...child,
-          children: child.children.map(grandChild => ({
-            ...grandChild,
-            thirdKey: 'unordered-list',
-          })),
-        };
-      }),
-    };
-  });
-};
-
 const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...props }) => {
   const [isLoading, setLoading] = useState(true);
   const [value, setValue] = useState([]);
@@ -406,8 +383,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       });
     }
 
-    const formatValue = getFormatValueByActionSteps(value);
-    setValue(formatValue);
+    setValue(value);
     setLoading(false);
   }, [propsValue]);
 
