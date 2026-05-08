@@ -12,6 +12,8 @@ const { projectUuid } = window.app.pageOptions;
 const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate }) => {
   const [name, setName] = useState(portalName || '');
   const [logoUrl, setLogoUrl] = useState(portalLogo || '');
+  const [previewLogoUrl, setPreviewLogoUrl] = useState('');
+  const [pendingLogoFile, setPendingLogoFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
@@ -19,42 +21,38 @@ const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate })
   useEffect(() => {
     setName(portalName || '');
     setLogoUrl(portalLogo || '');
+    setPendingLogoFile(null);
+    setPreviewLogoUrl('');
   }, [portalName, portalLogo]);
+
+  useEffect(() => {
+    return () => {
+      if (previewLogoUrl) {
+        URL.revokeObjectURL(previewLogoUrl);
+      }
+    };
+  }, [previewLogoUrl]);
 
   const openFileInput = useCallback(() => {
     fileInputRef.current && fileInputRef.current.click();
   }, []);
 
-  const onFileChange = useCallback(async (e) => {
+  const onFileChange = useCallback((e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       toaster.danger(gettext('Please upload an image file'));
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const res = await portalAPI.uploadPortalLogo(projectUuid, file);
-      const uploadedUrl = res.data?.file_url || res.data?.url || '';
-      if (uploadedUrl) {
-        setLogoUrl(uploadedUrl);
-      } else {
-        toaster.danger(gettext('Upload failed'));
-      }
-    } catch (error) {
-      const serverMessage = error.response?.data?.error_msg;
-      if (serverMessage) {
-        toaster.danger(serverMessage);
-      } else {
-        toaster.danger(gettext('Upload failed'));
-      }
-    } finally {
-      setIsUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      return;
+    }
+
+    setPendingLogoFile(file);
+    setPreviewLogoUrl(URL.createObjectURL(file));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   }, []);
 
@@ -62,29 +60,58 @@ const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate })
     setName(e.target.value);
   }, []);
 
-  const onSave = useCallback(() => {
-    if (isSaving) return;
+  const onSave = useCallback(async () => {
+    if (isSaving || isUploading) return;
     setIsSaving(true);
 
-    portalAPI.updateSettings(projectUuid, {
-      portal_name: name,
-      portal_logo: logoUrl,
-    }).then(() => {
+    try {
+      let nextLogoUrl = logoUrl;
+      if (pendingLogoFile) {
+        setIsUploading(true);
+        try {
+          const res = await portalAPI.uploadPortalLogo(projectUuid, pendingLogoFile);
+          nextLogoUrl = res.data?.file_url || res.data?.url || '';
+          if (!nextLogoUrl) {
+            toaster.danger(gettext('Upload failed'));
+            return;
+          }
+        } catch (error) {
+          const serverMessage = error.response?.data?.error_msg;
+          toaster.danger(serverMessage || gettext('Upload failed'));
+          return;
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
+      await portalAPI.updateSettings(projectUuid, {
+        portal_name: name,
+        portal_logo: nextLogoUrl,
+      });
+
+      setLogoUrl(nextLogoUrl);
+      setPendingLogoFile(null);
+      setPreviewLogoUrl('');
       window.app.pageOptions.portalName = name;
-      window.app.pageOptions.portalLogo = logoUrl;
-      onUpdate(name, logoUrl);
+      window.app.pageOptions.portalLogo = nextLogoUrl;
+      onUpdate(name, nextLogoUrl);
       toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
       toggle();
-    }).catch((error) => {
+    } catch (error) {
       toaster.danger(gettext('Save failed'));
-    }).finally(() => {
+    } finally {
+      setIsUploading(false);
       setIsSaving(false);
-    });
-  }, [name, logoUrl, isSaving, toggle, onUpdate]);
+    }
+  }, [name, logoUrl, pendingLogoFile, isSaving, isUploading, toggle, onUpdate]);
 
   const onRemoveLogo = useCallback(() => {
+    setPendingLogoFile(null);
+    setPreviewLogoUrl('');
     setLogoUrl('');
   }, []);
+
+  const displayedLogoUrl = previewLogoUrl || logoUrl;
 
   return (
     <Modal isOpen={true} toggle={toggle} className="portal-customization-dialog">
@@ -94,9 +121,9 @@ const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate })
           <div className="portal-customization-section">
             <label className="portal-customization-label">{gettext('Logo')}</label>
             <div className="portal-customization-logo-area">
-              {logoUrl ? (
+              {displayedLogoUrl ? (
                 <div className="portal-customization-logo-preview">
-                  <img src={logoUrl} alt="" />
+                  <img src={displayedLogoUrl} alt="" />
                 </div>
               ) : (
                 <div className="portal-customization-logo-placeholder">
@@ -108,16 +135,16 @@ const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate })
                   color="outline-primary"
                   size="sm"
                   onClick={openFileInput}
-                  disabled={isUploading}
+                  disabled={isSaving || isUploading}
                 >
-                  {isUploading ? gettext('Uploading...') : logoUrl ? gettext('Change logo') : gettext('Upload logo')}
+                  {isUploading ? gettext('Uploading...') : displayedLogoUrl ? gettext('Change logo') : gettext('Upload logo')}
                 </Button>
-                {logoUrl && (
+                {displayedLogoUrl && (
                   <Button
                     color="outline-secondary"
                     size="sm"
                     onClick={onRemoveLogo}
-                    disabled={isUploading}
+                    disabled={isSaving || isUploading}
                   >
                     {gettext('Remove')}
                   </Button>
