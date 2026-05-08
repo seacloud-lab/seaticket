@@ -1,5 +1,4 @@
 from django.core.cache import cache
-from email.utils import formatdate
 
 from seahub.utils import normalize_cache_key
 from seahub.auth.models import EmailUser
@@ -81,25 +80,3 @@ def is_user_in_the_same_team(project, email):
         return False
     
     return True
-
-def etag_matches(request_etag_header, response_etag):
-    if not request_etag_header or not response_etag:
-        return False
-
-    candidate_etags = [etag.strip() for etag in request_etag_header.split(',')]
-    normalized_response_etag = response_etag[2:] if response_etag.startswith('W/') else response_etag
-    for candidate in candidate_etags:
-        if candidate == '*':
-            return True
-        normalized_candidate = candidate[2:] if candidate.startswith('W/') else candidate
-        if normalized_candidate == normalized_response_etag:
-            return True
-    return False
-
-def build_portal_logo_cache_response(response, metadata):
-    response['Cache-Control'] = 'public, max-age=86400'
-    response['ETag'] = metadata.get('ETag', '')
-    last_modified = metadata.get('LastModified')
-    if last_modified:
-        response['Last-Modified'] = formatdate(int(last_modified.timestamp()), usegmt=True)
-    return response
