@@ -555,10 +555,16 @@ class TestTicketCommentAPIView:
         request.user = project_creator
         now = datetime.datetime(2025, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
         ticket = {'_pk': 1}
-        ticket_comment = {'_pk': 2, 'modified_time': (now - datetime.timedelta(seconds=5)).isoformat()}
+        comment = {
+            '_pk': 2,
+            'modified_time': (now - datetime.timedelta(seconds=5)).isoformat(),
+            'content': 'hi',
+            'number': 2,
+            
+        }
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
-                patch('seahub.tickets.tickets.get_ticket_comment_by_pk', return_value=ticket_comment), \
+                patch('seahub.tickets.tickets.get_ticket_comment_by_pk', return_value=comment), \
                 patch('seahub.tickets.tickets.timezone.now', return_value=now):
             resp = TicketCommentAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1', comment_id='1')
         assert resp.status_code == 429

@@ -34,6 +34,7 @@ import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialo
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
@@ -109,11 +110,15 @@ const Issue = ({
     });
 
     return portalAPI.modifyPortalIssue(projectUuid, issueID, serverData).then(res => {
-      const newIssue = issue._update(data);
-      handleUpdateRowsCacheData(issueID, data);
+      let update = { ...data };
+      if (hasOwnProperty(res.data.update, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT)) {
+        update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT] = res.data.update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT];
+      }
+      const newIssue = issue._update(update);
+      handleUpdateRowsCacheData(issueID, update);
       setIssue(deepCopy(newIssue));
 
-      return data;
+      return update;
     });
   }, [projectUuid, issue, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
@@ -127,9 +132,10 @@ const Issue = ({
 
   const modifyComment = useCallback((issueID, commentID, comment) => {
     return portalAPI.modifyPortalIssueComment(projectUuid, issueID, commentID, comment).then(res => {
-      let newIssue = issue._modify_comment(commentID, comment);
+      let newIssue = issue._modify_comment(commentID, res.data.comment);
+      const newComment = newIssue._get_comment(commentID);
       setIssue(deepCopy(newIssue));
-      return newIssue;
+      return newComment;
     });
   }, [projectUuid, issue]);
 
@@ -261,8 +267,8 @@ const Issue = ({
   }, [issue, modifyIssue]);
 
   const onContentChange = useCallback((content, callback) => {
-    modifyIssue(issue.id, { content }).then(res => {
-      callback && callback();
+    modifyIssue(issue.id, { content }).then(update => {
+      callback && callback('', update.content);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -331,8 +337,8 @@ const Issue = ({
   }, [issue, comment, modifyIssue, onSubmitComment]);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
-    modifyComment(issue.id, commentID, content).then(res => {
-      callback && callback();
+    modifyComment(issue.id, commentID, content).then(newComment => {
+      callback && callback('', newComment?.content);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);

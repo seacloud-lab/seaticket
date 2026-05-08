@@ -32,6 +32,7 @@ import Header from './header';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useNotification } from '@/components/common/notification/hooks/notification';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
@@ -129,6 +130,9 @@ const Ticket = ({
       if (isAutoUpdateParticipants && !participants.includes(user.email)) {
         update['participants'] = [...participants, user.email];
       }
+      if (hasOwnProperty(res.data.update, PREDEFINED_TICKET_COLUMN_NAME.CONTENT)) {
+        update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT] = res.data.update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT];
+      }
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));
@@ -139,7 +143,7 @@ const Ticket = ({
         setActivities(prevActivities => [...prevActivities, ...newActivities]);
       }
 
-      return data;
+      return update;
     });
   }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
@@ -154,19 +158,20 @@ const Ticket = ({
 
   const createComment = useCallback((ticketID, comment) => {
     return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, comment).then(res => {
-      let newTicket = ticket._create_comment(res.data.ticket_comment);
+      let newTicket = ticket._create_comment(res.data.comment);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
-      return res.data.ticket_comment;
+      return res.data.comment;
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
   const modifyComment = useCallback((ticketID, commentID, comment) => {
     return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, commentID, comment).then(res => {
-      let newTicket = ticket._modify_comment(commentID, comment);
+      const newTicket = ticket._modify_comment(commentID, res.data.comment);
+      const newComment = newTicket._get_comment(commentID);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
-      return newTicket;
+      return newComment;
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
@@ -303,8 +308,8 @@ const Ticket = ({
   }, [ticket, modifyTicket]);
 
   const onContentChange = useCallback((content, callback) => {
-    modifyTicket(ticket.id, { content }).then(res => {
-      callback && callback();
+    modifyTicket(ticket.id, { content }).then(update => {
+      callback && callback('', update.content);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -390,8 +395,8 @@ const Ticket = ({
   }, [ticket, comment, modifyTicket, onSubmitComment]);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
-    modifyComment(ticket.id, commentID, content).then(res => {
-      callback && callback();
+    modifyComment(ticket.id, commentID, content).then(newComment => {
+      callback && callback('', newComment?.content);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);

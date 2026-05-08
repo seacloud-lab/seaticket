@@ -346,7 +346,7 @@ class KnowledgeBaseAPIView(APIView):
 
         send_knowledge_base_update_msg(project_uuid)
 
-        return Response({'row': row}, status=status.HTTP_200_OK)
+        return Response({'update': row}, status=status.HTTP_200_OK)
 
 
 class KnowledgeBasesTrashAPIView(APIView):

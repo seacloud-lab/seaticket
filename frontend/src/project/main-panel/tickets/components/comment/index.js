@@ -87,10 +87,10 @@ const Comment = ({
     event.stopPropagation();
 
     setIsShowCommentLoading(true);
-    onModify && onModify(content, (error) => {
+    onModify && onModify(content, (error, newContent) => {
       if (!error) {
         isChangeRef.current = false;
-        setContent(content?.text);
+        setContent(newContent);
         setIsShowEditor(false);
         setIsShowCommentLoading(false);
         return;

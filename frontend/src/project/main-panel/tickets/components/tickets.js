@@ -157,7 +157,7 @@ const Tickets = ({
         if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
           delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
         }
-        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste));
+        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData });
       };
     }
     if (isFunction(api.modifyRows)) {
