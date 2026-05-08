@@ -183,6 +183,10 @@
 }
 
 /* answer_generation - primary-content-container */
+.sea-qa-ai-thought-process-content.primary-content-container.answer_generation > .sea-qa-ai-thought-process-order > .sea-qa-icon-btn {
+  display: none;
+}
+
 .sea-qa-ai-thought-process-content.primary-content-container.answer_generation > .sea-qa-ai-thought-process-content {
   padding-top: 8px;
 }

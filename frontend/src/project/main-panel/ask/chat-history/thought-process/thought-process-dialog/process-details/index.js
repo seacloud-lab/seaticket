@@ -51,15 +51,15 @@ const ProcessDetails = ({ value, primaryKey }) => {
   const hasName = hasOwnProperty(value, 'name');
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
-    const { isPrimaryContainer, name, icon, key: primaryKey } = value;
+    const { isPrimaryContainer, name, icon, key: primaryKey, defaultShowDetails } = value;
     const orderClassName = classnames('sea-qa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
     const arrowClassName = classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails });
     const contentClassName = classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
-    const defaultShowDetails = !isPrimaryContainer; // Not displaying details at the first level
 
     return (
       <>
         <div className={orderClassName} onClick={toggle} >
+          {!isPrimaryContainer && <IconButton icon="arrow-down" className={arrowClassName} />}
           <span className="sea-qa-ai-thought-process-order-title">
             {isPrimaryContainer && <Icon symbol={icon} />}
             <span>{name}</span>
@@ -73,7 +73,7 @@ const ProcessDetails = ({ value, primaryKey }) => {
               <RadioGroup value={displayType} options={rawOptions} onChange={setDisplayType} />
             )}
             {children.map((child, childIndex) => (
-              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} />
+              <ProcessDetails value={child} key={childIndex} primaryKey={primaryKey} defaultShowDetails={defaultShowDetails} />
             ))}
           </div>
         )}

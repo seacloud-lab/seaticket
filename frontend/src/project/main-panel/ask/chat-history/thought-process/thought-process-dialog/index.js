@@ -33,18 +33,10 @@ const getToolRetryChildren = (retries = []) => {
 const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildren = false } = {}) => {
   const { attachments, message, raw } = messageInfo || {};
   const messageValue = message ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: message } : null;
-  const messageNode = flattenLeafChildren ? {
+  const messageNode = {
     name: gettext('Message'),
     value: messageValue,
     formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
-  } : {
-    name: gettext('Message'),
-    children: [
-      {
-        value: messageValue,
-        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
-      },
-    ],
   };
 
   const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
@@ -72,17 +64,8 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     children: [
       messageNode, {
         name: gettext('Attachments'),
-        ...(flattenLeafChildren ? {
-          value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-          formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-        } : {
-          children: [
-            {
-              value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-              formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-            },
-          ]
-        })
+        value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+        formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
       },
     ],
   };
@@ -95,6 +78,42 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     ];
   }
   return userMessage;
+};
+
+const getFormatValue = (value = []) => {
+  return value.map(item => {
+    if (item.key === THOUGHT_PROCESS_TYPE.CONTEXT.key || item.key === THOUGHT_PROCESS_TYPE.ACTION_STEPS.key) {
+      return {
+        ...item,
+        children: item.children.map(child => {
+          if (!Array.isArray(child.children)) return child;
+
+          return {
+            ...child,
+            children: child.children.map(grandChild => ({
+              ...grandChild,
+              defaultShowDetails: true,
+            })),
+          };
+        }),
+      };
+    }
+
+    if (item.key === THOUGHT_PROCESS_TYPE.ANSWER_GENERATION.key) {
+      return {
+        ...item,
+        children: item.children.map(child => {
+          if (!Array.isArray(child.children)) return child;
+
+          return {
+            ...child,
+            defaultShowDetails: true,
+          };
+        }),
+      };
+    }
+    return item;
+  });
 };
 
 const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...props }) => {
@@ -328,12 +347,8 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       if (result) {
         finalAnswerValue.push({
           name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
-          children: [
-            {
-              value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
-              formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
-            }
-          ]
+          value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
+          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
         });
       }
       if (finalAnswerRetryChildren.length > 0) {
@@ -383,7 +398,8 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
       });
     }
 
-    setValue(value);
+    const formatValue = getFormatValue(value);
+    setValue(formatValue);
     setLoading(false);
   }, [propsValue]);
 
