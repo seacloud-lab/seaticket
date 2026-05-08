@@ -103,13 +103,13 @@ class PortalLogoView(APIView):
     authentication_classes = ()
     permission_classes = ()
 
-    def get(self, request, project_uuid, logo_filename):
+    def get(self, request, project_uuid):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        file_path = gen_portal_logo_file_path(logo_filename)
+        file_path = gen_portal_logo_file_path()
         try:
             metadata = get_file_metadata_from_s3(project_uuid, file_path)
             file = get_file_from_s3(project_uuid, file_path)
@@ -1455,16 +1455,15 @@ class PortalSettingsView(APIView):
         elif enable_password_protection is not None:
             portal_settings.pop('password', None)
 
-        # remove portal logo
+        project_settings['portal'] = portal_settings
+        project.settings = json.dumps(project_settings)
+        project.save(update_fields=['settings'])
+
         if portal_logo == '':
             try:
                 delete_file_from_s3(project_uuid, gen_portal_logo_file_path())
             except Exception as e:
                 logger.error(e)
-
-        project_settings['portal'] = portal_settings
-        project.settings = json.dumps(project_settings)
-        project.save(update_fields=['settings'])
 
         return Response({'success': True})
 

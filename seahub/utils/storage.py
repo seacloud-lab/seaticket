@@ -102,7 +102,7 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
 
     # ETag Cache Detection: Skip upload if ETag matches
     if metadata and metadata.get('ETag') == local_etag:
-        return f'/portal-logo/{project_uuid}/{PORTAL_LOGO_OBJECT_NAME}?v={version}'
+        return f'/portal-logo/{project_uuid}/?v={version}'
 
     # Upload only if necessary
     file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
@@ -125,7 +125,7 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
             except Exception as e:
                 logger.error(f"Failed to remove temp file: {e}")
 
-    return f'/portal-logo/{project_uuid}/{PORTAL_LOGO_OBJECT_NAME}?v={version}'
+    return f'/portal-logo/{project_uuid}/?v={version}'
 
 
 def check_file_exists_from_s3(s3_file_path):

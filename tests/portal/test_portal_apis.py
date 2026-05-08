@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from seahub.project.models import Projects
 from seahub.portal.apis import (
     PortalKnowledgeBaseRecordsView,
     PortalKnowledgeBaseViewsView,
@@ -444,7 +445,7 @@ class TestPortalSettingsView:
         project = real_project
         settings_dict = json.loads(project.settings) if project.settings else {}
         settings_dict['portal'] = {
-            'portal_logo': f'/portal-logo/{project.uuid}/logo?v=1',
+            'portal_logo': f'/portal-logo/{project.uuid}/?v=1',
         }
         project.settings = json.dumps(settings_dict)
         project.save(update_fields=['settings'])
@@ -466,14 +467,14 @@ class TestPortalSettingsView:
         project = real_project
         settings_dict = json.loads(project.settings) if project.settings else {}
         settings_dict['portal'] = {
-            'portal_logo': f'/portal-logo/{project.uuid}/logo?v=1',
+            'portal_logo': f'/portal-logo/{project.uuid}/?v=1',
         }
         project.settings = json.dumps(settings_dict)
         project.save(update_fields=['settings'])
 
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
-            data={'portal_logo': f'/portal-logo/{project.uuid}/logo?v=2'},
+            data={'portal_logo': f'/portal-logo/{project.uuid}/?v=2'},
             format='json'
         )
         request.user = project_creator
@@ -484,13 +485,29 @@ class TestPortalSettingsView:
         assert resp.status_code == 200
         delete_mock.assert_not_called()
 
+    def test_post_portal_logo_save_failed_does_not_delete_logo_file(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': ''},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch.object(Projects, 'save', side_effect=Exception('boom')), \
+                patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            with pytest.raises(Exception, match='boom'):
+                PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        delete_mock.assert_not_called()
+
 
 @pytest.mark.django_db
 class TestPortalLogoView:
 
     def test_get_success_includes_image_content_type(self, factory, real_project):
         project = real_project
-        request = factory.get(f"/portal-logo/{project.uuid}/logo.png")
+        request = factory.get(f"/portal-logo/{project.uuid}/")
         metadata = {
             'ContentType': 'image/png',
             'ETag': '"abc123"',
@@ -499,7 +516,7 @@ class TestPortalLogoView:
 
         with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
                 patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')):
-            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid), logo_filename='logo.png')
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
         assert resp['Content-Type'] == 'image/png'
@@ -508,7 +525,7 @@ class TestPortalLogoView:
 
     def test_get_uses_relative_portal_logo_path(self, factory, real_project):
         project = real_project
-        request = factory.get(f"/portal-logo/{project.uuid}/logo.png")
+        request = factory.get(f"/portal-logo/{project.uuid}/")
         metadata = {
             'ContentType': 'image/png',
             'ETag': '"abc123"',
@@ -517,11 +534,11 @@ class TestPortalLogoView:
 
         with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata) as metadata_mock, \
                 patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
-            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid), logo_filename='logo.png')
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo.png')
-        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo.png')
+        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
 
 
 @pytest.mark.django_db

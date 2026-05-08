@@ -62,7 +62,7 @@ urlpatterns = [
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoUploadView.as_view(), name='api-v1-portal-logo'),
-    re_path(r'^portal-logo/(?P<project_uuid>[-0-9a-f]{36})/(?P<logo_filename>[^/]+)$', PortalLogoView.as_view(), name='portal-logo'),
+    re_path(r'^portal-logo/(?P<project_uuid>[-0-9a-f]{36})/$', PortalLogoView.as_view(), name='portal-logo'),
 
 
     # portal issues API
