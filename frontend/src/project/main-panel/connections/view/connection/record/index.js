@@ -68,6 +68,15 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const row = getRow(connectionTableName, childrenPageSlugId);
     return row;
   }, [connection, childrenPageSlugId, connectionTableName, getRow]);
+  const linkedTicketTools = useMemo(() => {
+    if (!record) return [];
+    const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
+    const isRw = permission === PERMISSION_TYPES.READ_WRITE;
+    return [
+      isRw && generateCreateRelatedTicketOption({ row, columns, connection }, () => setTicketDialogOpen(true)),
+      isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
+    ];
+  }, [record, connection, permission, columns, childrenPageSlugId]);
   const tools = useMemo(() => {
     if (!record) return [];
     const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
@@ -80,8 +89,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         toggleBar([BAR_TYPE.CHAT]);
       }),
       isRw && generateFindRelatedIssuesOption({ row, connection }, () => setIsShowRelatedIssuesDialog(true)),
-      isRw && generateCreateRelatedTicketOption({ row, columns, connection }, () => setTicketDialogOpen(true)),
-      isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
+      ...linkedTicketTools,
       { key: 'divider' },
       generateOpenOriginalPageOption({ row, columns, connection }),
       generateCopyOriginalLinkOption({ row, columns, connection }),
@@ -123,7 +131,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       return acc;
     }, []);
     return _tools;
-  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, updateAttachments, toggleBar]);
+  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools, updateAttachments, toggleBar]);
 
   const title = useMemo(() => {
     if (record && record.title) return record.title;
@@ -154,6 +162,8 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       linkedRecords: connectionLinkedUpdate
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
+        setRecord({ ...record, [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket.id });
+        linkedTicketTitle.current = ticket.title;
         callback && callback();
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -161,7 +171,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         callback && callback(true);
       });
     });
-  }, [title, columns, childrenPageSlugId, connection, modifyRowLink]);
+  }, [title, columns, childrenPageSlugId, connection, record, modifyRowLink]);
 
   const updateResource = useCallback(({ record, columns, linked_ticket_title }) => {
     linkedTicketTitle.current = linked_ticket_title;
@@ -318,6 +328,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
                 tagsData={tagsData}
                 onChange={handleOthersChange}
                 isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+                linkedTicketTools={linkedTicketTools}
               />
             </div>
           )}

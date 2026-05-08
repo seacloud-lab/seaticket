@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import { CustomizeLabel } from '@/components';
+import { Dropdown, DropdownToggle } from 'reactstrap';
+import { CustomizeLabel, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { gettext } from '@/constants';
 import { ResourceDetailsDialog } from '@/project/components';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
@@ -12,9 +13,13 @@ const LinkedTicket = ({
   ticketID,
   title,
   className,
+  isReadonly,
+  linkedTicketTools,
   getTicket,
 }) => {
   const [isShowTicketInDialog, setIsShowTicketInDialog] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
   const isValid = ticketID && title;
 
   return (
@@ -26,7 +31,45 @@ const LinkedTicket = ({
             <span className="link-item-name" title={title} onClick={() => setIsShowTicketInDialog(true)}>{title}</span>
           </div>
         ) : (
-          <div className="tip-default">{gettext('No linked ticket')}</div>
+          <>
+            {!isReadonly && Array.isArray(linkedTicketTools) && linkedTicketTools.length > 0 ? (
+              <>
+                <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+                  <DropdownToggle
+                    tag="div"
+                    className="cursor-pointer tip-default"
+                    title={gettext('Create related ticket or link an existing ticket')}
+                    aria-label={gettext('Create related ticket or link an existing ticket')}
+                    data-toggle="dropdown"
+                    aria-expanded={isMoreMenuOpen}
+                    isOpen={isMoreMenuOpen}
+                  >
+                    {gettext('No linked ticket')}
+                  </DropdownToggle>
+                  <CustomizeDropdownMenu className="position-fixed">
+                    {linkedTicketTools.map((tool, index) => {
+                      if (tool.key === 'divider' || tool === 'Divider') {
+                        return <CustomizeDropdownItem key={index} divider />;
+                      }
+                      return (
+                        <CustomizeDropdownItem
+                          key={tool.key}
+                          onClick={() => {
+                            tool.callback && tool.callback();
+                            setIsMoreMenuOpen(false);
+                          }}
+                        >
+                          {tool.label}
+                        </CustomizeDropdownItem>
+                      );
+                    })}
+                  </CustomizeDropdownMenu>
+                </Dropdown>
+              </>
+            ) : (
+              <div className="tip-default">{gettext('No linked ticket')}</div>
+            )}
+          </>
         )}
       </div>
       {isShowTicketInDialog && (

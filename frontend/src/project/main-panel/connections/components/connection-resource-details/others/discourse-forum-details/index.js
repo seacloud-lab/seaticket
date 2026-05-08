@@ -12,6 +12,7 @@ const DiscourseForumDetails = ({
   isReadonly,
   linkedTicketTitle,
   projectUuid,
+  linkedTicketTools,
   onChange,
 }) => {
   const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
@@ -30,6 +31,8 @@ const DiscourseForumDetails = ({
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}
         title={linkedTicketTitle}
         projectUuid={projectUuid}
+        isReadonly={isReadonly}
+        linkedTicketTools={linkedTicketTools}
       />
     </>
   );

@@ -14,6 +14,7 @@ const EmailDetails = ({
   linkedTicketTitle,
   projectUuid,
   tagsData,
+  linkedTicketTools,
   onChange,
 }) => {
   const tagsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
@@ -40,6 +41,8 @@ const EmailDetails = ({
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}
         title={linkedTicketTitle}
         projectUuid={projectUuid}
+        isReadonly={isReadonly}
+        linkedTicketTools={linkedTicketTools}
       />
     </>
   );
