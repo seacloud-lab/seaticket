@@ -445,7 +445,7 @@ class TestPortalSettingsView:
         project = real_project
         settings_dict = json.loads(project.settings) if project.settings else {}
         settings_dict['portal'] = {
-            'portal_logo': f'/portal-logo/{project.uuid}/?v=1',
+            'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
         }
         project.settings = json.dumps(settings_dict)
         project.save(update_fields=['settings'])
@@ -467,14 +467,14 @@ class TestPortalSettingsView:
         project = real_project
         settings_dict = json.loads(project.settings) if project.settings else {}
         settings_dict['portal'] = {
-            'portal_logo': f'/portal-logo/{project.uuid}/?v=1',
+            'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
         }
         project.settings = json.dumps(settings_dict)
         project.save(update_fields=['settings'])
 
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
-            data={'portal_logo': f'/portal-logo/{project.uuid}/?v=2'},
+            data={'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=2'},
             format='json'
         )
         request.user = project_creator
@@ -507,7 +507,7 @@ class TestPortalLogoView:
 
     def test_get_success_includes_image_content_type(self, factory, real_project):
         project = real_project
-        request = factory.get(f"/portal-logo/{project.uuid}/")
+        request = factory.get(f"/api/v1/portal/{project.uuid}/logo/")
         metadata = {
             'ContentType': 'image/png',
             'ETag': '"abc123"',
@@ -525,7 +525,7 @@ class TestPortalLogoView:
 
     def test_get_uses_relative_portal_logo_path(self, factory, real_project):
         project = real_project
-        request = factory.get(f"/portal-logo/{project.uuid}/")
+        request = factory.get(f"/api/v1/portal/{project.uuid}/logo/")
         metadata = {
             'ContentType': 'image/png',
             'ETag': '"abc123"',

@@ -63,10 +63,39 @@ logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
 
-class PortalLogoUploadView(APIView):
+class PortalLogoView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
+
+    def initialize_request(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.authentication_classes = ()
+            self.permission_classes = ()
+        return super().initialize_request(request, *args, **kwargs)
+
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        file_path = gen_portal_logo_file_path()
+        try:
+            metadata = get_file_metadata_from_s3(project_uuid, file_path)
+            file = get_file_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
+        response['Cache-Control'] = 'max-age=604800, public'
+        response['ETag'] = metadata.get('ETag', '')
+        last_modified = metadata.get('LastModified')
+        response['Last-Modified'] = formatdate(int(last_modified.timestamp()), usegmt=True)
+
+        return response
 
     @require_org_context
     def post(self, request, project_uuid):
@@ -97,34 +126,6 @@ class PortalLogoUploadView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'file_url': file_url}, status=status.HTTP_201_CREATED)
-
-
-class PortalLogoView(APIView):
-    authentication_classes = ()
-    permission_classes = ()
-
-    def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        file_path = gen_portal_logo_file_path()
-        try:
-            metadata = get_file_metadata_from_s3(project_uuid, file_path)
-            file = get_file_from_s3(project_uuid, file_path)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = metadata.get('ETag', '')
-        last_modified = metadata.get('LastModified')
-        response['Last-Modified'] = formatdate(int(last_modified.timestamp()), usegmt=True)
-
-        return response
 
 
 class PortalIssuesView(APIView):
