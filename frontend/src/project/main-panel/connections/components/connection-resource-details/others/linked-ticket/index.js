@@ -37,6 +37,7 @@ const LinkedTicket = ({
                 <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
                   <DropdownToggle
                     tag="div"
+                    role="button"
                     className="cursor-pointer tip-default"
                     title={gettext('Create related ticket or link an existing ticket')}
                     aria-label={gettext('Create related ticket or link an existing ticket')}
@@ -47,10 +48,7 @@ const LinkedTicket = ({
                     {gettext('No linked ticket')}
                   </DropdownToggle>
                   <CustomizeDropdownMenu className="position-fixed">
-                    {linkedTicketTools.map((tool, index) => {
-                      if (tool.key === 'divider' || tool === 'Divider') {
-                        return <CustomizeDropdownItem key={index} divider />;
-                      }
+                    {linkedTicketTools.map((tool) => {
                       return (
                         <CustomizeDropdownItem
                           key={tool.key}

@@ -75,7 +75,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     return [
       isRw && generateCreateRelatedTicketOption({ row, columns, connection }, () => setTicketDialogOpen(true)),
       isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
-    ];
+    ].filter(Boolean);
   }, [record, connection, permission, columns, childrenPageSlugId]);
   const tools = useMemo(() => {
     if (!record) return [];
