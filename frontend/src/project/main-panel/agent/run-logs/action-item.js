@@ -130,6 +130,13 @@ const ActionItem = React.memo(({
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
 
     switch (type) {
+      case ACTION_TYPE.EVENTS:
+        return (
+          <div className="action-content action-content-events">
+            <div className="action-label">{gettext('Events')}</div>
+            {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
+          </div>
+        );
       case ACTION_TYPE.ANALYSIS:
         return (
           <div className="action-content action-content-analysis">
