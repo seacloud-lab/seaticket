@@ -25,7 +25,7 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, get_file_from_s3, get_file_metadata_from_s3, \
+from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, get_file_from_s3, get_file_metadata_from_s3, \
     upload_portal_logo_file_to_s3, gen_portal_logo_file_path
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
@@ -38,28 +38,14 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_colu
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from email.utils import formatdate
 from seahub.knowledge_base.models import KnowledgeBaseViews
-from seahub.auth.models import EmailUser
-from seahub.organizations.models import OrgUser
-from seahub.profile.models import Profile
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission
 from seahub.portal.models import ProjectExternalUser
-from seahub.portal.utils import (
-    PORTAL_EXTERNAL_LOGIN_CODE_TTL,
-    PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN,
-    PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT,
-    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL,
-    clear_portal_external_login_code,
-    clear_portal_external_login_state,
-    get_portal_external_login_code_key,
-    get_portal_external_login_cooldown_key,
-    get_portal_external_login_fail_key,
-    get_portal_external_login_lock_key,
-    incr_portal_external_login_fail,
-    is_portal_external_login_locked,
-    normalize_external_login_email,
-)
+from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
+    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
+    get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -75,25 +61,6 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
-
-
-def is_user_in_the_same_team(project, email):
-    org_id = getattr(project.workspace, 'org_id', -1)
-    if org_id == -1:
-        return False
-
-    username = Profile.objects.convert_login_str_to_username((email or '').strip())
-    if not username:
-        return False
-
-    user = EmailUser.objects.get_user_by_email(username)
-    if not user or not user.is_active:
-        return False
-
-    if not OrgUser.objects.org_user_exists(org_id, username):
-        return False
-    
-    return True
 
 
 class PortalLogoUploadView(APIView):
@@ -1487,6 +1454,13 @@ class PortalSettingsView(APIView):
                 portal_settings['password'] = cryptor.encode(password)
         elif enable_password_protection is not None:
             portal_settings.pop('password', None)
+
+        # remove portal logo
+        if portal_logo == '':
+            try:
+                delete_file_from_s3(project_uuid, gen_portal_logo_file_path())
+            except Exception as e:
+                logger.error(e)
 
         project_settings['portal'] = portal_settings
         project.settings = json.dumps(project_settings)

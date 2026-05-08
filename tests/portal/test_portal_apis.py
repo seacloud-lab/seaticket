@@ -440,6 +440,50 @@ class TestPortalSettingsView:
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
 
+    def test_post_portal_logo_cleared_deletes_current_logo_file(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'portal_logo': f'/portal-logo/{project.uuid}/logo?v=1',
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': ''},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        delete_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+
+    def test_post_portal_logo_same_file_path_does_not_delete_current_logo(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'portal_logo': f'/portal-logo/{project.uuid}/logo?v=1',
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': f'/portal-logo/{project.uuid}/logo?v=2'},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        delete_mock.assert_not_called()
+
 
 @pytest.mark.django_db
 class TestPortalLogoView:

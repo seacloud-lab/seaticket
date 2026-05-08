@@ -9,6 +9,7 @@ from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 
 logger = logging.getLogger(__name__)
+PORTAL_LOGO_OBJECT_NAME = 'logo'
 
 
 def gen_s3_file_path(project_uuid, file_path):
@@ -18,7 +19,7 @@ def gen_s3_file_path(project_uuid, file_path):
 def gen_s3_web_crawl_file_path(project_uuid, site_id, filename):
     return f"{project_uuid}/{site_id}/" + filename
 
-def gen_portal_logo_file_path(filename):
+def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
     return f'attachments/portal-logo/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
@@ -89,8 +90,7 @@ def get_s3_file_metadata(s3_file_path):
 
 
 def upload_portal_logo_file_to_s3(project_uuid, file, username):
-    filename = os.path.basename(file.name)
-    final_file_path = gen_portal_logo_file_path(filename)
+    final_file_path = gen_portal_logo_file_path()
     s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
 
     # Calculate local MD5 first
@@ -102,10 +102,10 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
 
     # ETag Cache Detection: Skip upload if ETag matches
     if metadata and metadata.get('ETag') == local_etag:
-        return f'/portal-logo/{project_uuid}/{filename}?v={version}'
+        return f'/portal-logo/{project_uuid}/{PORTAL_LOGO_OBJECT_NAME}?v={version}'
 
     # Upload only if necessary
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + filename
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
 
     try:
@@ -125,7 +125,7 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
             except Exception as e:
                 logger.error(f"Failed to remove temp file: {e}")
 
-    return f'/portal-logo/{project_uuid}/{filename}?v={version}'
+    return f'/portal-logo/{project_uuid}/{PORTAL_LOGO_OBJECT_NAME}?v={version}'
 
 
 def check_file_exists_from_s3(s3_file_path):
