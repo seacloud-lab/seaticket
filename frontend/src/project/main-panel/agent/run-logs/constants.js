@@ -13,6 +13,7 @@ const ACTION_STATUS = {
 
 const ACTION_TYPE = {
   THOUGHT: 'thought',
+  EVENTS: 'events',
   ANALYSIS: 'analysis',
   TOOL_CALL: 'tool_call',
   SUGGESTION: 'suggestion',
@@ -21,6 +22,7 @@ const ACTION_TYPE = {
 };
 
 const ACTION_ICON_MAPPER = {
+  [ACTION_TYPE.EVENTS]: 'eye',
   [ACTION_TYPE.ANALYSIS]: 'analysis',
   [ACTION_TYPE.SUGGESTION]: 'suggestion',
   [ACTION_TYPE.ERROR]: 'close'

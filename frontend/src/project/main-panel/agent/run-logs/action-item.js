@@ -91,8 +91,8 @@ const ActionItem = React.memo(({
     return <div>{errorContent}</div>;
   };
 
-  // Don't render SUMMARY type action
-  if (type === ACTION_TYPE.SUMMARY) return null;
+  // Don't render SUMMARY and TOOL_CALL type actions
+  if (type === ACTION_TYPE.SUMMARY || type === ACTION_TYPE.TOOL_CALL) return null;
 
   const renderIcon = () => {
     let symbol = ACTION_ICON_MAPPER[type];
@@ -130,6 +130,13 @@ const ActionItem = React.memo(({
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
 
     switch (type) {
+      case ACTION_TYPE.EVENTS:
+        return (
+          <div className="action-content action-content-events">
+            <div className="action-label">{gettext('Events')}</div>
+            {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
+          </div>
+        );
       case ACTION_TYPE.ANALYSIS:
         return (
           <div className="action-content action-content-analysis">

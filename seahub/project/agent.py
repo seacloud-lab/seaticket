@@ -301,7 +301,7 @@ class AgentActionConfirmView(APIView):
             seadb_api = SeaDBAPI(username)
 
             # 1. Get action details from SeaDB
-            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `content` " \
+            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `content`, `suggestion_text` " \
                 f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
