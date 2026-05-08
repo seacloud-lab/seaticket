@@ -1,6 +1,6 @@
 import json
 from io import BytesIO
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, MagicMock, patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -542,12 +542,13 @@ class TestPortalLogoStorage:
     def test_upload_portal_logo_sets_content_type(self):
         file = SimpleUploadedFile('logo.png', b'png-bytes', content_type='image/png')
 
-        with patch('seahub.utils.storage.get_s3_file_metadata', return_value=None), \
-                patch('seahub.utils.storage.s3_client.upload_file') as upload_mock:
+        mock_s3_client = MagicMock()
+        with patch('seahub.utils.storage.s3_client', mock_s3_client), \
+                patch('seahub.utils.storage.get_s3_file_metadata', return_value=None):
             file_url = upload_portal_logo_file_to_s3('project-uuid', file, 'user@example.com')
 
         assert file_url.startswith('/api/v1/portal/project-uuid/logo/?v=')
-        _, kwargs = upload_mock.call_args
+        _, kwargs = mock_s3_client.upload_file.call_args
         assert kwargs['ExtraArgs']['ContentType'] == 'image/png'
         assert kwargs['ExtraArgs']['Metadata']['username'] == 'user@example.com'
 
