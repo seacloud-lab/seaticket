@@ -1,7 +1,9 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 import json
+import uuid
 import redis
+from datetime import datetime, timezone
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -139,6 +141,8 @@ class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
             return api_error(status.HTTP_400_BAD_REQUEST, 'credits invalid.')
 
         channel = ADDITIONAL_CREDITS_REDIS_CHANNEL
+        message_id = uuid.uuid4().hex
+        published_at = datetime.now(timezone.utc).isoformat()
         try:
             redis_conn = redis.Redis(
                 host=REDIS_HOST,
@@ -149,6 +153,8 @@ class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
             )
             redis_conn.publish(channel, json.dumps({
                 'operation': 'add_additional_credits',
+                'message_id': message_id,
+                'published_at': published_at,
                 'org_id': int(org.org_id),
                 'credits': credits,
             }))
@@ -158,7 +164,7 @@ class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
 
         return Response({
             'success': True,
+            'message_id': message_id,
             'org_id': int(org.org_id),
             'credits': credits,
         })
-
