@@ -4,6 +4,7 @@ from io import BytesIO
 from unittest.mock import Mock, patch
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seahub.project.models import Projects
 from seahub.portal.apis import (
@@ -21,6 +22,7 @@ from seahub.portal.apis import (
 )
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
+from seahub.utils.storage import upload_portal_logo_file_to_s3
 
 
 def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
@@ -520,8 +522,9 @@ class TestPortalLogoView:
 
         assert resp.status_code == 200
         assert resp['Content-Type'] == 'image/png'
-        assert resp['Cache-Control'] == 'max-age=604800, public'
+        assert resp['Cache-Control'] == 'public, max-age=31536000, immutable'
         assert resp['ETag'] == '"abc123"'
+        assert resp['Last-Modified']
 
     def test_get_uses_relative_portal_logo_path(self, factory, real_project):
         project = real_project
@@ -539,6 +542,62 @@ class TestPortalLogoView:
         assert resp.status_code == 200
         metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
         file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+
+    def test_get_if_none_match_returns_304_without_fetching_file(self, factory, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/portal/{project.uuid}/logo/",
+            HTTP_IF_NONE_MATCH='"abc123"',
+        )
+        metadata = {
+            'ContentType': 'image/png',
+            'ETag': '"abc123"',
+            'LastModified': datetime(2026, 5, 1, tzinfo=timezone.utc),
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
+                patch('seahub.portal.apis.get_file_from_s3') as file_mock:
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 304
+        assert resp['ETag'] == '"abc123"'
+        assert resp['Cache-Control'] == 'public, max-age=31536000, immutable'
+        file_mock.assert_not_called()
+
+    def test_get_if_modified_since_returns_304_without_fetching_file(self, factory, real_project):
+        project = real_project
+        request = factory.get(
+            f"/api/v1/portal/{project.uuid}/logo/",
+            HTTP_IF_MODIFIED_SINCE='Fri, 01 May 2026 00:00:00 GMT',
+        )
+        metadata = {
+            'ContentType': 'image/png',
+            'ETag': '"abc123"',
+            'LastModified': datetime(2026, 5, 1, 0, 0, 0, tzinfo=timezone.utc),
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
+                patch('seahub.portal.apis.get_file_from_s3') as file_mock:
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 304
+        assert resp['Last-Modified'] == 'Fri, 01 May 2026 00:00:00 GMT'
+        file_mock.assert_not_called()
+
+
+class TestPortalLogoStorage:
+
+    def test_upload_portal_logo_sets_content_type(self):
+        file = SimpleUploadedFile('logo.png', b'png-bytes', content_type='image/png')
+
+        with patch('seahub.utils.storage.get_s3_file_metadata', return_value=None), \
+                patch('seahub.utils.storage.s3_client.upload_file') as upload_mock:
+            file_url = upload_portal_logo_file_to_s3('project-uuid', file, 'user@example.com')
+
+        assert file_url.startswith('/api/v1/portal/project-uuid/logo/?v=')
+        _, kwargs = upload_mock.call_args
+        assert kwargs['ExtraArgs']['ContentType'] == 'image/png'
+        assert kwargs['ExtraArgs']['Metadata']['username'] == 'user@example.com'
 
 
 @pytest.mark.django_db

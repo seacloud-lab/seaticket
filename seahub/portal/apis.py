@@ -15,9 +15,10 @@ from rest_framework.response import Response
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseNotModified
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
+from django.utils.http import parse_http_date_safe
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -36,7 +37,6 @@ from seahub.seadb_models.utils import list_knowledge_base_records, list_my_porta
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
-from email.utils import formatdate
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
@@ -45,7 +45,7 @@ from seahub.portal.models import ProjectExternalUser
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
-    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, etag_matches, build_portal_logo_cache_response
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -72,6 +72,7 @@ class PortalLogoView(APIView):
         if request.method == 'GET':
             self.authentication_classes = ()
             self.permission_classes = ()
+            self.throttle_classes = ()
         return super().initialize_request(request, *args, **kwargs)
 
     def get(self, request, project_uuid):
@@ -83,19 +84,31 @@ class PortalLogoView(APIView):
         file_path = gen_portal_logo_file_path()
         try:
             metadata = get_file_metadata_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response_etag = metadata.get('ETag', '')
+        last_modified = metadata.get('LastModified')
+        if etag_matches(request.META.get('HTTP_IF_NONE_MATCH', ''), response_etag):
+            return build_portal_logo_cache_response(HttpResponseNotModified(), metadata)
+
+        if_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE')
+        if last_modified and if_modified_since:
+            modified_since = parse_http_date_safe(if_modified_since)
+            if modified_since is not None and int(last_modified.timestamp()) <= modified_since:
+                return build_portal_logo_cache_response(HttpResponseNotModified(), metadata)
+
+        try:
             file = get_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = metadata.get('ETag', '')
-        last_modified = metadata.get('LastModified')
-        response['Last-Modified'] = formatdate(int(last_modified.timestamp()), usegmt=True)
-
-        return response
+        response = FileResponse(file, content_type=metadata.get('ContentType'))
+        return build_portal_logo_cache_response(response, metadata)
 
     @require_org_context
     def post(self, request, project_uuid):

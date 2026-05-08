@@ -92,7 +92,7 @@ def get_s3_file_metadata(s3_file_path):
 def upload_portal_logo_file_to_s3(project_uuid, file, username):
     final_file_path = gen_portal_logo_file_path()
     s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
-
+    content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     # Calculate local MD5 first
     local_etag = calculate_md5(file)
     version = local_etag.strip('"')
@@ -116,7 +116,10 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
             tmp_upload_file_path,
             S3_FILE_BUCKET,
             s3_file_path,
-            ExtraArgs={'Metadata': {'username': username}}
+            ExtraArgs={
+                'ContentType': content_type,
+                'Metadata': {'username': username},
+            }
         )
     finally:
         if os.path.exists(tmp_upload_file_path):
