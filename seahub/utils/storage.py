@@ -1,4 +1,6 @@
 import os
+import hashlib
+import json
 import logging
 from datetime import datetime, timezone
 
@@ -9,6 +11,74 @@ from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 
 logger = logging.getLogger(__name__)
 PORTAL_LOGO_OBJECT_NAME = 'logo'
+
+
+def gen_file_etag_cache_path(file_path):
+    return f'{file_path}.etag'
+
+
+def _build_file_etag(file_path):
+    hasher = hashlib.sha256()
+    with open(file_path, 'rb') as fd:
+        for chunk in iter(lambda: fd.read(1024 * 1024), b''):
+            hasher.update(chunk)
+    return f'"{hasher.hexdigest()}"'
+
+
+def _write_file_etag_cache(file_path, etag):
+    cache_path = gen_file_etag_cache_path(file_path)
+    payload = {
+        'etag': etag,
+        'size': os.path.getsize(file_path),
+        'mtime_ns': os.stat(file_path).st_mtime_ns,
+    }
+    tmp_cache_path = f'{cache_path}.tmp'
+    with open(tmp_cache_path, 'w', encoding='utf-8') as fd:
+        json.dump(payload, fd, separators=(',', ':'))
+    os.replace(tmp_cache_path, cache_path)
+
+
+def get_file_etag(file_path):
+    stat_result = os.stat(file_path)
+    cache_path = gen_file_etag_cache_path(file_path)
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as fd:
+                payload = json.load(fd)
+            if (
+                payload.get('size') == stat_result.st_size and
+                payload.get('mtime_ns') == stat_result.st_mtime_ns and
+                payload.get('etag')
+            ):
+                return payload['etag']
+        except Exception:
+            pass
+
+    etag = _build_file_etag(file_path)
+    _write_file_etag_cache(file_path, etag)
+    return etag
+
+
+def if_none_match_hit(request, etag):
+    if_none_match = request.META.get('HTTP_IF_NONE_MATCH', '')
+    if not if_none_match or not etag:
+        return False
+
+    def normalize(value):
+        value = value.strip()
+        if value.startswith('W/'):
+            value = value[2:].strip()
+        if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+            return value[1:-1]
+        return value
+
+    target = normalize(etag)
+    for candidate in (item.strip() for item in if_none_match.split(',') if item.strip()):
+        if candidate == '*':
+            return True
+        if normalize(candidate) == target:
+            return True
+    return False
 
 
 def gen_s3_file_path(project_uuid, file_path):
@@ -33,8 +103,12 @@ def gen_tmp_upload_file_path(project_uuid, file_path):
 def upload_file_to_tmp_dir(project_uuid, file):
     file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+    hasher = hashlib.sha256()
     with open(tmp_upload_file_path, 'wb') as fd:
-        fd.write(file.read())
+        for chunk in iter(lambda: file.read(1024 * 1024), b''):
+            hasher.update(chunk)
+            fd.write(chunk)
+    _write_file_etag_cache(tmp_upload_file_path, f'"{hasher.hexdigest()}"')
     return tmp_upload_file_path
 
 
@@ -123,6 +197,11 @@ def get_file_from_s3(project_uuid, file_path):
     return response['Body']
 
 
+def get_file_from_s3_with_meta(project_uuid, file_path):
+    s3_file_path = gen_s3_file_path(project_uuid, file_path)
+    return s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+
+
 class FileNotFound(Exception):
     pass
 
@@ -137,6 +216,17 @@ def get_file_from_s3_web_crawl(project_uuid, site_id, filename):
             raise FileNotFound()
         raise
     return response['Body']
+
+
+def get_file_from_s3_web_crawl_with_meta(project_uuid, site_id, filename):
+    s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
+    try:
+        return s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey':
+            raise FileNotFound()
+        raise
 
 
 def delete_file_from_s3(project_uuid, file_path):

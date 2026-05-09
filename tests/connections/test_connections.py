@@ -3,6 +3,8 @@ import hmac
 import hashlib
 from unittest.mock import Mock, patch
 
+from botocore.exceptions import ClientError
+
 from seahub.project.connections import (
     ProjectConnectionsView,
     ProjectConnectionView,
@@ -16,7 +18,6 @@ from seahub.project.connections import (
     DiscourseWebhookView,
     ConnectionFileView,
 )
-from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
 
@@ -503,7 +504,9 @@ class TestConnectionFileView:
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/f.txt")
         request.user = project_creator
 
-        with patch('seahub.project.connections.get_file_from_s3_web_crawl', side_effect=FileNotFound()):
+        s3_client_mock = Mock()
+        s3_client_mock.get_object.side_effect = ClientError({'Error': {'Code': 'NoSuchKey'}}, 'GetObject')
+        with patch('seahub.project.connections.s3_client', s3_client_mock):
             resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id=site_connection.id, file_path='f.txt')
 
         assert resp.status_code == 404

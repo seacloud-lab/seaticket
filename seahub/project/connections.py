@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-import hmac
 import hashlib
+import hmac
 import logging
 import json
 import datetime
-import sys
 import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
 
+from botocore.exceptions import ClientError
 from django.utils.translation import gettext as _
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseNotModified
 from django.utils import timezone
 
 from rest_framework.views import APIView
@@ -31,6 +31,9 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
+from seahub.utils.storage import get_file_etag, if_none_match_hit, gen_s3_web_crawl_file_path
+from seahub.utils import s3_client
+from seahub.settings import S3_WEB_CRAWL_BUCKET
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
@@ -1420,19 +1423,38 @@ class ConnectionFileView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         project_uuid = uuid_str_to_32_chars(project_uuid)
         try:
-            file = get_file_from_s3_web_crawl(project_uuid, str(connection_id), file_path)
-        except FileNotFound:
-            error_msg = 'File not exist'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            s3_file_path = gen_s3_web_crawl_file_path(project_uuid, str(connection_id), file_path)
+            s3_obj = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code')
+            if error_code == 'NoSuchKey':
+                error_msg = 'File not exist'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(file)
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
-        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        etag = s3_obj.get('ETag')
+        if if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            not_modified['ETag'] = etag
+            if s3_obj.get('LastModified'):
+                not_modified['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
+            return not_modified
+
+        response = FileResponse(s3_obj['Body'])
+        response['Cache-Control'] = 'max-age=604800, private'
+        if etag:
+            response['ETag'] = etag
+        if s3_obj.get('LastModified'):
+            response['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
+        else:
+            response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
 
 
@@ -1552,13 +1574,26 @@ class DownloadEmailAttachments(APIView):
         os.makedirs(EMAIL_ATTACHMENT_TEMP_DIR, exist_ok=True)
         local_zip_path = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(email_id), EMAIL_ATTACHMENTS_ZIP_NAME)
 
+        if not os.path.exists(local_zip_path):
+            error_msg = 'File not exist.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        modified_ts = int(os.path.getmtime(local_zip_path))
+        etag = get_file_etag(local_zip_path)
+        if if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            not_modified['ETag'] = etag
+            not_modified['Last-Modified'] = formatdate(modified_ts, usegmt=True)
+            return not_modified
+
         response = FileResponse(
             open(local_zip_path, "rb"),
             content_type="application/zip",
             as_attachment=True,
             filename=EMAIL_ATTACHMENTS_ZIP_NAME
         )
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(os.path.getsize(local_zip_path)) + '"'
-        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        response['Cache-Control'] = 'max-age=604800, private'
+        response['ETag'] = etag
+        response['Last-Modified'] = formatdate(modified_ts, usegmt=True)
         return response
