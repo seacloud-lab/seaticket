@@ -20,7 +20,7 @@ const {
 } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
-  if (anonymous) return kbEnabled ? PORTAL_PAGE.KNOWLEDGE_BASE : null;
+  if (anonymous) return PORTAL_PAGE.CHAT;
   if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
   return PORTAL_PAGE.SUBMIT_ISSUE;
 };
@@ -38,7 +38,7 @@ const Portal = () => {
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
   const onPageChange = useCallback((page) => {
-    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_ISSUE || page === PORTAL_PAGE.MY_ISSUES || page === PORTAL_PAGE.CHAT)) {
+    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_ISSUE || page === PORTAL_PAGE.MY_ISSUES)) {
       const { origin } = location;
       location.href = `${origin}/portal/${projectUuid}/login/`;
       return;
@@ -59,7 +59,7 @@ const Portal = () => {
     if (match && match[1]) {
       const pageKey = match[1];
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
-        const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_ISSUE || pageKey === PORTAL_PAGE.MY_ISSUES || pageKey === PORTAL_PAGE.CHAT;
+        const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_ISSUE || pageKey === PORTAL_PAGE.MY_ISSUES;
         if (isAnonymous && isRestrictedPage) {
           setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
         } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {

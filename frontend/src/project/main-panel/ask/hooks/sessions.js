@@ -67,14 +67,17 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
   }, [isShowSessions]);
 
   const solveProblem = useCallback(({ sessionId, message: problem, attachments, model, clearContext }) => {
-    let newSessions = sessions.slice(0);
-    const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
-    let session = newSessions[sessionIdx];
-    session.is_replying = true;
-    session.running_task = true;
-    session.problem = null;
-    newSessions[sessionIdx] = session;
-    setSessions(newSessions);
+    setSessions((sessions) => {
+      const newSessions = sessions.slice(0);
+      const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
+      if (sessionIdx === -1) return sessions;
+      const session = newSessions[sessionIdx];
+      session.is_replying = true;
+      session.running_task = true;
+      session.problem = null;
+      newSessions[sessionIdx] = session;
+      return newSessions;
+    });
 
     const params = {
       project_uuid: projectUuid,
@@ -111,7 +114,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
     });
-  }, [projectUuid, sessions, api]);
+  }, [projectUuid, api]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     setSessions(sessions => {
@@ -244,7 +247,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
     }).finally(() => {
       setLoading(false);
     });
-  }, []);
+  }, [projectUuid, api]);
 
   useEffect(() => {
     localStorage.setItem(localStorageKeyRef.current, String(isShowSessions));

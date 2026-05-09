@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
 import Sessions from '@/project/main-panel/ask/sessions';
 import Chat from '@/project/main-panel/ask/chat';
@@ -11,16 +11,25 @@ import { chatAPI } from '@/portal/api/chat-api';
 import '@/project/main-panel/ask/index.css';
 
 const {
-  projectUuid, projectName, workspaceID, isAnonymous, isEditMode, streamingResponse
+  projectUuid, projectName, workspaceID, isEditMode, streamingResponse
 } = window.app.pageOptions;
 
 const Main = ({ title, settings }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
-  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
+  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, sessions } = useSessions();
 
-  const permission = isAnonymous ? 'r' : 'rw';
+  const permission = 'rw';
 
   const isLoading = isAskPageLoading || isSessionsLoading;
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (pageSlugId === ASK_PAGE_SLUG_ID.NEW) return;
+    const hasSession = sessions.some(session => session._id === pageSlugId);
+    if (!hasSession) {
+      togglePageSlugId(ASK_PAGE_SLUG_ID.NEW);
+    }
+  }, [isLoading, pageSlugId, sessions, togglePageSlugId]);
 
   return (
     <>
@@ -42,15 +51,13 @@ const Main = ({ title, settings }) => {
                 customHeaderTitle={gettext('Chat')}
                 renderOperation={() => (
                   <div className="d-flex">
-                    {!isAnonymous && (
-                      <IconButton
-                        icon="new-chat"
-                        onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
-                        className="mr-2"
-                        title={gettext('New chat')}
-                        aria-label={gettext('New chat')}
-                      />
-                    )}
+                    <IconButton
+                      icon="new-chat"
+                      onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
+                      className="mr-2"
+                      title={gettext('New chat')}
+                      aria-label={gettext('New chat')}
+                    />
                     <IconButton
                       icon="history"
                       onClick={toggleIsShowSessions}
@@ -98,9 +105,7 @@ const Ask = ({ title = gettext('Chat') }) => {
   return (
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider
-        workspaceID={workspaceID}
         projectUuid={projectUuid}
-        settings={settings}
         localStorageKey={`sea-ticket-${projectUuid}-portal-chat-sessions-display`}
         api={chatAPI}
       >

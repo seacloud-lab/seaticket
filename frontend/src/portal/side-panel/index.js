@@ -8,7 +8,9 @@ import ExternalUserAccount from '@/components/account/external-user-account';
 
 const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const primaryTabs = isAnonymous
-    ? (enableKB ? [{ value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }] : [])
+    ? (enableKB
+      ? [{ value: PORTAL_PAGE.CHAT, label: gettext('Chat') }, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
+      : [{ value: PORTAL_PAGE.CHAT, label: gettext('Chat') }])
     : (enableKB
       ? [...BASE_PRIMARY_TABS, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
       : BASE_PRIMARY_TABS);
