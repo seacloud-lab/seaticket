@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '@/constants';
@@ -14,10 +13,6 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import './index.css';
 
 const allStatus = ['sync', 'index', 'ai-status', 'vector-index'];
-const contentVectorStatus = {
-  last_content_vector_index_status: 'pending',
-  last_content_vector_indexed_count: 0
-};
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualSync, record }) => {
   const [totalRecords, setTotalRecords] = useState('');
@@ -55,7 +50,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
             label: gettext('Processed: ') + last_ai_processing_count + ' ' + (last_ai_processing_count < 2 ? gettext('record') : gettext('records')),
           };
         } else if (status === 'vector-index' && (record.type === CONNECTION_TYPE.SITE || record.type === CONNECTION_TYPE.SEAFILE)) {
-          const { last_content_vector_index_status, last_content_vector_indexed_count } = _.merge(contentVectorStatus, record.content_vector_status);
+          const { last_content_vector_index_status, last_content_vector_indexed_count } = record.content_vector_status;
           return {
             title: gettext('Vector index'),
             time: record.content_vector_indexed_at,

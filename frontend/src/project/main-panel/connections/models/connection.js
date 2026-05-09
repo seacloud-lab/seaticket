@@ -18,7 +18,7 @@ class Connection {
 
     this.status = initConnectionStatus(object.status || '{}');
     this.ai_status = initConnectionStatus(object.ai_status || '{}');
-    this.content_vector_status = initConnectionStatus(object.content_vector_status || '{}');
+    this.content_vector_status = initConnectionStatus(object.content_vector_status || '{"last_content_vector_index_status": "pending","last_content_vector_indexed_count": 0}');
   }
 }
 
