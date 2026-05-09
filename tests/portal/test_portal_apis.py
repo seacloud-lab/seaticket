@@ -442,6 +442,39 @@ class TestPortalSettingsView:
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
 
+    def test_post_partial_update_portal_branding_preserves_other_settings(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'allow_anonymous': True,
+            'enable_password_protection': False,
+            'show_knowledge_base': True,
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={
+                'portal_name': 'Custom support',
+                'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
+            },
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        portal_settings = settings_dict.get('portal', {})
+        assert portal_settings.get('allow_anonymous') is True
+        assert portal_settings.get('enable_password_protection') is False
+        assert portal_settings.get('show_knowledge_base') is True
+        assert portal_settings.get('portal_name') == 'Custom support'
+        assert portal_settings.get('portal_logo') == f'/api/v1/portal/{project.uuid}/logo/?v=1'
+
     def test_post_portal_logo_cleared_deletes_current_logo_file(self, factory, project_creator, real_project):
         project = real_project
         settings_dict = json.loads(project.settings) if project.settings else {}

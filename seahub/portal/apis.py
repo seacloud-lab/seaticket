@@ -1394,23 +1394,26 @@ class PortalSettingsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        allow_anonymous = request.data.get('allow_anonymous', None)
-        enable_password_protection = request.data.get('enable_password_protection', None)
+        raw_allow_anonymous = request.data.get('allow_anonymous')
+        raw_enable_password_protection = request.data.get('enable_password_protection')
+        raw_show_knowledge_base = request.data.get('show_knowledge_base')
+        raw_daily_chat_credit_limit = request.data.get('daily_chat_credit_limit')
         password = request.data.get('password', '')
-        show_knowledge_base = request.data.get('show_knowledge_base', None)
-        daily_chat_credit_limit = request.data.get('daily_chat_credit_limit', None)
-        portal_name = request.data.get('portal_name', None)
-        portal_logo = request.data.get('portal_logo', None)
+        portal_name = request.data.get('portal_name')
+        portal_logo = request.data.get('portal_logo')
+        chat_allowed_sources = request.data.get('chat_allowed_sources')
 
+        bool_field_mapping = {
+            'allow_anonymous': raw_allow_anonymous,
+            'enable_password_protection': raw_enable_password_protection,
+            'show_knowledge_base': raw_show_knowledge_base,
+        }
+        bool_updates = {}
         try:
-            if allow_anonymous is not None:
-                allow_anonymous = int(allow_anonymous)
-            if enable_password_protection is not None:
-                enable_password_protection = int(enable_password_protection)
-            if show_knowledge_base is not None:
-                show_knowledge_base = int(show_knowledge_base)
-            if daily_chat_credit_limit is not None:
-                daily_chat_credit_limit = int(daily_chat_credit_limit)
+            for key, value in bool_field_mapping.items():
+                if value is not None:
+                    bool_updates[key] = bool(int(value))
+            daily_chat_credit_limit = None if raw_daily_chat_credit_limit is None else int(raw_daily_chat_credit_limit)
         except Exception:
             error_msg = 'Invalid params.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1419,10 +1422,14 @@ class PortalSettingsView(APIView):
             error_msg = 'daily_chat_credit_limit invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if enable_password_protection:
-            if password and len(password) < 8:
-                error_msg = 'Password too short.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        enable_password_protection = bool_updates.get('enable_password_protection')
+        if enable_password_protection and password and len(password) < 8:
+            error_msg = 'Password too short.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if chat_allowed_sources is not None and not isinstance(chat_allowed_sources, dict):
+            error_msg = 'chat_allowed_sources invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
             project_settings = json.loads(project.settings) if project.settings else {}
@@ -1430,18 +1437,9 @@ class PortalSettingsView(APIView):
             project_settings = {}
 
         portal_settings = project_settings.get('portal', {})
-        if allow_anonymous is not None:
-            portal_settings['allow_anonymous'] = bool(allow_anonymous)
-        if enable_password_protection is not None:
-            portal_settings['enable_password_protection'] = bool(enable_password_protection)
-        if show_knowledge_base is not None:
-            portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
+        portal_settings.update(bool_updates)
 
-        chat_allowed_sources = request.data.get('chat_allowed_sources')
         if chat_allowed_sources is not None:
-            if not isinstance(chat_allowed_sources, dict):
-                error_msg = 'chat_allowed_sources invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             portal_settings['chat_allowed_sources'] = chat_allowed_sources
         if daily_chat_credit_limit is not None:
             portal_settings['daily_chat_credit_limit'] = daily_chat_credit_limit
@@ -1451,11 +1449,11 @@ class PortalSettingsView(APIView):
         if portal_logo is not None:
             portal_settings['portal_logo'] = portal_logo
 
-        if enable_password_protection:
+        if enable_password_protection is True:
             if password:
                 cryptor = AESPasswordHasher()
                 portal_settings['password'] = cryptor.encode(password)
-        elif enable_password_protection is not None:
+        elif enable_password_protection is False:
             portal_settings.pop('password', None)
 
         project_settings['portal'] = portal_settings
