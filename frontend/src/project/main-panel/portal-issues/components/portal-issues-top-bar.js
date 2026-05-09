@@ -89,12 +89,6 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
         <IconTextBtn icon="plus" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} />
       );
     }
-    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
-      if (!isRW) return null;
-      return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.CLEAN_DELETED_PORTAL_ISSUES)} text={gettext('Clean')} icon="" />
-      );
-    }
     return null;
   }, [permission, pageSlugId, childrenPageSlugId]);
 
