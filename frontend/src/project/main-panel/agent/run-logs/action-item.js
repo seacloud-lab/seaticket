@@ -4,6 +4,9 @@ import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
 import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
+import AIReferenceMarkdown from '@/project/components/ai-reference-markdown';
+
+const { projectUuid } = window?.app?.pageOptions || {};
 
 const ActionItem = React.memo(({
   action,
@@ -12,7 +15,7 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, content, result, tool_name, suggestion_text } = action;
+  const { id, type, status, content, result, tool_name, suggestion_text, sources } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -141,7 +144,14 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}</div>
-            {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
+            {content && (
+              <AIReferenceMarkdown
+                value={content}
+                sources={Array.isArray(sources) ? sources : []}
+                projectUuid={projectUuid}
+                showTOC={false}
+              />
+            )}
           </div>
         );
       case ACTION_TYPE.TOOL_CALL:

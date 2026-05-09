@@ -69,6 +69,21 @@ class MappingRequiredError(Exception):
         self.connection_id = connection_id
         super().__init__(f'Mapping required for agent type: {agent_type}')
 
+
+def _parse_action_sources(raw_sources):
+    if isinstance(raw_sources, list):
+        return raw_sources
+    if not raw_sources:
+        return []
+    if not isinstance(raw_sources, str):
+        return []
+    try:
+        sources = json.loads(raw_sources)
+    except Exception:
+        return []
+    return sources if isinstance(sources, list) else []
+
+
 def _build_items_map_from_actions(actions):
     """build the items map from actions"""
     items_map = {}
@@ -91,6 +106,7 @@ def _build_items_map_from_actions(actions):
             'result': action.get('result', ''),
             'status': action.get('status', ''),
             'suggestion_text': action.get('suggestion_text', ''),
+            'sources': _parse_action_sources(action.get('sources')),
             'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
@@ -120,7 +136,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
             actions_limit = per_page * 30
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-                f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+                f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -169,7 +185,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
         
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-            f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+            f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
