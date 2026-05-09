@@ -550,7 +550,7 @@ class TestPortalLogoStorage:
         assert file_url.startswith('/api/v1/portal/project-uuid/logo/?v=')
         _, kwargs = mock_s3_client.upload_file.call_args
         assert kwargs['ExtraArgs']['ContentType'] == 'image/png'
-        assert kwargs['ExtraArgs']['Metadata']['username'] == 'user@example.com'
+        
 
 
 @pytest.mark.django_db

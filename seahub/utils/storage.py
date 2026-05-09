@@ -104,10 +104,8 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
     if metadata and metadata.get('ETag') == local_etag:
         return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
 
-    # Upload only if necessary
     file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-
     try:
         with open(tmp_upload_file_path, 'wb') as fd:
             fd.write(file.read())
@@ -116,10 +114,7 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
             tmp_upload_file_path,
             S3_FILE_BUCKET,
             s3_file_path,
-            ExtraArgs={
-                'ContentType': content_type,
-                'Metadata': {'username': username},
-            }
+            ExtraArgs={'ContentType': content_type}
         )
     finally:
         if os.path.exists(tmp_upload_file_path):
