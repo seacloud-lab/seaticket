@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from seahub.seadb_models.models import TicketActivitiesTable, TicketCommentsTable, TicketsTable
+from seahub.seadb_models.models import TicketActivitiesTable, TicketCommentsTable, TicketsTable, TagTable
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
@@ -328,6 +328,29 @@ def get_option_id_by_name(columns, column_name, option_name, case_insensitive=Fa
         if name == target:
             return opt.get('id', option_name)
     return option_name
+
+
+def build_tag_id_to_name_map(seadb_api, project_uuid, tag_ids):
+    unique_tag_ids = set()
+    for tag_id in (tag_ids or []):
+        if tag_id in (None, ''):
+            continue
+        try:
+            unique_tag_ids.add(int(tag_id))
+        except (TypeError, ValueError):
+            continue
+
+    if not unique_tag_ids:
+        return {}
+
+    tag_ids_str = ', '.join(str(tag_id) for tag_id in sorted(unique_tag_ids))
+    sql = f"SELECT `_pk`, `name` FROM `{TagTable.gen_table_name()}` WHERE `_pk` IN ({tag_ids_str})"
+    rows = seadb_api.query_rows(project_uuid, sql).get('results') or []
+    return {
+        str(row.get('_pk')): row.get('name') or row.get('_pk')
+        for row in rows
+        if row.get('_pk') is not None
+    }
 
 
 def add_select_option(seadb_api, project_uuid, table_id, column_key, option_name, option_data):
