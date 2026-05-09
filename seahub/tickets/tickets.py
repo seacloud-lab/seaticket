@@ -2,6 +2,7 @@
 import datetime
 import logging
 import json
+import copy
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
@@ -679,18 +680,7 @@ class TicketAPIView(APIView):
             end = 25
             ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
 
-            for ticket_comment in ticket_comments:
-                result = {
-                    'number': ticket_comment.get('_pk'),
-                    'content': ticket_comment.get('content'),
-                    'created_time': ticket_comment.get('created_time'),
-                    'modified_time': ticket_comment.get('modified_time'),
-                    'creator': ticket_comment.get('creator'),
-                    'via_agent': bool(ticket_comment.get('via_agent')),
-                }
-                if not ticket.get('comments'):
-                    ticket['comments'] = []
-                ticket['comments'].append(result)
+            ticket['comments'] = ticket_comments
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1020,7 +1010,11 @@ class TicketAPIView(APIView):
         for activity in new_activities:
             activity.pop('field_name', None)
 
-        return Response({'success': True, 'activities': new_activities})
+        return_dict = {
+            'row': update_row,
+            'activities': new_activities
+        }
+        return Response(return_dict)
 
     @require_org_context
     def delete(self, request, project_uuid, ticket_id):
@@ -1257,7 +1251,7 @@ class TicketCommentsAPIView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
-            row.update({'number': pk, 'via_agent': False})
+            row.update({'_pk': pk, 'via_agent': False})
             ticket_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_comments` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
                 'pk': ticket.get('_pk'),
@@ -1306,7 +1300,7 @@ class TicketCommentsAPIView(APIView):
             },
         )
 
-        return Response({'ticket_comment': row}, status=status.HTTP_201_CREATED)
+        return Response({'comment': row}, status=status.HTTP_201_CREATED)
 
 
 class TicketCommentAPIView(APIView):
@@ -1363,12 +1357,12 @@ class TicketCommentAPIView(APIView):
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            ticket_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket.get('_pk'), comment_id)
-            if not ticket_comment_data:
+            old_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket.get('_pk'), comment_id)
+            if not old_comment_data:
                 error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             # permission check
-            if not check_comment_permission(username, workspace.owner, ticket_comment_data):
+            if not check_comment_permission(username, workspace.owner, old_comment_data):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         except Exception as e:
@@ -1376,7 +1370,8 @@ class TicketCommentAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        modified_time = ticket_comment_data.get('modified_time')
+        new_comment_data = copy.deepcopy(old_comment_data)
+        modified_time = old_comment_data.get('modified_time')
         if modified_time:
             modified_time = datetime.datetime.fromisoformat(modified_time)
         if modified_time and modified_time > timezone.now() - relativedelta(seconds=10):
@@ -1392,14 +1387,18 @@ class TicketCommentAPIView(APIView):
                 logger.error(e)
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            
+        new_comment_data['_pk'] = old_comment_data.get('_pk')
+        new_comment_data['content'] = content
+        new_comment_data['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
         # main
         try:
             ticket_comment_update = {
-                'pk': ticket_comment_data.get('_pk'),
+                'pk': old_comment_data.get('_pk'),
                 'row': {
-                    'content': content,
-                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'content': new_comment_data.get('content'),
+                    'modified_time': new_comment_data.get('modified_time'),
                 },
             }
             seadb_api.update_rows(project_uuid, 'ticket_comments', [ticket_comment_update])
@@ -1430,17 +1429,17 @@ class TicketCommentAPIView(APIView):
             event={
                 'type': DataEventType.TICKET_COMMENT_UPDATED.value,
                 'old_value': {
-                    'comment_id': ticket_comment_data.get('_pk'),
-                    'content': ticket_comment_data.get('content'),
+                    'comment_id': old_comment_data.get('_pk'),
+                    'content': old_comment_data.get('content'),
                 },
                 'new_value': {
-                    'comment_id': ticket_comment_data.get('_pk'),
-                    'content': content,
+                    'comment_id': old_comment_data.get('_pk'),
+                    'content': new_comment_data.get('content'),
                 }
             },
         )
 
-        return Response({'ticket_comment': ticket_comment_data})
+        return Response({'comment': new_comment_data})
 
     @require_org_context
     def delete(self, request, project_uuid, ticket_id, comment_id):

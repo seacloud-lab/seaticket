@@ -761,7 +761,7 @@ class PortalIssueView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         send_portal_issue_update_msg(project_uuid, updated=1)
-        return Response({'success': True})
+        return Response({'row': update_row})
 
     @require_org_context
     def delete(self, request, project_uuid, issue_id):
@@ -914,7 +914,7 @@ class PortalIssueCommentsView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
-            row.update({'number': pk, 'via_agent': False})
+            row.update({'_pk': pk, 'via_agent': False})
             issue_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `{portal_issue_comment_table_name}` WHERE `issue_id` = {issue.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_issue = {
                 'pk': issue.get('_pk'),
@@ -978,20 +978,21 @@ class PortalIssueCommentView(APIView):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            issue_comment_data = get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue.get('_pk'), comment_id)
-            if not issue_comment_data:
+            comment_data = get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue.get('_pk'), comment_id)
+            if not comment_data:
                 error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             
             # permission check
-            if not check_comment_permission(username, workspace.owner, issue_comment_data):
+            if not check_comment_permission(username, workspace.owner, comment_data):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         
-        modified_time = issue_comment_data.get('modified_time')
+
+        modified_time = comment_data.get('modified_time')
         modified_time = datetime.datetime.fromisoformat(modified_time)
         if modified_time > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
@@ -1008,12 +1009,14 @@ class PortalIssueCommentView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         
         # main
+        comment_data['content'] = content
+        comment_data['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             issue_comment_update = {
-                'pk': issue_comment_data.get('_pk'),
+                'pk': comment_data.get('_pk'),
                 'row': {
-                    'content': content,
-                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'content': comment_data.get('content'),
+                    'modified_time': comment_data.get('modified_time'),
                 },
             }
             seadb_api.update_rows(project_uuid, PortalIssueCommentsTable.gen_table_name(), [issue_comment_update])
@@ -1034,7 +1037,7 @@ class PortalIssueCommentView(APIView):
         except Exception as e:
             logger.error(e)
 
-        return Response({'comment': issue_comment_data})
+        return Response({'comment': comment_data})
 
     def delete(self, request, project_uuid, issue_id, comment_id):
         project = Projects.objects.get_project_by_uuid(project_uuid)

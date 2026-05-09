@@ -3,8 +3,7 @@ import { TICKET_STATE } from '../constants';
 
 class Comment {
   constructor(object) {
-    this.id = object.number || '';
-    this.number = object.number || '';
+    this.id = object._pk || '';
 
     this.creator = object.creator || '';
 
@@ -86,6 +85,10 @@ class Ticket {
     return this;
   };
 
+  _get_comment = (commentID) => {
+    return this.comments.find(comment => comment.id === commentID);
+  };
+
   _create_comment = (comment) => {
     this.comments.push(new Comment(comment));
     return this;
@@ -96,11 +99,10 @@ class Ticket {
     return this;
   };
 
-  _modify_comment = (commentID, content) => {
+  _modify_comment = (commentID, newComment) => {
     const commentIndex = this.comments.findIndex(comment => comment.id === commentID);
-    let comment = this.comments[commentIndex];
-    comment = comment._update(content);
-    this.comments[commentIndex] = comment;
+    if (commentIndex === -1) return this;
+    this.comments[commentIndex] = new Comment(newComment);
     return this;
   };
 }

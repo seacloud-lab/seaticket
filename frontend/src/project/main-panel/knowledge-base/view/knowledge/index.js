@@ -30,7 +30,7 @@ const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
     let serverData = { title, content, tags };
     knowledgeBaseAPI.updateRecord(projectUuid, knowledgeID, serverData).then(res => {
       handleUpdateRowsCacheData(knowledgeID, serverData);
-      setKnowledge({ ...knowledge, ...serverData, content: content?.text });
+      setKnowledge({ ...knowledge, ...serverData, ...res.data.row });
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -53,8 +53,8 @@ const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
     lastKnowledgeID.current = knowledgeID;
     setLoading(true);
     knowledgeBaseAPI.getRecord(projectUuid, knowledgeID).then(res => {
-      handleUpdateRowsCacheData(knowledgeID, res?.data.record);
       const { record } = res?.data || {};
+      handleUpdateRowsCacheData(knowledgeID, record);
       setKnowledge(record);
       setLoading(false);
     }).catch(error => {

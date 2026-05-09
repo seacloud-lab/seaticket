@@ -17,6 +17,7 @@ import userAPI from '@/api/user-api';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
 import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 import { isFunction } from '@/utils/type-detection';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 const DataContext = React.createContext(null);
 
@@ -382,12 +383,25 @@ export const DataProvider = ({
     modifyLocalRows(tableName, [{ row_id: rowId, row: rowUpdate }]);
   }, [modifyLocalRows]);
 
-  const modifyRow = useCallback((tableName, rowId, rowUpdate, api) => {
+  const modifyRow = useCallback((tableName, rowId, rowUpdate, api, { typesData } = {}) => {
     return api().then(res => {
-      modifyLocalRow(tableName, rowId, rowUpdate);
-      return res;
+      let table = data[tableName];
+      let _rowUpdate = { ...rowUpdate };
+      if (table) {
+        if (res.data.row) {
+          const columns = Object.values(table?.key_column_map || {});
+          const rowUpdateCallback = convertRowToKeyValue(res.data.row, { data: { columns }, typesData });
+          _rowUpdate = { ...rowUpdate, ...rowUpdateCallback };
+        }
+        modifyLocalRow(tableName, rowId, _rowUpdate);
+      }
+      return {
+        data: {
+          'row': _rowUpdate,
+        },
+      };
     });
-  }, [modifyLocalRow]);
+  }, [data, modifyLocalRow]);
 
   const modifyRowLink = useCallback((table1Update, table2Update, api) => {
     const _updateTableData = (data, tableUpdate) => {

@@ -692,7 +692,7 @@ class TestPortalIssueViewPut:
             resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
 
         assert resp.status_code == 200
-        assert resp.data['success'] is True
+        assert 'row' in resp.data
         # Should update portal issue's linked_ticket
         portal_update = seadb_api.update_rows.call_args_list[-1]
         portal_rows = portal_update[0][2]

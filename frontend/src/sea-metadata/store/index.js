@@ -329,12 +329,15 @@ class Store {
     const type = OPERATION_TYPE.MODIFY_ROW;
     const operation = this.createOperation({
       type,
-      row_id: row_id,
-      row_update: row_update,
-      old_row_data: old_row_data,
+      row_id,
+      row_update,
+      old_row_data,
       is_copy_paste,
       fail_callback,
-      success_callback,
+      success_callback: (operation) => {
+        this.modifyLocalRow(row_id, operation.row_update);
+        success_callback && success_callback();
+      },
     });
     this.applyOperation(operation);
   }

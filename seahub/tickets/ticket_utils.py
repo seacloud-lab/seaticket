@@ -448,11 +448,11 @@ def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records
     ticket_comments_sql = f"SELECT `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
     ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
     result = {}
-    for ticket_comment in ticket_comments_data:
-        if ticket_comment['ticket_id'] not in result:
-            result[ticket_comment['ticket_id']] = [ticket_comment]
-        elif len(result[ticket_comment['ticket_id']]) < max_records_for_each_id:
-            result[ticket_comment['ticket_id']].append(ticket_comment)
+    for comment in ticket_comments_data:
+        if comment['ticket_id'] not in result:
+            result[comment['ticket_id']] = [comment]
+        elif len(result[comment['ticket_id']]) < max_records_for_each_id:
+            result[comment['ticket_id']].append(comment)
     return result
 
 def get_deleted_tickets(seadb_api, project_uuid):
@@ -524,8 +524,8 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
     all_comments_users = []
     for ticket_comments in ticket_ids_comments_map.values():
-        for ticket_comment in ticket_comments:
-            all_comments_users.append(ticket_comment.get('creator'))
+        for comment in ticket_comments:
+            all_comments_users.append(comment.get('creator'))
     all_comments_users = set(all_comments_users)
 
     all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)
@@ -548,16 +548,16 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             'comments': []
         }
         total_content_size = len(whole_ticket_data['content'])
-        for ticket_comment in ticket_ids_comments_map.get(ticket['_pk'], []):
-            content = ticket_comment.get('content', '')
+        for comment in ticket_ids_comments_map.get(ticket['_pk'], []):
+            content = comment.get('content', '')
             total_content_size += len(content)
 
             # break if exceed maximum content size
             if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
                 break
 
-            nickname = nickname_map.get(ticket_comment.get('creator'))
-            commented_at = ticket_comment.get('created_time')
+            nickname = nickname_map.get(comment.get('creator'))
+            commented_at = comment.get('created_time')
             commented_at = time_str_to_utc_time(commented_at).isoformat()
             whole_ticket_data['comments'].append({
                 'nickname': nickname,

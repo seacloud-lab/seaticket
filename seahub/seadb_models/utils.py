@@ -836,16 +836,7 @@ def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
         comments_sql = f"SELECT _pk, content, created_time, modified_time, creator FROM `{comments_table_name}` WHERE issue_id = {_pk} AND deleted = False ORDER BY _pk ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_records = comments_res.get('results', [])
-        issue['comments'] = []
-        for comment in comments_records:
-            issue['comments'].append({
-                'id': comment.get('_pk'),
-                'number': comment.get('_pk'),
-                'content': comment.get('content'),
-                'created_time': comment.get('created_time'),
-                'modified_time': comment.get('modified_time'),
-                'creator': comment.get('creator'),
-            })
+        issue['comments'] = comments_records
         linked_ticket = issue.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
