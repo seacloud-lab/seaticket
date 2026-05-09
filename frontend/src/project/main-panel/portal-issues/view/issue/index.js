@@ -111,8 +111,8 @@ const Issue = ({
 
     return portalAPI.modifyPortalIssue(projectUuid, issueID, serverData).then(res => {
       let update = { ...data };
-      if (hasOwnProperty(res.data.update, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT)) {
-        update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT] = res.data.update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT];
+      if (hasOwnProperty(res.data.row, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT)) {
+        update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT] = res.data.row[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT];
       }
       const newIssue = issue._update(update);
       handleUpdateRowsCacheData(issueID, update);

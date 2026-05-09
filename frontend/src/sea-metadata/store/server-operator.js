@@ -28,7 +28,7 @@ class ServerOperator {
       case OPERATION_TYPE.MODIFY_ROW: {
         const { row_id, row_update, is_copy_paste = false } = operation;
         context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
-          operation.row_update = { ...row_update, ...res.data.update };
+          operation.row_update = { ...row_update, ...res.data.row };
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: context.translate('Failed to modify {row}') });

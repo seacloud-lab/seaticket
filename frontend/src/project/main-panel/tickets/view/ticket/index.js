@@ -130,8 +130,8 @@ const Ticket = ({
       if (isAutoUpdateParticipants && !participants.includes(user.email)) {
         update['participants'] = [...participants, user.email];
       }
-      if (hasOwnProperty(res.data.update, PREDEFINED_TICKET_COLUMN_NAME.CONTENT)) {
-        update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT] = res.data.update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT];
+      if (hasOwnProperty(res.data.row, PREDEFINED_TICKET_COLUMN_NAME.CONTENT)) {
+        update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT] = res.data.row[PREDEFINED_TICKET_COLUMN_NAME.CONTENT];
       }
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);

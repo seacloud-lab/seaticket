@@ -30,7 +30,7 @@ const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
     let serverData = { title, content, tags };
     knowledgeBaseAPI.updateRecord(projectUuid, knowledgeID, serverData).then(res => {
       handleUpdateRowsCacheData(knowledgeID, serverData);
-      setKnowledge({ ...knowledge, ...serverData, ...res.data.update });
+      setKnowledge({ ...knowledge, ...serverData, ...res.data.row });
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

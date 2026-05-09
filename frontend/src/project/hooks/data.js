@@ -388,16 +388,16 @@ export const DataProvider = ({
       let table = data[tableName];
       let _rowUpdate = { ...rowUpdate };
       if (table) {
-        if (res.data.update) {
+        if (res.data.row) {
           const columns = Object.values(table?.key_column_map || {});
-          const updateCallback = convertRowToKeyValue(res.data.update, { data: { columns }, typesData });
-          _rowUpdate = { ...rowUpdate, ...updateCallback };
+          const rowUpdateCallback = convertRowToKeyValue(res.data.row, { data: { columns }, typesData });
+          _rowUpdate = { ...rowUpdate, ...rowUpdateCallback };
         }
         modifyLocalRow(tableName, rowId, _rowUpdate);
       }
       return {
         data: {
-          'update': _rowUpdate,
+          'row': _rowUpdate,
         },
       };
     });
