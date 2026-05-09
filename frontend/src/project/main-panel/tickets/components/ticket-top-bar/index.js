@@ -107,12 +107,7 @@ const TicketTopBar = ({ title, type, permission }) => {
 
     if (type === BAR_TYPE.MY_TICKET) return null;
     if (type === BAR_TYPE.NEW_TICKET) return null;
-    if (type === BAR_TYPE.TRASH) {
-      if (!isRW) return null;
-      return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.CLEAN_DELETED_TICKETS)} text={gettext('Clean')} icon="" />
-      );
-    }
+    if (type === BAR_TYPE.TRASH) return null;
     return (
       <IconTextBtn icon="all-tickets" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} />
     );
