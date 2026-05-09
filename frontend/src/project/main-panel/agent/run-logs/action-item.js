@@ -109,8 +109,8 @@ const ActionItem = React.memo(({
 
   const renderSuggestionIcon = () => {
     switch (tool_name) {
-      case 'suggest_resolution': {
-        return 'resolution-filled';
+      case 'suggest_reply': {
+        return 'reply-filled';
       }
       case 'suggest_create_ticket': {
         return 'ticket-filled';
@@ -125,7 +125,7 @@ const ActionItem = React.memo(({
         return 'notifications-filled';
       }
       default:
-        return 'resolution-filled';
+        return 'reply-filled';
     }
   };
 
