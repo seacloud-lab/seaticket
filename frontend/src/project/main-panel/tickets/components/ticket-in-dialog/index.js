@@ -59,9 +59,8 @@ const TicketInDialog = ({
     return ticket.creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   }, [ticket]);
 
-  const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
-
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
+    const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
     const table = getTableByName(tableName, null);
     const cacheColumns = Object.values(table?.key_column_map || {});
     const validColumns = propsColumns.length > 0 ? propsColumns : cacheColumns;
@@ -80,7 +79,7 @@ const TicketInDialog = ({
     const eventBus = context.eventBus;
     eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
     markTablesViewExpired([tableName]);
-  }, [tableName, getTableByName, modifyLocalRow, markTablesViewExpired, propsColumns, typesData, tagsData]);
+  }, [getTableByName, modifyLocalRow, markTablesViewExpired, propsColumns, typesData, tagsData]);
 
   const modifyTicket = useCallback((currentTicketID, data) => {
     let serverData = {};

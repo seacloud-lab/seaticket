@@ -74,6 +74,14 @@ const ResourceDetailsDialog = ({
     setResourceDetails(record);
   }, []);
 
+  const handleUpdateTicket = useCallback((ticket) => {
+    setResourceDetails(ticket);
+  }, []);
+
+  const handleUpdateIssue = useCallback((issue) => {
+    setResourceDetails(issue);
+  }, []);
+
   return (
     <Modal className="sea-ticket-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onToggle}>
@@ -147,10 +155,10 @@ const ResourceDetailsDialog = ({
           <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketID={resource._id} updateTicket={(ticket) => setResourceDetails(ticket)} getTicket={getTicket} />
+          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketID={resource._id} updateTicket={handleUpdateTicket} getTicket={getTicket} />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={(issue) => setResourceDetails(issue)} getTicket={getIssue} />
+          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} />
         )}
       </ModalBody>
     </Modal>
