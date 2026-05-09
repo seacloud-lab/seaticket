@@ -3,8 +3,8 @@ import { TICKET_STATE } from '../constants';
 
 class Comment {
   constructor(object) {
-    this.id = object.number || '';
-    this.number = object.number || '';
+    this.id = object._pk || '';
+    this.number = object._pk || '';
 
     this.creator = object.creator || '';
 

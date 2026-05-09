@@ -680,18 +680,7 @@ class TicketAPIView(APIView):
             end = 25
             ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
 
-            for comment in ticket_comments:
-                result = {
-                    'number': comment.get('_pk'),
-                    'content': comment.get('content'),
-                    'created_time': comment.get('created_time'),
-                    'modified_time': comment.get('modified_time'),
-                    'creator': comment.get('creator'),
-                    'via_agent': bool(comment.get('via_agent')),
-                }
-                if not ticket.get('comments'):
-                    ticket['comments'] = []
-                ticket['comments'].append(result)
+            ticket['comments'] = ticket_comments
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1022,7 +1011,7 @@ class TicketAPIView(APIView):
             activity.pop('field_name', None)
 
         return_dict = {
-            'update': update_row,
+            'row': update_row,
             'activities': new_activities
         }
         return Response(return_dict)
@@ -1262,7 +1251,7 @@ class TicketCommentsAPIView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
-            row.update({'number': pk, 'via_agent': False})
+            row.update({'_pk': pk, 'via_agent': False})
             ticket_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_comments` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
                 'pk': ticket.get('_pk'),
@@ -1399,7 +1388,7 @@ class TicketCommentAPIView(APIView):
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             
-        new_comment_data['number'] = old_comment_data.get('_pk')
+        new_comment_data['_pk'] = old_comment_data.get('_pk')
         new_comment_data['content'] = content
         new_comment_data['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 

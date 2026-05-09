@@ -553,9 +553,9 @@ class TestKnowledgeBasePut:
         response = api_client.put(url, data, format='json')
 
         assert response.status_code == 200
-        assert 'update' in response.data
-        assert response.data['update']['title'] == 'Updated Title'
-        assert response.data['update']['content'] == 'Updated Content'
+        assert 'row' in response.data
+        assert response.data['row']['title'] == 'Updated Title'
+        assert response.data['row']['content'] == 'Updated Content'
         mock_seadb_api.update_rows.assert_called_once()
 
     def test_put_content_as_dict_success(
@@ -571,4 +571,4 @@ class TestKnowledgeBasePut:
         response = api_client.put(url, data, format='json')
 
         assert response.status_code == 200
-        assert 'update' in response.data
+        assert 'row' in response.data

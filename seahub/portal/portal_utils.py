@@ -35,9 +35,9 @@ def get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end):
     issue_comments_data = seadb_api.query_rows(project_uuid, issue_comments_sql).get('results')
     return issue_comments_data
 
-def get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_number):
+def get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_id):
     comment_columns_join = ', '.join(PORTAL_ISSUE_COMMENT_COLUMNS)
-    sql = f"SELECT {comment_columns_join} FROM `{PortalIssueCommentsTable.gen_table_name()}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_number}"
+    sql = f"SELECT {comment_columns_join} FROM `{PortalIssueCommentsTable.gen_table_name()}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_id}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
