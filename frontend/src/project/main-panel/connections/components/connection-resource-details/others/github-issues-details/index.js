@@ -14,6 +14,7 @@ const GitHubIssuesDetails = ({
   isReadonly,
   linkedTicketTitle,
   projectUuid,
+  linkedTicketTools,
   onChange,
 }) => {
   const labelsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LABELS);
@@ -60,6 +61,8 @@ const GitHubIssuesDetails = ({
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}
         title={linkedTicketTitle}
         projectUuid={projectUuid}
+        isReadonly={isReadonly}
+        linkedTicketTools={linkedTicketTools}
       />
     </>
   );
