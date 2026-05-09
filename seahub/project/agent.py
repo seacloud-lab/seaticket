@@ -694,7 +694,7 @@ class AgentActionConfirmView(APIView):
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-            github_seadb_api.save_issue_update(
+            github_seadb_api.update_issue_record(
                 project_uuid,
                 ctx['connection_id'],
                 ctx['record_id'],
