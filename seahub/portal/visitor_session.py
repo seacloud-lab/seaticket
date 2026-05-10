@@ -144,3 +144,18 @@ def set_visitor_cookie(response, visitor_id):
 def clear_visitor_cookie(response):
     response.delete_cookie(VISITOR_SESSION_COOKIE_NAME, path='/')
     return response
+
+
+def ensure_visitor_cookie(request, response):
+    visitor_session = load_visitor_session(request)
+    if visitor_session.get('status') == 'active':
+        session_data = touch_visitor_session(
+            visitor_session['visitor_id'],
+            visitor_session['session_data'],
+            refresh_cookie=True,
+        )
+        if not session_data:
+            session_data = create_visitor_session()
+    else:
+        session_data = create_visitor_session()
+    return set_visitor_cookie(response, session_data['visitor_id'])

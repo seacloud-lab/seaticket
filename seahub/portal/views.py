@@ -10,10 +10,7 @@ from django.utils import timezone
 
 from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
-    create_visitor_session,
-    load_visitor_session,
-    set_visitor_cookie,
-    touch_visitor_session,
+    ensure_visitor_cookie,
 )
 from seahub import settings
 from seahub.project.models import Projects
@@ -137,18 +134,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
 
     response = render(request, 'portal_view_react.html', return_dict)
     if is_anonymous:
-        visitor_session = load_visitor_session(request)
-        if visitor_session.get('status') == 'active':
-            session_data = touch_visitor_session(
-                visitor_session['visitor_id'],
-                visitor_session['session_data'],
-                refresh_cookie=True,
-            )
-            if not session_data:
-                session_data = create_visitor_session()
-        else:
-            session_data = create_visitor_session()
-        set_visitor_cookie(response, session_data['visitor_id'])
+        response = ensure_visitor_cookie(request, response)
     return response
 
 

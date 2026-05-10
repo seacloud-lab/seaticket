@@ -11,9 +11,9 @@ class ChatAPI {
     return `${origin}${siteRoot}${basePath}/${projectUuid}/chat/`;
   }
 
-  _handleVisitorSessionExpired(status, errorMsg = '') {
+  _handleVisitorSessionExpired(status, data) {
     if (status !== 401) return;
-    if (errorMsg && errorMsg !== 'Visitor session expired. Please refresh the page.') return;
+    if (data?.error_code !== 'visitor_session_expired') return;
     window.setTimeout(() => window.location.replace(this._getPortalChatRootURL()), 0);
   }
 
@@ -47,7 +47,7 @@ class ChatAPI {
     this.req.interceptors.response.use(
       response => response,
       error => {
-        this._handleVisitorSessionExpired(error?.response?.status, error?.response?.data?.error_msg);
+        this._handleVisitorSessionExpired(error?.response?.status, error?.response?.data);
         return Promise.reject(error);
       }
     );
@@ -98,7 +98,12 @@ class ChatAPI {
         credentials: 'include',
         signal: options.signal,
       }).then(response => {
-        this._handleVisitorSessionExpired(response.status);
+        if (response.status === 401) {
+          return response.json().then(data => {
+            this._handleVisitorSessionExpired(response.status, data);
+            return response;
+          }).catch(() => response);
+        }
         return response;
       });
     }
@@ -117,7 +122,12 @@ class ChatAPI {
       credentials: 'include',
       signal: options.signal,
     }).then(response => {
-      this._handleVisitorSessionExpired(response.status);
+      if (response.status === 401) {
+        return response.json().then(data => {
+          this._handleVisitorSessionExpired(response.status, data);
+          return response;
+        }).catch(() => response);
+      }
       return response;
     });
   }

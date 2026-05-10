@@ -103,6 +103,7 @@ def gen_portal_chat_task_id(session_uuid):
 
 def _build_visitor_session_error():
     response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')
+    response.data['error_code'] = 'visitor_session_expired'
     clear_visitor_cookie(response)
     return response
 
