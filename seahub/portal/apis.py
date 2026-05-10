@@ -1072,7 +1072,7 @@ class PortalIssueCommentView(APIView):
                 'pk': issue_comment_data.get('_pk'),
                 'row': {
                     'deleted': True,
-                    'delete_time': now_datetime,
+                    'modified_time': now_datetime,
                 },
             }
             seadb_api.update_rows(project_uuid, PortalIssueCommentsTable.gen_table_name(), [update_issue_comment])

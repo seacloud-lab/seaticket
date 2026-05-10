@@ -1483,7 +1483,7 @@ class TicketCommentAPIView(APIView):
                 'pk': ticket_comment_data.get('_pk'),
                 'row': {
                     'deleted': True,
-                    'delete_time': now_datetime,
+                    'modified_time': now_datetime,
                 },
             }
             seadb_api.update_rows(project_uuid, 'ticket_comments', [update_ticket_comment])
