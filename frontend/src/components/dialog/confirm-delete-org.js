@@ -22,8 +22,8 @@ class ConfirmDeleteOrg extends Component {
   }
 
   onKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      this.createTag();
+    if (e.key === 'Enter' && this.state.confirmText === this.props.orgName) {
+      this.executeOperation();
     }
   };
 

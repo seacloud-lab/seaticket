@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'reactstrap';
 import { toaster, CenteredLoading, SectionSettings } from '@/components';
+import ConfirmDeleteOrg from '@/components/dialog/confirm-delete-org';
 import AdminCheckboxSettings from '@/components/settings/admin-checkbox-settings';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
-import { orgID, gettext, displayTwoFactorAuth } from '@/constants';
+import { orgID, gettext, displayTwoFactorAuth, siteRoot } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import InputItem from './input-item';
 import { validateName } from '@/utils/validate';
@@ -20,6 +22,7 @@ class OrgSettings extends React.Component {
       settings: {},
       loading: true,
       orgName: '',
+      isDeleteOrgDialogOpen: false,
     };
   }
 
@@ -80,8 +83,22 @@ class OrgSettings extends React.Component {
     toaster.danger(errMessage);
   };
 
+  toggleDeleteOrgDialog = () => {
+    this.setState({ isDeleteOrgDialogOpen: !this.state.isDeleteOrgDialogOpen });
+  };
+
+  deleteOrg = () => {
+    orgAdminAPI.orgAdminDeleteOrg(orgID).then(() => {
+      toaster.success(gettext('%s deleted').replace('%s', gettext('Team')));
+      window.location.href = siteRoot;
+    }).catch((error) => {
+      this.handleError(error);
+    });
+  };
+
   render() {
-    let { loading, settings, orgName } = this.state;
+    let { loading, settings, orgName, isDeleteOrgDialogOpen } = this.state;
+    const deleteOrgMsg = gettext('Please type {placeholder} to confirm.').replace('{placeholder}', `<span class="op-target">${Utils.HTMLescape(orgName)}</span>`);
     return (
       <>
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
@@ -123,6 +140,24 @@ class OrgSettings extends React.Component {
                   helpTip={gettext('Enable members modify their own name')}
                 />
               </SectionSettings>
+              <SectionSettings title={gettext('Danger zone')}>
+                <div className="d-flex align-items-center justify-content-between flex-wrap">
+                  <div className="mr-3">
+                    <div className="font-weight-bold">{gettext('Delete team')}</div>
+                    <div className="text-secondary">{gettext('Delete this team and all of its data permanently.')}</div>
+                  </div>
+                  <Button color="danger" onClick={this.toggleDeleteOrgDialog}>{gettext('Delete team')}</Button>
+                </div>
+              </SectionSettings>
+              {isDeleteOrgDialogOpen && (
+                <ConfirmDeleteOrg
+                  title={gettext('Delete team')}
+                  message={deleteOrgMsg}
+                  orgName={orgName}
+                  executeOperation={this.deleteOrg}
+                  toggleDialog={this.toggleDeleteOrgDialog}
+                />
+              )}
             </>
           )}
         </Main>

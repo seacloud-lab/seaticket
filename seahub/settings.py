@@ -770,6 +770,8 @@ sys.path.pop(0)
 # Following settings are private, can not be overwrite.
 MULTI_TENANCY = True
 
+ORG_ENABLE_ADMIN_DELETE_ORG = False
+
 # service url
 SEATICKET_SERVER_HOSTNAME = os.environ.get('SEATICKET_SERVER_HOSTNAME', '')
 SEATICKET_SERVER_PROTOCOL = os.environ.get('SEATICKET_SERVER_PROTOCOL', '')

@@ -8,3 +8,4 @@ org_role_updated = Signal()
 
 org_operation_signal = Signal()
 org_operation_signal.connect(org_operation_callback)
+org_deleted = Signal()

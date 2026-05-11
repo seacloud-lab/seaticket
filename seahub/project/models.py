@@ -121,6 +121,18 @@ class WorkspacesManager(models.Manager):
         for workspace in workspaces:
             self.delete_workspace(workspace.id)
 
+    def delete_workspace(self, workspace_id):
+        try:
+            workspace = super(WorkspacesManager, self).get(pk=workspace_id)
+            from seahub.project.utils import delete_project
+            projects = Projects.objects.filter(workspace=workspace)
+            for project in projects:
+                delete_project(project)
+            workspace.delete()
+            return True
+        except self.model.DoesNotExist:
+            return False
+
 
 class Workspaces(models.Model):
     name = models.CharField(max_length=255, null=True)
