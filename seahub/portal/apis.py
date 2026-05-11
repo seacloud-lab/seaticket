@@ -121,7 +121,7 @@ class PortalLogoView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            file_url = upload_portal_logo_file_to_s3(project_uuid, file, username)
+            file_url = upload_portal_logo_file_to_s3(project_uuid, file)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

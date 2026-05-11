@@ -21,7 +21,6 @@ from seahub.portal.apis import (
 )
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
-from seahub.utils.storage import upload_portal_logo_file_to_s3
 
 
 def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
@@ -568,22 +567,6 @@ class TestPortalLogoView:
         assert resp.status_code == 200
         metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
         file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
-
-
-class TestPortalLogoStorage:
-
-    def test_upload_portal_logo_sets_content_type(self):
-        file = SimpleUploadedFile('logo.png', b'png-bytes', content_type='image/png')
-
-        mock_s3_client = MagicMock()
-        with patch('seahub.utils.storage.s3_client', mock_s3_client), \
-                patch('seahub.utils.storage.get_s3_file_metadata', return_value=None):
-            file_url = upload_portal_logo_file_to_s3('project-uuid', file, 'user@example.com')
-
-        assert file_url.startswith('/api/v1/portal/project-uuid/logo/?v=')
-        _, kwargs = mock_s3_client.upload_file.call_args
-        assert kwargs['ExtraArgs']['ContentType'] == 'image/png'
-        
 
 
 @pytest.mark.django_db

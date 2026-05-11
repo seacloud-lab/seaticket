@@ -1,5 +1,4 @@
 import os
-import hashlib
 import logging
 from datetime import datetime, timezone
 
@@ -70,32 +69,12 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
     return new_file_urls_dict
 
 
-def calculate_md5(file_stream):
-    md5_hash = hashlib.md5()
-    # Read in chunks to handle large files without memory spikes
-    for chunk in iter(lambda: file_stream.read(4096), b""):
-        md5_hash.update(chunk)
-    file_stream.seek(0)
-    return f'"{md5_hash.hexdigest()}"'
 
-
-def get_s3_file_metadata(s3_file_path):
-    try:
-        response = s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-        return response
-    except s3_client.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            return None
-        raise e
-
-
-def upload_portal_logo_file_to_s3(project_uuid, file, username):
+def upload_portal_logo_file_to_s3(project_uuid, file):
     final_file_path = gen_portal_logo_file_path()
     s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
-    # Calculate local MD5 first
-    local_etag = calculate_md5(file)
-    version = local_etag.strip('"')
+    version = int(datetime.now(timezone.utc).timestamp())
 
     file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
