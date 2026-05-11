@@ -37,12 +37,22 @@ const PortalCustomizationDialog = ({ toggle, portalName, portalLogo, onUpdate })
     fileInputRef.current && fileInputRef.current.click();
   }, []);
 
+  const MAX_FILE_SIZE = 1024 * 1024;
+
   const onFileChange = useCallback((e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       toaster.danger(gettext('Please upload an image file'));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toaster.danger(gettext('The file is too large. Allowed maximum size is 1MB.'));
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

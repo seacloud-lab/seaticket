@@ -1,7 +1,6 @@
 from django.core.cache import cache
 
 from seahub.utils import normalize_cache_key
-from seahub.auth.models import EmailUser
 from seahub.organizations.models import OrgUser
 from seahub.profile.models import Profile
 
