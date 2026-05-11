@@ -31,7 +31,7 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
-from seahub.utils.storage import get_file_etag, if_none_match_hit, gen_s3_web_crawl_file_path
+from seahub.utils.storage import if_none_match_hit, gen_s3_web_crawl_file_path
 from seahub.utils import s3_client
 from seahub.settings import S3_WEB_CRAWL_BUCKET
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
@@ -1424,7 +1424,7 @@ class ConnectionFileView(APIView):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         try:
             s3_file_path = gen_s3_web_crawl_file_path(project_uuid, str(connection_id), file_path)
-            s3_obj = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+            s3_meta = s3_client.head_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code')
             if error_code == 'NoSuchKey':
@@ -1438,21 +1438,25 @@ class ConnectionFileView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        etag = s3_obj.get('ETag')
+        etag = s3_meta.get('ETag')
         if if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
-            not_modified['ETag'] = etag
-            if s3_obj.get('LastModified'):
-                not_modified['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
             return not_modified
+
+        try:
+            s3_obj = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         response = FileResponse(s3_obj['Body'])
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag
-        if s3_obj.get('LastModified'):
-            response['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
+        if s3_meta.get('LastModified'):
+            response['Last-Modified'] = formatdate(int(s3_meta['LastModified'].timestamp()), usegmt=True)
         else:
             response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
@@ -1578,13 +1582,11 @@ class DownloadEmailAttachments(APIView):
             error_msg = 'File not exist.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        modified_ts = int(os.path.getmtime(local_zip_path))
-        etag = get_file_etag(local_zip_path)
+        stat_result = os.stat(local_zip_path)
+        etag = f'"{stat_result.st_size:x}-{stat_result.st_mtime_ns:x}"'
         if if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
-            not_modified['ETag'] = etag
-            not_modified['Last-Modified'] = formatdate(modified_ts, usegmt=True)
             return not_modified
 
         response = FileResponse(
@@ -1595,5 +1597,5 @@ class DownloadEmailAttachments(APIView):
         )
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
-        response['Last-Modified'] = formatdate(modified_ts, usegmt=True)
+        response['Last-Modified'] = formatdate(int(stat_result.st_mtime), usegmt=True)
         return response

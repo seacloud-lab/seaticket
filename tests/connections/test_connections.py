@@ -505,7 +505,7 @@ class TestConnectionFileView:
         request.user = project_creator
 
         s3_client_mock = Mock()
-        s3_client_mock.get_object.side_effect = ClientError({'Error': {'Code': 'NoSuchKey'}}, 'GetObject')
+        s3_client_mock.head_object.side_effect = ClientError({'Error': {'Code': 'NoSuchKey'}}, 'HeadObject')
         with patch('seahub.project.connections.s3_client', s3_client_mock):
             resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id=site_connection.id, file_path='f.txt')
 

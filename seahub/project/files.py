@@ -21,7 +21,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils import s3_client
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, get_file_etag, if_none_match_hit, gen_s3_file_path
+from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, gen_s3_file_path
 from seahub.settings import S3_FILE_BUCKET
 from seahub.project.constants import IMAGE_EXTS
 
@@ -122,19 +122,17 @@ class GetProjectUploadFileView(APIView):
             error_msg = 'File not exist.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        modified_ts = int(os.path.getmtime(tmp_upload_file_path))
-        etag = get_file_etag(tmp_upload_file_path)
+        stat_result = os.stat(tmp_upload_file_path)
+        etag = f'"{stat_result.st_size:x}-{stat_result.st_mtime_ns:x}"'
         if if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
-            not_modified['ETag'] = etag
-            not_modified['Last-Modified'] = formatdate(modified_ts, usegmt=True)
             return not_modified
 
         response = FileResponse(open(tmp_upload_file_path, 'rb'))
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
-        response['Last-Modified'] = formatdate(modified_ts, usegmt=True)
+        response['Last-Modified'] = formatdate(int(stat_result.st_mtime), usegmt=True)
         return response
 
 
