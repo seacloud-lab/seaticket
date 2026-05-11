@@ -7,7 +7,8 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGenerato
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable, \
+    GeneralTaskTable
 
 logger = logging.getLogger(__name__)
 
@@ -523,6 +524,41 @@ def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
         )
 
 
+def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in GeneralTaskTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    index_column_names = [
+        GeneralTaskTable.source_row_id.name,
+        GeneralTaskTable.title.name,
+        GeneralTaskTable.status.name,
+        GeneralTaskTable.priority.name,
+        GeneralTaskTable.modified_time.name,
+        GeneralTaskTable.created_time.name,
+        GeneralTaskTable.record_modified_time.name,
+        GeneralTaskTable.deleted.name,
+        GeneralTaskTable.linked_ticket.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
+
+
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
@@ -537,6 +573,8 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = ThreadTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.NOTION.value:
         table_name = NotionTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -965,6 +1003,28 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
         record = {}
         column_metadata = []
     return record, column_metadata, ''
+
+
+def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
+    general_task_table_name = GeneralTaskTable.gen_table_name(connection_id)
+    from seahub.tickets.ticket_utils import get_ticket_title
+    sql = (
+        f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
+        f"`content`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
+        f"`linked_ticket`, `outdated` FROM `{general_task_table_name}` WHERE _pk = {_pk}"
+    )
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results')[0]
+        column_metadata = res.get('metadata')
+        linked_ticket = record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        logger.error(f'SeaDB query error for general task details {general_task_table_name}: {e}')
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return record, column_metadata, linked_ticket_title
 
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):

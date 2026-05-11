@@ -35,7 +35,8 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    init_notion_seadb_table, list_notion_record_details
+    init_notion_seadb_table, list_notion_record_details, init_general_task_seadb_table, \
+    list_general_task_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -43,7 +44,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
@@ -165,6 +166,8 @@ class ProjectConnectionsView(APIView):
                 init_email_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.NOTION.value:
                 init_notion_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.GENERAL_TASK.value:
+                init_general_task_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -893,6 +896,8 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_email_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.NOTION.value:
             record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, record_id)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -939,6 +944,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GENERAL_TASK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -957,6 +963,8 @@ class ProjectConnectionRecordView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            table_cls = GeneralTaskTable
 
         update_row = {'pk': int(record_id), 'row': {}}
 
@@ -1050,6 +1058,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GENERAL_TASK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1068,6 +1077,8 @@ class ProjectConnectionRecordsView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            table_cls = GeneralTaskTable
 
         update_rows = []
         for record in records_data:
