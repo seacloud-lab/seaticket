@@ -3,6 +3,7 @@ import { CONNECTION_TYPE } from '../../../constants';
 import GitHubIssuesDetails from './github-issues-details';
 import EmailDetails from './email-details';
 import DiscourseForumDetails from './discourse-forum-details';
+import GeneralTaskDetails from './general-task-details';
 
 const ConnectionResourceOtherDetails = ({
   connection,
@@ -17,6 +18,9 @@ const ConnectionResourceOtherDetails = ({
   }
   if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
     return (<DiscourseForumDetails { ...props } />);
+  }
+  if (connectionType === CONNECTION_TYPE.GENERAL_TASK) {
+    return (<GeneralTaskDetails { ...props } />);
   }
   return null;
 };

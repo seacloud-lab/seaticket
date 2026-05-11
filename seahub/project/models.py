@@ -42,7 +42,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'auth_token']
 
 
 def encrypt_config(config):

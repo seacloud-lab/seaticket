@@ -213,6 +213,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
     // Add modifyRow/modifyRows for all connection types that support outdated editing
     if (SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection.type)) {
+      if (connection.type === CONNECTION_TYPE.GENERAL_TASK) {
+        _api.insertRow = (rowData = {}) => {
+          return connectionsAPI.createConnectionRecord(projectUuid, connectionID, rowData).then(res => res.data.row);
+        };
+      }
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
         const tableName = getTableNameByConnectionID(connectionID);

@@ -282,7 +282,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
     }, {
       key: 'base_url',
-      name: gettext('Tasks URL'),
+      name: gettext('Middleware base URL'),
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
@@ -341,7 +341,7 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.GENERAL_TASK,
     icon: 'sites',
     name: gettext('General tasks'),
-    help_text: gettext('Provide the Tasks URL of a General task middleware. If any problem occurs, check the'),
+    help_text: gettext('Provide the middleware URL for general task sync. Both a base URL and a full /tasks/ URL are accepted. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'General-Tasks',
   }
 ];
@@ -610,15 +610,21 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Title'),
       is_name_column: true,
       frozen: true,
+      editable: true,
+      is_required: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: {
       display_name: gettext('Status'),
+      editable: true,
+      is_required: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: {
       display_name: gettext('Size'),
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: {
       display_name: gettext('Priority'),
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
       display_name: gettext('Assignees'),
@@ -633,6 +639,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Due date'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
       display_name: gettext('Created time'),
