@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import ThoughtProcess from '../thought-process';
 import { Attachments } from '../../components';
-import CustomizeMarkdownViewer from '../customize-markdown-viewer';
+import AIReply from '@/project/components/ai-reply';
 import MessageOperations from '../message-operations';
+import { useDocuments } from '../../hooks';
 
 import './index.css';
 
@@ -13,6 +14,8 @@ const CommonMessage = ({
   showOperations,
 }) => {
   const markdownMessageRef = useRef(null);
+
+  const { openDocument } = useDocuments();
 
   const getAIReply = useCallback(() => {
     return markdownMessageRef.current.getAIReply();
@@ -30,13 +33,14 @@ const CommonMessage = ({
           workspaceID={workspaceID}
         />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
-        <CustomizeMarkdownViewer
+        <AIReply
           ref={markdownMessageRef}
-          chatId={chatId}
+          messageId={chatId}
           message={message}
           projectName={projectName}
           projectUuid={projectUuid}
           workspaceID={workspaceID}
+          openDocument={openDocument}
         />
         {showOperations && (<MessageOperations getAIReply={getAIReply} />)}
       </div>

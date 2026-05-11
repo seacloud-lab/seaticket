@@ -4,9 +4,9 @@ import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
 import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
-import AIReferenceMarkdown from '@/project/components/ai-reference-markdown';
+import AIReply from '@/project/components/ai-reply';
 
-const { projectUuid } = window?.app?.pageOptions || {};
+const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
 const ActionItem = React.memo(({
   action,
@@ -145,11 +145,10 @@ const ActionItem = React.memo(({
           <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}</div>
             {content && (
-              <AIReferenceMarkdown
-                value={content}
-                sources={Array.isArray(sources) ? sources : []}
+              <AIReply
+                message={{ ai_reply: content, sources: Array.isArray(sources) ? sources : [] }}
                 projectUuid={projectUuid}
-                showTOC={false}
+                projectName={projectName}
               />
             )}
           </div>

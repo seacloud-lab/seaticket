@@ -1,14 +1,23 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { IconButton } from '@/components';
-import SimpleLongTextFormatter from '../../../connections/components/cell-formatter/long-text-formatter';
-import { useDocuments } from '../../hooks';
+import SimpleLongTextFormatter from '../../../main-panel/connections/components/cell-formatter/long-text-formatter';
 import { gettext } from '@/constants';
 
 import './index.css';
 
-const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isShowPopover, onLinkClick, onHrefClick, attributes, children, editor }) => {
-  const { openDocument } = useDocuments();
+const CustomizeLink = ({
+  canPreviewLinkedFile = true,
+  mdFiles = [],
+  element,
+  isShowPopover,
+  onLinkClick,
+  onHrefClick,
+  attributes,
+  children,
+  editor,
+  openDocument,
+}) => {
 
   const file = useMemo(() => {
     if (!Array.isArray(mdFiles) || mdFiles.length === 0) return null;
@@ -18,7 +27,7 @@ const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isS
   const onClick = useCallback((event) => {
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
-    openDocument(file);
+    openDocument && openDocument(file);
   }, [file, openDocument]);
 
   const { url } = element;
@@ -49,7 +58,7 @@ const CustomizeLink = ({ canPreviewLinkedFile = true, mdFiles = [], element, isS
   }
 
   return (
-    <div className="sea-ai-chat-customize-link" onClick={canPreviewLinkedFile ? onClick : () => {}}>
+    <div className="sea-ai-chat-customize-link" onClick={canPreviewLinkedFile && openDocument ? onClick : () => {}}>
       <div className="sea-ai-chat-customize-link-header">
         <div className="sea-ai-chat-customize-link-name o-hidden">
           <IconButton icon="ai-file" size={16} className="no-hover-bg d-inline-flex" />
