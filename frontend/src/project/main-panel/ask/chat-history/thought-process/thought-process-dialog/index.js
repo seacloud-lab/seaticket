@@ -6,7 +6,7 @@ import ProcessDetails from './process-details';
 import { isObject } from '@/utils/type-detection';
 import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 import { Attachments } from '../../../components';
-import CustomizeMarkdownViewer from '../../customize-markdown-viewer';
+import AIReply from '@/project/components/ai-reply';
 import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 
@@ -36,7 +36,7 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
   const messageNode = {
     name: gettext('Message'),
     value: messageValue,
-    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+    formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...props } />),
   };
 
   const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
@@ -53,7 +53,7 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
       children: [
         {
           value: messageValue,
-          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+          formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...props } />),
         }
       ]
     };
@@ -73,7 +73,7 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     userMessage.rawChildren = [
       {
         value: raw ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: raw } : null,
-        formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...props } />),
+        formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...props } />),
       }
     ];
   }
@@ -132,7 +132,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         const allSystemPrompts = system_prompts.map((system_prompt) => {
           return {
             value: system_prompt ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: system_prompt } : null,
-            formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />)
+            formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />)
           };
         });
         TaskInfo.push({
@@ -176,7 +176,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                       [CHAT_MESSAGE_TYPE.AI_REPLY]: record.assistant_response?.[0]?.content?.answer,
                       [CHAT_MESSAGE_TYPE.SOURCES]: Array.isArray(record.assistant_response?.[0]?.content?.sources) ? record.assistant_response?.[0]?.content?.sources : [],
                     },
-                    formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                    formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
                   return {
@@ -214,7 +214,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                 {
                   name: gettext('Step output'),
                   value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
-                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                  formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
                 },
               ]
             } : {
@@ -222,7 +222,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               children: [
                 {
                   value: action.result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: action.result } : null,
-                  formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                  formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
                 }
               ]
             }
@@ -267,7 +267,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                   children: [
                     {
                       value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                      formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                      formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
                     }
                   ]
                 },
@@ -304,7 +304,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
                       children: [
                         {
                           value: too_call.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+                          formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
                         }
                       ]
                     },
@@ -348,7 +348,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         finalAnswerValue.push({
           name: final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
           value: result ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: result } : null,
-          formatter: ({ className, value }) => (<CustomizeMarkdownViewer message={value} className={className} { ...customizeMDProps } />),
+          formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
         });
       }
       if (finalAnswerRetryChildren.length > 0) {
