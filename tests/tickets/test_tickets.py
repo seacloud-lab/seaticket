@@ -11,7 +11,24 @@ from seahub.tickets.tickets import (
     MyTicketAPIView,
     TicketMetadataAPIView,
     TicketTrashAPIView,
+    build_ticket_data_event,
 )
+
+
+class TestBuildTicketDataEvent:
+    def test_tags_are_rendered_as_readable_names(self):
+        seadb_api = Mock()
+        with patch('seahub.tickets.tickets.build_tag_id_to_name_map', return_value={'1': 'bug', '2': 'frontend'}):
+            event = build_ticket_data_event(
+                'ticket_updated',
+                old_row={'tags': [1]},
+                new_row={'tags': [1, 2]},
+                seadb_api=seadb_api,
+                project_uuid='project-id',
+            )
+
+        assert event['old_value'] == {'tags': ['bug']}
+        assert event['new_value'] == {'tags': ['bug', 'frontend']}
 
 
 class TestTicketsAPIView:

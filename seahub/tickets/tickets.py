@@ -41,7 +41,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
-    validate_linked_connection_records
+    build_tag_id_to_name_map, validate_linked_connection_records
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -55,19 +55,40 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 
+def _format_ticket_event_value(field_name, field_value, tag_id_to_name=None):
+    if field_name == TicketsTable.tags.name and isinstance(field_value, list):
+        return [
+            tag_id_to_name.get(str(tag_id), tag_id)
+            for tag_id in field_value
+        ]
+    return field_value
 
-def build_ticket_data_event(event_type, old_row=None, new_row=None):
+
+def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=None, project_uuid=None):
     old_row = old_row or {}
     new_row = new_row or {}
     old_value = {}
     new_value = {}
+    tag_id_to_name = {}
+
+    has_tag_changes = False
+    tag_ids = []
+    if TicketsTable.tags.name in new_row:
+        old_tags = old_row.get(TicketsTable.tags.name) or []
+        new_tags = new_row.get(TicketsTable.tags.name) or []
+        if old_tags != new_tags:
+            has_tag_changes = True
+            tag_ids = old_tags + new_tags
+
+    if has_tag_changes and seadb_api and project_uuid:
+        tag_id_to_name = build_tag_id_to_name_map(seadb_api, project_uuid, tag_ids)
 
     for field_name, field_value in new_row.items():
         old_field_value = old_row.get(field_name)
         if old_field_value == field_value:
             continue
-        old_value[field_name] = old_field_value
-        new_value[field_name] = field_value
+        old_value[field_name] = _format_ticket_event_value(field_name, old_field_value, tag_id_to_name)
+        new_value[field_name] = _format_ticket_event_value(field_name, field_value, tag_id_to_name)
 
     return {
         'type': event_type,
@@ -368,7 +389,12 @@ class TicketsAPIView(APIView):
         send_data_update_msg(
             project_uuid,
             ticket_pk,
-            event=build_ticket_data_event(DataEventType.TICKET_ADDED.value, new_row=row),
+            event=build_ticket_data_event(
+                DataEventType.TICKET_ADDED.value,
+                new_row=row,
+                seadb_api=seadb_api,
+                project_uuid=project_uuid,
+            ),
         )
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
@@ -511,7 +537,13 @@ class TicketsAPIView(APIView):
                     'row': updated_row,
                 }
             )
-            ticket_events[int(row.get('_pk'))] = build_ticket_data_event(event_type, old_row=row, new_row=updated_row)
+            ticket_events[int(row.get('_pk'))] = build_ticket_data_event(
+                event_type,
+                old_row=row,
+                new_row=updated_row,
+                seadb_api=seadb_api,
+                project_uuid=project_uuid,
+            )
 
         if ticket_link_diff:
             try:
@@ -1003,7 +1035,13 @@ class TicketAPIView(APIView):
         send_data_update_msg(
             project_uuid,
             ticket.get('_pk'),
-            event=build_ticket_data_event(event_type, old_row=ticket, new_row=update_row),
+            event=build_ticket_data_event(
+                event_type,
+                old_row=ticket,
+                new_row=update_row,
+                seadb_api=seadb_api,
+                project_uuid=project_uuid,
+            ),
         )
 
         # Rename activity_type to type_description for frontend

@@ -69,6 +69,21 @@ class MappingRequiredError(Exception):
         self.connection_id = connection_id
         super().__init__(f'Mapping required for agent type: {agent_type}')
 
+
+def _parse_action_sources(raw_sources):
+    if isinstance(raw_sources, list):
+        return raw_sources
+    if not raw_sources:
+        return []
+    if not isinstance(raw_sources, str):
+        return []
+    try:
+        sources = json.loads(raw_sources)
+    except Exception:
+        return []
+    return sources if isinstance(sources, list) else []
+
+
 def _build_items_map_from_actions(actions):
     """build the items map from actions"""
     items_map = {}
@@ -91,6 +106,7 @@ def _build_items_map_from_actions(actions):
             'result': action.get('result', ''),
             'status': action.get('status', ''),
             'suggestion_text': action.get('suggestion_text', ''),
+            'sources': _parse_action_sources(action.get('sources')),
             'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
@@ -120,7 +136,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50):
             actions_limit = per_page * 30
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-                f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+                f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -169,7 +185,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
         
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
-            f"`statistics`, `created_at`, `executed_at` FROM `{AgentActionsTable.gen_table_name()}` " \
+            f"`statistics`, `created_at`, `executed_at`, `sources` FROM `{AgentActionsTable.gen_table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
@@ -398,8 +414,8 @@ class AgentActionConfirmView(APIView):
     def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, action, username):
         """Dispatch GitHub issue actions to the appropriate handler."""
         content = action.get('content', '') if isinstance(action, dict) else ''
-        if tool_name == 'suggest_resolution':
-            return self._execute_github_suggest_resolution(seadb_api, project_uuid, source_id, content)
+        if tool_name == 'suggest_reply':
+            return self._execute_github_suggest_reply(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_modify_type':
             suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
             return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, suggestion_text)
@@ -410,8 +426,8 @@ class AgentActionConfirmView(APIView):
             return f'Unknown tool_name: {tool_name}'
 
     def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
-        if tool_name == 'suggest_resolution':
-            return self._execute_discourse_suggest_resolution(seadb_api, project, project_uuid, source_id, content, username)
+        if tool_name == 'suggest_reply':
+            return self._execute_discourse_suggest_reply(seadb_api, project, project_uuid, source_id, content, username)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -420,17 +436,17 @@ class AgentActionConfirmView(APIView):
 
     def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
         """Dispatch email-thread actions to the appropriate handler."""
-        if tool_name == 'suggest_resolution':
-            return self._execute_email_suggest_resolution(seadb_api, project_uuid, source_id, content)
+        if tool_name == 'suggest_reply':
+            return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_discourse_suggest_resolution(self, seadb_api, project, project_uuid, source_id, resolution_content, username):
-        resolution_content = (resolution_content or '').strip()
-        if not resolution_content:
+    def _execute_discourse_suggest_reply(self, seadb_api, project, project_uuid, source_id, reply_content, username):
+        reply_content = (reply_content or '').strip()
+        if not reply_content:
             return 'Cannot create Discourse reply: empty content.'
 
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
@@ -462,7 +478,7 @@ class AgentActionConfirmView(APIView):
 
         try:
             discourse_api = DiscourseForumAPI(discourse_url, api_key, api_username)
-            result = discourse_api.create_post(topic_id, resolution_content)
+            result = discourse_api.create_post(topic_id, reply_content)
             post_number = result.get('post_number', 0)
         except DiscourseForumAPIException as e:
             logger.error(f'Failed to create Discourse reply for topic #{topic_id}: {e}')
@@ -471,7 +487,7 @@ class AgentActionConfirmView(APIView):
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         reply_data = {
             'post_number': post_number,
-            'content': resolution_content,
+            'content': reply_content,
             'author': api_username,
             'topic_pk': topic_pk,
         }
@@ -537,13 +553,13 @@ class AgentActionConfirmView(APIView):
             'comment_count': issue.get('comment_count') or 0,
         }
 
-    def _execute_github_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
-        """Post a resolution suggestion as a GitHub comment."""
+    def _execute_github_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
+        """Post a reply suggestion as a GitHub comment."""
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
 
-        if not resolution_content:
+        if not reply_content:
             return f'Resolution content is empty for GitHub issue {ctx["record_id"]}.'
 
         try:
@@ -551,11 +567,11 @@ class AgentActionConfirmView(APIView):
                 ctx['owner'],
                 ctx['repo'],
                 ctx['issue_number'],
-                resolution_content,
+                reply_content,
             )
             comment_id = result.get('id')
             comment_created_at = result.get('created_at', '')
-            logger.info(f'Added resolution comment #{comment_id} to GitHub issue {ctx["record_id"]}')
+            logger.info(f'Added reply comment #{comment_id} to GitHub issue {ctx["record_id"]}')
         except Exception as e:
             logger.error(f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}')
             return f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}'
@@ -582,7 +598,7 @@ class AgentActionConfirmView(APIView):
                 GithubIssueCommentsTable.comment_id.name: comment_id,
                 GithubIssueCommentsTable.issue_id.name: ctx['issue_id'],
                 GithubIssueCommentsTable.author.name: ctx['author'],
-                GithubIssueCommentsTable.content.name: resolution_content,
+                GithubIssueCommentsTable.content.name: reply_content,
                 GithubIssueCommentsTable.created_time.name: comment_created_at,
                 GithubIssueCommentsTable.modified_time.name: comment_created_at,
             }
@@ -678,7 +694,7 @@ class AgentActionConfirmView(APIView):
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-            github_seadb_api.save_issue_update(
+            github_seadb_api.update_issue_record(
                 project_uuid,
                 ctx['connection_id'],
                 ctx['record_id'],
@@ -847,9 +863,9 @@ class AgentActionConfirmView(APIView):
 
         return project_connection, topic, replies, None
 
-    def _execute_email_suggest_resolution(self, seadb_api, project_uuid, source_id, resolution_content):
-        resolution_content = (resolution_content or '').strip()
-        if not resolution_content:
+    def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
+        reply_content = (reply_content or '').strip()
+        if not reply_content:
             return 'Cannot send reply email: empty content.'
 
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
@@ -898,7 +914,7 @@ class AgentActionConfirmView(APIView):
         message_id = make_msgid(domain=domain)
 
         send_info = {
-            'message': resolution_content,
+            'message': reply_content,
             'html_message': None,
             'send_to': to_emails,
             'copy_to': [],
@@ -923,7 +939,7 @@ class AgentActionConfirmView(APIView):
             'email_to': to_text,
             'cc': '',
             'subject': subject,
-            'content': resolution_content,
+            'content': reply_content,
             'html_content': None,
             'reply_to_message_id': target_message_id,
             'origin_thread_id': send_res.get('origin_thread_id') or target_email.get('origin_thread_id'),
