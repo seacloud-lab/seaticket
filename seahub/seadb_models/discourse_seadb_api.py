@@ -25,7 +25,7 @@ class DiscourseSeaDBAPI:
 
     def get_topic_by_pk(self, connection_id, _pk):
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-        sql = f"SELECT `title`, `topic_id`, `slug`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+        sql = f"SELECT `_pk`, `title`, `topic_id`, `slug`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response and response['results']:
             return response['results'][0]
