@@ -22,7 +22,7 @@ from seahub.utils.ai_client import (
 )
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
-from seahub.project.github_issues_api import GitHubAPI
+from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.tickets.ticket_utils import get_ticket
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -1441,7 +1441,16 @@ class GithubIssueTypesView(APIView):
                 )
 
             seadb_api = SeaDBAPI()
-            github_api = GitHubAPI(installation_id=installation_id)
+            try:
+                github_api = GitHubAPI(installation_id=installation_id)
+            except GitHubAppNotInstalled:
+                logger.warning(
+                    f'GitHub App is not installed for connection {connection.id}.'
+                )
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'GitHub App is not installed.'
+                )
             try:
                 added, added_names, updated, deleted = _sync_issue_type_column_options(
                     seadb_api, project_uuid, connection.id, github_api, owner, repo
