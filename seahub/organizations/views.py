@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 
@@ -213,6 +213,10 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
 
     login_bg_image_path = get_login_bg_image_path()
     redirect_to = request.GET.get(redirect_field_name)
+
+    if request.user.is_authenticated:
+        return redirect(redirect_to or 'projects_list')
+
     if request.method == 'POST':
         form = OrgRegistrationForm(request.POST)
 

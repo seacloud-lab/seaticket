@@ -10,9 +10,6 @@
       <div class="org-register-panel-header d-flex justify-content-center align-items-center">
         <div class="org-register-title">{% trans "Sign up" %}</div>
       </div>
-      {% if request.user.is_authenticated %}
-      <p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
-      {% else %}
       <form class="login-form-wrapper" action="" method="post" id="signup-form">{% csrf_token %}
         <input id="org_name" type="text" name="org_name"  placeholder="{% trans "Team name" %}" value="{{ form.org_name.value|default_if_none:"" }}" class="input form-item-input" />
         {{ form.org_name.errors }}
@@ -43,7 +40,6 @@
         </div>
         <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
       </form>
-      {% endif %}
     </div>
     <div class="login-panel-bottom-container">
       {# language will be shown here #}
