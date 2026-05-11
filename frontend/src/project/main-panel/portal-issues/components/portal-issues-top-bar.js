@@ -6,7 +6,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { IconButton, IconTextBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import eventBus from '@/utils/event-bus';
-import { AddButton, RefreshBtn } from '@/project/components';
+import { RefreshBtn } from '@/project/components';
 
 const PortalIssuesTopBar = ({ title, permission, type }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = usePortalIssuesPage();

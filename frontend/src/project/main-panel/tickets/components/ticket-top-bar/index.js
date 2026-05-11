@@ -7,7 +7,7 @@ import { IconButton, IconTextBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { AddButton, RefreshBtn } from '@/project/components';
+import { RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
