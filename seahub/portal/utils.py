@@ -72,10 +72,6 @@ def is_user_in_the_same_team(project, email):
     if not username:
         return False
 
-    user = EmailUser.objects.get_user_by_email(username)
-    if not user or not user.is_active:
-        return False
-
     if not OrgUser.objects.org_user_exists(org_id, username):
         return False
     

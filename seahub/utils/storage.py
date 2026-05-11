@@ -97,13 +97,6 @@ def upload_portal_logo_file_to_s3(project_uuid, file, username):
     local_etag = calculate_md5(file)
     version = local_etag.strip('"')
 
-    # Check S3 Metadata
-    metadata = get_s3_file_metadata(s3_file_path)
-
-    # ETag Cache Detection: Skip upload if ETag matches
-    if metadata and metadata.get('ETag') == local_etag:
-        return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
-
     file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     try:
