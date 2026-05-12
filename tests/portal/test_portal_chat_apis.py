@@ -36,8 +36,8 @@ class TestPortalChatPermissionAnonymous:
         request = factory.get(
             f'/api/v1/portal/{real_project.uuid}/chat/sessions/'
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
         resp = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
 
@@ -52,8 +52,8 @@ class TestPortalChatPermissionAnonymous:
         request = factory.get(
             f'/api/v1/portal/{real_project.uuid}/chat/sessions/'
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
         resp = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
 
@@ -68,8 +68,8 @@ class TestPortalChatPermissionAnonymous:
         request = factory.get(
             f'/api/v1/portal/{real_project.uuid}/chat/sessions/'
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
         request.session[f'portal_verified_token_{real_project.uuid}'] = 'secret'
 
         resp = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
@@ -85,7 +85,7 @@ class TestPortalChatViewAnonymous:
         session = PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='test',
-            username=visitor['visitor_id'],
+            username=visitor['visitor_uuid'],
         )
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/chat/',
@@ -95,10 +95,10 @@ class TestPortalChatViewAnonymous:
             }),
             content_type='application/json',
         )
-        from seahub.portal.visitor_session import _sign_visitor_id, _get_visitor_session_cache_key
+        from seahub.portal.visitor_session import _sign_visitor_uuid, _get_visitor_session_cache_key
         from django.core.cache import cache
-        cache.delete(_get_visitor_session_cache_key(visitor['visitor_id']))
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        cache.delete(_get_visitor_session_cache_key(visitor['visitor_uuid']))
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
         resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
 
@@ -111,7 +111,7 @@ class TestPortalChatViewAnonymous:
         session = PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='test',
-            username=visitor['visitor_id'],
+            username=visitor['visitor_uuid'],
         )
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/chat/',
@@ -121,8 +121,8 @@ class TestPortalChatViewAnonymous:
             }),
             content_type='application/json',
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
         with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
                 patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
@@ -151,7 +151,7 @@ class TestPortalChatViewAnonymous:
         session = PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='test',
-            username=visitor['visitor_id'],
+            username=visitor['visitor_uuid'],
         )
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/chat/',
@@ -162,8 +162,8 @@ class TestPortalChatViewAnonymous:
             }),
             content_type='application/json',
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
         with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
                 patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
@@ -190,18 +190,18 @@ class TestPortalChatSessionsAnonymous:
         PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='session-a',
-            username=visitor_a['visitor_id'],
+            username=visitor_a['visitor_uuid'],
         )
         PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='session-b',
-            username=visitor_b['visitor_id'],
+            username=visitor_b['visitor_uuid'],
         )
         request = factory.get(
             f'/api/v1/portal/{real_project.uuid}/chat/sessions/'
         )
-        from seahub.portal.visitor_session import _sign_visitor_id
-        request.COOKIES['portal_visitor_session'] = _sign_visitor_id(visitor_a['visitor_id'])
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor_a['visitor_uuid'])
 
         resp = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
 

@@ -87,9 +87,9 @@ def _get_request_identity(request, project_uuid):
     if visitor_session.get('status') != 'active':
         return None, _build_visitor_session_error()
 
-    visitor_id = visitor_session['visitor_id']
+    visitor_uuid = visitor_session['visitor_uuid']
     touched_session = touch_visitor_session(
-        visitor_id,
+        visitor_uuid,
         visitor_session['session_data'],
         refresh_cookie=visitor_session['should_refresh_cookie'],
     )
@@ -97,8 +97,8 @@ def _get_request_identity(request, project_uuid):
         return None, _build_visitor_session_error()
 
     return {
-        'username': visitor_id,
-        'visitor_id': visitor_id,
+        'username': visitor_uuid,
+        'visitor_uuid': visitor_uuid,
         'is_external_user': False,
         'is_anonymous': True,
         'should_refresh_cookie': visitor_session['should_refresh_cookie'],
@@ -110,7 +110,7 @@ def _finalize_visitor_session_response(response, identity):
         return response
 
     if identity.get('should_refresh_cookie'):
-        set_visitor_cookie(response, identity['visitor_id'])
+        set_visitor_cookie(response, identity['visitor_uuid'])
     return response
 
 def _portal_chat_view(func):
@@ -304,11 +304,11 @@ class PortalChatView(APIView):
             if rate_limit_error:
                 return _finalize_visitor_session_response(rate_limit_error, request.identity)
 
-        visitor_session = request.identity.get('visitor_id', '')
+        visitor_uuid = request.identity.get('visitor_uuid', '')
         ip = ''
         if request.identity['is_anonymous']:
             ip = get_remote_ip(request)
-            rate_limit_error = check_anonymous_chat_rate_limit(visitor_session, ip)
+            rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
             if rate_limit_error:
                 return _finalize_visitor_session_response(rate_limit_error, request.identity)
 
@@ -361,7 +361,7 @@ class PortalChatView(APIView):
         if request.identity['is_external_user']:
             mark_external_chat_rate_limit(project_uuid, request.identity['username'])
         elif request.identity['is_anonymous']:
-            mark_anonymous_chat_rate_limit(visitor_session, ip)
+            mark_anonymous_chat_rate_limit(visitor_uuid, ip)
 
         task_info = {
             'user_input': {

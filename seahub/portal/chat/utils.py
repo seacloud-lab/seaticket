@@ -100,18 +100,18 @@ def get_project_portal_chat_credit_used(project_uuid):
     return convert_cost_to_credit(total_cost or 0)
 
 
-def _get_anon_session_rate_limit_key(visitor_session, date_str):
-    return _get_counter_cache_key('portal_anon_chat_session_daily_', visitor_session, date_str)
+def _get_anon_session_rate_limit_key(visitor_uuid, date_str):
+    return _get_counter_cache_key('portal_anon_chat_session_daily_', visitor_uuid, date_str)
 
 
 def _get_anon_ip_rate_limit_key(ip, date_str):
     return _get_counter_cache_key('portal_anon_chat_ip_daily_', ip, date_str)
 
 
-def check_anonymous_chat_rate_limit(visitor_session, ip):
+def check_anonymous_chat_rate_limit(visitor_uuid, ip):
     today_str = timezone.localdate().strftime('%Y%m%d')
 
-    session_key = _get_anon_session_rate_limit_key(visitor_session, today_str)
+    session_key = _get_anon_session_rate_limit_key(visitor_uuid, today_str)
     if _get_cached_counter(session_key) >= PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT:
         return api_error(
             status.HTTP_429_TOO_MANY_REQUESTS,
@@ -128,11 +128,11 @@ def check_anonymous_chat_rate_limit(visitor_session, ip):
     return None
 
 
-def mark_anonymous_chat_rate_limit(visitor_session, ip):
+def mark_anonymous_chat_rate_limit(visitor_uuid, ip):
     today_str = timezone.localdate().strftime('%Y%m%d')
 
     _increase_cached_counter(
-        _get_anon_session_rate_limit_key(visitor_session, today_str),
+        _get_anon_session_rate_limit_key(visitor_uuid, today_str),
         PORTAL_ANON_CHAT_DAILY_TTL
     )
     _increase_cached_counter(
