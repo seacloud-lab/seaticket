@@ -572,3 +572,9 @@ def check_slide_captcha_verified_time(request):
         return False
     else:
         return True
+
+
+def gen_file_etag_and_modified_time(file_path):
+    stat_result = os.stat(file_path)
+    etag = f'"{stat_result.st_size:x}-{stat_result.st_mtime_ns:x}"'
+    return etag, stat_result.st_mtime

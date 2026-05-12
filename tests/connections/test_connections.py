@@ -3,8 +3,6 @@ import hmac
 import hashlib
 from unittest.mock import Mock, patch
 
-from botocore.exceptions import ClientError
-
 from seahub.project.connections import (
     ProjectConnectionsView,
     ProjectConnectionView,
@@ -505,7 +503,7 @@ class TestConnectionFileView:
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/f.txt")
         request.user = project_creator
 
-        with patch('seahub.project.connections.get_file_head_from_s3_web_crawl_with_meta', side_effect=FileNotFound()):
+        with patch('seahub.project.connections.get_connection_file_head_from_s3', side_effect=FileNotFound()):
             resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id=site_connection.id, file_path='f.txt')
 
         assert resp.status_code == 404

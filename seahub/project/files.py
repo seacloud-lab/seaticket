@@ -18,12 +18,11 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
-from seahub.utils import s3_client
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, gen_s3_file_path, get_file_head_from_s3_with_meta
-from seahub.settings import S3_FILE_BUCKET
+from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, get_project_file_head_from_s3, get_project_file_from_s3, FileNotFound
 from seahub.project.constants import IMAGE_EXTS
+from seahub.utils import gen_file_etag_and_modified_time
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -110,20 +109,12 @@ class GetProjectUploadFileView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # main
-        try:
-            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
+        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
         if not os.path.exists(tmp_upload_file_path):
             error_msg = 'File not exist.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        stat_result = os.stat(tmp_upload_file_path)
-        etag = f'"{stat_result.st_size:x}-{stat_result.st_mtime_ns:x}"'
+        etag, last_modified_time = gen_file_etag_and_modified_time(tmp_upload_file_path)
         if if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
@@ -132,7 +123,7 @@ class GetProjectUploadFileView(APIView):
         response = FileResponse(open(tmp_upload_file_path, 'rb'))
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
-        response['Last-Modified'] = formatdate(int(stat_result.st_mtime), usegmt=True)
+        response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
         return response
 
 
@@ -198,7 +189,10 @@ class GetProjectFileView(APIView):
 
         # main
         try:
-            s3_meta = get_file_head_from_s3_with_meta(project_uuid, file_path)
+            s3_meta = get_project_file_head_from_s3(project_uuid, file_path)
+        except FileNotFound:
+            error_msg = 'File not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -211,19 +205,18 @@ class GetProjectFileView(APIView):
             return not_modified
 
         try:
-            s3_file_path = gen_s3_file_path(project_uuid, file_path)
-            s3_obj = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+            file = get_project_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(s3_obj['Body'])
+        response = FileResponse(file)
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag
-        if s3_obj.get('LastModified'):
-            response['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
+        if s3_meta.get('LastModified'):
+            response['Last-Modified'] = formatdate(int(s3_meta['LastModified'].timestamp()), usegmt=True)
         else:
             response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
