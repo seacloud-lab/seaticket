@@ -271,7 +271,7 @@ class AgentRunDetailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             result = get_agent_run_detail(seadb_api, project_uuid, run_id)
         except ValueError as e:
             logger.error(f'Error getting agent run detail: {e}')
@@ -314,7 +314,7 @@ class AgentActionConfirmView(APIView):
 
         username = request.user.username
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
 
             # 1. Get action details from SeaDB
             sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `content`, `suggestion_text` " \
@@ -1256,7 +1256,7 @@ class AgentActionUpdateView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             sql = "SELECT `run_id`, `status` " \
                 f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
@@ -1309,7 +1309,7 @@ class AgentActionCancelView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
 
             # Get action details
             action_sql = "SELECT `run_id`, `status` " \

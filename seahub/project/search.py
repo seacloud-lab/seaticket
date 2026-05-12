@@ -53,7 +53,7 @@ class SearchTicketsView(APIView):
 
         # project_uuid, username, search_text, start, end
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             tickets, columns = list_tickets_by_link_search(seadb_api, project_uuid, query, 0, limit)
         except Exception as e:
             logger.error(e)
