@@ -674,7 +674,7 @@ class GithubIssueView(APIView):
         if not installation_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'GitHub auth config missing.')
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         try:
             issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         except Exception as e:
@@ -1205,7 +1205,7 @@ class ProjectConnectionReplyEmailView(APIView):
         content = (request.data.get('content') or '').strip()
         config = decrypt_config(json.loads(project_connection.config))
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
 
         # email_id is the _pk of the email table to reply to (required)
@@ -1359,7 +1359,7 @@ class ProjectConnectionReplyDiscourseView(APIView):
             error_msg = 'Discourse connection config is incomplete.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
 
         topic = discourse_seadb_api.get_topic_by_pk(connection_id, _pk)
@@ -1460,7 +1460,7 @@ class ZipEmailAttachments(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
         if not target_email:
@@ -1535,7 +1535,7 @@ class DownloadEmailAttachments(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
+        seadb_api = SeaDBAPI()
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         target_email = email_seadb_api.get_email_by_pk(connection_id, email_id)
         if not target_email:

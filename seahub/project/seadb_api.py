@@ -5,6 +5,8 @@ import requests
 from seahub.settings import SEADB_SERVER_ACCESS_TOKEN, SEADB_SERVER_URL
 from seahub.utils import uuid_str_to_36_chars
 
+SEADB_COMPONENT_USERNAME='seaqa-web'
+
 
 def parse_response(response):
     if response.status_code >= 400 or response.status_code < 200:
@@ -17,7 +19,7 @@ def parse_response(response):
 
 
 class SeaDBAPI:
-    def __init__(self, username='', timeout=30):
+    def __init__(self, username=SEADB_COMPONENT_USERNAME, timeout=30):
         self.timeout = timeout
         self.secret_key = SEADB_SERVER_ACCESS_TOKEN
         self.server_url = SEADB_SERVER_URL
