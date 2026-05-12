@@ -1,4 +1,4 @@
-import { filterRow, deleteInvalidFilter, getValidFilters } from '../filter';
+import { filterRow, deleteInvalidFilter, getFormattedFilters, getValidFilters } from '../filter';
 import { ValidateFilter } from '../validate';
 import { ROW_COLOR_TYPE } from '../../constants';
 
@@ -22,7 +22,7 @@ const getValidRowColorRules = (colorbys, columns, tagsData) => {
     const validFilters = deleteInvalidFilter(rule.filters, columns);
     return {
       ...rule,
-      filters: validFilters,
+      filters: getFormattedFilters(validFilters),
       filter_conjunction: rule.filter_conjunction || 'And',
     };
   });
