@@ -296,6 +296,9 @@ ENABLE_CONVERT_TO_TEAM_ACCOUNT = False
 # Enable or disable sharing to all groups
 ENABLE_SHARE_TO_ALL_GROUPS = False
 
+# Enable admin delete Org account
+ORG_ENABLE_ADMIN_DELETE_ORG = False
+
 # File preview
 FILE_PREVIEW_MAX_SIZE = 30 * 1024 * 1024
 FILE_ENCODING_LIST = ['auto', 'utf-8', 'gbk', 'ISO-8859-1', 'ISO-8859-5']
@@ -769,8 +772,6 @@ sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
 MULTI_TENANCY = True
-
-ORG_ENABLE_ADMIN_DELETE_ORG = False
 
 # service url
 SEATICKET_SERVER_HOSTNAME = os.environ.get('SEATICKET_SERVER_HOSTNAME', '')

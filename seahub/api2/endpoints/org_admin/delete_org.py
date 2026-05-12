@@ -11,10 +11,12 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 
 from seahub.base.accounts import User
-from seahub.organizations.models import Organization, OrgUser, OrgGroup
-from seahub.organizations.signals import org_deleted, org_operation_signal
+from seahub.organizations.models import Organization, OrgUser, OrgGroup, OrgMemberQuota, OrgSettings, OrgAdminSettings,\
+    OrgSAMLConfig
+from seahub.organizations.signals import org_deleted
 from seahub.organizations.settings import ORG_ENABLE_ADMIN_DELETE_ORG
-from seahub.project.models import Workspaces
+from seahub.project.models import Workspaces, AIUsageStatistics
+from seahub.admin_log.models import OrgAdminLog
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -67,6 +69,14 @@ class OrgAdminDeleteOrg(APIView):
             # remove org workspace and projects
             Workspaces.objects.delete_workspaces_by_org_id(org_id)
 
+            # remove org-related configs and records
+            OrgMemberQuota.objects.filter(org_id=org_id).delete()
+            OrgSettings.objects.filter(org_id=org_id).delete()
+            OrgAdminSettings.objects.filter(org_id=org_id).delete()
+            OrgSAMLConfig.objects.filter(org_id=org_id).delete()
+            OrgAdminLog.objects.filter(org_id=org_id).delete()
+            AIUsageStatistics.objects.filter(org_id=org_id).delete()
+
             # remove org
             Organization.objects.remove_org(org_id)
 
@@ -76,10 +86,5 @@ class OrgAdminDeleteOrg(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        try:
-            org_operation_signal.send(sender=None, org=org, operation='delete')
-        except Exception as e:
-            logger.error(e)
 
         return Response({'success': True})
