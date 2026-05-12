@@ -105,7 +105,7 @@ const AIReply = forwardRef(({
       const removeComma = /(\s*\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 
       // [Reference 1] => [Source title][1]
-      const reference2Md = /\[(Reference)\s+(\d+)\]/g;
+      const reference2Md = /\s*\[(Reference)\s+(\d+)\]/g;
 
       value = value
         .replace(regex, (match, openBracket, refType, ordersPart, closeBracket) => {
