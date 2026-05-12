@@ -45,11 +45,6 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
     });
   }, [modifyRowColor]);
 
-  const handleDelete = useCallback(() => {
-    updateRules([]);
-    hidePopover();
-  }, [updateRules, hidePopover]);
-
   const handleAddRule = useCallback(() => {
     const defaultColumn = validColumns[0];
     if (!defaultColumn) return;
@@ -127,9 +122,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
       ]}
     >
       <div className="sea-metadata-row-color-body">
-        {rules.length === 0 && (
-          <div className="sea-metadata-row-color-empty">{gettext('No rules')}</div>
-        )}
+        {rules.length === 0 && <div className="sea-metadata-row-color-empty">{gettext('No rules')}</div>}
         {rules.map((rule, ruleIndex) => {
           const colorTarget = `sea-metadata-row-color-selector-${ruleIndex}`;
           const filterTarget = `sea-metadata-row-color-filter-${ruleIndex}`;
@@ -164,16 +157,14 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
                   )}
                   <div
                     id={filterTarget}
-                    ref={(ref) => {
-                      filterTargetsRef.current[ruleIndex] = ref;
-                    }}
+                    ref={(ref) => { filterTargetsRef.current[ruleIndex] = ref;}}
                     className="sea-metadata-row-color-rule-filter-trigger text-truncate"
                   >
                     {`${gettext('Rule')} ${ruleIndex + 1}`}
                   </div>
                 </div>
                 {!readOnly && (
-                  <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={(e) => {e.stopPropagation(); handleDeleteRule(ruleIndex);}} style={{ backgroundColor: 'transparent' }} />
+                  <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={(e) => {e.stopPropagation(); handleDeleteRule(ruleIndex);}} />
                 )}
               </div>
               {editingRuleIndex === ruleIndex && (
@@ -203,16 +194,12 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
             </div>
           );
         })}
-        {!readOnly && (
-          <div className="sea-metadata-row-color-add-btns">
-            <CommonAddTool
-              className={'popover-add-tool'}
-              callBack={handleAddRule}
-              name={gettext('Add rule')}
-            />
-          </div>
-        )}
       </div>
+      {!readOnly && (
+        <div className="sea-metadata-row-color-add-btns">
+          <CommonAddTool className="popover-add-tool" callBack={handleAddRule} name={gettext('Add rule')} />
+        </div>
+      )}
     </CustomizePopover>
   );
 };

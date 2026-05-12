@@ -1,13 +1,13 @@
 .sea-metadata-row-color-popover .popover {
   max-width: none;
-  min-width: 300px;
+  min-width: 450px;
 }
 
 .sea-metadata-row-color-body {
   display: flex;
   flex-direction: column;
   padding-top: 16px;
-  min-width: 400px;
+  min-width: 450px;
 }
 
 .sea-metadata-row-color-body .sea-metadata-row-color-empty {
@@ -18,7 +18,7 @@
 }
 
 /* add rule */
-.sea-metadata-row-color-body .sea-metadata-row-color-add-btns {
+.sea-metadata-row-color-add-btns {
   display: flex;
   align-items: center;
   background: inherit;
@@ -28,7 +28,7 @@
   padding: 0px 16px;
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool {
+.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool {
   height: 28px;
   padding: 0 6px;
   width: fit-content;
@@ -38,7 +38,7 @@
   margin-left: -6px;
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-add-btns .customize-add-tool .sea-qa-icon-svg {
+.sea-metadata-row-color-add-btns .customize-add-tool .sea-qa-icon-svg {
   color: #666;
   height: 14px;
   width: 14px;
@@ -103,6 +103,7 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s ease;
+  background-color: transparent !important;
 }
 
 .sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-remove .sea-qa-icon-svg {
@@ -116,10 +117,6 @@
 }
 
 /* rule item -- filters */
-.sea-metadata-row-color-rule-filters {
-  
-}
-
 .sea-metadata-row-color-rule-filters .sea-metadata-filters-list {
   min-height: 30px;
   padding: 8px 15px;
@@ -139,4 +136,21 @@
 
 .sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool {
   background-color: transparent;
+  font-weight: 400;
+  color: var(--bs-icon-secondary-color);
+  width: fit-content;
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool:hover {
+  color: var(--bs-icon-color);
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool:hover .customize-add-tool-icon {
+  color: var(--bs-icon-color);
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool .customize-add-tool-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--bs-icon-secondary-color);
 }
