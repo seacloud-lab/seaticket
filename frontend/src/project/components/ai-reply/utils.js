@@ -28,6 +28,7 @@ export const formatSources = (sources, { workspaceID, projectName }) => {
 };
 
 export const transformMDFileToLink = (value = '', mdFiles = [], messageId) => {
+  if (!value) return value;
   const mdRegex = /<seaqa-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
   return value
     .replace(mdRegex, (match, quotationType, fileName, content) => {
@@ -44,6 +45,7 @@ export const transformMDFileToLink = (value = '', mdFiles = [], messageId) => {
 
 // Render seaqa-kb-entry as a direct link to the created KB record
 export const transformKBToLink = (value, { workspaceID, projectName }) => {
+  if (!value) return value;
   const kbEntryRegex = /<seaqa-kb-entry\s+id=(?:["'])(\d+)(?:["'])\s+title=(?:["'])(.*?)(?:["'])\s*\/>/g;
   return value.replace(kbEntryRegex, (match, kbId, title) => {
     const kbUrl = generatorKnowledgeBaseURL({ kb: { _id: kbId }, workspaceID, projectName });
@@ -52,7 +54,7 @@ export const transformKBToLink = (value, { workspaceID, projectName }) => {
 };
 
 export const transformReferencesToMarkdown = (value = '', sources = []) => {
-  if (!Array.isArray(sources) || sources.length === 0) return value || '';
+  if (!value || !Array.isArray(sources) || sources.length === 0) return value;
   const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
   const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
 
@@ -61,7 +63,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
   const regex = new RegExp(`([\\[\\(])(${referenceMarkString})\\s*(\\d+(?:\\s*,\\s*(?:\\d+|(?:${referenceMarkString})\\s*\\d+))*)\\s*([\\]\\)])`, 'gi');
 
   // [Reference 1](url) => [Reference 1]
-  const formatReference = /\[Reference\s*(\d+)\]\(([^\)]+)\)/gi;
+  const formatReference = /\[Reference\s*(\d+)\]\((https?:\/\/[^\s]+)\)/gi;
 
   // ([Reference 1]) => [Reference 1]
   // ([Reference 1], [Reference 2]) => [Reference 1], [Reference 2]
@@ -71,7 +73,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
   const removeComma = /\s*(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 
   // [Reference 1] => [Source title][1]
-  const reference2Md = /\s*\[Reference\s+(\d+)\]/g;
+  const reference2Md = /\s*\[(Reference)\s+(\d+)\]/g;
 
   return String(value)
     .replace(regex, (match, openBracket, refType, ordersPart, closeBracket) => {
@@ -104,7 +106,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
     })
     .replace(removeParentheses, (match, p1) => p1)
     .replace(removeComma, (match, references) => references.replace(/\],\s*\[/g, ']['))
-    .replace(reference2Md, (match, orderString) => {
+    .replace(reference2Md, (match, text, orderString) => {
       const order = Number(orderString);
       const source = sources[order - 1];
       if (!source) return '';

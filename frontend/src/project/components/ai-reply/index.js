@@ -12,6 +12,7 @@ import {
 } from './utils';
 
 import './index.css';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 const AIReply = forwardRef(({
   messageId,
@@ -30,22 +31,22 @@ const AIReply = forwardRef(({
   const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
 
   const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
-    if (Object.keys(message).length === 0) return { aiReply: '', aiReplyForCopy: '', sources: [], mdFiles: [] };
-    let value = message.ai_reply;
+    if (Object.keys(message).length === 0 || !hasOwnProperty(message, 'ai_reply')) {
+      return { aiReply: '', aiReplyForCopy: '', sources: [], mdFiles: [] };
+    }
+
+    let value = message.ai_reply || '';
     let aiReplyForCopy = '';
 
     let sources = formatSources(message.sources, { workspaceID, projectName });
     let mdFiles = [];
-    if (value) {
-      value = transformMDFileToLink(value, mdFiles, messageId);
-      value = transformKBToLink(value, { workspaceID, projectName });
-    }
+    value = transformMDFileToLink(value, mdFiles, messageId);
+    value = transformKBToLink(value, { workspaceID, projectName });
 
     if (value && messageId === 'typing') {
       const referenceXRegex = /<reference_(\d+)>/g;
       value = value.replace(referenceXRegex, '');
     }
-
     value = transformReferencesToMarkdown(value, sources);
     aiReplyForCopy = transformContentForCopy(value, { mdFiles, sources });
     if (sources.length > 0) {
