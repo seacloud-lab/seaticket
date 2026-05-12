@@ -4,6 +4,19 @@ import { siteRoot } from '../../constants';
 
 class ChatAPI {
 
+  _getPortalChatRootURL() {
+    const { origin } = window.location;
+    const { projectUuid, isEditMode } = window.app.pageOptions;
+    const basePath = isEditMode ? 'portal-edit' : 'portal';
+    return `${origin}${siteRoot}${basePath}/${projectUuid}/chat/`;
+  }
+
+  _handleVisitorSessionExpired(status, data) {
+    if (status !== 401) return;
+    if (data?.error_code !== 'visitor_session_expired') return;
+    window.setTimeout(() => window.location.replace(this._getPortalChatRootURL()), 0);
+  }
+
   init({ server, username, password, token }) {
     this.server = server;
     this.username = username;
@@ -31,6 +44,13 @@ class ChatAPI {
         'X-CSRFToken': xcsrfHeaders,
       }
     });
+    this.req.interceptors.response.use(
+      response => response,
+      error => {
+        this._handleVisitorSessionExpired(error?.response?.status, error?.response?.data);
+        return Promise.reject(error);
+      }
+    );
     return this;
   }
 
@@ -77,6 +97,14 @@ class ChatAPI {
         headers: headers,
         credentials: 'include',
         signal: options.signal,
+      }).then(response => {
+        if (response.status === 401) {
+          return response.json().then(data => {
+            this._handleVisitorSessionExpired(response.status, data);
+            return response;
+          }).catch(() => response);
+        }
+        return response;
       });
     }
 
@@ -93,6 +121,14 @@ class ChatAPI {
       headers: headers,
       credentials: 'include',
       signal: options.signal,
+    }).then(response => {
+      if (response.status === 401) {
+        return response.json().then(data => {
+          this._handleVisitorSessionExpired(response.status, data);
+          return response;
+        }).catch(() => response);
+      }
+      return response;
     });
   }
 

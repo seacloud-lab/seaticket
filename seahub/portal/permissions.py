@@ -92,8 +92,12 @@ class PortalIssuePermission(BasePermission):
 
 class PortalChatPermission(BasePermission):
     def has_permission(self, request, view):
-        project_uuid, project, _ = _get_project_and_settings(request, view)
+        project_uuid, project, portal_settings = _get_project_and_settings(request, view)
         if not project:
+            return False
+
+        enable_portal = portal_settings.get('enable_portal', False)
+        if not enable_portal:
             return False
 
         user = getattr(request, 'user', None)
@@ -102,5 +106,12 @@ class PortalChatPermission(BasePermission):
                 return True
 
         if _is_external_member(request, project_uuid):
+            return True
+
+        allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
+        enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
+        if allow_anonymous:
+            if enable_password_protection and not _is_portal_password_verified(request, project_uuid, portal_settings):
+                return False
             return True
         return False

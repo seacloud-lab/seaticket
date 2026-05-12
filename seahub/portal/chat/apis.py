@@ -1,6 +1,4 @@
-import uuid
 import logging
-import json
 import time
 
 from django.core.cache import cache
@@ -17,55 +15,41 @@ from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, delete_portal_sessions
+from seahub.project.utils import check_ai_limit, check_same_org_permission, delete_portal_sessions
+from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
+    build_portal_message_result,
+    check_anonymous_chat_rate_limit,
     check_external_chat_rate_limit,
+    gen_portal_chat_task_id,
+    gen_portal_message_id,
+    get_portal_chat_settings,
     get_portal_external_username,
     get_project_portal_chat_credit_used,
+    mark_anonymous_chat_rate_limit,
     mark_external_chat_rate_limit,
+    process_portal_stream_ai_reply,
 )
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.visitor_session import (
+    clear_visitor_cookie,
+    load_visitor_session,
+    set_visitor_cookie,
+    touch_visitor_session,
+)
 from seahub.chats.utils import get_ai_reply
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
-
-def get_portal_settings(project):
-    settings = project.settings or '{}'
-    if isinstance(settings, str):
-        try:
-            settings = json.loads(settings)
-        except:
-            settings = {}
-    portal_settings = settings.get('portal', {})
-    chat_allowed_sources = portal_settings.get('chat_allowed_sources')
-    if not isinstance(chat_allowed_sources, dict):
-        chat_allowed_sources = {}
-    daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
-    try:
-        daily_chat_credit_limit = int(daily_chat_credit_limit)
-    except (TypeError, ValueError):
-        daily_chat_credit_limit = 50
-    if daily_chat_credit_limit < 0:
-        daily_chat_credit_limit = 50
-    return {
-        'chat_allowed_sources': {
-            'connection_ids': chat_allowed_sources.get('connection_ids') or [],
-            'extra_sources': chat_allowed_sources.get('extra_sources') or [],
-        },
-        'daily_chat_credit_limit': daily_chat_credit_limit,
-    }
-
-
-def get_project_or_error(project_uuid):
+def _get_project_or_error(project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return None, api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
     return project, None
 
 
-def get_session_or_error(session_uuid, username):
+def _get_session_or_error(session_uuid, username):
     session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
     if not session:
         return None, api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
@@ -73,94 +57,80 @@ def get_session_or_error(session_uuid, username):
         return None, api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
     return session, None
 
+def _build_visitor_session_error():
+    response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')
+    response.data['error_code'] = 'visitor_session_expired'
+    clear_visitor_cookie(response)
+    return response
 
-def gen_portal_message_id(session_uuid, max_try=5):
-    trying = 0
-    new_message_id = ''
-    while not new_message_id and trying < max_try:
-        try_message_id = uuid.uuid4().hex[:4]
-        if not PortalChatMessages.objects.filter(session_uuid=session_uuid, message_id=try_message_id).exists():
-            new_message_id = try_message_id
-        trying += 1
+def _get_request_identity(request, project_uuid):
+    user = getattr(request, 'user', None)
+    if user and getattr(user, 'is_authenticated', False):
+        project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
+        workspace = getattr(project, 'workspace', None)
+        if workspace and check_same_org_permission(user, workspace):
+            return {
+                'username': user.username,
+                'is_external_user': False,
+                'is_anonymous': False,
+            }, None
 
-    if trying == max_try:
-        raise Exception('Failure to generate message_id')
+    external_username = get_portal_external_username(request, project_uuid)
+    if external_username:
+        return {
+            'username': external_username,
+            'is_external_user': True,
+            'is_anonymous': False,
+        }, None
 
-    return new_message_id
+    visitor_session = load_visitor_session(request)
+    if visitor_session.get('status') != 'active':
+        return None, _build_visitor_session_error()
 
+    visitor_uuid = visitor_session['visitor_uuid']
+    touched_session = touch_visitor_session(
+        visitor_uuid,
+        visitor_session['session_data'],
+        refresh_cookie=visitor_session['should_refresh_cookie'],
+    )
+    if not touched_session:
+        return None, _build_visitor_session_error()
 
-def gen_portal_chat_task_id(session_uuid):
-    return f"portal_chat_{session_uuid.replace('-', '')}"
+    return {
+        'username': visitor_uuid,
+        'visitor_uuid': visitor_uuid,
+        'is_external_user': False,
+        'is_anonymous': True,
+        'should_refresh_cookie': visitor_session['should_refresh_cookie'],
+        'visitor_session': touched_session,
+    }, None
 
+def _finalize_visitor_session_response(response, identity):
+    if not identity or not identity.get('is_anonymous'):
+        return response
 
-def record_portal_message_to_db(ai_result, session_uuid, message_id, query):
-    if 'ai_reply' not in ai_result:
-        ai_result['ai_reply'] = ai_result.get('answer', '')
+    if identity.get('should_refresh_cookie'):
+        set_visitor_cookie(response, identity['visitor_uuid'])
+    return response
 
-    ai_result.pop('answer', None)
-    ai_result.update({
-        'session_uuid': session_uuid,
-    })
+def _portal_chat_view(func):
+    def wrapper(self, request, *args, **kwargs):
+        project_uuid = kwargs.get('project_uuid')
 
-    try:
-        user_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, 'user', query
-        )
-        ai_reply_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, 'assistant', ai_result['ai_reply']
-        )
-        ai_result.update({
-            'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id
-        })
-    except Exception as e:
-        logger.warning(f'Failure to record portal messages to db: {e}')
+        project, error = _get_project_or_error(project_uuid)
+        if error:
+            return error
 
-    return ai_result
+        identity, error = _get_request_identity(request, project_uuid)
+        if error:
+            return error
 
+        request.project = project
+        request.identity = identity
 
-def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query):
-    has_recorded_result = False
-    error_msg = None
-    try:
-        for line in ai_response.iter_lines():
-            if line:
-                line_str = line.decode('utf-8')
-                if not line_str.startswith('data:'):
-                    line_str = f"data: {line_str}"
-                content = line_str[len('data: '):]
-                # use if - else instead of json.loads() to avoid performance issues
-                if content.startswith('{"results": ') and content.endswith('}'):
-                    results = json.loads(content)['results']
-                    item = f'data: {json.dumps({"results": record_portal_message_to_db(results, session_uuid, message_id, query)})}\n\n'
-                    has_recorded_result = True
-                elif content.startswith('[ERROR: ') and content.endswith(']'):
-                    error_msg = content[1:-1]
-                    item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": error_msg, "sources": []}, session_uuid, message_id, query)})}\n\n'
-                    has_recorded_result = True
-                else:
-                    if not line_str.endswith('\n\n'):
-                        line_str += '\n\n'
-                    item = line_str
-                try:
-                    yield item
-                except:  # continues to receive data even client interrupts the stream
-                    continue
-                if error_msg:
-                    raise ConnectionError(error_msg)
-    except Exception as e:
-        logger.exception(f'Portal streaming response is interrupted: {e}')
-        if not has_recorded_result:
-            item = f'data: {json.dumps({"results": record_portal_message_to_db({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, session_uuid, message_id, query)})}\n\n'
-            try:
-                yield item
-            except:
-                pass
-        try:
-            yield 'data: [DONE]\n\n'
-        except:
-            pass
-    cache.delete(chat_task_id_info)
+        response = func(self, request, *args, **kwargs)
+        return _finalize_visitor_session_response(response, identity)
+    return wrapper
 
 
 class PortalChatSessionsView(APIView):
@@ -168,34 +138,28 @@ class PortalChatSessionsView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
+    @_portal_chat_view
     def get(self, request, project_uuid):
-        project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
         try:
-            sessions = PortalChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
+            sessions = PortalChatSessions.objects.get_sessions_by_project(project_uuid, request.identity['username'])
             sessions_data = [session.to_dict() for session in sessions]
             return Response({'sessions': sessions_data})
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+    @_portal_chat_view
     def post(self, request, project_uuid):
         """Create a new portal chat session"""
         session_name = request.data.get('session_name', '')
         if not session_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
 
-        project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
         try:
             session = PortalChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
-                username=request.user.username,
+                username=request.identity['username'],
             )
             return Response({'session': session.to_dict()}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -208,19 +172,16 @@ class PortalChatSessionView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
+    @_portal_chat_view
     def put(self, request, project_uuid, session_uuid):
         """Modify portal chat session"""
         session_name = request.data.get('session_name', '')
         if not session_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
 
-        project, error = get_project_or_error(project_uuid)
+        session, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return error
-
-        session, error = get_session_or_error(session_uuid, request.user.username)
-        if error:
-            return error
+            return _finalize_visitor_session_response(error, request.identity)
 
         try:
             session.session_name = session_name
@@ -230,15 +191,12 @@ class PortalChatSessionView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+    @_portal_chat_view
     def delete(self, request, project_uuid, session_uuid):
         """Delete portal chat session"""
-        project, error = get_project_or_error(project_uuid)
+        _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return error
-
-        session, error = get_session_or_error(session_uuid, request.user.username)
-        if error:
-            return error
+            return _finalize_visitor_session_response(error, request.identity)
 
         try:
             delete_portal_sessions([session_uuid])
@@ -254,15 +212,12 @@ class PortalChatMessagesView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
+    @_portal_chat_view
     def get(self, request, project_uuid, session_uuid):
         """Retrieve the message list of the portal chat session"""
-        project, error = get_project_or_error(project_uuid)
+        _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return error
-
-        session, error = get_session_or_error(session_uuid, request.user.username)
-        if error:
-            return error
+            return _finalize_visitor_session_response(error, request.identity)
 
         try:
             messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
@@ -286,19 +241,16 @@ class PortalChatView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
+    @_portal_chat_view
     def get(self, request, project_uuid):
         session_uuid = request.GET.get('session_uuid')
         if not session_uuid:
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_uuid parameter is required.')
 
-        project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
         try:
-            session, error = get_session_or_error(session_uuid, request.user.username)
+            _, error = _get_session_or_error(session_uuid, request.identity['username'])
             if error:
-                return error
+                return _finalize_visitor_session_response(error, request.identity)
 
             chat_task_id_info = gen_portal_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
@@ -320,6 +272,7 @@ class PortalChatView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+    @_portal_chat_view
     def post(self, request, project_uuid):
         """Send message and get AI reply"""
         query = request.data.get('query')
@@ -336,11 +289,7 @@ class PortalChatView(APIView):
         if not isinstance(clear_context, bool):
             return api_error(status.HTTP_400_BAD_REQUEST, 'clear_context invalid.')
 
-        project, error = get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        stream = project.to_dict()['settings'].get('streaming_response', True)
+        stream = request.project.to_dict()['settings'].get('streaming_response', True)
         stream_from_request = request.data.get('stream')
         if stream_from_request is not None:
             if isinstance(stream_from_request, str):
@@ -349,46 +298,54 @@ class PortalChatView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid stream')
             stream = stream_from_request
 
-        portal_settings = get_portal_settings(project)
-        external_username = get_portal_external_username(request, project_uuid)
-        is_external_user = bool(external_username)
-        if is_external_user:
-            rate_limit_error = check_external_chat_rate_limit(project_uuid, external_username)
+        portal_settings = get_portal_chat_settings(request.project)
+        if request.identity['is_external_user']:
+            rate_limit_error = check_external_chat_rate_limit(project_uuid, request.identity['username'])
             if rate_limit_error:
-                return rate_limit_error
+                return _finalize_visitor_session_response(rate_limit_error, request.identity)
+
+        visitor_uuid = request.identity.get('visitor_uuid', '')
+        ip = ''
+        if request.identity['is_anonymous']:
+            ip = get_remote_ip(request)
+            rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
+            if rate_limit_error:
+                return _finalize_visitor_session_response(rate_limit_error, request.identity)
 
         project_credit_used = get_project_portal_chat_credit_used(project_uuid)
         if project_credit_used >= portal_settings['daily_chat_credit_limit']:
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Portal chat daily quota exceeded.')
 
-        username = request.user.username
-        session, error = get_session_or_error(session_uuid, username)
-        if error:
-            return error
+        username = request.identity['username']
 
+        session, error = _get_session_or_error(session_uuid, username)
+        if error:
+            return _finalize_visitor_session_response(error, request.identity)
+
+        current_session_uuid = session.session_uuid
         if clear_context:
-            PortalChatMessages.objects.clear_context(session_uuid)
+            PortalChatMessages.objects.clear_context(current_session_uuid)
 
         # Check AI quota of org
-        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
+        org_id = getattr(getattr(request.project, 'workspace', None), 'org_id', -1) or -1
         if check_ai_limit(username, org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 
         try:
-            message_id = gen_portal_message_id(session.session_uuid)
+            message_id = gen_portal_message_id(current_session_uuid)
         except Exception as e:
             logger.exception(f'Failure to generate message id: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
         chat_sources = portal_settings['chat_allowed_sources']
 
-        chat_task_id_info = gen_portal_chat_task_id(session.session_uuid)
+        chat_task_id_info = gen_portal_chat_task_id(current_session_uuid)
         if cache.get(chat_task_id_info) is not None:
             return api_error(status.HTTP_409_CONFLICT, 'There are unfinished tasks in the current session, please try again later.')
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
-            'session_uuid': session.session_uuid,
+            'session_uuid': current_session_uuid,
             'message_id': message_id,
             'query': query,
             'attachments': [],
@@ -401,8 +358,10 @@ class PortalChatView(APIView):
             'scenario': AIScenario.PORTAL_CHAT.value,
         }
 
-        if is_external_user:
-            mark_external_chat_rate_limit(project_uuid, external_username)
+        if request.identity['is_external_user']:
+            mark_external_chat_rate_limit(project_uuid, request.identity['username'])
+        elif request.identity['is_anonymous']:
+            mark_anonymous_chat_rate_limit(visitor_uuid, ip)
 
         task_info = {
             'user_input': {
@@ -414,7 +373,13 @@ class PortalChatView(APIView):
         if stream:
             try:
                 return StreamingHttpResponse(
-                    process_portal_stream_ai_reply(chat_task_id_info, get_ai_reply(params), session.session_uuid, message_id, query),
+                    process_portal_stream_ai_reply(
+                        chat_task_id_info,
+                        get_ai_reply(params),
+                        current_session_uuid,
+                        message_id,
+                        query,
+                    ),
                     content_type='text/event-stream',
                     headers={
                         'Cache-Control': 'no-cache',
@@ -434,22 +399,6 @@ class PortalChatView(APIView):
                 'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
             }
 
-        # Save messages
-        user_message = PortalChatMessages.objects.create_message(
-            session.session_uuid, message_id, 'user', query
-        )
-        ai_reply_message = PortalChatMessages.objects.create_message(
-            session.session_uuid, message_id, 'assistant',
-            ai_response['ai_reply']
-        )
-
         cache.delete(chat_task_id_info)
 
-        return Response({
-            'ai_reply': ai_response['ai_reply'],
-            'session_uuid': session_uuid,
-            'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id,
-        })
-
-
+        return Response(build_portal_message_result(ai_response, current_session_uuid, message_id, query))

@@ -9,6 +9,9 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils import timezone
 
 from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
+from seahub.portal.visitor_session import (
+    ensure_visitor_cookie,
+)
 from seahub import settings
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -128,7 +131,11 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             return redirect(f"/portal/{project_uuid}/anonymous-validate/")
 
         return_dict['need_password'] = need_password
-    return render(request, 'portal_view_react.html', return_dict)
+
+    response = render(request, 'portal_view_react.html', return_dict)
+    if is_anonymous:
+        response = ensure_visitor_cookie(request, response)
+    return response
 
 
 def portal_login_view(request, project_uuid):
