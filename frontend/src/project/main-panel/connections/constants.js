@@ -627,9 +627,11 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
+      type: CellType.COLLABORATOR,
       display_name: gettext('Assignees'),
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
+      type: CellType.COLLABORATOR,
       display_name: gettext('Participants'),
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS]: {
