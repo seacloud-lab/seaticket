@@ -52,7 +52,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
   }, [title, content, isSubmitting]);
 
-  const { togglePageSlugId } = useTicketsPage();
+  const { pageSlugId, togglePageSlugId } = useTicketsPage();
+  const shouldShowCancelBtn = pageSlugId === TICKET_PAGE_SLUG_ID.NEW;
 
   const onTitleChange = useCallback((event) => {
     const newTitle = event.target.value;
@@ -130,11 +131,13 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
-        <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+        {shouldShowCancelBtn && (
+          <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+        )}
         <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
       </div>
     );
-  }, [disabled, togglePageSlugId, onSubmit]);
+  }, [disabled, togglePageSlugId, onSubmit, shouldShowCancelBtn]);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
   const isSmallScreen = containerWidth < 892;
