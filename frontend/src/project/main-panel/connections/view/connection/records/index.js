@@ -10,7 +10,7 @@ import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
-  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
+  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -573,6 +573,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
+        columnWidthRules={CONNECTION_COLUMNS_WIDTH_CONFIG}
         typesData={typesData}
         tagsData={tagsData}
         createTag={createTag}
