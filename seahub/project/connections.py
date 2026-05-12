@@ -31,7 +31,7 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
-from seahub.utils.storage import if_none_match_hit, gen_s3_web_crawl_file_path
+from seahub.utils.storage import if_none_match_hit, gen_s3_web_crawl_file_path, get_file_head_from_s3_web_crawl_with_meta
 from seahub.utils import s3_client
 from seahub.settings import S3_WEB_CRAWL_BUCKET
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
@@ -1424,7 +1424,10 @@ class ConnectionFileView(APIView):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         try:
             s3_file_path = gen_s3_web_crawl_file_path(project_uuid, str(connection_id), file_path)
-            s3_meta = s3_client.head_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+            s3_meta = get_file_head_from_s3_web_crawl_with_meta(project_uuid, str(connection_id), file_path)
+        except FileNotFound:
+            error_msg = 'File not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code')
             if error_code == 'NoSuchKey':

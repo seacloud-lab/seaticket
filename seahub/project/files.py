@@ -21,7 +21,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils import s3_client
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, gen_s3_file_path
+from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, gen_s3_file_path, get_file_head_from_s3_with_meta
 from seahub.settings import S3_FILE_BUCKET
 from seahub.project.constants import IMAGE_EXTS
 
@@ -198,21 +198,25 @@ class GetProjectFileView(APIView):
 
         # main
         try:
+            s3_meta = get_file_head_from_s3_with_meta(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        etag = s3_meta.get('ETag')
+        if etag and if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            return not_modified
+
+        try:
             s3_file_path = gen_s3_file_path(project_uuid, file_path)
             s3_obj = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        etag = s3_obj.get('ETag')
-        if etag and if_none_match_hit(request, etag):
-            not_modified = HttpResponseNotModified()
-            not_modified['Cache-Control'] = 'max-age=604800, private'
-            not_modified['ETag'] = etag
-            if s3_obj.get('LastModified'):
-                not_modified['Last-Modified'] = formatdate(int(s3_obj['LastModified'].timestamp()), usegmt=True)
-            return not_modified
 
         response = FileResponse(s3_obj['Body'])
         response['Cache-Control'] = 'max-age=604800, private'

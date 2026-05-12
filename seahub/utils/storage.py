@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 
 from botocore.exceptions import ClientError
+from django.utils.http import parse_etags
 
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
@@ -25,7 +26,7 @@ def if_none_match_hit(request, etag):
         return value
 
     target = normalize(etag)
-    for candidate in (item.strip() for item in if_none_match.split(',') if item.strip()):
+    for candidate in parse_etags(if_none_match):
         if candidate == '*':
             return True
         if normalize(candidate) == target:
@@ -146,9 +147,20 @@ def get_file_from_s3(project_uuid, file_path):
     return response['Body']
 
 
-def get_file_from_s3_with_meta(project_uuid, file_path):
+def get_file_head_from_s3_with_meta(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    return s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+    return s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+
+
+def get_file_head_from_s3_web_crawl_with_meta(project_uuid, site_id, filename):
+    s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
+    try:
+        return s3_client.head_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey':
+            raise FileNotFound()
+        raise
 
 
 class FileNotFound(Exception):
@@ -165,17 +177,6 @@ def get_file_from_s3_web_crawl(project_uuid, site_id, filename):
             raise FileNotFound()
         raise
     return response['Body']
-
-
-def get_file_from_s3_web_crawl_with_meta(project_uuid, site_id, filename):
-    s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
-    try:
-        return s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code == 'NoSuchKey':
-            raise FileNotFound()
-        raise
 
 
 def delete_file_from_s3(project_uuid, file_path):

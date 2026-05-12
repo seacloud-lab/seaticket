@@ -18,6 +18,7 @@ from seahub.project.connections import (
     DiscourseWebhookView,
     ConnectionFileView,
 )
+from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
 
@@ -504,9 +505,7 @@ class TestConnectionFileView:
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/f.txt")
         request.user = project_creator
 
-        s3_client_mock = Mock()
-        s3_client_mock.head_object.side_effect = ClientError({'Error': {'Code': 'NoSuchKey'}}, 'HeadObject')
-        with patch('seahub.project.connections.s3_client', s3_client_mock):
+        with patch('seahub.project.connections.get_file_head_from_s3_web_crawl_with_meta', side_effect=FileNotFound()):
             resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id=site_connection.id, file_path='f.txt')
 
         assert resp.status_code == 404
