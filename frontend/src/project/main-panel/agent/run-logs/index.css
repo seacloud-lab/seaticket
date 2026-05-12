@@ -30,7 +30,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 16px;
+  padding: 6px 12px 6px 16px;
   background: #f7f7f5;
   position: relative;
   border-radius: 8px 8px 0 0;
@@ -66,6 +66,23 @@
   color: #666;
 }
 
+.run-card-header-right .run-card-running svg {
+  width: 14px;
+  height: 14px;
+  fill: #666;
+}
+
+.run-card-header-right .run-card-failed {
+  color: #FF0000;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.run-card-header-right .run-card-more-toggle .sea-qa-icon-btn {
+  margin-right: 8px;
+}
+
 .run-card-more-dropdown {
   display: inline-flex;
 }
@@ -81,19 +98,6 @@
 .run-card-more-dropdown .dropdown-item {
   font-size: 13px;
   padding: 8px 16px;
-}
-
-.run-card-header-right .run-card-running svg {
-  width: 14px;
-  height: 14px;
-  fill: #666;
-}
-
-.run-card-header-right .run-card-failed {
-  color: #FF0000;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 22px;
 }
 
 .run-time {

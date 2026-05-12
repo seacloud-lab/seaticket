@@ -212,7 +212,7 @@ const HeaderDropdownMenu = forwardRef(({
     // const canModifyView = context.canModifyView();
 
     return (
-      <DropdownMenu ref={menuRef} className="sea-metadata-column-dropdown-menu">
+      <DropdownMenu ref={menuRef} className="sea-qa-dropdown-menu sea-metadata-column-dropdown-menu">
         <div ref={dropdownDomRef}>
           {/* {type === CellType.SINGLE_SELECT && (
             <>
