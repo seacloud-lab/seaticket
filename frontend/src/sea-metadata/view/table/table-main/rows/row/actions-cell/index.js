@@ -54,7 +54,7 @@ class ActionsCell extends Component {
           'justify-content-center': !isShowRowExpandBtn
         })}
         id={`action-cell-${rowId}`}
-        style={{ ...cellStyle, ...(rowColor ? { backgroundColor: rowColor } : {}) }}
+        style={{ ...cellStyle }}
         onMouseEnter={this.onCellMouseEnter}
         onMouseLeave={this.onCellMouseLeave}
       >
@@ -78,6 +78,7 @@ class ActionsCell extends Component {
             </label>
           </div>
         </div>
+        {rowColor && <div className="row-color-indicator" style={{ backgroundColor: rowColor }}></div>}
         {isShowRowExpandBtn && (
           <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
         )}

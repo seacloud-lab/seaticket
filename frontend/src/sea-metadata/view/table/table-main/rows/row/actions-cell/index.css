@@ -14,9 +14,10 @@
 }
 
 .sea-metadata-table-row .sea-metadata-table-column-content.actions-checkbox {
-  width: 40px;
+  width: 28px;
   text-align: center;
   display: none;
+  margin-left: 12px;
 }
 
 .sea-metadata-table-row:hover .sea-metadata-table-column-content.actions-checkbox {
@@ -38,7 +39,7 @@
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell {
   align-items: start;
   padding: 4px 0px;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .actions-checkbox .select-cell-checkbox-container {
@@ -54,6 +55,7 @@
   width: 20px;
   height: 20px;
   margin-top: 2px;
+  margin-right: 2px;
 }
 
 .sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .row-expand .row-expand-icon {
@@ -70,4 +72,14 @@
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-expand:hover {
   background-color: #c2f5e9;
+}
+
+.sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-color-indicator {
+  position: absolute;
+  top: 2px;
+  right: 26px;
+  display: inline-block;
+  width: 6px;
+  height: calc(100% - 4px);
+  border-radius: 3px;
 }

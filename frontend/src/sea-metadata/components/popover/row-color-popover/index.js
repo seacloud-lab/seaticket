@@ -2,9 +2,10 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
-import { ColorSelectorPopover, Icon, IconButton } from '@/components';
+import { ColorSelectorPopover, IconButton } from '@/components';
 import CommonAddTool from '@/components/customize-add-tool';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
+import context from '@/sea-metadata/context';
 import { getFilterByColumn } from '../../../utils/filter';
 import { getDefaultRowColorRule } from '../../../utils/view';
 import { FILTER_COLUMN_OPTIONS, ROW_COLOR_TYPE } from '../../../constants';
@@ -19,9 +20,19 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
   const filterTargetsRef = useRef({});
 
+  const excludedColumnKeys = useMemo(() => {
+    return new Set([
+      context.getSetting('stateColumnKey', 'status'),
+      context.getSetting('typeColumnKey', 'type'),
+      context.getSetting('tagsColumnKey', 'tags'),
+    ]);
+  }, []);
+
   const validColumns = useMemo(() => {
-    return (columns || []).filter((column) => FILTER_COLUMN_OPTIONS[column.type] && column.filter_able);
-  }, [columns]);
+    return (columns || []).filter((column) => {
+      return FILTER_COLUMN_OPTIONS[column.type] && column.filter_able && !excludedColumnKeys.has(column.key);
+    });
+  }, [columns, excludedColumnKeys]);
 
   const rules = useMemo(() => {
     return Array.isArray(colorbys?.color_by_rules) ? colorbys.color_by_rules : [];
@@ -158,7 +169,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
                     }}
                     className="sea-metadata-row-color-rule-filter-trigger text-truncate"
                   >
-                    {gettext('Define rule')}
+                    {`${gettext('Rule')} ${ruleIndex + 1}`}
                   </div>
                 </div>
                 {!readOnly && (

@@ -549,11 +549,9 @@ class Store {
       type,
       colorbys,
       view_id: this.viewId,
-      success_callback: () => {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA);
-      }
     });
     this.applyOperation(operation);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA);
   }
 
   modifyRowHeight(row_height) {

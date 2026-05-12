@@ -60,7 +60,7 @@ const Cell = React.memo(({
       value['backgroundColor'] = bgColor;
     }
     return value;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [frozen, height, column, column.left, bgColor]);
 
   const onCellClick = useCallback((event) => {
