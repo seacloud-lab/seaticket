@@ -25,6 +25,7 @@ const Cell = React.memo(({
   isLastFrozenCell,
   isCellSelected,
   bgColor,
+  rowColor,
   frozen,
   height,
 }) => {
@@ -58,10 +59,12 @@ const Cell = React.memo(({
     }
     if (bgColor) {
       value['backgroundColor'] = bgColor;
+    } else if (rowColor) {
+      value['backgroundColor'] = rowColor;
     }
     return value;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frozen, height, column, column.left, bgColor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frozen, height, column, column.left, bgColor, rowColor]);
 
   const onCellClick = useCallback((event) => {
     const cell = { idx: column.idx, groupRowIndex, rowIdx: rowIndex };
@@ -176,8 +179,8 @@ const Cell = React.memo(({
 }, (props, nextProps) => {
   const {
     row: oldRow, column, isCellSelected, isLastCell, highlightClassName,
-    height, bgColor } = props;
-  const { row: newRow, highlightClassName: newHighlightClassName, height: newHeight, column: newColumn, bgColor: newBgColor } = nextProps;
+    height, bgColor, rowColor } = props;
+  const { row: newRow, highlightClassName: newHighlightClassName, height: newHeight, column: newColumn, bgColor: newBgColor, rowColor: newRowColor } = nextProps;
   // the modification of column is not currently supported, only the modification of cell data is considered
   const oldValue = getCellValueByColumn(oldRow, column);
   const newValue = getCellValueByColumn(newRow, column);
@@ -187,11 +190,12 @@ const Cell = React.memo(({
     isCellSelected !== nextProps.isCellSelected ||
     isLastCell !== nextProps.isLastCell ||
     highlightClassName !== newHighlightClassName ||
-    height !== newHeight ||
-    column.left !== newColumn.left ||
-    column.width !== newColumn.width ||
-    bgColor !== newBgColor ||
-    !ObjectUtils.isSameObject(column.data, newColumn.data) ||
+     height !== newHeight ||
+     column.left !== newColumn.left ||
+     column.width !== newColumn.width ||
+     bgColor !== newBgColor ||
+      rowColor !== newRowColor ||
+     !ObjectUtils.isSameObject(column.data, newColumn.data) ||
     props.groupRowIndex !== nextProps.groupRowIndex ||
     props.rowIndex !== nextProps.rowIndex
   );
@@ -217,6 +221,7 @@ Cell.propTypes = {
   highlightClassName: PropTypes.string,
   rowHeightClassName: PropTypes.string,
   bgColor: PropTypes.string,
+  rowColor: PropTypes.string,
 };
 
 export default Cell;

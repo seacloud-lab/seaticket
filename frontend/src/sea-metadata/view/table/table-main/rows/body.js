@@ -459,7 +459,7 @@ class RowsBody extends Component {
     this.rowFrozenRefs = [];
     const {
       rowsCount, columns, colOverScanStartIdx, colOverScanEndIdx, lastFrozenColumnKey,
-      rowMetrics, showCellColoring, columnColors, isShowRowExpandBtn
+      rowMetrics, showCellColoring, columnColors, isShowRowExpandBtn, colors = {}
     } = this.props;
     const { startRenderIndex, endRenderIndex, selectedPosition } = this.state;
     const cellMetaData = this.getCellMetaData();
@@ -474,6 +474,7 @@ class RowsBody extends Component {
       const isLastRow = lastRowIndex === rowIndex;
       const hasSelectedCell = this.props.hasSelectedCell({ rowIndex }, selectedPosition);
       const columnColor = showCellColoring ? columnColors[rowId] : {};
+      const rowColor = colors[rowId];
       return (
         <Row
           key={rowId || rowIndex}
@@ -498,6 +499,7 @@ class RowsBody extends Component {
           modifyRow={this.props.modifyRow}
           searchResult={this.props.searchResult}
           columnColor={columnColor}
+          rowColor={rowColor}
           onRowExpand={this.props.onRowExpand}
           isShowRowExpandBtn={isShowRowExpandBtn}
           generatorRowClassName={this.props.generatorRowClassName}
@@ -630,6 +632,7 @@ RowsBody.propTypes = {
   deleteRowsLinks: PropTypes.func,
   paste: PropTypes.func,
   searchResult: PropTypes.object,
+  colors: PropTypes.object,
   scrollToRowIndex: PropTypes.number,
   frozenColumnsWidth: PropTypes.number,
   editMobileCell: PropTypes.func,

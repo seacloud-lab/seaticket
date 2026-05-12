@@ -186,6 +186,11 @@ export default function apply(data, operation) {
       data.view.groupbys = groupbys;
       return data;
     }
+    case OPERATION_TYPE.MODIFY_ROW_COLOR: {
+      const { colorbys } = operation;
+      data.view.colorbys = colorbys;
+      return data;
+    }
     case OPERATION_TYPE.MODIFY_ROW_HEIGHT: {
       const { row_height } = operation;
       data.view.row_height = row_height;

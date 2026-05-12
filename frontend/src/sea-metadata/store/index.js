@@ -543,6 +543,19 @@ class Store {
     this.applyOperation(operation);
   }
 
+  modifyRowColor(colorbys) {
+    const type = OPERATION_TYPE.MODIFY_ROW_COLOR;
+    const operation = this.createOperation({
+      type,
+      colorbys,
+      view_id: this.viewId,
+      success_callback: () => {
+        context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA);
+      }
+    });
+    this.applyOperation(operation);
+  }
+
   modifyRowHeight(row_height) {
     const type = OPERATION_TYPE.MODIFY_ROW_HEIGHT;
     const operation = this.createOperation({

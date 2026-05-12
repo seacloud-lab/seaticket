@@ -44,6 +44,7 @@ export const VIEW_PROPERTY_KEYS = {
   SORTS: 'sorts',
   GROUPBYS: 'groupbys',
   HIDDEN_COLUMNS: 'hidden_columns',
+  COLORBYS: 'colorbys',
   TYPE: 'type',
   SETTINGS: 'settings',
 };
@@ -61,6 +62,7 @@ export const VIEW_TOOL = {
   FILTERS: 'filters',
   SORTS: 'sorts',
   GROUPBYS: 'groupbys',
+  ROW_COLOR: 'row_color',
   ROW_HEIGHT: 'row_height',
   ORDER_HIDDEN: 'order_and_hidden',
 };
@@ -72,6 +74,11 @@ export const VIEW_TOOLS = [
   VIEW_TOOL.FILTERS,
   VIEW_TOOL.SORTS,
   VIEW_TOOL.GROUPBYS,
+  VIEW_TOOL.ROW_COLOR,
   VIEW_TOOL.ROW_HEIGHT,
   VIEW_TOOL.ORDER_HIDDEN,
 ];
+
+export const ROW_COLOR_TYPE = {
+  BY_RULES: 'by_rules',
+};

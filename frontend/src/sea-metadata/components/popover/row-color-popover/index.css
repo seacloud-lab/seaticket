@@ -1,0 +1,138 @@
+.sea-metadata-row-color-popover .popover {
+  max-width: none;
+  min-width: 300px;
+}
+
+.sea-metadata-row-color-body {
+  display: flex;
+  flex-direction: column;
+  padding-top: 16px;
+  min-width: 400px;
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-empty {
+  color: var(--bs-icon-color);
+  font-size: 14px;
+  padding: .25rem;
+  margin-left: 16px;
+}
+
+/* add rule */
+.sea-metadata-row-color-body .sea-metadata-row-color-add-btns {
+  display: flex;
+  align-items: center;
+  background: inherit;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  height: 40px;
+  padding: 0px 16px;
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool {
+  height: 28px;
+  padding: 0 6px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 3px;
+  font-weight: 400;
+  margin-left: -6px;
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-add-btns .customize-add-tool .sea-qa-icon-svg {
+  color: #666;
+  height: 14px;
+  width: 14px;
+  margin-right: 10px;
+  transform: none;
+}
+
+/* rule item */
+.sea-metadata-row-color-body .sea-metadata-row-color-rule {
+  padding: 8px 16px;
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-rule:hover {
+  background-color: var(--bs-nav-active-bg);
+  cursor: pointer;
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-rule.row-color-rule-editing {
+  background-color: var(--bs-nav-active-bg);
+  padding-bottom: 2px;
+}
+
+/* rule item -- top */
+.sea-metadata-row-color-rule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color {
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-block;
+  height: 20px;
+  line-height: 20px;
+  margin-right: 8px;
+  position: relative;
+  text-align: center;
+  width: 20px;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .sea-qa-icon-svg {
+  color: inherit;
+  width: 12px;
+  height: 12px;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-filter-trigger {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-remove {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-remove .sea-qa-icon-svg {
+  color: var(--bs-icon-secondary-color);
+}
+
+.sea-metadata-row-color-body .sea-metadata-row-color-rule:hover .sea-metadata-row-color-rule-remove,
+.sea-metadata-row-color-body .sea-metadata-row-color-rule.row-color-rule-editing .sea-metadata-row-color-rule-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* rule item -- filters */
+.sea-metadata-row-color-rule-filters {
+  
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-filters-list {
+  min-height: 30px;
+  padding: 8px 15px;
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .sea-qa-select.custom-select:hover {
+  border-color: rgba(0, 40, 100, 0.12);
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .selected-option {
+  background-color: transparent;
+}
+
+.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool {
+  background-color: transparent;
+}

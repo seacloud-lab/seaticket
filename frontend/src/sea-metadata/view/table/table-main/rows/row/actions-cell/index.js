@@ -40,7 +40,7 @@ class ActionsCell extends Component {
   };
 
   render() {
-    const { isSelected, isLastFrozenCell, index, height, row, isShowRowExpandBtn } = this.props;
+    const { isSelected, isLastFrozenCell, index, height, row, isShowRowExpandBtn, rowColor } = this.props;
     const rowId = row._id;
     let cellStyle = {
       height,
@@ -54,7 +54,7 @@ class ActionsCell extends Component {
           'justify-content-center': !isShowRowExpandBtn
         })}
         id={`action-cell-${rowId}`}
-        style={{ ...cellStyle }}
+        style={{ ...cellStyle, ...(rowColor ? { backgroundColor: rowColor } : {}) }}
         onMouseEnter={this.onCellMouseEnter}
         onMouseLeave={this.onCellMouseLeave}
       >
@@ -92,6 +92,7 @@ ActionsCell.propTypes = {
   isLastFrozenCell: PropTypes.bool,
   index: PropTypes.number,
   height: PropTypes.number,
+  rowColor: PropTypes.string,
   onSelectRow: PropTypes.func,
   onRowExpand: PropTypes.func,
 };

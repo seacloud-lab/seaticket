@@ -22,6 +22,7 @@
 .sea-metadata-view-tools .sea-metadata-view-tool-filter.active:hover,
 .sea-metadata-view-tools .sea-metadata-view-tool-sort.active:hover,
 .sea-metadata-view-tools .sea-metadata-view-tool-groupby.active:hover,
+.sea-metadata-view-tools .sea-metadata-view-tool-row-color.active:hover,
 .sea-metadata-view-tools .sea-metadata-view-tool-hide-column.active:hover {
   box-shadow: inset 0 0 0 2px #0000001a;
 }
@@ -36,6 +37,10 @@
 
 .sea-metadata-view-tools .sea-metadata-view-tool-groupby.active {
   background-color: #dad7ff !important;
+}
+
+.sea-metadata-view-tools .sea-metadata-view-tool-row-color.active {
+  background-color: #ffd9c8 !important;
 }
 
 .sea-metadata-view-tools .sea-metadata-view-tool-hide-column.active {

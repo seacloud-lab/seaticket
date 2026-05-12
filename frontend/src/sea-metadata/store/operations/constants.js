@@ -3,6 +3,7 @@ export const OPERATION_TYPE = {
   MODIFY_FILTERS: 'modify_filters',
   MODIFY_SORTS: 'modify_sorts',
   MODIFY_GROUPBYS: 'modify_groupbys',
+  MODIFY_ROW_COLOR: 'modify_row_color',
   MODIFY_ROW_HEIGHT: 'modify_row_height',
   MODIFY_HIDDEN_COLUMNS: 'modify_hidden_columns',
   MODIFY_SETTINGS: 'modify_settings',
@@ -62,6 +63,7 @@ export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.MODIFY_FILTERS]: ['view_id', 'filter_conjunction', 'filters', 'basic_filters'],
   [OPERATION_TYPE.MODIFY_SORTS]: ['view_id', 'sorts'],
   [OPERATION_TYPE.MODIFY_GROUPBYS]: ['view_id', 'groupbys'],
+  [OPERATION_TYPE.MODIFY_ROW_COLOR]: ['view_id', 'colorbys'],
   [OPERATION_TYPE.MODIFY_ROW_HEIGHT]: ['view_id', 'row_height'],
   [OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS]: ['view_id', 'hidden_columns'],
   [OPERATION_TYPE.MODIFY_LOCAL_VIEW]: ['view_id', 'update'],
@@ -121,6 +123,7 @@ export const VIEW_OPERATION = [
   OPERATION_TYPE.MODIFY_FILTERS,
   OPERATION_TYPE.MODIFY_SORTS,
   OPERATION_TYPE.MODIFY_GROUPBYS,
+  OPERATION_TYPE.MODIFY_ROW_COLOR,
   OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS,
   OPERATION_TYPE.MODIFY_VIEW_TYPE,
 ];
@@ -139,6 +142,7 @@ export const RE_SEARCH_ROWS_OPERATION = [
   // view
   OPERATION_TYPE.MODIFY_SORTS,
   OPERATION_TYPE.MODIFY_GROUPBYS,
+  OPERATION_TYPE.MODIFY_ROW_COLOR,
   OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS,
   OPERATION_TYPE.MODIFY_SETTINGS,
   OPERATION_TYPE.MODIFY_LOCAL_VIEW,
