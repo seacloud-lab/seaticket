@@ -8,8 +8,11 @@ import {
 } from '@/components';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME } from '../../constants';
-import { CollaboratorsSettings, TypeSettings, PrioritySettings, DueDateSettings } from '../../components/ticket-settings';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME, TICKET_STATE_OPTIONS } from '../../constants';
+import {
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  StateSettings, SubStateSettings, DueDateSettings,
+} from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -25,6 +28,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
+  const [participants, setParticipants] = useState([]);
+  const [state, setState] = useState(TICKET_STATE_OPTIONS[0]?.id || '');
+  const [substate, setSubstate] = useState('0010' || '');
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
@@ -90,7 +96,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       return;
     }
 
-    const data = { title: validTitle, content, type, assignees, tags, priority, due_date };
+    const data = { title: validTitle, content, type, assignees, tags, priority, due_date, state, substate, participants };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
@@ -111,7 +117,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags, priority, due_date, insertRow]);
+  }, [title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, insertRow]);
 
   useEffect(() => {
     const ticketDom = ticketRef.current;
@@ -206,8 +212,32 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               createTag={createTag}
               onChange={setTags}
             />
+            <StateSettings
+              isReadonly={isSubmitting}
+              state={state}
+              substate={substate}
+              useMetadataContext={useMetadata}
+              onChange={(nextState, nextSubstate) => {
+                setState(nextState);
+                setSubstate(nextSubstate);
+              }}
+            />
+            <SubStateSettings
+              isReadonly={isSubmitting}
+              state={state}
+              substate={substate}
+              useMetadataContext={useMetadata}
+              onChange={setSubstate}
+            />
             <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} useMetadataContext={useMetadata} onChange={setType} />
             <DueDateSettings isReadonly={isSubmitting} value={due_date} onChange={setDueDate} />
+            <CollaboratorsSettings
+              id="participants-editor-popover"
+              isReadonly={isSubmitting}
+              title={gettext('Participants')}
+              value={participants}
+              onChange={setParticipants}
+            />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>
