@@ -143,7 +143,7 @@ class Row extends React.Component {
   getColumnCells = () => {
     const {
       columns, colOverScanStartIdx, colOverScanEndIdx, groupRowIndex, index: rowIndex,
-      row, cellMetaData, isGroupView, isLastRow, height, columnColor, rowColor
+      row, cellMetaData, isGroupView, isLastRow, height, columnColor
     } = this.props;
     const rowId = row._id;
     const rendererColumns = columns.slice(colOverScanStartIdx, colOverScanEndIdx);
@@ -175,7 +175,6 @@ class Row extends React.Component {
           highlightClassName={highlightClassName}
           rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
-          rowColor={rowColor}
         />
       );
     });

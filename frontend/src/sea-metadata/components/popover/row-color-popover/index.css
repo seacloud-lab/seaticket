@@ -133,6 +133,10 @@
   background-color: transparent;
 }
 
+.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .form-control {
+  background-color: transparent;
+}
+
 .sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool {
   background-color: transparent;
 }

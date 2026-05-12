@@ -140,6 +140,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
                       color: currentColorOption?.TEXT_COLOR,
                     }}
                     icon="check-mark"
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {e.stopPropagation(); setColorSelectorIndex(colorSelectorIndex === ruleIndex ? null : ruleIndex);}}
                   />
                   {colorSelectorIndex === ruleIndex && (
@@ -161,11 +162,11 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
                   </div>
                 </div>
                 {!readOnly && (
-                  <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={() => handleDeleteRule(ruleIndex)} style={{ backgroundColor: 'transparent' }} />
+                  <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={(e) => {e.stopPropagation(); handleDeleteRule(ruleIndex);}} style={{ backgroundColor: 'transparent' }} />
                 )}
               </div>
               {editingRuleIndex === ruleIndex && (
-                <div className="sea-metadata-row-color-rule-filters">
+                <div className="sea-metadata-row-color-rule-filters" onClick={(e) => e.stopPropagation()}>
                   <AdvancedFilters
                     readOnly={readOnly}
                     columns={validColumns}
