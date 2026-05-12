@@ -15,9 +15,7 @@ const IconTooltip = ({ icon = 'question-circle-filled', tip, className, tooltipC
         className={classnames('sea-qa-tooltip-icon-btn', { 'no-hover-bg': !hoverBackground }, className)}
         { ...props }
       />
-      <Tooltip target={ref} placement={placement} className={tooltipClassName}>
-        {tip}
-      </Tooltip>
+      {tip && <Tooltip target={ref} placement={placement} className={tooltipClassName}>{tip}</Tooltip>}
     </>
   );
 };

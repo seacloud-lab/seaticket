@@ -3,32 +3,33 @@
 }
 
 .sea-metadata-row-height-wrapper {
-  padding: 8px 0;
+  padding: 8px;
 }
 
 .sea-metadata-row-height-header {
-  padding: 0 12px;
+  padding: 0 8px;
   margin-bottom: 4px;
   font-size: 13px;
   color: #666;
+  border-bottom: 1px solid #EEEEEE;
+  padding-bottom: 4px;
+  height: 28px;
+  line-height: 24px;
 }
 
 .sea-metadata-row-height-item {
   cursor: pointer;
   height: 32px;
-  padding-left: 14px;
-  padding-right: 12px;
   font-size: 14px;
   height: 32px;
   white-space: nowrap;
   display: flex;
-  flex: 0 0 100%;
   -webkit-box-flex: 0;
   -webkit-box-align: center;
   align-items: center;
   text-overflow: ellipsis;
   min-width: min-content;
-  justify-content: space-between;
+  border-radius: 4px;
 }
 
 .sea-metadata-row-height-item.disabled {
@@ -41,6 +42,11 @@
 
 .sea-metadata-row-height-item:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sea-metadata-row-height-item-left {
+  width: 40px;
+  padding-left: 12px;
 }
 
 .sea-metadata-row-height-item-left,

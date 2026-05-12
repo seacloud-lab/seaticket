@@ -185,13 +185,13 @@ const RunCard = ({
             <DropdownToggle tag="span" className="run-card-more-toggle">
               <IconTooltip
                 icon="more"
-                tip={gettext('More options')}
+                tip={dropdownOpen ? null : gettext('More options')}
                 className="sea-ticket-project-refresh-btn"
                 placement="bottom"
                 hoverBackground={true}
               />
             </DropdownToggle>
-            <DropdownMenu right>
+            <DropdownMenu right className="sea-qa-dropdown-menu">
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>
@@ -200,7 +200,7 @@ const RunCard = ({
           <IconTooltip
             icon="arrow-down"
             tip={isExpanded ? gettext('Collapse') : gettext('Expand')}
-            className={classnames('sea-ticket-project-refresh-btn', { 'rotate-180': isExpanded })}
+            className={classnames('sea-ticket-project-refresh-btn m-0', { 'rotate-180': isExpanded })}
             placement="bottom"
             hoverBackground={true}
             onClick={toggleExpand}

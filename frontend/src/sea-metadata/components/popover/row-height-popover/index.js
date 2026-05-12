@@ -36,18 +36,17 @@ const RowHeightPopover = ({ hidePopover, onChange, target, rowHeight, readOnly }
             key={index}
           >
             <span className="sea-metadata-row-height-item-left">
-              <Icon className="sea-metadata-icon" symbol={item.icon} title={item.name}/>
-              <span className="ml-2">{item.name}</span>
+              {rowHeight === item.value && <Icon className="sea-metadata-icon" symbol="check-mark" title={gettext('Selected')}/>}
             </span>
             <span className="sea-metadata-row-height-item-right">
-              {rowHeight === item.value && <Icon className="sea-metadata-icon" symbol="check-mark" title={gettext('Selected')}/>}
+              <Icon className="sea-metadata-icon" symbol={item.icon} title={item.name}/>
+              <span className="ml-2">{item.name}</span>
             </span>
           </div>
         ))}
       </div>
     </CustomizePopover>
   );
-
 };
 
 RowHeightPopover.propTypes = {
