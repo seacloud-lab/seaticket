@@ -13,9 +13,7 @@ import AdvancedFilters from '../filter-popover/advanced-filters';
 
 import './index.css';
 
-const EMPTY_COLLABORATORS = [];
-
-const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, modifyRowColor }) => {
+const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
   const filterTargetsRef = useRef({});
@@ -133,7 +131,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
               key={`row-color-rule-${ruleIndex}`}
               onClick={() => setEditingRuleIndex(editingRuleIndex === ruleIndex ? null : ruleIndex)}
             >
-              <div className="sea-metadata-row-color-rule-item">
+              <div className="sea-metadata-row-color-rule-header">
                 <div className="sea-metadata-row-color-rule-color-wrap">
                   <IconButton
                     id={colorTarget}
@@ -172,7 +170,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, hidePopover, mod
                   <AdvancedFilters
                     readOnly={readOnly}
                     columns={validColumns}
-                    collaborators={EMPTY_COLLABORATORS}
+                    collaborators={collaborators}
                     filterConjunction={rule.filter_conjunction || 'And'}
                     filters={Array.isArray(rule.filters) ? rule.filters : []}
                     emptyPlaceholder={gettext('No filters')}
@@ -209,6 +207,7 @@ RowColorPopover.propTypes = {
   readOnly: PropTypes.bool,
   columns: PropTypes.array,
   colorbys: PropTypes.object,
+  collaborators: PropTypes.array,
   hidePopover: PropTypes.func.isRequired,
   modifyRowColor: PropTypes.func.isRequired,
 };

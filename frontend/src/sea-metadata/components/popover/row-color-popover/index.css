@@ -61,19 +61,19 @@
   padding-bottom: 2px;
 }
 
-/* rule item -- top */
-.sea-metadata-row-color-rule-item {
+/* rule header */
+.sea-metadata-row-color-rule-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap {
   display: flex;
   align-items: center;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color {
   border-radius: 3px;
   cursor: pointer;
   display: inline-block;
@@ -85,18 +85,18 @@
   width: 20px;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .sea-qa-icon-svg {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .sea-qa-icon-svg {
   color: inherit;
   width: 12px;
   height: 12px;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-filter-trigger {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-filter-trigger {
   cursor: pointer;
   font-size: 14px;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-remove {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
@@ -106,7 +106,7 @@
   background-color: transparent !important;
 }
 
-.sea-metadata-row-color-rule-item .sea-metadata-row-color-rule-remove .sea-qa-icon-svg {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove .sea-qa-icon-svg {
   color: var(--bs-icon-secondary-color);
 }
 
@@ -116,7 +116,7 @@
   pointer-events: auto;
 }
 
-/* rule item -- filters */
+/* rule filters */
 .sea-metadata-row-color-rule-filters .sea-metadata-filters-list {
   min-height: 30px;
   padding: 8px 15px;

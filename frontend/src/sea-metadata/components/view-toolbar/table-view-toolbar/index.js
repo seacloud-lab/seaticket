@@ -92,6 +92,7 @@ const TableViewToolbar = ({
           readOnly={isReadOnly}
           columns={viewColumns}
           colorbys={view.colorbys}
+          collaborators={collaborators}
           modifyRowColor={modifyRowColor}
         />
       )}
