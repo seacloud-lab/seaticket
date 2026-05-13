@@ -204,6 +204,7 @@
 .ticket-icon {
   font-size: 14px;
   display: flex;
+  flex-shrink: 0;
 }
 
 .ticket-title {
