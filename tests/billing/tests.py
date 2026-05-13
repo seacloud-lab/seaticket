@@ -26,7 +26,10 @@ class BillingOrganizationAdditionalCreditsTests(TestCase):
         mock_cursor.return_value.__enter__.return_value = cursor
         mock_cursor.return_value.__exit__.return_value = None
 
-        request = self.factory.post(self.url, {'credits': 12.5}, format='json')
+        request = self.factory.post(self.url, {
+            'credits': 12.5,
+            'stripe_session_id': 'cs_test_abc123',
+        }, format='json')
         response = self.view(request, org_id='123')
 
         self.assertEqual(status.HTTP_200_OK, response.status_code)
@@ -34,7 +37,7 @@ class BillingOrganizationAdditionalCreditsTests(TestCase):
         self.assertEqual(123, response.data.get('org_id'))
         self.assertEqual(12.5, response.data.get('credits'))
         mock_cursor.assert_called_once()
-        cursor.execute.assert_called_once()
+        self.assertEqual(cursor.execute.call_count, 2)
         sql, params = cursor.execute.call_args.args
         self.assertIn('INSERT INTO additional_credits', sql)
         self.assertEqual([123, 12.5], params)
@@ -60,7 +63,10 @@ class BillingOrganizationAdditionalCreditsTests(TestCase):
         mock_cursor.return_value.__enter__.side_effect = RuntimeError('db unavailable')
         mock_cursor.return_value.__exit__.return_value = None
 
-        request = self.factory.post(self.url, {'credits': 8.0}, format='json')
+        request = self.factory.post(self.url, {
+            'credits': 8.0,
+            'stripe_session_id': 'cs_test_db_error',
+        }, format='json')
         response = self.view(request, org_id='123')
 
         self.assertEqual(status.HTTP_500_INTERNAL_SERVER_ERROR, response.status_code)

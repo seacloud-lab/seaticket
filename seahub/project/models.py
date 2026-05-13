@@ -955,10 +955,19 @@ class AIUsageStatistics(models.Model):
 class AdditionalCredits(models.Model):
     org_id = models.IntegerField(unique=True, db_index=True)
     credits = models.FloatField(default=0)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField()
 
     class Meta:
         db_table = 'additional_credits'
+
+
+class AdditionalCreditsStripeSession(models.Model):
+    stripe_session_id = models.CharField(max_length=255, unique=True, db_index=True)
+    org_id = models.IntegerField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'additional_credits_stripe_sessions'
 
 
 class ProjectGithubAppInstallationManager(models.Manager):

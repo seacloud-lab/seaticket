@@ -242,7 +242,7 @@ def get_ai_credit_by_org_id(org_id):
     os = OrgSettings.objects.filter(org_id=org_id).first()
     if os:
         role = os.role
-    return get_ai_credit_by_role(role)
+    return get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
 
 
 def get_ai_credit_by_username(username):
@@ -256,21 +256,7 @@ def get_ai_credit_by_username(username):
     except User.DoesNotExist:
         role = TEAM_FREE
 
-    return get_ai_credit_by_role(role)
-
-
-def get_ai_credit_by_role(role):
-    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
-
-    try:
-        ai_credit = float(ai_credit)
-    except (TypeError, ValueError):
-        ai_credit = -1
-
-    if ai_credit < 0:
-        return -1
-
-    return ai_credit
+    return get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
 
 
 def get_additional_credits_by_org_id(org_id):

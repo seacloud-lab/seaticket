@@ -21,6 +21,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 
 from seahub.settings import BILLING_AUTH_TOKEN, MULTI_TENANCY
+from seahub.project.models import AdditionalCreditsStripeSession
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +131,8 @@ class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
             return error
 
         credits = request.data.get('credits')
+        stripe_session_id = request.data.get('stripe_session_id', '')
+
         try:
             credits = float(credits)
         except (TypeError, ValueError):
@@ -139,19 +142,48 @@ class BillingOrganizationAdditionalCredits(BillingOrganizationOperation):
             return api_error(status.HTTP_400_BAD_REQUEST, 'credits invalid.')
 
         org_id_int = int(org.org_id)
-        try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    cursor.execute('''
-                        INSERT INTO additional_credits (org_id, credits, updated_at)
-                        VALUES (%s, %s, NOW())
-                        ON DUPLICATE KEY UPDATE
-                            credits = credits + VALUES(credits),
-                            updated_at = VALUES(updated_at)
-                    ''', [org_id_int, credits])
-        except Exception as e:
-            logger.error('Failed to add additional credits to db, org_id=%s credits=%s error=%s', org_id_int, credits, e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to add additional credits.')
+
+        # Idempotency: use stripe_session_id to prevent duplicate credit additions
+        if stripe_session_id:
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cursor:
+                        # Try to insert the session record; if it already exists (duplicate key),
+                        # this is a retry from Stripe and we skip adding credits.
+                        cursor.execute('''
+                            INSERT IGNORE INTO additional_credits_stripe_sessions
+                                (stripe_session_id, org_id, created_at)
+                            VALUES (%s, %s, NOW())
+                        ''', [stripe_session_id, org_id_int])
+
+                        if cursor.rowcount == 0:
+                            logger.info(
+                                'Stripe session %s already processed for org_id=%s, skipping duplicate credits',
+                                stripe_session_id, org_id_int
+                            )
+                            return Response({
+                                'success': True,
+                                'org_id': org_id_int,
+                                'credits': credits,
+                                'already_processed': True,
+                            })
+
+                        # New session: add credits
+                        cursor.execute('''
+                            INSERT INTO additional_credits (org_id, credits, updated_at)
+                            VALUES (%s, %s, NOW())
+                            ON DUPLICATE KEY UPDATE
+                                credits = credits + VALUES(credits),
+                                updated_at = VALUES(updated_at)
+                        ''', [org_id_int, credits])
+            except Exception as e:
+                logger.error(
+                    'Failed to add additional credits to db, org_id=%s credits=%s stripe_session_id=%s error=%s',
+                    org_id_int, credits, stripe_session_id, e
+                )
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to add additional credits.')
+        else:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'stripe_session_id is required.')
 
         return Response({
             'success': True,

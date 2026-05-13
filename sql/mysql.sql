@@ -766,3 +766,13 @@ CREATE TABLE `additional_credits` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `additional_credits_stripe_sessions` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `stripe_session_id` varchar(255) NOT NULL,
+  `org_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `stripe_session_id` (`stripe_session_id`),
+  KEY `org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
