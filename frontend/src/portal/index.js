@@ -9,20 +9,26 @@ import { CenteredLoading } from '../components';
 import { PORTAL_PAGE } from './constants';
 import { DataProvider } from '@/project/hooks';
 import { portalAPI } from './api';
-import { gettext, name, username, avatarURL } from '@/constants';
+import { gettext, name, username, avatarURL, mediaUrl } from '@/constants';
 import User from '@/models/user';
+import { PortalSettingsProvider } from './hooks';
 
 import './index.css';
 
 const {
   projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
-  isAnonymous, workspaceID, isExternalUser, portalName: initialPortalName, portalLogo: initialPortalLogo,
+  isAnonymous, workspaceID, isExternalUser, portalName, portalLogo,
 } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
   if (anonymous) return PORTAL_PAGE.CHAT;
   if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
   return PORTAL_PAGE.SUBMIT_ISSUE;
+};
+
+const initSettings = {
+  name: portalName || gettext('Support portal'),
+  logo: portalLogo || `${mediaUrl}img/portal-logo.png`,
 };
 
 const Portal = () => {
@@ -34,9 +40,6 @@ const Portal = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
-
-  const [portalName, setPortalName] = useState(initialPortalName || '');
-  const [portalLogo, setPortalLogo] = useState(initialPortalLogo || '');
 
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
@@ -102,11 +105,6 @@ const Portal = () => {
     window.addEventListener('portal:kb-visibility', handler);
 
     return () => window.removeEventListener('portal:kb-visibility', handler);
-  }, []);
-
-  const onPortalUpdate = useCallback((name, logo) => {
-    setPortalName(name);
-    setPortalLogo(logo);
   }, []);
 
   const onPasswordSubmit = useCallback(async (event) => {
@@ -206,9 +204,9 @@ const Portal = () => {
           <CenteredLoading />
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true}>
-            {isEditMode && <LeftBar portalName={portalName} portalLogo={portalLogo} onPortalUpdate={onPortalUpdate} />}
+            {isEditMode && <LeftBar />}
             <div className="sea-qa-portal-body">
-              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser} portalName={portalName} portalLogo={portalLogo}/>
+              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
               <MainPanel
                 isEditMode={isEditMode}
                 activePage={activePage}
@@ -227,4 +225,8 @@ const Portal = () => {
 };
 
 const root = createRoot(document.getElementById('wrapper'));
-root.render(<Portal />);
+root.render(
+  <PortalSettingsProvider projectUuid={projectUuid} { ...initSettings }>
+    <Portal />
+  </PortalSettingsProvider>
+);

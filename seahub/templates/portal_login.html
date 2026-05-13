@@ -10,7 +10,7 @@
       <div class="portal-login-panel-header d-flex justify-content-center align-items-center">
         <div>
           {% if portal_logo %}
-          <img src="{{ portal_logo }}" alt="" class="login-panel-logo" width="48" height="48">
+          <img src="{{ portal_logo }}" alt="" class="login-panel-logo" style="border-radius: 6px;" width="48" height="48">
           {% endif %}
           <div class="portal-login-title text-truncate" title="{{ portal_name|default:project_name }} - {% trans 'Portal' %}">{{ portal_name|default:project_name }} - {% trans "Portal" %}</div>
         </div>

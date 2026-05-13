@@ -106,8 +106,8 @@ class PortalLogoView(APIView):
             error_msg = 'file not found.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if file.size > AVATAR_MAX_SIZE:
-            error_msg = _("Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s") % { 'size' : filesizeformat(file.size), 'max_valid_size' : filesizeformat(AVATAR_MAX_SIZE)}
+        if file.size > AVATAR_MAX_SIZE * 5:
+            error_msg = _("Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s") % { 'size' : filesizeformat(file.size), 'max_valid_size' : filesizeformat(AVATAR_MAX_SIZE * 5)}
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)

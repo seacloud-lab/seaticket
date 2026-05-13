@@ -98,46 +98,37 @@ body {
   justify-content: space-between;
   padding: 0px 16px;
   height: 56px;
-}
-
-.sea-qa-portal-side-panel-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  background-color: #FF8000;
-  border-radius: 4px;
-}
-
-.sea-qa-portal-side-panel-icon .project-icon {
-  font-size: 16px;
-}
-
-.sea-qa-portal-side-panel-custom-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  border-radius: 4px;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
-.sea-qa-portal-side-panel-custom-logo img {
-  width: 100%;
-  height: 100%;
+.sea-qa-portal-side-panel-logo {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 200px;
+}
+
+.sea-qa-portal-side-panel-logo img {
+  width: 24px;
+  height: 24px;
   object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 4px;
+   margin-right: 8px;
+}
+
+.sea-qa-portal-side-panel-account {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .sea-qa-portal-side-panel-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .sea-qa-portal-side-panel-tabs .sea-tickets-customize-tabs {

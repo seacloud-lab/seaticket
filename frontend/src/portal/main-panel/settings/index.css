@@ -12,7 +12,9 @@
   width: 100%;
   padding: 5px 16px 5px 8px;
   cursor: pointer;
-  color: #666;
+  border-radius: 4px;
+  height: 32px;
+  margin-right: 0;
 }
 
 .portal-settings-dialog-side .nav .nav-item {
@@ -20,14 +22,13 @@
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active {
-  background-color: #fff;
+  background-color: var(--bs-bg-color);
   color: #212529;
-  font-weight: 600;
   position: relative;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link:hover {
-  background-color: #f7f7f7;
+  background-color: var(--bs-bg-secondary-color);
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active::before {
@@ -35,7 +36,7 @@
   border-radius: 2px;
   content: "";
   display: block;
-  left: 0;
+  left: -7px;
   position: absolute;
   top: 4px;
   bottom: 4px;
@@ -45,8 +46,13 @@
 .portal-settings-dialog-main {
   display: flex;
   flex: 0 0 75%;
-  padding: 12px 8px;
+  padding: 16px;
   overflow: auto;
+}
+
+.portal-settings-dialog-main.portal_customization {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .portal-settings-dialog-main .tab-content {
@@ -55,6 +61,7 @@
 
 .portal-settings-dialog-main .tab-pane {
   height: 100%;
+  width: 100%;
 }
 
 .portal-settings-dialog-main .table th {
