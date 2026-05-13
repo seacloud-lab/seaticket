@@ -56,9 +56,12 @@ const RunCardHeader = ({ item }) => {
         <span className="ticket-icon">
           <img src={resource.icon} alt="Ticket" width={16} height={16} />
         </span>
-        <span className={classnames('ticket-title', { 'cursor-pointer': hasDetails })} onClick={hasDetails ? openDetails : () => {}}>
+        <span
+          className={classnames('ticket-title text-truncate', { 'cursor-pointer': hasDetails })}
+          onClick={hasDetails ? openDetails : () => {}}
+        >
           <span>{titleTip}</span>
-          <span className="sea-qa-text-orange"> {resource.title}</span>
+          <span className="sea-qa-text-orange ml-1" title={resource.title}>{resource.title}</span>
         </span>
       </div>
       {isShowDetails && (
