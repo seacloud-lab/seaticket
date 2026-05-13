@@ -5,8 +5,7 @@ import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } fro
 import { getFilteredRows } from '../utils/filter';
 import { getGroupRows } from '../utils/group';
 import { sortTableRows } from '../utils/sort';
-import { isFilterView, isGroupView, isSortView } from '../utils/view';
-import { getRowColors } from '../utils/view';
+import { isFilterView, isGroupView, isSortView, getRowColors } from '../utils/view';
 import { getSearchRule } from '../utils/search';
 import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';

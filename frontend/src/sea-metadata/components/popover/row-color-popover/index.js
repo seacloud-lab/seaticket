@@ -75,12 +75,6 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     updateRules(newRules);
   }, [rules, updateRules]);
 
-  const handleUpdateRuleFilters = useCallback((ruleIndex, filters) => {
-    const rule = rules[ruleIndex];
-    if (!rule) return;
-    handleUpdateRule(ruleIndex, { filters });
-  }, [rules, handleUpdateRule]);
-
   const handleDeleteRuleFilter = useCallback((ruleIndex, filterIndex) => {
     const rule = rules[ruleIndex];
     if (!rule) return;
