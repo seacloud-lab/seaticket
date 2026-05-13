@@ -7,6 +7,7 @@ import { isObject } from '@/utils/type-detection';
 import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 import { Attachments } from '../../../components';
 import AIReply from '@/project/components/ai-reply';
+import MessageImages from '../../common-message/message-images';
 import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 
@@ -59,15 +60,28 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     };
   }
 
+  const imageAttachments = attachments.filter(a => a && a.type === 'image' && a.url);
+  const otherAttachments = attachments.filter(a => !(a && a.type === 'image'));
+
+  const attachmentChildren = [messageNode];
+  if (imageAttachments.length > 0) {
+    attachmentChildren.push({
+      name: gettext('Images'),
+      value: imageAttachments,
+      formatter: () => (<MessageImages images={imageAttachments} />),
+    });
+  }
+  if (otherAttachments.length > 0) {
+    attachmentChildren.push({
+      name: gettext('Attachments'),
+      value: otherAttachments,
+      formatter: () => (<Attachments attachments={otherAttachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+    });
+  }
+
   let userMessage = {
     name,
-    children: [
-      messageNode, {
-        name: gettext('Attachments'),
-        value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-        formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-      },
-    ],
+    children: attachmentChildren,
   };
   if (raw) {
     userMessage.rawChildren = [

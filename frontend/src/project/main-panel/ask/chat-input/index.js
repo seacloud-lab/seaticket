@@ -12,6 +12,7 @@ import ProjectRecordsSelector from './project-records-selector';
 import { useAIChatTools } from '../hooks';
 import AIModelSelector from './ai-model-selector';
 import AttachmentsFormatter from './attachments';
+import ImageAttachments from './image-attachments';
 
 import './index.css';
 
@@ -37,17 +38,32 @@ const ChatInput = forwardRef(({
   const previewContentRef = useRef(null);
   const domRef = useRef(null);
   const sendBtnRef = useRef(null);
+  const uploadInputRef = useRef(null);
+  const uploadBtnRef = useRef(null);
 
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
+    pendingImages, addImages, removeImage, retryImage, clearImages,
   } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
-      // todo;
+      const arr = Array.from(pasteFiles || []);
+      const images = arr.filter(f => f && f.type && f.type.startsWith('image/'));
+      if (images.length) addImages(images);
     };
     inputUtils.onPaste(event, callBack);
-  }, [inputUtils]);
+  }, [inputUtils, addImages]);
+
+  const onUploadClick = useCallback(() => {
+    uploadInputRef.current && uploadInputRef.current.click();
+  }, []);
+
+  const onFilesSelected = useCallback((event) => {
+    const files = event.target.files;
+    if (files && files.length) addImages(files);
+    event.target.value = '';
+  }, [addImages]);
 
   const onValueChange = useCallback((event) => {
     const value = event.target.value;
@@ -86,15 +102,23 @@ const ChatInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
+    const hasUploading = pendingImages.some(i => i.status === 'uploading');
+    if (hasUploading) return;
+    const completed = pendingImages.filter(i => i.status === 'done' && i.tempUrl);
+    const imageUrls = completed.map(i => i.tempUrl);
+    const imagePreviews = completed.map(i => i.previewUrl);
     sendMessage({
       message: value,
       attachments,
+      image_urls: imageUrls,
+      image_previews: imagePreviews,
       model: selectedModel,
       clearContext
     });
     clearAttachments();
+    clearImages();
     resetClearContext();
-  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
+  }, [value, attachments, pendingImages, selectedModel, sendMessage, clearAttachments, clearImages, clearContext, resetClearContext]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -180,6 +204,7 @@ const ChatInput = forwardRef(({
   useEffect(() => {
     return () => {
       clearAttachments();
+      clearImages();
     };
   }, []);
 
@@ -195,12 +220,15 @@ const ChatInput = forwardRef(({
 
   const disabled = isReply || readOnly;
   const isSimple = width <= 673;
+  const hasUploading = pendingImages.some(i => i.status === 'uploading');
+  const sendDisabled = disabled || !value || hasUploading;
 
   return (
     <div className={classnames('seaqa-ai-ask-chat-input-wrapper', { 'disabled': disabled })} ref={domRef}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('seaqa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
           <AttachmentsFormatter value={attachments} projectUuid={projectUuid} onRemove={removeAttachment} />
+          <ImageAttachments images={pendingImages} onRemove={removeImage} onRetry={retryImage} />
           <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -224,6 +252,27 @@ const ChatInput = forwardRef(({
               {canAddDocuments && (
                 <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
               )}
+              <>
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={onFilesSelected}
+                />
+                <IconButton
+                  disabled={disabled}
+                  ref={uploadBtnRef}
+                  icon="paperclip"
+                  className="sea-qa-ai-ask-icon-btn no-hover-bg"
+                  onClick={disabled ? () => {} : onUploadClick}
+                  aria-label={gettext('Upload image')}
+                />
+                <Tooltip target={uploadBtnRef} placement="top">
+                  {gettext('Upload image')}
+                </Tooltip>
+              </>
             </div>
             <div className="seaqa-ai-ask-chat-operations-container-right">
               {canSelectModel && (
@@ -231,15 +280,15 @@ const ChatInput = forwardRef(({
               )}
               <>
                 <IconButton
-                  disabled={disabled || !value}
+                  disabled={sendDisabled}
                   ref={sendBtnRef}
                   icon="btn-send"
                   className="seaqa-ai-ask-icon-btn icon-send-wrapper no-hover-bg"
-                  onClick={disabled ? () => {} : onSendMessage}
+                  onClick={sendDisabled ? () => {} : onSendMessage}
                   aria-label={gettext('Send')}
                 />
                 <Tooltip target={sendBtnRef} placement="top">
-                  {gettext('Send')}
+                  {hasUploading ? gettext('Uploading images...') : gettext('Send')}
                 </Tooltip>
               </>
             </div>

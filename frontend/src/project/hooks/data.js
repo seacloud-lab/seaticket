@@ -652,7 +652,7 @@ export const DataProvider = ({
       deleteRows,
       restoreRows,
     }}>
-      <AIChatToolsProvider>
+      <AIChatToolsProvider projectUuid={projectUuid}>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>

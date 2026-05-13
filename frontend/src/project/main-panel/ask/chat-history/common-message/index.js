@@ -1,10 +1,11 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import ThoughtProcess from '../thought-process';
 import { Attachments } from '../../components';
 import AIReply from '@/project/components/ai-reply';
 import MessageOperations from '../message-operations';
+import MessageImages from './message-images';
 import { useDocuments } from '../../hooks';
 
 import './index.css';
@@ -21,9 +22,22 @@ const CommonMessage = ({
     return markdownMessageRef.current.getAIReply();
   }, [markdownMessageRef.current]);
 
+  const { imageAttachments, otherAttachments } = useMemo(() => {
+    const all = message[CHAT_MESSAGE_TYPE.ATTACHMENTS];
+    if (!Array.isArray(all)) return { imageAttachments: [], otherAttachments: [] };
+    const images = [];
+    const others = [];
+    for (const a of all) {
+      if (a && a.type === 'image' && a.url) images.push(a);
+      else others.push(a);
+    }
+    return { imageAttachments: images, otherAttachments: others };
+  }, [message]);
+
   return (
     <>
-      <Attachments attachments={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} projectUuid={projectUuid} />
+      <MessageImages images={imageAttachments} />
+      <Attachments attachments={otherAttachments} projectUuid={projectUuid} />
       <div className="seaqa-ai-ask-message-content">
         <ThoughtProcess
           value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]}

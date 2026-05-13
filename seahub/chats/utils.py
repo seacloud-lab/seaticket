@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
+import base64
 import logging
 import json
+import mimetypes
 import requests
 import jwt
 import uuid
@@ -18,6 +21,8 @@ from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.utils.storage import get_file_from_s3
+from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 from seahub.project.constants import ConnectionType, ExtraSourceType
 
 logger = logging.getLogger(__name__)
@@ -221,3 +226,41 @@ def strip_content_details_from_attachments(attachments):
         attachment.pop('comments', None)
         attachment.pop('emails', None)
     return new_attachments
+
+
+def filter_valid_temp_image_urls(project_uuid, image_urls):
+    """Drop URLs that are not temp uploads owned by this project."""
+    if not isinstance(image_urls, list):
+        return []
+    prefix = f'/upload-file/project/{project_uuid}/'
+    return [u for u in image_urls if isinstance(u, str) and u.startswith(prefix)][:CHAT_IMAGE_MAX_COUNT]
+
+
+def build_image_attachments(permanent_image_urls):
+    return [
+        {'type': 'image', 'url': url, 'name': os.path.basename(url)}
+        for url in permanent_image_urls
+    ]
+
+
+def build_ai_images_payload(project_uuid, permanent_image_urls):
+    payload = []
+    file_prefix = f'/file/project/{project_uuid}/'
+    for url in permanent_image_urls:
+        if not isinstance(url, str) or not url.startswith(file_prefix):
+            logger.warning(f'skip unexpected image url: {url}')
+            continue
+        file_path = url[len(file_prefix):]
+        name = os.path.basename(file_path)
+        mime_type, _ = mimetypes.guess_type(name)
+        if not mime_type or not mime_type.startswith('image/'):
+            logger.warning(f'skip image with unknown mime type: {name}')
+            continue
+        try:
+            body = get_file_from_s3(project_uuid, file_path)
+            data = base64.b64encode(body.read()).decode('ascii')
+        except Exception as e:
+            logger.warning(f'Failed to read image {file_path} from s3: {e}')
+            continue
+        payload.append({'name': name, 'mime_type': mime_type, 'data': data})
+    return payload

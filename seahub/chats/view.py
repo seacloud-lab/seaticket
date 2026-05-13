@@ -16,10 +16,12 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.utils.storage import upload_files_to_s3
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
-    record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments
+    record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments, \
+    filter_valid_temp_image_urls, build_image_attachments, build_ai_images_payload
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -398,6 +400,18 @@ class ChatView(APIView):
             error_msg = 'Internal server error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        # Move user-uploaded images from /tmp to S3 and append to attachments
+        permanent_image_urls = []
+        try:
+            temp_image_urls = filter_valid_temp_image_urls(project_uuid, request.data.get('image_urls', []))
+            if temp_image_urls:
+                record_id = f'{session.session_uuid}/{message_id}'
+                new_url_map = upload_files_to_s3(project_uuid, temp_image_urls, username, 'chat', record_id)
+                permanent_image_urls = list(new_url_map.keys())
+                attachments = attachments + build_image_attachments(permanent_image_urls)
+        except Exception as e:
+            logger.warning(f'Failure to persist chat images: {e}')
+
         # Read project-level custom prompt from settings
         project_prompt = ''
         if project.settings:
@@ -416,7 +430,8 @@ class ChatView(APIView):
             'scenario': AIScenario.CHAT.value,
             'llm_model': request.data.get('model'),
             'stream': stream,
-            'project_prompt': project_prompt
+            'project_prompt': project_prompt,
+            'images': build_ai_images_payload(project_uuid, permanent_image_urls),
         }
 
         task_info = {

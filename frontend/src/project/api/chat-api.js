@@ -170,6 +170,13 @@ class ChatAPI {
     return this.req.get(url);
   }
 
+  uploadChatImage(projectUuid, file, onUploadProgress) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.req.post(url, formData, { onUploadProgress });
+  }
+
 }
 
 const chatAPI = new ChatAPI();

@@ -65,17 +65,25 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(({ message, attachments, model, clearContext }) => {
+  const sendMessage = useCallback(({ message, attachments, image_urls, image_previews, model, clearContext }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
       return;
     }
+    const urls = Array.isArray(image_urls) ? image_urls : [];
+    const previews = Array.isArray(image_previews) ? image_previews : [];
+    const localImageAttachments = urls.map((url, idx) => ({
+      type: 'image',
+      url: previews[idx] || url,
+      name: url.split('/').pop(),
+    }));
+    const mergedAttachments = (attachments || []).concat(localImageAttachments);
     const newChatHistories = chatHistories.slice(0);
     newChatHistories.push(new ChatMessage({
       message: {
         [CHAT_MESSAGE_TYPE.TEXT]: validMessage,
-        [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
+        [CHAT_MESSAGE_TYPE.ATTACHMENTS]: mergedAttachments,
       },
       isUserSpeak: true,
     }));
@@ -84,7 +92,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, attachments, model, clearContext });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, attachments, image_urls, model, clearContext });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -93,7 +101,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, attachments, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, attachments, image_urls, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
