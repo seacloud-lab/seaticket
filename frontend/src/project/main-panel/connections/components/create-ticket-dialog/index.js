@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { ticketsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
-import { CollaboratorsSettings, TypeSettings, PrioritySettings } from '../../../tickets/components/ticket-settings';
+import {
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  StateSettings, SubStateSettings, DueDateSettings,
+} from '../../../tickets/components/ticket-settings';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { TICKET_STATE, TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
 import { useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
@@ -24,12 +27,28 @@ const CreateTicketDialog = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
+  const [participants, setParticipants] = useState([]);
+  const [state, setState] = useState(TICKET_STATE_OPTIONS[0]?.id || '0001');
+  const [substate, setSubstate] = useState('0010' || '');
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
+  const [due_date, setDueDate] = useState('');
 
   const { typesData, substatesData } = useMetadataContext();
   const { tagsData, createTag } = useTags();
+
+  const openSubstate = useMemo(() => {
+    if (!substatesData?.rows) return '';
+    const firstSubstate = substatesData.rows.find(r => r.parent_id === TICKET_STATE.OPEN);
+    return firstSubstate ? firstSubstate._id : '';
+  }, [substatesData]);
+
+  useEffect(() => {
+    if (!substate && openSubstate) {
+      setSubstate(openSubstate);
+    }
+  }, [substate, openSubstate]);
 
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -49,8 +68,7 @@ const CreateTicketDialog = ({
       }
     }
 
-    const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
-    const substateOption = substateOptions[0];
+    const substateRow = getRowById(substatesData, substate);
 
     const ticketData = {
       title,
@@ -59,7 +77,10 @@ const CreateTicketDialog = ({
       assignees,
       tags,
       priority,
-      substate: substateOption?.name,
+      state: state === TICKET_STATE.OPEN ? 'open' : 'closed',
+      substate: substateRow?.origin_name || substate,
+      due_date,
+      participants,
       linked_connection_records: [`${linkedRecordPrefix}_${row._id}`],
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then((res) => {
@@ -92,7 +113,7 @@ const CreateTicketDialog = ({
     }).finally(() => {
       setLoading(false);
     });
-  }, []);
+  }, [projectUuid, row, convertToTicket, openSubstate]);
 
   return (
     <Modal className="sea-qa-create-ticket-dialog" isOpen={true} toggle={onClose}>
@@ -144,6 +165,34 @@ const CreateTicketDialog = ({
                 onChange={setTags}
               />
               <TypeSettings isReadonly={isLoading} value={type} onChange={setType} useMetadataContext={useMetadataContext} />
+              <StateSettings
+                isReadonly={isLoading}
+                state={state}
+                substate={substate}
+                useMetadataContext={useMetadataContext}
+                onChange={(nextState, nextSubstate) => {
+                  setState(nextState);
+                  setSubstate(nextSubstate);
+                }}
+              />
+              <SubStateSettings
+                isReadonly={isLoading}
+                state={state}
+                substate={substate}
+                useMetadataContext={useMetadataContext}
+                onChange={setSubstate}
+              />
+              <DueDateSettings
+                isReadonly={isLoading}
+                value={due_date}
+                onChange={setDueDate}
+              />
+              <CollaboratorsSettings
+                isReadonly={isLoading}
+                title={gettext('Participants')}
+                value={participants}
+                onChange={setParticipants}
+              />
             </div>
           </div>
         )}
