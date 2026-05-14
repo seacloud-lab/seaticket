@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 
@@ -8,6 +9,15 @@ const MessageImages = ({ images }) => {
   const [previewIndex, setPreviewIndex] = useState(-1);
 
   const onClose = useCallback(() => setPreviewIndex(-1), []);
+
+  useEffect(() => {
+    if (previewIndex < 0) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setPreviewIndex(-1);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [previewIndex]);
 
   if (!Array.isArray(images) || images.length === 0) return null;
 
@@ -25,7 +35,7 @@ const MessageImages = ({ images }) => {
           </div>
         ))}
       </div>
-      {previewIndex > -1 && (
+      {previewIndex > -1 && ReactDOM.createPortal(
         <div
           className="sea-qa-ai-chat-message-image-lightbox"
           onClick={onClose}
@@ -33,7 +43,8 @@ const MessageImages = ({ images }) => {
           aria-label={gettext('Image preview')}
         >
           <img src={images[previewIndex].url} alt={images[previewIndex].name || ''} />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
