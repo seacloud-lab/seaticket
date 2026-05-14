@@ -22,6 +22,7 @@ const ChatInput = forwardRef(({
   projectUuid,
   canAddDocuments = true,
   canSelectModel = true,
+  canUploadImage = true,
   clearContext,
   sendMessage,
   resetClearContext,
@@ -47,13 +48,17 @@ const ChatInput = forwardRef(({
   } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
+    if (!canUploadImage) {
+      inputUtils.onPaste(event);
+      return;
+    }
     const callBack = (pasteFiles) => {
       const arr = Array.from(pasteFiles || []);
       const images = arr.filter(f => f && f.type && f.type.startsWith('image/'));
       if (images.length) addImages(images);
     };
     inputUtils.onPaste(event, callBack);
-  }, [inputUtils, addImages]);
+  }, [inputUtils, addImages, canUploadImage]);
 
   const onUploadClick = useCallback(() => {
     uploadInputRef.current && uploadInputRef.current.click();
@@ -228,7 +233,9 @@ const ChatInput = forwardRef(({
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('seaqa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
           <AttachmentsFormatter value={attachments} projectUuid={projectUuid} onRemove={removeAttachment} />
-          <ImageAttachments images={pendingImages} onRemove={removeImage} onRetry={retryImage} />
+          {canUploadImage && (
+            <ImageAttachments images={pendingImages} onRemove={removeImage} onRetry={retryImage} />
+          )}
           <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -252,27 +259,29 @@ const ChatInput = forwardRef(({
               {canAddDocuments && (
                 <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
               )}
-              <>
-                <input
-                  ref={uploadInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  style={{ display: 'none' }}
-                  onChange={onFilesSelected}
-                />
-                <IconButton
-                  disabled={disabled}
-                  ref={uploadBtnRef}
-                  icon="paperclip"
-                  className="sea-qa-ai-ask-icon-btn no-hover-bg"
-                  onClick={disabled ? () => {} : onUploadClick}
-                  aria-label={gettext('Upload image')}
-                />
-                <Tooltip target={uploadBtnRef} placement="top">
-                  {gettext('Upload image')}
-                </Tooltip>
-              </>
+              {canUploadImage && (
+                <>
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={onFilesSelected}
+                  />
+                  <IconButton
+                    disabled={disabled}
+                    ref={uploadBtnRef}
+                    icon="paperclip"
+                    className="sea-qa-ai-ask-icon-btn no-hover-bg"
+                    onClick={disabled ? () => {} : onUploadClick}
+                    aria-label={gettext('Upload image')}
+                  />
+                  <Tooltip target={uploadBtnRef} placement="top">
+                    {gettext('Upload image')}
+                  </Tooltip>
+                </>
+              )}
             </div>
             <div className="seaqa-ai-ask-chat-operations-container-right">
               {canSelectModel && (

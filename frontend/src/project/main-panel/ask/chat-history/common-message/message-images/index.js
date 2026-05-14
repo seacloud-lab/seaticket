@@ -31,7 +31,7 @@ const MessageImages = ({ images }) => {
             onClick={() => setPreviewIndex(idx)}
             title={img.name || ''}
           >
-            <img src={img.url} alt={img.name || ''} />
+            <img src={img.path} alt={img.name || ''} />
           </div>
         ))}
       </div>
@@ -42,7 +42,7 @@ const MessageImages = ({ images }) => {
           role="dialog"
           aria-label={gettext('Image preview')}
         >
-          <img src={images[previewIndex].url} alt={images[previewIndex].name || ''} />
+          <img src={images[previewIndex].path} alt={images[previewIndex].name || ''} />
         </div>,
         document.body
       )}

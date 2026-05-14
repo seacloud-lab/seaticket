@@ -28,7 +28,7 @@ const CommonMessage = ({
     const images = [];
     const others = [];
     for (const a of all) {
-      if (a && a.type === 'image' && a.url) images.push(a);
+      if (a && a.type === 'image' && a.path) images.push(a);
       else others.push(a);
     }
     return { imageAttachments: images, otherAttachments: others };

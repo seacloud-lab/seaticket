@@ -60,7 +60,7 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     };
   }
 
-  const imageAttachments = attachments.filter(a => a && a.type === 'image' && a.url);
+  const imageAttachments = attachments.filter(a => a && a.type === 'image' && a.path);
   const otherAttachments = attachments.filter(a => !(a && a.type === 'image'));
 
   const attachmentChildren = [messageNode];

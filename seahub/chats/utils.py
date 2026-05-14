@@ -236,10 +236,10 @@ def filter_valid_temp_image_urls(project_uuid, image_urls):
     return [u for u in image_urls if isinstance(u, str) and u.startswith(prefix)][:CHAT_IMAGE_MAX_COUNT]
 
 
-def build_image_attachments(permanent_image_urls):
+def build_image_attachments(permanent_image_paths):
     return [
-        {'type': 'image', 'url': url, 'name': os.path.basename(url)}
-        for url in permanent_image_urls
+        {'type': 'image', 'path': p, 'name': os.path.basename(p)}
+        for p in permanent_image_paths
     ]
 
 

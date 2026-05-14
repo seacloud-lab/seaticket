@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, canUploadImage = true, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -71,12 +71,12 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
       messageInputRef.current?.focusInput();
       return;
     }
-    const urls = Array.isArray(image_urls) ? image_urls : [];
+    const paths = Array.isArray(image_urls) ? image_urls : [];
     const previews = Array.isArray(image_previews) ? image_previews : [];
-    const localImageAttachments = urls.map((url, idx) => ({
+    const localImageAttachments = paths.map((p, idx) => ({
       type: 'image',
-      url: previews[idx] || url,
-      name: url.split('/').pop(),
+      path: previews[idx] || p,
+      name: p.split('/').pop(),
     }));
     const mergedAttachments = (attachments || []).concat(localImageAttachments);
     const newChatHistories = chatHistories.slice(0);
@@ -561,6 +561,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           placeholder={isEmpty ? undefined : ''}
           canAddDocuments={canAddDocuments}
           canSelectModel={canSelectModel}
+          canUploadImage={canUploadImage}
           sendMessage={sendMessage}
           clearContext={clearContext}
           resetClearContext={resetClearContext}
