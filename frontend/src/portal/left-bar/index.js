@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import CustomModalHeader from '../../components/modal-header';
-import { Icon } from '../../components';
+import { IconTooltip } from '../../components';
 import { gettext } from '@/constants';
 import Settings from '../main-panel/settings';
 import UserManagement from '../main-panel/user-management';
@@ -12,50 +12,51 @@ const LeftBar = () => {
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [isShowInvite, setIsShowInvite] = useState(false);
 
-  const openSettings = useCallback(() => {
-    setIsShowSettings(true);
+  const bars = useMemo(() => {
+    return [
+      {
+        icon: 'set-up',
+        tip: gettext('Settings'),
+        callback: () => setIsShowSettings(true),
+      }, {
+        icon: 'eye',
+        tip: gettext('Go to app'),
+        callback: () => {
+          const { projectUuid } = window.app.pageOptions;
+          window.open(`/portal/${projectUuid}/`, '_blank');
+        },
+      }, {
+        icon: 'manage-members',
+        tip: gettext('User management'),
+        callback: () => setIsShowInvite(true),
+      },
+    ];
   }, []);
 
   const closeSettings = useCallback(() => {
     setIsShowSettings(false);
   }, []);
 
-  const openInvite = useCallback(() => {
-    setIsShowInvite(true);
-  }, []);
   const closeInvite = useCallback(() => {
     setIsShowInvite(false);
-  }, []);
-
-  const goToApp = useCallback(() => {
-    const { projectUuid } = window.app.pageOptions;
-    window.open(`/portal/${projectUuid}/`, '_blank');
   }, []);
 
   return (
     <>
       <div className="sea-qa-portal-left-bar">
-        <div
-          className="sea-qa-portal-left-bar-item"
-          onClick={openSettings}
-          title={gettext('Settings')}
-        >
-          <Icon symbol="set-up" />
-        </div>
-        <div
-          className="sea-qa-portal-left-bar-item"
-          onClick={goToApp}
-          title={gettext('Go to app')}
-        >
-          <Icon symbol="app-preview" />
-        </div>
-        <div
-          className="sea-qa-portal-left-bar-item"
-          onClick={openInvite}
-          title={gettext('User management')}
-        >
-          <Icon symbol="manage-members" />
-        </div>
+        {bars.map(bar => {
+          return (
+            <IconTooltip
+              key={bar.icon}
+              className="sea-qa-portal-left-bar-item"
+              size={{ btn: 50, icon: 20 }}
+              hoverBackground={true}
+              icon={bar.icon}
+              tip={bar.tip}
+              onClick={bar.callback}
+            />
+          );
+        })}
       </div>
       {isShowSettings && (
         <Modal isOpen={true} toggle={closeSettings} className="portal-settings-dialog">

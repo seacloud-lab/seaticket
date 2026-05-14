@@ -1,12 +1,10 @@
 {% load seahub_tags i18n static %}
 {% load render_bundle from webpack_loader %}
-{% load pwa %}
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
-<title>{{ project_name }} - {% trans "Portal" %}</title>
-{% progressive_web_app_meta %}
+<title>{{ portal.portal_name|default:project_name }} - {% trans "Portal" %}</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 {% if request.is_mobile or request.is_tablet %}
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
@@ -14,8 +12,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 {% endif %}
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
+{% if portal.portal_name %} 
+<link rel="icon" href="{{ portal.portal_logo }}">
+<link rel="apple-touch-icon" href="{{ portal.portal_logo }}">
+{% else %}
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+{% endif %}
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20260428" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?t=20250826" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260514" />
@@ -54,6 +57,8 @@
             needPassword: {% if need_password %}true{% else %}false{% endif %},
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
+            portalName: '{{ portal.portal_name|escapejs }}',
+            portalLogo: '{{ portal.portal_logo|escapejs }}',
         }
      };
 </script>

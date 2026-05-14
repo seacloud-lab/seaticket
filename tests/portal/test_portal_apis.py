@@ -1,11 +1,15 @@
 import json
-from unittest.mock import Mock, patch
+from io import BytesIO
+from unittest.mock import Mock, MagicMock, patch
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 
+from seahub.project.models import Projects
 from seahub.portal.apis import (
     PortalKnowledgeBaseRecordsView,
     PortalKnowledgeBaseViewsView,
+    PortalLogoView,
     PortalSettingsView,
     PortalTagsView,
     PortalIssuesView,
@@ -436,6 +440,133 @@ class TestPortalSettingsView:
         assert portal_settings.get('enable_password_protection') is False
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
+
+    def test_post_partial_update_portal_branding_preserves_other_settings(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'allow_anonymous': True,
+            'enable_password_protection': False,
+            'show_knowledge_base': True,
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={
+                'portal_name': 'Custom support',
+                'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
+            },
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        portal_settings = settings_dict.get('portal', {})
+        assert portal_settings.get('allow_anonymous') is True
+        assert portal_settings.get('enable_password_protection') is False
+        assert portal_settings.get('show_knowledge_base') is True
+        assert portal_settings.get('portal_name') == 'Custom support'
+        assert portal_settings.get('portal_logo') == f'/api/v1/portal/{project.uuid}/logo/?v=1'
+
+    def test_post_portal_logo_cleared_deletes_current_logo_file(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': ''},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        delete_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+
+    def test_post_portal_logo_same_file_path_does_not_delete_current_logo(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=1',
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': f'/api/v1/portal/{project.uuid}/logo/?v=2'},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        delete_mock.assert_not_called()
+
+    def test_post_portal_logo_save_failed_does_not_delete_logo_file(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_logo': ''},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch.object(Projects, 'save', side_effect=Exception('boom')), \
+                patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            with pytest.raises(Exception, match='boom'):
+                PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        delete_mock.assert_not_called()
+
+
+@pytest.mark.django_db
+class TestPortalLogoView:
+
+    def test_get_success_includes_image_content_type(self, factory, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/logo/")
+        metadata = {
+            'ContentType': 'image/png',
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
+                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')):
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'] == 'image/png'
+        assert resp['Cache-Control'] == 'public, max-age=86400, immutable'
+
+    def test_get_uses_relative_portal_logo_path(self, factory, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/logo/")
+        metadata = {
+            'ContentType': 'image/png',
+        }
+
+        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+            resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
 
 
 @pytest.mark.django_db

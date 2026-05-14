@@ -15,7 +15,9 @@ from rest_framework.response import Response
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
-
+from django.http import FileResponse
+from django.template.defaultfilters import filesizeformat
+from django.utils import timezone
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -23,7 +25,8 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
+from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, get_file_from_s3, get_file_metadata_from_s3, \
+    upload_portal_logo_file_to_s3, gen_portal_logo_file_path
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -34,28 +37,14 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_colu
     build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
-from seahub.auth.models import EmailUser
-from seahub.organizations.models import OrgUser
-from seahub.profile.models import Profile
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission
 from seahub.portal.models import ProjectExternalUser
-from seahub.portal.utils import (
-    PORTAL_EXTERNAL_LOGIN_CODE_TTL,
-    PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN,
-    PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT,
-    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL,
-    clear_portal_external_login_code,
-    clear_portal_external_login_state,
-    get_portal_external_login_code_key,
-    get_portal_external_login_cooldown_key,
-    get_portal_external_login_fail_key,
-    get_portal_external_login_lock_key,
-    incr_portal_external_login_fail,
-    is_portal_external_login_locked,
-    normalize_external_login_email,
-)
+from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
+    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
+    get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -63,6 +52,8 @@ from seahub.portal.models import PortalExternalInvitation, PortalIssueViews
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_key
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
+from seahub.avatar.settings import AVATAR_MAX_SIZE
+
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
     send_portal_issue_update_msg, check_portal_issue_comment_creation_interval
 logger = logging.getLogger(__name__)
@@ -71,24 +62,72 @@ logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
 
-def is_user_in_the_same_team(project, email):
-    org_id = getattr(project.workspace, 'org_id', -1)
-    if org_id == -1:
-        return False
+class PortalLogoView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
 
-    username = Profile.objects.convert_login_str_to_username((email or '').strip())
-    if not username:
-        return False
+    def initialize_request(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.authentication_classes = ()
+            self.permission_classes = ()
+            self.throttle_classes = ()
+        return super().initialize_request(request, *args, **kwargs)
 
-    user = EmailUser.objects.get_user_by_email(username)
-    if not user or not user.is_active:
-        return False
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-    if not OrgUser.objects.org_user_exists(org_id, username):
-        return False
-    
-    return True
+        file_path = gen_portal_logo_file_path()
+        try:
+            metadata = get_file_metadata_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        try:
+            file = get_file_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
+        response['Cache-Control'] = 'public, max-age=86400, immutable'
+        return response
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        file = request.FILES.get('file', None)
+        if not file:
+            error_msg = 'file not found.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if file.size > AVATAR_MAX_SIZE * 5:
+            error_msg = _("Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s") % { 'size' : filesizeformat(file.size), 'max_valid_size' : filesizeformat(AVATAR_MAX_SIZE * 5)}
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            file_url = upload_portal_logo_file_to_s3(project_uuid, file)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'file_url': file_url}, status=status.HTTP_201_CREATED)
 
 
 class PortalIssuesView(APIView):
@@ -279,7 +318,7 @@ class PortalIssuesView(APIView):
 
             if file_urls:
                 try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(portal_issue_pk))
+                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
@@ -677,7 +716,7 @@ class PortalIssueView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -889,7 +928,7 @@ class PortalIssueCommentsView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1001,7 +1040,7 @@ class PortalIssueCommentView(APIView):
          # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal_issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1355,19 +1394,26 @@ class PortalSettingsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        allow_anonymous = request.data.get('allow_anonymous', 0)
-        enable_password_protection = request.data.get('enable_password_protection', 0)
+        raw_allow_anonymous = request.data.get('allow_anonymous')
+        raw_enable_password_protection = request.data.get('enable_password_protection')
+        raw_show_knowledge_base = request.data.get('show_knowledge_base')
+        raw_daily_chat_credit_limit = request.data.get('daily_chat_credit_limit')
         password = request.data.get('password', '')
-        show_knowledge_base = request.data.get('show_knowledge_base', None)
-        daily_chat_credit_limit = request.data.get('daily_chat_credit_limit', None)
+        portal_name = request.data.get('portal_name')
+        portal_logo = request.data.get('portal_logo')
+        chat_allowed_sources = request.data.get('chat_allowed_sources')
 
+        bool_field_mapping = {
+            'allow_anonymous': raw_allow_anonymous,
+            'enable_password_protection': raw_enable_password_protection,
+            'show_knowledge_base': raw_show_knowledge_base,
+        }
+        bool_updates = {}
         try:
-            allow_anonymous = int(allow_anonymous)
-            enable_password_protection = int(enable_password_protection)
-            if show_knowledge_base is not None:
-                show_knowledge_base = int(show_knowledge_base)
-            if daily_chat_credit_limit is not None:
-                daily_chat_credit_limit = int(daily_chat_credit_limit)
+            for key, value in bool_field_mapping.items():
+                if value is not None:
+                    bool_updates[key] = bool(int(value))
+            daily_chat_credit_limit = None if raw_daily_chat_credit_limit is None else int(raw_daily_chat_credit_limit)
         except Exception:
             error_msg = 'Invalid params.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1376,10 +1422,14 @@ class PortalSettingsView(APIView):
             error_msg = 'daily_chat_credit_limit invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if enable_password_protection:
-            if password and len(password) < 8:
-                error_msg = 'Password too short.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        enable_password_protection = bool_updates.get('enable_password_protection')
+        if enable_password_protection and password and len(password) < 8:
+            error_msg = 'Password too short.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if chat_allowed_sources is not None and not isinstance(chat_allowed_sources, dict):
+            error_msg = 'chat_allowed_sources invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
             project_settings = json.loads(project.settings) if project.settings else {}
@@ -1387,30 +1437,34 @@ class PortalSettingsView(APIView):
             project_settings = {}
 
         portal_settings = project_settings.get('portal', {})
-        portal_settings['allow_anonymous'] = bool(allow_anonymous)
-        portal_settings['enable_password_protection'] = bool(enable_password_protection)
-        if show_knowledge_base is not None:
-            portal_settings['show_knowledge_base'] = bool(show_knowledge_base)
+        portal_settings.update(bool_updates)
 
-        chat_allowed_sources = request.data.get('chat_allowed_sources')
         if chat_allowed_sources is not None:
-            if not isinstance(chat_allowed_sources, dict):
-                error_msg = 'chat_allowed_sources invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             portal_settings['chat_allowed_sources'] = chat_allowed_sources
         if daily_chat_credit_limit is not None:
             portal_settings['daily_chat_credit_limit'] = daily_chat_credit_limit
 
-        if enable_password_protection:
+        if portal_name is not None:
+            portal_settings['portal_name'] = portal_name
+        if portal_logo is not None:
+            portal_settings['portal_logo'] = portal_logo
+
+        if enable_password_protection is True:
             if password:
                 cryptor = AESPasswordHasher()
                 portal_settings['password'] = cryptor.encode(password)
-        else:
+        elif enable_password_protection is False:
             portal_settings.pop('password', None)
 
         project_settings['portal'] = portal_settings
         project.settings = json.dumps(project_settings)
         project.save(update_fields=['settings'])
+
+        if portal_logo == '':
+            try:
+                delete_file_from_s3(project_uuid, gen_portal_logo_file_path())
+            except Exception as e:
+                logger.error(e)
 
         return Response({'success': True})
 

@@ -1,14 +1,19 @@
 {% extends "base_clean.html" %}
 {% load i18n static %}
 
-{% block sub_title %}{{ project_name }} - {% trans "Portal Login" %} - {% endblock %}
+{% block sub_title %}{{ portal_name|default:project_name }} - {% trans "Portal Login" %} - {% endblock %}
 
 {% block main_content %}
 <div class="login-panel-outer-container">
   <div class="portal-login-panel-wrapper">
     <div class="portal-login-panel-content">
       <div class="portal-login-panel-header d-flex justify-content-center align-items-center">
-        <div class="portal-login-title text-truncate" title="{{ project_name }} - {% trans 'Portal' %}">{{ project_name }} - {% trans "Portal" %}</div>
+        <div>
+          {% if portal_logo %}
+          <img src="{{ portal_logo }}" alt="" class="login-panel-logo" style="border-radius: 6px;" width="48" height="48">
+          {% endif %}
+          <div class="portal-login-title text-truncate" title="{{ portal_name|default:project_name }} - {% trans 'Portal' %}">{{ portal_name|default:project_name }} - {% trans "Portal" %}</div>
+        </div>
       </div>
       <div class="login-form-wrapper">
         <input id="portal-email" type="email" class="input form-item-input" placeholder="{% trans 'Enter email' %}">

@@ -401,6 +401,12 @@ class PortalAPI {
     return this.req.put(url, { issue_ids: issueIds });
   }
 
+  uploadPortalLogo(projectUuid, file) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/logo/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this._sendPostRequest(url, formData);
+  }
 }
 
 const portalAPI = new PortalAPI();

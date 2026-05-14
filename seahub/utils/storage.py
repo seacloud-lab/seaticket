@@ -1,5 +1,4 @@
 import os
-import hashlib
 import logging
 from datetime import datetime, timezone
 
@@ -9,6 +8,7 @@ from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 
 logger = logging.getLogger(__name__)
+PORTAL_LOGO_OBJECT_NAME = 'logo'
 
 
 def gen_s3_file_path(project_uuid, file_path):
@@ -18,6 +18,8 @@ def gen_s3_file_path(project_uuid, file_path):
 def gen_s3_web_crawl_file_path(project_uuid, site_id, filename):
     return f"{project_uuid}/{site_id}/" + filename
 
+def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
+    return f'attachments/portal-logo/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
@@ -67,12 +69,52 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
     return new_file_urls_dict
 
 
+
+def upload_portal_logo_file_to_s3(project_uuid, file):
+    final_file_path = gen_portal_logo_file_path()
+    s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
+    content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
+    version = int(datetime.now(timezone.utc).timestamp())
+
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
+    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+    try:
+        with open(tmp_upload_file_path, 'wb') as fd:
+            fd.write(file.read())
+
+        s3_client.upload_file(
+            tmp_upload_file_path,
+            S3_FILE_BUCKET,
+            s3_file_path,
+            ExtraArgs={'ContentType': content_type}
+        )
+    finally:
+        if os.path.exists(tmp_upload_file_path):
+            try:
+                os.remove(tmp_upload_file_path)
+            except Exception as e:
+                logger.error(f"Failed to remove temp file: {e}")
+
+    return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
+
+
 def check_file_exists_from_s3(s3_file_path):
     try:
         s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
         return True
     except Exception:
         return False
+
+
+def get_file_metadata_from_s3(project_uuid, file_path):
+    s3_file_path = gen_s3_file_path(project_uuid, file_path)
+    response = s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+    return {
+        'ContentLength': response.get('ContentLength', 0),
+        'ContentType': response.get('ContentType', ''),
+        'LastModified': response.get('LastModified'),
+        'ETag': response.get('ETag', ''),
+    }
 
 
 def get_file_from_s3(project_uuid, file_path):

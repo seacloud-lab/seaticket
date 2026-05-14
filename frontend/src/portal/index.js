@@ -9,20 +9,26 @@ import { CenteredLoading } from '../components';
 import { PORTAL_PAGE } from './constants';
 import { DataProvider } from '@/project/hooks';
 import { portalAPI } from './api';
-import { gettext, name, username, avatarURL } from '@/constants';
+import { gettext, name, username, avatarURL, mediaUrl } from '@/constants';
 import User from '@/models/user';
+import { PortalSettingsProvider } from './hooks';
 
 import './index.css';
 
 const {
   projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
-  isAnonymous, workspaceID, isExternalUser,
+  isAnonymous, workspaceID, isExternalUser, portalName, portalLogo,
 } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
   if (anonymous) return PORTAL_PAGE.CHAT;
   if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
   return PORTAL_PAGE.SUBMIT_ISSUE;
+};
+
+const initSettings = {
+  name: portalName || gettext('Support portal'),
+  logo: portalLogo || `${mediaUrl}img/portal-logo.png`,
 };
 
 const Portal = () => {
@@ -152,12 +158,13 @@ const Portal = () => {
 
 
   if (needPasswordState) {
+    const displayName = portalName || projectName;
     return (
       <I18nextProvider i18n={i18n}>
         <div className="sea-qa-portal">
           <div className="portal-password-panel">
             <div className="portal-password-header">
-              <div className="portal-password-title">{projectName || 'Portal'}</div>
+              <div className="portal-password-title">{displayName}</div>
             </div>
             <form method="post" action={`/portal/${projectUuid}/anonymous-validate/`} onSubmit={onPasswordSubmit}>
               <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
@@ -218,4 +225,8 @@ const Portal = () => {
 };
 
 const root = createRoot(document.getElementById('wrapper'));
-root.render(<Portal />);
+root.render(
+  <PortalSettingsProvider projectUuid={projectUuid} { ...initSettings }>
+    <Portal />
+  </PortalSettingsProvider>
+);

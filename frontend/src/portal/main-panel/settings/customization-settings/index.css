@@ -1,0 +1,111 @@
+.portal-customization-settings {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.tab-content>.portal-customization-settings.active {
+  display: flex !important;
+}
+
+.portal-customization-settings .portal-customization-settings-body {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.portal-customization-settings .portal-customization-settings-footer {
+  border-top: 1px solid var(--bs-border-secondary-color);
+  padding: 16px 16px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.portal-customization-settings .portal-customization-settings-footer .btn {
+  height: 38px;
+}
+
+.portal-customization-settings-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.portal-customization-settings-logo,
+.portal-customization-settings-logo img,
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn {
+  height: 64px;
+  width: 64px;
+}
+
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn {
+  display: none;
+  position: absolute;
+  margin-left: 0;
+  margin-right: 0;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn .sea-qa-icon-svg,
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn:hover .sea-qa-icon-svg {
+  color: #fff;
+  height: 20px;
+  width: 20px;
+}
+
+.portal-customization-settings-logo:hover .portal-customization-settings-logo-change-btn {
+  display: flex;
+}
+
+/* popover */
+.portal-customization-settings-logo-popover .popover {
+  width: 300px;
+  max-width: 300px;
+  height: 294px;
+}
+
+.portal-customization-settings-logo-popover .popover .popover-inner {
+  height: 100%;
+}
+
+.portal-customization-settings-logo-popover-container {
+  padding: 32px;
+  height: 292px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-customization-settings-logo-popover-logo {
+  height: 128px;
+  width: 128px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.portal-customization-settings-logo-upload-btn {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 32px;
+  margin-top: 10px;
+}
+
+.portal-customization-settings-logo-popover .sea-qa-tip-default {
+  font-size: 12px;
+  width: 100%;
+  text-align: center;
+}

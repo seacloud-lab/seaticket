@@ -1,6 +1,9 @@
 from django.core.cache import cache
 
 from seahub.utils import normalize_cache_key
+from seahub.organizations.models import OrgUser
+from seahub.profile.models import Profile
+
 
 
 PORTAL_EXTERNAL_LOGIN_CODE_TTL = 10 * 60
@@ -57,3 +60,18 @@ def clear_portal_external_login_state(project_uuid, email):
     cache.delete(get_portal_external_login_cooldown_key(project_uuid, email))
     cache.delete(get_portal_external_login_fail_key(project_uuid, email))
     cache.delete(get_portal_external_login_lock_key(project_uuid, email))
+
+
+def is_user_in_the_same_team(project, email):
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id == -1:
+        return False
+
+    username = Profile.objects.convert_login_str_to_username((email or '').strip())
+    if not username:
+        return False
+
+    if not OrgUser.objects.org_user_exists(org_id, username):
+        return False
+    
+    return True
