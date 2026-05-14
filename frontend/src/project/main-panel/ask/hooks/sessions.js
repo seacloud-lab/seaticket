@@ -136,14 +136,16 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
   }, []);
 
   const markSessionRunningTask = useCallback((sessionId, runningTask) => {
-    setSessions(sessions => {
+    const _updateSessions = (sessions) => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       if (sessionIdx !== -1) {
         newSessions[sessionIdx].running_task = runningTask;
       }
       return newSessions;
-    });
+    };
+    setSessions(_updateSessions);
+    setTeamSessions(_updateSessions);
   }, []);
 
   const getChatMessage = useCallback((sessionId, isStream, streamed_length) => {
