@@ -67,7 +67,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
   }, [isShowSessions]);
 
   const solveProblem = useCallback(({ sessionId, message: problem, attachments, model, clearContext }) => {
-    setSessions((sessions) => {
+    const _updateSessions = (sessions) => {
       const newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
       if (sessionIdx === -1) return sessions;
@@ -77,7 +77,9 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       session.problem = null;
       newSessions[sessionIdx] = session;
       return newSessions;
-    });
+    };
+    setSessions(_updateSessions);
+    setTeamSessions(_updateSessions);
 
     const params = {
       project_uuid: projectUuid,
@@ -117,7 +119,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
   }, [projectUuid, api]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
-    setSessions(sessions => {
+    const _updateSessions = (sessions) => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
       if (sessionIdx === -1) return sessions;
@@ -128,7 +130,9 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       });
       newSessions[sessionIdx] = session;
       return newSessions;
-    });
+    };
+    setSessions(_updateSessions);
+    setTeamSessions(_updateSessions);
   }, []);
 
   const markSessionRunningTask = useCallback((sessionId, runningTask) => {
