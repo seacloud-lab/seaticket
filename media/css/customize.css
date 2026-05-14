@@ -73,7 +73,7 @@
 .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg).active,
 .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg):active,
 .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg):hover {
-  background-color: var(--bs-hover-bg);
+  background-color: var(--btn-hover-bg-color);
   cursor: pointer;
 }
 
@@ -313,6 +313,7 @@
 
 body {
   --option-bg-color: rgba(0, 0, 0, 0.04);
+  --btn-hover-bg-color: rgba(0, 0, 0, 0.04);
 }
 
 .popover {
