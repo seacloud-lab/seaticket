@@ -65,6 +65,10 @@ export const PortalSettingsProvider = ({
 
   useEffect(() => {
     window.app.pageOptions.portalLogo = logo;
+    const existingFavicon = document.querySelector('link[rel~="icon"]');
+    if (existingFavicon) {
+      existingFavicon.href = logo;
+    }
   }, [logo]);
 
   return (
