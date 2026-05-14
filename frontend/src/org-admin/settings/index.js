@@ -23,6 +23,7 @@ class OrgSettings extends React.Component {
       loading: true,
       orgName: '',
       isDeleteOrgDialogOpen: false,
+      canDeleteOrg: false,
     };
   }
 
@@ -33,7 +34,10 @@ class OrgSettings extends React.Component {
 
   loadOrgInfo = () => {
     orgAdminAPI.orgAdminGetOrgInfo().then(res => {
-      this.setState({ orgName: res.data.org_name });
+      this.setState({
+        orgName: res.data.org_name,
+        canDeleteOrg: res.data.org_enable_admin_delete_org || false,
+      });
     }).catch(error => {
       this.handleError(error);
     });
@@ -97,7 +101,7 @@ class OrgSettings extends React.Component {
   };
 
   render() {
-    let { loading, settings, orgName, isDeleteOrgDialogOpen } = this.state;
+    let { loading, settings, orgName, isDeleteOrgDialogOpen, canDeleteOrg } = this.state;
     const deleteOrgMsg = gettext('Please type {placeholder} to confirm.').replace('{placeholder}', `<span class="op-target">${Utils.HTMLescape(orgName)}</span>`);
     return (
       <>
@@ -140,15 +144,17 @@ class OrgSettings extends React.Component {
                   helpTip={gettext('Enable members modify their own name')}
                 />
               </SectionSettings>
-              <SectionSettings title={gettext('Danger zone')}>
-                <div className="d-flex align-items-center justify-content-between flex-wrap">
-                  <div className="mr-3">
-                    <div className="font-weight-bold">{gettext('Delete team')}</div>
-                    <div className="text-secondary">{gettext('Delete this team and all of its data permanently.')}</div>
+              {canDeleteOrg && (
+                <SectionSettings title={gettext('Danger zone')}>
+                  <div className="d-flex align-items-center justify-content-between flex-wrap">
+                    <div className="mr-3">
+                      <div className="font-weight-bold">{gettext('Delete team')}</div>
+                      <div className="text-secondary">{gettext('Delete this team and all of its data permanently.')}</div>
+                    </div>
+                    <Button color="danger" onClick={this.toggleDeleteOrgDialog}>{gettext('Delete team')}</Button>
                   </div>
-                  <Button color="danger" onClick={this.toggleDeleteOrgDialog}>{gettext('Delete team')}</Button>
-                </div>
-              </SectionSettings>
+                </SectionSettings>
+              )}
               {isDeleteOrgDialogOpen && (
                 <ConfirmDeleteOrg
                   title={gettext('Delete team')}

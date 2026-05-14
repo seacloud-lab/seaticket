@@ -75,7 +75,6 @@ class OrgAdminDeleteOrg(APIView):
             OrgAdminSettings.objects.filter(org_id=org_id).delete()
             OrgSAMLConfig.objects.filter(org_id=org_id).delete()
             OrgAdminLog.objects.filter(org_id=org_id).delete()
-            AIUsageStatistics.objects.filter(org_id=org_id).delete()
 
             # remove org
             Organization.objects.remove_org(org_id)
