@@ -14,7 +14,7 @@ from seahub.api2.utils import api_error
 
 from seahub.organizations.models import OrgMemberQuota, OrgSettings, Organization
 from django.db.models import Sum
-from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED, ORG_ENABLE_ADMIN_DELETE_ORG
+from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.project.models import ProjectIssuesStatistics, Projects
 from seahub.project.utils import convert_cost_to_credit, get_ai_cost_by_org_id
@@ -82,7 +82,6 @@ class OrgAdminInfo(APIView):
         info['role'] = org_role
         info['issues_usage'] = issues_usage
         info['ai_credit_used'] = round(convert_cost_to_credit(get_ai_cost_by_org_id(org_id)), 0)
-        info['org_enable_admin_delete_org'] = ORG_ENABLE_ADMIN_DELETE_ORG
 
         return Response(info)
 

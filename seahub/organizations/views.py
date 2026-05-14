@@ -24,7 +24,7 @@ from seahub.utils.auth import get_login_bg_image_path
 from seahub.organizations.signals import org_created
 from seahub.organizations.decorators import org_staff_required
 from seahub.organizations.forms import OrgRegistrationForm
-from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO
+from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO, ORG_ENABLE_ADMIN_DELETE_ORG
 from seahub.organizations.utils import transfer_user_to_org, can_org_use_saml
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.utils.two_factor_auth import has_two_factor_auth
@@ -363,4 +363,5 @@ def react_fake_view(request, **kwargs):
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,
         'enable_external_billing_service': settings.ENABLE_EXTERNAL_BILLING_SERVICE,
-        })
+        'org_enable_admin_delete_org': ORG_ENABLE_ADMIN_DELETE_ORG,
+    })

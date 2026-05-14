@@ -6,7 +6,7 @@ import ConfirmDeleteOrg from '@/components/dialog/confirm-delete-org';
 import AdminCheckboxSettings from '@/components/settings/admin-checkbox-settings';
 import orgAdminAPI from '../api';
 import { Utils } from '@/utils/utils';
-import { orgID, gettext, displayTwoFactorAuth, siteRoot } from '@/constants';
+import { orgID, gettext, displayTwoFactorAuth, siteRoot, orgEnableAdminDeleteOrg } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import InputItem from './input-item';
 import { validateName } from '@/utils/validate';
@@ -23,7 +23,7 @@ class OrgSettings extends React.Component {
       loading: true,
       orgName: '',
       isDeleteOrgDialogOpen: false,
-      canDeleteOrg: false,
+      canDeleteOrg: orgEnableAdminDeleteOrg,
     };
   }
 
@@ -36,7 +36,6 @@ class OrgSettings extends React.Component {
     orgAdminAPI.orgAdminGetOrgInfo().then(res => {
       this.setState({
         orgName: res.data.org_name,
-        canDeleteOrg: res.data.org_enable_admin_delete_org || false,
       });
     }).catch(error => {
       this.handleError(error);
