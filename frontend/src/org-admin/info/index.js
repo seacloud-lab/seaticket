@@ -59,7 +59,7 @@ class Info extends Component {
           <MultipleTextCard
             texts={[
               { name: gettext('Total issues'), value: issues_usage || '--' },
-              { name: gettext('AI Credit'), value: aiCreditUsed },
+              { name: gettext('Included Al credits'), value: aiCreditUsed },
               { name: gettext('Additional credits'), value: additionalCredits },
             ]}
             itemStyle={{ flex: 1 }}

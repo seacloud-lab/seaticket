@@ -163,7 +163,7 @@ class AccountInfo(APIView):
         if getattr(settings, 'SEAQA_AI_INNER_SERVER_URL', ''):
             if is_org_context(request):
                 org_id = request.user.org.org_id
-                info['ai_credit'] = get_total_ai_credit_by_org_id(org_id)
+                info['ai_credit'] = get_ai_credit_by_org_id(org_id)
                 info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
             else:
                 info['ai_credit'] = get_ai_credit_by_username(request.user.username)

@@ -21,8 +21,7 @@ from seahub.project.utils import (
     convert_cost_to_credit,
     get_additional_credits_by_org_id,
     get_ai_cost_by_org_id,
-    get_ai_credit_by_org_id,
-    get_total_ai_credit_by_org_id,
+    get_ai_credit_by_org_id
 )
 
 logger = logging.getLogger(__name__)
@@ -87,9 +86,8 @@ class OrgAdminInfo(APIView):
         info['active_members'] = active_members
         info['role'] = org_role
         info['issues_usage'] = issues_usage
-        info['ai_monthly_credit'] = round(get_ai_credit_by_org_id(org_id), 0)
         info['additional_ai_credit'] = round(get_additional_credits_by_org_id(org_id), 0)
-        info['ai_credit_limit'] = round(get_total_ai_credit_by_org_id(org_id), 0)
+        info['ai_credit_limit'] = round(get_ai_credit_by_org_id(org_id), 0)
         info['ai_credit_used'] = round(convert_cost_to_credit(get_ai_cost_by_org_id(org_id)), 0)
         return Response(info)
 
