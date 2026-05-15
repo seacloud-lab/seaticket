@@ -21,7 +21,7 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 
 const SEARCH_STORE_KEY = 'search-project';
 
-const Search = ({ title, settings }) => {
+const Search = ({ title }) => {
   const { connections, reloadConnections } = useConnections();
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
@@ -229,7 +229,6 @@ const Search = ({ title, settings }) => {
                     key={result._id || result.uuid}
                     {...result}
                     searchValue={value}
-                    settings={settings}
                     expandItem={() => expandItem(index)}
                   />
                 )}

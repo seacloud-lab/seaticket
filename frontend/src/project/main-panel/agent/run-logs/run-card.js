@@ -194,7 +194,7 @@ const RunCard = ({
                 hoverBackground={true}
               />
             </DropdownToggle>
-            <DropdownMenu right className="sea-qa-dropdown-menu">
+            <DropdownMenu end className="sea-qa-dropdown-menu">
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>
