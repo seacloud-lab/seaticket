@@ -91,9 +91,9 @@
   height: 12px;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-filter-trigger {
-  cursor: pointer;
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-name {
   font-size: 14px;
+  user-select: none;
 }
 
 .sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove {

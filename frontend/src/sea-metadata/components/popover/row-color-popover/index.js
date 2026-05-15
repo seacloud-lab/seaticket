@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
@@ -13,10 +13,21 @@ import AdvancedFilters from '../filter-popover/advanced-filters';
 
 import './index.css';
 
+const normalizeRule = (rule, update = {}) => {
+  return {
+    ...rule,
+    ...update,
+    filter_conjunction: update.filter_conjunction || rule.filter_conjunction || 'And',
+  };
+};
+
+const getValidRules = (rules = []) => {
+  return rules.filter(rule => Array.isArray(rule?.filters) && rule.filters.length > 0);
+};
+
 const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
-  const filterTargetsRef = useRef({});
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
@@ -32,14 +43,24 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     });
   }, [columns, excludedColumnKeys]);
 
-  const rules = useMemo(() => {
+  const colorRules = useMemo(() => {
     return Array.isArray(colorbys?.color_by_rules) ? colorbys.color_by_rules : [];
   }, [colorbys]);
 
-  const updateRules = useCallback((newRules) => {
-    modifyRowColor({
-      type: newRules.length > 0 ? ROW_COLOR_TYPE.BY_RULES : '',
-      color_by_rules: newRules,
+  const [rules, setRules] = useState(colorRules);
+
+  useEffect(() => {
+    setRules(colorRules);
+  }, [colorRules]);
+
+  const updateRules = useCallback((updater) => {
+    setRules((prevRules) => {
+      const newRules = typeof updater === 'function' ? updater(prevRules) : updater;
+      modifyRowColor({
+        type: newRules.length > 0 ? ROW_COLOR_TYPE.BY_RULES : '',
+        color_by_rules: newRules,
+      });
+      return newRules;
     });
   }, [modifyRowColor]);
 
@@ -49,57 +70,77 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     const filter = getFilterByColumn(defaultColumn);
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
-    updateRules([...rules, defaultRule]);
+    updateRules(prevRules => [...prevRules, defaultRule]);
   }, [validColumns, rules, updateRules]);
 
   const handleChangeRuleColor = useCallback((ruleIndex, colorOption) => {
-    const newRules = rules.slice();
-    newRules[ruleIndex] = { ...newRules[ruleIndex], color: colorOption.COLOR };
-    updateRules(newRules);
-  }, [rules, updateRules]);
+    updateRules((prevRules) => {
+      const newRules = prevRules.slice();
+      newRules[ruleIndex] = { ...newRules[ruleIndex], color: colorOption.COLOR };
+      return newRules;
+    });
+  }, [updateRules]);
 
   const handleDeleteRule = useCallback((ruleIndex) => {
-    const newRules = rules.slice();
-    newRules.splice(ruleIndex, 1);
-    updateRules(newRules);
-  }, [rules, updateRules]);
+    updateRules((prevRules) => {
+      const newRules = prevRules.slice();
+      newRules.splice(ruleIndex, 1);
+      return newRules;
+    });
+  }, [updateRules]);
 
+  // filter - update rule
   const handleUpdateRule = useCallback((ruleIndex, update) => {
-    let newRules = rules.slice();
-    newRules[ruleIndex] = {
-      ...newRules[ruleIndex],
-      ...update,
-      filter_conjunction: update.filter_conjunction || newRules[ruleIndex].filter_conjunction || 'And',
-    };
-    newRules = newRules.filter(rule => rule.filters && rule.filters.length > 0);
-    updateRules(newRules);
-  }, [rules, updateRules]);
+    updateRules((prevRules) => {
+      const currentRule = prevRules[ruleIndex];
+      if (!currentRule) return prevRules;
+      const newRules = prevRules.slice();
+      newRules[ruleIndex] = normalizeRule(currentRule, update);
+      return getValidRules(newRules);
+    });
+  }, [updateRules]);
 
+  // filter - delete rule
   const handleDeleteRuleFilter = useCallback((ruleIndex, filterIndex) => {
-    const rule = rules[ruleIndex];
-    if (!rule) return;
-    const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
-    filters.splice(filterIndex, 1);
-    handleUpdateRule(ruleIndex, { filters });
-  }, [rules, handleUpdateRule]);
+    updateRules((prevRules) => {
+      const rule = prevRules[ruleIndex];
+      if (!rule) return prevRules;
+      const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
+      filters.splice(filterIndex, 1);
+      const newRules = prevRules.slice();
+      newRules[ruleIndex] = normalizeRule(rule, { filters });
+      return getValidRules(newRules);
+    });
+  }, [updateRules]);
 
+  // filter - update rule filter
   const handleUpdateRuleFilter = useCallback((ruleIndex, filterIndex, updatedFilter) => {
-    const rule = rules[ruleIndex];
-    if (!rule || !updatedFilter) return;
-    const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
-    filters[filterIndex] = updatedFilter;
-    handleUpdateRule(ruleIndex, { filters });
-  }, [rules, handleUpdateRule]);
+    if (!updatedFilter) return;
+    updateRules((prevRules) => {
+      const rule = prevRules[ruleIndex];
+      if (!rule) return prevRules;
+      const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
+      filters[filterIndex] = updatedFilter;
+      const newRules = prevRules.slice();
+      newRules[ruleIndex] = normalizeRule(rule, { filters });
+      return newRules;
+    });
+  }, [updateRules]);
 
   const handleAddRuleFilter = useCallback((ruleIndex) => {
-    const rule = rules[ruleIndex];
     const defaultColumn = validColumns[0];
-    if (!rule || !defaultColumn) return;
-    const filter = getFilterByColumn(defaultColumn);
-    const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
-    filters.push(filter);
-    handleUpdateRule(ruleIndex, { filters });
-  }, [rules, validColumns, handleUpdateRule]);
+    if (!defaultColumn) return;
+    updateRules((prevRules) => {
+      const rule = prevRules[ruleIndex];
+      if (!rule) return prevRules;
+      const filter = getFilterByColumn(defaultColumn);
+      const filters = Array.isArray(rule.filters) ? rule.filters.slice() : [];
+      filters.push(filter);
+      const newRules = prevRules.slice();
+      newRules[ruleIndex] = normalizeRule(rule, { filters });
+      return newRules;
+    });
+  }, [validColumns, updateRules]);
 
   return (
     <CustomizePopover
@@ -117,13 +158,12 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         {rules.length === 0 && <div className="sea-metadata-row-color-empty">{gettext('No rules')}</div>}
         {rules.map((rule, ruleIndex) => {
           const colorTarget = `sea-metadata-row-color-selector-${ruleIndex}`;
-          const filterTarget = `sea-metadata-row-color-filter-${ruleIndex}`;
           const currentColorOption = SELECT_OPTION_COLORS.find(option => option.COLOR === rule.color);
           return (
             <div
               className={classnames('sea-metadata-row-color-rule', { 'row-color-rule-editing': editingRuleIndex === ruleIndex })}
               key={`row-color-rule-${ruleIndex}`}
-              onClick={() => setEditingRuleIndex(editingRuleIndex === ruleIndex ? null : ruleIndex)}
+              onClick={() => setEditingRuleIndex((prevIndex) => prevIndex === ruleIndex ? null : ruleIndex)}
             >
               <div className="sea-metadata-row-color-rule-header">
                 <div className="sea-metadata-row-color-rule-color-wrap">
@@ -147,13 +187,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                       onChange={(option) => handleChangeRuleColor(ruleIndex, option)}
                     />
                   )}
-                  <div
-                    id={filterTarget}
-                    ref={(ref) => { filterTargetsRef.current[ruleIndex] = ref;}}
-                    className="sea-metadata-row-color-rule-filter-trigger text-truncate"
-                  >
-                    {`${gettext('Rule')} ${ruleIndex + 1}`}
-                  </div>
+                  <div className="sea-metadata-row-color-rule-name text-truncate">{`${gettext('Rule')} ${ruleIndex + 1}`}</div>
                 </div>
                 {!readOnly && (
                   <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={(e) => {e.stopPropagation(); handleDeleteRule(ruleIndex);}} />
@@ -174,11 +208,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   />
                   {!readOnly && (
                     <div className="sea-metadata-row-color-rule-filters-footer">
-                      <CommonAddTool
-                        className={`popover-add-tool ${validColumns.length === 0 ? 'disabled' : ''}`}
-                        callBack={validColumns.length > 0 ? () => handleAddRuleFilter(ruleIndex) : () => {}}
-                        name={gettext('Add filter')}
-                      />
+                      <CommonAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add filter')} />
                     </div>
                   )}
                 </div>
