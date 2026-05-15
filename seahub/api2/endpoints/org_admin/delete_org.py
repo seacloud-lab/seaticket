@@ -13,9 +13,8 @@ from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.organizations.models import Organization, OrgUser, OrgGroup, OrgMemberQuota, OrgSettings, OrgAdminSettings,\
     OrgSAMLConfig
-from seahub.organizations.signals import org_deleted
 from seahub.organizations.settings import ORG_ENABLE_ADMIN_DELETE_ORG
-from seahub.project.models import Workspaces, AIUsageStatistics
+from seahub.project.models import Workspaces
 from seahub.admin_log.models import OrgAdminLog
 
 try:
@@ -62,9 +61,7 @@ class OrgAdminDeleteOrg(APIView):
                     break
 
             # remove org groups
-            groups = OrgGroup.objects.get_org_groups(org_id)
-            for g in groups:
-                OrgGroup.objects.remove_org_group(org_id, g.group_id)
+            OrgGroup.objects.remove_org_groups(org_id)
 
             # remove org workspace and projects
             Workspaces.objects.delete_workspaces_by_org_id(org_id)
@@ -79,8 +76,6 @@ class OrgAdminDeleteOrg(APIView):
             # remove org
             Organization.objects.remove_org(org_id)
 
-            # handle signal
-            org_deleted.send(sender=None, org_id=org_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
