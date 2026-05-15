@@ -3,6 +3,7 @@ import { globalHistory, LocationProvider, navigate } from '@gatsbyjs/reach-route
 import { createRoot } from 'react-dom/client';
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
+import { toaster } from '@/components';
 import { siteRoot } from '../constants';
 import Header from './header';
 import SidePanel from './side-panel';
@@ -29,7 +30,6 @@ class Home extends React.Component {
       isUpdateSidePanelGroups: false,
       isOpenGroupExpanded: false,
       workspaceList: [],
-      groupItems: [],
       isWorkspaceListLoading: true,
       errorMsg: null,
     };
@@ -94,10 +94,8 @@ class Home extends React.Component {
   loadWorkspaceList = () => {
     homeAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => new Workspace(item));
-      let groupItems = workspaceList.filter(workspace => workspace.type === 'group');
       this.setState({
         workspaceList,
-        groupItems,
         isWorkspaceListLoading: false,
       });
     }).catch(error => {
@@ -156,6 +154,28 @@ class Home extends React.Component {
     this.setState({ workspaceList });
   };
 
+  moveGroup = (sourceGroupId, targetGroupId, isMoveToLast) => {
+    homeAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
+      let workspaceList = this.state.workspaceList.slice(0);
+      const sourceWorkspaceIdx = workspaceList.findIndex(w => w.group_id === sourceGroupId);
+      if (sourceWorkspaceIdx === -1) return;
+      const sourceWorkspace = workspaceList[sourceWorkspaceIdx];
+      workspaceList.splice(sourceWorkspaceIdx, 1);
+      const targetWorkspaceIdx = workspaceList.findIndex(w => w.group_id === targetGroupId);
+      if (isMoveToLast || targetWorkspaceIdx === -1) {
+        workspaceList.push(sourceWorkspace);
+      } else {
+        workspaceList.splice(targetWorkspaceIdx, 0, sourceWorkspace);
+      }
+      this.setState({ workspaceList });
+    }).catch((error) => {
+      let errMsg = Utils.getErrorMsg(error, true);
+      if (!error.response || error.response.status !== 403) {
+        toaster.danger(errMsg);
+      }
+    });
+  };
+
   render() {
     let { isSidePanelClosed, currentTab, isOpenGroupExpanded, isUpdateSidePanelGroups } = this.state;
     return (
@@ -181,7 +201,7 @@ class Home extends React.Component {
                 onAddProject={this.onAddProject}
                 onDeleteProject={this.onDeleteProject}
                 loadWorkspaceList={this.loadWorkspaceList}
-                groupItems={this.state.groupItems}
+                moveGroup={this.moveGroup}
               />
             )}
             <MainPanel

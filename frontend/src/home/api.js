@@ -252,7 +252,7 @@ class HomeAPI {
     const params = {
       group_id,
       anchor_group_id,
-      to_last
+      to_last: to_last + ''
     };
     return this.req.put(url, params);
   }

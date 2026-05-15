@@ -6,9 +6,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, siteRoot, gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import homeAPI from '../api';
 import GroupItem from './group-item';
-import { Icon, IconButton, toaster } from '@/components';
+import { Icon, IconButton } from '@/components';
 import classNames from 'classnames';
 import ResizeBar from '@/components/resize-bar';
 import eventBus from '@/utils/event-bus';
@@ -26,6 +25,7 @@ const propTypes = {
   updateSidePanelGroups: PropTypes.func,
   toggleGroupExpanded: PropTypes.func,
   isDesktop: PropTypes.bool.isRequired,
+  moveGroup: PropTypes.func,
 };
 
 const GROUP_ITEM_HEIGHT = 36;
@@ -99,36 +99,28 @@ class SidePanel extends React.Component {
   };
 
   moveGroupItem = (optionSource, optionTarget) => {
-    let groupItems = this.props.groupItems.slice(0);
-    let isMoveToLast = 'false';
+    const workspaceList = this.props.workspaceList;
+    const groupItems = workspaceList.filter(workspace => workspace.type === 'group');
+    let isMoveToLast = false;
     const sourceGroupId = optionSource.data.group_id;
     let targetGroupId = optionTarget.data.group_id;
 
     if (optionSource.idx < optionTarget.idx) {
       if (optionTarget.idx === groupItems.length - 1) {
         targetGroupId = null;
-        isMoveToLast = 'true';
+        isMoveToLast = true;
       } else {
         let targetGroup = groupItems[optionTarget.idx + 1];
         targetGroupId = targetGroup.group_id;
       }
     }
-    homeAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
-      groupItems.splice(optionSource.idx, 1);
-      groupItems.splice(optionTarget.idx, 0, optionSource.data);
-      this.setState({ groupItems });
-    }).catch((error) => {
-      let errMsg = Utils.getErrorMsg(error, true);
-      if (!error.response || error.response.status !== 403) {
-        toaster.danger(errMsg);
-      }
-    });
+    this.props.moveGroup && this.props.moveGroup(sourceGroupId, targetGroupId, isMoveToLast);
   };
 
   renderWorkspaceItems = () => {
     let workspaceList = this.props.workspaceList;
-    let { groupItems } = this.props;
     let personalWorkspace = workspaceList.find(workspace => workspace.type === 'personal');
+    const groupItems = workspaceList.filter(workspace => workspace.type === 'group');
     const tabIndex = this.props.isOpenGroupExpanded ? 0 : -1;
 
     return (
