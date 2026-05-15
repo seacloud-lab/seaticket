@@ -27,7 +27,7 @@ from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
-    extract_email_addresses
+    extract_email_addresses, get_connection_general_task_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
@@ -690,6 +690,9 @@ class ProjectConnectionDetailsView(APIView):
             ticket_pk_to_ticket_title = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )
+        related_users = []
+        if project_connection.type == ConnectionType.GENERAL_TASK.value:
+            related_users = get_connection_general_task_related_users(project_uuid, connection_id)
 
         return Response({
             'records': records,
@@ -697,6 +700,7 @@ class ProjectConnectionDetailsView(APIView):
             'name': project_connection.name,
             'type': project_connection.type,
             'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
+            'related_users': related_users,
         })
 
 
@@ -1063,10 +1067,15 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        related_users = []
+        if project_connection.type == ConnectionType.GENERAL_TASK.value:
+            related_users = get_connection_general_task_related_users(project_uuid, connection_id)
+
         return Response({
             'record': record,
             'columns': columns,
-            'linked_ticket_title': linked_ticket_title
+            'linked_ticket_title': linked_ticket_title,
+            'related_users': related_users,
         })
 
 

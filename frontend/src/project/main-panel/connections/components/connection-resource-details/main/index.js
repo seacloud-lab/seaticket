@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
+import { useCollaborators } from '@/sea-metadata';
 import { CONNECTION_TYPE } from '../../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
@@ -18,8 +19,12 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   const [details, setDetails] = useState(null);
   const [localEmailDetails, setLocalEmailDetails] = useState([]);
   const [localDiscourseDetails, setLocalDiscourseDetails] = useState([]);
-
+  const { setScopedCollaborators } = useCollaborators();
   const type = useMemo(() => resource.type, [resource]);
+  const collaboratorScopeKey = useMemo(() => {
+    if (type !== CONNECTION_TYPE.GENERAL_TASK) return '';
+    return `general-task-${resource.connection_id}`;
+  }, [type, resource.connection_id]);
 
   const mergedDetails = useMemo(() => {
     if (!Array.isArray(details)) return details;
@@ -77,7 +82,10 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   useEffect(() => {
     setStatus('loading');
     connectionsAPI.getConnectionRecord(projectUuid, resource.connection_id, resource._id).then((res) => {
-      const { record, columns, linked_ticket_title } = res.data;
+      const { record, columns, linked_ticket_title, related_users } = res.data;
+      if (type === CONNECTION_TYPE.GENERAL_TASK && Array.isArray(related_users)) {
+        setScopedCollaborators(collaboratorScopeKey, related_users);
+      }
       const details = initConnectionResourceDetails(resource.type, record);
       setDetails(details);
       updateResource({ record, columns, linked_ticket_title });
@@ -87,7 +95,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       setErrorMessage(errMessage);
       setStatus('error');
     });
-  }, [projectUuid, resource]);
+  }, [projectUuid, resource, type, setScopedCollaborators, collaboratorScopeKey]);
 
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);

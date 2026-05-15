@@ -4,12 +4,10 @@ import hashlib
 from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
-from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics, AdditionalCredits
+from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
+    AdditionalCredits
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
-from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalExternalInvitation
-from seahub.tickets.models import TicketViews
-from seahub.knowledge_base.models import KnowledgeBaseViews
+from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.core.cache import cache
@@ -24,15 +22,15 @@ from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
-from seahub.notifications.models import ProjectNotification
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
-from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
-from seahub.seadb_models.models import GithubIssuesTable
+from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserMappingTable
+from seahub.avatar.util import get_default_avatar_url
+
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +154,31 @@ def get_project_related_users(owner):
         return [get_user_common_info(group_user.user_name) for group_user in group_users]
     else:
         return [get_user_common_info(owner)]
+
+
+def get_connection_general_task_related_users(project_uuid, connection_id):
+    seadb_api = SeaDBAPI()
+    related_users = {}
+    default_avatar_url = get_default_avatar_url()
+    table_name = GeneralTaskUserMappingTable.gen_table_name(connection_id)
+    try:
+        sql = f"SELECT `email`, `nickname` FROM `{table_name}`"
+        results = seadb_api.query_rows(project_uuid, sql).get('results', [])
+    except Exception:
+        return []
+
+    for item in results:
+        email = str(item.get('email') or '').strip()
+        nickname = str(item.get('nickname') or '').strip()
+        if not email or not nickname or email in related_users:
+            continue
+        related_users[email] = {
+            'email': email,
+            'name': nickname,
+            'avatar_url': default_avatar_url,
+        }
+
+    return list(related_users.values())
 
 
 def convert_project_trash_names(project):

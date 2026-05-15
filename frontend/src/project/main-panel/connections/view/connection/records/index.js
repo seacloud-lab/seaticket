@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback, useState, useRef } from 'react';
-import SeaMetadata from '@/sea-metadata';
+import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import SeaMetadata, { useCollaborators } from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
@@ -48,6 +48,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { updateAttachments } = useAIChatTools();
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
+  const { setScopedCollaborators, clearScopedCollaborators } = useCollaborators();
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
@@ -56,6 +57,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { tagsData, createTag } = useTags();
 
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
+  const collaboratorScopeKey = useMemo(() => {
+    if (connection?.type !== CONNECTION_TYPE.GENERAL_TASK) return '';
+    return `general-task-${connectionID}`;
+  }, [connection?.type, connectionID]);
+
+  useEffect(() => {
+    return () => {
+      clearScopedCollaborators(collaboratorScopeKey);
+    };
+  }, [clearScopedCollaborators, collaboratorScopeKey]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
     const connection = connections.find(c => c.id === connectionID);
@@ -97,6 +108,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
+          const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
+          if (connection?.type === CONNECTION_TYPE.GENERAL_TASK) {
+            setScopedCollaborators(collaboratorScopeKey, relatedUsers);
+          }
           return {
             data: {
               ...res.data,
@@ -284,7 +299,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
     updateAttachments(newAttachments);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connectionID, toggleBar, updateAttachments]);
+  }, [connection?.type, connectionID, toggleBar, updateAttachments, setScopedCollaborators, collaboratorScopeKey]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
