@@ -8,8 +8,7 @@ import { getResourceIconURL } from '@/project/utils';
 import './index.css';
 
 const ListItem = ({
-  type, id, title, subtitle, content = '', bumped_at = '', searchValue, settings,
-  expandItem,
+  type, id, title, subtitle, content = '', bumped_at = '', searchValue, expandItem
 }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
   const detailContentRef = useRef(null);

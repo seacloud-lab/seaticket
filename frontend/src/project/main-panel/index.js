@@ -47,7 +47,7 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
       return (<Agent title={title} settings={settings} modifySettings={modifySettings} />);
     }
     case BAR_TYPE.SEARCH: {
-      return (<Search title={title} settings={settings} />);
+      return (<Search title={title} />);
     }
     case BAR_TYPE.TICKET:
     case BAR_TYPE.MY_TICKET:
