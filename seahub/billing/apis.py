@@ -1,6 +1,9 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
+import jwt
+
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 from django.db import transaction, connection
 from rest_framework import status
@@ -12,6 +15,7 @@ from seahub.api2.throttling import UserRateThrottle
 
 from seahub.utils.auth import AUTHORIZATION_PREFIX
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
+from seahub.utils import get_service_url
 
 from seahub.organizations.signals import org_role_updated
 from seahub.organizations.models import Organization, OrgSettings
@@ -20,7 +24,8 @@ from seahub.role_permissions.utils import get_available_roles
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 
-from seahub.settings import BILLING_AUTH_TOKEN, MULTI_TENANCY
+from seahub.settings import BILLING_SERVICE_JWT_SECRET_KEY, BILLING_SERVICE_JWT_ALGORITHM, MULTI_TENANCY
+from seahub.billing.settings import BILLING_SERVICE_URL
 from seahub.project.models import AdditionalCreditsStripeSession
 
 logger = logging.getLogger(__name__)
@@ -62,9 +67,31 @@ class BillingOrganizationOperation(APIView):
             error_msg = 'Invalid token header. Token string should not contain spaces.'
             return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        key = auth[1]
-        if key != BILLING_AUTH_TOKEN:
-            error_msg = 'Invalid token.'
+        jwt_token = auth[1]
+
+        # Resolve expected issuer (pay.seaticket.ai) and audience (seaqa-web) domains
+        billing_parsed = urlparse(BILLING_SERVICE_URL) if BILLING_SERVICE_URL else None
+        billing_domain = billing_parsed.netloc.split(':')[0] if billing_parsed else ''
+
+        seaticket_service_url = get_service_url()
+        seaticket_parsed = urlparse(seaticket_service_url) if seaticket_service_url else None
+        seaticket_domain = seaticket_parsed.netloc.split(':')[0] if seaticket_parsed else ''
+
+        try:
+            jwt.decode(
+                jwt_token,
+                BILLING_SERVICE_JWT_SECRET_KEY,
+                algorithms=[BILLING_SERVICE_JWT_ALGORITHM],
+                issuer=billing_domain,
+                audience=seaticket_domain,
+                options={'require': ['exp', 'iss', 'aud', 'jti']},
+            )
+        except jwt.ExpiredSignatureError:
+            error_msg = 'JWT token has expired.'
+            return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        except jwt.InvalidTokenError as e:
+            logger.error('JWT token validation error: %s', e)
+            error_msg = 'Invalid JWT token.'
             return None, api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not MULTI_TENANCY:
