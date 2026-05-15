@@ -10,6 +10,7 @@ import { CellType } from '@/sea-metadata/constants';
 import { getFilterByColumn } from '../../../utils/filter';
 import { getDefaultRowColorRule } from '../../../utils/view';
 import { FILTER_COLUMN_OPTIONS, ROW_COLOR_TYPE } from '../../../constants';
+import { ValidateFilter } from '../../../utils/validate/filter';
 import AdvancedFilters from '../filter-popover/advanced-filters';
 
 import './index.css';
@@ -54,6 +55,18 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     setRules(colorRules);
   }, [colorRules]);
 
+  const canAddRule = useMemo(() => {
+    if (validColumns.length === 0) return false;
+    if (rules.length === 0) return true;
+
+    const lastRule = rules[rules.length - 1];
+    const hasValidFilters = lastRule?.filters.every((filter) => {
+      const { error_message } = ValidateFilter.validate(filter, validColumns);
+      return !error_message;
+    });
+    return Array.isArray(lastRule?.filters) && lastRule.filters.length > 0 && hasValidFilters;
+  }, [rules, validColumns]);
+
   const updateRules = useCallback((updater) => {
     setRules((prevRules) => {
       const newRules = typeof updater === 'function' ? updater(prevRules) : updater;
@@ -66,13 +79,14 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   }, [modifyRowColor]);
 
   const handleAddRule = useCallback(() => {
+    if (!canAddRule) return;
     const defaultColumn = validColumns[0];
     if (!defaultColumn) return;
     const filter = getFilterByColumn(defaultColumn);
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
     updateRules(prevRules => [...prevRules, defaultRule]);
-  }, [validColumns, rules, updateRules]);
+  }, [canAddRule, validColumns, rules, updateRules]);
 
   const handleChangeRuleColor = useCallback((ruleIndex, colorOption) => {
     updateRules((prevRules) => {
@@ -220,7 +234,11 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       </div>
       {!readOnly && (
         <div className="sea-metadata-row-color-add-btns">
-          <CommonAddTool className="popover-add-tool" callBack={handleAddRule} name={gettext('Add rule')} />
+          <CommonAddTool
+            className={`popover-add-tool ${canAddRule ? '' : 'disabled'}`}
+            callBack={canAddRule ? handleAddRule : () => {}}
+            name={gettext('Add rule')}
+          />
         </div>
       )}
     </CustomizePopover>

@@ -38,6 +38,10 @@
   margin-left: -6px;
 }
 
+.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool.disabled .sea-qa-icon-svg {
+  color: #c2c2c2;
+}
+
 .sea-metadata-row-color-add-btns .customize-add-tool .sea-qa-icon-svg {
   color: #666;
   height: 14px;
