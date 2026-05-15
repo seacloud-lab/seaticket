@@ -183,7 +183,8 @@ class SortPopover extends Component {
     const selectedType = sort.sort_type;
     const selectedTypeOption = SORT_TYPES.find(sortType => sortType.value === selectedType);
     const selectedSortType = selectedType && {
-      label: <span className="select-option-name">{selectedTypeOption?.name || gettext('Up')}</span>
+      label: <span className="select-option-name">{selectedTypeOption?.name || gettext('Up')}</span>,
+      value: { sortType: selectedType },
     };
 
     let columnsOptions = this.columnsOptions;
@@ -242,18 +243,19 @@ class SortPopover extends Component {
         boundariesElement={document.body}
       >
         <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
-          <div className={`sorts-list${isEmpty ? ' empty-sorts-container' : ''}`} >
+          <div className={`sorts-list${isEmpty ? ' d-flex align-items-center justify-content-center' : ''}`} >
             {isEmpty ?
-              <div className="empty-sorts-list">{gettext('No sorts')}</div> :
+              <div className="sea-qa-tip-large">{gettext('No sorts')}</div> :
               this.renderSortsList()
             }
           </div>
           {!readOnly &&
-            <CommonAddTool
-              callBack={this.addSort}
-              name={gettext('Add sort')}
-              className="popover-add-tool"
-            />
+            <div className="popover-add-tool">
+              <CommonAddTool
+                callBack={this.addSort}
+                name={gettext('Add sort')}
+              />
+            </div>
           }
         </div>
       </UncontrolledPopover>

@@ -1,16 +1,21 @@
 .seaqa-clear-icon-button.seaqa-icon-btn {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   line-height: 14px;
   display: inline-flex;
   cursor: pointer;
   position: absolute;
+  border-radius: 4px;
+}
+
+.sea-ticket-clear-icon-button.sea-qa-icon-btn:hover {
+  background-color: #0000000A;
 }
 
 .seaqa-clear-icon-button.seaqa-icon-btn .seaqa-icon-svg {
   margin-top: 0;
-  color: var(--bs-icon-secondary-color);
-  height: 14px;
-  width: 14px;
+  color: var(--bs-icon-color);
+  height: 12px;
+  width: 12px;
 }

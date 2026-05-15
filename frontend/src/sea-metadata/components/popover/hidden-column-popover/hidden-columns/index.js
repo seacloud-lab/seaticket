@@ -2,7 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideColumn from './hide-column';
-import context from '@/sea-metadata/context';
+import Tip from '@/components/option-editor/tip';
+import { gettext } from '@/constants';
 
 const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
   const [draggingColumnKey, setDraggingCellKey] = useState(null);
@@ -26,10 +27,11 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
   const draggingColumnIndex = draggingColumnKey ? columns.findIndex(c => c.key === draggingColumnKey) : -1;
 
   return (
-    <div className={classnames('hide-columns-list', { 'empty-hide-columns-container': isEmpty })}>
+    <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty })}>
       {isEmpty && (
+        // TODO
         <div className="empty-hide-columns-list sea-metadata-tip-default">
-          {context.translate('No {columns} available to be hidden' )}
+          {gettext('No columns available to be hidden')}
         </div>
       )}
       {!isEmpty && columns.map((column, columnIndex) => {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { Icon } from '@/components';
 
 class Option extends Component {
 
@@ -24,6 +25,7 @@ class Option extends Component {
   };
 
   render() {
+    const { isSelected } = this.props;
     return (
       <div
         className={classnames('seaqa-select-option option', { 'active': this.props.isActive })}
@@ -31,7 +33,8 @@ class Option extends Component {
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
       >
-        {this.props.children}
+        <span className="option-content">{this.props.children}</span>
+        {isSelected && <Icon symbol="check-mark" className="option-check-icon" />}
       </div>
     );
   }
@@ -40,6 +43,7 @@ class Option extends Component {
 Option.propTypes = {
   index: PropTypes.number,
   isActive: PropTypes.bool,
+  isSelected: PropTypes.bool,
   changeIndex: PropTypes.func,
   value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   children: PropTypes.oneOfType([PropTypes.node, PropTypes.string]),

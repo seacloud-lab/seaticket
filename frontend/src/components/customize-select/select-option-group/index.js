@@ -142,7 +142,7 @@ class OptionGroup extends Component {
   };
 
   renderOptGroup = (searchVal) => {
-    let { noOptionsPlaceholder, onChange } = this.props;
+    let { noOptionsPlaceholder, onChange, value } = this.props;
     this.filterOptions = this.props.getFilterOptions(searchVal);
     if (this.filterOptions.length === 0) {
       return (<Tip searchValue={searchVal} tip={noOptionsPlaceholder} />);
@@ -150,11 +150,17 @@ class OptionGroup extends Component {
     return this.filterOptions.map((opt, i) => {
       let key = opt.value.column ? opt.value.column.key : i;
       let isActive = this.state.activeIndex === i;
+      let isSelected = false;
+      if (value) {
+        const valueToCompare = value.value !== undefined ? value.value : value;
+        isSelected = JSON.stringify(valueToCompare) === JSON.stringify(opt.value);
+      }
       return (
         <Option
           key={`${key}-${i}`}
           index={i}
           isActive={isActive}
+          isSelected={isSelected}
           value={opt.value}
           onChange={onChange}
           changeIndex={this.changeIndex}

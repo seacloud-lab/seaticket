@@ -98,22 +98,25 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
       target={target}
       fade={false}
       hideArrow={true}
-      className="sea-metadata-hide-columns-popover"
+      className="seaqa-hide-columns-popover"
       boundariesElement={document.body}
     >
       <div
         onClick={onPopoverInsideClick}
         ref={popoverRef}
-        className="sea-metadata-hide-columns-container"
+        className="d-flex flex-column align-items-center w-100 p-2"
         style={{ maxHeight: window.innerHeight - 100 }}
       >
-        <div className="sea-metadata-hide-columns-search-container">
+        <div className="w-100 px-2 pt-2">
           <SearchInput
             placeholder={context.translate('Search {column}')}
             onKeyDown={onKeyDown}
             onChange={onChangeSearch}
-            size={28}
+            onClear={() => setSearchValue('')}
+            size={32}
             autoFocus={true}
+            isShowClearIcon={true}
+            isShowSearchIcon={true}
           />
         </div>
         <HiddenColumns
@@ -125,9 +128,9 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
           modifyColumnOrder={modifyColumnOrder}
         />
         {!readOnly && !searchValue && (
-          <div className="sea-metadata-hide-columns-operations">
-            <div className="sea-metadata-hide-columns-operation px-2" onClick={hideAll} aria-label={gettext('Hide all')}>{gettext('Hide all')}</div>
-            <div className="sea-metadata-hide-columns-operation px-2" onClick={showAll} aria-label={gettext('Show all')}>{gettext('Show all')}</div>
+          <div className="seaqa-hide-columns-operations d-flex justify-content-space-around p-2 w-100">
+            <div className="d-flex align-items-center justify-content-center w-100 border-radius-4 cursor-pointer h-6" onClick={hideAll} aria-label={gettext('Hide all')}>{gettext('Hide all')}</div>
+            <div className="d-flex align-items-center justify-content-center w-100 border-radius-4 cursor-pointer h-6" onClick={showAll} aria-label={gettext('Show all')}>{gettext('Show all')}</div>
           </div>
         )}
       </div>
