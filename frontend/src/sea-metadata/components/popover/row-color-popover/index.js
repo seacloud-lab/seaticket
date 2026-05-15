@@ -6,6 +6,7 @@ import { ColorSelectorPopover, IconButton } from '@/components';
 import CommonAddTool from '@/components/customize-add-tool';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import context from '@/sea-metadata/context';
+import { CellType } from '@/sea-metadata/constants';
 import { getFilterByColumn } from '../../../utils/filter';
 import { getDefaultRowColorRule } from '../../../utils/view';
 import { FILTER_COLUMN_OPTIONS, ROW_COLOR_TYPE } from '../../../constants';
@@ -39,7 +40,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
 
   const validColumns = useMemo(() => {
     return (columns || []).filter((column) => {
-      return FILTER_COLUMN_OPTIONS[column.type] && column.filter_able && !excludedColumnKeys.has(column.key);
+      return FILTER_COLUMN_OPTIONS[column.type] && column.filter_able && !excludedColumnKeys.has(column.key) && column.type !== CellType.PRIORITY;
     });
   }, [columns, excludedColumnKeys]);
 

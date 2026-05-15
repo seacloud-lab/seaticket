@@ -29,7 +29,7 @@ const RowColorSetter = ({ target = 'sea-metadata-row-color-popover', readOnly, c
   return (
     <>
       <IconBtn
-        icon="plus"
+        icon="shading"
         size={{ btn: 24 }}
         className={className}
         onClick={onSetterToggle}
