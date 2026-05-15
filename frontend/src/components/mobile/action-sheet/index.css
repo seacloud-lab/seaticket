@@ -236,3 +236,8 @@
 .am-action-sheet-button-list .am-action-sheet-destructive-button {
   color: #f4333c;
 }
+
+.am-action-sheet-button-list-item .my-am-action.disabled,
+.am-action-sheet-button-list-item .my-am-action.disabled .sea-qa-icon-svg {
+  color: #c2c2c2;
+}

@@ -237,7 +237,7 @@ const OptionDialog = ({
               <span className="required-tip" title={gettext('Required')}>{'*'}</span>
             </Label>
             <CustomizeSelect
-              className=" sea-metadata-selector-single-select"
+              className="sea-metadata-selector-single-select"
               value={selectedParentOption}
               options={formattedParentOptions}
               onChange={onSelectParentOption}

@@ -38,7 +38,7 @@ import { Collaborator, AsyncCollaborator } from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
 import OptionEditor from './option-editor';
-import SyncOptionsEditor from './sync-option-editor';
+import SyncOptionEditor from './sync-option-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
 import UploadFile from './upload-file';
@@ -109,7 +109,7 @@ export {
   Collaborator,
   CollaboratorEditor,
   Option,
-  OptionEditor, SyncOptionsEditor,
+  OptionEditor, SyncOptionEditor,
   PasswordInput,
   TextInput,
   UploadFile,

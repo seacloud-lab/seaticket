@@ -171,7 +171,7 @@ const StateSettings = ({
         <OptionEditor
           id={id}
           target={editorRef}
-          className="popover-radius-4 sea-ticket-settings-popover sea-ticket-state-settings-popover"
+          className="sea-ticket-settings-popover sea-ticket-state-settings-popover"
           sameWidthWithTarget={240}
           isMultiple={false}
           isSearchEnabled={false}

@@ -132,7 +132,7 @@ const TagsSettings = ({
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover sea-qa-tags-selector-popover sea-ticket-settings-popover popover-radius-4 hide-description"
+          className="option-editor-popover sea-qa-tags-selector-popover sea-ticket-settings-popover hide-description"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}

@@ -5,7 +5,7 @@ import OptionEditorContainer from './option-editor-container';
 
 import './index.css';
 
-const OptionsEditor = ({
+const OptionEditor = ({
   id,
   target,
   isMultiple = false,
@@ -67,4 +67,4 @@ const OptionsEditor = ({
   );
 };
 
-export default OptionsEditor;
+export default OptionEditor;
