@@ -5,7 +5,7 @@ import OptionEditorContainer from './option-editor-container';
 
 import './index.css';
 
-const SyncOptionsEditor = ({
+const SyncOptionEditor = ({
   target,
   isMultiple = false,
   placement,
@@ -55,4 +55,4 @@ const SyncOptionsEditor = ({
   );
 };
 
-export default SyncOptionsEditor;
+export default SyncOptionEditor;

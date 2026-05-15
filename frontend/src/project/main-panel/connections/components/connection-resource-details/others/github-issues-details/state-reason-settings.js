@@ -80,7 +80,7 @@ const StateReasonSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id={id}
-          className="popover-radius-4 sea-ticket-settings-popover"
+          className="sea-ticket-settings-popover"
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}

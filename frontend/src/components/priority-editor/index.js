@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import classnames from 'classnames';
-import OptionsEditor from '../option-editor';
+import OptionEditor from '../option-editor';
 
 import './index.css';
 
@@ -34,9 +34,9 @@ const PriorityEditor = ({
   }, [priorities]);
 
   return (
-    <OptionsEditor
+    <OptionEditor
       target={target}
-      className={classnames('sea-ticket-priority-editor-popover popover-radius-4', className)}
+      className={classnames('sea-ticket-priority-editor-popover', className)}
       onToggle={onToggle}
       value={value}
       isSearchEnabled={false}

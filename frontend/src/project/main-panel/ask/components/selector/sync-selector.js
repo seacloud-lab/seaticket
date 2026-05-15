@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { SyncOptionsEditor } from '@/components';
+import { SyncOptionEditor } from '@/components';
 import { gettext } from '@/constants';
 import SelectorDisplay from './selector-display';
 
@@ -35,7 +35,7 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
         {children}
       </SelectorDisplay>
       {isShowSelector && (
-        <SyncOptionsEditor
+        <SyncOptionEditor
           className="sea-qa-ai-chat-selector-display-editor "
           target={ref}
           isMultiple={true}

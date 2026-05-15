@@ -36,7 +36,7 @@ const CollaboratorEditor = ({
   return (
     <CustomizePopover
       target={target}
-      className={classnames('collaborator-editor-popover popover-radius-4', className)}
+      className={classnames('collaborator-editor-popover', className)}
       hidePopover={handleSubmit}
       hidePopoverWithEsc={handleSubmit}
       sameWidthWithTarget={sameWidthWithTarget}

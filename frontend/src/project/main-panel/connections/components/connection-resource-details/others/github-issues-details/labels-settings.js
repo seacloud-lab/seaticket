@@ -128,7 +128,7 @@ const LabelsSettings = ({
       {!isReadonly && isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover popover-radius-4 sea-ticket-settings-popover"
+          className="option-editor-popover sea-ticket-settings-popover"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}

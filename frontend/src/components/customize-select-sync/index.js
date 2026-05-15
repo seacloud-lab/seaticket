@@ -73,7 +73,7 @@ const CustomizeSelectSync = ({
       </div>
       {!disabled && isShowSelector && (
         <OptionEditor
-          className="popover-radius-4 sea-ticket-settings-popover"
+          className="sea-ticket-settings-popover"
           target={ref}
           sameWidthWithTarget={240}
           isMultiple={false}
