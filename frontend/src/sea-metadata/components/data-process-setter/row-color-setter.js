@@ -13,8 +13,8 @@ const RowColorSetter = ({ target = 'sea-metadata-row-color-popover', readOnly, c
   const isActive = useMemo(() => hasRowColor(colorbys), [colorbys]);
 
   const title = useMemo(() => {
-    return isActive ? gettext('Row color enabled') : gettext('Row color');
-  }, [isActive]);
+    return gettext('Color');
+  }, []);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);
