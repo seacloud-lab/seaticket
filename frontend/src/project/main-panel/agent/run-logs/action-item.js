@@ -136,7 +136,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.EVENTS:
         return (
           <div className="action-content action-content-events">
-            <div className="action-label">{gettext('Events')}</div>
+            <div className="action-label">{gettext('Event')}</div>
             {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
           </div>
         );

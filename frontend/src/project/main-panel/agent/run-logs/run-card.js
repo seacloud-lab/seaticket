@@ -75,10 +75,23 @@ const RunCardHeader = ({ item }) => {
   );
 };
 
-const getUniqueEventTypes = (events) => {
-  if (!Array.isArray(events) || events.length === 0) return [];
+const normalizeRunEvents = (Events) => {
+  if (Array.isArray(Events)) return Events.filter(Boolean);
+  if (!Events || typeof Events !== 'object') return [];
+
+  // New schema: bare event object
+  if (typeof Events.type === 'string') {
+    return [Events];
+  }
+
+  return [];
+};
+
+const getUniqueEventTypes = (Events) => {
+  const normalizedEvents = normalizeRunEvents(Events);
+  if (normalizedEvents.length === 0) return [];
   const seen = new Set();
-  return events.reduce((acc, e) => {
+  return normalizedEvents.reduce((acc, e) => {
     const type = e && e.type;
     if (type && !seen.has(type)) {
       seen.add(type);
