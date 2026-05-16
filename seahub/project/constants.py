@@ -71,8 +71,6 @@ class DataEventType(Enum):
     def is_valid(cls, value):
         return value in {item.value for item in cls}
 
-PRESET_BUILTIN_USERNAMES = ['seaqa-indexer', 'agent']
-
 class ConnectionField(object):
     def __init__(self, key, is_required=False, is_unique=False):
         self.key = key

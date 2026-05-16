@@ -95,7 +95,7 @@ class ViaProjectSearchView(APIView):
             results = retrieve_vector_search_rerank_data(SeaDBAPI(), uuid_str_to_32_chars(project_uuid), results)
 
             # rerank
-            results = rank_vector_search_results({'ai_summary': query}, results, username, org_id, project_uuid)
+            results = rank_vector_search_results({'ai_summary': query}, results, org_id, project_uuid)
         
         if results is None:
             results = []

@@ -353,7 +353,7 @@ class ChatView(APIView):
 
         # Check AI quota
         org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
-        is_exceed = check_ai_limit(username, org_id)
+        is_exceed = check_ai_limit(org_id)
         if is_exceed:
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
@@ -412,7 +412,6 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'query': query,
             'attachments': attachments,
-            'username': username,
             'org_id': org_id,
             'scenario': AIScenario.CHAT.value,
             'llm_model': request.data.get('model'),

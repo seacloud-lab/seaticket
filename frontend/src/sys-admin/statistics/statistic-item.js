@@ -45,7 +45,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
   const handleOpenAIStaticsDetailDialog = useCallback(() => {
     let condition = {};
     if (groupBy === 'user') {
-      condition.username = item.username;
+      condition.owner = item.owner;
     } else if (groupBy === 'project') {
       condition.project_uuid = item.project_uuid;
     } else if (groupBy === 'group') {
@@ -87,7 +87,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
       {groupBy === 'user' && (
         <>
           <td>
-            <Link to={getOwnerURL(item.username)}>
+            <Link to={getOwnerURL(item.owner)}>
               {item.nickname}
             </Link>
           </td>
@@ -106,18 +106,14 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
         <>
           <td>{item.project_name || item.project_uuid}</td>
           <td>
-            {(item.nickname || item.group_name) && item.group_name ? (
+            {item.group_name ? (
               <div>
                 <Link to={getOwnerURL(item.owner)}>{item.group_name}</Link>
-                {' '}
-                {'(' + gettext('group') + ')'}
+                {' (' + gettext('group') + ')'}
               </div>
             ) : (
-              <Link to={getOwnerURL(item.owner)}>
-                {item.group_name ? item.group_name : item.nickname}
-              </Link>
+              <Link to={getOwnerURL(item.owner)}>{item.nickname}</Link>
             )}
-            {!(item.nickname || item.group_name) && item.owner}
           </td>
           <td>
             {item.org_name && item.org_id > 0 && (

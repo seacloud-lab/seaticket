@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-from urllib.parse import urlparse
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -71,7 +70,7 @@ class ConvertRecordToTicket(APIView):
 
         # Check AI quota
         org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
-        is_exceed = check_ai_limit(username, org_id)
+        is_exceed = check_ai_limit(org_id)
         if is_exceed:
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
@@ -182,7 +181,6 @@ class ConvertRecordToTicket(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         params = {
-            'username': username,
             'record_detail': record_detail,
             'project_uuid': project_uuid,
             'org_id': org_id,
@@ -232,7 +230,7 @@ class ConvertPortalIssueToTicket(APIView):
 
         # Check AI quota
         org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
-        is_exceed = check_ai_limit(username, org_id)
+        is_exceed = check_ai_limit(org_id)
         if is_exceed:
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 
@@ -277,7 +275,6 @@ class ConvertPortalIssueToTicket(APIView):
 
         # AI conversion
         params = {
-            'username': username,
             'record_detail': record_detail,
             'project_uuid': project_uuid,
             'org_id': org_id,
@@ -342,7 +339,7 @@ class ConvertTicketToKnowledgeBaseRecord(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         org_id = request.user.org.org_id
-        is_exceed = check_ai_limit(username, org_id)
+        is_exceed = check_ai_limit(org_id)
         if is_exceed:
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
@@ -365,7 +362,6 @@ class ConvertTicketToKnowledgeBaseRecord(APIView):
             })
 
         params = {
-            'username': username,
             'ticket_title': ticket_title,
             'ticket_content': ticket_content,
             'ticket_comments': sanitized_comments,
@@ -579,7 +575,7 @@ class RelatedRecordsView(APIView):
             search_results = rank_vector_search_results({
                 'title': query_record['title'],
                 'ai_summary': query_record['ai_summary']
-            }, search_results, username, org_id, project_uuid)
+            }, search_results, org_id, project_uuid)
 
             formatted_results = []
             for result in search_results:

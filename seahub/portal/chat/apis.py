@@ -328,7 +328,7 @@ class PortalChatView(APIView):
 
         # Check AI quota of org
         org_id = getattr(getattr(request.project, 'workspace', None), 'org_id', -1) or -1
-        if check_ai_limit(username, org_id):
+        if check_ai_limit(org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
 
         try:
@@ -349,7 +349,6 @@ class PortalChatView(APIView):
             'message_id': message_id,
             'query': query,
             'attachments': [],
-            'username': username,
             'org_id': org_id,
             'connection_ids': chat_sources['connection_ids'],
             'extra_sources': chat_sources['extra_sources'],

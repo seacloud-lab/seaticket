@@ -247,22 +247,6 @@ def get_ai_credit_by_org_id(org_id):
 
     return ai_credit
 
-
-def get_ai_credit_by_username(username):
-    if '@seafile_group' in username:
-        return -1
-
-    from seahub.base.accounts import User
-    try:
-        user = User.objects.get(email=username)
-        role = get_user_role(user)
-    except User.DoesNotExist:
-        role = TEAM_FREE
-
-    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
-    return ai_credit
-
-
 def get_ai_cost_by_org_id(org_id):
     cache_key = f'ai_cost_org_{org_id}'
     cost = cache.get(cache_key)
@@ -274,32 +258,16 @@ def get_ai_cost_by_org_id(org_id):
         cache.set(cache_key, cost, cache_timeout)
     return cost
 
-
-def get_ai_cost_by_username(username):
-    cache_key = f'ai_cost_user_{username}'
-    cost = cache.get(cache_key)
-    if not cost:
-        cost = AIUsageStatistics.objects.filter(date__range=get_month_date_range(), username=username).aggregate(
-            total_cost=Coalesce(Sum('cost'), Value(0.0))
-        )['total_cost']
-        cache_timeout = 600 # update / 10 min
-        cache.set(cache_key, cost, cache_timeout)
-    return cost
-
-
-def check_ai_limit(username, org_id):
-    if org_id != -1:
+def check_ai_limit(org_id):
+    if org_id >= 0:
         # Organization user
         credit = get_ai_credit_by_org_id(org_id)
         if credit == -1:
             return False
         cost = get_ai_cost_by_org_id(org_id)
     else:
-        # Personal user
-        credit = get_ai_credit_by_username(username)
-        if credit == -1:
-            return False
-        cost = get_ai_cost_by_username(username)
+        # system admin mode
+        return False
 
     is_exceed = cost >= credit
     return is_exceed
@@ -344,7 +312,7 @@ def query_items(request, query_str, query_type):
         return query_projects(request, query_str)
     return []
 
-def rank_vector_search_results(query_record, results, username, org_id, project_uuid):
+def rank_vector_search_results(query_record, results, org_id, project_uuid):
     if not results:
         return results
 
@@ -373,7 +341,6 @@ def rank_vector_search_results(query_record, results, username, org_id, project_
     params = {
         'query_record': query_record,
         'candidate_records': candidate_records,
-        'username': username,
         'org_id': org_id,
         'project_uuid': project_uuid,
         'scenario': AIScenario.SEARCH.value,

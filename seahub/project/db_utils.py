@@ -1,19 +1,21 @@
 from django.db.models import Sum
 from seahub.project.models import AIUsageStatistics
-from seahub.project.constants import PRESET_BUILTIN_USERNAMES
 from seahub.project.utils import convert_cost_to_credit
 
 def query_ai_statistics_overview(group_by, date_range, org_id=None):
     """
     sql:
-    SELECT `{group_by}`, SUM(`cost`) as `total_credit_used` 
-    FROM `ai_usage_statistics` 
-    WHERE `date` >= '{date_begin}' and `date` <= '{date_end}'
+    SELECT `{group_by}`, SUM(`cost`) AS `total_credit_used`
+    FROM `ai_usage_statistics`
+    WHERE `date` >= '{date_begin}' AND `date` <= '{date_end}'
     GROUP BY `{group_by}`
     ORDER BY `total_credit_used` DESC
 
-    if group_by in (group_id, org_id) => add a where condition with group_id >= 0 or org_id >= 0
-    if has org_id => add a where condition with org_id = ... 
+    if group_by == 'owner' => add `owner IS NOT NULL`
+    if group_by == 'group_id' => add `group_id >= 0`
+    if group_by == 'org_id' => add `org_id >= 0` (params org_id not set)
+    if group_by == 'project_uuid' => additionally select `owner`, `group_id`
+    if org_id is provided => add `org_id = {org_id}` (remove the above `org_id >= 0`)
     """
     date_begin, date_end = date_range
 
@@ -21,19 +23,24 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
         'date__gte': date_begin,
         'date__lte': date_end,
     }
-    if group_by == 'group_id':
+    addition_value_columns = []
+    if group_by == 'owner':
+        query_kwargs['owner__isnull'] = False
+    elif group_by == 'group_id':
         query_kwargs['group_id__gte'] = 0
     elif group_by == 'org_id':
-        query_kwargs['org_id__gte'] = 0
+        if not org_id:
+            query_kwargs['org_id__gte'] = 0
+    elif group_by == 'project_uuid':
+        addition_value_columns = [
+            'owner',
+            'group_id'
+        ]
+    elif group_by != 'scenario':
+        raise AssertionError(f'Invalid group_by type: {group_by}')
     if org_id:
         query_kwargs['org_id'] = org_id
-    if group_by == 'username':
-        # for username (i.e., user page, only shows the user's projects usage, the projects in group is not included)
-        # add to the last for using index idx_date_org_group_id
-        query_kwargs['group_id'] = -1
     query_set = AIUsageStatistics.objects.filter(**query_kwargs)
-    if group_by == 'username':
-        query_set = query_set.exclude(username__in=PRESET_BUILTIN_USERNAMES)
     query_set = query_set.values(
         group_by
     ).annotate(
@@ -43,7 +50,8 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
     ).values(
         group_by,
         'org_id',
-        'total_credit_used'
+        'total_credit_used',
+        *addition_value_columns
     )
 
     return query_set
@@ -52,14 +60,15 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
 def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
     """
     sql:
-    SELECT `date`, SUM(`input_tokens`) as `total_input_tokens`, SUM(`output_tokens`) as `total_output_tokens`, SUM(`cost`) as `total_credit_used`
-    FROM `ai_usage_statistics` 
-    WHERE `date` >= '{date_begin}' and `date` <= '{date_end}' and `condition_field` = 'condition_value'
+    SELECT `{group_by}`, SUM(`input_tokens`) AS `total_input_tokens`, SUM(`output_tokens`) AS `total_output_tokens`, SUM(`cost`) AS `total_credit_used`
+    FROM `ai_usage_statistics`
+    WHERE `date` >= '{date_begin}' AND `date` <= '{date_end}'
+      AND `{condition_key}` = '{condition_value}'
     GROUP BY `{group_by}`
-    ORDER BY `{date or total_credit_used}`
+    ORDER BY `date ASC` (if group_by == 'date') OR `total_credit_used DESC` (otherwise)
 
-    if has model_list => add a new condition of `model` in where condition
-    if has scenarios => add a new condition of `scenario` in where condition
+    condition dict supports keys: owner, project_uuid (hyphens stripped), group_id, org_id
+    if scenarios is provided => add `scenario IN (...)`
     """
     date_begin, date_end = date_range
 
@@ -67,10 +76,8 @@ def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
         'date__gte': date_begin,
         'date__lte': date_end,
     }
-    if 'username' in condition:
-        # for username (i.e., user page, only shows the user's projects usage, the projects in group is not included)
-        query_kwargs['group_id'] = -1
-        query_kwargs['username'] = condition['username']
+    if 'owner' in condition:
+        query_kwargs['owner'] = condition['owner']
     if 'project_uuid' in condition:
         query_kwargs['project_uuid'] = condition['project_uuid'].replace('-', '')
     if 'group_id' in condition:
@@ -97,7 +104,5 @@ def query_ai_statistics_detail(group_by, date_range, condition, scenarios=None):
         'total_output_tokens',
         'total_credit_used'
     )
-    if group_by == 'username':
-        query_set = query_set.exclude(username__in=PRESET_BUILTIN_USERNAMES)
 
     return query_set

@@ -575,7 +575,7 @@ CREATE TABLE `ai_usage_statistics` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `date` date DEFAULT NULL,
   `project_uuid` varchar(36) NOT NULL,
-  `username` varchar(255) DEFAULT NULL,
+  `owner` varchar(255) DEFAULT NULL,
   `group_id` int(11) DEFAULT NULL,
   `org_id` bigint(20) DEFAULT NULL,
   `model` varchar(100) NOT NULL,
@@ -586,9 +586,10 @@ CREATE TABLE `ai_usage_statistics` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_proj` (`date`, `project_uuid`),
-  KEY `idx_group_username` (`date`, `group_id`, `username`),
-  KEY `idx_date_org_group_id` (`date`, `org_id`, `group_id`)
+  KEY `idx_date_proj`(`date`, `project_uuid`),
+  KEY `idx_date_org`(`date`, `org_id`),
+  KEY `idx_date_owner_org`(`date`, `owner`, `org_id`),
+  KEY `idx_date_group_org`(`date`, `group_id`, `org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
