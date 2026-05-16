@@ -16,6 +16,7 @@ class Info extends Component {
       issues_usage: 0,
       org_name: '',
       org_id: null,
+      additional_ai_credit: 0,
     };
   }
 
@@ -30,13 +31,15 @@ class Info extends Component {
         org_id: res.data.org_id,
         ai_credit_used: res.data.ai_credit_used || 0,
         ai_credit_limit: res.data.ai_credit_limit || 0,
+        additional_ai_credit: res.data.additional_ai_credit || 0,
       });
     });
   }
 
   render() {
-    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used, ai_credit_limit } = this.state;
+    let { org_name, org_id, active_members, member_usage, member_quota, issues_usage, ai_credit_used, ai_credit_limit, additional_ai_credit } = this.state;
     const aiCreditUsed = !ai_credit_used && !ai_credit_limit ? '--' : `${ai_credit_used || '--'} / ${ai_credit_limit || '--'}`;
+    const additionalCredits = additional_ai_credit === null || additional_ai_credit === undefined ? '--' : additional_ai_credit;
     return (
 
       <Fragment>
@@ -56,7 +59,8 @@ class Info extends Component {
           <MultipleTextCard
             texts={[
               { name: gettext('Total issues'), value: issues_usage || '--' },
-              { name: gettext('AI Credit'), value: aiCreditUsed },
+              { name: gettext('Included Al credits'), value: aiCreditUsed },
+              { name: gettext('Additional credits'), value: additionalCredits },
             ]}
             itemStyle={{ flex: 1 }}
           />

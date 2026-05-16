@@ -79,11 +79,11 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
 }
 
 try:
-    custom_role_permissions = settings.ENABLED_ROLE_PERMISSIONS
+    custom_role_permissions = settings.ROLE_PERMISSIONS
 except AttributeError:
     custom_role_permissions = {}
 
-ENABLED_ROLE_PERMISSIONS = merge_roles(
+ROLE_PERMISSIONS = merge_roles(
     DEFAULT_ENABLED_ROLE_PERMISSIONS,
     custom_role_permissions,
     fallback_role=TEAM_FREE

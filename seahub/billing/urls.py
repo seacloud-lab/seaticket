@@ -6,4 +6,7 @@ urlpatterns = [
     re_path(r'^api/organizations/(?P<org_id>\d+)/$',
             apis.BillingOrganizationOperation.as_view(),
             name='billing-api-organization-operation'),
+    re_path(r'^api/organizations/(?P<org_id>\d+)/additional-credits/$',
+            apis.BillingOrganizationAdditionalCredits.as_view(),
+            name='billing-api-organization-additional-credits'),
 ]

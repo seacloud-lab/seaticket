@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics
+    AIUsageStatistics, AIUsageStatistics, Workspaces, ProjectIssuesStatistics, AdditionalCredits
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalExternalInvitation
 from seahub.tickets.models import TicketViews
@@ -29,6 +29,7 @@ from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_project_dir_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
+from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
 from seahub.seadb_models.models import GithubIssuesTable
@@ -241,11 +242,7 @@ def get_ai_credit_by_org_id(org_id):
     os = OrgSettings.objects.filter(org_id=org_id).first()
     if os:
         role = os.role
-    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
-    if ai_credit < 0:
-        return -1
-
-    return ai_credit
+    return get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
 
 
 def get_ai_credit_by_username(username):
@@ -259,8 +256,21 @@ def get_ai_credit_by_username(username):
     except User.DoesNotExist:
         role = TEAM_FREE
 
-    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
-    return ai_credit
+    return get_enabled_role_permissions_by_role(role).get('ai_credit', -1)
+
+
+def get_additional_credits_by_org_id(org_id):
+    credits_obj = AdditionalCredits.objects.filter(org_id=org_id).first()
+    if not credits_obj:
+        return 0
+    return credits_obj.credits or 0
+
+
+def get_total_ai_credit_by_org_id(org_id):
+    monthly_credit = get_ai_credit_by_org_id(org_id)
+    if monthly_credit < 0:
+        return -1
+    return monthly_credit + get_additional_credits_by_org_id(org_id)
 
 
 def get_ai_cost_by_org_id(org_id):
@@ -290,18 +300,18 @@ def get_ai_cost_by_username(username):
 def check_ai_limit(username, org_id):
     if org_id != -1:
         # Organization user
-        credit = get_ai_credit_by_org_id(org_id)
+        credit = get_total_ai_credit_by_org_id(org_id)
         if credit == -1:
             return False
-        cost = get_ai_cost_by_org_id(org_id)
+        used_credit = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
     else:
         # Personal user
         credit = get_ai_credit_by_username(username)
         if credit == -1:
             return False
-        cost = get_ai_cost_by_username(username)
+        used_credit = convert_cost_to_credit(get_ai_cost_by_username(username))
 
-    is_exceed = cost >= credit
+    is_exceed = used_credit >= credit
     return is_exceed
 
 
