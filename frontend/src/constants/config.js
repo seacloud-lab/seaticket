@@ -60,6 +60,7 @@ export const enableOrgLogo = window.org ? window.org.pageOptions.enable_org_logo
 export const enableMultiSAML = window.org ? window.org.pageOptions.enableMultiSAML : false;
 export const canUseSAML = window.org ? window.org.pageOptions.canUseSAML : false;
 export const enableExternalBillingService = window.org ? window.org.pageOptions.enableExternalBillingService : false;
+export const orgEnableAdminDeleteOrg = window.org ? window.org.pageOptions.orgEnableAdminDeleteOrg : false;
 
 // sys admin
 export const isShowUint = window.sysadmin ? window.sysadmin.pageOptions.is_show_unit : '';

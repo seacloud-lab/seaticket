@@ -1,6 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 from django.urls import re_path
 
+from seahub.api2.endpoints.org_admin.delete_org import OrgAdminDeleteOrg
 from seahub.api2.endpoints.org_admin.users import OrgAdminUser, OrgAdminUsers, \
     OrgAdminSearchUsers, OrgAdminInviteUsers, OrgAdminTwoFactorAuth
 from seahub.api2.endpoints.org_admin.user_set_password import OrgAdminUserSetPassword
@@ -17,6 +18,8 @@ from seahub.api2.endpoints.org_admin.statistics import OrgAdminAIStatisticsView,
 urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/groups/$', OrgAdminGroups.as_view(), name='api-v1-org-admin-groups'),
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/$', OrgAdminGroup.as_view(), name='api-admin-group'),
+
+    re_path(r'^(?P<org_id>\d+)/admin/delete-org/$', OrgAdminDeleteOrg.as_view(), name='api-v1-org-admin-delete-org'),
 
     re_path(r'^(?P<org_id>\d+)/admin/projects/$', OrgAdminProjectsView.as_view(), name='api-v1-org-admin-projects'),
     re_path(r'^(?P<org_id>\d+)/admin/projects/(?P<project_id>\d+)/$', OrgAdminProjectView.as_view(), name='api-v1-org-admin-project'),

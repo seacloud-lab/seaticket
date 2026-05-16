@@ -9,6 +9,7 @@ from rest_framework import status
 
 from django.utils.crypto import get_random_string
 
+from seahub.admin_log.models import OrgAdminLog
 from seahub.constants import TEAM_FREE
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.utils import is_valid_email
@@ -20,7 +21,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.role_permissions.utils import get_available_roles
 from seahub.profile.models import Profile
-from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup
+from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup, OrgAdminSettings,\
+    OrgMemberQuota
 from seahub.organizations.signals import org_role_updated
 from seahub.project.models import Workspaces
 
@@ -28,9 +30,6 @@ try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
 except ImportError:
     ORG_MEMBER_QUOTA_ENABLED= False
-
-if ORG_MEMBER_QUOTA_ENABLED:
-    from seahub.organizations.models import OrgMemberQuota
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -450,14 +449,18 @@ class AdminOrganization(APIView):
             # remove org groups
             OrgGroup.objects.remove_org_groups(org_id)
 
+            # remove org workspace and projects
+            Workspaces.objects.delete_workspaces_by_org_id(org_id)
+
+            # remove org-related configs and records
+            OrgMemberQuota.objects.filter(org_id=org_id).delete()
+            OrgSettings.objects.filter(org_id=org_id).delete()
+            OrgAdminSettings.objects.filter(org_id=org_id).delete()
+            OrgSAMLConfig.objects.filter(org_id=org_id).delete()
+            OrgAdminLog.objects.filter(org_id=org_id).delete()
+
             # remove org
             Organization.objects.remove_org(org_id)
-
-            # remove org settings
-            OrgSettings.objects.filter(org_id=org_id).delete()
-
-            # # remove org org quota
-            # OrgQuota.objects.filter(org_id=org_id).delete()
 
         except Exception as e:
             logger.error(e)
