@@ -228,12 +228,25 @@ def strip_content_details_from_attachments(attachments):
     return new_attachments
 
 
-def filter_valid_temp_image_urls(project_uuid, image_urls):
-    """Drop URLs that are not temp uploads owned by this project."""
-    if not isinstance(image_urls, list):
-        return []
+def split_image_and_other_attachments(project_uuid, attachments):
+    """Split mixed attachments into temp image paths and non-image attachments.
+
+    Returns (temp_image_paths, other_attachments). Image items whose path is
+    not a temp upload URL owned by this project are dropped.
+    """
+    if not isinstance(attachments, list):
+        return [], []
     prefix = f'/upload-file/project/{project_uuid}/'
-    return [u for u in image_urls if isinstance(u, str) and u.startswith(prefix)][:CHAT_IMAGE_MAX_COUNT]
+    temp_paths = []
+    others = []
+    for a in attachments:
+        if isinstance(a, dict) and a.get('type') == 'image':
+            path = a.get('path')
+            if isinstance(path, str) and path.startswith(prefix):
+                temp_paths.append(path)
+        else:
+            others.append(a)
+    return temp_paths[:CHAT_IMAGE_MAX_COUNT], others
 
 
 def build_image_attachments(permanent_image_paths):
@@ -243,24 +256,26 @@ def build_image_attachments(permanent_image_paths):
     ]
 
 
-def build_ai_images_payload(project_uuid, permanent_image_urls):
+class ImageProcessingError(Exception):
+    pass
+
+
+def build_ai_images_payload(project_uuid, permanent_image_paths):
     payload = []
     file_prefix = f'/file/project/{project_uuid}/'
-    for url in permanent_image_urls:
-        if not isinstance(url, str) or not url.startswith(file_prefix):
-            logger.warning(f'skip unexpected image url: {url}')
-            continue
-        file_path = url[len(file_prefix):]
+    for path in permanent_image_paths:
+        if not isinstance(path, str) or not path.startswith(file_prefix):
+            raise ImageProcessingError(f'Invalid image path: {path}')
+        file_path = path[len(file_prefix):]
         name = os.path.basename(file_path)
         mime_type, _ = mimetypes.guess_type(name)
         if not mime_type or not mime_type.startswith('image/'):
-            logger.warning(f'skip image with unknown mime type: {name}')
-            continue
+            raise ImageProcessingError(f'Unsupported image type: {name}')
         try:
             body = get_file_from_s3(project_uuid, file_path)
             data = base64.b64encode(body.read()).decode('ascii')
         except Exception as e:
             logger.warning(f'Failed to read image {file_path} from s3: {e}')
-            continue
+            raise ImageProcessingError(f'Failed to read image: {name}')
         payload.append({'name': name, 'mime_type': mime_type, 'data': data})
     return payload

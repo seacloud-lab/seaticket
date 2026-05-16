@@ -110,13 +110,15 @@ const ChatInput = forwardRef(({
     const hasUploading = pendingImages.some(i => i.status === 'uploading');
     if (hasUploading) return;
     const completed = pendingImages.filter(i => i.status === 'done' && i.tempUrl);
-    const imageUrls = completed.map(i => i.tempUrl);
-    const imagePreviews = completed.map(i => i.previewUrl);
+    const imageAttachments = completed.map(i => ({
+      type: 'image',
+      path: i.tempUrl,
+      name: i.name,
+      _previewUrl: i.previewUrl,
+    }));
     sendMessage({
       message: value,
-      attachments,
-      image_urls: imageUrls,
-      image_previews: imagePreviews,
+      attachments: attachments.concat(imageAttachments),
       model: selectedModel,
       clearContext
     });

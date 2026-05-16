@@ -9,6 +9,18 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
+const stripLocalAttachmentFields = (attachments) => {
+  if (!Array.isArray(attachments)) return [];
+  return attachments.map((a) => {
+    if (!a || typeof a !== 'object') return a;
+    const cleaned = {};
+    Object.keys(a).forEach((k) => {
+      if (!k.startsWith('_')) cleaned[k] = a[k];
+    });
+    return cleaned;
+  });
+};
+
 export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
@@ -66,7 +78,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
     setIsShowSessions(!isShowSessions);
   }, [isShowSessions]);
 
-  const solveProblem = useCallback(({ sessionId, message: problem, attachments, image_urls, model, clearContext }) => {
+  const solveProblem = useCallback(({ sessionId, message: problem, attachments, model, clearContext }) => {
     const _updateSessions = (sessions) => {
       const newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
@@ -85,8 +97,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       project_uuid: projectUuid,
       query: problem,
       session_uuid: sessionId,
-      attachments: attachments,
-      image_urls: Array.isArray(image_urls) ? image_urls : [],
+      attachments: stripLocalAttachmentFields(attachments),
       model: model,
       clear_context: clearContext,
       stream: true,

@@ -2,6 +2,7 @@ import React, { useContext, useState, useCallback, useRef, useEffect } from 'rea
 import { chatAPI } from '@/project/api/chat-api';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
 
 const AIChatToolsContext = React.createContext(null);
 
@@ -37,6 +38,7 @@ export const AIChatToolsProvider = ({ projectUuid, children }) => {
     }).then((res) => {
       updatePendingImage(id, { status: 'done', tempUrl: res.data.url, progress: 100 });
     }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
       updatePendingImage(id, { status: 'error', error });
     });
   }, [projectUuid, updatePendingImage]);
@@ -46,13 +48,25 @@ export const AIChatToolsProvider = ({ projectUuid, children }) => {
     if (arr.length === 0) return;
 
     setPendingImages((prev) => {
+      const existingNames = new Set(prev.map((img) => img.name));
       const remain = CHAT_IMAGE_MAX_COUNT - prev.length;
       if (remain <= 0) {
         toaster.danger(gettext('Up to {count} images per message').replace('{count}', CHAT_IMAGE_MAX_COUNT));
         return prev;
       }
       const accepted = [];
-      for (const file of arr.slice(0, remain)) {
+      let exceedLimit = false;
+      let hasDuplicateName = false;
+      for (const file of arr) {
+        if (existingNames.has(file.name)) {
+          hasDuplicateName = true;
+          continue;
+        }
+        if (accepted.length >= remain) {
+          exceedLimit = true;
+          break;
+        }
+        existingNames.add(file.name);
         const item = {
           id: genId(),
           name: file.name,
@@ -65,7 +79,10 @@ export const AIChatToolsProvider = ({ projectUuid, children }) => {
         blobUrlsRef.current.push(item.previewUrl);
         accepted.push(item);
       }
-      if (arr.length > remain) {
+      if (hasDuplicateName) {
+        toaster.danger(gettext('Images with the same name are not allowed.'));
+      }
+      if (exceedLimit) {
         toaster.danger(gettext('Up to {count} images per message').replace('{count}', CHAT_IMAGE_MAX_COUNT));
       }
       setTimeout(() => accepted.forEach((it) => uploadOne(it.id, it.file)), 0);

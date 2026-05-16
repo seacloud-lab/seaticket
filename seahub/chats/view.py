@@ -21,7 +21,8 @@ from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
     record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments, \
-    filter_valid_temp_image_urls, build_image_attachments, build_ai_images_payload
+    split_image_and_other_attachments, build_image_attachments, build_ai_images_payload, \
+    ImageProcessingError
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -360,9 +361,11 @@ class ChatView(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
+        raw_attachments = request.data.get('attachments', [])
+        temp_image_paths, non_image_attachments = split_image_and_other_attachments(project_uuid, raw_attachments)
         # Extra contents
         try:
-            attachments = get_attachments(SeaDBAPI(), project_uuid, request.data.get('attachments', []))
+            attachments = get_attachments(SeaDBAPI(), project_uuid, non_image_attachments)
         except Exception as e:
             attachments = []
             logger.warning(f'Failure to get extra contents: {e}')
@@ -401,16 +404,26 @@ class ChatView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # Move user-uploaded images from /tmp to S3 and append to attachments
-        permanent_image_urls = []
-        try:
-            temp_image_urls = filter_valid_temp_image_urls(project_uuid, request.data.get('image_urls', []))
-            if temp_image_urls:
+        permanent_image_paths = []
+        if temp_image_paths:
+            image_names = [path.rsplit('/', 1)[-1] for path in temp_image_paths if isinstance(path, str)]
+            if len(image_names) != len(set(image_names)):
+                return api_error(status.HTTP_400_BAD_REQUEST, _('Images with the same name are not allowed.'))
+            try:
                 record_id = f'{session.session_uuid}/{message_id}'
-                new_url_map = upload_files_to_s3(project_uuid, temp_image_urls, username, 'chat', record_id)
-                permanent_image_urls = list(new_url_map.keys())
-                attachments = attachments + build_image_attachments(permanent_image_urls)
-        except Exception as e:
-            logger.warning(f'Failure to persist chat images: {e}')
+                new_url_map = upload_files_to_s3(project_uuid, temp_image_paths, username, 'chat', record_id)
+                permanent_image_paths = list(new_url_map.keys())
+            except Exception as e:
+                logger.exception(f'Failed to upload images to S3: {e}')
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+
+            if len(permanent_image_paths) != len(temp_image_paths):
+                logger.warning(
+                    f'Image upload incomplete: requested={len(temp_image_paths)} succeeded={len(permanent_image_paths)}'
+                )
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+
+            attachments = attachments + build_image_attachments(permanent_image_paths)
 
         # Read project-level custom prompt from settings
         project_prompt = ''
@@ -421,17 +434,31 @@ class ChatView(APIView):
             except json.JSONDecodeError:
                 pass
 
+        try:
+            ai_images_payload = build_ai_images_payload(project_uuid, permanent_image_paths)
+        except ImageProcessingError as e:
+            logger.warning(f'Image processing failed: {e}')
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
+        image_data_by_name = {img['name']: img for img in ai_images_payload}
+        ai_attachments = []
+        for a in attachments:
+            if isinstance(a, dict) and a.get('type') == 'image':
+                extra = image_data_by_name.get(a.get('name'), {})
+                ai_attachments.append({**a, **extra})
+            else:
+                ai_attachments.append(a)
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
             'query': query,
-            'attachments': attachments,
+            'attachments': ai_attachments,
             'org_id': org_id,
             'scenario': AIScenario.CHAT.value,
             'llm_model': request.data.get('model'),
             'stream': stream,
             'project_prompt': project_prompt,
-            'images': build_ai_images_payload(project_uuid, permanent_image_urls),
         }
 
         task_info = {
