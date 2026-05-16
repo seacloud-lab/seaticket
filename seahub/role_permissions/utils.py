@@ -1,16 +1,16 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 
-from .settings import ENABLED_ROLE_PERMISSIONS, ENABLED_ADMIN_ROLE_PERMISSIONS
+from .settings import ROLE_PERMISSIONS, ENABLED_ADMIN_ROLE_PERMISSIONS
 
 from seahub.constants import TEAM_FREE, DEFAULT_ADMIN
 
 logger = logging.getLogger(__name__)
 
 def get_available_roles():
-    """Get available roles defined in `ENABLED_ROLE_PERMISSIONS`.
+    """Get available roles defined in `ROLE_PERMISSIONS`.
     """
-    return list(ENABLED_ROLE_PERMISSIONS.keys())
+    return list(ROLE_PERMISSIONS.keys())
 
 def get_enabled_role_permissions_by_role(role):
     """Get permissions dict(perm_name: bool) of a role.
@@ -18,11 +18,11 @@ def get_enabled_role_permissions_by_role(role):
     if not role:
         role = TEAM_FREE
 
-    if role not in list(ENABLED_ROLE_PERMISSIONS.keys()):
+    if role not in list(ROLE_PERMISSIONS.keys()):
         logger.warning('%s is not a valid role, use default role.' % role)
         role = TEAM_FREE
 
-    return ENABLED_ROLE_PERMISSIONS[role]
+    return ROLE_PERMISSIONS[role]
 
 def get_available_admin_roles():
     """Get available admin roles defined in `ENABLED_ADMIN_ROLE_PERMISSIONS`.

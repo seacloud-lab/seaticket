@@ -120,7 +120,7 @@ class BillingJwtAuthTests(TestCase):
         self.valid_jwt = _generate_valid_jwt()
         self.expired_jwt = _generate_expired_jwt()
 
-    @patch('seahub.billing.apis.get_service_url', return_value='https://seaqa-web')
+    @patch('seahub.billing.apis.get_service_url', Mock(return_value='https://seaqa-web'))
     @patch('seahub.billing.apis.BILLING_SERVICE_URL', 'https://pay.seaticket.ai')
     @patch('seahub.billing.apis.MULTI_TENANCY', True)
     @patch('seahub.billing.apis.BILLING_SERVICE_JWT_SECRET_KEY', JWT_SECRET)
@@ -200,7 +200,7 @@ class BillingJwtAuthTests(TestCase):
         self.assertIsNone(org)
         self.assertEqual(error.status_code, 403)
 
-    @patch('seahub.billing.apis.get_service_url', return_value='https://seaqa-web')
+    @patch('seahub.billing.apis.get_service_url', Mock(return_value='https://seaqa-web'))
     @patch('seahub.billing.apis.BILLING_SERVICE_URL', 'https://pay.seaticket.ai')
     @patch('seahub.billing.apis.MULTI_TENANCY', True)
     @patch('seahub.billing.apis.BILLING_SERVICE_JWT_SECRET_KEY', JWT_SECRET)
