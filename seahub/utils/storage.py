@@ -7,7 +7,7 @@ from django.utils.http import parse_etags
 
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
-from seahub.utils import uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
 
 logger = logging.getLogger(__name__)
 PORTAL_LOGO_OBJECT_NAME = 'logo'
@@ -38,7 +38,7 @@ class FileNotFound(Exception):
     pass
 
 def gen_s3_project_file_path(project_uuid, file_path):
-    project_uuid = uuid_str_to_32_chars(project_uuid)
+    project_uuid = uuid_str_to_36_chars(project_uuid)
     return f'/projects/{project_uuid}/{file_path}'
 
 
