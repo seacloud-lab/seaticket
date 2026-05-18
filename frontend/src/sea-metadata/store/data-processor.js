@@ -49,7 +49,6 @@ class DataProcessor {
   }
 
   static hasRelatedRowColor(colorbys, updatedColumnKeyMap) {
-    console.log(colorbys);
     const colorRules = colorbys?.color_by_rules;
     if (!Array.isArray(colorRules) || colorRules.length === 0) return false;
     return colorRules.some(rule => {

@@ -15,8 +15,9 @@
 }
 
 .sea-metadata-table-row .sea-metadata-table-cell .select-all-checkbox-container {
-  width: 28px;
+  width: 21px;
   margin-left: 4px;
+  justify-content: end;
 }
 
 .sea-metadata-table-row .sea-metadata-table-cell .select-all-checkbox-container .select-all-checkbox {

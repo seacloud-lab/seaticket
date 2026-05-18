@@ -38,11 +38,11 @@
   margin-left: -6px;
 }
 
-.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool.disabled .sea-qa-icon-svg {
+.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool.disabled .seaqa-icon-svg {
   color: #c2c2c2;
 }
 
-.sea-metadata-row-color-add-btns .customize-add-tool .sea-qa-icon-svg {
+.sea-metadata-row-color-add-btns .customize-add-tool .seaqa-icon-svg {
   color: #666;
   height: 14px;
   width: 14px;
@@ -80,7 +80,6 @@
 .sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color {
   border-radius: 3px;
   cursor: pointer;
-  display: inline-block;
   height: 20px;
   line-height: 20px;
   margin-right: 8px;
@@ -89,7 +88,7 @@
   width: 20px;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .sea-qa-icon-svg {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .seaqa-icon-svg {
   color: inherit;
   width: 12px;
   height: 12px;
@@ -154,7 +153,8 @@
 }
 
 .sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool .customize-add-tool-icon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   color: var(--bs-icon-secondary-color);
+  margin-right: 10px;
 }

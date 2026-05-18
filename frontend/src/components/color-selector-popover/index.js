@@ -32,7 +32,7 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
               key={optionColor}
               className="colorinput-color"
               style={{ backgroundColor: optionColor, borderColor: borderColor, color: textColor }}
-              icon={optionColor === color ? 'check-mark' : null}
+              icon={optionColor === color ? 'arrow-down-b' : null}
               onClick={(event) => onClick(event, option)}
             />
           );

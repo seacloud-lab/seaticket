@@ -190,7 +190,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                       borderColor: currentColorOption?.BORDER_COLOR,
                       color: currentColorOption?.TEXT_COLOR,
                     }}
-                    icon="check-mark"
+                    icon="arrow-down-b"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {e.stopPropagation(); setColorSelectorIndex(colorSelectorIndex === ruleIndex ? null : ruleIndex);}}
                   />
