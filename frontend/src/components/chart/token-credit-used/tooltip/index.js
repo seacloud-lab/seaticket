@@ -29,23 +29,23 @@ const Tooltip = ({
 
   return (
     <div
-      className="sea-ai-tokens-chart-tooltip"
+      className="seaqa-ai-tokens-chart-tooltip"
       ref={ref}
       style={position}
     >
-      <div className="sea-ai-tokens-chart-tooltip-header">{data.name}</div>
+      <div className="seaqa-ai-tokens-chart-tooltip-header">{data.name}</div>
       {legends.map(l => {
         if (l.key === 'credit_used') return null;
         return (
-          <div className="sea-ai-tokens-chart-tooltip-item" key={l.key}>
+          <div className="seaqa-ai-tokens-chart-tooltip-item" key={l.key}>
             {`${l.name}: ${data[l.key]}`}
           </div>
         );
       })}
-      <div className="sea-ai-tokens-chart-tooltip-item">
+      <div className="seaqa-ai-tokens-chart-tooltip-item">
         {`${gettext('Total tokens')}: ${data.total_tokens}`}
       </div>
-      <div className="sea-ai-tokens-chart-tooltip-footer">
+      <div className="seaqa-ai-tokens-chart-tooltip-footer">
         {`${gettext('Credit used')}: ${data.credit_used.toFixed(0)}`}
       </div>
     </div>

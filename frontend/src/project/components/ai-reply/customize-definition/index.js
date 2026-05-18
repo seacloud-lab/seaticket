@@ -30,13 +30,13 @@ const CustomizeDefinition = ({ element, sources, ...props }) => {
     return (
       <>
         <MoreDefinition sources={sources} { ...props } />
-        <div data-id={element.id} { ...props?.attributes } className="sea-ai-chat-customize-definition-hidden"></div>
+        <div data-id={element.id} { ...props?.attributes } className="seaqa-ai-chat-customize-definition-hidden"></div>
       </>
     );
   }
 
   return (
-    <div data-id={element.id} { ...props?.attributes } className="sea-ai-chat-customize-definition-hidden"></div>
+    <div data-id={element.id} { ...props?.attributes } className="seaqa-ai-chat-customize-definition-hidden"></div>
   );
 };
 

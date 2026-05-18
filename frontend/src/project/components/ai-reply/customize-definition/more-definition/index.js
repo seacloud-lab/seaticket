@@ -61,7 +61,7 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
   return (
     <>
       <div
-        className={classnames('sea-ai-chat-customize-definition sea-ai-chat-customize-more-definition')}
+        className={classnames('seaqa-ai-chat-customize-definition seaqa-ai-chat-customize-more-definition')}
         onClick={openShowMore}
         ref={moreRef}
       >
@@ -72,19 +72,19 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
       {isShowMore && (
         <CustomizePopover
           target={moreRef}
-          className="sea-ai-chat-customize-definitions-popover"
+          className="seaqa-ai-chat-customize-definitions-popover"
           placement="bottom-end"
           hidePopover={hideShowMore}
           hidePopoverWithEsc={hideShowMore}
         >
-          <div className="sea-ai-chat-customize-definitions-container" style={{ width: popoverWidth }}>
-            <div className="sea-ai-chat-customize-definitions-title">
-              <IconButton icon="arrow-left" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
-              <div className="sea-ai-chat-customize-definitions-index">
+          <div className="seaqa-ai-chat-customize-definitions-container" style={{ width: popoverWidth }}>
+            <div className="seaqa-ai-chat-customize-definitions-title">
+              <IconButton icon="arrow-left" className="seaqa-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
+              <div className="seaqa-ai-chat-customize-definitions-index">
                 <span>{definitionIndex}</span>
                 <span className="sources-count-text">/{sourcesCount}</span>
               </div>
-              <IconButton icon="arrow-right" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(1)} />
+              <IconButton icon="arrow-right" className="seaqa-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(1)} />
             </div>
             <Definition
               element={{ id: definitionIndex, identifier: definitionIndex }}

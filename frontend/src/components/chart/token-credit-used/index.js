@@ -491,7 +491,7 @@ const TokenCreditUsed = ({
   }, [data, legends, margin, isAnnotationExpanded, hoveredBar, modelsUsageStatics]);
 
   return (
-    <div className="sea-ai-tokens-chart w-100 h-100 d-flex align-items-center justify-content-center" ref={ref}>
+    <div className="seaqa-ai-tokens-chart w-100 h-100 d-flex align-items-center justify-content-center" ref={ref}>
       <svg ref={chartRef}></svg>
       {tooltip.display && tooltipData.current && (
         <Tooltip data={tooltipData.current} position={tooltip.position} legends={legends} />
