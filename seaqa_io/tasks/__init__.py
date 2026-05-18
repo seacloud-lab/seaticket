@@ -18,7 +18,7 @@ from seaqa_io.log import setup_logger
 from seaqa_io.sql_view import filter_display_columns, view_data_2_sql
 from seaqa_io.utils import uuid_str_to_32_chars
 from seaqa_io.utils.knowledge_base_utils import send_knowledge_base_update_msg
-from seaqa_io.utils.storage import get_file_from_s3_web_crawl
+from seaqa_io.utils.storage import get_connection_file_from_s3
 
 
 logger = setup_logger('seaqa_io', propagate=False)
@@ -361,7 +361,7 @@ def download_email_attachments(project_uuid, connection_id, pk):
         for file_name in attachments:
             relative_path = str(pk) + '/' + file_name
             try:
-                file = get_file_from_s3_web_crawl(project_uuid, str(connection_id), relative_path)
+                file = get_connection_file_from_s3(project_uuid, str(connection_id), relative_path)
                 zip_file.writestr(file_name, file.read())
 
             except Exception as e:

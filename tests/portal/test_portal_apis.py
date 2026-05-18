@@ -545,8 +545,8 @@ class TestPortalLogoView:
             'ContentType': 'image/png',
         }
 
-        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata), \
-                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')):
+        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata), \
+                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')):
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -560,8 +560,8 @@ class TestPortalLogoView:
             'ContentType': 'image/png',
         }
 
-        with patch('seahub.portal.apis.get_file_metadata_from_s3', return_value=metadata) as metadata_mock, \
-                patch('seahub.portal.apis.get_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200

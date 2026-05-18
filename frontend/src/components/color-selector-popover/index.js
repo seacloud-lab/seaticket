@@ -24,27 +24,17 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
       hidePopover={onToggle}
       hidePopoverWithEsc={onToggle}
     >
-      <div className="row gutters-xs" onMouseDown={(e) => e && e.stopPropagation()}>
+      <div className="sea-qa-color-selector-container" onMouseDown={(e) => e && e.stopPropagation()}>
         {SELECT_OPTION_COLORS.map((option) => {
           const { COLOR: optionColor, BORDER_COLOR: borderColor, TEXT_COLOR: textColor } = option;
           return (
-            <div key={option.COLOR} className="col-auto">
-              <label className="colorinput">
-                <input
-                  name="color"
-                  type="radio"
-                  value={optionColor}
-                  className="colorinput-input"
-                  checked={optionColor === color}
-                  onClick={(event) => onClick(event, option)}
-                />
-                <IconButton
-                  className="colorinput-color"
-                  style={{ backgroundColor: optionColor, borderColor: borderColor, color: textColor }}
-                  icon={optionColor === color ? 'check-mark' : null}
-                />
-              </label>
-            </div>
+            <IconButton
+              key={optionColor}
+              className="colorinput-color"
+              style={{ backgroundColor: optionColor, borderColor: borderColor, color: textColor }}
+              icon={optionColor === color ? 'check-mark' : null}
+              onClick={(event) => onClick(event, option)}
+            />
           );
         })}
       </div>

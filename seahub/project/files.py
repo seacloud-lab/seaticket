@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import logging
 from email.utils import formatdate
 
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseNotModified
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -21,14 +20,16 @@ from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-from seahub.utils.storage import upload_file_to_tmp_dir, get_file_from_s3, delete_file_from_s3, gen_tmp_upload_file_path
+from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, get_project_file_head_from_s3, get_project_file_from_s3, FileNotFound
 from seahub.project.constants import IMAGE_EXTS
+from seahub.utils import gen_file_etag_and_modified_time
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 
 logger = logging.getLogger(__name__)
+
 
 class ProjectUploadFileAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -108,18 +109,21 @@ class GetProjectUploadFileView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # main
-        try:
-            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+        if not os.path.exists(tmp_upload_file_path):
+            error_msg = 'File not exist.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        etag, last_modified_time = gen_file_etag_and_modified_time(tmp_upload_file_path)
+        if if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            return not_modified
 
         response = FileResponse(open(tmp_upload_file_path, 'rb'))
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(os.path.getsize(tmp_upload_file_path)) + '"'
-        response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_upload_file_path)), usegmt=True)
+        response['Cache-Control'] = 'max-age=604800, private'
+        response['ETag'] = etag
+        response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
         return response
 
 
@@ -185,15 +189,34 @@ class GetProjectFileView(APIView):
 
         # main
         try:
-            file = get_file_from_s3(project_uuid, file_path)
+            s3_meta = get_project_file_head_from_s3(project_uuid, file_path)
+        except FileNotFound:
+            error_msg = 'File not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        etag = s3_meta.get('ETag')
+        if etag and if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            return not_modified
+
+        try:
+            file = get_project_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         response = FileResponse(file)
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
-        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        response['Cache-Control'] = 'max-age=604800, private'
+        if etag:
+            response['ETag'] = etag
+        if s3_meta.get('LastModified'):
+            response['Last-Modified'] = formatdate(int(s3_meta['LastModified'].timestamp()), usegmt=True)
+        else:
+            response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
-

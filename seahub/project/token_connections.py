@@ -16,7 +16,7 @@ from seahub.project.models import (
 )
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import url_to_filename
-from seahub.utils.storage import get_file_from_s3_web_crawl
+from seahub.utils.storage import get_connection_file_from_s3
 from seahub.seadb_models.utils import (
     list_connection_view_records, list_discourse_forum_replies_records,
     list_github_issue_record_details
@@ -211,7 +211,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 filename = url_to_filename(url)
                 uuid_32_chars = uuid_str_to_32_chars(project_uuid)
                 try:
-                    file_obj = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                    file_obj = get_connection_file_from_s3(uuid_32_chars, connection_id, filename)
                     if file_obj:
                         row_details = json.loads(file_obj.read())
                 except Exception as err:
