@@ -17,12 +17,28 @@ from seahub.profile.models import Profile
 from seahub.group.models import Group
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.project.db_utils import query_ai_statistics_overview, query_ai_statistics_detail
-from seahub.project.models import Projects, Workspaces
+from seahub.project.models import Projects
 from seahub.group.utils import group_id_to_name
 from seahub.organizations.models import Organization
 
 logger = logging.getLogger(__name__)
 
+def _get_user_nickname_map(usernames):
+    if not usernames:
+        return {}
+    profiles = Profile.objects.filter(user__in=usernames)
+    return {p.user: p.nickname for p in profiles}
+
+def _get_group_name_map(group_ids):
+    if not group_ids:
+        return {}
+    return {group_id: group_id_to_name(group_id) for group_id in group_ids}
+
+def _get_org_name_map(org_ids):
+    if not org_ids:
+        return {}
+    orgs = Organization.objects.filter(org_id__in=org_ids)
+    return {org.org_id: org.org_name for org in orgs}
 
 class AdminAIStatisticsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -62,34 +78,32 @@ class AdminAIStatisticsView(APIView):
         start, end = (page - 1) * per_page, page * per_page
 
         if group_by == 'user':
-            records = query_ai_statistics_overview('username', date_range)
+            records = query_ai_statistics_overview('owner', date_range)
 
             total_count = records.count()
             stats = records[start:end]
             if not stats:
                 return Response({'results': [], 'count': 0})
 
-            usernames = [i['username'] for i in stats]
-            profiles_dict = {}
-            if usernames:
-                profiles = Profile.objects.filter(user__in=usernames)
-                profiles_dict = {p.user: p.nickname for p in profiles}
+            usernames = []
+            org_ids = []
+            for item in stats:
+                usernames.append(item['owner'])
+                if item.get('org_id', -1) != -1:
+                    org_ids.append(item['org_id'])
 
-            org_ids = [i['org_id'] for i in stats if i.get('org_id', -1) != -1]
-            org_dict = {}
-            if org_ids:
-                orgs = Organization.objects.filter(org_id__in=org_ids)
-                org_dict = {org.org_id: org.org_name for org in orgs}
+            nickname_map = _get_user_nickname_map(usernames)
+            org_name_map = _get_org_name_map(org_ids)
 
             results = []
             for item in stats:
-                username = item.get('username')
+                owner = item.get('owner')
                 org_id = item.get('org_id')
                 results.append({
-                    'username': username,
-                    'nickname': profiles_dict.get(username, email2nickname(username)),
+                    'owner': owner,
+                    'nickname': nickname_map.get(owner, email2nickname(owner)),
                     'org_id': org_id,
-                    'org_name': org_dict.get(org_id, ''),
+                    'org_name': org_name_map.get(org_id, ''),
                     'total_credit_used': item['total_credit_used']
                 })
 
@@ -103,31 +117,30 @@ class AdminAIStatisticsView(APIView):
             if not stats:
                 return Response({'results': [], 'count': total_count})
 
-            project_uuids = [item['project_uuid'] for item in stats]
+            project_uuids = []
+            all_personal_projects_owners = []
+            all_group_projects_group_ids = []
+            org_ids = []
+            for item in stats:
+                project_uuids.append(item['project_uuid'])
+                if item['owner'] is not None:
+                    all_personal_projects_owners.append(item['owner'])
+                if item['group_id'] is not None:
+                    all_group_projects_group_ids.append(item['group_id'])
+                org_ids.append(item['org_id'])
+
+            # all project's info
             projects = Projects.objects.filter(uuid__in=project_uuids)
             projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
 
-            workspace_ids = [p.workspace_id for p in projects]
-            workspaces = Workspaces.objects.filter(id__in=workspace_ids)
+            # all personal project's owner name
+            personal_project_owner_nickname_map = _get_user_nickname_map(all_personal_projects_owners)
 
-            org_ids = [i['org_id'] for i in stats if i.get('org_id', -1) != -1]
-            org_dict = {}
-            if org_ids:
-                orgs = Organization.objects.filter(org_id__in=org_ids)
-                org_dict = {org.org_id: org.org_name for org in orgs}
+            # all group project' group name
+            group_project_group_name_map = _get_group_name_map(all_group_projects_group_ids)
 
-            usernames = [w.owner for w in workspaces if '@seafile_group' not in w.owner]
-            profiles = Profile.objects.filter(user__in=set(usernames))
-            profiles_dict = {p.user: p.nickname for p in profiles}
-
-            # {workspace_id:{'owner': owner, 'group_name': group_name, 'nickname': nickname}}
-            workspace_info = {}
-            for w in workspaces:
-                if '@seafile_group' in w.owner:
-                    group_id = int(w.owner.split('@')[0])
-                    workspace_info[w.id] = {'owner': w.owner, 'group_name': group_id_to_name(group_id)}
-                else:
-                    workspace_info[w.id] = {'owner': w.owner, 'nickname': profiles_dict.get(w.owner, '')}
+            # all org's name
+            org_name_map = _get_org_name_map(org_ids)
 
             results = []
             for item in stats:
@@ -139,14 +152,14 @@ class AdminAIStatisticsView(APIView):
                     'project_name': project.name if project else None
                 }
                 if project:
-                    ws_info = workspace_info.get(project.workspace_id, {})
-                    result['owner'] = ws_info.get('owner')
-                    if 'group_name' in ws_info:
-                        result['group_name'] = ws_info['group_name']
-                    else:
-                        result['nickname'] = ws_info.get('nickname', '')
+                    if item['owner'] is not None:
+                        result['owner'] = item['owner']
+                        result['nickname'] = personal_project_owner_nickname_map.get(item['owner'], email2nickname(item['owner']))
+                    elif item['group_id'] is not None:
+                        result['owner'] = f"{item['group_id']}@seafile_group"
+                        result['group_name'] = group_project_group_name_map.get(item['group_id'], item['group_id'])
                 result['org_id'] = item.get('org_id', -1)
-                result['org_name'] = org_dict.get(item.get('org_id', -1), ''),
+                result['org_name'] = org_name_map.get(result['org_id'], '')
                 results.append(result)
 
             return Response({'results': results, 'count': total_count})
@@ -159,31 +172,34 @@ class AdminAIStatisticsView(APIView):
             if not stats:
                 return Response({'results': [], 'count': total_count})
             
-            group_ids = [item['group_id'] for item in stats]
+            group_ids = []
+            org_ids = []
+            for item in stats:
+                group_ids.append(item['group_id'])
+                org_ids.append(item['org_id'])
             groups = Group.objects.filter(group_id__in=group_ids)
             group_id_to_name_map = {}
             group_id_to_creator_map = {}
             for g in groups:
                 group_id_to_name_map[g.group_id] = g.group_name
                 group_id_to_creator_map[g.group_id] = g.creator_name
-            profiles = Profile.objects.filter(user__in=set(group_id_to_creator_map.values()))
-            profiles_dict = {p.user: p.nickname for p in profiles}
 
-            org_ids = [item['org_id'] for item in stats if item['org_id'] != -1]
-            orgs = Organization.objects.filter(org_id__in=org_ids)
-            org_dict = {org.org_id: org.org_name for org in orgs}
+            nickname_map = _get_user_nickname_map(set(group_id_to_creator_map.values()))
+
+            org_name_map = _get_org_name_map(org_ids)
 
             results = []
             for item in stats:
                 creator = group_id_to_creator_map.get(item['group_id'], '')
+                org_id = item.get('org_id', -1)
                 results.append({
                     'group_id': item['group_id'],
                     'group_name': group_id_to_name_map.get(item['group_id'], ''),
                     'creator': creator,
-                    'creator_name': profiles_dict.get(creator, email2nickname(creator)),
+                    'creator_name': nickname_map.get(creator, email2nickname(creator)),
                     'total_credit_used': item['total_credit_used'],
-                    'org_id': item['org_id'],
-                    'org_name': org_dict.get(item['org_id'], '')
+                    'org_id': org_id,
+                    'org_name': org_name_map.get(org_id, '')
                 })
 
             return Response({'results': results, 'count': total_count})
@@ -204,8 +220,8 @@ class AdminAIStatisticsView(APIView):
                 for org in orgs:
                     org_dict[org.org_id] = org
                     org_creators.append(org.creator)
-            profiles = Profile.objects.filter(user__in=set(org_creators))
-            profiles_dict = {p.user: p.nickname for p in profiles}
+
+            nickname_map = _get_user_nickname_map(set(org_creators))
 
             results = []
             for item in stats:
@@ -216,7 +232,7 @@ class AdminAIStatisticsView(APIView):
                     'org_id': org_id,
                     'org_name': org.org_name if org else '',
                     'creator': creator,
-                    'creator_name': profiles_dict.get(creator, email2nickname(creator)),
+                    'creator_name': nickname_map.get(creator, email2nickname(creator)),
                     'total_credit_used': item['total_credit_used']
                 })
 
@@ -243,7 +259,7 @@ class AdminAIStatisticsDetailView(APIView):
         if group_by == 'project':
             group_by = 'project_uuid'
         elif group_by == 'user':
-            group_by = 'username'
+            group_by = 'owner'
         elif group_by != 'date':
             return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be sub-group_by of "project" or "group" or "org" or "date"')
         
@@ -264,18 +280,13 @@ class AdminAIStatisticsDetailView(APIView):
             for item in query_set:
                 item['total_credit_used'] = item['total_credit_used']
                 results.append(item)
-        elif group_by == 'username':
+        elif group_by == 'owner':
             query_set = query_set[:30]
-            usernames = [item['username'] for item in query_set if item['username'] != 'seaqa-indexer']
-            profiles_dict = {}
-            if usernames:
-                profiles = Profile.objects.filter(user__in=usernames)
-                profiles_dict = {p.user: p.nickname for p in profiles}
+            owners = [item['owner'] for item in query_set]
+            nickname_map = _get_user_nickname_map(owners)
             results = []
             for item in query_set:
-                nickname = item['username']
-                if item != 'seaqa-indexer':
-                    nickname = profiles_dict.get(item['username'], email2nickname(item['username']))
+                nickname = nickname_map.get(item['username'], email2nickname(item['username']))
                 results.append({
                     'user': nickname,
                     'total_credit_used': item['total_credit_used'],

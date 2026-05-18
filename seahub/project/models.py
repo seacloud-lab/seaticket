@@ -944,7 +944,7 @@ class ProjectAPIToken(models.Model):
 class AIUsageStatistics(models.Model):
     date = models.DateField()
     project_uuid = models.CharField(max_length=36)
-    username = models.CharField(max_length=255)
+    owner = models.CharField(max_length=255)
     org_id = models.IntegerField(null=True)
     group_id = models.IntegerField(null=True)
     model = models.CharField(max_length=64)
@@ -959,8 +959,7 @@ class AIUsageStatistics(models.Model):
         db_table = 'ai_usage_statistics'
         indexes = [
             models.Index(fields=['date', 'project_uuid']),
-            models.Index(fields=['date', 'group_id', 'username']),
-            models.Index(fields=['date', 'org_id', 'group_id']),
+            models.Index(fields=['date', 'org_id'])
         ]
 
 
