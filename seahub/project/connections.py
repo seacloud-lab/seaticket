@@ -50,7 +50,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
-from seahub.settings import GITHUB_WEBHOOK_SECRET
+from seahub.settings import GITHUB_WEBHOOK_SECRET, ENABLE_GENERAL_TASK
 from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
 
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
@@ -328,6 +328,9 @@ class ProjectConnectionsView(APIView):
             elif connection_type == ConnectionType.NOTION.value:
                 init_notion_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.GENERAL_TASK.value:
+                if not ENABLE_GENERAL_TASK:
+                    error_msg = 'General task connection is not enabled'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 init_general_task_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
