@@ -106,4 +106,3 @@ def org_operation_callback(sender, **kwargs):
     redis_conn = get_redis_conn()
     channel = BILLING_REDIS_CONFIG["channel"]
     redis_conn.publish(channel, json_data)
-    logger.info(json_data)
