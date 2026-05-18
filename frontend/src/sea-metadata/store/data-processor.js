@@ -48,6 +48,16 @@ class DataProcessor {
     return groupbys.some(groupby => updatedColumnKeyMap[groupby.column_key]);
   }
 
+  static hasRelatedRowColor(colorbys, updatedColumnKeyMap) {
+    console.log(colorbys);
+    const colorRules = colorbys?.color_by_rules;
+    if (!Array.isArray(colorRules) || colorRules.length === 0) return false;
+    return colorRules.some(rule => {
+      const filters = rule?.filters;
+      return Array.isArray(filters) && filters.some(filter => updatedColumnKeyMap[filter.column_key]);
+    });
+  }
+
   static deleteGroupRows(groups, idDeletedRowMap) {
     groups.forEach(group => {
       const { subgroups, row_ids } = group;
@@ -147,7 +157,7 @@ class DataProcessor {
   }
 
   static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
-    const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
+    const { basic_filters, filters, filter_conjunction, sorts, groupbys, colorbys } = table.view;
     const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
@@ -173,14 +183,18 @@ class DataProcessor {
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
-      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+      if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
+        table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+      }
       return;
     }
     const isRegroup = _isGroupView && this.hasRelatedGroupby(groupbys, relatedColumnKeyMap);
     if (isRegroup) {
       table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
     }
-    table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+    if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
+      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+    }
   }
 
   static updateDataWithDeleteRows(deletedRowsIds, table) {
