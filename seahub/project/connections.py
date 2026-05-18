@@ -22,6 +22,7 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
+from seahub.project.linear_api import LinearAPI
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth
@@ -943,7 +944,7 @@ class ProjectConnectionRecordView(APIView):
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.LINEAR.value:
-            record = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
+            record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

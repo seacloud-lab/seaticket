@@ -131,21 +131,14 @@ export const initConnectionResourceDetails = (type, record) => {
     return [mainPost, ...initComments];
   }
   if (type === CONNECTION_TYPE.LINEAR) {
+    const { author, created_time, comments } = record;
     const mainPost = {
-      author: author,
-      time: created_time,
-      body: content || '',
+      author,
+      created_time,
+      content: content || '',
     };
-    const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
-      ...detail,
-      time: detail.created_time,
-      body: detail.content || '',
-    })) : [];
-    return {
-      title,
-      details: [mainPost, ...initComments],
-      ...prams
-    };
+    const initComments = Array.isArray(comments) ? comments : [];
+    return [mainPost, ...initComments];
   }
   if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     const { replies } = record;
