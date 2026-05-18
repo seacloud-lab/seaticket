@@ -551,7 +551,6 @@ class Store {
       view_id: this.viewId,
     });
     this.applyOperation(operation);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA);
   }
 
   modifyRowHeight(row_height) {

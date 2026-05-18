@@ -378,6 +378,12 @@ class DataProcessor {
         table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
         break;
       }
+      case OPERATION_TYPE.MODIFY_ROW_COLOR: {
+        const availableColumns = table.view.columns || table.columns;
+        const renderedRows = getRowsByIds(table, table.view.rows);
+        table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { tagsData });
+        break;
+      }
       case OPERATION_TYPE.MODIFY_COLUMN_DATA:
       case OPERATION_TYPE.MODIFY_LOCAL_COLUMN_DATA: {
         const { column_key, option_modify_type } = operation;
