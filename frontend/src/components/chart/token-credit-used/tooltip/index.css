@@ -1,4 +1,4 @@
-.sea-ai-tokens-chart .sea-ai-tokens-chart-tooltip {
+.seaqa-ai-tokens-chart .seaqa-ai-tokens-chart-tooltip {
   position: fixed;
   box-sizing: 'border-box';
   min-width: 178px;
@@ -11,7 +11,7 @@
   opacity: .95;
 }
 
-.sea-ai-tokens-chart .sea-ai-tokens-chart-tooltip .sea-ai-tokens-chart-tooltip-header {
+.seaqa-ai-tokens-chart .seaqa-ai-tokens-chart-tooltip .seaqa-ai-tokens-chart-tooltip-header {
   font-size: 14px;
   max-width: 100%;
   font-weight: 500;
@@ -22,12 +22,12 @@
   padding: 0 8px 8px;
 }
 
-.sea-ai-tokens-chart .sea-ai-tokens-chart-tooltip .sea-ai-tokens-chart-tooltip-item {
+.seaqa-ai-tokens-chart .seaqa-ai-tokens-chart-tooltip .seaqa-ai-tokens-chart-tooltip-item {
   display: flex;
   padding: 8px;
 }
 
-.sea-ai-tokens-chart .sea-ai-tokens-chart-tooltip .sea-ai-tokens-chart-tooltip-footer {
+.seaqa-ai-tokens-chart .seaqa-ai-tokens-chart-tooltip .seaqa-ai-tokens-chart-tooltip-footer {
   font-size: 14px;
   max-width: 100%;
   font-weight: 500;

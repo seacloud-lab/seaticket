@@ -58,9 +58,9 @@ const CustomizeLink = ({
   }
 
   return (
-    <div className="sea-ai-chat-customize-link" onClick={canPreviewLinkedFile && openDocument ? onClick : () => {}}>
-      <div className="sea-ai-chat-customize-link-header">
-        <div className="sea-ai-chat-customize-link-name o-hidden">
+    <div className="seaqa-ai-chat-customize-link" onClick={canPreviewLinkedFile && openDocument ? onClick : () => {}}>
+      <div className="seaqa-ai-chat-customize-link-header">
+        <div className="seaqa-ai-chat-customize-link-name o-hidden">
           <IconButton icon="ai-file" size={16} className="no-hover-bg d-inline-flex" />
           <span className="text-truncate">{file.name}</span>
         </div>
@@ -70,7 +70,7 @@ const CustomizeLink = ({
         value={file.content}
         canPreview={false}
         textCount={500}
-        className="sea-ai-chat-customize-md-link-body"
+        className="seaqa-ai-chat-customize-md-link-body"
       />
     </div>
   );

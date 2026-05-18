@@ -36,33 +36,33 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   return (
     <div
-      className={classnames('sea-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
+      className={classnames('seaqa-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
       style={definitionStyle}
       onClick={handleClick}
       data-id={element.id}
       { ...attributes }
     >
-      <div className="sea-ai-chat-customize-definition-simple-info">
-        <div className="sea-ai-chat-customize-definition-title-content">
-          <div className="sea-ai-chat-customize-definition-title">{title}</div>
+      <div className="seaqa-ai-chat-customize-definition-simple-info">
+        <div className="seaqa-ai-chat-customize-definition-title-content">
+          <div className="seaqa-ai-chat-customize-definition-title">{title}</div>
         </div>
       </div>
-      <div className="sea-ai-chat-customize-definition-content">
+      <div className="seaqa-ai-chat-customize-definition-content">
         {removeTextMark(content)}
       </div>
-      <div className="sea-ai-chat-customize-definition-content-divider"></div>
+      <div className="seaqa-ai-chat-customize-definition-content-divider"></div>
       <div className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">
-          <div className="sea-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
+          <div className="seaqa-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
             <img src={icon} alt="" />
           </div>
           {(mtime) && (
-            <div className="sea-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
+            <div className="seaqa-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
               {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
             </div>
           )}
         </div>
-        <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
+        <div className="seaqa-ai-chat-customize-definition-order">{identifier}</div>
       </div>
     </div>
   );
