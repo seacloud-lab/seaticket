@@ -59,6 +59,7 @@ class Store {
     if (!this.mounted) return;
     DataProcessor.run(this.data, {
       collaborators: this.collaborators,
+      username: context.getUsername(),
       typesData: this.typesData,
       tagsData: this.tagsData
     });
@@ -274,6 +275,7 @@ class Store {
   syncOperationOnData(operation) {
     DataProcessor.syncOperationOnData(this.data, operation, {
       collaborators: this.collaborators,
+      username: context.getUsername(),
       tagsData: this.tagsData,
       typesData: this.typesData,
     });

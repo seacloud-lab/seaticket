@@ -273,7 +273,7 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators, tagsData, typesData }) {
+  static syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;
@@ -392,7 +392,7 @@ class DataProcessor {
       case OPERATION_TYPE.MODIFY_ROW_COLOR: {
         const availableColumns = table.view.columns || table.columns;
         const renderedRows = getRowsByIds(table, table.view.rows);
-        table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { tagsData });
+        table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { username, tagsData });
         break;
       }
       case OPERATION_TYPE.MODIFY_COLUMN_DATA:
