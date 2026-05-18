@@ -10,7 +10,7 @@ from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
     KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable, \
-    GeneralTaskTable, GeneralTaskUserMappingTable
+    GeneralTaskTable, GeneralTaskUserTable
 
 logger = logging.getLogger(__name__)
 
@@ -644,10 +644,10 @@ def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
             ]
         )
 
-    task_user_mapping_table_name = GeneralTaskUserMappingTable.gen_table_name(connection_id)
+    task_user_mapping_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, task_user_mapping_table_name)
     table_id = res['table_id']
-    for column in GeneralTaskUserMappingTable.get_fields():
+    for column in GeneralTaskUserTable.get_fields():
         mapped_column = {
             'column_name': column.name,
             'column_type': column.type,
@@ -657,8 +657,8 @@ def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     for column_name in (
-        GeneralTaskUserMappingTable.email.name,
-        GeneralTaskUserMappingTable.record_modified_time.name,
+        GeneralTaskUserTable.email.name,
+        GeneralTaskUserTable.record_modified_time.name,
     ):
         seadb_api.create_column_index(project_uuid, table_id, [column_name])
 

@@ -485,7 +485,7 @@ class GeneralTaskTable(BaseModel):
         return ConnectionType.GENERAL_TASK.value + '_' + str(connection_id)
 
 
-class GeneralTaskUserMappingTable(BaseModel):
+class GeneralTaskUserTable(BaseModel):
     email = MappedColumn('email', PropertyTypes.TEXT)
     nickname = MappedColumn('nickname', PropertyTypes.TEXT)
     record_modified_time = MappedColumn('record_modified_time', PropertyTypes.DATETIME)

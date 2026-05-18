@@ -28,7 +28,7 @@ from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
-from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserMappingTable
+from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserTable
 from seahub.avatar.util import get_default_avatar_url
 
 
@@ -160,7 +160,7 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = GeneralTaskUserMappingTable.gen_table_name(connection_id)
+    table_name = GeneralTaskUserTable.gen_table_name(connection_id)
     try:
         sql = f"SELECT `email`, `nickname` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
