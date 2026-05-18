@@ -9,10 +9,6 @@
   gap: 8px;
 }
 
-.sea-qa-color-selector-popover .colorinput-input:checked ~ .colorinput-color:before {
-  display: none;
-}
-
 .sea-qa-color-selector-popover .colorinput-color {
   display: flex;
 }

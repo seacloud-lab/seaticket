@@ -28,21 +28,13 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
         {SELECT_OPTION_COLORS.map((option) => {
           const { COLOR: optionColor, BORDER_COLOR: borderColor, TEXT_COLOR: textColor } = option;
           return (
-            <label className="colorinput" key={option.COLOR}>
-              <input
-                name="color"
-                type="radio"
-                value={optionColor}
-                className="colorinput-input"
-                checked={optionColor === color}
-                onClick={(event) => onClick(event, option)}
-              />
-              <IconButton
-                className="colorinput-color"
-                style={{ backgroundColor: optionColor, borderColor: borderColor, color: textColor }}
-                icon={optionColor === color ? 'check-mark' : null}
-              />
-            </label>
+            <IconButton
+              key={optionColor}
+              className="colorinput-color"
+              style={{ backgroundColor: optionColor, borderColor: borderColor, color: textColor }}
+              icon={optionColor === color ? 'check-mark' : null}
+              onClick={(event) => onClick(event, option)}
+            />
           );
         })}
       </div>
