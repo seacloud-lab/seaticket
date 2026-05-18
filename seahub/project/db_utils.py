@@ -27,7 +27,7 @@ def query_ai_statistics_overview(group_by, date_range, org_id=None):
     if group_by == 'owner':
         query_kwargs['owner__isnull'] = False
     elif group_by == 'group_id':
-        query_kwargs['group_id__gte'] = 0
+        query_kwargs['group_id__isnull'] = False
     elif group_by == 'org_id':
         if not org_id:
             query_kwargs['org_id__gte'] = 0
