@@ -91,7 +91,7 @@ export const DataProvider = ({
       let id_view_map = {};
       Array.isArray(views) && views.forEach(v => {
         const oldView = old_id_view_map[v._id] || {};
-        const viewCompareKeys = ['filters', 'filter_conjunction', 'basic_filters', 'sorts', 'colorbys'];
+        const viewCompareKeys = ['filters', 'filter_conjunction', 'basic_filters', 'sorts'];
         let oldViewData = {};
         let newViewData = {};
         viewCompareKeys.forEach(key => {
@@ -178,7 +178,7 @@ export const DataProvider = ({
       let view_map = { ...table[viewMapName] };
       let newView = view_map[viewID] || {};
       newView = { ...newView, ...viewData };
-      if (viewDataKeys.includes('sorts') || viewDataKeys.includes('colorbys') || viewDataKeys.join('').toLowerCase().includes('filter')) {
+      if (viewDataKeys.includes('sorts') || viewDataKeys.join('').toLowerCase().includes('filter')) {
         newView.timestamp = 0;
         newView.rows = [];
       }

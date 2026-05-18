@@ -106,10 +106,11 @@ class DataProcessor {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
 
+    table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
-      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
       return;
     }
     let renderedRows = rows;
@@ -117,7 +118,6 @@ class DataProcessor {
     const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
     table.view.rows = row_ids;
     table.view.groups = groups;
-    table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { username, userId, tagsData });
   }
 
   static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData, tagsData }) {
@@ -142,10 +142,10 @@ class DataProcessor {
     if (!isSortComputedOnServer && rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
+    table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
-      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
       return;
     }
     let renderedRows = rows;
@@ -153,7 +153,6 @@ class DataProcessor {
     const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
     table.view.rows = row_ids;
     table.view.groups = groups;
-    table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { username, userId, tagsData });
   }
 
   static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
@@ -180,20 +179,19 @@ class DataProcessor {
     if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
+
+    if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
+      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+    }
+
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
-      if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
-        table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
-      }
       return;
     }
     const isRegroup = _isGroupView && this.hasRelatedGroupby(groupbys, relatedColumnKeyMap);
     if (isRegroup) {
       table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
-    }
-    if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
-      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
     }
   }
 

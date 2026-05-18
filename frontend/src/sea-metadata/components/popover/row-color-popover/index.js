@@ -19,7 +19,7 @@ const normalizeRule = (rule, update = {}) => {
   return {
     ...rule,
     ...update,
-    filter_conjunction: update.filter_conjunction || rule.filter_conjunction || 'And',
+    filter_conjunction: update.filter_conjunction || rule.filter_conjunction || 'Or',
   };
 };
 
@@ -223,7 +223,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   />
                   {!readOnly && (
                     <div className="sea-metadata-row-color-rule-filters-footer">
-                      <CommonAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add filter')} />
+                      <CommonAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add condition')} />
                     </div>
                   )}
                 </div>

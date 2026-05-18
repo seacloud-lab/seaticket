@@ -10,7 +10,7 @@ import { isEnter, isSpace } from '@/utils/hotkey';
 const RowColorSetter = ({ target = 'sea-metadata-row-color-popover', readOnly, columns, colorbys, collaborators, modifyRowColor, wrapperClass }) => {
   const [isShowSetter, setShowSetter] = useState(false);
 
-  const isActive = useMemo(() => hasRowColor(colorbys), [colorbys]);
+  const isActive = useMemo(() => hasRowColor(colorbys, columns), [colorbys, columns]);
 
   const title = useMemo(() => {
     return gettext('Color');

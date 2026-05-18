@@ -46,8 +46,15 @@ export const getRowColors = (rows, view, columns, { username, userId, tagsData }
   }, {});
 };
 
-export const hasRowColor = (colorbys) => {
-  return colorbys?.type === ROW_COLOR_TYPE.BY_RULES && Array.isArray(colorbys?.color_by_rules) && colorbys.color_by_rules.length > 0;
+export const isValidRowColorRule = (rule, columns) => {
+  const { filters } = rule;
+  if (!filters || filters.length === 0) return false;
+  return filters.some((filter) => !ValidateFilter.validate(filter, columns).error_message);
+};
+
+export const hasRowColor = (colorbys, columns) => {
+  if (!Array.isArray(colorbys?.color_by_rules) || colorbys.color_by_rules.length === 0) return false;
+  return colorbys.color_by_rules.some(rule => isValidRowColorRule(rule, columns));
 };
 
 export const getDefaultRowColorRule = (columns, defaultFilter, defaultColor) => {
