@@ -79,27 +79,27 @@ const Documents = () => {
   const { content } = currentDocument;
 
   return (
-    <div className={classnames('sea-ticket-chat-documents-wrapper', { 'full-content': isFull })}>
-      <div className="sea-ticket-chat-documents">
-        <div className="sea-ticket-chat-documents-header">
+    <div className={classnames('seaqa-chat-documents-wrapper', { 'full-content': isFull })}>
+      <div className="seaqa-chat-documents">
+        <div className="seaqa-chat-documents-header">
           <Selector
             value={currentDocument.url}
             options={documentsOptions}
             icon="arrow-down"
-            className="sea-ticket-chat-documents-selector"
-            editorClassName="sea-ticket-chat-documents-selector-editor"
+            className="seaqa-chat-documents-selector"
+            editorClassName="seaqa-chat-documents-selector-editor"
             iconPlacement="right"
             border={false}
             onChange={handleToggleCurrentDocument}
             isSearchEnabled={false}
             displayBgColor={true}
           >
-            <IconButton icon="ai-file" size={16} className="no-hover-bg sea-ticket-chat-document-icon" />
-            <div className="sea-ticket-chat-documents-count ml-1">{documents.length}</div>
-            <div className="sea-ticket-chat-documents-divider mx-2"></div>
-            <div className="sea-ticket-chat-document-name text-truncate" title={currentDocument.name}>{currentDocument.name}</div>
+            <IconButton icon="ai-file" size={16} className="no-hover-bg seaqa-chat-document-icon" />
+            <div className="seaqa-chat-documents-count ml-1">{documents.length}</div>
+            <div className="seaqa-chat-documents-divider mx-2"></div>
+            <div className="seaqa-chat-document-name text-truncate" title={currentDocument.name}>{currentDocument.name}</div>
           </Selector>
-          <div className="sea-ticket-chat-documents-header-btns">
+          <div className="seaqa-chat-documents-header-btns">
             <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-flex">
               <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} className="ml-0" />
               <CustomizeDropdownMenu>
@@ -117,9 +117,9 @@ const Documents = () => {
             <IconButton icon="close" title={gettext('Close')} onClick={closeDocuments} />
           </div>
         </div>
-        <div className="sea-ticket-chat-documents-body">
-          <div className="sea-ticket-chat-document-content">
-            <CustomizeMarkdownViewer key={currentDocument.url} value={content} showTOC={false} className="sea-ticket-chat-document-md" />
+        <div className="seaqa-chat-documents-body">
+          <div className="seaqa-chat-document-content">
+            <CustomizeMarkdownViewer key={currentDocument.url} value={content} showTOC={false} className="seaqa-chat-document-md" />
           </div>
         </div>
       </div>

@@ -83,7 +83,7 @@ const ResourceDetailsDialog = ({
   }, []);
 
   return (
-    <Modal className="sea-ticket-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
+    <Modal className="seaqa-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onToggle}>
         <div className="d-flex align-items-center">
           {switchResource && (
@@ -105,7 +105,7 @@ const ResourceDetailsDialog = ({
             </div>
           )}
           {isShowIcon && (
-            <div className="sea-ticket-resource-type-avatar mr-2">
+            <div className="seaqa-resource-type-avatar mr-2">
               <img src={getResourceIconURL(type)} alt={''} />
             </div>
           )}

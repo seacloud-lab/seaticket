@@ -5,12 +5,12 @@
   flex-direction: column;
 }
 
-.sea-ticket-settings-item {
+.seaqa-settings-item {
   width: 100%;
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
-.sea-ticket-settings-item:last-child {
+.seaqa-settings-item:last-child {
   border-bottom: none;
 }
 

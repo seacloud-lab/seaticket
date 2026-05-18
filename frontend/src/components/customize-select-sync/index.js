@@ -73,7 +73,7 @@ const CustomizeSelectSync = ({
       </div>
       {!disabled && isShowSelector && (
         <OptionEditor
-          className="sea-ticket-settings-popover"
+          className="seaqa-settings-popover"
           target={ref}
           sameWidthWithTarget={240}
           isMultiple={false}

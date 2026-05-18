@@ -49,7 +49,7 @@ const ReplyDiscourse = ({ onToggle, onSubmit }) => {
   }, [content, onToggle, onSubmit]);
 
   return (
-    <div className="sea-ticket-discourse-reply-container">
+    <div className="seaqa-discourse-reply-container">
       <div className="author-info-wrapper">
         <div className="author-info-left">
           <div className="author-avatar">
@@ -75,7 +75,7 @@ const ReplyDiscourse = ({ onToggle, onSubmit }) => {
           onSaveEditorValue={onContentChange}
         />
       </div>
-      <div className="sea-ticket-discourse-reply-op-btns">
+      <div className="seaqa-discourse-reply-op-btns">
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
         <Button color="primary" disabled={!ableSubmitting} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<>{gettext('Submit')}</>)}

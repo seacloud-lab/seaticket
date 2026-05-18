@@ -24,10 +24,10 @@ const CheckboxSettings = ({
   }, [isReadonly, isSubmitting, value, onChange]);
 
   return (
-    <div className={classnames('sea-ticket-settings-item', className)}>
+    <div className={classnames('seaqa-settings-item', className)}>
       <CustomizeLabel icon="check-box">{title}</CustomizeLabel>
-      <div className="sea-ticket-checkbox-settings-formatter valid">
-        <div className={classnames('sea-ticket-checkbox-settings-btn', { 'cursor-pointer': !isReadonly && !isSubmitting })} onClick={handleClick} >
+      <div className="seaqa-checkbox-settings-formatter valid">
+        <div className={classnames('seaqa-checkbox-settings-btn', { 'cursor-pointer': !isReadonly && !isSubmitting })} onClick={handleClick} >
           {value && (<Icon symbol="check-mark" />)}
         </div>
       </div>

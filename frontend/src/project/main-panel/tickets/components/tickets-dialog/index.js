@@ -170,10 +170,10 @@ const Main = ({
   }, []);
 
   return (
-    <Modal className="sea-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 1100 }}>
+    <Modal className="seaqa-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 1100 }}>
       <ModalHeader toggle={onToggle}>{gettext('Tickets')}</ModalHeader>
       <ModalBody>
-        <div className="sea-tickets-search-wrapper">
+        <div className="seaqa-tickets-search-wrapper">
           <SearchInput
             autoFocus={true}
             value={searchValue}
@@ -184,7 +184,7 @@ const Main = ({
             onClear={() => onSearchValueChange('')}
           />
         </div>
-        <div className="sea-tickets-container">
+        <div className="seaqa-tickets-container">
           {isLoading && (<CenteredLoading />)}
           {renderTip()}
           {renderTickets()}

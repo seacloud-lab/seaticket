@@ -1,10 +1,10 @@
-.sea-ticket-priority-editor-popover .popover {
+.seaqa-priority-editor-popover .popover {
   min-height: 100px;
   width: 200px;
   max-width: 200px;
 }
 
-.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-container {
+.seaqa-priority-editor-popover .seaqa-priority-editor-container {
   min-height: fit-content;
   width: 100%;
   align-items: center;
@@ -12,7 +12,7 @@
   padding: 8px;
 }
 
-.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-name-hotkey {
+.seaqa-priority-editor-popover .seaqa-priority-editor-option-name-hotkey {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -21,14 +21,14 @@
   gap: 8px;
 }
 
-.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-name {
+.seaqa-priority-editor-popover .seaqa-priority-editor-option-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sea-ticket-priority-editor-popover .sea-ticket-priority-editor-option-hotkey {
+.seaqa-priority-editor-popover .seaqa-priority-editor-option-hotkey {
   color: var(--bs-icon-color);
   flex-shrink: 0;
   margin-left: 12px;

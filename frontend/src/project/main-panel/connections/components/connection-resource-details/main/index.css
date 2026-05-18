@@ -1,18 +1,18 @@
-.sea-ticket-connection-resource-details {
+.seaqa-connection-resource-details {
   height: 100%;
   overflow: auto;
   padding: 0 16px;
 }
 
-.sea-ticket-connection-github-comment-editor {
+.seaqa-connection-github-comment-editor {
   margin: 16px 0 24px;
 }
 
-.sea-ticket-connection-github-comment-editor .sf-long-text-inline-editor-container {
+.seaqa-connection-github-comment-editor .sf-long-text-inline-editor-container {
   min-height: 140px;
 }
 
-.sea-ticket-connection-github-comment-editor .github-comment-actions {
+.seaqa-connection-github-comment-editor .github-comment-actions {
   margin-top: 8px;
   display: flex;
   justify-content: flex-end;

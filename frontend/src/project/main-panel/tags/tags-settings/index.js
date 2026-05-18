@@ -106,7 +106,7 @@ const TagsSettings = ({
   const selectedTags = getRowsByIds(tagsData, value).filter(tag => tag);
 
   return (
-    <div className={classnames('sea-ticket-settings-item', className)}>
+    <div className={classnames('seaqa-settings-item', className)}>
       <CustomizeLabel icon="tag-filled">
         {gettext('Tags')}
       </CustomizeLabel>
@@ -132,7 +132,7 @@ const TagsSettings = ({
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover seaqa-tags-selector-popover sea-ticket-settings-popover hide-description"
+          className="option-editor-popover seaqa-tags-selector-popover seaqa-settings-popover hide-description"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}

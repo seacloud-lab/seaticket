@@ -118,7 +118,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       return (
         <button
           type="button"
-          className="sea-ticket-log-inline-link"
+          className="seaqa-log-inline-link"
           onClick={() => openEmailThread(connection_id, thread_id, thread_title)}
         >
           {label}
@@ -172,8 +172,8 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const o = fmtVal(oldObj[field]);
         const n = fmtVal(newObj[field]);
         if (!o && n) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
-        if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="sea-ticket-log-removed">{o}</span></span>;
-        if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="sea-ticket-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
+        if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
+        if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
         return null;
       }).filter(Boolean);
     };
@@ -188,7 +188,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
             oldValue: (
               <Option
                 option={{ name: oldValueOption.name, color: oldValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: oldValueOption.icon_color ? '#fff' : '#212529' }}
-                className="sea-ticket-log-removed"
+                className="seaqa-log-removed"
               />
             ),
             newValue: (
@@ -202,7 +202,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TITLE].op_name,
-            oldValue: (<del className="sea-ticket-log-removed">{old_value}</del>),
+            oldValue: (<del className="seaqa-log-removed">{old_value}</del>),
             newValue: new_value,
           }
         ];
@@ -214,7 +214,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name,
-            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            oldValue: (<Option option={oldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={newValueOption} />),
           }
         ];
@@ -235,7 +235,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name,
-            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            oldValue: (<Option option={oldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={newValueOption} />),
           }
         ];
@@ -258,7 +258,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TYPE].op_name,
-            oldValue: (<Option option={oldValueOption} className="sea-ticket-log-removed" />),
+            oldValue: (<Option option={oldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={newValueOption} />),
           }
         ];
@@ -280,11 +280,11 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const modifies = [
           {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.STATE].op_name,
-            oldValue: (<Option option={stateOldValueOption} className="sea-ticket-log-removed" />),
+            oldValue: (<Option option={stateOldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={stateNewValueOption} />),
           }, {
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE].op_name,
-            oldValue: (<Option option={substateOldValueOption} className="sea-ticket-log-removed" />),
+            oldValue: (<Option option={substateOldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={substateNewValueOption} />),
           }
         ];
@@ -338,7 +338,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
             name={gettext('unassigned')}
             value={(
               <>
-                {old_value.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 sea-ticket-log-removed"/>))}
+                {old_value.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 seaqa-log-removed"/>))}
               </>
             )}
           />
@@ -353,7 +353,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
                 name={gettext('unassigned')}
                 value={(
                   <>
-                    {removed.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 sea-ticket-log-removed"/>))}
+                    {removed.map(email => (<AsyncCollaborator key={email} value={email} { ...asyncCollaboratorProps } className="mr-0 seaqa-log-removed"/>))}
                   </>
                 )}
               />
@@ -401,7 +401,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
                 {new_value.map(tagID => {
                   const tag = getRowById(tagsData, tagID + '');
                   if (!tagID) return null;
-                  return (<Tag tag={tag} key={tagID} className="mr-0 sea-ticket-log-removed" />);
+                  return (<Tag tag={tag} key={tagID} className="mr-0 seaqa-log-removed" />);
                 })}
               </>
             )}
@@ -419,7 +419,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
                 name={gettext('removed tags')}
                 value={(
                   <>
-                    {removedTags.map(tag => (<Tag tag={tag} key={tag._id} className="mr-0 sea-ticket-log-removed" />))}
+                    {removedTags.map(tag => (<Tag tag={tag} key={tag._id} className="mr-0 seaqa-log-removed" />))}
                   </>
                 )}
               />
@@ -504,16 +504,16 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     <>
       <div
         id={getTicketLogAnchorId(activity.id)}
-        className={classnames('sea-ticket-log', className, { 'small': isSmallScreen })}
+        className={classnames('seaqa-log', className, { 'small': isSmallScreen })}
       >
-        <div className="sea-ticket-log-type-container">
-          <IconButton size={{ btn: 24, icon: 14 }} className="sea-ticket-log-btn no-hover-bg" icon={iconSymbol} />
+        <div className="seaqa-log-type-container">
+          <IconButton size={{ btn: 24, icon: 14 }} className="seaqa-log-btn no-hover-bg" icon={iconSymbol} />
         </div>
-        <div className="sea-ticket-log-content">
+        <div className="seaqa-log-content">
           {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && (
             <AsyncCollaborator
               value={activity.creator}
-              className="sea-ticket-log-creator"
+              className="seaqa-log-creator"
               collaborators={collaborators}
               collaboratorsCache={collaboratorsCache}
               updateCollaboratorsCache={updateCollaboratorsCache}
@@ -521,7 +521,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
             />
           )}
           {renderActivityMessage()}
-          <span className="sea-ticket-log-time">{dayjs(activity.created_time).fromNow()}</span>
+          <span className="seaqa-log-time">{dayjs(activity.created_time).fromNow()}</span>
         </div>
       </div>
       {selectedEmailThread && (

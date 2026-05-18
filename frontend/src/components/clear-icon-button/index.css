@@ -1,4 +1,4 @@
-.sea-ticket-clear-icon-button.seaqa-icon-btn {
+.seaqa-clear-icon-button.seaqa-icon-btn {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -8,7 +8,7 @@
   position: absolute;
 }
 
-.sea-ticket-clear-icon-button.seaqa-icon-btn .seaqa-icon-svg {
+.seaqa-clear-icon-button.seaqa-icon-btn .seaqa-icon-svg {
   margin-top: 0;
   color: var(--bs-icon-secondary-color);
   height: 14px;

@@ -196,7 +196,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   if (!isExpanded || isShowReply) {
     return (
       <>
-        <div className="sea-ticket-connection-email-record-details collapsed" onClick={openExpanded}>
+        <div className="seaqa-connection-email-record-details collapsed" onClick={openExpanded}>
           <div className="email-avatar">
             <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
@@ -222,7 +222,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   }
 
   return (
-    <div className="sea-ticket-connection-email-record-details expanded">
+    <div className="seaqa-connection-email-record-details expanded">
       <div className="email-header" onClick={() => setIsExpanded(false)}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>

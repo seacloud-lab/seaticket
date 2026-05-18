@@ -1,12 +1,12 @@
-.sea-ticket-link-settings-formatter {
+.seaqa-link-settings-formatter {
   padding: 6px 0;
   margin-bottom: 8px;
 }
 
-.sea-ticket-link-settings-formatter.valid {
+.seaqa-link-settings-formatter.valid {
   padding: 5px 0;
 }
 
-.sea-ticket-link-settings-formatter.valid .link-item .link-item-name {
+.seaqa-link-settings-formatter.valid .link-item .link-item-name {
   max-width: 100%;
 }

@@ -1,9 +1,9 @@
-.sea-ticket-checkbox-settings-formatter {
+.seaqa-checkbox-settings-formatter {
   padding: 7px 0;
   margin-bottom: 8px;
 }
 
-.sea-ticket-checkbox-settings-btn {
+.seaqa-checkbox-settings-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@
   width: 24px;
 }
 
-.sea-ticket-checkbox-settings-btn .seaqa-icon-svg-check-mark {
+.seaqa-checkbox-settings-btn .seaqa-icon-svg-check-mark {
   font-weight: 600;
   fill: #20c933;
   height: 14px;

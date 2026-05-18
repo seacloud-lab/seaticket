@@ -69,7 +69,7 @@ const StateReasonSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item mb-4', className)}>
+      <div className={classnames('seaqa-settings-item mb-4', className)}>
         <CustomizeLabel icon="single-select">
           {gettext('State reason')}
         </CustomizeLabel>
@@ -80,7 +80,7 @@ const StateReasonSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id={id}
-          className="sea-ticket-settings-popover"
+          className="seaqa-settings-popover"
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}

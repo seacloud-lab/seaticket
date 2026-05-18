@@ -189,7 +189,7 @@ const RunCard = ({
               <IconTooltip
                 icon="more"
                 tip={dropdownOpen ? null : gettext('More options')}
-                className="sea-ticket-project-refresh-btn"
+                className="seaqa-project-refresh-btn"
                 placement="bottom"
                 hoverBackground={true}
               />
@@ -203,7 +203,7 @@ const RunCard = ({
           <IconTooltip
             icon="arrow-down"
             tip={isExpanded ? gettext('Collapse') : gettext('Expand')}
-            className={classnames('sea-ticket-project-refresh-btn m-0', { 'rotate-180': isExpanded })}
+            className={classnames('seaqa-project-refresh-btn m-0', { 'rotate-180': isExpanded })}
             placement="bottom"
             hoverBackground={true}
             onClick={toggleExpand}

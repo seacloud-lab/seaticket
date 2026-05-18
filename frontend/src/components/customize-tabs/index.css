@@ -1,4 +1,4 @@
-.sea-tickets-customize-tabs {
+.seaqa-customize-tabs {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -7,7 +7,7 @@
   flex-shrink: 0;
 }
 
-.sea-tickets-customize-tabs .sea-tickets-customize-tab {
+.seaqa-customize-tabs .seaqa-customize-tab {
   display: flex;
   align-items: center;
   height: 30px;
@@ -16,18 +16,18 @@
   cursor: pointer;
 }
 
-.sea-tickets-customize-tabs .sea-tickets-customize-tab:not(.active):hover {
+.seaqa-customize-tabs .seaqa-customize-tab:not(.active):hover {
   background-color: var(--option-bg-color);
   border-radius: 4px;
 }
 
-.sea-tickets-customize-tabs .sea-tickets-customize-tab.active {
+.seaqa-customize-tabs .seaqa-customize-tab.active {
   color: #ed7109;
   font-weight: 500;
   position: relative;
 }
 
-.sea-tickets-customize-tabs .sea-tickets-customize-tab.active::before {
+.seaqa-customize-tabs .seaqa-customize-tab.active::before {
   background-color: #ff8000;
   bottom: -5px;
   content: "";

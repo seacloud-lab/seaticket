@@ -41,18 +41,18 @@ const SendTo = ({
 
   return (
     <ClickOutside onClickOutside={() => setFocus(false)}>
-      <div className={classnames('sea-ticket-email-to-container', className, { 'focus': focus })}>
+      <div className={classnames('seaqa-email-to-container', className, { 'focus': focus })}>
         {value.length > 0 && (
-          <div className="sea-ticket-email-to-value">
+          <div className="seaqa-email-to-value">
             {value.map(email => {
               return (
-                <div className="sea-ticket-email-to-user" key={email}>
-                  <div className="sea-ticket-email-to-user-email">{email}</div>
+                <div className="seaqa-email-to-user" key={email}>
+                  <div className="seaqa-email-to-user-email">{email}</div>
                   {!readonly && (
                     <IconTooltip
                       hoverBackground={true}
                       icon="close"
-                      className="mr-0 sea-ticket-email-to-user-remove-btn"
+                      className="mr-0 seaqa-email-to-user-remove-btn"
                       tip={gettext('Remove')}
                       size={{ btn: 20, icon: 12 }}
                       onClick={() => handleRemove(email)}
@@ -66,7 +66,7 @@ const SendTo = ({
         )}
         {!readonly && (
           <Input
-            className="sea-ticket-email-to-user-input"
+            className="seaqa-email-to-user-input"
             value={email}
             onChange={onEmailChange}
             onFocus={() => setFocus(true)}

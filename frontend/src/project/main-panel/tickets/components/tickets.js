@@ -299,7 +299,7 @@ const Tickets = ({
   return (
     <>
       <SeaMetadata
-        className="sea-tickets-metadata"
+        className="seaqa-tickets-metadata"
         ref={metadataRef}
         api={metadataAPI}
         t={t}

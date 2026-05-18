@@ -177,7 +177,7 @@ const Issues = ({
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
 
-  const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `sea-ticket-${projectUuid}-issues`, [projectUuid, customizeLocalStorageNamePrefix]);
+  const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-issues`, [projectUuid, customizeLocalStorageNamePrefix]);
 
   const t = useMemo(() => {
     return {
@@ -345,7 +345,7 @@ const Issues = ({
   return (
     <>
       <SeaMetadata
-        className="sea-ticket-issues-metadata"
+        className="seaqa-issues-metadata"
         ref={metadataRef}
         isShowViewInURL={isShowViewInURL}
         api={metadataAPI}

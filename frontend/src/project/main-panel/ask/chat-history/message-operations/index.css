@@ -6,7 +6,7 @@
   height: 24px;
 }
 
-.sea-ticket-ai-reply.text:not(.ends-with-link) + .seaqa-ai-answer-operations {
+.seaqa-ai-reply.text:not(.ends-with-link) + .seaqa-ai-answer-operations {
   margin-top: 9px;
 }
 

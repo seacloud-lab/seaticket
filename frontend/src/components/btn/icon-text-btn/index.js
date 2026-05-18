@@ -25,7 +25,7 @@ const IconTextBtn = ({
   };
   return (
     <div
-      className={classnames('sea-ticket-icon-text-btn', className, { [`sea-ticket-${icon}-text-btn`]: icon, 'cursor-pointer': !disabled }, `sea-ticket-${color}-icon-text-btn`)}
+      className={classnames('seaqa-icon-text-btn', className, { [`seaqa-${icon}-text-btn`]: icon, 'cursor-pointer': !disabled }, `seaqa-${color}-icon-text-btn`)}
       title={text}
       aria-label={text}
       role={disabled ? '' : 'button'}

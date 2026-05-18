@@ -20,10 +20,10 @@ const Preview = ({ knowledge, className, onLinkClick }) => {
   const validTags = getRowsByIds(tagsData, validTagIds).filter(tag => tag);
 
   return (
-    <div className={classnames('sea-ticket-knowledge-preview', className)}>
-      <div className="sea-ticket-knowledge-create-info">
+    <div className={classnames('seaqa-knowledge-preview', className)}>
+      <div className="seaqa-knowledge-create-info">
         <AsyncCollaborator
-          className="sea-ticket-knowledge-creator"
+          className="seaqa-knowledge-creator"
           value={creator}
           mediaUrl={mediaUrl}
           collaborators={collaborators}
@@ -31,21 +31,21 @@ const Preview = ({ knowledge, className, onLinkClick }) => {
           updateCollaboratorsCache={updateCollaboratorsCache}
           api={queryUser}
         />
-        <div className="sea-ticket-knowledge-create-time">
+        <div className="seaqa-knowledge-create-time">
           <IconButton icon="time-stroked" className="no-hover-bg" size={14} />
-          <DateFormatter value={created_time} className="sea-ticket-knowledge-create-time-content" />
+          <DateFormatter value={created_time} className="seaqa-knowledge-create-time-content" />
         </div>
       </div>
-      <div className={classnames('sea-ticket-knowledge-title', { 'mb-6': validTags.length === 0 })}>
+      <div className={classnames('seaqa-knowledge-title', { 'mb-6': validTags.length === 0 })}>
         {title}
       </div>
       {validTags.length > 0 && (
-        <div className="sea-ticket-knowledge-tags">
+        <div className="seaqa-knowledge-tags">
           {validTags.map(tag => (<Tag tag={tag} key={tag._id} />))}
         </div>
       )}
       <CustomizeMarkdownViewer
-        className="sea-ticket-knowledge-content"
+        className="seaqa-knowledge-content"
         value={content}
         showTOC={false}
         onLinkClick={onLinkClick}

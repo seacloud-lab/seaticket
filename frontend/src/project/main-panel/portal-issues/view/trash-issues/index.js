@@ -51,7 +51,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
     }),
   }), [projectUuid, viewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-deleted-portal-issues`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-deleted-portal-issues`, [projectUuid]);
 
   const handleRestorePortalIssues = useCallback((issueIds, { deleteLocalRows, selectNone }) => {
     portalAPI.restorePortalIssues(projectUuid, issueIds).then(res => {

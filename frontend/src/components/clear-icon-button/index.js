@@ -7,7 +7,7 @@ import './index.css';
 const ClearIconButton = ({ ...props }) => {
   return (
     <IconButton
-      className='sea-ticket-clear-icon-button no-hover-bg'
+      className='seaqa-clear-icon-button no-hover-bg'
       icon="close"
       title={gettext('Clear search')}
       { ...props }

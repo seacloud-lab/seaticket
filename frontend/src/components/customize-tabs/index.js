@@ -18,11 +18,11 @@ const CustomizeTabs = ({
 
   if (!Array.isArray(tabs) || tabs.length === 0) return null;
   return (
-    <div className={classnames('sea-tickets-customize-tabs', className)}>
+    <div className={classnames('seaqa-customize-tabs', className)}>
       {tabs.map(tab => {
         return (
           <div
-            className={classnames('sea-tickets-customize-tab', { 'active': tab.value === value } )}
+            className={classnames('seaqa-customize-tab', { 'active': tab.value === value } )}
             key={tab.value}
             onClick={(event) => handleChange(event, tab.value)}
           >

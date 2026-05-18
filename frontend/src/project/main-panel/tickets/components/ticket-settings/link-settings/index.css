@@ -1,4 +1,4 @@
-.sea-ticket-settings-item .link-settings-content {
+.seaqa-settings-item .link-settings-content {
   padding: 6px 0;
   margin-bottom: 8px;
   display: flex;
@@ -6,7 +6,7 @@
   gap: 4px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item {
+.seaqa-settings-item .link-settings-content .link-item {
   background-color: #f7f7f5;
   height: 32px;
   gap: 8px;
@@ -14,35 +14,35 @@
   border-radius: 6px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item:hover {
+.seaqa-settings-item .link-settings-content .link-item:hover {
   background-color: #ededed;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .link-item-name {
+.seaqa-settings-item .link-settings-content .link-item .link-item-name {
   padding: 0px;
   max-width: 100%;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .connection-icon {
+.seaqa-settings-item .link-settings-content .link-item .connection-icon {
   width: 16px;
   height: 16px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn {
+.seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn {
   width: 16px;
   height: 16px;
   margin-right: 0px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg {
+.seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg {
   width: 16px;
   height: 16px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-check-circle-stroked {
+.seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-check-circle-stroked {
   color: var(--ticket-close-color);
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-dot-circle-stroked {
+.seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-dot-circle-stroked {
   color: var(--ticket-open-color);
 }

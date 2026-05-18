@@ -82,22 +82,22 @@
 
 /* customize css */
 /* github | email | discourse_forum */
-.sea-connection-record-details .sea-ticket-connection-github_issue-resource-details,
-.sea-connection-record-details .sea-ticket-connection-email-resource-details,
-.sea-connection-record-details .sea-ticket-connection-discourse_forum-resource-details {
+.sea-connection-record-details .seaqa-connection-github_issue-resource-details,
+.sea-connection-record-details .seaqa-connection-email-resource-details,
+.sea-connection-record-details .seaqa-connection-discourse_forum-resource-details {
   padding: 0 !important;
 }
 
-.sea-connection-record-details .sea-ticket-connection-email-resource-details {
+.sea-connection-record-details .seaqa-connection-email-resource-details {
   overflow-y: unset;
   padding-bottom: 28px !important;
 }
 
-.sea-connection-record-details .sea-ticket-connection-email-resource-details.last-record-expand {
+.sea-connection-record-details .seaqa-connection-email-resource-details.last-record-expand {
   padding-bottom: 0 !important;
 }
 
-.sea-connection-record-details .sea-ticket-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
+.sea-connection-record-details .seaqa-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
   padding: 10px 16px 24px 16px !important;
   border: unset;
   height: auto;
@@ -108,8 +108,8 @@
 }
 
 /* seafile */
-.sea-connection-record-details .sea-ticket-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
-.sea-connection-record-details .sea-ticket-connection-site-resource-details .sf-slate-viewer-article-container .article {
+.sea-connection-record-details .seaqa-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
+.sea-connection-record-details .seaqa-connection-site-resource-details .sf-slate-viewer-article-container .article {
   max-width: 100%;
   padding: 0 !important;
 }

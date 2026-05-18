@@ -1,9 +1,9 @@
-.sea-ticket-customize-label {
+.seaqa-customize-label {
   display: inline-flex;
   align-items: flex-start;
 }
 
-.sea-ticket-customize-label .sea-ticket-customize-label-icon {
+.seaqa-customize-label .seaqa-customize-label-icon {
   color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;

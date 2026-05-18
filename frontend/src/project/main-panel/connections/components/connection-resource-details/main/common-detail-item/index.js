@@ -12,14 +12,14 @@ const CommonDetailItem = ({ type, detail }) => {
   const renderContentByType = useCallback((content) => {
     if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return (
-        <div className="sea-ticket-resource-detail-item-content" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="seaqa-resource-detail-item-content" dangerouslySetInnerHTML={{ __html: content }} />
       );
     }
     return (<CustomizeMarkdownViewer value={content} showTOC={false} />);
   }, [type]);
 
   return (
-    <div className="sea-ticket-resource-detail-item">
+    <div className="seaqa-resource-detail-item">
       <div className="author-info-wrapper">
         <div className="author-info-left">
           <div className="author-avatar">

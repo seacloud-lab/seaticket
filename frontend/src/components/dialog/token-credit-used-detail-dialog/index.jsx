@@ -261,7 +261,7 @@ class TokenCreditUsedDetailDialog extends Component {
       };
     }) : [];
 
-    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select sea-ticket-ai-statistic-condition-select';
+    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select seaqa-ai-statistic-condition-select';
 
     return (
       <Modal isOpen={true} toggle={onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
@@ -296,7 +296,7 @@ class TokenCreditUsedDetailDialog extends Component {
                 onChange={this.updateFilterModels}
               />
             }
-            <div className="sea-ticket-ai-statistic-date-condition">
+            <div className="seaqa-ai-statistic-date-condition">
               <span className="date-range-title">{gettext('Date range: ')}</span>
               <span className="date-range-value">
                 <DateAndTimePicker

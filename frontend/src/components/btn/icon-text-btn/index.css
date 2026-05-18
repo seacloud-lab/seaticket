@@ -1,4 +1,4 @@
-.sea-ticket-icon-text-btn {
+.seaqa-icon-text-btn {
   display: inline-flex;
   align-items: center;
   color: #ED7109;
@@ -9,19 +9,19 @@
   padding: 0 8px;
 }
 
-.sea-ticket-icon-text-btn:hover {
+.seaqa-icon-text-btn:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.sea-ticket-default-icon-text-btn {
+.seaqa-default-icon-text-btn {
   color: var(--bs-body-color);
 }
 
-.sea-ticket-default-icon-text-btn .seaqa-icon-svg {
+.seaqa-default-icon-text-btn .seaqa-icon-svg {
   color: var(--bs-icon-color);
 }
 
-.sea-ticket-icon-text-btn .seaqa-loading-tip {
+.seaqa-icon-text-btn .seaqa-loading-tip {
   height: 16px;
   width: 16px;
   margin-right: 8px;

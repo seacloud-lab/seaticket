@@ -10,7 +10,7 @@ const RefreshBtn = ({ onClick, className }) => {
     <IconTooltip
       icon="refresh"
       tip={gettext('Refresh')}
-      className={classnames('sea-ticket-project-refresh-btn', className)}
+      className={classnames('seaqa-project-refresh-btn', className)}
       placement="bottom"
       hoverBackground={true}
       onClick={onClick}

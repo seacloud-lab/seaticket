@@ -9,14 +9,14 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {
 
   if (details.length === 0) {
     return (
-      <div className={classnames('sea-ticket-connection-email-record empty', className)}>
+      <div className={classnames('seaqa-connection-email-record empty', className)}>
         <EmptyTip />
       </div>
     );
   }
 
   return (
-    <div className={classnames('sea-ticket-connection-email-record', className)}>
+    <div className={classnames('seaqa-connection-email-record', className)}>
       {details.map((detail, index) => {
         const comment = {
           creator: {

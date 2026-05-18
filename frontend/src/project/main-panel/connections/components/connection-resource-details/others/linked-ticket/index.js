@@ -23,9 +23,9 @@ const LinkedTicket = ({
   const isValid = ticketID && title;
 
   return (
-    <div className={classnames('sea-ticket-settings-item', className)}>
+    <div className={classnames('seaqa-settings-item', className)}>
       <CustomizeLabel icon="link">{gettext('Linked ticket')}</CustomizeLabel>
-      <div className={classnames('sea-ticket-link-settings-formatter', { 'valid': isValid })}>
+      <div className={classnames('seaqa-link-settings-formatter', { 'valid': isValid })}>
         {isValid ? (
           <div className="link-item">
             <span className="link-item-name" title={title} onClick={() => setIsShowTicketInDialog(true)}>{title}</span>
