@@ -1,15 +1,15 @@
-.sea-customize-table-wrapper .empty-tip {
+.seaqa-customize-table-wrapper .empty-tip {
   flex: 1;
   overflow: hidden;
 }
 
 /* cell formatter */
-.sea-customize-table-wrapper .sea-custom-table-long_text-cell {
+.seaqa-customize-table-wrapper .seaqa-customize-table-long_text-cell {
   display: flex;
   align-items: center;
 }
 
-.sea-custom-table {
+.seaqa-customize-table {
   height: 100%;
   width: 100%;
   overflow-y: auto;
@@ -18,7 +18,7 @@
   align-items: center;
 }
 
-.sea-custom-table .sea-custom-table-row {
+.seaqa-customize-table .seaqa-customize-table-row {
   height: 40px;
   width: 100%;
   display: flex;
@@ -27,7 +27,7 @@
   border-bottom: 1px solid #eaeaea;
 }
 
-.sea-custom-table .sea-custom-table-row.sea-custom-table-row-title {
+.seaqa-customize-table .seaqa-customize-table-row.seaqa-customize-table-row-title {
   background-color: #fff;
   height: 37px;
   position: sticky;
@@ -35,12 +35,12 @@
   z-index: 1;
 }
 
-.sea-custom-table .sea-custom-table-row:not(.sea-custom-table-row-title):hover {
+.seaqa-customize-table .seaqa-customize-table-row:not(.seaqa-customize-table-row-title):hover {
   background-color: #f5f5f5;
   cursor: default;
 }
 
-.sea-custom-table .sea-custom-table-row .sea-custom-table-cell {
+.seaqa-customize-table .seaqa-customize-table-row .seaqa-customize-table-cell {
   font-size: 14px;
   height: 100%;
   line-height: 39px;
@@ -50,17 +50,17 @@
   overflow: hidden;
 }
 
-.sea-custom-table .sea-custom-table-row.sea-custom-table-row-title .sea-custom-table-cell {
+.seaqa-customize-table .seaqa-customize-table-row.seaqa-customize-table-row-title .seaqa-customize-table-cell {
   color: #666;
   font-size: 13px;
   line-height: 20px;
   padding: 10px 0 6px;
 }
 
-.sea-custom-table .sea-custom-table-row .sea-custom-table-cell:first-child {
+.seaqa-customize-table .seaqa-customize-table-row .seaqa-customize-table-cell:first-child {
   padding-left: 8px;
 }
 
-.sea-custom-table .sea-custom-table-row .sea-custom-table-cell:last-child {
+.seaqa-customize-table .seaqa-customize-table-row .seaqa-customize-table-cell:last-child {
   padding-right: 8px;
 }

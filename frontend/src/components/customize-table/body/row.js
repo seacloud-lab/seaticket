@@ -16,7 +16,7 @@ const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
   }, [row, onUpdate]);
 
   return (
-    <div className="sea-custom-table-row" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ height: rowHeight }}>
+    <div className="seaqa-customize-table-row" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ height: rowHeight }}>
       {columns.map(column => {
         const { key, width, is_custom, type, formatter } = column;
         const value = is_custom ? row['config']?.[key] : row[key];
@@ -28,7 +28,7 @@ const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
           cancelActive: onMouseLeave,
         });
         return (
-          <div className={`sea-custom-table-cell sea-custom-table-${type}-cell`} key={key} style={{ width }}>
+          <div className={`seaqa-customize-table-cell seaqa-customize-table-${type}-cell`} key={key} style={{ width }}>
             {valueFormatter}
           </div>
         );

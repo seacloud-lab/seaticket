@@ -16,7 +16,7 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onCo
   };
 
   return (
-    <div className="sea-custom-table-op-formatter">
+    <div className="seaqa-customize-table-op-formatter">
       {column.width >= 88 && (
         <>
           {onModify && (

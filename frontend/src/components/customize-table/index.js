@@ -43,9 +43,9 @@ const CustomizeTable = ({
   }, []);
 
   return (
-    <div className={classnames('sea-customize-table-wrapper', className)} ref={ref}>
+    <div className={classnames('seaqa-customize-table-wrapper', className)} ref={ref}>
       {children}
-      {children && (<div className="sea-customize-table-wrapper-divider"></div>)}
+      {children && (<div className="seaqa-customize-table-wrapper-divider"></div>)}
       <Body isLoading={isLoading} emptyTip={emptyTip} columns={customizeColumns} rows={rows} loadMore={loadMore} { ...params } />
     </div>
   );

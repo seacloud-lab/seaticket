@@ -1,4 +1,4 @@
-.sea-customize-table-wrapper {
+.seaqa-customize-table-wrapper {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -6,7 +6,7 @@
   flex: 1;
 }
 
-.sea-customize-table-wrapper-divider {
+.seaqa-customize-table-wrapper-divider {
   background-color: #eaeaea;
   height: 1px;
   width: 100%;

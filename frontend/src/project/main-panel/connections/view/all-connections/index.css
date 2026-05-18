@@ -3,10 +3,10 @@
   padding-right: 16px;
 }
 
-.seaqa-project-connections-table .sea-custom-table {
+.seaqa-project-connections-table .seaqa-customize-table {
   padding: 0 0 16px 16px;
 }
 
-.seaqa-project-connections-table .sea-customize-table-wrapper-divider {
+.seaqa-project-connections-table .seaqa-customize-table-wrapper-divider {
   display: none;
 }
