@@ -1,4 +1,4 @@
-.sea-qa-inbox-panel {
+.seaqa-inbox-panel {
   position: absolute;
   left: 0;
   background-color: #ffffff;
@@ -10,7 +10,7 @@
   box-shadow: 1px 0px 32px 0px rgba(0, 0, 0, 0.1);
 }
 
-.sea-qa-inbox-header {
+.seaqa-inbox-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,13 +20,13 @@
   width: calc(100% - 32px);
 }
 
-.sea-qa-inbox-header .heading {
+.seaqa-inbox-header .heading {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
 }
 
-.sea-qa-inbox-actions {
+.seaqa-inbox-actions {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -36,17 +36,17 @@
   border-radius: 4px;
 }
 
-.sea-qa-inbox-actions:hover {
+.seaqa-inbox-actions:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.sea-qa-inbox-actions .sea-qa-icon-svg {
+.seaqa-inbox-actions .seaqa-icon-svg {
   width: 14px;
   height: 14px;
   fill: #666;
 }
 
-.sea-qa-inbox-actions .mark-all-as-read {
+.seaqa-inbox-actions .mark-all-as-read {
   font-size: 14px;
   color: #666666;
 }

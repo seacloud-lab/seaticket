@@ -1,4 +1,4 @@
-.sea-qa-project-main-panel {
+.seaqa-project-main-panel {
   flex: 1;
   overflow: hidden;
   height: 100%;
@@ -7,7 +7,7 @@
   padding: 8px 8px 8px 0;
 }
 
-.sea-qa-project-main-panel-content {
+.seaqa-project-main-panel-content {
   width: 100%;
   height: 100%;
   display: flex;
@@ -19,19 +19,19 @@
   overflow-y: auto;
 }
 
-.sea-qa-project-main-panel .sea-metadata {
+.seaqa-project-main-panel .sea-metadata {
   padding-left: 16px;
   padding-right: 16px;
 }
 
-.sea-qa-project-main-panel .sea-metadata .sea-metadata-views {
+.seaqa-project-main-panel .sea-metadata .sea-metadata-views {
   padding-left: 0;
 }
 
-.sea-qa-project-main-panel .sea-metadata .sea-metadata-view-tools {
+.seaqa-project-main-panel .sea-metadata .sea-metadata-view-tools {
   padding-right: 0;
 }
 
-.sea-qa-project-main-panel .sea-metadata .sea-metadata-table-footer {
+.seaqa-project-main-panel .sea-metadata .sea-metadata-table-footer {
   border-bottom: none;
 }

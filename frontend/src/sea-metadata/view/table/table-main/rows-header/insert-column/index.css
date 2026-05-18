@@ -5,6 +5,6 @@
   cursor: pointer;
 }
 
-.sea-metadata-row-header-cell .sea-metadata-table-cell.insert-column:hover .sea-qa-icon-svg {
+.sea-metadata-row-header-cell .sea-metadata-table-cell.insert-column:hover .seaqa-icon-svg {
   fill: #666;
 }

@@ -19,26 +19,26 @@ const DefaultMoreNav = ({ onClick }) => {
   }, [onClick]);
 
   return (
-    <Dropdown isOpen={isShowChildren} toggle={toggleShowChildren} className="sea-qa-side-panel-more-nav" direction="right">
+    <Dropdown isOpen={isShowChildren} toggle={toggleShowChildren} className="seaqa-side-panel-more-nav" direction="right">
       <DropdownToggle
         tag="div"
-        className={classnames('sea-qa-project-navigation-item', { 'sea-qa-project-navigation-item-active': isShowChildren })}
+        className={classnames('seaqa-project-navigation-item', { 'seaqa-project-navigation-item-active': isShowChildren })}
         style={{ paddingLeft: NAVIGATION_BASE_PADDING }}
       >
-        <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
-        <span className="sea-qa-project-navigation-item-name">{window.gettext('More')}</span>
+        <Icon symbol={'more'} className="seaqa-project-navigation-item-icon" />
+        <span className="seaqa-project-navigation-item-name">{window.gettext('More')}</span>
       </DropdownToggle>
       <CustomizeDropdownMenu
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
-          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} className="sea-qa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} className="seaqa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        <CustomizeDropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
-          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.TAGS].icon} className="sea-qa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="sea-qa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.TAGS].icon} className="seaqa-dropdown-item-icon" />
+          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
       </CustomizeDropdownMenu>
     </Dropdown>

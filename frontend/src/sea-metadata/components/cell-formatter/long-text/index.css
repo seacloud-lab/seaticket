@@ -23,8 +23,8 @@
   border-radius: 3px;
 }
 
-.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-links .sea-qa-icon-svg,
-.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list .sea-qa-icon-svg {
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-links .seaqa-icon-svg,
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list .seaqa-icon-svg {
   height: 12px;
   width: 12px;
   margin-right: 4px;
@@ -33,7 +33,7 @@
 }
 
 /* check list */
-.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list.completed .sea-qa-icon-svg {
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list.completed .seaqa-icon-svg {
   color: #61bd4f;
 }
 

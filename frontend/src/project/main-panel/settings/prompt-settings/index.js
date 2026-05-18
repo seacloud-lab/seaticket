@@ -41,7 +41,7 @@ const PromptSettings = ({
       <div className={classnames('prompt-settings-option w-100 pl-4 pr-4', className)}>
         <div className="prompt-settings-option-header text-truncate">{gettext('Project prompt')}</div>
         <div className="prompt-settings-option-body">
-          <p className="tip-default tip m-0 mb-2">
+          <p className="seaqa-tip-default tip m-0 mb-2">
             {gettext('Set the AI system prompt for this project. This prompt will be applied to all AI conversations within this project.')}
           </p>
           <div className="prompt-preview-container">

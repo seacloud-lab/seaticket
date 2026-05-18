@@ -1,4 +1,4 @@
-.sea-qa-project .sea-qa-project-icon {
+.seaqa-project .seaqa-project-icon {
   display: flex;
   height: 32px;
   width: 32px;
@@ -10,26 +10,26 @@
   overflow: hidden;
 }
 
-.sea-qa-project .sea-qa-project-icon .project-icon {
+.seaqa-project .seaqa-project-icon .project-icon {
   font-size: 20px;
 }
 
-.sea-qa-project .sea-qa-project-icon .sea-qa-project-return-home-icon {
+.seaqa-project .seaqa-project-icon .seaqa-project-return-home-icon {
   color: #fff;
   height: 20px;
   width: 20px;
 }
 
-.sea-qa-project .sea-qa-project-icon .sea-qa-project-return-home-icon,
-.sea-qa-project .sea-qa-project-icon:hover .project-icon {
+.seaqa-project .seaqa-project-icon .seaqa-project-return-home-icon,
+.seaqa-project .seaqa-project-icon:hover .project-icon {
   display: none;
 }
 
-.sea-qa-project .sea-qa-project-icon:hover .sea-qa-project-return-home-icon {
+.seaqa-project .seaqa-project-icon:hover .seaqa-project-return-home-icon {
   display: unset;
 }
 
-.sea-qa-project .sea-qa-project-name {
+.seaqa-project .seaqa-project-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;

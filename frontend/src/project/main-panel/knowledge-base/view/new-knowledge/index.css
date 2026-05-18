@@ -1,4 +1,4 @@
-.sea-qa-project-new-knowledge {
+.seaqa-project-new-knowledge {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
@@ -7,12 +7,12 @@
   display: flex;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-user {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-user {
   width: 44px;
   overflow: hidden;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-user img {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-user img {
   height: 32px;
   width: 32px;
   border-radius: 50%;
@@ -20,42 +20,42 @@
   margin-right: 12px;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-settings {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-settings {
   flex: 1;
   padding-top: 4px;
   overflow-x: hidden;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-name {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-name {
   font-size: 16px;
   font-weight: 600;
   width: 100%;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-settings-container {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-settings-container {
   display: flex;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-content-settings {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-content-settings {
   width: 70%;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-content {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-content {
   display: flex;
   flex-direction: column;
   height: fit-content;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-other-settings {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-other-settings {
   width: 30%;
   padding-left: 16px;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-footer {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -63,38 +63,38 @@
   padding-bottom: 50px;
 }
 
-.sea-qa-project-new-knowledge .sea-qa-project-knowledge-footer .sea-qa-loading-icon {
+.seaqa-project-new-knowledge .seaqa-project-knowledge-footer .seaqa-loading-icon {
   height: 16px;
   width: 16px;
 }
 
-.sea-qa-project-new-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
+.seaqa-project-new-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
   border-color: var(--bs-custom-select-focus-border-color);
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-settings-container {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-settings-container {
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-content-settings {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-content-settings {
   width: 100%;
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-other-settings {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-other-settings {
   padding-left: 0;
   width: 100%;
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-other-settings .sea-ticket-settings-item:last-child {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-other-settings .sea-ticket-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-footer {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-footer {
   padding-bottom: 16px;
 }
 
-.sea-qa-project-new-knowledge.small .sea-qa-project-knowledge-submit-btns {
+.seaqa-project-new-knowledge.small .seaqa-project-knowledge-submit-btns {
   margin-top: 10px;
   display: flex;
   align-items: center;

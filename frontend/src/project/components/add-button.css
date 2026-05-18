@@ -1,4 +1,4 @@
-.sea-qa-project-main-panel .sea-qa-project-add-btn {
+.seaqa-project-main-panel .seaqa-project-add-btn {
   padding-top: 0;
   padding-bottom: 0;
   height: 28px;
@@ -6,7 +6,7 @@
   align-items: center;
 }
 
-.sea-qa-project-main-panel .sea-qa-project-add-btn .sea-qa-icon-svg {
+.seaqa-project-main-panel .seaqa-project-add-btn .seaqa-icon-svg {
   height: 14px;
   width: 14px;
 }

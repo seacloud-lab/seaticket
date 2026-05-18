@@ -181,13 +181,13 @@ const ViewItem = ({
         <ModalPortal>
           <ClickOutside onClickOutside={closeDropdown}>
             <div
-              className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
+              className="seaqa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
               style={menuStyle.current}
             >
               {modifyAble && (
                 <button
                   onClick={handleModify}
-                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
                   <Icon symbol="rename" />
@@ -195,7 +195,7 @@ const ViewItem = ({
                 </button>
               )}
               {duplicateAble && (
-                <button onClick={handleDuplicate} className="dropdown-item sea-qa-dropdown-item">
+                <button onClick={handleDuplicate} className="dropdown-item seaqa-dropdown-item">
                   <Icon symbol="copy" />
                   {gettext('Duplicate view')}
                 </button>
@@ -203,7 +203,7 @@ const ViewItem = ({
               {deleteAble && (
                 <button
                   onClick={openDeleteConfirmationDialog}
-                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
                   <Icon symbol="delete" />
@@ -211,7 +211,7 @@ const ViewItem = ({
                 </button>
               )}
               {context.getSetting('enableExportAndImportXlsx', false) && (
-                <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
+                <button onClick={handleExport} className="dropdown-item seaqa-dropdown-item">
                   <Icon symbol="export-xlsx" />
                   {gettext('Export view to XLSX')}
                 </button>

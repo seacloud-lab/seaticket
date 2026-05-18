@@ -8,29 +8,29 @@ body {
 }
 
 /* icon color */
-.sea-qa-project-ticket-state-check-circle-stroked-icon {
+.seaqa-project-ticket-state-check-circle-stroked-icon {
   color: var(--ticket-close-color);
 }
 
-.sea-qa-project-ticket-state-dot-circle-stroked-icon,
-.sea-qa-project-ticket-state-loop-dot-icon {
+.seaqa-project-ticket-state-dot-circle-stroked-icon,
+.seaqa-project-ticket-state-loop-dot-icon {
   color: var(--ticket-open-color);
   flex-shrink: 0;
 }
 
-.sea-qa-project-ticket-state-circle-invalid-icon {
+.seaqa-project-ticket-state-circle-invalid-icon {
   color: var(--ticket-invalid-color);
   flex-shrink: 0;
 }
 
-.sea-qa-portal {
+.seaqa-portal {
   display: flex;
   height: 100vh;
   width: 100%;
   background-color: #fff;
 }
 
-.sea-qa-portal-body {
+.seaqa-portal-body {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -82,7 +82,7 @@ body {
   justify-content: flex-end;
 }
 
-.sea-qa-portal-side-panel {
+.seaqa-portal-side-panel {
   width: 100%;
   min-width: 0;
   height: auto;
@@ -92,7 +92,7 @@ body {
   flex-direction: column;
 }
 
-.sea-qa-portal-side-panel-header {
+.seaqa-portal-side-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -101,14 +101,14 @@ body {
   overflow: hidden;
 }
 
-.sea-qa-portal-side-panel-logo {
+.seaqa-portal-side-panel-logo {
   display: flex;
   align-items: center;
   overflow: hidden;
   width: 200px;
 }
 
-.sea-qa-portal-side-panel-logo img {
+.seaqa-portal-side-panel-logo img {
   width: 24px;
   height: 24px;
   object-fit: cover;
@@ -117,33 +117,33 @@ body {
    margin-right: 8px;
 }
 
-.sea-qa-portal-side-panel-account {
+.seaqa-portal-side-panel-account {
   width: 200px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-.sea-qa-portal-side-panel-header h3 {
+.seaqa-portal-side-panel-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
   flex: 1;
 }
 
-.sea-qa-portal-side-panel-tabs .sea-tickets-customize-tabs {
+.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs {
   gap: 32px;
 }
 
-.sea-qa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab {
+.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab {
   font-size: 16px
 }
 
-.sea-qa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab.active::before {
+.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab.active::before {
   bottom: -13px;
 }
 
-.sea-qa-portal-sub-navigation {
+.seaqa-portal-sub-navigation {
   height: 40px;
   display: flex;
   align-items: center;
@@ -153,11 +153,11 @@ body {
   justify-content: center;
 }
 
-.sea-qa-portal-secondary-tabs {
+.seaqa-portal-secondary-tabs {
   padding-left: 32px;
 }
 
-.sea-qa-portal-nav-item {
+.seaqa-portal-nav-item {
   display: flex;
   align-items: center;
   height: 32px;
@@ -167,19 +167,19 @@ body {
   color: #212529;
 }
 
-.sea-qa-portal-nav-item:hover,
-.sea-qa-portal-nav-item.active {
+.seaqa-portal-nav-item:hover,
+.seaqa-portal-nav-item.active {
   background-color: #EDEDEA;
 }
 
-.sea-qa-portal-nav-item-icon {
+.seaqa-portal-nav-item-icon {
   margin-right: 8px;
   width: 16px;
   height: 16px;
   color: #666;
 }
 
-.sea-qa-portal-nav-item-name {
+.seaqa-portal-nav-item-name {
   font-size: 14px;
   flex: 1;
   overflow: hidden;
@@ -187,7 +187,7 @@ body {
   white-space: nowrap;
 }
 
-.sea-qa-portal-main-panel {
+.seaqa-portal-main-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -198,53 +198,53 @@ body {
   border-top-left-radius: 8px;
 }
 
-.sea-qa-portal-content {
+.seaqa-portal-content {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-portal-content .ask-main-container {
+.seaqa-portal-content .ask-main-container {
   padding-right: 0px;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-wrapper {
+.seaqa-portal-content .seaqa-ai-ask-wrapper {
   position: relative;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-wrapper .chat-header-operation-wrapper {
+.seaqa-portal-content .seaqa-ai-ask-wrapper .chat-header-operation-wrapper {
   position: absolute;
   top: 8px;
   right: 16px;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-wrapper.empty.has-header .sea-qa-ai-ask-chats-header {
+.seaqa-portal-content .seaqa-ai-ask-wrapper.empty.has-header .seaqa-ai-ask-chats-header {
   margin-bottom: auto;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-wrapper.empty.has-header .sea-qa-ai-ask-chats-footer {
+.seaqa-portal-content .seaqa-ai-ask-wrapper.empty.has-header .seaqa-ai-ask-chats-footer {
   margin-bottom: auto;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-header {
+.seaqa-portal-content .seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-sessions-header {
   width: calc(100% - 32px);
   margin-left: 0px;
 }
 
-.sea-qa-portal-content .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-body {
+.seaqa-portal-content .seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-sessions-body {
   padding: 16px 16px 0 16px;
 }
 
-.sea-qa-portal-content .sea-metadata {
+.seaqa-portal-content .sea-metadata {
   padding-left: 16px;
   padding-right: 16px;
 }
 
-.sea-qa-portal-content .sea-metadata .sea-metadata-views {
+.seaqa-portal-content .sea-metadata .sea-metadata-views {
   padding-left: 0;
 }
 
-.sea-qa-portal-content .sea-metadata .sea-metadata-view-tools {
+.seaqa-portal-content .sea-metadata .sea-metadata-view-tools {
   padding-right: 0;
 }

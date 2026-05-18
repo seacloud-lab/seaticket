@@ -181,7 +181,7 @@ const Project = () => {
   return (
     <DataProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} enablePortal={settings?.portal?.enable_portal}>
       <I18nextProvider i18n={i18n}>
-        <div className="sea-qa-project">
+        <div className="seaqa-project">
           {isLoading ? (
             <CenteredLoading />
           ) : (

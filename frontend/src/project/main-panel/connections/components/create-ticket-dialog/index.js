@@ -116,14 +116,14 @@ const CreateTicketDialog = ({
   }, [projectUuid, row, convertToTicket, openSubstate]);
 
   return (
-    <Modal className="sea-qa-create-ticket-dialog" isOpen={true} toggle={onClose}>
+    <Modal className="seaqa-create-ticket-dialog" isOpen={true} toggle={onClose}>
       <ModalHeader toggle={onClose}>{gettext('Create related ticket')}</ModalHeader>
       <ModalBody>
         {isLoading && <CenteredLoading/>}
         {!isLoading && errorMessage && (<CenteredError>{errorMessage}</CenteredError>)}
         {!isLoading && !errorMessage && (
           <div className="d-flex">
-            <div className="sea-qa-create-ticket-dialog-left-settings">
+            <div className="seaqa-create-ticket-dialog-left-settings">
               <Form>
                 <FormGroup>
                   <Label for="ticketTitle">
@@ -143,7 +143,7 @@ const CreateTicketDialog = ({
                 <FormGroup>
                   <Label for="ticketContent">{gettext('Content')}</Label>
                   <Input
-                    className="sea-qa-ticket-content"
+                    className="seaqa-ticket-content"
                     type="textarea"
                     name="content"
                     id="ticketContent"
@@ -154,7 +154,7 @@ const CreateTicketDialog = ({
                 </FormGroup>
               </Form>
             </div>
-            <div className="sea-qa-create-ticket-dialog-other-settings">
+            <div className="seaqa-create-ticket-dialog-other-settings">
               <PrioritySettings isReadonly={isLoading} value={priority} onChange={setPriority} />
               <CollaboratorsSettings isReadonly={isLoading} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
               <TagsSettings

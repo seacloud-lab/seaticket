@@ -115,18 +115,18 @@ const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, 
   const isSmallScreen = containerWidth < 892;
 
   return (
-    <div className={classnames('sea-qa-project-edit-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
-      <div className="sea-qa-project-knowledge-settings">
-        <div className="sea-qa-project-knowledge-settings-container">
-          <div className="sea-qa-project-knowledge-content-settings">
-            <div className="sea-qa-project-knowledge-title mb-4">
+    <div className={classnames('seaqa-project-edit-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
+      <div className="seaqa-project-knowledge-settings">
+        <div className="seaqa-project-knowledge-settings-container">
+          <div className="seaqa-project-knowledge-content-settings">
+            <div className="seaqa-project-knowledge-title mb-4">
               <Label>
                 {gettext('Title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
               <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
-            <div className="sea-qa-project-knowledge-content mb-4">
+            <div className="seaqa-project-knowledge-content mb-4">
               <Label>
                 {gettext('Content')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
@@ -148,12 +148,12 @@ const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, 
                 onLinkClick={onLinkClick}
               />
             </div>
-            <div className="sea-qa-project-knowledge-footer">
+            <div className="seaqa-project-knowledge-footer">
               <UploadFilesButton onChange={handleFiles} />
               {!isSmallScreen && renderSubmitBtns()}
             </div>
           </div>
-          <div className="sea-qa-project-knowledge-other-settings">
+          <div className="seaqa-project-knowledge-other-settings">
             <TagsSettings
               value={tags}
               isLoading={false}
@@ -162,7 +162,7 @@ const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, 
               onChange={setTags}
             />
           </div>
-          {isSmallScreen && renderSubmitBtns('sea-qa-project-knowledge-submit-btns')}
+          {isSmallScreen && renderSubmitBtns('seaqa-project-knowledge-submit-btns')}
         </div>
       </div>
     </div>

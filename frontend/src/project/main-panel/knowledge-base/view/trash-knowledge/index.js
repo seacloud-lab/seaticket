@@ -125,7 +125,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
       api={api}
       isShowViewInURL={false}
       permission={permission}
-      localStorageNamePrefix={`sea-qa-${projectUuid}-kb-trash`}
+      localStorageNamePrefix={`seaqa-${projectUuid}-kb-trash`}
       createContextMenuOptions={createContextMenuOptions}
       createRowsTools={createRowsTools}
       settings={{

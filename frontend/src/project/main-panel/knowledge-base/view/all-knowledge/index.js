@@ -92,7 +92,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
   }, []);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-knowledge-base`, []);
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-knowledge-base`, []);
 
   const t = useMemo(() => ({
     row: gettext('record'),

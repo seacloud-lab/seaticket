@@ -54,7 +54,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
         <FormGroup className="rate-column-data-setting-item rate-column-data-style-setting">
           <Label>{gettext('Style')}</Label>
           <div
-            className={classnames('sea-qa-customize-select custom-select rate-column-data-style-setting-wrapper', { 'focus': isShowStylePopover })}
+            className={classnames('seaqa-customize-select custom-select rate-column-data-style-setting-wrapper', { 'focus': isShowStylePopover })}
             id="sea-metadata-rate-column-data-style-setting-wrapper"
             onClick={openStylePopover}
             ref={selectedBtnRef}

@@ -84,7 +84,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
   }, []);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tag-tickets`, [projectUuid]);
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-tag-tickets`, [projectUuid]);
 
   const t = useMemo(() => ({
     row: gettext('record'),

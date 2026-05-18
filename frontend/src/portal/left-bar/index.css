@@ -1,4 +1,4 @@
-.sea-qa-portal-left-bar {
+.seaqa-portal-left-bar {
   width: 50px;
   min-width: 50px;
   height: 100%;
@@ -9,7 +9,7 @@
   align-items: center;
 }
 
-.sea-qa-portal-left-bar-item {
+.seaqa-portal-left-bar-item {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,8 +19,8 @@
   border-radius: 0;
 }
 
-.sea-qa-portal-left-bar-item:hover .sea-qa-icon-svg,
-.sea-qa-portal-left-bar-item .sea-qa-icon-svg {
+.seaqa-portal-left-bar-item:hover .seaqa-icon-svg,
+.seaqa-portal-left-bar-item .seaqa-icon-svg {
   color: #666;
 }
 

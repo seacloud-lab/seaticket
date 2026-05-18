@@ -24,7 +24,7 @@ const CommonMessage = ({
   return (
     <>
       <Attachments attachments={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} projectUuid={projectUuid} />
-      <div className="sea-qa-ai-ask-message-content">
+      <div className="seaqa-ai-ask-message-content">
         <ThoughtProcess
           value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]}
           projectUuid={projectUuid}

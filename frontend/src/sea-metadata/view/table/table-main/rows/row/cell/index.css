@@ -193,7 +193,7 @@
   flex-shrink: 0;
 }
 
-.sea-metadata-table-cell .select-all-checkbox-container .sea-qa-icon-svg-partially-selected {
+.sea-metadata-table-cell .select-all-checkbox-container .seaqa-icon-svg-partially-selected {
   cursor: pointer;
   height: 12px;
   width: 12px;
@@ -243,7 +243,7 @@
   transform: rotate(45deg);
 }
 
-.sea-metadata-table-cell .mobile-select-all-container .sea-qa-icon-svg-partially-selected {
+.sea-metadata-table-cell .mobile-select-all-container .seaqa-icon-svg-partially-selected {
   font-size: 14px;
   line-height: 1;
 }

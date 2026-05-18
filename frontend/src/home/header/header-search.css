@@ -21,7 +21,7 @@
   padding-bottom: 0;
 }
 
-.sea-qa-search-icon-btn.sea-qa-icon-btn .sea-qa-icon-svg {
+.seaqa-search-icon-btn.seaqa-icon-btn .seaqa-icon-svg {
   color: #9aa0ac;
 }
 
@@ -147,7 +147,7 @@
   }
 }
 
-.sea-qa-home-header .common-toolbar .search.active {
+.seaqa-home-header .common-toolbar .search.active {
   width: 600px;
 }
 
@@ -200,7 +200,7 @@
   border-radius: 3px;
 }
 
-.project-searcher .input-icon .sea-qa-icon-svg-close {
+.project-searcher .input-icon .seaqa-icon-svg-close {
   color: #666;
 }
 
@@ -216,7 +216,7 @@
   border-bottom: 1px solid #ddd;
 }
 
-.project-searcher .sea-qa-search-results {
+.project-searcher .seaqa-search-results {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;

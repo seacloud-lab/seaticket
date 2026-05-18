@@ -29,7 +29,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+            className="rotate-icon-90 seaqa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={gettext('New record')}>{gettext('New record')}</span>
@@ -42,7 +42,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+            className="rotate-icon-90 seaqa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={gettext('Deleted records')}>{gettext('Deleted records')}</span>
@@ -56,7 +56,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
       <>
         <IconButton
           icon="arrow-down"
-          className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+          className="rotate-icon-90 seaqa-project-toggle-knowledge-btn"
           onClick={() => isKBRecordPreview ? togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL) : toggleKBRecordPreview(true)}
         />
         <span className="text-truncate" title={editTitle}>{editTitle}</span>

@@ -8,7 +8,7 @@ const Tag = ({ option, className }) => {
   const { name, color, text_color } = option;
   return (
     <div
-      className={classnames('sea-qa-tag', className)}
+      className={classnames('seaqa-tag', className)}
       style={{ backgroundColor: color, color: text_color }}
       title={name}
     >

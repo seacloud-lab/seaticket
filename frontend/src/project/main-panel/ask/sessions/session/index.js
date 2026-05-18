@@ -54,11 +54,11 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   if (isTeamTab) {
     return (
       <div
-        className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected })}
+        className={classnames('seaqa-ai-ask-session-item', { 'active': isSelected })}
         onClick={() => togglePageSlugId(sessionId)}
       >
         <IconButton icon="chat-team" className="no-hover-bg mr-2 w-4 h-4" />
-        <div className="sea-qa-ai-ask-session-name text-truncate">
+        <div className="seaqa-ai-ask-session-name text-truncate">
           {session.name}
         </div>
       </div>
@@ -70,18 +70,18 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   return (
     <>
       <div
-        className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected || isOpen })}
+        className={classnames('seaqa-ai-ask-session-item', { 'active': isSelected || isOpen })}
         onClick={() => togglePageSlugId(sessionId)}
       >
         <IconButton icon={icon} className="no-hover-bg mr-2 w-4 h-4" />
-        <div className="sea-qa-ai-ask-session-content">
-          <div className="sea-qa-ai-ask-session-name text-truncate" title={session.name}>
+        <div className="seaqa-ai-ask-session-content">
+          <div className="seaqa-ai-ask-session-name text-truncate" title={session.name}>
             {session.name}
           </div>
         </div>
         {permission === PERMISSION_TYPES.READ_WRITE && (
           <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
-            <CustomizeDropdownMoreToggle isOpen={isOpen} className={classnames('sea-qa-ai-ask-session-more-op-btn', { 'd-flex': isSelected || isOpen })} />
+            <CustomizeDropdownMoreToggle isOpen={isOpen} className={classnames('seaqa-ai-ask-session-more-op-btn', { 'd-flex': isSelected || isOpen })} />
             <CustomizeDropdownMenu fixed={true}>
               <CustomizeDropdownItem onClick={openRename}>
                 <CustomizeDropdownItem.Icon symbol="rename" />

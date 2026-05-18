@@ -1,4 +1,4 @@
-.sea-metadata-basic-filters-select.sea-qa-customize-select {
+.sea-metadata-basic-filters-select.seaqa-customize-select {
   width: fit-content;
   max-width: 100%;
   background-image: none;
@@ -8,31 +8,31 @@
   height: 28px;
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select:hover,
-.sea-metadata-basic-filters-select.sea-qa-customize-select.highlighted:hover {
+.sea-metadata-basic-filters-select.seaqa-customize-select:hover,
+.sea-metadata-basic-filters-select.seaqa-customize-select.highlighted:hover {
   background: var(--bs-hover-bg);
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select .selected-option {
+.sea-metadata-basic-filters-select.seaqa-customize-select .selected-option {
   background-color: transparent;
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select .selected-option .sea-qa-icon-svg-arrow-down,
-.sea-metadata-basic-filters-select.sea-metadata-basic-filter-tags-select .sea-qa-icon-svg-arrow-down {
+.sea-metadata-basic-filters-select.seaqa-customize-select .selected-option .seaqa-icon-svg-arrow-down,
+.sea-metadata-basic-filters-select.sea-metadata-basic-filter-tags-select .seaqa-icon-svg-arrow-down {
   margin-left: 0;
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select.focus {
+.sea-metadata-basic-filters-select.seaqa-customize-select.focus {
   border-color: unset;
   box-shadow: none;
 }
 
 .sea-metadata-basic-filters-select.highlighted .selected-option .selected-option-show,
-.sea-metadata-basic-filters-select.highlighted .selected-option .sea-qa-icon-svg-arrow-down {
+.sea-metadata-basic-filters-select.highlighted .selected-option .seaqa-icon-svg-arrow-down {
   color: #ed7109;
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select .selected-option .selected-option-show {
+.sea-metadata-basic-filters-select.seaqa-customize-select .selected-option .selected-option-show {
   width: 100%;
 }
 
@@ -68,7 +68,7 @@
   margin-left: 10px;
 }
 
-.sea-qa-select-option.active .sea-qa-icon-svg-check-mark {
+.seaqa-select-option.active .seaqa-icon-svg-check-mark {
   color: #fff;
 }
 

@@ -13,19 +13,19 @@
   padding: 5px 0;
 }
 
-.ticket-state-formatter .sea-qa-ui-option {
+.ticket-state-formatter .seaqa-ui-option {
   margin-bottom: 4px;
   margin-top: 4px;
   margin-right: 10px;
 }
 
-.sea-qa-ticket-state-substate-option {
+.seaqa-ticket-state-substate-option {
   display: flex;
   align-items: center;
   overflow: hidden;
 }
 
-.sea-qa-ticket-state-substate-option .sea-qa-ui-option {
+.seaqa-ticket-state-substate-option .seaqa-ui-option {
   max-width: 120px;
 }
 

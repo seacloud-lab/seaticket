@@ -1,4 +1,4 @@
-.sea-qa-all-inbox-panel {
+.seaqa-all-inbox-panel {
   position: absolute;
   left: 0;
   background-color: var(--bs-body-bg);
@@ -11,7 +11,7 @@
   border-top-left-radius: 8px;
 }
 
-.sea-qa-all-inbox-header {
+.seaqa-all-inbox-header {
   display: flex;
   align-items: center;
   height: 48px;
@@ -19,13 +19,13 @@
   width: calc(100% - 32px);
 }
 
-.sea-qa-all-inbox-header .heading {
+.seaqa-all-inbox-header .heading {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
 }
 
-.sea-qa-all-inbox-tabs-wrapper {
+.seaqa-all-inbox-tabs-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,13 +34,13 @@
   height: 40px;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-label {
+.seaqa-all-inbox-tabs-wrapper .seaqa-inbox-tab-label {
   display: inline-flex;
   align-items: center;
   position: relative;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-tab-badge {
+.seaqa-all-inbox-tabs-wrapper .seaqa-inbox-tab-badge {
   width: 8px;
   height: 8px;
   right: -8px;
@@ -50,18 +50,18 @@
   position: absolute;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions {
+.seaqa-all-inbox-tabs-wrapper .seaqa-inbox-actions {
   display: flex;
   cursor: pointer;
   padding: 4px;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions:hover {
+.seaqa-all-inbox-tabs-wrapper .seaqa-inbox-actions:hover {
   background-color: rgba(0, 0, 0, 0.04);
   border-radius: 4px;
 }
 
-.sea-qa-all-inbox-tabs-wrapper .sea-qa-inbox-actions .sea-qa-icon-svg {
+.seaqa-all-inbox-tabs-wrapper .seaqa-inbox-actions .seaqa-icon-svg {
   width: 16px;
   height: 16px;
   fill: var(--bs-body-secondary-color);

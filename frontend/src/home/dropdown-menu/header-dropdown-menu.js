@@ -67,7 +67,7 @@ class HeaderDropdownMenu extends React.Component {
         isOpen={this.state.dropdownOpen}
         toggle={this.dropdownToggle}
         direction="down"
-        className="header-more-operation sea-qa-icon-btn"
+        className="header-more-operation seaqa-icon-btn"
         style={{ backgroundColor: this.state.dropdownOpen ? '#efefef' : 'transparent' }}
       >
         <DropdownToggle

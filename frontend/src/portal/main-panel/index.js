@@ -42,18 +42,18 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
 
   return (
-    <div className="sea-qa-portal-main-panel">
+    <div className="seaqa-portal-main-panel">
       {!isAnonymous && activePrimaryTab === TICKETS_TAB && (
-        <div className="sea-qa-portal-sub-navigation">
+        <div className="seaqa-portal-sub-navigation">
           <CustomizeTabs
-            className="sea-qa-portal-secondary-tabs"
+            className="seaqa-portal-secondary-tabs"
             tabs={TICKET_SECONDARY_TABS}
             value={activePage}
             onChange={onPageChange}
           />
         </div>
       )}
-      <div className="sea-qa-portal-content">
+      <div className="seaqa-portal-content">
         {renderContent()}
       </div>
     </div>

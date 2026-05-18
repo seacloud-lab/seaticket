@@ -238,6 +238,6 @@
 }
 
 .am-action-sheet-button-list-item .my-am-action.disabled,
-.am-action-sheet-button-list-item .my-am-action.disabled .sea-qa-icon-svg {
+.am-action-sheet-button-list-item .my-am-action.disabled .seaqa-icon-svg {
   color: #c2c2c2;
 }

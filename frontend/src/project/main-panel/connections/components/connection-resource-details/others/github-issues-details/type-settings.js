@@ -67,7 +67,7 @@ const TypeSettings = ({
           {gettext('Type')}
         </CustomizeLabel>
         <div className={classnames('ticket-types-formatter', { 'valid': typeOption, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
-          {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('No types')}</div>}
+          {typeOption ? <Option option={typeOption} /> : <div className="seaqa-tip-default">{gettext('No types')}</div>}
         </div>
       </div>
       {!isReadonly && isShowEditor && (

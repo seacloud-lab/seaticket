@@ -28,21 +28,21 @@
   height: 16px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn {
+.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn {
   width: 16px;
   height: 16px;
   margin-right: 0px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
+.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg {
   width: 16px;
   height: 16px;
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-check-circle-stroked {
+.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-check-circle-stroked {
   color: var(--ticket-close-color);
 }
 
-.sea-ticket-settings-item .link-settings-content .link-item .sea-qa-tooltip-icon-btn .sea-qa-icon-svg-dot-circle-stroked {
+.sea-ticket-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-dot-circle-stroked {
   color: var(--ticket-open-color);
 }

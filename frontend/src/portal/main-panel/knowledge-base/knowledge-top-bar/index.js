@@ -26,7 +26,7 @@ const PortalKnowledgeTopBar = () => {
       <>
         <IconButton
           icon="arrow-down"
-          className="rotate-icon-90 sea-qa-portal-toggle-knowledge-btn"
+          className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
           onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
         />
         <span className="text-truncate" title={editTitle}>{editTitle}</span>

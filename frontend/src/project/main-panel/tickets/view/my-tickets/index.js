@@ -79,7 +79,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
   }), [projectUuid, myTicketViewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-my-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-my-tickets`, [projectUuid]);
 
   const dataDidMount = useCallback((data) => {
     if (data.view.basic_filters.length !== 2) {

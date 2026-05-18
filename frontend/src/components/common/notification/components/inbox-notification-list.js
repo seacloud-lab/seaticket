@@ -12,7 +12,7 @@ const InboxNotificationList = ({
 }) => {
 
   return (
-    <div className="sea-qa-inbox-list" onScroll={Utils.debounce(onScroll)}>
+    <div className="seaqa-inbox-list" onScroll={Utils.debounce(onScroll)}>
       {loading && <CenteredLoading />}
       {!loading && notificationList.length === 0 && (
         <EmptyTip

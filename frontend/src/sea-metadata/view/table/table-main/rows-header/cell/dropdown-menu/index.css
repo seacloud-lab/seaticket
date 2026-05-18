@@ -1,4 +1,4 @@
-.sea-metadata-column-dropdown-menu .dropdown-item .sea-qa-icon-svg {
+.sea-metadata-column-dropdown-menu .dropdown-item .seaqa-icon-svg {
   margin-right: 10px;
   height: 14px;
   width: 14px;
@@ -16,7 +16,7 @@
 }
 
 .sea-metadata-column-dropdown-menu .dropdown-toggle:hover::after,
-.sea-metadata-column-dropdown-menu .dropdown-item:hover .sea-qa-icon-svg {
+.sea-metadata-column-dropdown-menu .dropdown-item:hover .seaqa-icon-svg {
   color: #fff;
 }
 
@@ -31,6 +31,6 @@
   color: #c2c2c2;
 }
 
-.sea-metadata-column-dropdown-menu .disabled.dropdown-item .sea-qa-icon-svg {
+.sea-metadata-column-dropdown-menu .disabled.dropdown-item .seaqa-icon-svg {
   color: #c2c2c2;
 }

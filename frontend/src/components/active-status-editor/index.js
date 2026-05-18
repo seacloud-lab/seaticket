@@ -25,7 +25,7 @@ const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, on
       <DropdownToggle className="dropdown-toggle-button d-flex align-items-center" tag="div">
         {currentOption.label}
         <div className="dropdown-icon-container ml-1">
-          <Icon symbol="arrow-down" className={classnames('sea-qa-role-status-down-icon', { 'd-none': !isShowDropdownIcon })}/>
+          <Icon symbol="arrow-down" className={classnames('seaqa-role-status-down-icon', { 'd-none': !isShowDropdownIcon })}/>
         </div>
       </DropdownToggle>
       <DropdownMenu
@@ -38,7 +38,7 @@ const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, on
             <DropdownItem key={`item-${value}`} onClick={() => handleClickMenuOption(option)}>
               {label}
               {value === currentOption.value && (
-                <Icon symbol="check-mark" className="sea-qa-role-status-check ml-2" />
+                <Icon symbol="check-mark" className="seaqa-role-status-check ml-2" />
               )}
             </DropdownItem>
           );

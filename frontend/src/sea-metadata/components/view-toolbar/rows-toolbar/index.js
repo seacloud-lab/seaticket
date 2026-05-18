@@ -63,7 +63,7 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyR
 
   return (
     <div className="sea-metadata-views sea-metadata-rows-tools">
-      <div className="sea-qa-icon-btn sea-metadata-rows-tool-btn pl-2 pr-2 mr-2" onClick={selectNone}>
+      <div className="seaqa-icon-btn sea-metadata-rows-tool-btn pl-2 pr-2 mr-2" onClick={selectNone}>
         <Icon symbol="close" className="mr-2" />
         <span className="color-default">{gettext('{count} selected').replace('{count}', rowIds.length)}</span>
       </div>

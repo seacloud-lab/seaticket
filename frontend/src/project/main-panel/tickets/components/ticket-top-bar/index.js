@@ -30,7 +30,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     const toggleBtn = (
       <IconButton
         icon="arrow-down"
-        className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+        className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
         onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
       />
     );
@@ -44,7 +44,7 @@ const TicketTopBar = ({ title, type, permission }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={customTitle}>{customTitle}</span>
@@ -69,7 +69,7 @@ const TicketTopBar = ({ title, type, permission }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={customTitle}>{customTitle}</span>

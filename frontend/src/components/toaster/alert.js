@@ -30,7 +30,7 @@ class Alert extends React.PureComponent {
     const { intent, title, children, isRemovable, onRemove } = this.props;
     const symbol = this.getIconSymbol(intent);
     return (
-      <div className={`sea-qa-toast-alert-container ${intent || 'success'}`}>
+      <div className={`seaqa-toast-alert-container ${intent || 'success'}`}>
         <div className="toast-alert-icon">
           <Icon symbol={symbol} />
         </div>

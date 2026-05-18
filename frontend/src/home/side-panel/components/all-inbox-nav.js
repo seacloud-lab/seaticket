@@ -21,10 +21,10 @@ const AllInboxNav = ({ onTabClick, isOpenGroupExpanded }) => {
 
   return (
     <div
-      className={classNames('all-inbox-nav-wrapper nav-item sea-qa-nav-item projects-nav', { 'mt-3': isOpenGroupExpanded })}
+      className={classNames('all-inbox-nav-wrapper nav-item seaqa-nav-item projects-nav', { 'mt-3': isOpenGroupExpanded })}
       onClick={handleClick}
     >
-      <div aria-label={gettext('Inbox')} className="nav-link sea-qa-nav-link">
+      <div aria-label={gettext('Inbox')} className="nav-link seaqa-nav-link">
         <Icon symbol="inbox-navbar" className="nav-icon" />
         <span className="nav-text">{gettext('Inbox')}</span>
         <InboxCount unseen={unseen} />

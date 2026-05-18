@@ -58,8 +58,8 @@
   background: rgba(0, 0, 0, 0.3);
 }
 
-.portal-customization-settings-logo .portal-customization-settings-logo-change-btn .sea-qa-icon-svg,
-.portal-customization-settings-logo .portal-customization-settings-logo-change-btn:hover .sea-qa-icon-svg {
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn .seaqa-icon-svg,
+.portal-customization-settings-logo .portal-customization-settings-logo-change-btn:hover .seaqa-icon-svg {
   color: #fff;
   height: 20px;
   width: 20px;
@@ -104,7 +104,7 @@
   margin-top: 10px;
 }
 
-.portal-customization-settings-logo-popover .sea-qa-tip-default {
+.portal-customization-settings-logo-popover .seaqa-tip-default {
   font-size: 12px;
   width: 100%;
   text-align: center;

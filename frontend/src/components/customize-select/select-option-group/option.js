@@ -26,7 +26,7 @@ class Option extends Component {
   render() {
     return (
       <div
-        className={classnames('sea-qa-select-option option', { 'active': this.props.isActive })}
+        className={classnames('seaqa-select-option option', { 'active': this.props.isActive })}
         onClick={this.onChange.bind(this, this.props.value)}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}

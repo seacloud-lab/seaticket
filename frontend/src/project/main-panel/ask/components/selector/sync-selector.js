@@ -36,7 +36,7 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
       </SelectorDisplay>
       {isShowSelector && (
         <SyncOptionEditor
-          className="sea-qa-ai-chat-selector-display-editor "
+          className="seaqa-ai-chat-selector-display-editor "
           target={ref}
           isMultiple={true}
           placeholder={gettext('Search')}

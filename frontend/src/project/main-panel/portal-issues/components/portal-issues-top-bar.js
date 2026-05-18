@@ -25,7 +25,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
     const toggleBtn = (
       <IconButton
         icon="arrow-down"
-        className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+        className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
         onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
       />
     );
@@ -34,7 +34,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>
@@ -46,7 +46,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={gettext('Trash')}>{gettext('Trash')}</span>
@@ -58,7 +58,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
           />
           <span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>

@@ -16,7 +16,7 @@ const InboxNav = ({ nav, level }) => {
 
   return (
     <div
-      className="sea-qa-project-navigation-item"
+      className="seaqa-project-navigation-item"
       style={{ paddingLeft: level > 1 ? (level - 1) * NAVIGATION_LEVEL_INDENT + NAVIGATION_BASE_PADDING : NAVIGATION_BASE_PADDING }}
       onClick={(e) => {
         e.stopPropagation();
@@ -24,8 +24,8 @@ const InboxNav = ({ nav, level }) => {
       }}
       title={name}
     >
-      {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
-      <span className="sea-qa-project-navigation-item-name">{name}</span>
+      {icon && (<Icon symbol={icon} className="seaqa-project-navigation-item-icon" />)}
+      <span className="seaqa-project-navigation-item-name">{name}</span>
       <InboxCount unseen={unseen} />
     </div>
   );

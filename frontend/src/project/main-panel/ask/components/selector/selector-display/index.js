@@ -18,7 +18,7 @@ const SelectorDisplay = ({
   onClick,
 }) => {
   const _className = useMemo(() => {
-    return classnames('sea-qa-select custom-select sea-qa-customize-select', 'sea-qa-ai-chat-selector-display', className, {
+    return classnames('seaqa-select custom-select seaqa-customize-select', 'seaqa-ai-chat-selector-display', className, {
       'border': border,
       'highlight': highlight,
       'bg-color': displayBgColor,

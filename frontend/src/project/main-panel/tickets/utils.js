@@ -116,7 +116,7 @@ export const generatorRowsMoreTool = ({
             key: o.value,
             icon: o.icon,
             label: o.name,
-            className: 'sea-qa-ticket-priority-dropdown-item',
+            className: 'seaqa-ticket-priority-dropdown-item',
             callback: () => {
               let rowIds = [];
               let idRowUpdates = {};

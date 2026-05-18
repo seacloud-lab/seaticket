@@ -63,8 +63,8 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
     <Selector
       value={option.value}
       options={options}
-      className="sea-qa-ai-model-selector"
-      editorClassName="sea-qa-ai-model-selector-editor"
+      className="seaqa-ai-model-selector"
+      editorClassName="seaqa-ai-model-selector-editor"
       icon="arrow-down"
       iconPlacement="right"
       border={false}
@@ -73,10 +73,10 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
       displayBgColor={true}
       placement="top-start"
     >
-      <div className="sea-qa-ai-model-logo">
+      <div className="seaqa-ai-model-logo">
         <img src={option.img} alt="" />
       </div>
-      <div className="sea-qa-ai-model-name text-truncate">{isSimple ? option?.simple_label : option?.label}</div>
+      <div className="seaqa-ai-model-name text-truncate">{isSimple ? option?.simple_label : option?.label}</div>
     </Selector>
   );
 };

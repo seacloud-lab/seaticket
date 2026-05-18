@@ -29,7 +29,7 @@ class TrashProjects extends Component {
             api={(page, perPage) => sysAdminAPI.sysAdminListTrashProjects(page, perPage)}
             onRestore={(project) => sysAdminAPI.sysAdminRestoreTrashProject(project.id, project.owner_deleted)}
           >
-            <p className="mt-4 seatable-tip-default text-secondary">
+            <p className="mt-4 seaqa-tip-default text-secondary">
               {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
             </p>
           </ProjectsTable>

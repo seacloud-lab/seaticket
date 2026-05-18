@@ -112,20 +112,20 @@ class SearchInput extends Component {
 
     return (
       <div
-        className={classnames('sea-qa-search-input-wrapper', className, {
+        className={classnames('seaqa-search-input-wrapper', className, {
           'display-search-icon': isShowSearchIcon,
           'display-clear-icon': isFunction(onClear)
         })}
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size - 2 }} />
+          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: size - 2 }} />
         )}
         <input
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control sea-qa-search-input', inputClassName, { 'small-size': isSmallSize })}
+          className={classnames('form-control seaqa-search-input', inputClassName, { 'small-size': isSmallSize })}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}

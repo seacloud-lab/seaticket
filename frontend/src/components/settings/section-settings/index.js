@@ -5,7 +5,7 @@ import './index.css';
 const SettingsSection = ({ title, children }) => {
   return (
     <>
-      <div className="sea-qa-section-settings">{title}</div>
+      <div className="seaqa-section-settings">{title}</div>
       {children}
     </>
   );

@@ -63,8 +63,8 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       }
 
       const btn = document.createElement('div');
-      btn.className = 'sea-qa-icon-btn email-item-toggle-btn';
-      btn.innerHTML = `<svg t="1751443664495" class="sea-qa-icon-svg" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7016" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+      btn.className = 'seaqa-icon-btn email-item-toggle-btn';
+      btn.innerHTML = `<svg t="1751443664495" class="seaqa-icon-svg" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7016" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
         <path d="M768 512c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 41.6-96 96z m-352 0c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 41.6-96 96z m-352 6.4c0 54.4 41.6 96 96 96s96-41.6 96-96-41.6-96-96-96-96 44.8-96 96z" p-id="7017"></path>
       </svg>`;
       if (!qt?.parentNode) return;

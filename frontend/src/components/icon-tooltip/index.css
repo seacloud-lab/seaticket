@@ -1,4 +1,4 @@
-.sea-qa-tooltip-icon-btn {
+.seaqa-tooltip-icon-btn {
   height: 14px;
   width: 14px;
   margin-left: 8px;
@@ -8,12 +8,12 @@
   line-height: 1;
 }
 
-.sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
+.seaqa-tooltip-icon-btn .seaqa-icon-svg {
   height: 14px;
   width: 14px;
   color: #bdbdbd;
 }
 
-.sea-qa-tooltip-icon-btn:hover .sea-qa-icon-svg {
+.seaqa-tooltip-icon-btn:hover .seaqa-icon-svg {
   color: #888;
 }

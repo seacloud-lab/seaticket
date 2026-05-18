@@ -52,7 +52,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
     }),
   }), [projectUuid, viewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-deleted-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-deleted-tickets`, [projectUuid]);
 
   const handleRestoreTickets = useCallback((ticketIds, { deleteLocalRows, selectNone }) => {
     ticketsAPI.restoreTickets(projectUuid, ticketIds).then(res => {

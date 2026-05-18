@@ -1,19 +1,19 @@
-.sea-qa-color-selector-popover .popover {
+.seaqa-color-selector-popover .popover {
   max-width: 394px;
   padding: 8px;
 }
 
-.sea-qa-color-selector-popover .sea-qa-color-selector-container {
+.seaqa-color-selector-popover .seaqa-color-selector-container {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.sea-qa-color-selector-popover .colorinput-color {
+.seaqa-color-selector-popover .colorinput-color {
   display: flex;
 }
 
-.sea-qa-color-selector-popover .colorinput-color .sea-qa-icon-svg,
-.sea-qa-color-selector-popover .colorinput-color:hover .sea-qa-icon-svg {
+.seaqa-color-selector-popover .colorinput-color .seaqa-icon-svg,
+.seaqa-color-selector-popover .colorinput-color:hover .seaqa-icon-svg {
   color: inherit;
 }

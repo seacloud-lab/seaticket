@@ -22,7 +22,7 @@ export default class MobileHeader extends Component {
 
   renderHeader = () => {
     return (
-      <header className="main-panel-north sea-qa-home-header">
+      <header className="main-panel-north seaqa-home-header">
         <ProjectMenuToolbar
           onShowSidePanel={this.props.onShowSidePanel}
           loadWorkspaceList={this.props.loadWorkspaceList}

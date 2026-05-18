@@ -91,8 +91,8 @@
   line-height: 1.5rem;
 }
 
-.org-admin .side-nav-con svg.sea-qa-icon-svg,
-.sys-admin .side-nav-con svg.sea-qa-icon-svg {
+.org-admin .side-nav-con svg.seaqa-icon-svg,
+.sys-admin .side-nav-con svg.seaqa-icon-svg {
   height: 20px;
   width: 20px;
   margin-right: 8px;
@@ -190,18 +190,18 @@
 }
 
 /* admin info */
-.sea-qa-admin-info-center .cur-view-content {
+.seaqa-admin-info-center .cur-view-content {
   padding: 0rem 1rem;
   flex: 1 1;
   overflow: auto;
 }
 
-.sea-qa-admin-info-center .info-header-content {
+.seaqa-admin-info-center .info-header-content {
   height: 106px;
   flex-shrink: 0;
 }
 
-.sea-qa-admin-info-center .am-progress-outer {
+.seaqa-admin-info-center .am-progress-outer {
   height: 6px !important;
   background: #eee;
   margin-left: 30px;
@@ -210,19 +210,19 @@
   margin-top: 1.25rem;
 }
 
-.sea-qa-admin-info-center .am-progress-bar {
+.seaqa-admin-info-center .am-progress-bar {
   height: 6px !important;
   border-radius: 5px;
   background-color: #ED7109;
 }
 
-.sea-qa-help-icon {
+.seaqa-help-icon {
   color: #bdbdbd;
   height: 13px;
   width: 13px;
 }
 
-.sea-qa-help-icon:hover {
+.seaqa-help-icon:hover {
   color: #888;
 }
 

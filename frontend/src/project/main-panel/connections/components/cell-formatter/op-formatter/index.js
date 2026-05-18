@@ -32,7 +32,7 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onCo
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
           </DropdownToggle>
-          <DropdownMenu className="sea-qa-dropdown-menu position-fixed">
+          <DropdownMenu className="seaqa-dropdown-menu position-fixed">
             {column.width < 88 && (
               <>
                 {onModify && (

@@ -88,7 +88,7 @@ const CollaboratorsSettings = ({
                 )}
               </AsyncCollaborator>
             );
-          }) : (<div className="tip-default">{gettext('No one assigned')}</div>)}
+          }) : (<div className="seaqa-tip-default">{gettext('No one assigned')}</div>)}
         </div>
       </div>
       {!isReadonly && isShowAssigneesEditor && (

@@ -162,7 +162,7 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
           })}
         </div>
         {warningText && (
-          <p className="tip-default tip m-0 mt-2">
+          <p className="seaqa-tip-default tip m-0 mt-2">
             {warningText}
           </p>
         )}

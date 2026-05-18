@@ -52,7 +52,7 @@ class Nav extends React.Component {
         </ul>
         {currentItem === 'organizations' &&
           <div className="org-toolbar">
-            <div className={`org-toolbar-item mr-2 ${isShowActiveFilter ? 'toolbar-actived-filter' : ''}`} id="sea-qa-filter-popover" onClick={this.onFilterToggle}>
+            <div className={`org-toolbar-item mr-2 ${isShowActiveFilter ? 'toolbar-actived-filter' : ''}`} id="seaqa-filter-popover" onClick={this.onFilterToggle}>
               <span className="toolbar-btn">
                 <Icon symbol="filter" className="mr-1" />
                 <span>{gettext('Filter')}</span>

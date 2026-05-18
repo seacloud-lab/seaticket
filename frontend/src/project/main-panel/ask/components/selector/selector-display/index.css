@@ -1,4 +1,4 @@
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display {
+.seaqa-customize-select.seaqa-ai-chat-selector-display {
   width: fit-content;
   max-width: 100%;
   background-image: none;
@@ -8,23 +8,23 @@
   color: #212529;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border) {
+.seaqa-customize-select.seaqa-ai-chat-selector-display:not(.border) {
   border: none;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.bg-color {
+.seaqa-customize-select.seaqa-ai-chat-selector-display.bg-color {
   background-color: #F7F7F5;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:hover {
+.seaqa-customize-select.seaqa-ai-chat-selector-display:hover {
   background-color: var(--option-bg-color);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border):hover {
+.seaqa-customize-select.seaqa-ai-chat-selector-display:not(.border):hover {
   background-color: #EDEDEB;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.highlight {
+.seaqa-customize-select.seaqa-ai-chat-selector-display.highlight {
   margin: 0;
   min-height: unset;
   max-height: unset;
@@ -33,21 +33,21 @@
   background-color: rgba(237, 113, 9, 0.05);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.highlight .sea-qa-icon-svg {
+.seaqa-customize-select.seaqa-ai-chat-selector-display.highlight .seaqa-icon-svg {
   color: inherit !important;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option {
+.seaqa-customize-select.seaqa-ai-chat-selector-display .selected-option {
   background-color: transparent;
   gap: 8px;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option .sea-qa-icon-svg {
+.seaqa-customize-select.seaqa-ai-chat-selector-display .selected-option .seaqa-icon-svg {
   height: 14px !important;
   width: 14px !important;
   color: var(--bs-icon-color);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option .selected-option-show {
+.seaqa-customize-select.seaqa-ai-chat-selector-display .selected-option .selected-option-show {
   font-size: 14px;
 }

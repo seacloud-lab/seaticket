@@ -197,11 +197,11 @@ const ChatInput = forwardRef(({
   const isSimple = width <= 673;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-chat-input-wrapper', { 'disabled': disabled })} ref={domRef}>
+    <div className={classnames('seaqa-ai-ask-chat-input-wrapper', { 'disabled': disabled })} ref={domRef}>
       <ClickOutside onClickOutside={onContainerBlur}>
-        <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
+        <div className={classnames('seaqa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
           <AttachmentsFormatter value={attachments} projectUuid={projectUuid} onRemove={removeAttachment} />
-          <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
+          <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
               className="message-input-value message-input"
@@ -219,13 +219,13 @@ const ChatInput = forwardRef(({
             />
             <div ref={previewContentRef} className="message-input message-input-preview"></div>
           </div>
-          <div className="sea-qa-ai-ask-chat-operations-container">
-            <div className="sea-qa-ai-ask-chat-operations-container-left">
+          <div className="seaqa-ai-ask-chat-operations-container">
+            <div className="seaqa-ai-ask-chat-operations-container-left">
               {canAddDocuments && (
                 <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
               )}
             </div>
-            <div className="sea-qa-ai-ask-chat-operations-container-right">
+            <div className="seaqa-ai-ask-chat-operations-container-right">
               {canSelectModel && (
                 <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} isSimple={isSimple}/>
               )}
@@ -234,7 +234,7 @@ const ChatInput = forwardRef(({
                   disabled={disabled || !value}
                   ref={sendBtnRef}
                   icon="btn-send"
-                  className="sea-qa-ai-ask-icon-btn icon-send-wrapper no-hover-bg"
+                  className="seaqa-ai-ask-icon-btn icon-send-wrapper no-hover-bg"
                   onClick={disabled ? () => {} : onSendMessage}
                   aria-label={gettext('Send')}
                 />

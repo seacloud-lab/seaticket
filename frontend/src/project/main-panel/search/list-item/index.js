@@ -58,7 +58,7 @@ const ListItem = ({
   return (
     <div className="list-item" key={id} onClick={handleItemClick}>
       <div className="list-item-icon">
-        <img src={iconSrc} alt={altText} className="sea-qa-project-connection-type-icon" />
+        <img src={iconSrc} alt={altText} className="seaqa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
         <div className="list-item-title">

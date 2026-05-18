@@ -180,7 +180,7 @@ const Tickets = ({
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
 
-  const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `sea-qa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
+  const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 
   const t = useMemo(() => {
     return {

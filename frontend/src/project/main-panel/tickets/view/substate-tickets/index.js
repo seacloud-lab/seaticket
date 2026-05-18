@@ -50,7 +50,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
     },
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-substate-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-substate-tickets`, [projectUuid]);
 
   if (isLoading) return (<CenteredLoading />);
 

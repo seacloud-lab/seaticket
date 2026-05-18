@@ -10,7 +10,7 @@ const AddButton = ({ onClick, text, icon, className }) => {
     <Button
       color='primary'
       onClick={onClick}
-      className={classnames('sea-qa-project-add-btn', className)}
+      className={classnames('seaqa-project-add-btn', className)}
     >
       {icon && <Icon symbol={icon} className="mr-2" />}
       {text}

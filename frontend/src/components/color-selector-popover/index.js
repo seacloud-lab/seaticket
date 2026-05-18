@@ -20,11 +20,11 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
   return (
     <CustomizePopover
       target={target}
-      className="sea-qa-color-selector-popover"
+      className="seaqa-color-selector-popover"
       hidePopover={onToggle}
       hidePopoverWithEsc={onToggle}
     >
-      <div className="sea-qa-color-selector-container" onMouseDown={(e) => e && e.stopPropagation()}>
+      <div className="seaqa-color-selector-container" onMouseDown={(e) => e && e.stopPropagation()}>
         {SELECT_OPTION_COLORS.map((option) => {
           const { COLOR: optionColor, BORDER_COLOR: borderColor, TEXT_COLOR: textColor } = option;
           return (

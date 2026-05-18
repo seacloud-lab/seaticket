@@ -50,9 +50,9 @@ const ConfigureWebhookDialog = ({ record, onSubmit, onToggle }) => {
   }, [record, connectionUrl, webhookSecret, onSubmit]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog">
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="seaqa-project-connection-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Configure webhook')}</ModalHeader>
-      <ModalBody className="sea-qa-project-connection-body">
+      <ModalBody className="seaqa-project-connection-body">
         <FormGroup>
           <Label>{gettext('Connection URL')}</Label>
           <InputGroup>

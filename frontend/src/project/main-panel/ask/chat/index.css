@@ -1,4 +1,4 @@
-.sea-qa-ai-ask-wrapper {
+.seaqa-ai-ask-wrapper {
   width: 100%;
   flex: 1;
   overflow: hidden;
@@ -6,7 +6,7 @@
   flex-direction: column;
 }
 
-.sea-qa-ai-ask-chats-header {
+.seaqa-ai-ask-chats-header {
   height: 40px;
   display: flex;
   align-items: center;
@@ -14,7 +14,7 @@
   padding: 0 16px;
 }
 
-.sea-qa-ai-ask-chats-body {
+.seaqa-ai-ask-chats-body {
   flex: 1;
   overflow: auto;
   width: 100%;
@@ -22,15 +22,15 @@
   min-height: 0;
 }
 
-.sea-qa-ai-ask-chats-footer {
+.seaqa-ai-ask-chats-footer {
   padding: 8px 180px 16px;
 }
 
-.sea-qa-ai-ask-chats-body::-webkit-scrollbar {
+.seaqa-ai-ask-chats-body::-webkit-scrollbar {
   display: none;
 }
 
-.sea-qa-ai-ask-chats {
+.seaqa-ai-ask-chats {
   display: flex;
   flex-direction: column;
   min-height: 100%;
@@ -39,16 +39,16 @@
   margin: 0 auto;
 }
 
-.sea-qa-ai-ask-wrapper.small-page .sea-qa-ai-ask-chats {
+.seaqa-ai-ask-wrapper.small-page .seaqa-ai-ask-chats {
   width: calc(100% - 80px);
 }
 
-.sea-qa-ai-ask-wrapper.small-page .sea-qa-ai-ask-chats-footer {
+.seaqa-ai-ask-wrapper.small-page .seaqa-ai-ask-chats-footer {
   padding-left: 40px;
   padding-right: 40px;
 }
 
-.sea-qa-ai-ask-chat {
+.seaqa-ai-ask-chat {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -57,11 +57,11 @@
   margin-top: 32px;
 }
 
-.sea-qa-ai-ask-chat:first-child {
+.seaqa-ai-ask-chat:first-child {
   margin-top: 0 !important;
 }
 
-.sea-qa-ai-ask-chat.user-input-chat {
+.seaqa-ai-ask-chat.user-input-chat {
   justify-content: flex-end;
   margin-left: 18px;
   align-items: flex-end;
@@ -69,7 +69,7 @@
   margin-top: 40px;
 }
 
-.sea-qa-ai-ask-message-content {
+.seaqa-ai-ask-message-content {
   max-width: 100%;
   min-width: 48px;
   min-height: 40px;
@@ -83,31 +83,31 @@
   background-color: #fff;
 }
 
-.user-input-chat .sea-qa-ai-ask-message-content {
+.user-input-chat .seaqa-ai-ask-message-content {
   background-color: #FFF7F0;
   border-radius: 0 8px 8px 8px;
   border: unset;
   padding: 12px 16px;
 }
 
-.sea-qa-ai-ask .send-chat-btn {
+.seaqa-ai-ask .send-chat-btn {
   flex-shrink: 0;
 }
 
 /* empty */
-.sea-qa-ai-ask-wrapper.empty {
+.seaqa-ai-ask-wrapper.empty {
   overflow-y: auto;
   justify-content: center;
 }
 
-.sea-qa-ai-ask-wrapper.empty .sea-qa-ai-ask-chats-body {
+.seaqa-ai-ask-wrapper.empty .seaqa-ai-ask-chats-body {
   flex: unset;
   height: fit-content;
   overflow: unset;
   flex-shrink: 0;
 }
 
-.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip {
+.seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -115,13 +115,13 @@
   width: 100%;
 }
 
-.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-icon {
+.seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip .seaqa-ai-ask-chats-tip-icon {
   height: 48px;
   width: 48px;
   color: var(--bs-primary);
 }
 
-.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-title {
+.seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip .seaqa-ai-ask-chats-tip-title {
   margin-top: 8px;
   margin-bottom: 8px;
   font-size: 24px;
@@ -129,7 +129,7 @@
   font-weight: 500;
 }
 
-.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-description {
+.seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip .seaqa-ai-ask-chats-tip-description {
   margin-bottom: 24px;
   font-size: 14px;
   line-height: 22px;

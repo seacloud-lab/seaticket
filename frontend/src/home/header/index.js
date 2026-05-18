@@ -83,7 +83,7 @@ class Header extends React.Component {
         >
           {!isShowSearcher &&
             <div className="input-icon">
-              <IconButton className="input-icon-addon h-100 sea-qa-search-icon-btn" icon="search" />
+              <IconButton className="input-icon-addon h-100 seaqa-search-icon-btn" icon="search" />
               <span
                 type="text"
                 className="form-control search-input"
@@ -110,9 +110,9 @@ class Header extends React.Component {
   render() {
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
-      <header id="header" className="sea-qa-home-header" style={{ zIndex: Z_INDEX.HOME_HEADER }}>
+      <header id="header" className="seaqa-home-header" style={{ zIndex: Z_INDEX.HOME_HEADER }}>
         <div className="side-panel-north" style={{ flex: '0 0 22%' }}>
-          <a className="sea-qa-logo" href={siteRoot} style={{ height: logoHeight }}>
+          <a className="seaqa-logo" href={siteRoot} style={{ height: logoHeight }}>
             <img
               src={logoUrl}
               height={logoHeight}

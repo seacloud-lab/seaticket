@@ -447,19 +447,19 @@ input.short-input {
   background-color: rgba(0, 0, 0, 0.04)
 }
 
-#lang-context .sea-qa-html-icon-svg svg {
+#lang-context .seaqa-html-icon-svg svg {
   margin-top: -2px;
   width: 12px;
   height: 12px;
 }
 
-/* sea-qa-html-icon-svg style */
-.sea-qa-html-icon-svg svg {
+/* seaqa-html-icon-svg style */
+.seaqa-html-icon-svg svg {
   width: 14px;
   height: 14px;
 }
 
-.sea-qa-html-icon-svg svg path {
+.seaqa-html-icon-svg svg path {
   fill: var(--bs-icon-color);
 }
 
@@ -502,7 +502,7 @@ input.short-input {
   color: #d6d6d6;
 }
 
-#my-info .sea-qa-icon-svg-arrow-down {
+#my-info .seaqa-icon-svg-arrow-down {
   height: 12px;
   width: 12px;
 }
@@ -591,7 +591,7 @@ input.short-input {
   display: flex;
 }
 
-.password-toggle .sea-qa-html-icon-svg svg {
+.password-toggle .seaqa-html-icon-svg svg {
   height: 16px;
   width: 16px;
   display: block;
@@ -614,7 +614,7 @@ input.short-input {
   cursor: pointer;
 }
 
-.remember-me-toggle .sea-qa-html-icon-svg svg {
+.remember-me-toggle .seaqa-html-icon-svg svg {
   display: block;
 }
 
@@ -1733,7 +1733,7 @@ a.sf-popover-item {
   font-size: 15px;
 }
 
-.seafile-multicolor-icon {
+.seaqa-multicolor-icon {
   fill: currentColor;
   height: 1em;
   overflow: hidden;

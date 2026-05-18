@@ -11,7 +11,7 @@ const CustomizeDropdownMenu = ({
 }) => {
   return (
     <DropdownMenu
-      className={classnames('sea-qa-dropdown-menu', className, { 'position-fixed': fixed })}
+      className={classnames('seaqa-dropdown-menu', className, { 'position-fixed': fixed })}
       modifiers={modifiers}
       { ...params }
     >

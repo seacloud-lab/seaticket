@@ -48,7 +48,7 @@ class SysOrgFilterPopover extends Component {
     const { orgRole } = this.state;
     return (
       <CustomizePopover
-        target="sea-qa-filter-popover"
+        target="seaqa-filter-popover"
         className="sys-filter-popover"
         hidePopover={this.props.hideFilterPopover}
         placement="bottom-end"

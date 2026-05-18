@@ -9,7 +9,7 @@ import { useAnalyzeTask } from './hooks/analyze-task';
 
 import './index.css';
 
-const SETTINGS_STORAGE_KEY = `sea-qa-analyze-settings-${window.app.pageOptions.projectUuid}`;
+const SETTINGS_STORAGE_KEY = `seaqa-analyze-settings-${window.app.pageOptions.projectUuid}`;
 
 const getStoredSettings = () => {
   try {
@@ -171,7 +171,7 @@ const Analyze = ({ title }) => {
           onClick={handleToggleSettings}
         />
       </TopBar>
-      <div className="sea-qa-project-analyze">
+      <div className="seaqa-project-analyze">
         <div className="analyze-main-content">
           {records && records.length > 0 && (
             <FilterPanel

@@ -1,4 +1,4 @@
-.sea-qa-toast-manager {
+.seaqa-toast-manager {
   position: fixed;
   margin: 0 auto;
   max-width: 560px;
@@ -8,7 +8,7 @@
   z-index: 999999;
 }
 
-.sea-qa-toast-container {
+.seaqa-toast-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,16 +37,16 @@
   }
 }
 
-.sea-qa-toast-container.entering,
-.sea-qa-toast-container.entered {
+.seaqa-toast-container.entering,
+.seaqa-toast-container.entered {
   animation: openAnimation 240ms cubic-bezier(0.175, 0.885, 0.320, 1.175) both;
 }
 
-.sea-qa-toast-container.exiting {
+.seaqa-toast-container.exiting {
   animation: closeAnimation 120ms cubic-bezier(0.4, 0.0, 1, 1) both;
 }
 
-.sea-qa-toast-alert-container {
+.seaqa-toast-alert-container {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -58,47 +58,47 @@
   background-color: #fff;
 }
 
-.sea-qa-toast-alert-container.success {
+.seaqa-toast-alert-container.success {
   border-left: 3px solid rgb(71, 184, 129);
   color: rgb(71, 184, 129);
 }
 
-.sea-qa-toast-alert-container.warning {
+.seaqa-toast-alert-container.warning {
   border-left: 3px solid rgb(217, 130, 43);
   color: rgb(217, 130, 43);
 }
 
-.sea-qa-toast-alert-container.none {
+.seaqa-toast-alert-container.none {
   border-left: 3px solid rgb(16, 112, 202);
   color: rgb(16, 112, 202);
 }
 
-.sea-qa-toast-alert-container.danger {
+.seaqa-toast-alert-container.danger {
   border-left: 3px solid rgb(236, 76, 71);
   color: rgb(236, 76, 71);
 }
 
-.sea-qa-toast-alert-container .toast-alert-icon {
+.seaqa-toast-alert-container .toast-alert-icon {
   margin-right: 10px;
   width: 14px;
   height: 20px;
   line-height: 20px;
 }
 
-.sea-qa-toast-alert-container .toast-text-title {
+.seaqa-toast-alert-container .toast-text-title {
   margin: 0;
   font-weight: 600;
   font-size: 14px;
   color: #435a6f;
 }
 
-.sea-qa-toast-alert-container .toast-text-child {
+.seaqa-toast-alert-container .toast-text-child {
   font-size: 14px;
   color: #666;
   margin: 0;
 }
 
-.sea-qa-toast-alert-container .toast-close {
+.seaqa-toast-alert-container .toast-close {
   text-align: center;
   cursor: pointer;
   height: 24px;
@@ -111,6 +111,6 @@
   opacity: 0.5;
 }
 
-.sea-qa-toast-alert-container .toast-close:hover { 
+.seaqa-toast-alert-container .toast-close:hover { 
   opacity: 1;
 }

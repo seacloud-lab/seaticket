@@ -1,12 +1,12 @@
-.sea-qa-project-connections-table {
+.seaqa-project-connections-table {
   padding-top: 16px;
   padding-right: 16px;
 }
 
-.sea-qa-project-connections-table .sea-custom-table {
+.seaqa-project-connections-table .sea-custom-table {
   padding: 0 0 16px 16px;
 }
 
-.sea-qa-project-connections-table .sea-customize-table-wrapper-divider {
+.seaqa-project-connections-table .sea-customize-table-wrapper-divider {
   display: none;
 }

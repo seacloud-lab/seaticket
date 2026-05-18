@@ -19,12 +19,12 @@
   border: 1px solid #c9c9c9;
 }
 
-.sea-metadata-cell-op-btn .sea-qa-icon-svg {
+.sea-metadata-cell-op-btn .seaqa-icon-svg {
   color: #999;
   height: 14px;
   width: 14px;
 }
 
-.sea-metadata-cell-op-btn:hover .sea-qa-icon-svg {
+.sea-metadata-cell-op-btn:hover .seaqa-icon-svg {
   color: #999;
 }

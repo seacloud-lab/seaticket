@@ -43,12 +43,12 @@ const LeftBar = () => {
 
   return (
     <>
-      <div className="sea-qa-portal-left-bar">
+      <div className="seaqa-portal-left-bar">
         {bars.map(bar => {
           return (
             <IconTooltip
               key={bar.icon}
-              className="sea-qa-portal-left-bar-item"
+              className="seaqa-portal-left-bar-item"
               size={{ btn: 50, icon: 20 }}
               hoverBackground={true}
               icon={bar.icon}

@@ -61,7 +61,7 @@ const RunCardHeader = ({ item }) => {
           onClick={hasDetails ? openDetails : () => {}}
         >
           <span>{titleTip}</span>
-          <span className="sea-qa-text-orange ml-1" title={resource.title}>{resource.title}</span>
+          <span className="seaqa-text-orange ml-1" title={resource.title}>{resource.title}</span>
         </span>
       </div>
       {isShowDetails && (
@@ -194,7 +194,7 @@ const RunCard = ({
                 hoverBackground={true}
               />
             </DropdownToggle>
-            <DropdownMenu end className="sea-qa-dropdown-menu">
+            <DropdownMenu end className="seaqa-dropdown-menu">
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>

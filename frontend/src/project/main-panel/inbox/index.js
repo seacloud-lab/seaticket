@@ -43,10 +43,10 @@ const Inbox = ({ toggleBar }) => {
   }, []);
 
   return (
-    <div className="sea-qa-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
-      <div className="sea-qa-inbox-header">
+    <div className="seaqa-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
+      <div className="seaqa-inbox-header">
         <span className="heading">{title}</span>
-        <div className="sea-qa-inbox-actions" onClick={markAllAsRead}>
+        <div className="seaqa-inbox-actions" onClick={markAllAsRead}>
           <Icon symbol="mark-all-as-read" />
           <div className="mark-all-as-read">{gettext('Mark all as read')}</div>
         </div>

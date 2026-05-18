@@ -1,21 +1,21 @@
-.sea-qa-ai-thought-process-dialog {
+.seaqa-ai-thought-process-dialog {
   margin: 28px auto;
   height: calc(100% - 56px);
   width: 80%;
   max-width: 80%;
 }
 
-.sea-qa-ai-thought-process-dialog .modal-content {
+.seaqa-ai-thought-process-dialog .modal-content {
   height: 100%;
   max-height: 100%;
   overflow: hidden;
 }
 
-.sea-qa-ai-thought-process-dialog .modal-body {
+.seaqa-ai-thought-process-dialog .modal-body {
   overflow-y: auto;
 }
 
-.sea-qa-ai-thought-process-dialog  .sf-slate-viewer-article-container {
+.seaqa-ai-thought-process-dialog  .sf-slate-viewer-article-container {
   width: 100%;
   margin: 0;
 }

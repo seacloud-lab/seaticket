@@ -1,8 +1,8 @@
-.admin-search-input .sea-qa-search-input-search {
+.admin-search-input .seaqa-search-input-search {
   width: 40px !important;
 }
 
-.admin-search-input .form-control.sea-qa-search-input {
+.admin-search-input .form-control.seaqa-search-input {
   color: #868E96;
   border-radius: 16px;
   padding-top: 0;
@@ -10,7 +10,7 @@
   padding-left: 40px !important;
 }
 
-.admin-search-input .form-control.sea-qa-search-input::placeholder {
+.admin-search-input .form-control.seaqa-search-input::placeholder {
   color: #868E96;
   font-size: 14px;
 }

@@ -17,11 +17,11 @@
   color: var(--bs-body-color);
 }
 
-.sea-ticket-default-icon-text-btn .sea-qa-icon-svg {
+.sea-ticket-default-icon-text-btn .seaqa-icon-svg {
   color: var(--bs-icon-color);
 }
 
-.sea-ticket-icon-text-btn .sea-qa-loading-tip {
+.sea-ticket-icon-text-btn .seaqa-loading-tip {
   height: 16px;
   width: 16px;
   margin-right: 8px;

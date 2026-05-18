@@ -4,7 +4,7 @@
   overflow: hidden;
 }
 
-.sea-qa-project {
+.seaqa-project {
   height: 100%;
   width: 100%;
   display: flex;
@@ -12,7 +12,7 @@
   overflow: hidden;
 }
 
-.sea-qa-project .sea-qa-project-panel-header {
+.seaqa-project .seaqa-project-panel-header {
   flex-shrink: 0;
   padding: 0 1rem;
   width: 100%;
@@ -36,17 +36,17 @@ body {
 }
 
 /* icon color */
-.sea-qa-project-ticket-state-check-circle-stroked-icon {
+.seaqa-project-ticket-state-check-circle-stroked-icon {
   color: var(--ticket-close-color);
 }
 
-.sea-qa-project-ticket-state-dot-circle-stroked-icon,
-.sea-qa-project-ticket-state-loop-dot-icon {
+.seaqa-project-ticket-state-dot-circle-stroked-icon,
+.seaqa-project-ticket-state-loop-dot-icon {
   color: var(--ticket-open-color);
   flex-shrink: 0;
 }
 
-.sea-qa-project-ticket-state-circle-invalid-icon {
+.seaqa-project-ticket-state-circle-invalid-icon {
   color: var(--ticket-invalid-color);
   flex-shrink: 0;
 }

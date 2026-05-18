@@ -116,16 +116,16 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
   }, [activeBar, previewFileName, markTablesViewExpired]);
 
   return (
-    <Modal isOpen={true} autoFocus={false} className="sea-qa-import-dialog" toggle={onToggle}>
+    <Modal isOpen={true} autoFocus={false} className="seaqa-import-dialog" toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{gettext('Import records from a .xlsx file')}</ModalHeader>
-      <ModalBody className="sea-qa-import-content">
-        <div className="sea-qa-import-example-file">
+      <ModalBody className="seaqa-import-content">
+        <div className="seaqa-import-example-file">
           <div className="example-file-title">{gettext('Download the example file')}</div>
           <a className="btn btn-outline-primary" href={`${siteRoot}api/v1/knowledge-bases-import-example/`}>
             {gettext('Download')}
           </a>
         </div>
-        <div className="sea-qa-import-upload-file-wrapper">
+        <div className="seaqa-import-upload-file-wrapper">
           <div className="upload-file-title">{gettext('Upload file')}</div>
           {previewData.length !== 0 && (
             <div className="preview-file-box">
@@ -133,7 +133,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
                 {totalRows <= 20 && (gettext('%s rows are about to be imported into this knowledge base.').replace('%s', totalRows))}
                 {totalRows > 20 && (gettext('%s rows are about to be imported into this knowledge base, display the first 20 lines as a preview').replace('%s', totalRows))}
               </div>
-              <table className="sea-qa-preview-table">
+              <table className="seaqa-preview-table">
                 <thead>
                   <tr>
                     <th className="title-column-header text-truncate">

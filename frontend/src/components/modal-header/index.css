@@ -1,4 +1,4 @@
-.modal-header .sea-qa-modal-close.close {
+.modal-header .seaqa-modal-close.close {
   padding: 14px 16px;
   opacity: 1;
   margin: -1rem -1rem -1rem auto;
@@ -11,11 +11,11 @@
   color: #000;
 }
 
-.modal-header .sea-qa-modal-close.close:not(:disabled):not(.disabled):hover {
+.modal-header .seaqa-modal-close.close:not(:disabled):not(.disabled):hover {
   opacity: 1;
 }
 
-.modal-header .sea-qa-modal-close .sea-qa-modal-close-inner {
+.modal-header .seaqa-modal-close .seaqa-modal-close-inner {
   width: 28px;
   height: 28px;
   font-size: 22.5px; /* same with Seafile close icon */

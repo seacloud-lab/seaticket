@@ -24,18 +24,18 @@ const LinkVerifiedDialog = ({
   const { host, protocol, pathname } = new URL(link);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} className="sea-qa-link-verified-dialog" zIndex={1071}>
+    <Modal isOpen={true} toggle={onToggle} className="seaqa-link-verified-dialog" zIndex={1071}>
       <ModalHeader toggle={onToggle}>
         <span className="mr-2">{gettext('This link is not verified')}</span>
       </ModalHeader>
       <ModalBody>
-        <p className="tip-default mb-5">
+        <p className="seaqa-tip-default mb-5">
           {gettext('Before continuing, please ensure you trust this link. If you do not trust the URL, do not open the link to access the site.')}
         </p>
-        <div className="sea-qa-verify-link">
-          <span className="tip-default">{protocol + '//'}</span>
+        <div className="seaqa-verify-link">
+          <span className="seaqa-tip-default">{protocol + '//'}</span>
           <span>{host}</span>
-          <span className="tip-default">{decodeURIComponent(pathname)}</span>
+          <span className="seaqa-tip-default">{decodeURIComponent(pathname)}</span>
         </div>
       </ModalBody>
       <ModalFooter>

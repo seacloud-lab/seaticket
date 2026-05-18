@@ -56,7 +56,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
     },
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-tag-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-tag-tickets`, [projectUuid]);
 
   if (isLoading || isTagsLoading) return (<CenteredLoading />);
   const tag = getRowById(tagsData, childrenPageSlugId);

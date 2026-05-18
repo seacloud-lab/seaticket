@@ -127,7 +127,7 @@ class SidePanel extends React.Component {
       <div id="workspace-items">
         {personalWorkspace && (
           <div
-            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'sea-qa-bg-grey active' : ''}`}
+            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'seaqa-bg-grey active' : ''}`}
             onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
@@ -168,8 +168,8 @@ class SidePanel extends React.Component {
           ref={this.sidePanelRef}
         >
           {!this.props.isDesktop &&
-            <header className="side-panel-north sea-qa-home-header">
-              <a className="sea-qa-logo" href={siteRoot} style={{ height: logoHeight }}>
+            <header className="side-panel-north seaqa-home-header">
+              <a className="seaqa-logo" href={siteRoot} style={{ height: logoHeight }}>
                 <img
                   src={logoUrl}
                   height={logoHeight}
@@ -183,16 +183,16 @@ class SidePanel extends React.Component {
           }
           <div className="side-panel-center">
             <nav className="project-side-nav">
-              <span className="sea-qa-nav-title">{gettext('Workspace')}</span>
-              <div className="nav nav-pills flex-column sea-qa-nav-list">
+              <span className="seaqa-nav-title">{gettext('Workspace')}</span>
+              <div className="nav nav-pills flex-column seaqa-nav-list">
                 <div
-                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'sea-qa-bg-grey' : ''}`}
+                  className={`nav-item seaqa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'seaqa-bg-grey' : ''}`}
                   onClick={this.onTabClick.bind(this, 'projects')}
                 >
                   <Link
                     to={siteRoot + 'projects/'}
                     aria-label={gettext('Projects')}
-                    className="nav-link sea-qa-nav-link"
+                    className="nav-link seaqa-nav-link"
                   >
                     <Icon symbol="projects-navbar" className="nav-icon" />
                     <span className="nav-text">{gettext('Projects')}</span>
@@ -221,13 +221,13 @@ class SidePanel extends React.Component {
                   onTabClick={(event) => this.onTabClick('project/inbox', event)}
                 />
                 <div
-                  className={`nav-item sea-qa-nav-item projects-nav ${this.props.isOpenGroupExpanded ? 'mt-3' : ''} ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'sea-qa-bg-grey' : ''}`}
+                  className={`nav-item seaqa-nav-item projects-nav ${this.props.isOpenGroupExpanded ? 'mt-3' : ''} ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'seaqa-bg-grey' : ''}`}
                   onClick={this.onTabClick.bind(this, 'project/trash')}
                 >
                   <Link
                     to={siteRoot + 'project/trash/'}
                     aria-label={gettext('Trash')}
-                    className="nav-link sea-qa-nav-link"
+                    className="nav-link seaqa-nav-link"
                   >
                     <Icon symbol="trash-navbar" className="nav-icon" />
                     <span className="nav-text">{gettext('Trash')}</span>

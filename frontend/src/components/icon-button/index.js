@@ -30,7 +30,7 @@ const IconButton = React.forwardRef(({
 
   return (
     <div
-      className={classnames('sea-qa-icon-btn', className, { 'disabled': disabled })}
+      className={classnames('seaqa-icon-btn', className, { 'disabled': disabled })}
       {...otherProperties}
       style={btnStyle}
       ref={ref}

@@ -62,12 +62,12 @@ class ProjectSettingPopover extends React.Component {
     let { bgColor } = this.props;
     bgColor = bgColor || PROJECT_ICON_COLORS[0];
     return (
-      <div className="row sea-qa-color-content">
+      <div className="row seaqa-color-content">
         {PROJECT_ICON_COLORS.map((color, index) => {
           return (
             <div
               key={index}
-              className="sea-qa-color-item"
+              className="seaqa-color-item"
               onClick={() => this.onColorChange(color)}
               role="button"
             >

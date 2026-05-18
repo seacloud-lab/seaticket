@@ -17,7 +17,7 @@ const ThoughtProcess = ({ value, projectUuid, projectName, workspaceID, settings
   return (
     <>
       <div
-        className="sea-qa-ai-thought-process-btn"
+        className="seaqa-ai-thought-process-btn"
         onClick={value === 'disabled' ? () => {} : openDetails}
       >
         <span className="mr-2">{gettext('Thought process')}</span>

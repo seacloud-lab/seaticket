@@ -13,7 +13,7 @@ const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
 
   return (
     <div
-      className={classnames('sea-qa-connection-name-formatter', { 'click-able': enableClick })}
+      className={classnames('seaqa-connection-name-formatter', { 'click-able': enableClick })}
       onClick={enableClick ? () => expandRow(row) : () => {}}
       title={value}
     >

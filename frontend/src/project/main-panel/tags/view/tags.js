@@ -186,7 +186,7 @@ const Tags = ({ projectUuid, permission }) => {
     return list;
   }, []);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tags`, [projectUuid]);
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-tags`, [projectUuid]);
 
   const t = useMemo(() => {
     return {

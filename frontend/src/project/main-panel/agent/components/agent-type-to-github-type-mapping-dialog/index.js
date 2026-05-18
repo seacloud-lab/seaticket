@@ -38,10 +38,10 @@ const AgentType2GithubTypeMappingDialog = ({
     <Modal isOpen={true} centered={true} toggle={onCancel} className="agent-type-mapping-github-type-modal">
       <ModalHeader toggle={onCancel}>{gettext('Map issue type')}</ModalHeader>
       <ModalBody>
-        <div className="sea-qa-tip-title">
+        <div className="seaqa-tip-title">
           {gettext('Select suitable issue type')}
         </div>
-        <div className="sea-qa-tip-default">
+        <div className="seaqa-tip-default">
           {gettext('No matching GitHub org type for Agent. Please select manually. You can modify it in settings later.')}
         </div>
         <div className="github-issue-type-mapping-table">
