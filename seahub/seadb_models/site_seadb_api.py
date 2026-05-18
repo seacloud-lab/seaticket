@@ -2,7 +2,7 @@ import logging
 
 import json
 from seahub.project.utils import url_to_filename
-from seahub.utils.storage import get_file_from_s3_web_crawl
+from seahub.utils.storage import get_connection_file_from_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.constants import ConnectionType
@@ -64,7 +64,7 @@ class SiteSeaDBAPI:
         for connection_id, document_ids in connection_ids_pks_map.items():
             current_sites = self.get_sites_by_pks(connection_id, document_ids)
             for site in current_sites:
-                file_obj = get_file_from_s3_web_crawl(project_uuid_to_s3, connection_id, url_to_filename(site['url']))
+                file_obj = get_connection_file_from_s3(project_uuid_to_s3, connection_id, url_to_filename(site['url']))
                 if file_obj:
                     content = json.loads(file_obj.read())['content']
                     result.append({

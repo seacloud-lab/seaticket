@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-import hmac
 import hashlib
+import hmac
 import logging
 import json
 import datetime
-import sys
 import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseNotModified
 from django.utils import timezone
 
 from rest_framework.views import APIView
@@ -23,14 +22,15 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.utils import uuid_str_to_32_chars
+from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
     extract_email_addresses
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
-from seahub.utils.storage import get_file_from_s3_web_crawl, FileNotFound
+from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
+from seahub.utils.storage import if_none_match_hit, get_connection_file_head_from_s3
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
@@ -882,8 +882,7 @@ class ProjectConnectionRecordView(APIView):
             url = record.get('url', '')
             if url:
                 filename = url_to_filename(url)
-                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                file = get_connection_file_from_s3(project_uuid, connection_id, filename)
                 if file:
                     record['content'] = json.loads(file.read()).get('content')
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
@@ -1418,9 +1417,8 @@ class ConnectionFileView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        project_uuid = uuid_str_to_32_chars(project_uuid)
         try:
-            file = get_file_from_s3_web_crawl(project_uuid, str(connection_id), file_path)
+            s3_meta = get_connection_file_head_from_s3(project_uuid, str(connection_id), file_path)
         except FileNotFound:
             error_msg = 'File not exist'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1429,10 +1427,27 @@ class ConnectionFileView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        etag = s3_meta.get('ETag')
+        if if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            return not_modified
+
+        try:
+            file = get_connection_file_from_s3(project_uuid, str(connection_id), file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         response = FileResponse(file)
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
-        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        response['Cache-Control'] = 'max-age=604800, private'
+        if etag:
+            response['ETag'] = etag
+        if s3_meta.get('LastModified'):
+            response['Last-Modified'] = formatdate(int(s3_meta['LastModified'].timestamp()), usegmt=True)
+        else:
+            response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
 
 
@@ -1552,13 +1567,23 @@ class DownloadEmailAttachments(APIView):
         os.makedirs(EMAIL_ATTACHMENT_TEMP_DIR, exist_ok=True)
         local_zip_path = os.path.join(EMAIL_ATTACHMENT_TEMP_DIR, project_uuid, connection_id, str(email_id), EMAIL_ATTACHMENTS_ZIP_NAME)
 
+        if not os.path.exists(local_zip_path):
+            error_msg = 'File not exist.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        etag, last_modified_time = gen_file_etag_and_modified_time(local_zip_path)
+        if if_none_match_hit(request, etag):
+            not_modified = HttpResponseNotModified()
+            not_modified['Cache-Control'] = 'max-age=604800, private'
+            return not_modified
+
         response = FileResponse(
             open(local_zip_path, "rb"),
             content_type="application/zip",
             as_attachment=True,
             filename=EMAIL_ATTACHMENTS_ZIP_NAME
         )
-        response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + str(os.path.getsize(local_zip_path)) + '"'
-        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        response['Cache-Control'] = 'max-age=604800, private'
+        response['ETag'] = etag
+        response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
         return response
