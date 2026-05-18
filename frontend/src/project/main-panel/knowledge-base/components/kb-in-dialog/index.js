@@ -38,7 +38,7 @@ const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) =>
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
 
   return (
-    <Preview className="sea-ticket-kb-in-dialog" knowledge={knowledge} onLinkClick={onLinkClick} />
+    <Preview className="seaqa-kb-in-dialog" knowledge={knowledge} onLinkClick={onLinkClick} />
   );
 };
 

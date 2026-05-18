@@ -98,7 +98,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     }
     return (
       <EmailDetails
-        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
         details={mergedDetails}
         projectUuid={projectUuid}
         connection_id={resource.connection_id}
@@ -112,7 +112,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     return (
       <GitHubIssuesDetails
-        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
         details={details}
         isSmallScreen={isSmallScreen}
       />
@@ -127,7 +127,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     }
     return (
       <DiscourseDetails
-        className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details pt-4 pb-4`}
+        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
         details={mergedDiscourseDetails}
         projectUuid={projectUuid}
         connection_id={resource.connection_id}
@@ -143,7 +143,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     }
     return (
-      <div className={`sea-ticket-connection-resource-details sea-ticket-connection-${type}-resource-details`}>
+      <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
         {details.map((detail, index) => {
           return (
             <CommonDetailItem detail={detail} type={type} key={index} />
@@ -154,7 +154,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   }
 
   if (details) {
-    return (<CustomizeMarkdownViewer className={`sea-ticket-connection-${type}-resource-details`} value={details} showTOC={false} />);
+    return (<CustomizeMarkdownViewer className={`seaqa-connection-${type}-resource-details`} value={details} showTOC={false} />);
   }
   return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };

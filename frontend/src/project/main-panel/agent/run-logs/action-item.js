@@ -185,7 +185,7 @@ const ActionItem = React.memo(({
                     icon="edit"
                     tip={gettext('Edit content')}
                     tooltipClassName='action-item-edit-content-tooltip'
-                    className='sea-ticket-project-refresh-btn'
+                    className='seaqa-project-refresh-btn'
                     placement="top"
                     hoverBackground={true}
                     onClick={handleViewContent}
@@ -231,7 +231,7 @@ const ActionItem = React.memo(({
             <div className={classnames('d-flex align-items-center justify-content-between', { 'mb-1': isThoughtExpanded })}>
               <IconButton
                 icon="arrow-down"
-                className={classnames('sea-ticket-project-refresh-btn sea-ticket-project-refresh-btn-thought', { 'sea-ticket-project-refresh-btn-expanded': isThoughtExpanded })}
+                className={classnames('seaqa-project-refresh-btn seaqa-project-refresh-btn-thought', { 'seaqa-project-refresh-btn-expanded': isThoughtExpanded })}
                 onClick={toggleThoughtExpand}
               >
                 <div className="action-label action-label-thought">{gettext('Thought')}</div>

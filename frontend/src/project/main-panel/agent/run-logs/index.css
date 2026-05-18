@@ -352,7 +352,7 @@
 }
 
 /* Default tooltip padding is 6px, in this special case padding-bottom use 4px */
-.sea-ticket-tooltip.action-item-edit-content-tooltip .tooltip {
+.seaqa-tooltip.action-item-edit-content-tooltip .tooltip {
   padding-bottom: 4px;
 }
 

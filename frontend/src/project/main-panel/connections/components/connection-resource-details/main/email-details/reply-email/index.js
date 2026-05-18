@@ -55,15 +55,15 @@ const ReplyEmail = ({
   }, [ableSubmit, emailTo, emailCC, emailContent, onToggle, onSubmit]);
 
   return (
-    <div className="sea-ticket-email-replay-container">
-      <div className="sea-ticket-email-replay-to">
-        <div className="sea-ticket-email-replay-to-title">
+    <div className="seaqa-email-replay-container">
+      <div className="seaqa-email-replay-to">
+        <div className="seaqa-email-replay-to-title">
           {gettext('To')}
         </div>
         <SendTo value={emailTo} onChange={onEmailToChange}/>
       </div>
-      <div className="sea-ticket-email-replay-to">
-        <div className="sea-ticket-email-replay-to-title">
+      <div className="seaqa-email-replay-to">
+        <div className="seaqa-email-replay-to-title">
           {gettext('Copy to')}
         </div>
         <SendTo value={emailCC} onChange={onEmailCCChange}/>
@@ -74,7 +74,7 @@ const ReplyEmail = ({
         assetURLPrefix={assetURLPrefix}
         onChange={onReplyChange}
       />
-      <div className="sea-ticket-email-replay-op-btns">
+      <div className="seaqa-email-replay-op-btns">
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
         <Button color="primary" disabled={!ableSubmit} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<>{gettext('Submit')}</>)}

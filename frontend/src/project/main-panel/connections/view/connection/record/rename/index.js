@@ -43,19 +43,19 @@ const Rename = ({
   }, [onToggle, handleModify]);
 
   return (
-    <div className="sea-ticket-rename-connection-title">
+    <div className="seaqa-rename-connection-title">
       <Input
         value={title}
         autoFocus={true}
         readOnly={isSubmitting}
-        className="sea-ticket-rename-connection-title-input"
+        className="seaqa-rename-connection-title-input"
         onChange={onChange}
         onKeyDown={onKeyDown}
       />
-      <Button className="sea-ticket-rename-connection-title-cancel-btn" onClick={onToggle}>
+      <Button className="seaqa-rename-connection-title-cancel-btn" onClick={onToggle}>
         {gettext('Cancel')}
       </Button>
-      <Button className="sea-ticket-rename-connection-title-submit-btn" color="primary" disabled={disabled} onClick={handleModify}>
+      <Button className="seaqa-rename-connection-title-submit-btn" color="primary" disabled={disabled} onClick={handleModify}>
         {isSubmitting ? (<Loading />) : gettext('Submit')}
       </Button>
     </div>

@@ -69,7 +69,7 @@ const SubStateSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item', className)}>
+      <div className={classnames('seaqa-settings-item', className)}>
         <CustomizeLabel icon="single-select">
           {gettext('Substate')}
         </CustomizeLabel>
@@ -80,7 +80,7 @@ const SubStateSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id="substate-editor-popover"
-          className="sea-ticket-settings-popover"
+          className="seaqa-settings-popover"
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}

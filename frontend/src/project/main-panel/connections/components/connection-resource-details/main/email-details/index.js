@@ -13,7 +13,7 @@ const EmailDetails = ({ details, className, ...props }) => {
 
   if (details.length === 0) {
     return (
-      <div className={classnames('sea-ticket-connection-email-record empty', className)}>
+      <div className={classnames('seaqa-connection-email-record empty', className)}>
         <EmptyTip />
       </div>
     );
@@ -22,9 +22,9 @@ const EmailDetails = ({ details, className, ...props }) => {
   const { email } = getInfoByEmailFrom(details[0]?.email_from);
 
   return (
-    <div className={classnames('sea-ticket-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
+    <div className={classnames('seaqa-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
       {!isShowAll && (
-        <div className="sea-ticket-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
+        <div className="seaqa-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
           <div className="email-avatar">
             <IconButton icon="more" className="no-hover-bg more-tip" />
           </div>

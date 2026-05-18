@@ -92,7 +92,7 @@ const LabelsSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item mb-4', className)}>
+      <div className={classnames('seaqa-settings-item mb-4', className)}>
         <CustomizeLabel icon="multiple-select">
           {gettext('Labels')}
         </CustomizeLabel>
@@ -128,7 +128,7 @@ const LabelsSettings = ({
       {!isReadonly && isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover sea-ticket-settings-popover"
+          className="option-editor-popover seaqa-settings-popover"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}

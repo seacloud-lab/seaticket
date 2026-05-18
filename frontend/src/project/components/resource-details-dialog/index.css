@@ -1,51 +1,51 @@
-.sea-ticket-resource-details-dialog {
+.seaqa-resource-details-dialog {
   height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
-.sea-ticket-resource-details-dialog .modal-content {
+.seaqa-resource-details-dialog .modal-content {
   height: 100%;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-header {
+.seaqa-resource-details-dialog .modal-content .modal-header {
   height: 37px;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-header .modal-title {
+.seaqa-resource-details-dialog .modal-content .modal-header .modal-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex: 1;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-header .modal-title .text-truncate {
+.seaqa-resource-details-dialog .modal-content .modal-header .modal-title .text-truncate {
   max-width: 400px;
 }
 
-.sea-ticket-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .seaqa-icon-btn {
+.seaqa-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .seaqa-icon-btn {
   height: 28px;
   width: 28px;
   margin-right: -16px;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-header .seaqa-modal-close.close {
+.seaqa-resource-details-dialog .modal-content .modal-header .seaqa-modal-close.close {
   flex: unset
 }
 
-.sea-ticket-resource-details-dialog .modal-header .open-in-new-tab-btn {
+.seaqa-resource-details-dialog .modal-header .open-in-new-tab-btn {
   height: 28px;
   width: 28px;
   margin-left: 8px;
   flex-shrink: 0;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons {
+.seaqa-resource-details-dialog .row-expand-direct-icons {
   display: flex;
   justify-content: space-between;
   width: 46px;
   flex-shrink: 0;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon {
+.seaqa-resource-details-dialog .row-expand-direct-icons .direct-icon {
   cursor: pointer;
   display: inline-block;
   height: 20px;
@@ -55,23 +55,23 @@
   margin: 0px;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon .seaqa-icon-svg-arrow-down {
+.seaqa-resource-details-dialog .row-expand-direct-icons .direct-icon .seaqa-icon-svg-arrow-down {
   color: #000;
   width: 16px !important;
   height: 16px !important;
   opacity: .5;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon:hover .seaqa-icon-svg-arrow-down {
+.seaqa-resource-details-dialog .row-expand-direct-icons .direct-icon:hover .seaqa-icon-svg-arrow-down {
   opacity: .75;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-body {
+.seaqa-resource-details-dialog .modal-content .modal-body {
   padding: 0px;
   overflow: hidden;
 }
 
-.sea-ticket-resource-details-dialog .sea-ticket-resource-type-avatar {
+.seaqa-resource-details-dialog .seaqa-resource-type-avatar {
   height: 20px;
   width: 20px;
   flex-shrink: 0;
@@ -80,11 +80,11 @@
   justify-content: center;
 }
 
-.sea-ticket-resource-details-dialog .sea-ticket-resource-type-avatar img {
+.seaqa-resource-details-dialog .seaqa-resource-type-avatar img {
   height: 20px;
   width: 20px;
 }
 
-.sea-ticket-resource-details-dialog .sea-ticket-github-comment-editor {
+.seaqa-resource-details-dialog .seaqa-github-comment-editor {
   margin-bottom: 16px;
 }

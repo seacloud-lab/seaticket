@@ -42,7 +42,7 @@ const DiscourseDetails = ({
   }, [projectUuid, connection_id, recordId, handleReplyDiscourseSuccess]);
 
   return (
-    <div className={classnames('sea-ticket-connection-discourse-record', className, { 'empty': details.length === 0 })}>
+    <div className={classnames('seaqa-connection-discourse-record', className, { 'empty': details.length === 0 })}>
       {details.length === 0 ? (
         <EmptyTip />
       ) : (
@@ -62,7 +62,7 @@ const DiscourseDetails = ({
                 onSubmit={onSubmit}
               />
             ) : (
-              <div className="sea-ticket-discourse-reply-btn">
+              <div className="seaqa-discourse-reply-btn">
                 <IconButton
                   icon="reply"
                   text={gettext('Reply')}

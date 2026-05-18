@@ -24,9 +24,9 @@ const PriorityEditor = ({
         icon: priority.icon,
         name: priority.name,
         label: (
-          <div className="sea-ticket-priority-editor-option-name-hotkey d-flex justify-content-between w-100" >
-            <div className="sea-ticket-priority-editor-option-name">{priority.name}</div>
-            <div className="sea-ticket-priority-editor-option-hotkey">{priority.hotKey}</div>
+          <div className="seaqa-priority-editor-option-name-hotkey d-flex justify-content-between w-100" >
+            <div className="seaqa-priority-editor-option-name">{priority.name}</div>
+            <div className="seaqa-priority-editor-option-hotkey">{priority.hotKey}</div>
           </div>
         ),
       };
@@ -36,7 +36,7 @@ const PriorityEditor = ({
   return (
     <OptionEditor
       target={target}
-      className={classnames('sea-ticket-priority-editor-popover', className)}
+      className={classnames('seaqa-priority-editor-popover', className)}
       onToggle={onToggle}
       value={value}
       isSearchEnabled={false}

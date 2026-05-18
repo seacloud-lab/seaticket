@@ -170,15 +170,15 @@ const HTMLContent = ({
     <>
       <div className={className} ref={ref} dangerouslySetInnerHTML={{ __html: content }} onClick={handleClick} />
       {attachments.length > 0 && (
-        <div className="sea-ticket-email-attachments">
+        <div className="seaqa-email-attachments">
           {attachments.map((attachment, index) => {
             const attachmentName = isString(attachment) ? attachment : '';
             const url = attachmentName ? `${assetURLPrefix}${detail._pk}/${attachmentName}` : '';
             const Tag = isReadonly ? 'span' : 'a';
             const canDownload = !isReadonly && Boolean(url);
             return (
-              <div className="sea-ticket-email-attachment" key={index}>
-                <div className="sea-ticket-email-attachment-icon">
+              <div className="seaqa-email-attachment" key={index}>
+                <div className="seaqa-email-attachment-icon">
                   <img
                     src={attachmentName && Utils.imageCheck(attachmentName) ? url : Utils.getFileIconUrl(attachmentName)}
                     alt=""
@@ -186,23 +186,23 @@ const HTMLContent = ({
                     width={32}
                   />
                 </div>
-                <div className="sea-ticket-email-attachment-info">
+                <div className="seaqa-email-attachment-info">
                   <Tag
-                    className="sea-ticket-email-attachment-name"
+                    className="seaqa-email-attachment-name"
                     href={canDownload ? url : undefined}
                     target={canDownload ? '_blank' : undefined}
                     rel={canDownload ? 'noopener noreferrer' : undefined}
                   >
                     {attachmentName || gettext('Unnamed attachment')}
                   </Tag>
-                  {/* <div className="sea-ticket-email-attachment-size">{''}</div> */}
+                  {/* <div className="seaqa-email-attachment-size">{''}</div> */}
                 </div>
-                <div className="sea-ticket-email-attachment-divider"></div>
+                <div className="seaqa-email-attachment-divider"></div>
                 {canDownload && (
                   <IconButton
                     icon="download"
                     title={gettext('Download')}
-                    className="sea-ticket-email-attachment-download-btn no-hover-bg"
+                    className="seaqa-email-attachment-download-btn no-hover-bg"
                     size={{ btn: 32, icon: 16 }}
                     onClick={() => handDownload(url)}
                   />
@@ -215,7 +215,7 @@ const HTMLContent = ({
       {!isReadonly && attachments.length > 1 && (
         <IconTextBtn
           icon={isDownloadingAll ? '' : 'download'}
-          className="sea-ticket-email-attachments-download-btn"
+          className="seaqa-email-attachments-download-btn"
           text={downloadAllTip}
           disabled={isDownloadingAll}
           isLoading={isDownloadingAll}

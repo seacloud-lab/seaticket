@@ -22,14 +22,14 @@
   justify-content: flex-end;
 }
 
-.ai-statistics-dialog .sea-ticket-ai-statistic-date-condition {
+.ai-statistics-dialog .seaqa-ai-statistic-date-condition {
   display: flex;
   gap: 4px;
   height: 28px;
   align-items: center;
 }
 
-.ai-statistics-dialog .sea-ticket-ai-statistic-date-condition .date-range-value input.form-control {
+.ai-statistics-dialog .seaqa-ai-statistic-date-condition .date-range-value input.form-control {
   border: unset;
   padding: 0;
   height: auto;

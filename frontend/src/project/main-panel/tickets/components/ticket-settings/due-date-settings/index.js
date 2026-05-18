@@ -43,14 +43,14 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
   }, [translateCalendar]);
 
   return (
-    <div className={classnames('sea-ticket-settings-item', className)}>
+    <div className={classnames('seaqa-settings-item', className)}>
       <CustomizeLabel icon="date">
         {gettext('Due date')}
       </CustomizeLabel>
       <div className="ticket-due-date-formatter">
         <DatePicker
           getCalendarContainer={getCalendarContainer}
-          calendar={<Calendar format='YYYY-MM-DD' locale={locale} className="sea-ticket-calendar"/>}
+          calendar={<Calendar format='YYYY-MM-DD' locale={locale} className="seaqa-calendar"/>}
           disabled={isReadonly}
           value={formatValue}
           onChange={onDueDateChange}

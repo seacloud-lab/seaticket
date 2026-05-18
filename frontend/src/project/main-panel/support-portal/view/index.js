@@ -30,17 +30,17 @@ const View = () => {
   }, []);
 
   return (
-    <div className={classnames('sea-ticket-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>
-      <div className="sea-ticket-support-portal-tip-img">
+    <div className={classnames('seaqa-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>
+      <div className="seaqa-support-portal-tip-img">
         <img src={`${mediaUrl}img/support-portal.png`} alt="" />
       </div>
-      <div className="sea-ticket-support-portal-tip-title">
+      <div className="seaqa-support-portal-tip-title">
         {gettext('What is support portal?')}
       </div>
-      <div className="sea-ticket-support-portal-tip-text">
+      <div className="seaqa-support-portal-tip-text">
         {gettext('Support portal allows external users to self-service and obtain support information, including documentation, knowledge base articles, and ticket management. It acts as the customer-facing interface for your support services.')}
       </div>
-      <div className="sea-ticket-support-portal-tip-pages">
+      <div className="seaqa-support-portal-tip-pages">
         {isProjectAdmin && (
           <CustomizeBtn color="primary" icon="rename" onClick={() => window.open(editURL, '_blank', 'noopener,noreferrer')}>
             {gettext('Edit portal')}

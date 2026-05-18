@@ -78,7 +78,7 @@
   width: 100%;
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings .sea-ticket-settings-item:last-child {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings .seaqa-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 

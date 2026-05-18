@@ -1,4 +1,4 @@
-.sea-ticket-knowledge-preview {
+.seaqa-knowledge-preview {
   width: 100%;
   flex: 1;
   overflow-y: auto;
@@ -6,7 +6,7 @@
   padding: 24px 143px 40px 143px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-create-info {
+.seaqa-knowledge-preview .seaqa-knowledge-create-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,7 +15,7 @@
   margin-bottom: 24px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-create-info .sea-ticket-knowledge-creator {
+.seaqa-knowledge-preview .seaqa-knowledge-create-info .seaqa-knowledge-creator {
   border-radius: 0;
   padding: 0;
   background-color: inherit;
@@ -25,19 +25,19 @@
   font-size: 14px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-create-info .sea-ticket-knowledge-create-time {
+.seaqa-knowledge-preview .seaqa-knowledge-create-info .seaqa-knowledge-create-time {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-create-info .sea-ticket-knowledge-create-time-content {
+.seaqa-knowledge-preview .seaqa-knowledge-create-info .seaqa-knowledge-create-time-content {
   color: var(--bs-body-secondary-color);
   font-size: 14px;
   line-height: 20px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-title {
+.seaqa-knowledge-preview .seaqa-knowledge-title {
   margin-bottom: 16px;
   border: none;
   color: var(--bs-body-color);
@@ -45,7 +45,7 @@
   font-weight: 700;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-tags {
+.seaqa-knowledge-preview .seaqa-knowledge-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -53,15 +53,15 @@
   margin-bottom: 32px;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-tags .sea-metadata-tag {
+.seaqa-knowledge-preview .seaqa-knowledge-tags .sea-metadata-tag {
   margin-right: 0;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-content {
+.seaqa-knowledge-preview .seaqa-knowledge-content {
   height: fit-content;
 }
 
-.sea-ticket-knowledge-preview .sea-ticket-knowledge-content .sf-slate-viewer-article-container .article {
+.seaqa-knowledge-preview .seaqa-knowledge-content .sf-slate-viewer-article-container .article {
   max-width: 100%;
   padding: 0 !important;
 }

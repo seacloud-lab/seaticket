@@ -82,7 +82,7 @@ const PrioritySettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item', className)}>
+      <div className={classnames('seaqa-settings-item', className)}>
         <CustomizeLabel icon="flag">
           {gettext('Priority')}
         </CustomizeLabel>
@@ -98,7 +98,7 @@ const PrioritySettings = ({
           target={editorRef}
           priorities={PRIORITIES}
           value={value}
-          className="sea-ticket-settings-popover sea-ticket-priority-settings-popover"
+          className="seaqa-settings-popover seaqa-priority-settings-popover"
           sameWidthWithTarget={240}
           onChange={onChangeValue}
           onToggle={closeEditor}

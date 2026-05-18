@@ -82,7 +82,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
   }), [projectUuid, myIssueViewsData]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-ticket-${projectUuid}-my-issues`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-my-issues`, [projectUuid]);
 
   const longTextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)

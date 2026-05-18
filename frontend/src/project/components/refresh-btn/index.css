@@ -1,20 +1,20 @@
-.sea-ticket-project-refresh-btn {
+.seaqa-project-refresh-btn {
   display: inline-flex;
   height: 24px;
   width: 24px;
   flex-shrink: 0;
 }
 
-.sea-ticket-project-refresh-btn>svg  {
+.seaqa-project-refresh-btn>svg  {
   color: #666 !important;
 }
 
-.sea-ticket-project-refresh-btn-thought {
+.seaqa-project-refresh-btn-thought {
   width: auto;
   margin: 0px;
   padding: 0 4px;
 }
 
-.sea-ticket-project-refresh-btn-expanded svg {
+.seaqa-project-refresh-btn-expanded svg {
   transform: rotate(180deg);
 }

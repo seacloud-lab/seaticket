@@ -63,7 +63,7 @@ const CollaboratorsSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item', className)}>
+      <div className={classnames('seaqa-settings-item', className)}>
         <CustomizeLabel icon="group">
           {title}
         </CustomizeLabel>
@@ -97,7 +97,7 @@ const CollaboratorsSettings = ({
           sameWidthWithTarget={240}
           target={assigneesRef}
           value={value}
-          className="sea-ticket-settings-popover"
+          className="seaqa-settings-popover"
           placeholder={gettext('Search users')}
           emptyTip={gettext('No users available')}
           collaborators={collaborators}

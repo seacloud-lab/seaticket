@@ -199,7 +199,7 @@ class DateEditor extends Component {
         <DatePicker
           calendar={
             <Calendar
-              className="sea-ticket-calendar"
+              className="seaqa-calendar"
               locale={translateCalendar(this.lang)}
               style={{ zIndex: 1060 }}
               dateInputPlaceholder={gettext('Enter date')}

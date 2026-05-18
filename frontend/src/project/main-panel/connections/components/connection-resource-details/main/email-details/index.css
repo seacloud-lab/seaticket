@@ -1,9 +1,9 @@
-.sea-ticket-connection-email-record {
+.seaqa-connection-email-record {
   display: flex;
   flex-direction: column;
 }
 
-.sea-ticket-connection-email-record-details {
+.seaqa-connection-email-record-details {
   display: flex;
   align-items: center;
   border-radius: 8px;
@@ -14,7 +14,7 @@
   transition: margin .2s;
 }
 
-.sea-ticket-connection-email-record-details .email-avatar {
+.seaqa-connection-email-record-details .email-avatar {
   width: 60px;
   height: 60px;
   display: flex;
@@ -23,20 +23,20 @@
   flex-shrink: 0;
 }
 
-.sea-ticket-connection-email-record-details .email-avatar img {
+.seaqa-connection-email-record-details .email-avatar img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info {
+.seaqa-connection-email-record-details .email-record-info {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info .email-record-info-container {
+.seaqa-connection-email-record-details .email-record-info .email-record-info-container {
   width: 100%;
   overflow: hidden;
   display: flex;
@@ -45,49 +45,49 @@
   gap: 4px;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info .email-record-info-sender {
+.seaqa-connection-email-record-details .email-record-info .email-record-info-sender {
   width: fit-content;
   flex-shrink: 0;
   font-weight: 500;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info-to {
+.seaqa-connection-email-record-details .email-record-info-to {
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info .email-record-info-content {
+.seaqa-connection-email-record-details .email-record-info .email-record-info-content {
   flex: 1;
   color: #666;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info .email-record-info-time {
+.seaqa-connection-email-record-details .email-record-info .email-record-info-time {
   width: fit-content;
   flex-shrink: 0;
   text-align: right;
 }
 
 /* collapsed */
-.sea-ticket-connection-email-record-details.collapsed {
+.seaqa-connection-email-record-details.collapsed {
   cursor: pointer;
   margin-bottom: -27px;
 }
 
 /* expanded */
-.sea-ticket-connection-email-record-details.expanded {
+.seaqa-connection-email-record-details.expanded {
   flex-direction: column;
   padding-right: 0;
   margin-bottom: 16px;
   box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
 }
 
-.sea-ticket-connection-email-record-details.expanded:last-child {
+.seaqa-connection-email-record-details.expanded:last-child {
   margin-bottom: 0;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-header {
+.seaqa-connection-email-record-details.expanded .email-header {
   width: 100%;
   display: flex;
   align-items: center;
@@ -95,14 +95,14 @@
   padding-right: 10px;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body {
+.seaqa-connection-email-record-details.expanded .email-body {
   width: 100%;
   border-top: 1px solid #eee;
   font-size: 14px;
   padding: 10px;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body .email-item-toggle-btn {
+.seaqa-connection-email-record-details.expanded .email-body .email-item-toggle-btn {
   background-color: #f5f5f5;
   font-size: 13px;
   height: 18px;
@@ -111,53 +111,53 @@
   width: 32px;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body .email-item-toggle-btn:hover {
+.seaqa-connection-email-record-details.expanded .email-body .email-item-toggle-btn:hover {
   background-color: #e5e5e5 !important;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body .email-content-detail {
+.seaqa-connection-email-record-details.expanded .email-body .email-content-detail {
   overflow-x: auto;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body .email-content-detail img {
+.seaqa-connection-email-record-details.expanded .email-body .email-content-detail img {
   max-width: calc(100% - 2px) !important;
   height: auto !important;
   object-fit: contain;
 }
 
-.sea-ticket-connection-email-record-details.expanded .email-body table .row {
+.seaqa-connection-email-record-details.expanded .email-body table .row {
   margin-left: 0;
   margin-right: 0;
 }
 
 /* more */
-.sea-ticket-connection-email-record-details.more .email-avatar {
+.seaqa-connection-email-record-details.more .email-avatar {
   align-items: flex-start;
 }
 
-.sea-ticket-connection-email-record-details.more .email-avatar .more-tip {
+.seaqa-connection-email-record-details.more .email-avatar .more-tip {
   height: 20px;
   width: 20px;
   margin-top: 9px;
 }
 
-.sea-ticket-connection-email-record-details.more .email-avatar .more-tip .seaqa-icon-svg-more {
+.seaqa-connection-email-record-details.more .email-avatar .more-tip .seaqa-icon-svg-more {
   height: 20px;
   width: 20px;
 }
 
-.sea-ticket-connection-email-record-details.more .email-record-info-more-count {
+.seaqa-connection-email-record-details.more .email-record-info-more-count {
   font-weight: 600;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info-to {
+.seaqa-connection-email-record-details .email-record-info-to {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sea-ticket-connection-email-record-details .email-record-info-to-container {
+.seaqa-connection-email-record-details .email-record-info-to-container {
   display: flex;
   align-items: center;
   justify-content: space-between;

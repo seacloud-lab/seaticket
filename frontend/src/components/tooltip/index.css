@@ -1,12 +1,12 @@
-.sea-ticket-tooltip .tooltip.show {
+.seaqa-tooltip .tooltip.show {
   opacity: 1;
 }
 
-.sea-ticket-tooltip.top-start .tooltip.show {
+.seaqa-tooltip.top-start .tooltip.show {
   left: -0.4rem !important;
 }
 
-.sea-ticket-tooltip .tooltip-inner {
+.seaqa-tooltip .tooltip-inner {
   max-width: 242px;
   text-align: start;
   background-color: var(--bs-body-color);
@@ -17,14 +17,14 @@
   font-weight: 400;
 }
 
-.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .tooltip-inner {
+.seaqa-tooltip.seaqa-tooltip-with-confirm-tip .tooltip-inner {
   padding: 8px 12px;
   display: inline-flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .sea-ticket-tooltip-confirm-text {
+.seaqa-tooltip.seaqa-tooltip-with-confirm-tip .seaqa-tooltip-confirm-text {
   color: #999;
   font-size: 14px;
   line-height: 22px;
@@ -34,30 +34,30 @@
   cursor: pointer;
 }
 
-.sea-ticket-tooltip.sea-ticket-tooltip-with-confirm-tip .sea-ticket-tooltip-confirm-text:hover {
+.seaqa-tooltip.seaqa-tooltip-with-confirm-tip .seaqa-tooltip-confirm-text:hover {
   color: var(--bs-body-bg);
 }
 
-.sea-ticket-tooltip .bs-tooltip-right .arrow::before,
-.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="right"] .arrow::before {
+.seaqa-tooltip .bs-tooltip-right .arrow::before,
+.seaqa-tooltip .bs-tooltip-auto[x-placement^="right"] .arrow::before {
   border-right-color: var(--bs-body-color);
 }
 
-.sea-ticket-tooltip .bs-tooltip-top .arrow::before,
-.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="top"] .arrow::before {
+.seaqa-tooltip .bs-tooltip-top .arrow::before,
+.seaqa-tooltip .bs-tooltip-auto[x-placement^="top"] .arrow::before {
   border-top-color: var(--bs-body-color);
 }
 
-.sea-ticket-tooltip .bs-tooltip-bottom .arrow::before,
-.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+.seaqa-tooltip .bs-tooltip-bottom .arrow::before,
+.seaqa-tooltip .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
   border-bottom-color: var(--bs-body-color);
 }
 
-.sea-ticket-tooltip .bs-tooltip-left .arrow::before,
-.sea-ticket-tooltip .bs-tooltip-auto[x-placement^="left"] .arrow::before {
+.seaqa-tooltip .bs-tooltip-left .arrow::before,
+.seaqa-tooltip .bs-tooltip-auto[x-placement^="left"] .arrow::before {
   border-left-color: var(--bs-body-color);
 }
 
-.sea-ticket-tooltip .bs-tooltip-auto[data-popper-placement^="right"] .arrow::before {
+.seaqa-tooltip .bs-tooltip-auto[data-popper-placement^="right"] .arrow::before {
   border-right-color: var(--bs-body-color);
 }

@@ -131,7 +131,7 @@ const AIReply = forwardRef(({
   return (
     <>
       {aiReply && (
-        <div className={classnames('sea-ticket-ai-reply', aiMessageType, className, propsClassName)}>
+        <div className={classnames('seaqa-ai-reply', aiMessageType, className, propsClassName)}>
           <CustomizeMarkdownViewerComponent
             value={aiReply}
             showTOC={false}

@@ -17,9 +17,9 @@ const SecondaryBtn = ({ icon = '', text, isSmall, disabled, doing, className = '
 
   return (
     <div
-      className={classnames('sea-ticket-secondary-btn', className, `sea-ticket-${icon}-secondary-btn`, {
-        'sea-ticket-secondary-icon-btn': icon,
-        'sea-ticket-secondary-small-btn': isSmall,
+      className={classnames('seaqa-secondary-btn', className, `seaqa-${icon}-secondary-btn`, {
+        'seaqa-secondary-icon-btn': icon,
+        'seaqa-secondary-small-btn': isSmall,
         'disabled': disabled,
         'doing': doing,
       })}

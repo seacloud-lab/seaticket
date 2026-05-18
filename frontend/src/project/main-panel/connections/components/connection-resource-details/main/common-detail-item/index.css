@@ -1,42 +1,42 @@
-.sea-ticket-resource-detail-item {
+.seaqa-resource-detail-item {
   margin-top: 16px;
   margin-bottom: 16px;
   border-bottom: 1px solid #eee;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper {
+.seaqa-resource-detail-item .author-info-wrapper {
   display: flex;
   justify-content: space-between;
 }
 
-.sea-ticket-resource-detail-item .sea-ticket-resource-detail-item-content {
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content {
   padding-left: 42px;
   padding-bottom: 16px;
   word-wrap: break-word;
 }
 
-.sea-ticket-resource-detail-item .sea-ticket-resource-detail-item-content :last-child {
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content :last-child {
   margin-bottom: 0px;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper .author-info-left {
+.seaqa-resource-detail-item .author-info-wrapper .author-info-left {
   display: flex;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper .author-info-left .author-avatar {
+.seaqa-resource-detail-item .author-info-wrapper .author-info-left .author-avatar {
   width: 32px;
   height: 32px;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper .author-info-left .author-avatar img {
+.seaqa-resource-detail-item .author-info-wrapper .author-info-left .author-avatar img {
   border-radius: 50%;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper .author-info-left .author-name {
+.seaqa-resource-detail-item .author-info-wrapper .author-info-left .author-name {
   padding-left: 10px;
   font-weight: 500;
 }
 
-.sea-ticket-resource-detail-item .author-info-wrapper .author-time {
+.seaqa-resource-detail-item .author-info-wrapper .author-time {
   color: #666;
 }

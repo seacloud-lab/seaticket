@@ -62,7 +62,7 @@ const TypeSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item mb-4', className)}>
+      <div className={classnames('seaqa-settings-item mb-4', className)}>
         <CustomizeLabel icon="single-select">
           {gettext('Type')}
         </CustomizeLabel>
@@ -73,7 +73,7 @@ const TypeSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id={id}
-          className="sea-ticket-settings-popover"
+          className="seaqa-settings-popover"
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}

@@ -57,7 +57,7 @@ class DateAndTimePicker extends React.Component {
             format={format}
             locale={translateCalendar()}
             showHourAndMinute={showHourAndMinute}
-            className="sea-ticket-calendar"
+            className="seaqa-calendar"
           />
         }
         value={this.props.value}

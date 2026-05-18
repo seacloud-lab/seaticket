@@ -1,4 +1,4 @@
-.sea-ticket-secondary-btn {
+.seaqa-secondary-btn {
   height: 38px;
   width: fit-content;
   display: flex;
@@ -13,20 +13,20 @@
   gap: 8px;
 }
 
-.sea-ticket-secondary-btn.disabled {
+.seaqa-secondary-btn.disabled {
   opacity: .65;
 }
 
-.sea-ticket-secondary-btn:not(.disabled):hover {
+.seaqa-secondary-btn:not(.disabled):hover {
   background-color: var(--bs-body-secondary-bg);
   cursor: pointer;
 }
 
-.sea-ticket-secondary-btn:not(.disabled):active {
+.seaqa-secondary-btn:not(.disabled):active {
   background-color: #E9E9E9;
 }
 
-.sea-ticket-secondary-btn.sea-ticket-secondary-small-btn {
+.seaqa-secondary-btn.seaqa-secondary-small-btn {
   font-size: 12px;
   color: var(--bs-body-color);
   height: 26px;
@@ -34,24 +34,24 @@
   gap: 4px;
 }
 
-.sea-ticket-secondary-btn .seaqa-icon-svg {
+.seaqa-secondary-btn .seaqa-icon-svg {
   height: 12px;
   width: 12px;
   color: var(--bs-icon-color);
 }
 
-.sea-ticket-secondary-btn .seaqa-loading-icon {
+.seaqa-secondary-btn .seaqa-loading-icon {
   height: 12px;
   width: 12px;
   margin: 0;
 }
 
-.sea-ticket-secondary-btn.doing {
+.seaqa-secondary-btn.doing {
   color: var(--bs-body-secondary-color);
 }
 
-.sea-ticket-secondary-btn.doing:hover,
-.sea-ticket-secondary-btn.doing:active {
+.seaqa-secondary-btn.doing:hover,
+.seaqa-secondary-btn.doing:active {
   cursor: default;
   background-color: var(--bs-body-bg);
 }

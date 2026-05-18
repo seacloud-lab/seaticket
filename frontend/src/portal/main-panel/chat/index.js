@@ -106,7 +106,7 @@ const Ask = ({ title = gettext('Chat') }) => {
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider
         projectUuid={projectUuid}
-        localStorageKey={`sea-ticket-${projectUuid}-portal-chat-sessions-display`}
+        localStorageKey={`seaqa-${projectUuid}-portal-chat-sessions-display`}
         api={chatAPI}
       >
         <DocumentsProvider>

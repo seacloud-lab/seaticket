@@ -16,7 +16,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
   const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(true);
-  const localStorageKeyRef = useRef(localStorageKey || `sea-ticket-${projectUuid}-chat-sessions-display`);
+  const localStorageKeyRef = useRef(localStorageKey || `seaqa-${projectUuid}-chat-sessions-display`);
 
   const sendMessageRequestController = useRef({});
 

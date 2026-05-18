@@ -118,7 +118,7 @@ class FilterCalendar extends Component {
         <DatePicker
           calendar={
             <Calendar
-              className="sea-ticket-calendar"
+              className="seaqa-calendar"
               locale={translateCalendar(this.lang)}
               style={{ zIndex: zIndex || 1001 }}
               dateInputPlaceholder={gettext('Enter date')}

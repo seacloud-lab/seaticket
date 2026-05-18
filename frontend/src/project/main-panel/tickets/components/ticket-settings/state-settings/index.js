@@ -91,7 +91,7 @@ const StateSettings = ({
 
   return (
     <>
-      <div className={classnames('sea-ticket-settings-item', className)}>
+      <div className={classnames('seaqa-settings-item', className)}>
         <CustomizeLabel icon="single-select">
           {gettext('State')}
         </CustomizeLabel>
@@ -102,7 +102,7 @@ const StateSettings = ({
       {!isReadonly && isShowEditor && (
         <OptionEditor
           id="state-editor-popover"
-          className="sea-ticket-settings-popover sea-ticket-state-settings-popover"
+          className="seaqa-settings-popover seaqa-state-settings-popover"
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
