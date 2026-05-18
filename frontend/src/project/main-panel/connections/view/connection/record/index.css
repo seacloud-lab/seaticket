@@ -1,4 +1,4 @@
-.sea-connection-record-details {
+.seaqa-connection--record-details {
   flex: 1;
   height: fit-content;
   overflow-x: hidden;
@@ -11,7 +11,7 @@
   position: relative;
 }
 
-.sea-connection-record-details .sea-connection-record-details-header {
+.seaqa-connection--record-details .seaqa-connection--record-details-header {
   overflow: hidden;
   width: 100%;
   font-size: 24px;
@@ -28,7 +28,7 @@
   z-index: 103;
 }
 
-.sea-connection-record-details .sea-connection-record-details-header .sea-connection-record-details-header-left {
+.seaqa-connection--record-details .seaqa-connection--record-details-header .seaqa-connection--record-details-header-left {
   align-items: center;
   display: flex;
   gap: 8px;
@@ -36,7 +36,7 @@
   max-width: calc(100% - 32px);
 }
 
-.sea-connection-record-details .sea-connection-record-details-body {
+.seaqa-connection--record-details .seaqa-connection--record-details-body {
   display: flex;
   width: 100%;
   padding: 16px 0 50px 0;
@@ -46,58 +46,58 @@
   gap: 24px;
 }
 
-.sea-connection-record-details .sea-connection-record-details-body.empty {
+.seaqa-connection--record-details .seaqa-connection--record-details-body.empty {
   height: 100%;
   padding: 0;
 }
 
-.sea-connection-record-details .sea-connection-record-details-body.empty .sea-connection-record-details-container {
+.seaqa-connection--record-details .seaqa-connection--record-details-body.empty .seaqa-connection--record-details-container {
   width: 100%;
 }
 
-.sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-container {
+.seaqa-connection--record-details .seaqa-connection--record-details-body .seaqa-connection--record-details-container {
   width: calc((100% - 16px) * 0.8);
 }
 
-.sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-others {
+.seaqa-connection--record-details .seaqa-connection--record-details-body .seaqa-connection--record-details-others {
   width: calc((100% - 16px) * 0.2);
   display: flex;
   flex-direction: column;
 }
 
 /* small */
-.sea-connection-record-details.small .sea-connection-record-details-body {
+.seaqa-connection--record-details.small .seaqa-connection--record-details-body {
   flex-direction: column;
   min-height: fit-content;
   gap: 0;
 }
 
-.sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-container {
+.seaqa-connection--record-details.small .seaqa-connection--record-details-body .seaqa-connection--record-details-container {
   width: 100%;
 }
 
-.sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-others {
+.seaqa-connection--record-details.small .seaqa-connection--record-details-body .seaqa-connection--record-details-others {
   width: 100%;
 }
 
 /* customize css */
 /* github | email | discourse_forum */
-.sea-connection-record-details .seaqa-connection-github_issue-resource-details,
-.sea-connection-record-details .seaqa-connection-email-resource-details,
-.sea-connection-record-details .seaqa-connection-discourse_forum-resource-details {
+.seaqa-connection--record-details .seaqa-connection-github_issue-resource-details,
+.seaqa-connection--record-details .seaqa-connection-email-resource-details,
+.seaqa-connection--record-details .seaqa-connection-discourse_forum-resource-details {
   padding: 0 !important;
 }
 
-.sea-connection-record-details .seaqa-connection-email-resource-details {
+.seaqa-connection--record-details .seaqa-connection-email-resource-details {
   overflow-y: unset;
   padding-bottom: 28px !important;
 }
 
-.sea-connection-record-details .seaqa-connection-email-resource-details.last-record-expand {
+.seaqa-connection--record-details .seaqa-connection-email-resource-details.last-record-expand {
   padding-bottom: 0 !important;
 }
 
-.sea-connection-record-details .seaqa-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
+.seaqa-connection--record-details .seaqa-connection-github_issue-resource-details .sf-slate-viewer-article-container .article {
   padding: 10px 16px 24px 16px !important;
   border: unset;
   height: auto;
@@ -108,13 +108,13 @@
 }
 
 /* seafile */
-.sea-connection-record-details .seaqa-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
-.sea-connection-record-details .seaqa-connection-site-resource-details .sf-slate-viewer-article-container .article {
+.seaqa-connection--record-details .seaqa-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
+.seaqa-connection--record-details .seaqa-connection-site-resource-details .sf-slate-viewer-article-container .article {
   max-width: 100%;
   padding: 0 !important;
 }
 
-.sea-connection-record-details .sea-connection-record-outdated-option {
+.seaqa-connection--record-details .seaqa-connection--record-outdated-option {
   height: 24px;
   padding: 0 8px;
   line-height: 24px;
@@ -123,6 +123,6 @@
   margin-right: 4px;
 }
 
-.sea-connection-record-details .sea-connection-record-outdated-option .seaqa-ui-option-name {
+.seaqa-connection--record-details .seaqa-connection--record-outdated-option .seaqa-ui-option-name {
   font-size: 14px;
 }
