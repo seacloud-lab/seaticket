@@ -140,15 +140,6 @@ def get_project_file_from_s3(project_uuid, file_path):
     response = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
     return response['Body']
 
-def get_file_metadata_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    response = s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-    return {
-        'ContentLength': response.get('ContentLength', 0),
-        'ContentType': response.get('ContentType', ''),
-        'LastModified': response.get('LastModified'),
-        'ETag': response.get('ETag', ''),
-    }
 
 def get_project_file_head_from_s3(project_uuid, file_path):
     s3_file_path = gen_s3_project_file_path(project_uuid, file_path)

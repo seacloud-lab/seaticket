@@ -25,8 +25,8 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, get_file_from_s3, get_file_metadata_from_s3, \
-    upload_portal_logo_file_to_s3, gen_portal_logo_file_path
+from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
+    upload_portal_logo_file_to_s3, gen_portal_logo_file_path, get_project_file_from_s3, get_project_file_head_from_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -82,14 +82,14 @@ class PortalLogoView(APIView):
 
         file_path = gen_portal_logo_file_path()
         try:
-            metadata = get_file_metadata_from_s3(project_uuid, file_path)
+            metadata = get_project_file_head_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            file = get_file_from_s3(project_uuid, file_path)
+            file = get_project_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
