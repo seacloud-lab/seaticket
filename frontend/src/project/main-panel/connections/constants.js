@@ -346,6 +346,11 @@ export const CONNECTION_TYPES = [
   }
 ];
 
+export const getAvailableConnectionTypes = (enableGeneralTask = false) => {
+  if (enableGeneralTask) return CONNECTION_TYPES;
+  return CONNECTION_TYPES.filter(typeOption => typeOption.type !== CONNECTION_TYPE.GENERAL_TASK);
+};
+
 export const CONNECTION_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',

@@ -625,6 +625,9 @@ GITHUB_WEBHOOK_SECRET = ''
 GITHUB_APP_ID = ''
 GITHUB_PRIVATE_KEY_PATH = ''
 
+# Enable general task feature
+ENABLE_GENERAL_TASK = False
+
 
 def validate_llm_models(models):
     if not models or not isinstance(models, list):
