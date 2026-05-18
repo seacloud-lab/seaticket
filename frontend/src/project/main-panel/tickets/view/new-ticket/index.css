@@ -1,4 +1,4 @@
-.sea-qa-project-new-ticket {
+.seaqa-project-new-ticket {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
@@ -7,12 +7,12 @@
   display: flex;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-user {
+.seaqa-project-new-ticket .seaqa-project-ticket-user {
   width: 44px;
   overflow: hidden;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-user img {
+.seaqa-project-new-ticket .seaqa-project-ticket-user img {
   height: 32px;
   width: 32px;
   border-radius: 50%;
@@ -20,73 +20,73 @@
   margin-right: 12px;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-settings {
+.seaqa-project-new-ticket .seaqa-project-ticket-settings {
   flex: 1;
   padding-top: 4px;
   overflow-x: hidden;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-name-container {
+.seaqa-project-new-ticket .seaqa-project-ticket-name-container {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: center;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-name {
+.seaqa-project-new-ticket .seaqa-project-ticket-name {
   font-size: 16px;
   font-weight: 600;
   width: 100%;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-settings-container {
+.seaqa-project-new-ticket .seaqa-project-ticket-settings-container {
   display: flex;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-content-settings {
+.seaqa-project-new-ticket .seaqa-project-ticket-content-settings {
   width: 70%;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-content {
+.seaqa-project-new-ticket .seaqa-project-ticket-content {
   display: flex;
   flex-direction: column;
   height: fit-content;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-footer {
+.seaqa-project-new-ticket .seaqa-project-ticket-footer {
   padding-left: 0;
   padding-bottom: 50px;
 }
 
-.sea-qa-project-new-ticket .sf-long-text-inline-editor-container:has(*:focus) {
+.seaqa-project-new-ticket .sf-long-text-inline-editor-container:has(*:focus) {
   border-color: var(--bs-input-focus-border-color);
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-settings-container {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-settings-container {
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-content-settings {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-content-settings {
   width: 100%;
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-other-settings {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings {
   padding-left: 0;
   width: 100%;
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-other-settings .sea-ticket-settings-item:last-child {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings .sea-ticket-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-footer {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-footer {
   padding-bottom: 16px;
 }
 
-.sea-qa-project-new-ticket.small .sea-qa-project-ticket-submit-btns {
+.seaqa-project-new-ticket.small .seaqa-project-ticket-submit-btns {
   margin-top: 10px;
   display: flex;
   align-items: center;

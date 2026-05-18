@@ -10,13 +10,13 @@ const ModalHeader = ({ children, ...props }) => {
     <DefaultModalHeader {...props} close={
       <button
         type="button"
-        className="close sea-qa-modal-close"
+        className="close seaqa-modal-close"
         data-dismiss="modal"
         aria-label={gettext('Close')}
         title={gettext('Close')}
         onClick={props.toggle}
       >
-        <IconButton icon="close" className="sea-qa-modal-close-inner" />
+        <IconButton icon="close" className="seaqa-modal-close-inner" />
       </button>
     }>
       {children}

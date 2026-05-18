@@ -198,7 +198,7 @@ const ProjectSearcher = (props) => {
   return (
     <div className='project-searcher' ref={searcherRef}>
       <SearchInput
-        className="sea-qa-project-search-in-popover"
+        className="seaqa-project-search-in-popover"
         onChange={startSearch}
         onClear={clearSearch}
         value={searchStr}
@@ -216,7 +216,7 @@ const ProjectSearcher = (props) => {
         />
       </div>
       <div
-        className='sea-qa-search-results'
+        className='seaqa-search-results'
         ref={searchListContainerRef}
       >
         {showRecent && renderRecentUsedResults()}

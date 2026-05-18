@@ -40,25 +40,25 @@ const Sessions = ({ sessionId, permission }) => {
   }, [activeTab, loadTeamSessions]);
 
   return (
-    <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: _isShowDocuments ? 16 : 0 }}>
-      <div className="sea-qa-ai-ask-sessions-header">
+    <div className="seaqa-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: _isShowDocuments ? 16 : 0 }}>
+      <div className="seaqa-ai-ask-sessions-header">
         <div>{gettext('Histories')}</div>
         <IconButton icon="close" onClick={closeShowSessions} title={gettext('Close')} aria-label={gettext('Close')} />
       </div>
       {loadTeamSessions && (
         <CustomizeTabs
-          className="sea-qa-ai-ask-sessions-tabs"
+          className="seaqa-ai-ask-sessions-tabs"
           value={activeTab}
           tabs={TABS}
           onChange={setActiveTab}
         />
       )}
-      <div className="sea-qa-ai-ask-sessions-body">
+      <div className="seaqa-ai-ask-sessions-body">
         {isTeamTab && isTeamSessionsLoading && (
           <CenteredLoading />
         )}
         {!isTeamSessionsLoading && displaySessions.length === 0 && (
-          <EmptyTip src={`${mediaUrl}img/no-nitification.png`} className="sea-qa-ai-ask-sessions-empty" text={gettext('No chats')} />
+          <EmptyTip src={`${mediaUrl}img/no-nitification.png`} className="seaqa-ai-ask-sessions-empty" text={gettext('No chats')} />
         )}
         {!isTeamSessionsLoading && displaySessions.map(session => {
           const isSelected = sessionId === session._id;

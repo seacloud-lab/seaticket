@@ -121,7 +121,7 @@ export default class ToastManager extends React.PureComponent {
 
   render() {
     return (
-      <div className="sea-qa-toast-manager">
+      <div className="seaqa-toast-manager">
         {this.state.toasts.map(({ id, description, ...props }) => {
           return (
             <Toast key={id} onRemove={() => this.removeToast(id)} {...props}>

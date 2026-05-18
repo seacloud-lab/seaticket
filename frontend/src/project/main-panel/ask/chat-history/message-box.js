@@ -5,7 +5,7 @@ import classnames from 'classnames';
 function MessageBox({ isUserSpeak, children, className }) {
 
   return (
-    <div className={classnames('sea-qa-ai-ask-chat', className, { 'user-input-chat': isUserSpeak })}>
+    <div className={classnames('seaqa-ai-ask-chat', className, { 'user-input-chat': isUserSpeak })}>
       {children}
     </div>
   );

@@ -56,7 +56,7 @@
   padding: 0.25rem 0.25rem 0.25rem 0;
 }
 
-.delete-sort .sea-qa-icon-svg-close {
+.delete-sort .seaqa-icon-svg-close {
   display: inline-block;
   height: 12px;
   width: 12px;
@@ -64,6 +64,6 @@
   cursor: pointer;
 }
 
-.sorts-list .delete-sort:hover .sea-qa-icon-svg-close {
+.sorts-list .delete-sort:hover .seaqa-icon-svg-close {
   color: #666666;
 }

@@ -70,10 +70,10 @@ class RenameProjectView extends React.Component {
     let { itemColor } = this.state;
     const iconColorList = PROJECT_ICON_COLORS;
     return (
-      <div className="row sea-qa-color-content">
+      <div className="row seaqa-color-content">
         {iconColorList.map((color, index) => {
           return (
-            <div key={index} className="sea-qa-color-item" onClick={() => this.onColorChange(color)}>
+            <div key={index} className="seaqa-color-item" onClick={() => this.onColorChange(color)}>
               <label className="colorinput">
                 <span className="colorinput-color" style={{ backgroundColor: color }}>
                   {color === itemColor && (<Icon symbol="check-mark" className="project-icon-color-check" />)}

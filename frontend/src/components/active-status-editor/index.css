@@ -6,12 +6,12 @@
   height: 20px;
 }
 
-.active-status-editor .dropdown-toggle-button .sea-qa-role-status-down-icon {
+.active-status-editor .dropdown-toggle-button .seaqa-role-status-down-icon {
   color: #b5b5b5;
   cursor: pointer;
 }
 
-.active-status-editor .dropdown-toggle-button .sea-qa-role-status-down-icon:hover {
+.active-status-editor .dropdown-toggle-button .seaqa-role-status-down-icon:hover {
   color: #555;
 }
 
@@ -45,7 +45,7 @@
   background-color: unset;
 }
 
-.active-status-editor .dropdown-menu .dropdown-item .sea-qa-role-status-check {
+.active-status-editor .dropdown-menu .dropdown-item .seaqa-role-status-check {
   height: 12px;
   width: 12px;
   color: #798d99;

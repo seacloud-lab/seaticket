@@ -186,7 +186,7 @@ class ProfileSettings extends React.Component {
                 {this.sideNavItems.map((item, index) => {
                   return item.show ?
                     (
-                      <li key={index} className={`nav-item ${this.state.curItemID === item.href.substr(1) ? 'sea-qa-bg-grey' : ''}`}>
+                      <li key={index} className={`nav-item ${this.state.curItemID === item.href.substr(1) ? 'seaqa-bg-grey' : ''}`}>
                         <Icon symbol={item.icon} />
                         <a className="nav-link" href={item.href}>{item.text}</a>
                       </li>

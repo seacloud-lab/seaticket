@@ -1,4 +1,4 @@
-.sea-qa-tag-dialog .tag-preview {
+.seaqa-tag-dialog .tag-preview {
   width: 100%;
   height: 52px;
   padding:  16px 24px;
@@ -9,11 +9,11 @@
   border-radius: 6px;
 }
 
-.sea-qa-tag-dialog .sea-qa-tag-description-editor {
+.seaqa-tag-dialog .seaqa-tag-description-editor {
   min-height: 82px;
 }
 
-.sea-qa-tag-dialog .sea-qa-tag-color-editor-btn {
+.seaqa-tag-dialog .seaqa-tag-color-editor-btn {
   height: 38px;
   width: 38px;
   border: 6px;
@@ -21,16 +21,16 @@
   flex-shrink: 0;
 }
 
-.sea-qa-tag-dialog .sea-qa-tag-color-editor-btn .sea-qa-icon-svg,
-.sea-qa-tag-dialog .sea-qa-tag-color-editor-btn:hover .sea-qa-icon-svg {
+.seaqa-tag-dialog .seaqa-tag-color-editor-btn .seaqa-icon-svg,
+.seaqa-tag-dialog .seaqa-tag-color-editor-btn:hover .seaqa-icon-svg {
   color: inherit;
 }
 
-.sea-qa-tag-dialog .sea-qa-tag-color-editor-container .sea-qa-tag-color-editor {
+.seaqa-tag-dialog .seaqa-tag-color-editor-container .seaqa-tag-color-editor {
   flex: 1;
 }
 
-.sea-qa-tag-dialog .sea-qa-tag-color-editor-container .sea-qa-tag-color-editor.invalid {
+.seaqa-tag-dialog .seaqa-tag-color-editor-container .seaqa-tag-color-editor.invalid {
   border-color: red;
   box-shadow: 0 0 0 2px rgba(255, 0, 0, .25);
 }

@@ -29,7 +29,7 @@ const View = (props) => {
   return (
     <div className="sea-metadata-wrapper">
       <div className="sea-metadata-main">
-        {errorMessage ? <div className="d-center-middle sea-qa-tip-danger">{errorMessage}</div> : renderView(metadata)}
+        {errorMessage ? <div className="d-center-middle seaqa-tip-danger">{errorMessage}</div> : renderView(metadata)}
       </div>
     </div>
   );

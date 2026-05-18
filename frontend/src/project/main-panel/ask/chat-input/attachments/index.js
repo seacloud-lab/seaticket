@@ -50,13 +50,13 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove }) => {
   return (
     <div className="w-100 px-4 o-hidden position-relative">
       {scrollLeft > 0 && (
-        <div className="sea-qa-ai-chat-attachments-scroll-before ">
+        <div className="seaqa-ai-chat-attachments-scroll-before ">
           <IconButton icon="arrow-down-b" className="rotate-icon-90 no-hover-bg" onClick={() => onScrollControlClick('prev')} />
         </div>
       )}
-      <div className="sea-qa-ai-chat-attachments-container" ref={ref} onScroll={onScroll} onWheel={onWheel}>
+      <div className="seaqa-ai-chat-attachments-container" ref={ref} onScroll={onScroll} onWheel={onWheel}>
         <Attachments
-          className="sea-qa-ai-chat-attachments"
+          className="seaqa-ai-chat-attachments"
           attachments={validValue}
           projectUuid={projectUuid}
           innerRef={attachmentsRef}
@@ -64,7 +64,7 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove }) => {
         />
       </div>
       {(scrollLeft + (ref.current?.offsetWidth || 0)) < attachmentsRef.current?.offsetWidth && (
-        <div className="sea-qa-ai-chat-attachments-scroll-after">
+        <div className="seaqa-ai-chat-attachments-scroll-after">
           <IconButton icon="arrow-down-b" className="rotate-icon-270 no-hover-bg" onClick={() => onScrollControlClick('next')} />
         </div>
       )}

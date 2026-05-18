@@ -74,7 +74,7 @@ const StateReasonSettings = ({
           {gettext('State reason')}
         </CustomizeLabel>
         <div className={classnames('ticket-types-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
-          {option ? <Option option={option} /> : <div className="tip-default">{gettext('No types')}</div>}
+          {option ? <Option option={option} /> : <div className="seaqa-tip-default">{gettext('No types')}</div>}
         </div>
       </div>
       {!isReadonly && isShowEditor && (

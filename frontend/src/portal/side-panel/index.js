@@ -34,20 +34,20 @@ const SidePanel = ({ activePage, onPageChange, enableKB, isAnonymous }) => {
   const { projectUuid, isExternalUser } = window.app.pageOptions;
 
   return (
-    <div className="sea-qa-portal-side-panel">
-      <div className="sea-qa-portal-side-panel-header">
-        <div className="sea-qa-portal-side-panel-logo d-flex align-items-center">
+    <div className="seaqa-portal-side-panel">
+      <div className="seaqa-portal-side-panel-header">
+        <div className="seaqa-portal-side-panel-logo d-flex align-items-center">
           <img src={logo} alt="" />
           <h3 className="text-truncate" title={name}>{name}</h3>
         </div>
-        <div className="sea-qa-portal-side-panel-tabs d-flex justify-content-center flex-1">
+        <div className="seaqa-portal-side-panel-tabs d-flex justify-content-center flex-1">
           <CustomizeTabs
             tabs={primaryTabs}
             value={activePrimaryTab}
             onChange={onPrimaryTabChange}
           />
         </div>
-        <div className="sea-qa-portal-side-panel-account">
+        <div className="seaqa-portal-side-panel-account">
           {isAnonymous && (
             <Button
               color="outline-primary"

@@ -6,7 +6,7 @@ import './index.css';
 
 function Radio({
   disabled = false,
-  name = 'sea-qa-radio-input',
+  name = 'seaqa-radio-input',
   onCheckedChange = () => {},
   className,
   isChecked,
@@ -16,27 +16,27 @@ function Radio({
 
   return (
     <label
-      className={classnames('sea-qa-radio w-100 align-items-center position-relative', {
-        'sea-qa-radio-disable': disabled,
+      className={classnames('seaqa-radio w-100 align-items-center position-relative', {
+        'seaqa-radio-disable': disabled,
         [className]: className
       })}
     >
       <input
         type="radio"
-        className="sea-qa-radio-input position-absolute"
+        className="seaqa-radio-input position-absolute"
         checked={isChecked}
         onChange={disabled ? () => {} : onCheckedChange}
         name={name}
         value={value}
       />
       <span
-        className={classnames('sea-qa-radio-indicator position-relative', {
-          'sea-qa-radio-selected-indicator': isChecked,
-          'sea-qa-radio-indicator-disable': disabled
+        className={classnames('seaqa-radio-indicator position-relative', {
+          'seaqa-radio-selected-indicator': isChecked,
+          'seaqa-radio-indicator-disable': disabled
         })}
       >
       </span>
-      <span className="sea-qa-radio-description text-truncate ml-2">{label}</span>
+      <span className="seaqa-radio-description text-truncate ml-2">{label}</span>
     </label>
   );
 }

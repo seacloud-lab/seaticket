@@ -1,4 +1,4 @@
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item {
   display: flex;
   align-items: center;
   padding: 0 8px;
@@ -8,35 +8,35 @@
   cursor: pointer;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item.active,
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover,
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn:hover {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item.active,
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item:hover,
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item .seaqa-ai-ask-session-more-op-btn:hover {
   background-color: var(--option-bg-color);
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item .seaqa-ai-ask-session-content {
   width: calc(100% - 16px); /* 16: icon-width(16) */
   overflow: hidden;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-content {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item:hover .seaqa-ai-ask-session-content {
   width: calc(100% - 56px); /* 56: icon-width(16) + icon-mr(8) + more-width(24) + more-ml(8) */
   margin-right: 8px;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item .seaqa-ai-ask-session-name {
   flex: 1;
   overflow: hidden;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item .seaqa-ai-ask-session-more-op-btn {
   display: none;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-more-op-btn {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item:hover .seaqa-ai-ask-session-more-op-btn {
   display: flex;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn .sea-qa-icon-svg {
+.seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-session-item .seaqa-ai-ask-session-more-op-btn .seaqa-icon-svg {
   color: var(--bs-icon-color);
 }

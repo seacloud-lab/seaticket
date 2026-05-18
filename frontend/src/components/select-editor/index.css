@@ -42,7 +42,7 @@
   cursor: pointer;
 }
 
-.btn-add-custom-permission .sea-qa-icon-svg-plus {
+.btn-add-custom-permission .seaqa-icon-svg-plus {
   height: 13px;
   width: 13px;
   margin-right: 0.25rem;
@@ -52,7 +52,7 @@
   word-break: keep-all;
 }
 
-.permission-editor .sea-qa-icon-svg-rename {
+.permission-editor .seaqa-icon-svg-rename {
   cursor: pointer;
 }
 

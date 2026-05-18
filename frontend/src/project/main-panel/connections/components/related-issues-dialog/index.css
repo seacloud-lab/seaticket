@@ -1,12 +1,12 @@
-.sea-qa-related-issues-dialog {
+.seaqa-related-issues-dialog {
   height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
-.sea-qa-related-issues-dialog .modal-content {
+.seaqa-related-issues-dialog .modal-content {
   height: 100%;
 }
 
-.sea-qa-related-issues-dialog .modal-content .modal-body {
+.seaqa-related-issues-dialog .modal-content .modal-body {
   padding: 0px;
   overflow: hidden;
 }
@@ -32,7 +32,7 @@
   flex-shrink: 0;
 }
 
-.issues-list-item-icon .sea-qa-project-connection-type-icon {
+.issues-list-item-icon .seaqa-project-connection-type-icon {
   width: 24px;
   height: 24px;
   object-fit: contain;

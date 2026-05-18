@@ -1,4 +1,4 @@
-.sea-qa-home-header {
+.seaqa-home-header {
   height: 56px;
   display: flex;
 }
@@ -18,7 +18,7 @@
   background-color: #f7f7f5;
 }
 
-.project-side-nav .sea-qa-nav-title {
+.project-side-nav .seaqa-nav-title {
   color: #666666;
   padding: 0 8px;
   line-height: 28px;
@@ -26,20 +26,20 @@
   margin-top: 4px;
 }
 
-.project-side-nav .sea-qa-nav-list {
+.project-side-nav .seaqa-nav-list {
   flex-wrap: inherit;
   height: auto;
   border-bottom: none;
   padding-top: 12px;
 }
 
-.sea-qa-nav-list .sea-qa-nav-item {
+.seaqa-nav-list .seaqa-nav-item {
   line-height: 38px;
   border-radius: 4px;
   padding: 0 12px;
 }
 
-.sea-qa-nav-list .sea-qa-nav-item .sea-qa-nav-link {
+.seaqa-nav-list .seaqa-nav-item .seaqa-nav-link {
   margin: 0;
   width: 100%;
   color: #999;
@@ -47,21 +47,21 @@
   padding: 0;
 }
 
-.sea-qa-nav-list .sea-qa-nav-item .sea-qa-nav-link:hover {
+.seaqa-nav-list .seaqa-nav-item .seaqa-nav-link:hover {
   background-color: #f5f5f5;
 }
 
-.sea-qa-nav-list .sea-qa-nav-link .nav-icon {
+.seaqa-nav-list .seaqa-nav-link .nav-icon {
   margin-right: 0.5rem;
 }
 
-.sea-qa-nav-list .sea-qa-nav-link .nav-text {
+.seaqa-nav-list .seaqa-nav-link .nav-text {
   color: #212529;
   flex: 1;
   font-size: 16px;
 }
 
-.sea-qa-nav-list .nav-toggle-icon {
+.seaqa-nav-list .nav-toggle-icon {
   width: 20px;
   height: 20px;
   color: var(--bs-icon-color);
@@ -72,38 +72,38 @@
   cursor: pointer;
 }
 
-.sea-qa-nav-list .nav-toggle-icon-spin {
+.seaqa-nav-list .nav-toggle-icon-spin {
   transform: rotate(90deg);
 }
 
-.sea-qa-nav-list .nav-toggle-container {
+.seaqa-nav-list .nav-toggle-container {
   position: relative;
   width: 24px !important;
 }
 
-.sea-qa-nav-list .nav-toggle-container:hover {
+.seaqa-nav-list .nav-toggle-container:hover {
   background-color: var(--bs-hover-tertiary-bg) !important;
   cursor: pointer;
 }
 
-.sea-qa-nav-list .nav-toggle-container .nav-toggle-icon {
+.seaqa-nav-list .nav-toggle-container .nav-toggle-icon {
   width: 12px !important;
   height: 12px !important;
 }
 
-.sea-qa-nav-list .sea-qa-nav-item.projects-nav .sea-qa-nav-link:hover {
+.seaqa-nav-list .seaqa-nav-item.projects-nav .seaqa-nav-link:hover {
   background-color: unset;
 }
 
-.sea-qa-nav-list .projects-nav:hover {
+.seaqa-nav-list .projects-nav:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.sea-qa-nav-list .projects-nav .nav-link {
+.seaqa-nav-list .projects-nav .nav-link {
   width: calc(100% - 24px) !important;
 }
 
-.sea-qa-nav-list .sea-qa-nav-link .sea-qa-icon-svg {
+.seaqa-nav-list .seaqa-nav-link .seaqa-icon-svg {
   height: 20px;
   width: 20px;
 }
@@ -287,9 +287,9 @@
   margin-right: -6px;
 }
 
-.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn.active,
-.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn:active,
-.project-item .project-item-icon-more-toggle-btn.sea-qa-icon-btn:hover {
+.project-item .project-item-icon-more-toggle-btn.seaqa-icon-btn.active,
+.project-item .project-item-icon-more-toggle-btn.seaqa-icon-btn:active,
+.project-item .project-item-icon-more-toggle-btn.seaqa-icon-btn:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
@@ -395,24 +395,24 @@
 
 /* snapshots */
 
-.sea-qa-snapshots-container {
+.seaqa-snapshots-container {
   overflow: hidden;
   height: 400px;
   padding: 0;
 }
 
-.sea-qa-snapshots-content {
+.seaqa-snapshots-content {
   padding: 8px 16px;
   height: 400px;
   overflow: auto;
   pointer-events: all;
 }
 
-.sea-qa-snapshots-content table td {
+.seaqa-snapshots-content table td {
   padding: 14px 3px;
 }
 
-.sea-qa-snapshots-content tr td:last-child {
+.seaqa-snapshots-content tr td:last-child {
   text-align: right;
 }
 
@@ -430,7 +430,7 @@
   align-items: center;
 }
 
-.mobile-dropdown-item .sea-qa-icon-svg {
+.mobile-dropdown-item .seaqa-icon-svg {
   font-size: 1.25rem;
   margin-right: 1rem;
   color: var(--bs-icon-color);
@@ -442,8 +442,8 @@
 
 .dropdown-item.disabled,
 .dropdown-item:disabled,
-.mobile-dropdown-item.disabled .sea-qa-icon-svg,
-.mobile-dropdown-item:disabled .sea-qa-icon-svg {
+.mobile-dropdown-item.disabled .seaqa-icon-svg,
+.mobile-dropdown-item:disabled .seaqa-icon-svg {
   color: #c2c2c2;
 }
 
@@ -495,7 +495,7 @@
   background-color: #20a0ff;
 }
 
-.project-item-more-operation .advanced-menu>.dropdown-item .sea-qa-icon-svg {
+.project-item-more-operation .advanced-menu>.dropdown-item .seaqa-icon-svg {
   color: #999;
 }
 

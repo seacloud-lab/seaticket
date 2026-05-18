@@ -23,7 +23,7 @@ const UploadFilesButton = forwardRef(({ className, onChange }, ref) => {
   }, []);
 
   return (
-    <div className={classnames('sea-qa-ticket-upload-files-btn sea-qa-icon-btn', className)} onClick={onUploadBtnClick}>
+    <div className={classnames('seaqa-ticket-upload-files-btn seaqa-icon-btn', className)} onClick={onUploadBtnClick}>
       <Icon symbol="paperclip" className="mr-2" />
       {gettext('Paste, drop, or click to add files')}
       <input type="file" className="d-none" ref={uploadInputRef} onClick={onInputFile} onChange={uploadFilesChange} value="" multiple />

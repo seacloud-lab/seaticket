@@ -88,8 +88,8 @@ const MainPanel = (props) => {
   const { showInboxDrawer } = useNotification();
 
   return (
-    <div className="sea-qa-project-main-panel">
-      <div className="sea-qa-project-main-panel-content">
+    <div className="seaqa-project-main-panel">
+      <div className="seaqa-project-main-panel-content">
         <Container { ...props } />
         {showInboxDrawer && <Inbox toggleBar={props.toggleBar} />}
       </div>

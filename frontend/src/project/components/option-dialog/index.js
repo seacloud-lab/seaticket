@@ -174,7 +174,7 @@ const OptionDialog = ({
   title = title.replace('%s', type);
 
   return (
-    <Modal isOpen={true} autoFocus={false} className="sea-qa-tag-dialog" toggle={onToggle}>
+    <Modal isOpen={true} autoFocus={false} className="seaqa-tag-dialog" toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{title}</ModalHeader>
       <ModalBody >
         <FormGroup className="tag-preview">
@@ -197,7 +197,7 @@ const OptionDialog = ({
             <Input
               type="textarea"
               rows={3}
-              className="sea-qa-tag-description-editor"
+              className="seaqa-tag-description-editor"
               value={description}
               onChange={onDescriptionChange}
             />
@@ -205,16 +205,16 @@ const OptionDialog = ({
         )}
         <FormGroup>
           <Label>{gettext('Color')}</Label>
-          <div className="d-flex algin-items-center sea-qa-tag-color-editor-container ">
+          <div className="d-flex algin-items-center seaqa-tag-color-editor-container ">
             <IconButton
               icon="sync"
               style={{ backgroundColor: lastColorOption.color, color: lastColorOption.textColor }}
-              className="sea-qa-tag-color-editor-btn"
+              className="seaqa-tag-color-editor-btn"
               onClick={syncGenerateColor}
             />
             <Input
               innerRef={colorInputRef}
-              className={classnames('sea-qa-tag-color-editor', { 'invalid': !isValidColor })}
+              className={classnames('seaqa-tag-color-editor', { 'invalid': !isValidColor })}
               value={color}
               onChange={onColorChange}
               onClick={openColorPopover}

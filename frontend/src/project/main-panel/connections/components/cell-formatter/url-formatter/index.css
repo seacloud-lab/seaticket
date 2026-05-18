@@ -1,7 +1,7 @@
-.sea-qa-url-formatter {
+.seaqa-url-formatter {
   color: var(--bs-body-color);
 }
 
-.sea-qa-url-formatter:hover {
+.seaqa-url-formatter:hover {
   color: #ed7109;
 }

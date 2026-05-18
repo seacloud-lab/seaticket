@@ -71,7 +71,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
     <>
       <div
         ref={editorRef}
-        className={classnames('sea-qa-select custom-select sea-qa-customize-select sea-metadata-basic-filters-select position-relative mr-4', {
+        className={classnames('seaqa-select custom-select seaqa-customize-select sea-metadata-basic-filters-select position-relative mr-4', {
           'highlighted': validValue.length > 0
         })}
       >
@@ -81,7 +81,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         </div>
         {isShowEditor && (
           <ClickOutside onClickOutside={closeEditor}>
-            <div className="sea-metadata-tags-selector-popover popover sea-qa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description">
+            <div className="sea-metadata-tags-selector-popover popover seaqa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description">
               <OptionEditorContainer
                 ref={optionEditorContainerRef}
                 isMultiple={true}

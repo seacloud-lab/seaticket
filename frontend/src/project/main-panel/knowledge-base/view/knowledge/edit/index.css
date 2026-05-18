@@ -1,4 +1,4 @@
-.sea-qa-project-edit-knowledge {
+.seaqa-project-edit-knowledge {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
@@ -7,42 +7,42 @@
   display: flex;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-settings {
   flex: 1;
   padding-top: 8px;
   padding-left: 44px;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-name {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-name {
   font-size: 16px;
   font-weight: 600;
   width: 100%;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings-container {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-settings-container {
   display: flex;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content-settings {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-content-settings {
   width: 70%;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-content {
   display: flex;
   flex-direction: column;
   height: fit-content;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-other-settings {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-other-settings {
   width: 30%;
   padding-left: 16px;
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -50,38 +50,38 @@
   padding-bottom: 40px;
 }
 
-.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer .sea-qa-loading-icon {
+.seaqa-project-edit-knowledge .seaqa-project-knowledge-footer .seaqa-loading-icon {
   height: 16px;
   width: 16px;
 }
 
-.sea-qa-project-edit-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
+.seaqa-project-edit-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
   border-color: var(--bs-custom-select-focus-border-color);
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-settings-container {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-settings-container {
   display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-content-settings {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-content-settings {
   width: 100%;
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-other-settings {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-other-settings {
   padding-left: 0;
   width: 100%;
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-other-settings .sea-ticket-settings-item:last-child {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-other-settings .sea-ticket-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-footer {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-footer {
   padding-bottom: 16px;
 }
 
-.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-submit-btns {
+.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-submit-btns {
   margin-top: 10px;
   display: flex;
   align-items: center;
@@ -89,6 +89,6 @@
   padding-bottom: 40px;
 }
 
-.sea-qa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {
+.seaqa-project-knowledge-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article {
   padding:  10px 16px !important;
 }

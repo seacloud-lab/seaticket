@@ -1,4 +1,4 @@
-.sea-qa-radio {
+.seaqa-radio {
   user-select: none;
   cursor: default;
   display: inline-flex;
@@ -6,16 +6,16 @@
   font-size: 14px;
 }
 
-.sea-qa-radio:not(.sea-qa-radio-disable):hover {
+.seaqa-radio:not(.seaqa-radio-disable):hover {
   cursor: pointer;
 }
 
-.sea-qa-radio .sea-qa-radio-input {
+.seaqa-radio .seaqa-radio-input {
   z-index: -1;
   opacity: 0;
 }
 
-.sea-qa-radio .sea-qa-radio-indicator {
+.seaqa-radio .seaqa-radio-indicator {
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -25,20 +25,20 @@
   border: 1px solid #bdbdbd;
 }
 
-.sea-qa-radio .sea-qa-radio-selected-indicator {
+.seaqa-radio .seaqa-radio-selected-indicator {
   background-color: #FF8000;
   border: unset !important;
 }
 
-.sea-qa-radio .sea-qa-radio-indicator-disable {
+.seaqa-radio .seaqa-radio-indicator-disable {
   background-color: #f5f5f5;
 }
 
-.sea-qa-radio .sea-qa-radio-selected-indicator.sea-qa-radio-indicator-disable {
+.seaqa-radio .seaqa-radio-selected-indicator.seaqa-radio-indicator-disable {
   background-color: #FF8000;
 }
 
-.sea-qa-radio .sea-qa-radio-selected-indicator::before {
+.seaqa-radio .seaqa-radio-selected-indicator::before {
   display: inline-block;
   content: '';
   width: 6px;
@@ -50,7 +50,7 @@
   border-radius: 50%;
 }
 
-.sea-qa-radio .sea-qa-radio-description {
+.seaqa-radio .seaqa-radio-description {
   flex: 1;
   color: inherit;
   transition: .3s color;

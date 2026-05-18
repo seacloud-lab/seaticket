@@ -14,12 +14,12 @@
   pointer-events: none;
 }
 
-.paginator .paginator-btn .sea-qa-icon-svg {
+.paginator .paginator-btn .seaqa-icon-svg {
   height: 14px;
   width: 14px;
 }
 
-.paginator .paginator-btn:not(.disabled) .sea-qa-icon-svg {
+.paginator .paginator-btn:not(.disabled) .seaqa-icon-svg {
   color: #212529;
 }
 
@@ -50,8 +50,8 @@
   margin-right: 4px;
 }
 
-.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .sea-qa-icon-svg,
-.paginator-dropdown>.btn .sea-qa-icon-svg {
+.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .seaqa-icon-svg,
+.paginator-dropdown>.btn .seaqa-icon-svg {
   color: #999;
   height: 12px;
   width: 12px;

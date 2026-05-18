@@ -1,15 +1,15 @@
-.sea-qa-project-connection-dialog {
+.seaqa-project-connection-dialog {
   height: fit-content;
   max-height: calc(100% - 56px);
   max-width: 600px;
 }
 
-.sea-qa-project-connection-dialog .modal-content {
+.seaqa-project-connection-dialog .modal-content {
   height: 100%;
   overflow: hidden;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-types {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-types {
   width: 100%;
   height: fit-content;
   display: flex;
@@ -18,7 +18,7 @@
   padding-bottom: 16px;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type {
   height: 52px;
   width: calc((100% - 10px) / 2);
   display: inline-flex;
@@ -30,15 +30,15 @@
   padding: 14px;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type.selected {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type.selected {
   border-color: #ff8000;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type:not(.selected):hover {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type:not(.selected):hover {
   border-color: #bdbdbd;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-icon {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-icon {
   height: 24px;
   width: 24px;
   overflow: hidden;
@@ -46,18 +46,18 @@
   margin-right: 8px;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-name {
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-connection-body {
+.seaqa-project-connection-dialog .seaqa-project-connection-body {
   overflow-y: auto;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-selected-connection {
+.seaqa-project-connection-dialog .seaqa-project-selected-connection {
   margin-top: -16px;
   min-height: 76px;
   display: flex;
@@ -66,14 +66,14 @@
   flex-direction: column;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-selected-connection .sea-qa-project-selected-no-type {
+.seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-selected-no-type {
   font-weight: 400;
   font-size: 16px;
   line-height: 28px;
   color: #666666;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-selected-connection .sea-qa-project-new-connection-type {
+.seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-new-connection-type {
   width: 100%;
   background: #f7f7f5;
   border: none;
@@ -84,7 +84,7 @@
   margin-bottom: 20px;
 }
 
-.sea-qa-project-connection-dialog .sea-qa-project-selected-connection .sea-qa-project-new-connection-type .sea-ticket-secondary-btn {
+.seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-new-connection-type .sea-ticket-secondary-btn {
   height: 26px;
   color: #212529;
   font-weight: 400;
@@ -93,17 +93,17 @@
   vertical-align: middle;
 }
 
-.sea-qa-project-connection-github-tip {
+.seaqa-project-connection-github-tip {
   padding: 50px;
 }
 
-.sea-qa-project-connection-github-tip h4 {
+.seaqa-project-connection-github-tip h4 {
   font-weight: 500;
   font-size: 16px;
   line-height: 24px;
 }
 
-.sea-qa-project-connection-github-tip p {
+.seaqa-project-connection-github-tip p {
   font-weight: 400;
   font-size: 14px;
   line-height: 22px;
@@ -111,7 +111,7 @@
   color: #666666;
 }
 
-.sea-qa-project-connection-help {
+.seaqa-project-connection-help {
   margin: 1rem 0;
   color: #666666;
   font-weight: 400;

@@ -110,10 +110,10 @@ const Main = ({ name: oldName, logo: oldLogo }) => {
                     <img src={logo} alt={gettext('Logo')} className="portal-customization-settings-logo-popover-logo" />
                   )}
                   <UploadFile fileType="image/jpeg, image/png, .jpg, .jpeg, .png" onUpload={onLogoChange} ref={uploadFileRef} />
-                  <div className="sea-qa-tip-default">
+                  <div className="seaqa-tip-default">
                     {gettext('Select a png or jpg image with in 5MB.')}
                   </div>
-                  <div className="sea-qa-tip-default">
+                  <div className="seaqa-tip-default">
                     {gettext('Recommended size is 156x256px.')}
                   </div>
                   <Button color="primary" outline className="portal-customization-settings-logo-upload-btn" onClick={showSystemUpload}>

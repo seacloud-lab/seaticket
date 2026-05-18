@@ -1,4 +1,4 @@
-.sea-qa-project-ticket .sea-qa-project-ticket-header {
+.seaqa-project-ticket .seaqa-project-ticket-header {
   width: 100%;
   display: flex;
   height: 86px;
@@ -9,7 +9,7 @@
   gap: 8px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-wrapper {
   width: 100%;
   display: flex;
   height: 28px;
@@ -17,26 +17,26 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-left {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-wrapper-left {
   flex: 1;
   margin-right: 16px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-right {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-wrapper-right {
   display: flex;
   align-items: center;
   height: 100%;
   width: fit-content;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-title-number {
+.seaqa-project-ticket .seaqa-project-ticket-title-number {
   display: flex;
   max-width: 100%;
   width: fit-content;
   align-items: center;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-title {
+.seaqa-project-ticket .seaqa-project-ticket-title {
   flex: 1;
   width: fit-content;
   display: inline-block;
@@ -49,43 +49,43 @@
   margin-right: 8px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-number {
+.seaqa-project-ticket .seaqa-project-ticket-number {
   display: inline-block;
   color: #666;
   font-size: 18px;
   font-weight: 500;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-copy {
   height: 24px;
   width: 24px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-rename-btn {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-rename-btn {
   display: inline-flex;
   margin-left: 8px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-input,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-submit-btn {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-input,
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-cancel-btn,
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-submit-btn {
   height: 28px;
   padding-top: 0;
   padding-bottom: 0;
   line-height: 1;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-title-cancel-btn {
   margin-right: 10px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-state-wrapper {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-state-wrapper {
   width: 100%;
   display: flex;
   align-items: center;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status {
   height: 20px;
   display: flex;
   align-items: center;
@@ -98,11 +98,11 @@
   line-height: 1;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.open {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.open {
   background-color: var(--ticket-open-color);
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.not_planned,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.duplicate {
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.not_planned,
+.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.duplicate {
   background-color: var(--ticket-invalid-color);
 }

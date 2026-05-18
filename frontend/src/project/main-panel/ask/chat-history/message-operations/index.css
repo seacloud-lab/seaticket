@@ -1,4 +1,4 @@
-.sea-qa-ai-answer-operations {
+.seaqa-ai-answer-operations {
   margin-top: 12px;
   width: 100%;
   display: flex;
@@ -6,15 +6,15 @@
   height: 24px;
 }
 
-.sea-ticket-ai-reply.text:not(.ends-with-link) + .sea-qa-ai-answer-operations {
+.sea-ticket-ai-reply.text:not(.ends-with-link) + .seaqa-ai-answer-operations {
   margin-top: 9px;
 }
 
-.sea-qa-ai-ask-chat .sea-qa-icon-btn {
+.seaqa-ai-ask-chat .seaqa-icon-btn {
   display: none;
 }
 
-.sea-qa-ai-ask-chat:last-child .sea-qa-icon-btn,
-.sea-qa-ai-ask-chat:hover .sea-qa-icon-btn {
+.seaqa-ai-ask-chat:last-child .seaqa-icon-btn,
+.seaqa-ai-ask-chat:hover .seaqa-icon-btn {
   display: flex;
 }

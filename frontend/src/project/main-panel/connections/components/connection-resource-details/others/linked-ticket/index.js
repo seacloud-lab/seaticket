@@ -38,7 +38,7 @@ const LinkedTicket = ({
                   <DropdownToggle
                     tag="div"
                     role="button"
-                    className="cursor-pointer tip-default"
+                    className="cursor-pointer seaqa-tip-default"
                     title={gettext('Create related ticket or link an existing ticket')}
                     aria-label={gettext('Create related ticket or link an existing ticket')}
                     data-toggle="dropdown"
@@ -65,7 +65,7 @@ const LinkedTicket = ({
                 </Dropdown>
               </>
             ) : (
-              <div className="tip-default">{gettext('No linked ticket')}</div>
+              <div className="seaqa-tip-default">{gettext('No linked ticket')}</div>
             )}
           </>
         )}

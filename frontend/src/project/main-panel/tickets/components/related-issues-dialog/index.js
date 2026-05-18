@@ -77,7 +77,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
 
   return (
     <>
-      <Modal className='sea-qa-ticket-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
+      <Modal className='seaqa-ticket-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
         <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
         <ModalBody>
           {status === 'loading' && (
@@ -95,7 +95,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
                     return (
                       <div className='issues-list-item' key={`${issue._id}-${issue.type}`} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
-                          <img src={getResourceIconURL(issue.type)} alt={getTypeName(issue)} className='sea-qa-project-connection-type-icon' />
+                          <img src={getResourceIconURL(issue.type)} alt={getTypeName(issue)} className='seaqa-project-connection-type-icon' />
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>

@@ -1,4 +1,4 @@
-.sea-qa-project-toggle-tickets-btn {
+.seaqa-project-toggle-tickets-btn {
   display: inline-flex;
   margin-right: 4px;
   height: 20px;
@@ -6,7 +6,7 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-toggle-tickets-btn .sea-qa-icon-svg {
+.seaqa-project-toggle-tickets-btn .seaqa-icon-svg {
   height: 16px !important;
   width: 16px !important;
 }

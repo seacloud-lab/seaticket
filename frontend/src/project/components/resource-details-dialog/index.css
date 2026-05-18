@@ -21,13 +21,13 @@
   max-width: 400px;
 }
 
-.sea-ticket-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .sea-qa-icon-btn {
+.sea-ticket-resource-details-dialog .modal-header .modal-title .ticket-create-more-options-dropdown .seaqa-icon-btn {
   height: 28px;
   width: 28px;
   margin-right: -16px;
 }
 
-.sea-ticket-resource-details-dialog .modal-content .modal-header .sea-qa-modal-close.close {
+.sea-ticket-resource-details-dialog .modal-content .modal-header .seaqa-modal-close.close {
   flex: unset
 }
 
@@ -55,14 +55,14 @@
   margin: 0px;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-arrow-down {
+.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon .seaqa-icon-svg-arrow-down {
   color: #000;
   width: 16px !important;
   height: 16px !important;
   opacity: .5;
 }
 
-.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon:hover .sea-qa-icon-svg-arrow-down {
+.sea-ticket-resource-details-dialog .row-expand-direct-icons .direct-icon:hover .seaqa-icon-svg-arrow-down {
   opacity: .75;
 }
 

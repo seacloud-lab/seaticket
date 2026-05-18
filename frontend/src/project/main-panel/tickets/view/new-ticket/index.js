@@ -149,15 +149,15 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const isSmallScreen = containerWidth < 892;
 
   return (
-    <div className={classnames('sea-qa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
+    <div className={classnames('seaqa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
       {!isSmallScreen && (
-        <div className="sea-qa-project-ticket-user">
+        <div className="seaqa-project-ticket-user">
           <img src={user.avatar_url} alt={user.name} />
         </div>
       )}
-      <div className="sea-qa-project-ticket-settings">
-        <div className="sea-qa-project-ticket-name-container mb-3">
-          <div className="sea-qa-project-ticket-name text-truncate">
+      <div className="seaqa-project-ticket-settings">
+        <div className="seaqa-project-ticket-name-container mb-3">
+          <div className="seaqa-project-ticket-name text-truncate">
             {gettext('New ticket')}
           </div>
           <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
@@ -169,16 +169,16 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </CustomizeDropdownMenu>
           </Dropdown>
         </div>
-        <div className="sea-qa-project-ticket-settings-container">
-          <div className="sea-qa-project-ticket-content-settings">
-            <div className="sea-qa-project-ticket-title mb-4">
+        <div className="seaqa-project-ticket-settings-container">
+          <div className="seaqa-project-ticket-content-settings">
+            <div className="seaqa-project-ticket-title mb-4">
               <Label>
                 {gettext('Title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
               <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
-            <div className="sea-qa-project-ticket-content mb-4">
+            <div className="seaqa-project-ticket-content mb-4">
               <Label>
                 {gettext('Content')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
@@ -199,12 +199,12 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 onSaveEditorValue={onContentChange}
               />
             </div>
-            <div className="sea-qa-project-ticket-footer">
+            <div className="seaqa-project-ticket-footer">
               <UploadFilesButton onChange={handleFiles} />
               {!isSmallScreen && renderSubmitBtns()}
             </div>
           </div>
-          <div className="sea-qa-project-ticket-other-settings">
+          <div className="seaqa-project-ticket-other-settings">
             <PrioritySettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
             <CollaboratorsSettings id="assignees-editor-popover" isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
             <TagsSettings
@@ -242,7 +242,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               onChange={setParticipants}
             />
           </div>
-          {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
+          {isSmallScreen && renderSubmitBtns('seaqa-project-ticket-submit-btns')}
         </div>
       </div>
       {isShowKeyboardShortcuts && (

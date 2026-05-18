@@ -63,7 +63,7 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
               return (
                 <div className="ticket-due-date-content">
                   {!value && (
-                    <div className="tip-default">{gettext('No due date')}</div>
+                    <div className="seaqa-tip-default">{gettext('No due date')}</div>
                   )}
                   {value && (
                     <div className="w-100 h-100 ticket-due-date-value">

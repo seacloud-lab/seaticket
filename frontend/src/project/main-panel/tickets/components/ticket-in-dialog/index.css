@@ -1,9 +1,9 @@
 @import url('../../view/ticket/index.css');
 
-.sea-qa-project-ticket.sea-qa-project-ticket-in-dialog {
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog {
   height: 100%;
 }
 
-.sea-qa-project-ticket.sea-qa-project-ticket-in-dialog .sea-qa-project-ticket-comment::after {
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog .seaqa-project-ticket-comment::after {
   display: none;
 }

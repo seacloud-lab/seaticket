@@ -46,7 +46,7 @@
   flex-shrink: 0;
 }
 
-.sea-metadata-ui.collaborator-item .collaborator-remove .sea-qa-icon-svg  {
+.sea-metadata-ui.collaborator-item .collaborator-remove .seaqa-icon-svg  {
   display: inline-block;
   font-size: 12px;
   color: #909090;
@@ -54,7 +54,7 @@
   cursor: pointer;
 }
 
-.sea-metadata-ui.collaborator-item .collaborator-remove .sea-qa-icon-svg:hover {
+.sea-metadata-ui.collaborator-item .collaborator-remove .seaqa-icon-svg:hover {
   color: #666666;
   cursor: pointer;
 }

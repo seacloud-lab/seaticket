@@ -202,12 +202,12 @@
   font-size: 0.9375rem;
 }
 
-.sea-qa-nav-list .workspace-list {
+.seaqa-nav-list .workspace-list {
   overflow: hidden;
   width: 100%;
 }
 
-.sea-qa-nav-list .workspace-list .workspace-nav-item {
+.seaqa-nav-list .workspace-list .workspace-nav-item {
   height: 36px;
   display: flex;
   align-items: center;
@@ -217,7 +217,7 @@
   position: relative;
 }
 
-.sea-qa-nav-list .workspace-list .workspace-nav-item:hover {
+.seaqa-nav-list .workspace-list .workspace-nav-item:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
@@ -238,11 +238,11 @@
   font-size: 14px;
 }
 
-.sea-qa-nav-list .side-panel-slide {
+.seaqa-nav-list .side-panel-slide {
   transition: all 0.3s ease-in-out;
 }
 
-.sea-qa-nav-list .side-panel-slide-up {
+.seaqa-nav-list .side-panel-slide-up {
   transition: all 0.3s ease-in-out;
   height: 0;
 }
@@ -258,7 +258,7 @@
   background-color: var(--bs-hover-tertiary-bg);
 }
 
-.workspace-nav-item .drop-button .sea-qa-icon-svg {
+.workspace-nav-item .drop-button .seaqa-icon-svg {
   color: #c2c2c2;
   height: 18px;
   width: 18px;

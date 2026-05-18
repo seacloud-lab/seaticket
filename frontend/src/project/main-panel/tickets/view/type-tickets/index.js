@@ -56,7 +56,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
-  const localStorageNamePrefix = useMemo(() => `sea-qa-${projectUuid}-type-tickets`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-type-tickets`, [projectUuid]);
 
   if (isLoading) return (<CenteredLoading />);
   const type = getRowById(typesData, childrenPageSlugId);

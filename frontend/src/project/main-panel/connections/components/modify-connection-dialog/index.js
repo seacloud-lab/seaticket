@@ -89,9 +89,9 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   }, [record, name, config, onSubmit, onToggle]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog" >
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="seaqa-project-connection-dialog" >
       <ModalHeader toggle={onToggle}>{gettext('Edit connection')}</ModalHeader>
-      <ModalBody className="sea-qa-project-connection-body">
+      <ModalBody className="seaqa-project-connection-body">
         <FormGroup>
           <Label>
             {gettext('Connection name')}
@@ -103,7 +103,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           const { type, key, children } = c;
           if (type === CONNECTION_FIELD_TYPE.GROUP) {
             return (
-              <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+              <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
                 {children.map((child, index) => (
                   <ConnectionConfigEditor
                     key={`${key}-${index}`}

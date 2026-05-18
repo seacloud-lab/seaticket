@@ -28,7 +28,7 @@ const ProjectRecordsSelector = ({ projectUuid, value: attachments = [], onChange
   return (
     <SyncSelector
       icon="plus"
-      className={classnames('sea-qa-ask-chat-records-selector', { 'simple': true })}
+      className={classnames('seaqa-ask-chat-records-selector', { 'simple': true })}
       value={Array.isArray(attachments) ? attachments.map(t => t.key) : []}
       onSearch={onSearch}
       onChange={onChange}

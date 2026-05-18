@@ -135,7 +135,7 @@ export default class Toast extends React.PureComponent {
         {state => (
           <div
             data-state={state}
-            className={`sea-qa-toast-container ${state}`}
+            className={`seaqa-toast-container ${state}`}
             onMouseEnter={this.handleMouseEnter}
             onMouseLeave={this.handleMouseLeave}
             style={{

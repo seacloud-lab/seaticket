@@ -8,7 +8,7 @@ html:not([data-scale]) .mobile-main-panel .am-tab-bar-bar:before {
   background-color: #bfbfbf;
 }
 
-.mobile-main-panel .sea-qa-home-header {
+.mobile-main-panel .seaqa-home-header {
   z-index: 101;
 }
 

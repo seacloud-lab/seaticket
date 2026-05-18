@@ -6,7 +6,7 @@ const URLFormatter = ({ value }) => {
   if (!value) return null;
 
   return (
-    <a className="sea-qa-url-formatter" href={value} target="_blank" rel="noopener noreferrer">{value}</a>
+    <a className="seaqa-url-formatter" href={value} target="_blank" rel="noopener noreferrer">{value}</a>
   );
 
 };

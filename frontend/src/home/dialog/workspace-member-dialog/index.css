@@ -1,4 +1,4 @@
-.sea-qa-group-member-content .member-count {
+.seaqa-group-member-content .member-count {
   height: 40px;
   line-height: 24px;
   text-align: center;
@@ -6,18 +6,18 @@
   font-weight: 400;
 }
 
-.sea-qa-group-member-content .group-members {
+.seaqa-group-member-content .group-members {
   min-height: 200px;
   max-height: 500px;
   overflow-y: auto;
   padding: 0;
 }
 
-.sea-qa-group-member-content .group-members-not-overflow::-webkit-scrollbar {
+.seaqa-group-member-content .group-members-not-overflow::-webkit-scrollbar {
   width: 0;
 }
 
-.sea-qa-group-member-content .group-members .member-details {
+.seaqa-group-member-content .group-members .member-details {
   height: 50px;
   width: 100%;
   display: flex;
@@ -25,26 +25,26 @@
   padding: 3px 12px;
 }
 
-.sea-qa-group-member-content .group-members .member-details:hover {
+.seaqa-group-member-content .group-members .member-details:hover {
   background-color: #f5f5f5;
 }
 
-.sea-qa-group-member-content .group-members .member-details:first-child {
+.seaqa-group-member-content .group-members .member-details:first-child {
   margin-top: 2px;
 }
 
-.sea-qa-group-member-content .group-members .member-details:last-child {
+.seaqa-group-member-content .group-members .member-details:last-child {
   margin-bottom: 2px;
 }
 
-.sea-qa-group-member-content .member-details .member-avatar {
+.seaqa-group-member-content .member-details .member-avatar {
   height: 32px;
   width: 32px;
   border-radius: 50%;
   overflow: hidden;
 }
 
-.sea-qa-group-member-content .member-details .member-name {
+.seaqa-group-member-content .member-details .member-name {
   max-width: calc(100% - 32px);
   padding-left: 8px;
   overflow: hidden;

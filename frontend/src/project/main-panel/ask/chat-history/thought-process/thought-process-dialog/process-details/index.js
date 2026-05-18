@@ -31,7 +31,7 @@ const ProcessDetails = ({ value, primaryKey }) => {
       const children = value.split('/').map((item, index) => {
         const child = item.split(':');
         return (
-          <Label key={index} className="sea-qa-ai-thought-process-content-title">
+          <Label key={index} className="seaqa-ai-thought-process-content-title">
             <span className="description">{child[0]}:</span>
             <span className="value">{child[1]}</span>
           </Label>
@@ -40,7 +40,7 @@ const ProcessDetails = ({ value, primaryKey }) => {
       return <div className="d-flex">{children}</div>;
     }
     return (
-      <Label className="sea-qa-ai-thought-process-content-title">{value}</Label>
+      <Label className="seaqa-ai-thought-process-content-title">{value}</Label>
     );
   }
 
@@ -52,15 +52,15 @@ const ProcessDetails = ({ value, primaryKey }) => {
   if (hasChildren) {
     const children = displayType === 'raw' ? value.rawChildren : value.children;
     const { isPrimaryContainer, name, icon, key: primaryKey, defaultShowDetails } = value;
-    const orderClassName = classnames('sea-qa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
+    const orderClassName = classnames('seaqa-ai-thought-process-order', { 'primary-order-container': isPrimaryContainer, 'has-content': isShowDetails }, primaryKey);
     const arrowClassName = classnames('no-hover-bg', { 'rotate-icon-180': isShowDetails });
-    const contentClassName = classnames('sea-qa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
+    const contentClassName = classnames('seaqa-ai-thought-process-content', { 'primary-content-container': isPrimaryContainer }, primaryKey);
 
     return (
       <>
         <div className={orderClassName} onClick={toggle} >
           {!isPrimaryContainer && <IconButton icon="arrow-down" className={arrowClassName} />}
-          <span className="sea-qa-ai-thought-process-order-title">
+          <span className="seaqa-ai-thought-process-order-title">
             {isPrimaryContainer && <Icon symbol={icon} />}
             <span>{name}</span>
           </span>
@@ -85,13 +85,13 @@ const ProcessDetails = ({ value, primaryKey }) => {
 
   return (
     <FormGroup>
-      {hasName && (<Label className="sea-qa-ai-thought-process-content-title">{value.name}</Label>)}
+      {hasName && (<Label className="seaqa-ai-thought-process-content-title">{value.name}</Label>)}
       {Formatter && value.value ? (
-        <Formatter value={value.value} className="sea-qa-ai-thought-process-content-value" />
+        <Formatter value={value.value} className="seaqa-ai-thought-process-content-value" />
       ) : (
-        <div className="sea-qa-ai-thought-process-content-value">
+        <div className="seaqa-ai-thought-process-content-value">
           {(value.value || value.value === 0) ? value.value : (
-            <span className="sea-qa-tip-default">{gettext('Empty')}</span>
+            <span className="seaqa-tip-default">{gettext('Empty')}</span>
           )}
         </div>
       )}

@@ -47,7 +47,7 @@ const CustomizeSelectSync = ({
 
   const renderSelected = useCallback(() => {
     const selectOption = allOptions.find(o => o.value === value);
-    if (isLoading) return (<span className="tip-default select-placeholder">{gettext('Loading...')}</span>);
+    if (isLoading) return (<span className="seaqa-tip-default select-placeholder">{gettext('Loading...')}</span>);
     if (errorMessage) return (<span className="error">{errorMessage}</span>);
     if (!selectOption) return (<span className="select-placeholder">{placeholder}</span>);
     return (
@@ -59,7 +59,7 @@ const CustomizeSelectSync = ({
     <>
       <div
         ref={ref}
-        className={classnames('sea-qa-select custom-select sea-qa-customize-select',
+        className={classnames('seaqa-select custom-select seaqa-customize-select',
           { 'focus': isShowSelector },
           { 'disabled': disabled },
           className

@@ -1,17 +1,17 @@
-.sea-qa-ticket-related-issues-dialog {
+.seaqa-ticket-related-issues-dialog {
   height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
-.sea-qa-ticket-related-issues-dialog .modal-content {
+.seaqa-ticket-related-issues-dialog .modal-content {
   height: 100%;
 }
 
-.sea-qa-ticket-related-issues-dialog .modal-content .modal-body {
+.seaqa-ticket-related-issues-dialog .modal-content .modal-body {
   padding: 0px;
   overflow: hidden;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item {
+.seaqa-ticket-related-issues-dialog .issues-list-item {
   display: flex;
   align-items: flex-start;
   padding: 10px 0px;
@@ -20,11 +20,11 @@
   border-bottom: 1px solid #eee;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item:hover {
+.seaqa-ticket-related-issues-dialog .issues-list-item:hover {
   background-color: #f5f5f5;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-icon {
+.seaqa-ticket-related-issues-dialog .issues-list-item-icon {
   margin: 0 8px;
   display: flex;
   align-items: center;
@@ -32,32 +32,32 @@
   flex-shrink: 0;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-icon .sea-qa-project-connection-type-icon {
+.seaqa-ticket-related-issues-dialog .issues-list-item-icon .seaqa-project-connection-type-icon {
   width: 24px;
   height: 24px;
   object-fit: contain;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content {
   flex: 1;
   min-width: 0;
   overflow: hidden;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-title {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-title {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
   justify-content: space-between;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-title .issues-list-item-title-content {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-title .issues-list-item-title-content {
   font-weight: 500;
   margin-right: 8px;
   font-size: 16px;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-score {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-score {
   font-size: 12px;
   color: #888;
   background-color: #eaeaea;
@@ -67,19 +67,19 @@
   flex-shrink: 0;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-path {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-path {
   font-size: 0.85em;
   color: #666;
   margin-bottom: 4px;
   word-break: break-all;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-time {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-time {
   font-size: 14px;
   padding-right: 8px;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-detail {
+.seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-detail {
   font-size: 0.9em;
   color: #555;
   line-height: 1.5;
@@ -89,13 +89,13 @@
   -webkit-box-orient: vertical;
 }
 
-.sea-qa-ticket-related-issues-dialog .issues-list-container {
+.seaqa-ticket-related-issues-dialog .issues-list-container {
   height: 100%;
   overflow: auto;
   padding: 0 16px;
 }
 
-.sea-qa-ticket-related-issues-dialog .loading-container {
+.seaqa-ticket-related-issues-dialog .loading-container {
   height: 400px;
 }
 

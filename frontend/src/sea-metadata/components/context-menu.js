@@ -144,7 +144,7 @@ const ContextMenu = ({
 
   return (
     <ModalPortal>
-      <div className="dropdown-menu sea-qa-dropdown-menu d-block" style={position} ref={menuRef}>
+      <div className="dropdown-menu seaqa-dropdown-menu d-block" style={position} ref={menuRef}>
         {options.map((option, index) => {
           if (option === 'Divider') {
             return <DropdownItem key={index} divider />;

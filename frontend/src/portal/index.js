@@ -161,7 +161,7 @@ const Portal = () => {
     const displayName = portalName || projectName;
     return (
       <I18nextProvider i18n={i18n}>
-        <div className="sea-qa-portal">
+        <div className="seaqa-portal">
           <div className="portal-password-panel">
             <div className="portal-password-header">
               <div className="portal-password-title">{displayName}</div>
@@ -199,13 +199,13 @@ const Portal = () => {
   }
   return (
     <I18nextProvider i18n={i18n}>
-      <div className="sea-qa-portal">
+      <div className="seaqa-portal">
         {isLoading ? (
           <CenteredLoading />
         ) : (
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true}>
             {isEditMode && <LeftBar />}
-            <div className="sea-qa-portal-body">
+            <div className="seaqa-portal-body">
               <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
               <MainPanel
                 isEditMode={isEditMode}

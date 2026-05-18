@@ -121,7 +121,7 @@ const LabelsSettings = ({
               })}
             </>
           ) : (
-            <div className="tip-default">{gettext('No labels')}</div>
+            <div className="seaqa-tip-default">{gettext('No labels')}</div>
           )}
         </div>
       </div>

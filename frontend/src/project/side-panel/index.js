@@ -37,10 +37,10 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
 
   return (
     <>
-      <div className="sea-qa-project-side-panel" ref={ref}>
-        <div className="sea-qa-project-side-panel-container">
+      <div className="seaqa-project-side-panel" ref={ref}>
+        <div className="seaqa-project-side-panel-container">
           <Header />
-          <div className="sea-qa-project-navigation sea-qa-nav-list">
+          <div className="seaqa-project-navigation seaqa-nav-list">
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.AGENT]} {...commonProps} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
@@ -50,17 +50,17 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }
             <DefaultMoreNav onClick={toggleBar} />
-            <div className="sea-qa-project-side-panel-subtitle">{gettext('Tickets')}</div>
+            <div className="seaqa-project-side-panel-subtitle">{gettext('Tickets')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.NEW_TICKET]} {...commonProps} />
             <TicketsMoreNav onClick={toggleBar} />
-            <div className="sea-qa-project-side-panel-subtitle">{gettext('Documents')}</div>
+            <div className="seaqa-project-side-panel-subtitle">{gettext('Documents')}</div>
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} {...commonProps} />
             <KnowledgeMoreNav { ...commonProps } />
             {settings?.portal?.enable_portal && (
               <>
-                <div className="sea-qa-project-side-panel-subtitle">{gettext('Support portal')}</div>
+                <div className="seaqa-project-side-panel-subtitle">{gettext('Support portal')}</div>
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES]} {...commonProps} />
                 <PortalIssuesMoreNav onClick={toggleBar} />

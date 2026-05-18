@@ -69,7 +69,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
 
   return (
     <>
-      <Modal className='sea-qa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
+      <Modal className='seaqa-related-issues-dialog' isOpen={true} toggle={onClose} style={{ minWidth: 1100 }}>
         <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
         <ModalBody>
           {status === 'loading' && <CenteredLoading />}
@@ -84,7 +84,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                     return (
                       <div className='issues-list-item' key={issue._id} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
-                          <img src={getResourceIconURL(connectionType)} alt={connectionOption?.name} className='sea-qa-project-connection-type-icon' />
+                          <img src={getResourceIconURL(connectionType)} alt={connectionOption?.name} className='seaqa-project-connection-type-icon' />
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>

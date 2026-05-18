@@ -79,7 +79,7 @@ const PortalAllKnowledge = ({ projectUuid }) => {
     },
   }), [projectUuid, getMetadata]);
 
-  const localStorageName = useMemo(() => `sea-qa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
+  const localStorageName = useMemo(() => `seaqa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
 
   const t = useMemo(() => ({
     row: gettext('record'),

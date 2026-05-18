@@ -44,7 +44,7 @@ class Info extends Component {
 
       <Fragment>
         <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
-        <Main title={gettext('Info')} className="sea-qa-admin-info-center">
+        <Main title={gettext('Info')} className="seaqa-admin-info-center">
           <div className="info-header-content w-100 d-flex justify-content-between mt-4">
             <InfoCard url={`${mediaUrl}img/org-info-organization.png`} name={gettext('Team name')} description={org_name} />
             <InfoCard url={`${mediaUrl}img/org-info-id.png`} name="ID" description={org_id} />

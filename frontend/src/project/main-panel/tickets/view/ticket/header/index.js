@@ -79,30 +79,30 @@ const Header = forwardRef(({
     [TICKET_STATE.DUPLICATE]: 'duplicate',
   };
   return (
-    <div className={classnames('sea-qa-project-ticket-header', className)} ref={domRef}>
-      <div className="sea-qa-project-ticket-title-wrapper">
-        <div className={classnames('sea-qa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
-          <div className={classnames('sea-qa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
+    <div className={classnames('seaqa-project-ticket-header', className)} ref={domRef}>
+      <div className="seaqa-project-ticket-title-wrapper">
+        <div className={classnames('seaqa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
+          <div className={classnames('seaqa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
             {isRenaming ? (
-              <Input value={title} autoFocus={true} className="sea-qa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
+              <Input value={title} autoFocus={true} className="seaqa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
             ) : (
               <>
-                <span title={title} className="sea-qa-project-ticket-title">{title}</span>
-                <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
+                <span title={title} className="seaqa-project-ticket-title">{title}</span>
+                <span className="seaqa-project-ticket-number">{`#${id}`}</span>
               </>
             )}
             {!readonly && !isRenaming && (
-              <IconButton icon="rename" className="sea-qa-project-ticket-rename-btn" onClick={() => setIsRenaming(true)} />
+              <IconButton icon="rename" className="seaqa-project-ticket-rename-btn" onClick={() => setIsRenaming(true)} />
             )}
           </div>
         </div>
-        <div className="sea-qa-project-ticket-title-wrapper-right">
+        <div className="seaqa-project-ticket-title-wrapper-right">
           {isRenaming ? (
             <>
-              <Button className="sea-qa-project-ticket-title-cancel-btn" onClick={handleCancelModify}>
+              <Button className="seaqa-project-ticket-title-cancel-btn" onClick={handleCancelModify}>
                 {gettext('Cancel')}
               </Button>
-              <Button className="sea-qa-project-ticket-title-submit-btn" color="primary" onClick={handleModify}>
+              <Button className="seaqa-project-ticket-title-submit-btn" color="primary" onClick={handleModify}>
                 {gettext('Submit')}
               </Button>
             </>
@@ -125,8 +125,8 @@ const Header = forwardRef(({
           ) : null}
         </div>
       </div>
-      <div className="sea-qa-project-ticket-state-wrapper">
-        <div className={classnames('sea-qa-project-ticket-status', statusClassNameMap[stateOption?.value])}>
+      <div className="seaqa-project-ticket-state-wrapper">
+        <div className={classnames('seaqa-project-ticket-status', statusClassNameMap[stateOption?.value])}>
           <Icon symbol={stateOption?.icon} />
           <span>{stateOption?.statusName}</span>
         </div>

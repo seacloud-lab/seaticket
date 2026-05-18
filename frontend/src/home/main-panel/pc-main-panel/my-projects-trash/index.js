@@ -89,7 +89,7 @@ const MyProjectsTrash = () => {
                   api={listTrashProjects}
                   onRestore={(project) => homeAPI.restoreTrashProject(project.uuid)}
                 >
-                  <p className="seatable-tip-default text-secondary">
+                  <p className="seaqa-tip-default text-secondary">
                     {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
                 </ProjectsTable>
@@ -108,7 +108,7 @@ const MyProjectsTrash = () => {
                   api={listManagedGroupTrashProjects}
                   onRestore={(project) => homeAPI.restoreGroupTrashProject(project.uuid, project.group_id)}
                 >
-                  <p className="seatable-tip-default text-secondary">
+                  <p className="seaqa-tip-default text-secondary">
                     {gettext('Note: Projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
                   </p>
                 </ProjectsTable>

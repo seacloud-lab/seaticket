@@ -126,13 +126,13 @@ const TagsSettings = ({
             ))}
           </>
         ) : (
-          <div className="tip-default">{gettext('No tags')}</div>
+          <div className="seaqa-tip-default">{gettext('No tags')}</div>
         )}
       </div>
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover sea-qa-tags-selector-popover sea-ticket-settings-popover hide-description"
+          className="option-editor-popover seaqa-tags-selector-popover sea-ticket-settings-popover hide-description"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}

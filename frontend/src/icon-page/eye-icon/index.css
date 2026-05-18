@@ -14,14 +14,14 @@
   color: #666;
 }
 
-.password-toggle .sea-qa-icon-svg-eye {
+.password-toggle .seaqa-icon-svg-eye {
   display: none;
 }
 
-.password-toggle.password-show .sea-qa-icon-svg-eye-slash {
+.password-toggle.password-show .seaqa-icon-svg-eye-slash {
   display: none;
 }
 
-.password-toggle.password-show .sea-qa-icon-svg-eye {
+.password-toggle.password-show .seaqa-icon-svg-eye {
   display: unset;
 }

@@ -17,12 +17,12 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="sea-qa-project-panel-header sea-qa-project-side-panel-header">
-      <a className="sea-qa-project-icon" style={{ backgroundColor: icon.bg_color }} href={siteRoot}>
+    <div className="seaqa-project-panel-header seaqa-project-side-panel-header">
+      <a className="seaqa-project-icon" style={{ backgroundColor: icon.bg_color }} href={siteRoot}>
         <i className={`project-icon icon-color-white ${icon.name}`}></i>
-        <Icon symbol="home" className="sea-qa-project-return-home-icon" />
+        <Icon symbol="home" className="seaqa-project-return-home-icon" />
       </a>
-      <span className="sea-qa-project-name" title={projectName} aria-label={projectName}>{projectName}</span>
+      <span className="seaqa-project-name" title={projectName} aria-label={projectName}>{projectName}</span>
     </div>
   );
 };

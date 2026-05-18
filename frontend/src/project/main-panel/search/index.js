@@ -184,7 +184,7 @@ const Search = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
-      <div className="sea-qa-project-search">
+      <div className="seaqa-project-search">
         <GlobalSearchInput
           className="mb-1"
           autoFocus={true}
@@ -209,21 +209,21 @@ const Search = ({ title }) => {
           </div>
         </div>
         {searching ?
-          <CenteredLoading className="sea-qa-project-search-loading-tip" />
+          <CenteredLoading className="seaqa-project-search-loading-tip" />
           :
           <>
             {!value && (
-              <div className="sea-qa-project-search-value-empty-tip">
+              <div className="seaqa-project-search-value-empty-tip">
                 <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Start your search above to find results')} />
               </div>
             )}
             {value && results.length === 0 && (
-              <div className="sea-qa-project-search-result-empty-tip">
+              <div className="seaqa-project-search-result-empty-tip">
                 <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
               </div>
             )}
             {value && results.length > 0 &&
-              <div className="sea-qa-project-search-result-list">
+              <div className="seaqa-project-search-result-list">
                 {results.map((result, index) =>
                   <ListItem
                     key={result._id || result.uuid}

@@ -20,7 +20,7 @@ const Groupbys = ({ readOnly, groupbys, columns, onDelete, onUpdate, onMove }) =
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={classnames('groupbys-list', { 'empty-groupbys-container': isEmpty })}>
-        {isEmpty && <div className="empty-groupbys-list tip-default">{gettext('No groupings applied to this view.')}</div>}
+        {isEmpty && <div className="empty-groupbys-list sea-metadata-tip-default">{gettext('No groupings applied to this view.')}</div>}
         {!isEmpty && groupbys.map((groupby, index) => {
           return (
             <GroupbyItem

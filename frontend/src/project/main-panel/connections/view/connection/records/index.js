@@ -485,7 +485,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, [createContextMenuOptions, modifyRowsByDetailsMenu]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
@@ -568,7 +568,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         metadataID={connectionID}
         api={api}
         ref={seaMetaDataRef}
-        className="sea-qa-connection-details-metadata"
+        className="seaqa-connection-details-metadata"
         localStorageNamePrefix={localStorageName}
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}

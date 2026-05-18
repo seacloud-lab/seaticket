@@ -1,17 +1,17 @@
-.sea-qa-create-ticket-dialog {
+.seaqa-create-ticket-dialog {
   max-width: 850px;
   height: 550px;
 }
 
-.sea-qa-create-ticket-dialog .modal-content {
+.seaqa-create-ticket-dialog .modal-content {
   height: 100%;
 }
 
-.sea-qa-create-ticket-dialog .sea-qa-create-ticket-dialog-left-settings {
+.seaqa-create-ticket-dialog .seaqa-create-ticket-dialog-left-settings {
   flex: 1;
 }
 
-.sea-qa-create-ticket-dialog .sea-qa-create-ticket-dialog-other-settings {
+.seaqa-create-ticket-dialog .seaqa-create-ticket-dialog-other-settings {
   width: 316px;
   display: flex;
   flex-direction: column;
@@ -20,15 +20,15 @@
   overflow-y: auto;
 }
 
-.sea-qa-create-ticket-dialog .sea-qa-ticket-content {
+.seaqa-create-ticket-dialog .seaqa-ticket-content {
   height: 250px;
 }
 
-.sea-qa-create-ticket-dialog .modal-footer .btn {
+.seaqa-create-ticket-dialog .modal-footer .btn {
   height: 38px;
 }
 
-.sea-qa-create-ticket-dialog .modal-footer .sea-qa-loading-icon {
+.seaqa-create-ticket-dialog .modal-footer .seaqa-loading-icon {
   width: 16px;
   height: 16px;
 }

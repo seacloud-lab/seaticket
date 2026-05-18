@@ -48,7 +48,7 @@
   cursor: pointer;
 }
 
-.sea-metadata-column-popover .sea-metadata-column-type-info .sea-qa-icon-svg {
+.sea-metadata-column-popover .sea-metadata-column-type-info .seaqa-icon-svg {
   flex-shrink: 0;
 }
 
@@ -64,16 +64,16 @@
   color: #666;
 }
 
-.sea-metadata-column-popover .sea-metadata-column-type .sea-qa-icon-svg {
+.sea-metadata-column-popover .sea-metadata-column-type .seaqa-icon-svg {
   fill: #aaa;
   cursor: default;
 }
 
-.sea-metadata-column-popover .sea-metadata-column-type .sea-qa-icon-svg-rate {
+.sea-metadata-column-popover .sea-metadata-column-type .seaqa-icon-svg-rate {
   font-size: 14px;
 }
 
-.sea-metadata-column-popover .sea-metadata-column-type .sea-qa-icon-svg-drop-down {
+.sea-metadata-column-popover .sea-metadata-column-type .seaqa-icon-svg-drop-down {
   font-size: 12px;
 }
 

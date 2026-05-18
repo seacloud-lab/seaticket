@@ -41,14 +41,14 @@
   margin-right: -2px;
 }
 
-.user-item .user-remove .sea-qa-icon-svg {
+.user-item .user-remove .seaqa-icon-svg {
   color: #909090;
   cursor: pointer;
   width: 13px;
   height: 13px;
 }
 
-.user-item .user-remove .sea-qa-icon-svg:hover {
+.user-item .user-remove .seaqa-icon-svg:hover {
   color: #666;
 }
 
@@ -117,7 +117,7 @@
   background: transparent;
 }
 
-.collaborator-check-icon .sea-qa-icon-svg {
+.collaborator-check-icon .seaqa-icon-svg {
   color: #798d99;
   height: 12px;
   width: 12px;

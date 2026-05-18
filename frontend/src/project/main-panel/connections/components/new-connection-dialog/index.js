@@ -165,29 +165,29 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       isOpen={true}
       toggle={onToggle}
       autoFocus={false}
-      className="sea-qa-project-connection-dialog"
+      className="seaqa-project-connection-dialog"
       style={{ height: (stepIndex === 1 && isEmail) ? 'calc(100% - 56px)' : 'fit-content' }}
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
-      <ModalBody className="sea-qa-project-connection-body">
-        <div className="sea-qa-project-selected-connection">
+      <ModalBody className="seaqa-project-connection-body">
+        <div className="seaqa-project-selected-connection">
           {stepIndex === 0 ?
-            <div className="sea-qa-project-selected-no-type">{gettext('Select connection type')}</div>
+            <div className="seaqa-project-selected-no-type">{gettext('Select connection type')}</div>
             :
             <>
-              <div className='sea-qa-project-connection-help'>
+              <div className='seaqa-project-connection-help'>
                 {typeOption.help_text}
                 <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
               </div>
-              <div className='sea-qa-project-new-connection-type'>
+              <div className='seaqa-project-new-connection-type'>
                 <div className="d-flex align-items-center">
                   <img
                     src={getConnectionIcon(typeOption.type)}
                     alt={typeOption.name}
-                    className="sea-qa-project-new-connection-icon"
+                    className="seaqa-project-new-connection-icon"
                     style={{ width: 20, height: 20 }}
                   />
-                  <span className="sea-qa-project-new-connection-name">{typeOption.name}</span>
+                  <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
                 </div>
                 {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
                   <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
@@ -197,21 +197,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           }
         </div>
         {step.key === STEP.TYPE && (
-          <div className="sea-qa-project-new-connection-types">
+          <div className="seaqa-project-new-connection-types">
             {CONNECTION_TYPES.map(connection => {
               const { type: key, name } = connection;
               const isActive = key === type;
               return (
-                <div className={classnames('sea-qa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => onTypeChange(key)}>
-                  <img src={getConnectionIcon(key)} alt={name} className="sea-qa-project-new-connection-icon" />
-                  <span className="sea-qa-project-new-connection-name">{name}</span>
+                <div className={classnames('seaqa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => onTypeChange(key)}>
+                  <img src={getConnectionIcon(key)} alt={name} className="seaqa-project-new-connection-icon" />
+                  <span className="seaqa-project-new-connection-name">{name}</span>
                 </div>
               );
             })}
           </div>
         )}
         {step.key === STEP.CONFIG && !isGithub && (
-          <div className="sea-qa-project-new-connection-config">
+          <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
                 {gettext('Connection name')}
@@ -223,7 +223,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               const { type, key, children } = c;
               if (type === CONNECTION_FIELD_TYPE.GROUP) {
                 return (
-                  <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
                     {children.map((child, index) => (
                       <ConnectionConfigEditor
                         className="mx-0 px-0 width-half"
@@ -253,7 +253,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         )}
 
         {step.key === STEP.CONFIG && isGithub && isLoadingRepositories &&
-          <div className="sea-qa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
+          <div className="seaqa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
             <Loading />
             <h4 className="mt-5">{gettext('Checking GitHub App installation status...')}</h4>
             <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
@@ -261,7 +261,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         }
 
         {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length === 0 &&
-          <div className="sea-qa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
+          <div className="seaqa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
             <h4>{gettext('GitHub app not installed')}</h4>
             <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
             <Button color="primary" outline onClick={() => window.open(installGitHubAppURL, '_blank')} >{gettext('Install GitHub app')}</Button>
@@ -269,7 +269,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         }
 
         {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length > 0 && (
-          <div className="sea-qa-project-new-connection-config">
+          <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
                 {gettext('Connection name')}
@@ -281,7 +281,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               const { type, key, children } = c;
               if (type === CONNECTION_FIELD_TYPE.GROUP) {
                 return (
-                  <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
                     {children.map((child, index) => (
                       <ConnectionConfigEditor
                         className="mx-0 px-0 width-half"

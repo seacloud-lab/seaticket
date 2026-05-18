@@ -53,7 +53,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
         <>
           <IconButton
             icon="arrow-down"
-            className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
+            className="rotate-icon-90 seaqa-project-toggle-connections-btn"
             onClick={() => toggleChildrenPageSlugId('')}
           />
           <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
@@ -64,7 +64,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       <>
         <IconButton
           icon="arrow-down"
-          className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
+          className="rotate-icon-90 seaqa-project-toggle-connections-btn"
           onClick={handleReturnConnectionsHome}
         />
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
@@ -148,7 +148,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
         {isSyncing
           ?
           (
-            <Button className='sea-qa-project-syncing-connections-btn' disabled={true} color="primary">
+            <Button className='seaqa-project-syncing-connections-btn' disabled={true} color="primary">
               <CenteredLoading className='mr-2' />
               <span>{gettext('Syncing')}</span>
             </Button>

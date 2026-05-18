@@ -43,7 +43,7 @@ const Attachments = ({
 
   return (
     <>
-      <div className={classnames('sea-qa-ai-chat-message-attachments', className)} ref={innerRef} { ...props }>
+      <div className={classnames('seaqa-ai-chat-message-attachments', className)} ref={innerRef} { ...props }>
         {attachments.map((attachment, index) => {
           return (
             <Attachment

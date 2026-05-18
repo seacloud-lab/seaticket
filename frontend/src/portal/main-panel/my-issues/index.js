@@ -131,11 +131,11 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   if (expandIssueID) {
     return (
       <>
-        <TopBar className="sea-qa-portal-issue-header" >
+        <TopBar className="seaqa-portal-issue-header" >
           <>
             <IconButton
               icon="arrow-down"
-              className="rotate-icon-90 sea-qa-portal-toggle-knowledge-btn"
+              className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
               onClick={closeIssue}
             />
             <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>

@@ -218,9 +218,9 @@ const TicketInDialog = ({
 
   const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   return (
-    <div className={classnames('sea-qa-project-ticket sea-qa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
-      <div className="sea-qa-project-ticket-content-wrapper">
-        <div className="sea-qa-project-ticket-comment-container-wrapper">
+    <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
+      <div className="seaqa-project-ticket-content-wrapper">
+        <div className="seaqa-project-ticket-comment-container-wrapper">
           <Comment
             isSmallScreen={isSmallScreen}
             comment={ticket}
@@ -240,7 +240,7 @@ const TicketInDialog = ({
             );
           })}
         </div>
-        <div className="sea-qa-project-ticket-other-settings">
+        <div className="seaqa-project-ticket-other-settings">
           <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           {!isPortalIssue && (
             <CollaboratorsSettings id="ticket-dialog-assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />

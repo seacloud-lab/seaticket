@@ -1,11 +1,11 @@
-.sea-qa-ai-chat-attachments-container {
+.seaqa-ai-chat-attachments-container {
   width: 100%;
   overflow-x: auto !important;
   margin-bottom: 16px;
   scrollbar-width: none;
 }
 
-.sea-qa-ai-chat-attachments {
+.seaqa-ai-chat-attachments {
   width: fit-content;
   display: flex;
   align-items: center;
@@ -15,26 +15,26 @@
   overflow: hidden;
 }
 
-.sea-qa-ai-chat-attachments-container::-webkit-scrollbar {
+.seaqa-ai-chat-attachments-container::-webkit-scrollbar {
   display: none;
   width: 0;
   height: 0;
 }
 
-.sea-qa-ai-chat-attachments-scroll-before {
+.seaqa-ai-chat-attachments-scroll-before {
   left: 15px;
   background: linear-gradient(90deg, #fff, #F7F7F5);
   padding-right: 6px;
 }
 
-.sea-qa-ai-chat-attachments-scroll-after {
+.seaqa-ai-chat-attachments-scroll-after {
   right: 15px;
   background: linear-gradient(270deg, #fff, #F7F7F5);
   padding-left: 6px;
 }
 
-.sea-qa-ai-chat-attachments-scroll-before,
-.sea-qa-ai-chat-attachments-scroll-after {
+.seaqa-ai-chat-attachments-scroll-before,
+.seaqa-ai-chat-attachments-scroll-after {
   z-index: 5;
   width: 30px;
   height: 36px;
@@ -45,8 +45,8 @@
   position: absolute;
 }
 
-.sea-qa-ai-chat-attachments-scroll-before .sea-qa-icon-btn,
-.sea-qa-ai-chat-attachments-scroll-after .sea-qa-icon-btn {
+.seaqa-ai-chat-attachments-scroll-before .seaqa-icon-btn,
+.seaqa-ai-chat-attachments-scroll-after .seaqa-icon-btn {
   border: 1px solid #eee;
   border-radius: 8px;
   cursor: pointer;

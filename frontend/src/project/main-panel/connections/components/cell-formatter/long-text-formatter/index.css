@@ -20,8 +20,8 @@
   padding: 0 3px !important;
 }
 
-.long-text-formatter .links-container .sea-qa-icon-svg,
-.long-text-formatter .check-list-container .sea-qa-icon-svg {
+.long-text-formatter .links-container .seaqa-icon-svg,
+.long-text-formatter .check-list-container .seaqa-icon-svg {
   margin-right: 4px !important;
   height: 12px;
   width: 12px;

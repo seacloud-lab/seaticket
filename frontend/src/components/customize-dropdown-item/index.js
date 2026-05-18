@@ -5,7 +5,7 @@ import { Icon } from '..';
 
 const CustomizeDropdownItem = ({ className, children, ...params }) => {
   return (
-    <DropdownItem className={classnames('sea-qa-dropdown-item', className)} { ...params}>
+    <DropdownItem className={classnames('seaqa-dropdown-item', className)} { ...params}>
       {children}
     </DropdownItem>
   );

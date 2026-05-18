@@ -158,7 +158,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   return (
     <>
       <CustomizeTable
-        className="sea-qa-project-connections-table"
+        className="seaqa-project-connections-table"
         columns={columns}
         rows={connections}
         emptyTip={

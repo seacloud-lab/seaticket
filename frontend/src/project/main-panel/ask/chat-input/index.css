@@ -1,4 +1,4 @@
-.sea-qa-ai-ask-wrapper .sea-qa-ai-ask-chat-input-wrapper {
+.seaqa-ai-ask-wrapper .seaqa-ai-ask-chat-input-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -7,11 +7,11 @@
   box-shadow: 0px 0px 0px 1px #E2E2E2;
 }
 
-.sea-qa-ai-ask-chat-input-wrapper.disabled {
+.seaqa-ai-ask-chat-input-wrapper.disabled {
   box-shadow: 0px 0px 0px 1px #BDBDBD !important;
 }
 
-.sea-qa-ai-ask-chat-input-container {
+.seaqa-ai-ask-chat-input-container {
   position: relative;
   width: 100%;
   padding: 16px 0;
@@ -24,17 +24,17 @@
   box-shadow: 0px 0px 0px 1px #EAEAEA;
 }
 
-.sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-container {
+.seaqa-ai-ask-chat-input-wrapper.disabled .seaqa-ai-ask-chat-input-container {
   box-shadow: 0px 0px 0px 1px #BDBDBD;
 }
 
-.sea-qa-ai-ask-chat-input-content {
+.seaqa-ai-ask-chat-input-content {
   width: 100%;
   height: fit-content;
   position: relative;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input {
+.seaqa-ai-ask-chat-input-content .message-input {
   width: 100%;
   height: 100%;
   min-height: 80px;
@@ -48,38 +48,38 @@
   line-height: 22px;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input::placeholder {
+.seaqa-ai-ask-chat-input-content .message-input::placeholder {
   color: #868E96;
   font-size: 14px;
   line-height: 22px;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input:focus-visible {
+.seaqa-ai-ask-chat-input-content .message-input:focus-visible {
   outline: none;
 }
 
-.sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-content .message-input {
+.seaqa-ai-ask-chat-input-wrapper.disabled .seaqa-ai-ask-chat-input-content .message-input {
   cursor: default;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input.message-input-value {
+.seaqa-ai-ask-chat-input-content .message-input.message-input-value {
   overscroll-behavior: contain;
   position: absolute;
   top: 0;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input.message-input-value:disabled {
+.seaqa-ai-ask-chat-input-content .message-input.message-input-value:disabled {
   background-color: transparent;
 }
 
-.sea-qa-ai-ask-chat-input-content .message-input.message-input-preview {
+.seaqa-ai-ask-chat-input-content .message-input.message-input-preview {
   border-radius: 0;
   visibility: hidden;
   pointer-events: none;
   height: fit-content;
 }
 
-.sea-qa-ai-ask-chat-operations-container {
+.seaqa-ai-ask-chat-operations-container {
   height: 48px;
   padding-top: 12px;
   width: 100%;
@@ -88,45 +88,45 @@
   justify-content: space-between;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-icon-btn {
   width: 32px;
   height: 32px;
   z-index: 1;
   border-radius: 50%;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-icon-btn {
   background-color: var(--bs-hover-tertiary-bg);
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn:not(.disabled) {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-icon-btn:not(.disabled) {
   background-color: var(--bs-primary);
 }
 
-.sea-qa-ai-ask-chat-operations-container-left .sea-qa-ai-ask-icon-btn,
-.sea-qa-ai-ask-chat-operations-container-right .sea-qa-ai-ask-icon-btn {
+.seaqa-ai-ask-chat-operations-container-left .seaqa-ai-ask-icon-btn,
+.seaqa-ai-ask-chat-operations-container-right .seaqa-ai-ask-icon-btn {
   margin: 0;
   cursor: pointer;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn .sea-qa-icon-svg {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-icon-btn .seaqa-icon-svg {
   color: #fff;
   height: 1rem;
   width: 1rem;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-icon-svg {
+.seaqa-ai-ask-chat-operations-container .seaqa-icon-svg {
   color: var(--bs-icon-color);
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-chat-operations-container-left {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-chat-operations-container-left {
   display: flex;
   align-items: center;
   padding: 0 8px 0 16px;
   gap: 8px;
 }
 
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-chat-operations-container-right {
+.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-chat-operations-container-right {
   display: flex;
   align-items: center;
   padding: 0 16px 0 8px;
@@ -134,18 +134,18 @@
   overflow: hidden;
 }
 
-.sea-qa-ai-model-selector .selected-option-show {
+.seaqa-ai-model-selector .selected-option-show {
   display: flex;
   align-items: center;
 }
 
-.sea-qa-ai-model-selector .selected-option-show .sea-qa-ai-model-logo,
-.sea-qa-ai-model-selector .selected-option-show .sea-qa-ai-model-logo img {
+.seaqa-ai-model-selector .selected-option-show .seaqa-ai-model-logo,
+.seaqa-ai-model-selector .selected-option-show .seaqa-ai-model-logo img {
   height: 16px;
   width: 16px;
 }
 
-.sea-qa-ai-model-selector .selected-option-show .sea-qa-ai-model-logo {
+.seaqa-ai-model-selector .selected-option-show .seaqa-ai-model-logo {
   margin-right: 8px;
   display: flex;
   align-items: center;
@@ -153,20 +153,20 @@
   flex-shrink: 0;
 }
 
-.sea-qa-ask-chat-records-selector {
+.seaqa-ask-chat-records-selector {
   width: 36px !important;
   padding: 0 10px !important;
 }
 
-.sea-qa-ask-chat-records-selector.simple .selected-option-show {
+.seaqa-ask-chat-records-selector.simple .selected-option-show {
   display: none;
 }
 
-.sea-qa-ai-model-selector-editor .popover,
-.sea-qa-ai-model-selector-editor .option-editor-container {
+.seaqa-ai-model-selector-editor .popover,
+.seaqa-ai-model-selector-editor .option-editor-container {
   min-height: fit-content;
 }
 
-.sea-qa-ai-model-selector-editor .option-editor-container .option-editor-content {
+.seaqa-ai-model-selector-editor .option-editor-container .option-editor-content {
   min-height: fit-content;
 }

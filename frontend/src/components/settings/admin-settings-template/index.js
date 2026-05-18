@@ -12,7 +12,7 @@ const AdminSettingsTemplate = ({ helpTip, displayName, mainContent, attachment }
       )}
       <Col md="5">
         {mainContent}
-        {helpTip && <p className="tip-default mt-1">{helpTip}</p>}
+        {helpTip && <p className="seaqa-tip-default mt-1">{helpTip}</p>}
       </Col>
       <Col md="4">
         {attachment}

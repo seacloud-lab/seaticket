@@ -4,7 +4,7 @@ import classnames from 'classnames';
 
 function CenteredError({ className, children }) {
   return (
-    <div className={classnames('d-flex align-items-center justify-content-center h-100 w-100 o-hidden sea-qa-tip-danger', className)}>
+    <div className={classnames('d-flex align-items-center justify-content-center h-100 w-100 o-hidden seaqa-tip-danger', className)}>
       {children}
     </div>
   );

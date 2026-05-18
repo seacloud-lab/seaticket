@@ -1,4 +1,4 @@
-.sea-qa-project-ticket-other-settings {
+.seaqa-project-ticket-other-settings {
   width: 30%;
   padding-left: 24px;
   display: flex;
@@ -47,18 +47,18 @@
   flex: 1;
 }
 
-.sea-qa-project-ticket-footer {
+.seaqa-project-ticket-footer {
   display: flex;
   align-items: center;
   padding-left: 48px;
   justify-content: space-between;
 }
 
-.sea-qa-project-ticket-footer .sea-qa-project-ticket-footer-confirm-btn {
+.seaqa-project-ticket-footer .seaqa-project-ticket-footer-confirm-btn {
   height: 38px;
 }
 
-.sea-qa-project-ticket-footer .sea-qa-loading-icon {
+.seaqa-project-ticket-footer .seaqa-loading-icon {
   height: 16px;
   width: 16px;
 }

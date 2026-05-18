@@ -33,15 +33,15 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
   return (
     <>
       <div
-        className={classnames('sea-qa-project-navigation-item', {
-          'sea-qa-project-navigation-item-active': isActive,
+        className={classnames('seaqa-project-navigation-item', {
+          'seaqa-project-navigation-item-active': isActive,
         })}
         style={{ paddingLeft: level > 1 ? (level - 1) * NAVIGATION_LEVEL_INDENT + NAVIGATION_BASE_PADDING : NAVIGATION_BASE_PADDING }}
         onClick={() => onClick([nav.key])}
         title={name}
       >
-        {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
-        <span className="sea-qa-project-navigation-item-name">{name}</span>
+        {icon && (<Icon symbol={icon} className="seaqa-project-navigation-item-icon" />)}
+        <span className="seaqa-project-navigation-item-name">{name}</span>
         <IconButton icon="arrow-down-b" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
       </div>
       <div

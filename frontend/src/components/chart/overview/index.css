@@ -29,7 +29,7 @@
   height: 36px;
 }
 
-.overview-chart-header .credit-header-item .icon .sea-qa-icon-svg {
+.overview-chart-header .credit-header-item .icon .seaqa-icon-svg {
   width: 20px;
   height: 20px;
 }
@@ -47,7 +47,7 @@
   background-color: rgba(255, 128, 0, 0.1);
 }
 
-.overview-chart-header .credit-header-item.current .icon .sea-qa-icon-svg {
+.overview-chart-header .credit-header-item.current .icon .seaqa-icon-svg {
   fill: #ff8000;
 }
 
@@ -64,7 +64,7 @@
   background-color: rgba(184, 48, 215, 0.1);
 }
 
-.overview-chart-header .credit-header-item.last .icon .sea-qa-icon-svg {
+.overview-chart-header .credit-header-item.last .icon .seaqa-icon-svg {
   fill: #b830d7;
 }
 
@@ -81,7 +81,7 @@
   background-color: rgba(21, 136, 252, 0.1);
 }
 
-.overview-chart-header .credit-header-item.month-on-month .icon .sea-qa-icon-svg {
+.overview-chart-header .credit-header-item.month-on-month .icon .seaqa-icon-svg {
   fill: #1588fc;
 }
 

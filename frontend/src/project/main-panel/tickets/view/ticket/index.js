@@ -477,7 +477,7 @@ const Ticket = ({
 
   return (
     <div
-      className={classnames('sea-qa-project-ticket', { 'small': isSmallScreen })}
+      className={classnames('seaqa-project-ticket', { 'small': isSmallScreen })}
       onScroll={handleScroll}
       ref={ticketRef}
     >
@@ -492,14 +492,14 @@ const Ticket = ({
         modifyTitle={onTitleChange}
       />
       <Header
-        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
+        className={classnames('seaqa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
         title={title}
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
       />
-      <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="sea-qa-project-ticket-comment-container-wrapper">
+      <div className="seaqa-project-ticket-content-wrapper" ref={containerRef}>
+        <div className="seaqa-project-ticket-comment-container-wrapper">
           <Comment
             isSmallScreen={isSmallScreen}
             comment={ticket}
@@ -538,12 +538,12 @@ const Ticket = ({
             );
           })}
           <Comment
-            className={classnames('sea-qa-project-ticket-add-comment d-none-after mb-0', { 'mt-4': lastOpType === 'log', 'mt-3': lastOpType === 'comment' })}
+            className={classnames('seaqa-project-ticket-add-comment d-none-after mb-0', { 'mt-4': lastOpType === 'log', 'mt-3': lastOpType === 'comment' })}
             isSmallScreen={isSmallScreen}
             comment={{ creator: username }}
             onSubmitComment={onSubmitComment}
           >
-            <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
+            <span className="seaqa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}
               ref={commentEditorRef}
@@ -559,9 +559,9 @@ const Ticket = ({
               onSaveEditorValue={onCommentChange}
             />
           </Comment>
-          <div className="sea-qa-project-ticket-footer">
+          <div className="seaqa-project-ticket-footer">
             <UploadFilesButton className="mt-4" onChange={handleFiles} />
-            <div className="sea-qa-project-ticket-submit-btns ml-2">
+            <div className="seaqa-project-ticket-submit-btns ml-2">
               <StatusToggleButton
                 state={state}
                 substate={substate}
@@ -571,7 +571,7 @@ const Ticket = ({
                 onChange={toggleState}
               />
               <Button
-                className="sea-qa-project-ticket-footer-confirm-btn"
+                className="seaqa-project-ticket-footer-confirm-btn"
                 disabled={!comment.text || isSubmitting}
                 color="primary"
                 onClick={() => onSubmitComment()}
@@ -581,7 +581,7 @@ const Ticket = ({
             </div>
           </div>
         </div>
-        <div className="sea-qa-project-ticket-other-settings">
+        <div className="seaqa-project-ticket-other-settings">
           <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings

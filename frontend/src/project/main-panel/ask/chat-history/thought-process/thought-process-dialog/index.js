@@ -404,11 +404,11 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
   }, [propsValue]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} className="sea-qa-ai-thought-process-dialog">
+    <Modal isOpen={true} toggle={onToggle} className="seaqa-ai-thought-process-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Thought process')}</ModalHeader>
       <ModalBody>
         {!isLoading && (
-          <div className="sea-qa-ai-thought-process">
+          <div className="seaqa-ai-thought-process">
             {value.map((v, index) => {
               return (<ProcessDetails value={v} key={index} />);
             })}

@@ -63,7 +63,7 @@ export default class WorkspaceMemberDialog extends React.Component {
     const { groupMembers, isLoading } = this.state;
     if (isLoading) {
       return (
-        <Modal isOpen={true} toggle={this.toggle} className="sea-qa-group-member-content">
+        <Modal isOpen={true} toggle={this.toggle} className="seaqa-group-member-content">
           <ModalHeader toggle={this.toggle}>{gettext('Group members')}</ModalHeader>
           <ModalBody className='group-members'>
             <CenteredLoading style={{ minHeight: '200px' }} />
@@ -72,7 +72,7 @@ export default class WorkspaceMemberDialog extends React.Component {
       );
     }
     return (
-      <Modal isOpen={true} toggle={this.toggle} className="sea-qa-group-member-content">
+      <Modal isOpen={true} toggle={this.toggle} className="seaqa-group-member-content">
         <ModalHeader toggle={this.toggle}>{gettext('Group members') + ` (${groupMembers.length})`}</ModalHeader>
         <ModalBody className={classnames('group-members', { 'group-members-not-overflow': groupMembers.length < 7 })}>
           {this.getMembers()}

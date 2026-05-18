@@ -73,11 +73,11 @@ body {
   background: rgba(0, 0, 0, 0.3);
 }
 
-.avatar-edit.sea-qa-icon-btn:hover {
+.avatar-edit.seaqa-icon-btn:hover {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-.avatar-edit.sea-qa-icon-btn .sea-qa-icon-svg {
+.avatar-edit.seaqa-icon-btn .seaqa-icon-svg {
   width: 24px;
   height: 24px;
   color: #fff;
@@ -91,7 +91,7 @@ body {
   border-radius: 4px;
 }
 
-.user-setting-nav .nav-item .sea-qa-icon-svg {
+.user-setting-nav .nav-item .seaqa-icon-svg {
   color: var(--bs-icon-color);
 }
 
@@ -127,12 +127,12 @@ body {
   background-color: rgb(96, 196, 76);
 }
 
-.logged-in-session-table .sea-qa-dropdown-more {
+.logged-in-session-table .seaqa-dropdown-more {
   color: #999;
   cursor: pointer;
 }
 
-.logged-in-session-table .sea-qa-dropdown-more:hover {
+.logged-in-session-table .seaqa-dropdown-more:hover {
   color: #666;
 }
 
@@ -149,7 +149,7 @@ body {
   border: none;
 }
 
-.logged-in-session-table tbody td .sea-qa-icon-svg-more-vertical {
+.logged-in-session-table tbody td .seaqa-icon-svg-more-vertical {
   transform: rotate(90deg);
 }
 

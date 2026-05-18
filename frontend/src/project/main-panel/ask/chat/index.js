@@ -500,12 +500,12 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
   const isNewChat = sessionId === ASK_PAGE_SLUG_ID.NEW;
 
   return (
-    <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })} ref={wrapperRef}>
+    <div className={classnames('seaqa-ai-ask-wrapper', { 'empty': isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })} ref={wrapperRef}>
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
       {!isNewChat && (
-        <div className="sea-qa-ai-ask-chats-header">
+        <div className="seaqa-ai-ask-chats-header">
           <ChatHeader
             isReply={_isReply}
             readOnly={readOnly}
@@ -517,13 +517,13 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           />
         </div>
       )}
-      <div className="sea-qa-ai-ask-chats-body">
-        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && !isNewChat })} ref={chatHistoryContentRef}>
+      <div className="seaqa-ai-ask-chats-body">
+        <div className={classnames('seaqa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && !isNewChat })} ref={chatHistoryContentRef}>
           {isEmpty && (
-            <div className="sea-qa-ai-ask-chats-tip">
-              <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
-              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
-              <div className="sea-qa-ai-ask-chats-tip-description">
+            <div className="seaqa-ai-ask-chats-tip">
+              <Icon symbol="chat-decoration" className="seaqa-ai-ask-chats-tip-icon" />
+              <div className="seaqa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
+              <div className="seaqa-ai-ask-chats-tip-description">
                 {gettext('You can say "Help solve the following issue: <issue description>" to let AI solve the issue by searching knowledge bases.')}
               </div>
             </div>
@@ -544,7 +544,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           {loading && (<CenteredLoading className="flex-1" />)}
         </div>
       </div>
-      <div className="sea-qa-ai-ask-chats-footer">
+      <div className="seaqa-ai-ask-chats-footer">
         <ChatInput
           ref={messageInputRef}
           isReply={_isReply}

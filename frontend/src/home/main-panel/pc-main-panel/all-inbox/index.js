@@ -70,11 +70,11 @@ const AllInbox = () => {
   if (!showInboxDrawer) return null;
 
   return (
-    <div className="sea-qa-all-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
-      <div className="sea-qa-all-inbox-header">
+    <div className="seaqa-all-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
+      <div className="seaqa-all-inbox-header">
         <span className="heading">{title}</span>
       </div>
-      <div className="sea-qa-all-inbox-tabs-wrapper">
+      <div className="seaqa-all-inbox-tabs-wrapper">
         <CustomizeTabs
           value={curTab}
           tabs={[
@@ -82,12 +82,12 @@ const AllInbox = () => {
             {
               value: NOTIFICATION_TYPE.PROJECT,
               label: (
-                <span className="sea-qa-inbox-tab-label">
+                <span className="seaqa-inbox-tab-label">
                   {gettext('Project')}
                   {projectUnreadCount > 0 && (
                     <>
                       {`(${projectUnreadCountText})`}
-                      <span className="sea-qa-inbox-tab-badge" />
+                      <span className="seaqa-inbox-tab-badge" />
                     </>
                   )}
                 </span>
@@ -96,7 +96,7 @@ const AllInbox = () => {
           ]}
           onChange={setCurTab}
         />
-        <div className="sea-qa-inbox-actions" onClick={() => markAllAsReadByTab(curTab)} title={gettext('mark all as read')}>
+        <div className="seaqa-inbox-actions" onClick={() => markAllAsReadByTab(curTab)} title={gettext('mark all as read')}>
           <Icon symbol="mark-all-as-read" />
         </div>
       </div>

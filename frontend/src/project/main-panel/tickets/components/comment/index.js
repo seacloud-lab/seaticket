@@ -117,7 +117,7 @@ const Comment = ({
 
   const renderAvatar = useCallback(() => {
     return (
-      <div className="sea-qa-project-ticket-comment-user-avatar">
+      <div className="seaqa-project-ticket-comment-user-avatar">
         <img src={comment.via_agent ? `${mediaUrl}/img/agent-avatar.png` : creator.avatar_url} alt={creator.name} />
       </div>
     );
@@ -132,11 +132,11 @@ const Comment = ({
     return (
       <>
         {isSmallScreen && renderAvatar()}
-        <span className="sea-qa-project-ticket-comment-user-name mr-1">{userName}</span>
+        <span className="seaqa-project-ticket-comment-user-name mr-1">{userName}</span>
         {isShowStatus && (
-          <span className="sea-qa-project-ticket-comment-status mr-1">{gettext('opened')}</span>
+          <span className="seaqa-project-ticket-comment-status mr-1">{gettext('opened')}</span>
         )}
-        <span className="sea-qa-project-ticket-comment-time">{created_time}</span>
+        <span className="seaqa-project-ticket-comment-time">{created_time}</span>
       </>
     );
   }, [isShowStatus, isSmallScreen, creator, comment, renderAvatar]);
@@ -185,20 +185,20 @@ const Comment = ({
   if (isEditComment) {
     return (
       <>
-        <div className={classnames('sea-qa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
+        <div className={classnames('seaqa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
           {!isSmallScreen && renderAvatar()}
-          <div className="sea-qa-project-ticket-comment-container">
-            <div className="sea-qa-project-ticket-comment-op">
-              <div className="sea-qa-project-ticket-comment-op-log">
+          <div className="seaqa-project-ticket-comment-container">
+            <div className="seaqa-project-ticket-comment-op">
+              <div className="seaqa-project-ticket-comment-op-log">
                 {renderOperationLog()}
               </div>
               {!isShowEditor && (
                 <Dropdown
                   isOpen={isOpen}
-                  className="sea-qa-project-ticket-comment-op-more-dropdown"
+                  className="seaqa-project-ticket-comment-op-more-dropdown"
                   toggle={() => setIsOpen(!isOpen)}
                 >
-                  <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn" tag="div">
+                  <DropdownToggle className="dropdown-toggle-button seaqa-icon-btn" tag="div">
                     <Icon symbol="more" />
                   </DropdownToggle>
                   <CustomizeDropdownMenu fixed={true} className="my-1 mr-2">
@@ -218,7 +218,7 @@ const Comment = ({
                 </Dropdown>
               )}
             </div>
-            <div className={classnames('sea-qa-project-ticket-comment-content', { 'p-2 editing': isShowEditor })}>
+            <div className={classnames('seaqa-project-ticket-comment-content', { 'p-2 editing': isShowEditor })}>
               {isShowEditor ? (
                 <>
                   <LongTextInlineEditor
@@ -235,12 +235,12 @@ const Comment = ({
                     editorApi={editorAPI}
                     onSaveEditorValue={onCommentChange}
                   />
-                  <div className="sea-qa-project-ticket-footer mt-2 pl-0">
+                  <div className="seaqa-project-ticket-footer mt-2 pl-0">
                     {editorAPI ? (<UploadFilesButton onChange={handleFiles} />) : (<div></div>)}
                     <div className="ml-2">
                       <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
                       <Button
-                        className="sea-qa-project-ticket-footer-confirm-btn"
+                        className="seaqa-project-ticket-footer-confirm-btn"
                         disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
                         color="primary"
                         onClick={handleUpdateComment}
@@ -270,11 +270,11 @@ const Comment = ({
   }
 
   return (
-    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
+    <div className={classnames('seaqa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
-      <div className="sea-qa-project-ticket-comment-container">
-        <div className="sea-qa-project-ticket-comment-op">
-          <div className="sea-qa-project-ticket-comment-op-log">
+      <div className="seaqa-project-ticket-comment-container">
+        <div className="seaqa-project-ticket-comment-op">
+          <div className="seaqa-project-ticket-comment-op-log">
             {children && children[0] ? (
               <>
                 {isSmallScreen && renderAvatar()}
@@ -287,7 +287,7 @@ const Comment = ({
             )}
           </div>
         </div>
-        <div className="sea-qa-project-ticket-comment-content">
+        <div className="seaqa-project-ticket-comment-content">
           {children && children[1] ? children[1] : (
             <CustomizeMarkdownViewer value={content} showTOC={false} onLinkClick={onLinkClick} />
           )}

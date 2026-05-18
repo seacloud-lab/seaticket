@@ -32,7 +32,7 @@ const SwitchSettingsItem = ({
           onChange={onValueChange}
           placeholder={placeholder}
         />
-        <p className="tip-default tip m-0">
+        <p className="seaqa-tip-default tip m-0">
           {tip}
         </p>
       </div>

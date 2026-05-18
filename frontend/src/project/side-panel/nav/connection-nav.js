@@ -16,13 +16,13 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
 
   return (
     <div
-      className={classnames('sea-qa-project-navigation-item', { 'sea-qa-project-navigation-item-active': isActive })}
+      className={classnames('seaqa-project-navigation-item', { 'seaqa-project-navigation-item-active': isActive })}
       style={{ paddingLeft: level > 1 ? (level - 1) * NAVIGATION_LEVEL_INDENT + NAVIGATION_BASE_PADDING : NAVIGATION_BASE_PADDING }}
       onClick={handleClick}
       title={name}
     >
-      <img src={getConnectionIcon(type)} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon"/>
-      <span className="sea-qa-project-navigation-item-name">{name}</span>
+      <img src={getConnectionIcon(type)} alt={connectionOption.name} className="connection-icon seaqa-project-navigation-item-icon"/>
+      <span className="seaqa-project-navigation-item-name">{name}</span>
     </div>
   );
 };

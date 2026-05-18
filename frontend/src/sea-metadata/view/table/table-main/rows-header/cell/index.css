@@ -42,10 +42,10 @@
   display: none;
 }
 
-.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg {
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .seaqa-icon-svg {
   color: var(--bs-icon-secondary-color);
 }
 
-.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg:hover {
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .seaqa-icon-svg:hover {
   color: #555;
 }

@@ -21,9 +21,9 @@
 {% block extra_ogp_tags %}{% endblock %}
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seaqa-ui.css?t=20260515" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260515" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=20260414" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seaqa-ui.css?t=20260518" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260518" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=20260518" />
 </head>
 {% block extra_style %}
 <style type="text/css">
@@ -50,13 +50,13 @@ html, body, #wrapper {
   text-align: left;
 }
 
-.sea-qa-container-fluid {
+.seaqa-container-fluid {
   padding-top: 70px;
   padding-bottom: 10px;
   overflow-y: auto;
 }
 
-.sea-qa-container-layout {
+.seaqa-container-layout {
   padding: 0px;
   height: 100%;
 }
@@ -79,7 +79,7 @@ html, body, #wrapper {
       <!-- <div id="lang">
         <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">
           {{ LANGUAGE_CODE|language_name_local|capfirst }}
-          <span class="sea-qa-html-icon-svg">{% include "svg/arrow-down-b.svg" %}</span>
+          <span class="seaqa-html-icon-svg">{% include "svg/arrow-down-b.svg" %}</span>
         </a>
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
@@ -87,9 +87,9 @@ html, body, #wrapper {
             <li class="d-flex align-items-center justify-content-between">
               <a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a>
               {% if LANG.0 == LANGUAGE_CODE %}
-              <span class="sea-qa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
+              <span class="seaqa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
               {% else %}
-              <span class="un-check-mark sea-qa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
+              <span class="un-check-mark seaqa-html-icon-svg">{% include "svg/check-mark.svg" %}</span>
               {% endif %}
             </li>
             {% endfor %}
@@ -97,7 +97,7 @@ html, body, #wrapper {
         </div>
       </div> -->
     </div>
-    <div id="main" class="container-fluid sea-qa-container-fluid sea-qa-container-layout">
+    <div id="main" class="container-fluid seaqa-container-fluid seaqa-container-layout">
       <div class="head-logo-container">
         <img class="login-logo" src="{{ MEDIA_URL }}{{ logo_path }}" title="{{ site_title }}" alt="logo" height="32" />
       </div>

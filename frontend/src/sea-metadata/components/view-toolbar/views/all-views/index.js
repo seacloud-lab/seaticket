@@ -110,7 +110,7 @@ const AllViews = ({
       {isShowDropdownMenu && (
         <ClickOutside onClickOutside={closeDropdown}>
           <div
-            className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
+            className="seaqa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
             style={menuStyle.current}
           >
             <div className="all-views-search-wrapper">
@@ -130,7 +130,7 @@ const AllViews = ({
                   <div
                     key={view._id}
                     onClick={() => {toggleView(view._id);}}
-                    className={classnames('dropdown-item sea-qa-dropdown-item view-item', {
+                    className={classnames('dropdown-item seaqa-dropdown-item view-item', {
                       'sea-metadata-view-item-next-position-before': dropRelativePosition === 'before' && currentOverViewId === view._id,
                       'sea-metadata-view-item-next-position-after': dropRelativePosition === 'after' && currentOverViewId === view._id,
                     })}
@@ -152,7 +152,7 @@ const AllViews = ({
               })}
               {views.length === 0 && (
                 <div className="all-views-empty-tip">
-                  <div className="tip-default">{gettext('No results')}</div>
+                  <div className="sea-metadata-tip-default">{gettext('No results')}</div>
                 </div>
               )}
             </div>

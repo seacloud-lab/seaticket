@@ -88,7 +88,7 @@
   justify-content: flex-end;
 }
 
-.group-manage-members-dialog .add-members .toggle-detail-btn .sea-qa-icon-svg {
+.group-manage-members-dialog .add-members .toggle-detail-btn .seaqa-icon-svg {
   color: inherit;
   height: 18px;
   width: 18px;
@@ -98,7 +98,7 @@
   color: #666;
 }
 
-.group-manage-members-dialog .sea-qa-icon-svg-return {
+.group-manage-members-dialog .seaqa-icon-svg-return {
   color: #777;
   font-size: 14px;
   cursor: pointer;
@@ -109,7 +109,7 @@
   margin: 10px 0;
 }
 
-.group-manage-members-dialog .search-group-members-input-wrapper .sea-qa-search-input {
+.group-manage-members-dialog .search-group-members-input-wrapper .seaqa-search-input {
   font-size: 14px;
   font-weight: normal;
   background: #f1f1f1;
@@ -117,7 +117,7 @@
   border: none;
 }
 
-.group-manage-members-dialog .search-group-members-input-wrapper .sea-qa-search-input:focus {
+.group-manage-members-dialog .search-group-members-input-wrapper .seaqa-search-input:focus {
   background-color: hsl(0, 0%, 100%);
   border: 1px solid hsl(0, 0%, 80%);
   color: #495057;

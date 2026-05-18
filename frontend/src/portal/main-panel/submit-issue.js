@@ -42,10 +42,10 @@ const IssueTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
 
   return (
     <>
-      <div className="sea-qa-portal-ticket-settings-item">
+      <div className="seaqa-portal-ticket-settings-item">
         <Label>{gettext('Type')}</Label>
         <div className="ticket-types-formatter" onClick={openEditor} ref={editorRef}>
-          {typeOption ? <Option option={typeOption} /> : <div className="tip-default">{gettext('Select type')}</div>}
+          {typeOption ? <Option option={typeOption} /> : <div className="seaqa-tip-default">{gettext('Select type')}</div>}
         </div>
       </div>
       {!isReadonly && isShowEditor && (
@@ -169,19 +169,19 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
   const isSmallScreen = containerWidth < 800;
 
   return (
-    <div className="sea-qa-portal-new-issue-container" ref={issueRef}>
-      <div className={classnames('sea-qa-portal-new-issue', { 'small': isSmallScreen })}>
-        <div className="sea-qa-portal-ticket-settings">
-          <div className="sea-qa-portal-ticket-settings-container d-flex">
-            <div className="sea-qa-portal-ticket-content-settings">
-              <div className="sea-qa-portal-ticket-label">
+    <div className="seaqa-portal-new-issue-container" ref={issueRef}>
+      <div className={classnames('seaqa-portal-new-issue', { 'small': isSmallScreen })}>
+        <div className="seaqa-portal-ticket-settings">
+          <div className="seaqa-portal-ticket-settings-container d-flex">
+            <div className="seaqa-portal-ticket-content-settings">
+              <div className="seaqa-portal-ticket-label">
                 <Label>
                   {gettext('Title')}
                   <span className="required-tip" title={gettext('Required')}>{'*'}</span>
                 </Label>
                 <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
               </div>
-              <div className="sea-qa-portal-ticket-content">
+              <div className="seaqa-portal-ticket-content">
                 <Label>
                   {gettext('Content')}
                   <span className="required-tip" title={gettext('Required')}>{'*'}</span>
@@ -210,7 +210,7 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
                   onChange={onTypeChange}
                 />
               )}
-              <div className="sea-qa-portal-ticket-footer d-flex justify-content-center">
+              <div className="seaqa-portal-ticket-footer d-flex justify-content-center">
                 <div>
                   <Button onClick={onSubmit} color="primary" disabled={disabled}>
                     {isSubmitting ? gettext('Submitting...') : gettext('Submit')}
