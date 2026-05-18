@@ -1,19 +1,19 @@
-.sea-tickets-dialog {
+.seaqa-tickets-dialog {
   height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
-.sea-tickets-dialog .modal-content {
+.seaqa-tickets-dialog .modal-content {
   height: 100%;
 }
 
-.sea-tickets-dialog .modal-content .modal-body {
+.seaqa-tickets-dialog .modal-content .modal-body {
   padding: 0px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.sea-tickets-dialog .sea-tickets-search-wrapper {
+.seaqa-tickets-dialog .seaqa-tickets-search-wrapper {
   width: 100%;
   height: 48px;
   padding: 10px 20px 0;
@@ -21,7 +21,7 @@
   flex-shrink: 0;
 }
 
-.sea-tickets-dialog .sea-tickets-container {
+.seaqa-tickets-dialog .seaqa-tickets-container {
   padding: 0 10px;
   position: relative;
   width: 100%;
@@ -29,7 +29,7 @@
   overflow: hidden;
 }
 
-.sea-tickets-dialog .sea-tickets-container .empty-tip {
+.seaqa-tickets-dialog .seaqa-tickets-container .empty-tip {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -37,6 +37,6 @@
   justify-content: center;
 }
 
-.sea-tickets-dialog .sea-tickets-container .empty-tip .no-items-img-tip {
+.seaqa-tickets-dialog .seaqa-tickets-container .empty-tip .no-items-img-tip {
   margin-top: 0;
 }

@@ -131,15 +131,15 @@ body {
   flex: 1;
 }
 
-.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs {
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs {
   gap: 32px;
 }
 
-.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab {
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab {
   font-size: 16px
 }
 
-.seaqa-portal-side-panel-tabs .sea-tickets-customize-tabs .sea-tickets-customize-tab.active::before {
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
   bottom: -13px;
 }
 
