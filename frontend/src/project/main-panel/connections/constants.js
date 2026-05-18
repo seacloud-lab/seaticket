@@ -288,8 +288,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
     }, {
-      key: 'auth_token',
-      name: gettext('Auth token'),
+      key: 'api_token',
+      name: gettext('API token'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: false,
       can_edit_multiple_times: false,

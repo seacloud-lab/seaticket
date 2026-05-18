@@ -81,7 +81,7 @@ def build_general_task_row_data(task, sync_time=None):
         participants = []
 
     return {
-        GeneralTaskTable.source_row_id.name: str(task.get('id') or task.get('source_row_id') or '').strip(),
+        GeneralTaskTable.source_task_id.name: str(task.get('task_id')).strip(),
         GeneralTaskTable.title.name: task.get('title', ''),
         GeneralTaskTable.status.name: task.get('status'),
         GeneralTaskTable.size.name: task.get('size'),
@@ -624,7 +624,7 @@ def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     index_column_names = [
-        GeneralTaskTable.source_row_id.name,
+        GeneralTaskTable.source_task_id.name,
         GeneralTaskTable.title.name,
         GeneralTaskTable.status.name,
         GeneralTaskTable.priority.name,

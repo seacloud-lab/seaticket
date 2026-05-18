@@ -115,12 +115,26 @@ CONNECTION_FIELDS = {
     ],
     ConnectionType.GENERAL_TASK.value: [
         ConnectionField('base_url', True, False).to_dict(),
-        ConnectionField('auth_token', False, False).to_dict(),
+        ConnectionField('api_token', False, False).to_dict(),
     ],
     ConnectionType.NOTION.value: [
         ConnectionField('integration_secret', True, False).to_dict(),
     ]
 }
+
+GENERAL_TASK_MUTABLE_FIELDS = {
+    'title',
+    'status',
+    'size',
+    'priority',
+    'assignees',
+    'participants',
+    'others',
+    'due_date',
+    'content',
+    'description',
+}
+
 
 
 class CrawlStatus:

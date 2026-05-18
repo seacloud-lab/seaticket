@@ -4,7 +4,6 @@ import hmac
 import logging
 import json
 import datetime
-import requests
 import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
@@ -41,8 +40,9 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
-    EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
+    EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
     SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable
@@ -51,176 +51,17 @@ from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET, ENABLE_GENERAL_TASK
-from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
-
+from seahub.project.github_issues_api import GitHubAPI
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
+from seahub.project.utils import normalize_general_task_payload, create_general_task_via_adapter, update_general_task_via_adapter
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
 
-GENERAL_TASK_MUTABLE_FIELDS = {
-    'title',
-    'status',
-    'size',
-    'priority',
-    'assignees',
-    'participants',
-    'others',
-    'due_date',
-    'content',
-    'description',
-}
-
-
-def _build_general_task_endpoint(base_url, task_id=None):
-    base_url = (base_url or '').strip()
-    if not base_url:
-        raise ValueError('General task base_url is required.')
-    tasks_url = base_url.rstrip('/')
-    if not tasks_url.endswith('/tasks'):
-        tasks_url = f'{tasks_url}/tasks'
-    if task_id is not None:
-        return f'{tasks_url}/{task_id}'
-    return f'{tasks_url}/'
-
-
-def _get_general_task_headers(connection_config):
-    headers = {}
-    auth_token = (connection_config.get('auth_token') or '').strip()
-    if auth_token:
-        headers['Authorization'] = f'Bearer {auth_token}'
-    return headers
-
-
-def _normalize_general_task_payload(task_data, *, partial=False):
-    payload = {}
-    if not isinstance(task_data, dict):
-        return payload
-
-    string_fields = ['title', 'status', 'size', 'priority', 'due_date']
-    list_fields = ['assignees', 'participants']
-
-    for field in string_fields:
-        if field not in task_data:
-            if not partial:
-                payload[field] = ''
-            continue
-        value = task_data.get(field)
-        payload[field] = '' if value in (None, '') else str(value)
-
-    for field in list_fields:
-        if field not in task_data:
-            if not partial:
-                payload[field] = []
-            continue
-        value = task_data.get(field)
-        if value is None:
-            payload[field] = []
-        elif isinstance(value, list):
-            payload[field] = [str(item) for item in value if item not in (None, '')]
-        else:
-            payload[field] = [str(value)] if value != '' else []
-
-    content_value = task_data.get('description')
-    if content_value is None and 'content' in task_data:
-        content_value = task_data.get('content')
-    if content_value is not None or not partial:
-        payload['description'] = '' if content_value in (None, '') else str(content_value)
-
-    if 'others' in task_data:
-        others = task_data.get('others')
-        if isinstance(others, str):
-            stripped = others.strip()
-            if not stripped:
-                payload['others'] = {}
-            else:
-                try:
-                    payload['others'] = json.loads(stripped)
-                except Exception:
-                    payload['others'] = {'value': others}
-        elif isinstance(others, dict):
-            payload['others'] = others
-        else:
-            payload['others'] = {}
-    elif not partial:
-        payload['others'] = {}
-
-    return payload
-
-
-def _extract_general_task_id(response_json):
-    candidates = []
-    if isinstance(response_json, dict):
-        candidates.extend([
-            response_json,
-            response_json.get('task'),
-            response_json.get('row'),
-            response_json.get('data'),
-        ])
-        for key in ('rows', 'inserted_rows', 'results'):
-            value = response_json.get(key)
-            if isinstance(value, list) and value:
-                candidates.append(value[0])
-
-    for candidate in candidates:
-        if not isinstance(candidate, dict):
-            continue
-        for key in ('id', '_id', 'row_id'):
-            value = candidate.get(key)
-            if value not in (None, ''):
-                return str(value)
-    return ''
-
-
-def _create_general_task_via_adapter(project_connection, task_payload):
-    connection_config = decrypt_config(json.loads(project_connection.config))
-    endpoint = _build_general_task_endpoint(connection_config.get('base_url'))
-    headers = _get_general_task_headers(connection_config)
-    response = requests.post(endpoint, json=task_payload, headers=headers, timeout=60)
-    if response.status_code >= 400:
-        raise ValueError(response.text or 'Create general task failed.')
-    response_json = response.json() if response.content else {}
-    created_task = {}
-    if isinstance(response_json, dict) and isinstance(response_json.get('task'), dict):
-        created_task.update(response_json['task'])
-    created_task = {**task_payload, **created_task}
-    task_id = _extract_general_task_id(response_json)
-    if task_id:
-        created_task['id'] = task_id
-    return created_task
-
-
-def _update_general_task_via_adapter(project_connection, source_row_id, task_payload):
-    connection_config = decrypt_config(json.loads(project_connection.config))
-    endpoint = _build_general_task_endpoint(connection_config.get('base_url'), source_row_id)
-    headers = _get_general_task_headers(connection_config)
-    response = requests.post(endpoint, json=task_payload, headers=headers, timeout=60)
-    if response.status_code >= 400:
-        raise ValueError(response.text or 'Update general task failed.')
-    response_json = response.json() if response.content else {}
-    updated_task = {}
-    if isinstance(response_json, dict) and isinstance(response_json.get('task'), dict):
-        updated_task.update(response_json['task'])
-    return {
-        **task_payload,
-        **updated_task,
-        'id': str(source_row_id),
-    }
-
-
-def _get_general_task_record(seadb_api, project_uuid, connection_id, record_id):
-    table_name = GeneralTaskTable.gen_table_name(connection_id)
-    sql = (
-        f"SELECT `_pk`, `source_row_id`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
-        f"`others`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "
-        f"FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
-    )
-    results = seadb_api.query_rows(project_uuid, sql).get('results', [])
-    return results[0] if results else {}
 
 
 class ProjectConnectionsView(APIView):
@@ -1143,7 +984,9 @@ class ProjectConnectionRecordView(APIView):
         seadb_api = SeaDBAPI()
 
         if project_connection.type == ConnectionType.GENERAL_TASK.value:
-            current_record = _get_general_task_record(seadb_api, project_uuid, connection_id, record_id)
+
+            general_task_seadb_api = GeneralTaskSeaDBAPI(project)
+            current_record = general_task_seadb_api.get_general_task_record(project_uuid, connection_id, record_id)
             if not current_record:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Task record not found.')
 
@@ -1152,11 +995,11 @@ class ProjectConnectionRecordView(APIView):
                 if field in row_data
             }
             if changed_task_fields:
-                source_row_id = current_record.get('source_row_id')
-                if not source_row_id:
-                    return api_error(status.HTTP_400_BAD_REQUEST, 'Task source_row_id is missing.')
+                source_task_id = current_record.get('source_task_id')
+                if not source_task_id:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Task source_task_id is missing.')
                 merged_task = {
-                    'id': source_row_id,
+                    'id': source_task_id,
                     'title': row_data.get('title', current_record.get('title', '')),
                     'status': row_data.get('status', current_record.get('status', '')),
                     'size': row_data.get('size', current_record.get('size', '')),
@@ -1170,14 +1013,15 @@ class ProjectConnectionRecordView(APIView):
                     'modified_time': current_record.get('modified_time'),
                     'deleted': False,
                 }
-                adapter_task = _update_general_task_via_adapter(
-                    project_connection,
-                    source_row_id,
-                    _normalize_general_task_payload(merged_task),
+                connection_config = decrypt_config(json.loads(project_connection.config))
+                adapter_task = update_general_task_via_adapter(
+                    connection_config,
+                    source_task_id,
+                    normalize_general_task_payload(merged_task),
                 )
                 ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                 update_row['row'].update(build_general_task_row_data(adapter_task))
-                update_row['row']['source_row_id'] = source_row_id
+                update_row['row']['source_task_id'] = source_task_id
 
         # Support outdated field for all connection types
         if 'outdated' in row_data:
@@ -1250,14 +1094,15 @@ class ProjectConnectionRecordsView(APIView):
         if project_connection.type != ConnectionType.GENERAL_TASK.value:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
 
-        task_payload = _normalize_general_task_payload(request.data or {})
+        task_payload = normalize_general_task_payload(request.data or {})
         task_payload['title'] = task_payload.get('title') or _('New task')
         task_payload['status'] = task_payload.get('status') or 'new'
         task_payload['priority'] = task_payload.get('priority') or 'medium'
         task_payload['size'] = task_payload.get('size') or 'medium'
 
         try:
-            created_task = _create_general_task_via_adapter(project_connection, task_payload)
+            connection_config = decrypt_config(json.loads(project_connection.config))
+            created_task = create_general_task_via_adapter(connection_config, task_payload)
         except Exception as e:
             logger.error(f'create general task error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
@@ -1348,7 +1193,8 @@ class ProjectConnectionRecordsView(APIView):
             update_row = {'pk': int(row_id), 'row': {}}
 
             if project_connection.type == ConnectionType.GENERAL_TASK.value:
-                current_record = _get_general_task_record(seadb_api, project_uuid, connection_id, row_id)
+                general_task_seadb_api = GeneralTaskSeaDBAPI(project_uuid)
+                current_record = general_task_seadb_api.get_general_task_record(project_uuid, connection_id, row_id)
                 if not current_record:
                     continue
                 changed_task_fields = {
@@ -1356,11 +1202,11 @@ class ProjectConnectionRecordsView(APIView):
                     if field in row_data
                 }
                 if changed_task_fields:
-                    source_row_id = current_record.get('source_row_id')
-                    if not source_row_id:
+                    source_task_id = current_record.get('source_task_id')
+                    if not source_task_id:
                         continue
                     merged_task = {
-                        'id': source_row_id,
+                        'id': source_task_id,
                         'title': row_data.get('title', current_record.get('title', '')),
                         'status': row_data.get('status', current_record.get('status', '')),
                         'size': row_data.get('size', current_record.get('size', '')),
@@ -1374,14 +1220,15 @@ class ProjectConnectionRecordsView(APIView):
                         'modified_time': current_record.get('modified_time'),
                         'deleted': False,
                     }
-                    adapter_task = _update_general_task_via_adapter(
-                        project_connection,
-                        source_row_id,
-                        _normalize_general_task_payload(merged_task),
+                    connection_config = decrypt_config(json.loads(project_connection.config))
+                    adapter_task = update_general_task_via_adapter(
+                        connection_config,
+                        source_task_id,
+                        normalize_general_task_payload(merged_task),
                     )
                     ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                     update_row['row'].update(build_general_task_row_data(adapter_task))
-                    update_row['row']['source_row_id'] = source_row_id
+                    update_row['row']['source_task_id'] = source_task_id
 
             # Support outdated field for all connection types
             if 'outdated' in row_data:
