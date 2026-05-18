@@ -43,20 +43,20 @@ const ToolTip = ({ tooltipData, toolTipPosition, chart }) => {
   }, [chart, toolTipPosition]);
 
   return (
-    <div ref={tooltipRef} className='sea-chart-d3-tooltip-container' style={{ transform: `translate(${position.offsetX}px, ${position.offsetY}px)`, display: position.offsetX === -9999 ? 'none' : 'block' }}>
+    <div ref={tooltipRef} className='seaqa-chart-d3-tooltip-container' style={{ transform: `translate(${position.offsetX}px, ${position.offsetY}px)`, display: position.offsetX === -9999 ? 'none' : 'block' }}>
       {title && (
-        <div className="sea-chart-d3-tooltip-title">
+        <div className="seaqa-chart-d3-tooltip-title">
           {titleMarkColor && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: titleMarkColor, display: 'inline-block', marginRight: '12px' }} />}
           {title}
         </div>
       )}
-      <ul className="sea-chart-d3-tooltip-list">
+      <ul className="seaqa-chart-d3-tooltip-list">
         {items.map((item, index) => {
           return (
-            <li className="sea-chart-d3-tooltip-list-item" key={index}>
-              {item.color && <span className="sea-chart-d3-tooltip-marker" style={{ backgroundColor: item.color }}></span>}
-              <span className="sea-chart-d3-tooltip-name">{item.name}</span>
-              <span className="sea-chart-d3-tooltip-value">{item.value}</span>
+            <li className="seaqa-chart-d3-tooltip-list-item" key={index}>
+              {item.color && <span className="seaqa-chart-d3-tooltip-marker" style={{ backgroundColor: item.color }}></span>}
+              <span className="seaqa-chart-d3-tooltip-name">{item.name}</span>
+              <span className="seaqa-chart-d3-tooltip-value">{item.value}</span>
             </li>
           );
         })}
