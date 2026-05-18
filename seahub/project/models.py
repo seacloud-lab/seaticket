@@ -959,9 +959,7 @@ class AIUsageStatistics(models.Model):
         db_table = 'ai_usage_statistics'
         indexes = [
             models.Index(fields=['date', 'project_uuid']),
-            models.Index(fields=['date', 'org_id']),
-            models.Index(fields=['date', 'owner', 'org_id']),
-            models.Index(fields=['date', 'group_id', 'org_id']),
+            models.Index(fields=['date', 'org_id'])
         ]
 
 
