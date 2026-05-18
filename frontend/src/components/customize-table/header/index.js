@@ -12,13 +12,13 @@ const Header = ({ title, btns }) => {
   const btn0 = useMemo(() => btns[0], [btns]);
 
   return (
-    <div className="sea-customize-table-wrapper-header">
-      <div className="sea-customize-table-wrapper-header-left">{title && title}</div>
-      <div className="sea-customize-table-wrapper-header-right">
-        {btnsCount === 1 && (<Button color="primary" className="sea-customize-table-wrapper-btn" onClick={btn0.func}>{btn0.name}</Button>)}
+    <div className="seaqa-customize-table-wrapper-header">
+      <div className="seaqa-customize-table-wrapper-header-left">{title && title}</div>
+      <div className="seaqa-customize-table-wrapper-header-right">
+        {btnsCount === 1 && (<Button color="primary" className="seaqa-customize-table-wrapper-btn" onClick={btn0.func}>{btn0.name}</Button>)}
         {btnsCount > 1 && (
           <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-            <DropdownToggle color="primary" className="sea-customize-table-wrapper-btn">
+            <DropdownToggle color="primary" className="seaqa-customize-table-wrapper-btn">
               {btn0.name}
             </DropdownToggle>
             <DropdownMenu end>

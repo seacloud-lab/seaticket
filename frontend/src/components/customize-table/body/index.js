@@ -64,11 +64,11 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
   }
 
   return (
-    <div className="sea-custom-table" onScroll={onScroll} ref={tableRef}>
-      <div className="sea-custom-table-row sea-custom-table-row-title">
+    <div className="seaqa-customize-table" onScroll={onScroll} ref={tableRef}>
+      <div className="seaqa-customize-table-row seaqa-customize-table-row-title">
         {columns.map(column => {
           const { key, name, width } = column;
-          return (<div className="sea-custom-table-cell" key={key} style={{ width }}>{name}</div>);
+          return (<div className="seaqa-customize-table-cell" key={key} style={{ width }}>{name}</div>);
         })}
       </div>
       {startRenderIndex > 0 && (
@@ -79,7 +79,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
         <div style={{ height: (rows.length - endRenderIndex) * rowHeight, width: '100%', flexShrink: 0 }}></div>
       )}
       {isLoading && (
-        <div className="sea-custom-table-row sea-custom-table-row-loading">
+        <div className="seaqa-customize-table-row seaqa-customize-table-row-loading">
           <Loading />
         </div>
       )}
