@@ -587,9 +587,7 @@ CREATE TABLE `ai_usage_statistics` (
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_date_proj`(`date`, `project_uuid`),
-  KEY `idx_date_org`(`date`, `org_id`),
-  KEY `idx_date_owner_org`(`date`, `owner`, `org_id`),
-  KEY `idx_date_group_org`(`date`, `group_id`, `org_id`)
+  KEY `idx_date_org`(`date`, `org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
