@@ -1,15 +1,16 @@
 .sea-qa-color-selector-popover .popover {
-  max-width: 425px;
-  padding-top: 5px;
-  padding-left: 5px;
+  max-width: 394px;
+  padding: 8px;
+}
+
+.sea-qa-color-selector-popover .sea-qa-color-selector-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .sea-qa-color-selector-popover .colorinput-input:checked ~ .colorinput-color:before {
   display: none;
-}
-
-.sea-qa-color-selector-popover .col-auto {
-  padding-left: 3px;
 }
 
 .sea-qa-color-selector-popover .colorinput-color {
