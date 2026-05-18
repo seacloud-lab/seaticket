@@ -155,13 +155,13 @@
 }
 
 .sea-metadata-filters-list .filter-term input:hover:focus {
-  border-color: var(--bs-custom-select-focus-border-color);;
+  border-color: var(--bs-custom-select-focus-border-color);
 }
 
 .sea-metadata-filters-list .filter-term input:focus {
   color: #495057;
   background: var(--bs-body-bg);
-  border-color: var(--bs-custom-select-focus-border-color);;
+  border-color: var(--bs-custom-select-focus-border-color);
   outline: 0;
 }
 

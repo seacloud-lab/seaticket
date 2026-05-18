@@ -11,7 +11,7 @@
 }
 
 .sea-ticket-discourse-reply-container .sf-long-text-inline-editor-container:has(*:focus) {
-  border-color: #3E84F7;
+  border-color: var(--bs-input-focus-border-color);
 }
 
 .sea-ticket-discourse-reply-container .author-info-wrapper {

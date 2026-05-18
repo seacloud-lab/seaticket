@@ -513,5 +513,5 @@
 
 .view-content-modal .view-content-textarea:focus {
   outline: none;
-  border-color: #f5a623;
+  border-color: var(--bs-input-focus-border-color);
 }
