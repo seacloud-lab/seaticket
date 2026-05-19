@@ -176,31 +176,6 @@ class ConvertRecordToTicket(APIView):
                     Title: {title}
                     Body: {body_content}
                 """
-            case ConnectionType.GENERAL_TASK.value:
-                seadb_api = SeaDBAPI()
-                task_table_name = GeneralTaskTable.gen_table_name(connection_id)
-                sql = (
-                    f"SELECT `title`, `status`, `content`, `size`, `priority`, `assignees`, `participants`, "
-                    f"`others`, `due_date`, `modified_time` FROM `{task_table_name}` WHERE _pk = {int(record_id)}"
-                )
-                results = seadb_api.query_rows(project_uuid, sql).get('results', [])
-                task = results[0] if results else {}
-                title = task.get('title', '')
-                default_title = title
-                related_url = ''
-                record_detail = f"""
-                    **Ticket Information:**
-                    Title: {title}
-                    Status: {task.get('status', '')}
-                    Body: {task.get('content', '')}
-                    Size: {task.get('size', '')}
-                    Priority: {task.get('priority', '')}
-                    Assignees: {task.get('assignees', [])}
-                    Participants: {task.get('participants', [])}
-                    Others: {task.get('others', '')}
-                    Due date: {task.get('due_date', '')}
-                    Last modified time: {task.get('modified_time', '')}
-                """
         if not record_detail:
             error_msg = 'Record detail not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)

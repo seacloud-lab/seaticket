@@ -1095,7 +1095,10 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
 
         task_payload = normalize_general_task_payload(request.data or {})
-        task_payload['title'] = task_payload.get('title') or _('New task')
+        task_title = task_payload.get('title')
+        if not task_title:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Task title is required.')
+        task_payload['title'] = task_title
         task_payload['status'] = task_payload.get('status') or 'new'
         task_payload['priority'] = task_payload.get('priority') or 'medium'
         task_payload['size'] = task_payload.get('size') or 'medium'
