@@ -444,9 +444,13 @@ class ChatView(APIView):
         ai_attachments = []
         for a in attachments:
             if isinstance(a, dict) and a.get('type') == 'image':
+                # a: {type:'image', path, name}
+                # extra: {name, mime_type, data(base64)}
+                # {**a, **extra}: {type:'image', path, name, mime_type, data}
                 extra = image_data_by_name.get(a.get('name'), {})
                 ai_attachments.append({**a, **extra})
             else:
+                # a: {type, record_id, content/comments/emails, ...}
                 ai_attachments.append(a)
 
         params = {
