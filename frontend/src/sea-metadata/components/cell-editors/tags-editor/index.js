@@ -41,7 +41,7 @@ const TagsEditor = forwardRef(({
   }, [tagsData]);
 
   const style = useMemo(() => {
-    return { width: 400, top: -1, right: 0 };
+    return { width: 400, top: -1, left: 0 };
   }, [column, height]);
 
   const handleCreateTag = useCallback((name) => {

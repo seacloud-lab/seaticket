@@ -26,7 +26,7 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
     modify_data_able: true,
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.AI_SUMMARY]: {
-    display_name: gettext('AI Summary'),
+    display_name: gettext('AI summary'),
     type: CellType.TEXT,
     is_hover_show_content: true,
   },
