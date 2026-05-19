@@ -339,7 +339,7 @@ export const CONNECTION_TYPES = [
     help_link: HELP_WEB_URL + 'Notion',
   }, {
     type: CONNECTION_TYPE.GENERAL_TASK,
-    icon: 'sites',
+    icon: 'general-tasks',
     name: gettext('General tasks'),
     help_text: gettext('Provide the middleware URL for general task sync. Both a base URL and a full /tasks/ URL are accepted. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'General-Tasks',

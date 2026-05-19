@@ -644,8 +644,8 @@ def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
             ]
         )
 
-    task_user_mapping_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, task_user_mapping_table_name)
+    task_user_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, task_user_table_name)
     table_id = res['table_id']
     for column in GeneralTaskUserTable.get_fields():
         mapped_column = {
