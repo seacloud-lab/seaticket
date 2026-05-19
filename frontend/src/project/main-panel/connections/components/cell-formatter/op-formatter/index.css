@@ -9,10 +9,3 @@
   align-items: center;
   justify-content: center;
 }
-
-.seaqa-customize-table .seaqa-customize-table-row .seaqa-customize-table-cell .dropdown-item {
-  font-size: 14px;
-  height: 32px;
-  padding: 0.25rem 1rem;
-  line-height: 1.5;
-}

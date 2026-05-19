@@ -32,18 +32,18 @@ const PortalIssuesMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_TYPES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_TYPES].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_TYPES].key)}>
+          <CustomizeDropdownItemIcon symbol={'manage-types'} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_TYPES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].key)}>
+          <CustomizeDropdownItemIcon symbol={'manage-types'} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
         <div className="dropdown-divider"></div>
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].key)}>
-          <CustomizeDropdownItemIcon symbol={'trash'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].key)}>
+          <CustomizeDropdownItemIcon symbol={'trash'} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
       </CustomizeDropdownMenu>
     </Dropdown>

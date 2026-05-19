@@ -5,7 +5,6 @@ import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
 import context from '@/sea-metadata/context';
 
-
 import './index.css';
 
 const ViewItem = ({
@@ -190,13 +189,13 @@ const ViewItem = ({
                   className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
-                  <Icon symbol="rename" />
+                  <Icon symbol="rename" className="item-icon" />
                   {gettext('Rename view')}
                 </button>
               )}
               {duplicateAble && (
                 <button onClick={handleDuplicate} className="dropdown-item seaqa-dropdown-item">
-                  <Icon symbol="copy" />
+                  <Icon symbol="copy" className="item-icon" />
                   {gettext('Duplicate view')}
                 </button>
               )}
@@ -206,13 +205,13 @@ const ViewItem = ({
                   className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
-                  <Icon symbol="delete" />
+                  <Icon symbol="delete" className="item-icon"/>
                   {gettext('Delete view')}
                 </button>
               )}
               {context.getSetting('enableExportAndImportXlsx', false) && (
                 <button onClick={handleExport} className="dropdown-item seaqa-dropdown-item">
-                  <Icon symbol="export-xlsx" />
+                  <Icon symbol="export-xlsx" className="item-icon" />
                   {gettext('Export view to XLSX')}
                 </button>
               )}

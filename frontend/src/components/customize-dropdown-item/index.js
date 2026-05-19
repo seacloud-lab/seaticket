@@ -19,7 +19,7 @@ const CustomizeDropdownItemIcon = ({ className, position, ...params }) => {
 
 const CustomizeDropdownItemText = ({ className, children, ...params }) => {
   return (
-    <span className={classnames('item-text', className)} { ...params }>
+    <span className={classnames('item-text text-truncate', className)} { ...params }>
       {children}
     </span>
   );

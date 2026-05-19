@@ -15,38 +15,7 @@
   color: #555;
 }
 
-.active-status-editor .dropdown-menu {
-  max-width: 200px;
-}
-
-.active-status-editor .dropdown-menu .dropdown-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2px 12px;
-  min-width: 140px;
-  height: 28px;
-}
-
-.active-status-editor .dropdown-menu .dropdown-item .label-container span {
+.active-status-editor .dropdown-menu .label-container span {
   word-wrap: normal;
   white-space: pre-wrap;
-}
-
-.active-status-editor .dropdown-menu .dropdown-item:hover {
-  color: #212529;
-  background: #f5f5f5;
-  cursor: pointer;
-}
-
-.active-status-editor .dropdown-menu .dropdown-item:focus {
-  outline: 0;
-  color: unset;
-  background-color: unset;
-}
-
-.active-status-editor .dropdown-menu .dropdown-item .seaqa-role-status-check {
-  height: 12px;
-  width: 12px;
-  color: #798d99;
 }

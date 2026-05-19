@@ -32,13 +32,13 @@ const DefaultMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
-          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
-          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.TAGS].icon} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.TAGS].icon} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
       </CustomizeDropdownMenu>
     </Dropdown>

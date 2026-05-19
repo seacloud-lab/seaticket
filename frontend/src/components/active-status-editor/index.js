@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownToggle } from 'reactstrap';
+import CustomDropdownMenu from '../customize-dropdown-menu';
+import CustomizeDropdownItem from '../customize-dropdown-item';
 import classnames from 'classnames';
 import Icon from '../icon';
 
 import './index.css';
+import IconButton from '../icon-button';
 
 const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onChangeOption, closeShowDropdownIcon }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,22 +31,20 @@ const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, on
           <Icon symbol="arrow-down" className={classnames('seaqa-role-status-down-icon', { 'd-none': !isShowDropdownIcon })}/>
         </div>
       </DropdownToggle>
-      <DropdownMenu
-        className="position-fixed"
+      <CustomDropdownMenu
+        fixed={true}
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
         {menuOptions.map(option => {
           const { value, label } = option;
           return (
-            <DropdownItem key={`item-${value}`} onClick={() => handleClickMenuOption(option)}>
+            <CustomizeDropdownItem key={`item-${value}`} onClick={() => handleClickMenuOption(option)} className="justify-content-between">
               {label}
-              {value === currentOption.value && (
-                <Icon symbol="check-mark" className="seaqa-role-status-check ml-2" />
-              )}
-            </DropdownItem>
+              <IconButton icon={value === currentOption.value ? 'check-mark' : ''} size={14} className="ml-2 no-hover-bg" />
+            </CustomizeDropdownItem>
           );
         })}
-      </DropdownMenu>
+      </CustomDropdownMenu>
     </Dropdown>
   );
 };

@@ -177,7 +177,6 @@ export const generatorRowsMoreTool = ({
             key: o.value,
             icon: o.icon,
             label: o.name,
-            className: 'seaqa-ticket-priority-dropdown-item',
             callback: () => {
               let rowIds = [];
               let idRowUpdates = {};

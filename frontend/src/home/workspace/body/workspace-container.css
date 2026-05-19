@@ -63,7 +63,6 @@
   color: #8c8c8c;
 }
 
-.project-folder-dropdown .dropdown-item:hover .operation-icon,
 .project-group-container .projects-dropdown .create-project-folder-item:hover .item-icon {
   color: #fff;
 }
@@ -157,24 +156,6 @@
 
 .project-group-container .project-folder-item:hover {
   background: rgb(255, 240, 204) !important;
-}
-
-.project-folder-dropdown {
-  margin-left: -16px;
-  min-width: 10rem;
-}
-
-.project-folder-dropdown .dropdown-item {
-  line-height: 1.5;
-  cursor: pointer;
-  min-height: 32px;
-  padding: 3px 12px;
-}
-
-.project-folder-dropdown .operation-icon {
-  font-size: 14px;
-  margin-right: 10px;
-  color: #8c8c8c;
 }
 
 .project-item .project-item-more {

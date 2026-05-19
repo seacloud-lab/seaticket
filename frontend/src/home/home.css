@@ -440,8 +440,6 @@
   font-size: 16px;
 }
 
-.dropdown-item.disabled,
-.dropdown-item:disabled,
 .mobile-dropdown-item.disabled .seaqa-icon-svg,
 .mobile-dropdown-item:disabled .seaqa-icon-svg {
   color: #c2c2c2;
@@ -475,49 +473,6 @@
   height: 20px;
   font-size: 14px;
   border-radius: 2px;
-}
-
-.project-item-more-operation .advanced-menu {
-  width: 100%;
-}
-
-.project-item-more-operation .advanced-menu>.dropdown-item {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  align-items: center;
-  font-weight: normal;
-  font-size: inherit;
-}
-
-.project-item-more-operation .advanced-menu>.dropdown-item.btn.btn-secondary:hover {
-  color: #fff;
-  background-color: #20a0ff;
-}
-
-.project-item-more-operation .advanced-menu>.dropdown-item .seaqa-icon-svg {
-  color: #999;
-}
-
-.project-item-more-operation .advanced-menu .dropdown-toggle {
-  padding-right: 0;
-  font-weight: 400;
-  font-size: 14px;
-}
-
-.project-item-more-operation .advanced-menu.show > .btn-secondary.dropdown-toggle {
-  color: #fff;
-  background-color: #20a0ff;
-}
-
-.project-item-more-operation .advanced-menu.show > .btn-secondary.dropdown-toggle::after {
-  color: #fff;
-}
-
-.project-item-more-operation .advanced-menu .dropdown-toggle::after {
-  position: absolute;
-  top: calc(50% - 3px);
-  right: 8px;
 }
 
 .virtual-project-settings .popover {

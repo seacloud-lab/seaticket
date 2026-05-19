@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { DropdownMenu, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownToggle } from 'reactstrap';
+import CustomDropdownMenu from '../customize-dropdown-menu';
+import CustomizeDropdownItem from '../customize-dropdown-item';
 import { navigate } from '@gatsbyjs/reach-router';
 import { gettext } from '../../constants';
 import Icon from '../icon';
@@ -66,14 +68,12 @@ class Paginator extends Component {
 
   renderDropdownItem = (curPerPage, perPage) => {
     return (
-      <DropdownItem onClick={() => this.resetPerPage(perPage)} key={perPage}>
-        <span className='paginator-dropdown-tick'>
-          {curPerPage === perPage && (<Icon symbol="check-mark" />)}
-        </span>
+      <CustomizeDropdownItem onClick={() => this.resetPerPage(perPage)} key={perPage}>
+        <IconBtn icon={curPerPage === perPage ? 'check-mark' : ''} size={14} className="item-icon no-hover-bg" />
         <span>
           {this.getPerPageText(perPage)}
         </span>
-      </DropdownItem>
+      </CustomizeDropdownItem>
     );
   };
 
@@ -96,11 +96,11 @@ class Paginator extends Component {
             <span className="pr-3">{this.getPerPageText(curPerPage)}</span>
             <Icon symbol="arrow-down" className={classnames('d-inline-block', { 'rotate-180': this.state.isMenuShow })} />
           </DropdownToggle>
-          <DropdownMenu>
+          <CustomDropdownMenu>
             {PAGES.map(perPage => {
               return this.renderDropdownItem(curPerPage, perPage);
             })}
-          </DropdownMenu>
+          </CustomDropdownMenu>
         </Dropdown>
       </div>
     );

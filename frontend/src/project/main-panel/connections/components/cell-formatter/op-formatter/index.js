@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { IconButton } from '@/components';
+import { Dropdown } from 'reactstrap';
+import { IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPE } from '../../../constants';
 
@@ -29,50 +29,48 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onCo
       )}
       {(onMore || onManualSync || handleStatusActive || onViewLog || onConfigureWebhook) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
-          <DropdownToggle className="bg-color-deep" tag="span">
-            <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
-          </DropdownToggle>
-          <DropdownMenu className="seaqa-dropdown-menu position-fixed">
+          <CustomizeDropdownMoreToggle isOpen={dropdownOpen} className="bg-color-deep" />
+          <CustomizeDropdownMenu fixed={true}>
             {column.width < 88 && (
               <>
                 {onModify && (
-                  <DropdownItem onClick={() => onModify(row)} >
+                  <CustomizeDropdownItem onClick={() => onModify(row)} >
                     {gettext('Edit')}
-                  </DropdownItem>
+                  </CustomizeDropdownItem>
                 )}
                 {onDelete && (
-                  <DropdownItem onClick={() => onDelete(row)} >
+                  <CustomizeDropdownItem onClick={() => onDelete(row)} >
                     {gettext('Delete')}
-                  </DropdownItem>
+                  </CustomizeDropdownItem>
                 )}
               </>
             )}
             {onMore &&
-              <DropdownItem onClick={() => onMore(row)}>
+              <CustomizeDropdownItem onClick={() => onMore(row)}>
                 {gettext('Status')}
-              </DropdownItem>
+              </CustomizeDropdownItem>
             }
             {onViewLog && (
-              <DropdownItem onClick={() => onViewLog(row)}>
+              <CustomizeDropdownItem onClick={() => onViewLog(row)}>
                 {gettext('Logs')}
-              </DropdownItem>
+              </CustomizeDropdownItem>
             )}
             {onManualSync &&
-              <DropdownItem onClick={() => onManualSync(row)}>
+              <CustomizeDropdownItem onClick={() => onManualSync(row)}>
                 {gettext('Sync now')}
-              </DropdownItem>
+              </CustomizeDropdownItem>
             }
             {handleStatusActive && (
-              <DropdownItem onClick={() => (handleStatusActive(!row.is_active, row))}>
+              <CustomizeDropdownItem onClick={() => (handleStatusActive(!row.is_active, row))}>
                 <span>{row.is_active ? gettext('Deactivate') : gettext('Active')}</span>
-              </DropdownItem>
+              </CustomizeDropdownItem>
             )}
             {onConfigureWebhook && WEBHOOK_SUPPORTED_TYPES.includes(row.type) && (
-              <DropdownItem onClick={() => onConfigureWebhook(row)}>
+              <CustomizeDropdownItem onClick={() => onConfigureWebhook(row)}>
                 {gettext('Webhook setting')}
-              </DropdownItem>
+              </CustomizeDropdownItem>
             )}
-          </DropdownMenu>
+          </CustomizeDropdownMenu>
         </Dropdown>
       }
     </div>

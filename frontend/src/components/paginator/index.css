@@ -35,25 +35,10 @@
 }
 
 .paginator-dropdown .dropdown-menu {
-  min-width: auto;
+  min-width: 4rem;
 }
 
-.paginator-dropdown .dropdown-menu .dropdown-item {
-  display: flex;
-  padding-left: 10px;
-  padding-right: 24px;
-}
-
-.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick {
-  display: inline-block;
-  width: 14px;
-  margin-right: 4px;
-}
-
-.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .seaqa-icon-svg,
 .paginator-dropdown>.btn .seaqa-icon-svg {
   color: #999;
-  height: 12px;
-  width: 12px;
   font-weight: 400;
 }

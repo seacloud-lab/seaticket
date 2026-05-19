@@ -32,8 +32,7 @@
   display: inline-block;
 }
 
-.keyboard-shortcut kbd,
-.keyboard-shortcut-history kbd {
+.keyboard-shortcut kbd {
   font: inherit;
   background-color: hsla(0, 0%, 100%, 0.25);
   border-color: rgba(0, 0, 0, 0.1);
@@ -52,14 +51,4 @@
   margin-bottom: 0px;
   min-width: 12px;
   padding: 1px 3px;
-}
-
-.dropdown-item:hover > .keyboard-shortcut-history kbd {
-  border: 1px solid white;
-  color: white;
-  background-color: rgba(7, 161, 250, 1);
-}
-
-.keyboard-shortcut-history {
-  margin-top: -1px;
 }
