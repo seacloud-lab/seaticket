@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
-import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
@@ -7,16 +7,6 @@ import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_T
 import { useData, useTags } from '@/project/hooks';
 import { usePortalKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-
-const viewTools = [
-  VIEW_TOOL.VIEWS,
-  VIEW_TOOL.SEARCH,
-  VIEW_TOOL.FILTERS,
-  VIEW_TOOL.SORTS,
-  VIEW_TOOL.GROUPBYS,
-  VIEW_TOOL.ROW_HEIGHT,
-  VIEW_TOOL.ORDER_HIDDEN,
-];
 
 const PortalAllKnowledge = ({ projectUuid }) => {
   const { togglePageSlugId } = usePortalKnowledgePage();
@@ -125,7 +115,6 @@ const PortalAllKnowledge = ({ projectUuid }) => {
           canDeleteRow: false,
           canModifyRow: false,
         }}
-        viewTools={viewTools}
         tagsData={tagsData}
         expandRow={handleExpandRow}
       >

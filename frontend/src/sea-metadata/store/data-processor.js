@@ -277,7 +277,7 @@ class DataProcessor {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;
-        this.updateDataWithInsertRows(table, [row._id], { collaborators, tagsData, typesData });
+        this.updateDataWithInsertRows(table, [row._id], { collaborators, username, tagsData, typesData });
         this.updateSummaries();
         break;
       }
@@ -294,7 +294,7 @@ class DataProcessor {
             }
           }
         });
-        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [row_id], { collaborators, typesData });
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [row_id], { collaborators, username, tagsData, typesData });
         this.updateSummaries();
         break;
       }
@@ -317,7 +317,7 @@ class DataProcessor {
             }
           }
         });
-        this.updateDataWithModifyRows(table, relatedColumnKeyMap, row_ids, { collaborators, typesData });
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, row_ids, { collaborators, username, tagsData, typesData });
         this.updateSummaries();
         break;
       }
@@ -331,7 +331,7 @@ class DataProcessor {
             relatedColumnKeyMap[columnKey] = true;
           }
         }
-        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [], { collaborators, typesData });
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [], { collaborators, username, tagsData, typesData });
         this.updateSummaries();
         break;
       }
@@ -372,12 +372,12 @@ class DataProcessor {
           });
         }
         table.view.rows = updatedRowIds;
-        this.updateDataWithModifyRows(table, {}, [], { collaborators, typesData });
+        this.updateDataWithModifyRows(table, {}, [], { collaborators, username, tagsData, typesData });
         this.updateSummaries();
         break;
       }
       case OPERATION_TYPE.MOVE_ROW: {
-        this.run(table, { collaborators });
+        this.run(table, { collaborators, username, tagsData, typesData });
         break;
       }
       case OPERATION_TYPE.MODIFY_GROUPBYS: {
