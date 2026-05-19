@@ -21,7 +21,7 @@ from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
-from seahub.utils.storage import get_file_from_s3
+from seahub.utils.storage import get_project_file_from_s3
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 from seahub.project.constants import ConnectionType, ExtraSourceType
 
@@ -272,7 +272,7 @@ def build_ai_images_payload(project_uuid, permanent_image_paths):
         if not mime_type or not mime_type.startswith('image/'):
             raise ImageProcessingError(f'Unsupported image type: {name}')
         try:
-            body = get_file_from_s3(project_uuid, file_path)
+            body = get_project_file_from_s3(project_uuid, file_path)
             data = base64.b64encode(body.read()).decode('ascii')
         except Exception as e:
             logger.warning(f'Failed to read image {file_path} from s3: {e}')
