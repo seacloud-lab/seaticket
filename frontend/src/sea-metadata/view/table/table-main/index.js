@@ -62,6 +62,7 @@ const TableMain = ({
       <Rows
         isGroupView={isGroupView}
         columns={columns}
+        colors={metadata.view.colors || {}}
         rowIds={metadata.view.rows || []}
         groups={metadata.view.groups}
         groupbys={metadata.view.groupbys}

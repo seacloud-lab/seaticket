@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
+import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowColorSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
   readOnly, view, collaborators, fixedColumnCount,
-  modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, modifyViewLock, searchRows
+  modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, modifyViewLock, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
   const viewId = useMemo(() => view._id, [view._id]);
@@ -83,6 +83,17 @@ const TableViewToolbar = ({
           hiddenColumns={view.hidden_columns || []}
           modifyHiddenColumns={modifyHiddenColumns}
           modifyColumnOrder={modifyColumnOrder}
+        />
+      )}
+      {tools.includes(VIEW_TOOL.ROW_COLOR) && (
+        <RowColorSetter
+          wrapperClass="sea-metadata-view-tool-row-color"
+          target="sea-metadata-row-color-popover"
+          readOnly={isReadOnly}
+          columns={viewColumns}
+          colorbys={view.colorbys}
+          collaborators={collaborators}
+          modifyRowColor={modifyRowColor}
         />
       )}
       {tools.includes(VIEW_TOOL.MANAGE) && (

@@ -177,6 +177,15 @@ class ServerOperator {
         });
         break;
       }
+      case OPERATION_TYPE.MODIFY_ROW_COLOR: {
+        const { view_id, colorbys } = operation;
+        context.modifyView(view_id, { colorbys }).then(res => {
+          callback({ operation });
+        }).catch(error => {
+          callback({ operation, error: gettext('Failed to modify row color') });
+        });
+        break;
+      }
       case OPERATION_TYPE.MODIFY_ROW_HEIGHT: {
         const { view_id, row_height } = operation;
         context.modifyView(view_id, { row_height }).then(res => {

@@ -130,9 +130,10 @@
 }
 
 .sea-metadata-table-column-content.row-index {
-  width: 40px;
+  width: 28px;
   text-align: center;
   line-height: 24px;
+  margin-left: 12px;
 }
 
 .sea-metadata-table-column-content .sea-metadata-font {

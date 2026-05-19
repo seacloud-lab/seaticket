@@ -12,7 +12,7 @@ import './index.css';
 const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
 
   const { collaborators } = useCollaborators();
-  const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
+  const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
     searchRows, deleteRow, deleteRows, modifyRows, updateLocalRow, deleteLocalRows, modifyViewLock,
   } = useMetadata();
   const { selectedRowIds } = useSelectedRows();
@@ -72,6 +72,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
                 modifyFilters={modifyFilters}
                 modifySorts={modifySorts}
                 modifyGroupbys={modifyGroupbys}
+                modifyRowColor={modifyRowColor}
                 modifyRowHeight={modifyRowHeight}
                 modifyHiddenColumns={modifyHiddenColumns}
                 modifyColumnOrder={modifyColumnOrder}

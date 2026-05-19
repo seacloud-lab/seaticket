@@ -59,6 +59,7 @@ class Store {
     if (!this.mounted) return;
     DataProcessor.run(this.data, {
       collaborators: this.collaborators,
+      username: context.getUsername(),
       typesData: this.typesData,
       tagsData: this.tagsData
     });
@@ -274,6 +275,7 @@ class Store {
   syncOperationOnData(operation) {
     DataProcessor.syncOperationOnData(this.data, operation, {
       collaborators: this.collaborators,
+      username: context.getUsername(),
       tagsData: this.tagsData,
       typesData: this.typesData,
     });
@@ -539,6 +541,16 @@ class Store {
     const type = OPERATION_TYPE.MODIFY_GROUPBYS;
     const operation = this.createOperation({
       type, groupbys, view_id: this.viewId
+    });
+    this.applyOperation(operation);
+  }
+
+  modifyRowColor(colorbys) {
+    const type = OPERATION_TYPE.MODIFY_ROW_COLOR;
+    const operation = this.createOperation({
+      type,
+      colorbys,
+      view_id: this.viewId,
     });
     this.applyOperation(operation);
   }

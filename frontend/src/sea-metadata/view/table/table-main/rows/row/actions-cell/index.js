@@ -40,7 +40,7 @@ class ActionsCell extends Component {
   };
 
   render() {
-    const { isSelected, isLastFrozenCell, index, height, row, isShowRowExpandBtn } = this.props;
+    const { isSelected, isLastFrozenCell, index, height, row, isShowRowExpandBtn, rowColor } = this.props;
     const rowId = row._id;
     let cellStyle = {
       height,
@@ -78,6 +78,7 @@ class ActionsCell extends Component {
             </label>
           </div>
         </div>
+        {rowColor && <div className="row-color-indicator" style={{ backgroundColor: rowColor }}></div>}
         {isShowRowExpandBtn && (
           <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
         )}
@@ -92,6 +93,7 @@ ActionsCell.propTypes = {
   isLastFrozenCell: PropTypes.bool,
   index: PropTypes.number,
   height: PropTypes.number,
+  rowColor: PropTypes.string,
   onSelectRow: PropTypes.func,
   onRowExpand: PropTypes.func,
 };

@@ -31,6 +31,10 @@ const getFilterResult = (row, filter, { username, userId, tagsData }) => {
     case CellType.TEXT: {
       return textFilter(cellValue, filter, userId);
     }
+    case CellType.LONG_TEXT: {
+      const normalizedText = typeof cellValue === 'string' ? cellValue : (cellValue?.text || '');
+      return textFilter(normalizedText, filter, userId);
+    }
     case CellType.LAST_MODIFIER:
     case CellType.CREATOR: {
       return creatorFilter(cellValue, filter, username);

@@ -14,7 +14,7 @@ import './index.css';
 
 const viewTools = [
   VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
-  VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
+  VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_COLOR, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
 ];
 
 const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
@@ -63,6 +63,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
               filters: context.localStorage.getItem('filters') || [],
               filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'And',
               basic_filters: context.localStorage.getItem('basic_filters') || [],
+              colorbys: context.localStorage.getItem('colorbys') || {},
               row_height: context.localStorage.getItem('row_height') || '',
               hidden_columns: context.localStorage.getItem('hidden_columns') || [],
               columns_keys: context.localStorage.getItem('columns_keys') || [],

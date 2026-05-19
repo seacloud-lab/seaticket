@@ -13,3 +13,9 @@ export {
 export {
   getGroupByPath,
 } from './group';
+
+export {
+  getRowColors,
+  hasRowColor,
+  getDefaultRowColorRule,
+} from './row-color';

@@ -28,6 +28,10 @@ class View {
     // hidden columns
     this.hidden_columns = object.hidden_columns || [];
 
+    // row color
+    this.colorbys = object.colorbys || {};
+    this.colors = object.colors || {};
+
     // rows
     this.rows = object.rows || [];
 

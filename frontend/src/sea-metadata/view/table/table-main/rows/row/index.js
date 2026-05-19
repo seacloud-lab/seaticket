@@ -34,7 +34,8 @@ class Row extends React.Component {
       nextProps.left !== this.props.left ||
       nextProps.height !== this.props.height ||
       nextProps.searchResult !== this.props.searchResult ||
-      nextProps.columnColor !== this.props.columnColor
+      nextProps.columnColor !== this.props.columnColor ||
+      nextProps.rowColor !== this.props.rowColor
     );
   }
 
@@ -76,7 +77,7 @@ class Row extends React.Component {
   getFrozenCells = () => {
     const {
       columns, lastFrozenColumnKey, groupRowIndex, index: rowIndex, row,
-      cellMetaData, isGroupView, isLastRow, height, columnColor
+      cellMetaData, isGroupView, isLastRow, height, columnColor, rowColor
     } = this.props;
     const frozenColumns = getFrozenColumns(columns);
     if (frozenColumns.length === 0) return null;
@@ -110,6 +111,7 @@ class Row extends React.Component {
           highlightClassName={highlightClassName}
           rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
+          rowColor={rowColor}
         />
       );
     });
@@ -231,7 +233,7 @@ class Row extends React.Component {
   render() {
     const {
       isSelected, isGroupView, index, isLastRow, lastFrozenColumnKey, height, row,
-      generatorRowClassName, columns
+      generatorRowClassName, columns, rowColor
     } = this.props;
     const isLocked = row._locked ? true : false;
     const cellHeight = isGroupView ? height : height - 1;
@@ -267,6 +269,7 @@ class Row extends React.Component {
             onSelectRow={this.onSelectRow}
             isLastFrozenCell={!lastFrozenColumnKey}
             height={cellHeight}
+            rowColor={rowColor}
             onRowExpand={this.props.onRowExpand}
             isShowRowExpandBtn={this.props.isShowRowExpandBtn}
           />
@@ -305,6 +308,7 @@ Row.propTypes = {
   reloadRows: PropTypes.func,
   searchResult: PropTypes.object,
   columnColor: PropTypes.object,
+  rowColor: PropTypes.string,
   onRowExpand: PropTypes.func
 };
 

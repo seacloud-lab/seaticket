@@ -763,7 +763,7 @@ class GroupBody extends Component {
     const {
       totalWidth: columnsWidth, containerWidth, isShowRowExpandBtn,
       columns, colOverScanStartIdx, colOverScanEndIdx, groupOffsetLeft, fixedColumnCount,
-      rowMetrics, summaryConfigs, lastFrozenColumnKey, showCellColoring, columnColors,
+      rowMetrics, summaryConfigs, lastFrozenColumnKey, showCellColoring, columnColors, colors = {},
     } = this.props;
     this.rowFrozenRefs = [];
     const totalColumnsWidth = columnsWidth + SEQUENCE_COLUMN_WIDTH;
@@ -812,6 +812,7 @@ class GroupBody extends Component {
         const isSelected = RowMetrics.isRowSelected(rowId, rowMetrics);
         const hasSelectedCell = this.props.hasSelectedCell({ groupRowIndex }, selectedPosition);
         const columnColor = showCellColoring ? columnColors[rowId] : {};
+        const rowColor = colors[rowId];
         if (!row) return;
         rendererGroups.push(
           <Row
@@ -844,6 +845,7 @@ class GroupBody extends Component {
             modifyRowViaButton={this.props.modifyRowViaButton}
             reloadRows={this.props.reloadRows}
             columnColor={columnColor}
+            rowColor={rowColor}
             onRowExpand={this.props.onRowExpand}
             isShowRowExpandBtn={isShowRowExpandBtn}
             generatorRowClassName={this.props.generatorRowClassName}
@@ -991,6 +993,7 @@ GroupBody.propTypes = {
   reloadRows: PropTypes.func,
   showCellColoring: PropTypes.bool,
   columnColors: PropTypes.object,
+  colors: PropTypes.object,
   getCopiedRowsAndColumnsFromRange: PropTypes.func,
   openDownloadFilesDialog: PropTypes.func,
   cacheDownloadFilesProps: PropTypes.func,

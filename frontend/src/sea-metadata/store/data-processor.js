@@ -5,7 +5,7 @@ import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } fro
 import { getFilteredRows } from '../utils/filter';
 import { getGroupRows } from '../utils/group';
 import { sortTableRows } from '../utils/sort';
-import { isFilterView, isGroupView, isSortView } from '../utils/view';
+import { isFilterView, isGroupView, isSortView, getRowColors } from '../utils/view';
 import { getSearchRule } from '../utils/search';
 import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
@@ -46,6 +46,15 @@ class DataProcessor {
 
   static hasRelatedGroupby(groupbys, updatedColumnKeyMap) {
     return groupbys.some(groupby => updatedColumnKeyMap[groupby.column_key]);
+  }
+
+  static hasRelatedRowColor(colorbys, updatedColumnKeyMap) {
+    const colorRules = colorbys?.color_by_rules;
+    if (!Array.isArray(colorRules) || colorRules.length === 0) return false;
+    return colorRules.some(rule => {
+      const filters = rule?.filters;
+      return Array.isArray(filters) && filters.some(filter => updatedColumnKeyMap[filter.column_key]);
+    });
   }
 
   static deleteGroupRows(groups, idDeletedRowMap) {
@@ -96,6 +105,8 @@ class DataProcessor {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
 
+    table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
@@ -130,6 +141,7 @@ class DataProcessor {
     if (!isSortComputedOnServer && rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
+    table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
@@ -143,7 +155,7 @@ class DataProcessor {
   }
 
   static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
-    const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
+    const { basic_filters, filters, filter_conjunction, sorts, groupbys, colorbys } = table.view;
     const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
@@ -166,6 +178,11 @@ class DataProcessor {
     if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
       rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, tagsData, isReturnID: false });
     }
+
+    if (this.hasRelatedRowColor(colorbys, relatedColumnKeyMap)) {
+      table.view.colors = getRowColors(rows, table.view, availableColumns, { username, userId, tagsData });
+    }
+
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
       table.view.rows = rows.map(row => row._id);
@@ -188,6 +205,7 @@ class DataProcessor {
       this.deleteGroupRows(groups, idNeedDeletedMap);
       table.view.groups = this.deleteEmptyGroups(groups);
     }
+    table.view.colors = getRowColors(table.rows, table.view, columns);
   }
 
   static handleReloadedRows(table, reloadedRows, relatedColumnKeyMap) {
@@ -255,7 +273,7 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators, tagsData, typesData }) {
+  static syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;
@@ -369,6 +387,12 @@ class DataProcessor {
           break;
         }
         table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData });
+        break;
+      }
+      case OPERATION_TYPE.MODIFY_ROW_COLOR: {
+        const availableColumns = table.view.columns || table.columns;
+        const renderedRows = getRowsByIds(table, table.view.rows);
+        table.view.colors = getRowColors(renderedRows, table.view, availableColumns, { username, tagsData });
         break;
       }
       case OPERATION_TYPE.MODIFY_COLUMN_DATA:
