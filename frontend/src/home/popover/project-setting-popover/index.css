@@ -4,22 +4,25 @@
 }
 
 .project-icon-settings-popover .popover {
-  max-width: 314px;
-  width: 314px;
-}
-
-.project-icon-settings-popover .project-icon-settings-content {
-  padding: 8px 12px;
+  max-width: 311px;
+  width: 311px;
 }
 
 .project-icon-settings-popover .seaqa-color-content {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin: 0 0 5px 0;
+  margin: 0 0 12px 0;
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
 }
 
 .project-icon-settings-popover .project-icon-content {
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
 }
 
 .project-icon-settings-popover .seaqa-color-item:first-child,
@@ -36,7 +39,6 @@
   height: 20px;
   width: 20px;
   padding: 0;
-  margin: 3px 2px;
   display: flex;
 }
 
@@ -61,8 +63,8 @@
 }
 
 .project-icon-settings-popover .project-icon-item {
-  height: 36px;
-  width: 36px;
+  height: 32px;
+  width: 32px;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -83,12 +85,4 @@
 
 .project-icon-settings-popover .project-icon-item:hover {
   background-color: #f5f5f5;
-}
-
-.project-icon-settings-popover .project-icon-settings-name {
-  margin-bottom: 7px;
-}
-
-.project-icon-settings-popover .project-icon-settings-name-input {
-  height: 36px;
 }

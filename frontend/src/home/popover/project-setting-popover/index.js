@@ -44,7 +44,7 @@ class ProjectSettingPopover extends React.Component {
 
   renderName = () => {
     return (
-      <div className="project-icon-settings-name">
+      <div className="mb-3">
         <input
           type="text"
           className="form-control project-icon-settings-name-input"
@@ -62,7 +62,7 @@ class ProjectSettingPopover extends React.Component {
     let { bgColor } = this.props;
     bgColor = bgColor || PROJECT_ICON_COLORS[0];
     return (
-      <div className="row seaqa-color-content">
+      <div className="seaqa-color-content">
         {PROJECT_ICON_COLORS.map((color, index) => {
           return (
             <div
@@ -94,7 +94,7 @@ class ProjectSettingPopover extends React.Component {
     bgColor = bgColor || PROJECT_ICON_COLORS[0];
     icon = icon || PROJECT_ICON_LIST[0];
     return (
-      <div className="row project-icon-content">
+      <div className="project-icon-content">
         {PROJECT_ICON_LIST.map((iconItem, index) => {
           let isSelected = iconItem === icon;
           return (
@@ -129,7 +129,7 @@ class ProjectSettingPopover extends React.Component {
         className={`project-icon-settings-popover ${this.props.className || ''}`}
         modifiers={this.props.modifiers}
       >
-        <PopoverBody className="project-icon-settings-content">
+        <PopoverBody className="p-4">
           {this.renderName()}
           {this.renderColorSettings()}
           {this.renderIconSettings()}
