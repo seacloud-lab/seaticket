@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useMemo } from 'react';
 import classnames from 'classnames';
-import { Icon, ClickOutside, SearchInput, IconButton } from '@/components';
+import { SearchInput, IconButton, CustomizeDropdownItemIcon, CustomizeDropdownItemText, CustomizePopover } from '@/components';
 import { gettext, KeyCodes } from '@/constants';
 import context from '@/sea-metadata/context';
 
@@ -9,7 +9,6 @@ import './index.css';
 const AllViews = ({
   viewID,
   allViews = [],
-  isSelected,
   onMove,
   toggleView,
 }) => {
@@ -103,20 +102,21 @@ const AllViews = ({
 
   return (
     <>
-      <div className='sea-metadata-view-container sea-metadata-all-views-container' onClick={openDropdownMenu}>
-        <div className={classnames('sea-metadata-view-item', { 'active': isSelected })} ref={viewRef}>
-          <div className="sea-metadata-view-item-operation-down">
-            <Icon symbol="arrow-down" />
-          </div>
-        </div>
-      </div>
+      <IconButton
+        icon="arrow-down"
+        className="sea-metadata-all-views-btn"
+        ref={viewRef}
+        onClick={openDropdownMenu}
+      />
       {isShowDropdownMenu && (
-        <ClickOutside onClickOutside={closeDropdown}>
-          <div
-            className="seaqa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
-            style={menuStyle.current}
-          >
-            <div className="all-views-search-wrapper">
+        <CustomizePopover
+          target={viewRef}
+          className="sea-metadata-all-views-popover"
+          hidePopover={closeDropdown}
+          hidePopoverWithEsc={closeDropdown}
+        >
+          <div className="sea-metadata-all-views-container">
+            <div className="sea-metadata-all-views-search-wrapper">
               <SearchInput
                 autoFocus={true}
                 isShowSearchIcon={true}
@@ -127,15 +127,15 @@ const AllViews = ({
                 onChange={onSearchValueChange}
               />
             </div>
-            <div className="all-views-list-wrapper">
+            <div className="sea-metadata-all-views-content-wrapper">
               {views.map((view) => {
                 return (
                   <div
                     key={view._id}
                     onClick={() => toggleView(view._id)}
-                    className={classnames('dropdown-item seaqa-dropdown-item view-item', {
-                      'sea-metadata-view-item-next-position-before': dropRelativePosition === 'before' && currentOverViewId === view._id,
-                      'sea-metadata-view-item-next-position-after': dropRelativePosition === 'after' && currentOverViewId === view._id,
+                    className={classnames('sea-metadata-all-views-item', {
+                      'sea-metadata-all-views-item-next-position-before': dropRelativePosition === 'before' && currentOverViewId === view._id,
+                      'sea-metadata-all-views-item-next-position-after': dropRelativePosition === 'after' && currentOverViewId === view._id,
                     })}
                     onDragStart={(event) => {onDragStart(event, view._id);}}
                     onDragEnter={onDragEnter}
@@ -143,22 +143,22 @@ const AllViews = ({
                     onDragLeave={(event) => {onDragLeave(event, view._id);}}
                     onDrop={(event) => {onDrop(event, view._id);}}
                   >
-                    <span className="view-item-left text-truncate" draggable={true} title={view.name}>
-                      {canManageView && (<Icon symbol="drag" className="item-icon" />)}
-                      {view.name}
-                    </span>
+                    <div className="sea-metadata-all-views-item-left text-truncate" draggable={true} title={view.name}>
+                      {canManageView && (<CustomizeDropdownItemIcon symbol="drag" className="mr-3" />)}
+                      <CustomizeDropdownItemText>{view.name}</CustomizeDropdownItemText>
+                    </div>
                     <IconButton icon={view._id === viewID ? 'check-mark' : ''} className="no-hover-bg" />
                   </div>
                 );
               })}
               {views.length === 0 && (
-                <div className="all-views-empty-tip">
+                <div className="sea-metadata-all-views-empty-tip">
                   <div className="sea-metadata-tip-default">{gettext('No results')}</div>
                 </div>
               )}
             </div>
           </div>
-        </ClickOutside>
+        </CustomizePopover>
       )}
     </>
   );
