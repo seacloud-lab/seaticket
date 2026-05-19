@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState, useMemo } from 'react';
 import classnames from 'classnames';
-import { SearchInput, IconButton, CustomizeDropdownItemIcon, CustomizeDropdownItemText, CustomizePopover } from '@/components';
-import { gettext, KeyCodes } from '@/constants';
+import { SearchInput, IconButton, CustomizeDropdownItemIcon, CustomizeDropdownItemText, CustomizePopover, EmptyTip } from '@/components';
+import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import context from '@/sea-metadata/context';
 
 import './index.css';
@@ -115,7 +115,7 @@ const AllViews = ({
           hidePopover={closeDropdown}
           hidePopoverWithEsc={closeDropdown}
         >
-          <div className="sea-metadata-all-views-container">
+          <div className={classnames('sea-metadata-all-views-container', { 'pb-2': views.length === 0 })}>
             <div className="sea-metadata-all-views-search-wrapper">
               <SearchInput
                 autoFocus={true}
@@ -147,14 +147,12 @@ const AllViews = ({
                       {canManageView && (<CustomizeDropdownItemIcon symbol="drag" className="mr-3" />)}
                       <CustomizeDropdownItemText>{view.name}</CustomizeDropdownItemText>
                     </div>
-                    <IconButton icon={view._id === viewID ? 'check-mark' : ''} className="no-hover-bg" />
+                    <IconButton icon={view._id === viewID ? 'check-mark-option' : ''} className="no-hover-bg" />
                   </div>
                 );
               })}
               {views.length === 0 && (
-                <div className="sea-metadata-all-views-empty-tip">
-                  <div className="sea-metadata-tip-default">{gettext('No results')}</div>
-                </div>
+                <EmptyTip src={`${mediaUrl}img/no-results.png`} text={gettext('No results')} className="option-editor-no-results-tip" />
               )}
             </div>
           </div>
