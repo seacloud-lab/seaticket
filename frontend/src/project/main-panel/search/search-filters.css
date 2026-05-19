@@ -74,31 +74,8 @@
   background-color: #efefef;
 }
 
-.search-filters-container .search-filters-dropdown-item {
-  width: 100%;
-}
-
 .search-filter-menu {
   z-index: 1050;
-}
-
-.search-filter-menu .dropdown-item {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.search-filter-menu .dropdown-item .dropdown-item-tick {
-  width: 1rem;
-  left: auto;
-  right: 16px;
-  color: #666;
-}
-
-.search-filter-menu .dropdown-item:focus .dropdown-item-tick,
-.search-filter-menu .dropdown-item:hover .dropdown-item-tick {
-  color: #fff;
 }
 
 .search-filter-menu .input-container {

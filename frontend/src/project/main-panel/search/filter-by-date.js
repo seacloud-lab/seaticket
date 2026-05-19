@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
+import { Dropdown, DropdownToggle } from 'reactstrap';
 import dayjs from 'dayjs';
 import classNames from 'classnames';
+import { CustomizeDropdownItem, CustomizeDropdownMenu, Icon, ModalPortal, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '@/components';
 import DateAndTimePicker from './date-and-time-picker';
 import { gettext } from '../../../constants';
-import ModalPortal from '@/components/modal-portal';
 import { Utils } from '@/utils/utils';
-import Icon from '../../../components/icon';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY } from './constants';
 
 const DATE_INPUT_WIDTH = 118;
@@ -147,12 +146,12 @@ const FilterByDate = ({ date, onChange }) => {
           <Icon symbol="arrow-down"/>
         </DropdownToggle>
         <ModalPortal>
-          <DropdownMenu className="seaqa-dropdown-menu search-filter-menu filter-by-date-menu">
+          <CustomizeDropdownMenu className="search-filter-menu filter-by-date-menu">
             {options.map((option, i) => {
               const isSelected = option.key === value;
-              if (option === 'Divider') return <div key={i} className="seafile-divider dropdown-divider"></div>;
+              if (option === 'Divider') return <div key={i} className="dropdown-divider"></div>;
               return (
-                <DropdownItem
+                <CustomizeDropdownItem
                   key={option.key}
                   tag="div"
                   tabIndex="-1"
@@ -160,10 +159,11 @@ const FilterByDate = ({ date, onChange }) => {
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={onOptionClick}
                   toggle={false}
+                  className="justify-content-between position-relative"
                 >
-                  {option.label}
-                  {isSelected && <Icon symbol="check-mark" className="dropdown-item-tick" />}
-                </DropdownItem>
+                  <CustomizeDropdownItemText>{option.label}</CustomizeDropdownItemText>
+                  {isSelected && <CustomizeDropdownItemIcon symbol="check-mark" position="right" />}
+                </CustomizeDropdownItem>
               );
             })}
             {isCustomDate && (
@@ -190,7 +190,7 @@ const FilterByDate = ({ date, onChange }) => {
                 </div>
               </div>
             )}
-          </DropdownMenu>
+          </CustomizeDropdownMenu>
         </ModalPortal>
       </Dropdown>
     </div>

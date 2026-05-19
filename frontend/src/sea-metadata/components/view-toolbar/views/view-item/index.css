@@ -70,14 +70,6 @@
   display: block;
 }
 
-.sea-metadata-view-dropdown-menu .dropdown-item .seaqa-icon-svg {
-  margin-right: 10px;
-  height: 14px;
-  width: 14px;
-  color: #666;
-  margin-top: -2px;
-}
-
 .sea-metadata-views .sea-metadata-view-item .sea-metadata-view-lock-icon {
   height: 12px;
   width: 12px;

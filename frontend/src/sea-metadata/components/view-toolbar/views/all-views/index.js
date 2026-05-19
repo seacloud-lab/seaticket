@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState, useMemo } from 'react';
 import classnames from 'classnames';
-import { Icon, ClickOutside, SearchInput } from '@/components';
+import { Icon, ClickOutside, SearchInput, IconButton } from '@/components';
 import { gettext, KeyCodes } from '@/constants';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -20,6 +21,8 @@ const AllViews = ({
   const viewRef = useRef(null);
   const menuStyle = useRef({});
   const enteredCounter = useRef(0);
+
+  const canManageView = context.getSetting('canManageView', true);
 
   const onDragStart = useCallback((event, viewId) => {
     event.stopPropagation();
@@ -129,7 +132,7 @@ const AllViews = ({
                 return (
                   <div
                     key={view._id}
-                    onClick={() => {toggleView(view._id);}}
+                    onClick={() => toggleView(view._id)}
                     className={classnames('dropdown-item seaqa-dropdown-item view-item', {
                       'sea-metadata-view-item-next-position-before': dropRelativePosition === 'before' && currentOverViewId === view._id,
                       'sea-metadata-view-item-next-position-after': dropRelativePosition === 'after' && currentOverViewId === view._id,
@@ -140,13 +143,11 @@ const AllViews = ({
                     onDragLeave={(event) => {onDragLeave(event, view._id);}}
                     onDrop={(event) => {onDrop(event, view._id);}}
                   >
-                    <span className="view-item-left" draggable={true}>
-                      <Icon symbol="drag" />
+                    <span className="view-item-left text-truncate" draggable={true} title={view.name}>
+                      {canManageView && (<Icon symbol="drag" className="item-icon" />)}
                       {view.name}
                     </span>
-                    <span className="view-item-right">
-                      {view._id === viewID && <Icon symbol="check-mark" />}
-                    </span>
+                    <IconButton icon={view._id === viewID ? 'check-mark' : ''} className="no-hover-bg" />
                   </div>
                 );
               })}

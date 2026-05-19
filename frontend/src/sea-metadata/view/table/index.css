@@ -297,12 +297,3 @@
   font-size: 13px;
   color: #666;
 }
-
-.sea-metadata-dropdown-menu .dropdown-item {
-  cursor: pointer;
-  height: 32px;
-  line-height: 1.5;
-  min-width: 200px;
-  padding: .25rem 1rem;
-  pointer-events: unset;
-}

@@ -39,12 +39,12 @@ const KnowledgeMoreNav = ({ activeBar, onClick }) => {
           className="position-fixed"
           modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
         >
-          <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={handleImportClick}>
-            <CustomizeDropdownItemIcon symbol={'import-xlsx'} className="seaqa-dropdown-item-icon" />
+          <CustomizeDropdownItem onClick={handleImportClick}>
+            <CustomizeDropdownItemIcon symbol={'import-xlsx'} />
             <CustomizeDropdownItemText>{window.gettext('Import records from XLSX')}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
-          <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={handleTrashClick}>
-            <CustomizeDropdownItemIcon symbol={'trash'} className="seaqa-dropdown-item-icon" />
+          <CustomizeDropdownItem onClick={handleTrashClick}>
+            <CustomizeDropdownItemIcon symbol={'trash'} />
             <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE_TRASH].name}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
         </CustomizeDropdownMenu>

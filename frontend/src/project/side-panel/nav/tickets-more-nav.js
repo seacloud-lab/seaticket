@@ -32,18 +32,18 @@ const TicketsMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
+          <CustomizeDropdownItemIcon symbol="manage-types" />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
-          <CustomizeDropdownItemIcon symbol={'manage-types'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
+          <CustomizeDropdownItemIcon symbol="manage-types" />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
         <div className="dropdown-divider"></div>
-        <CustomizeDropdownItem className="seaqa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
-          <CustomizeDropdownItemIcon symbol={'trash'} className="seaqa-dropdown-item-icon" />
-          <CustomizeDropdownItemText className="seaqa-dropdown-item-text">{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</CustomizeDropdownItemText>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
+          <CustomizeDropdownItemIcon symbol="trash" />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
       </CustomizeDropdownMenu>
     </Dropdown>
