@@ -393,58 +393,6 @@
   }
 }
 
-/* snapshots */
-
-.seaqa-snapshots-container {
-  overflow: hidden;
-  height: 400px;
-  padding: 0;
-}
-
-.seaqa-snapshots-content {
-  padding: 8px 16px;
-  height: 400px;
-  overflow: auto;
-  pointer-events: all;
-}
-
-.seaqa-snapshots-content table td {
-  padding: 14px 3px;
-}
-
-.seaqa-snapshots-content tr td:last-child {
-  text-align: right;
-}
-
-.snapshot-split {
-  display: inline-block;
-  margin: 0 8px;
-  color: #e4e8ef;
-}
-
-.mobile-dropdown-item {
-  height: 44px;
-  text-align: left;
-  padding: 0.25rem 1rem;
-  display: flex;
-  align-items: center;
-}
-
-.mobile-dropdown-item .seaqa-icon-svg {
-  font-size: 1.25rem;
-  margin-right: 1rem;
-  color: var(--bs-icon-color);
-}
-
-.mobile-dropdown-item .mobile-dropdown-span {
-  font-size: 16px;
-}
-
-.mobile-dropdown-item.disabled .seaqa-icon-svg,
-.mobile-dropdown-item:disabled .seaqa-icon-svg {
-  color: #c2c2c2;
-}
-
 .project-name .share-tip,
 .table-mobile-name .share-tip {
   display: inline-block;
