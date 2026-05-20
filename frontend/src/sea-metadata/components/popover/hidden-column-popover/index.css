@@ -51,43 +51,43 @@
 
 .seaqa-hide-columns-popover .hide-column-item .custom-switch .custom-switch-description {
   margin-left: 0;
-  padding-right: 5px;
   flex: 1;
   color: var(--bs-body-color);
   transition: .3s color;
+  display: flex;
+  align-items: center;
 }
 
-.sea-metadata-hide-columns-popover .hide-column-item .custom-switch .custom-switch-indicator {
+.seaqa-hide-columns-popover .hide-column-item .custom-switch .custom-switch-indicator {
   border-radius: 6px;
   height: 12px;
   width: 22px;
 }
 
-.sea-metadata-hide-columns-popover .hide-column-item .custom-switch .custom-switch-indicator:before {
+.seaqa-hide-columns-popover .hide-column-item .custom-switch .custom-switch-indicator:before {
   height: 8px;
   width: 8px;
 }
 
-.sea-metadata-hide-columns-popover .hide-column-item .custom-switch .custom-switch-input:checked~.custom-switch-indicator:before {
+.seaqa-hide-columns-popover .hide-column-item .custom-switch .custom-switch-input:checked~.custom-switch-indicator:before {
   left: 12px;
 }
 
-.sea-metadata-hide-columns-popover .hide-column-item .seaqa-icon-svg {
+.seaqa-hide-columns-popover .hide-column-item .seaqa-icon-svg {
   height: 12px;
   width: 12px;
   margin-right: 10px;
   color: var(--bs-icon-secondary-color);
-  margin-top: -2px;
 }
 
-.sea-metadata-hide-columns-popover .sea-metadata-hide-columns-operations {
+.seaqa-hide-columns-popover .sea-metadata-hide-columns-operations {
   display: flex;
   justify-content: space-between;
   padding: 0 17px;
   width: 100%;
 }
 
-.sea-metadata-hide-columns-popover .sea-metadata-hide-columns-operations .sea-metadata-hide-columns-operation {
+.seaqa-hide-columns-popover .sea-metadata-hide-columns-operations .sea-metadata-hide-columns-operation {
   display: flex;
   align-items: center;
 }
@@ -97,10 +97,6 @@
   width: 14px;
   margin-right: 10px;
   color: var(--bs-icon-secondary-color);
-}
-
-.sea-metadata-hide-columns-popover .hide-column-item .drag-hide-column-handle .seaqa-icon-svg {
-  margin-right: 0px;
 }
 
 .seaqa-hide-columns-popover .hide-columns-list .hide-column-item.disabled .drag-hide-column-handle {

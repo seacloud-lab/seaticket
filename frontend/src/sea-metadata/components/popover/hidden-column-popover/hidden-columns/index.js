@@ -29,10 +29,7 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
   return (
     <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty })}>
       {isEmpty && (
-        // TODO
-        <div className="empty-hide-columns-list sea-metadata-tip-default">
-          {gettext('No columns available to be hidden')}
-        </div>
+        <Tip tip={gettext('No columns available to be hidden')} hasAvailableOptions={false} />
       )}
       {!isEmpty && columns.map((column, columnIndex) => {
         return (
