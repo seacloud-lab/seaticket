@@ -369,6 +369,25 @@ export const GITHUB_STATE_REASON_NAME_MAP = {
   'duplicate': gettext('Duplicate'),
 };
 
+export const GENERAL_TASK_STATUS_NAME_MAP = {
+  'new': gettext('New'),
+  'in_progress': gettext('In progress'),
+  'canceled': gettext('Canceled'),
+  'done': gettext('Done'),
+};
+
+export const GENERAL_TASK_SIZE_NAME_MAP = {
+  'large': gettext('Large'),
+  'medium': gettext('Medium'),
+  'small': gettext('Small'),
+};
+
+export const GENERAL_TASK_PRIORITY_NAME_MAP = {
+  'high': gettext('High'),
+  'medium': gettext('Medium'),
+  'low': gettext('Low'),
+};
+
 export const CONNECTION_SYNC_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
@@ -420,6 +439,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   PRIORITY: 'priority',
   ASSIGNEES: 'assignees',
   PARTICIPANTS: 'participants',
+  VERSION: 'version',
   OTHERS: 'others',
   DUE_DATE: 'due_date',
 };
@@ -446,6 +466,10 @@ const CONNECTION_PREDEFINED_COLUMN = {
     display_name: gettext('Outdated'),
     type: CellType.CHECKBOX,
     editable: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.VERSION]: {
+    display_name: gettext('Version'),
+    type: CellType.TEXT,
   },
   [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: {
     display_name: gettext('Linked ticket'),
@@ -639,6 +663,10 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
       type: CellType.COLLABORATOR,
       display_name: gettext('Participants'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.VERSION]: {
+      display_name: gettext('Version'),
+      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS]: {
       display_name: gettext('Others'),

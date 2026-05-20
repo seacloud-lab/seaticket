@@ -88,6 +88,7 @@ def build_general_task_row_data(task, sync_time=None):
         GeneralTaskTable.priority.name: task.get('priority'),
         GeneralTaskTable.assignees.name: assignees,
         GeneralTaskTable.participants.name: participants,
+        GeneralTaskTable.version.name: task.get('version', ''),
         GeneralTaskTable.others.name: others,
         GeneralTaskTable.content.name: task.get('description') or task.get('content') or '',
         GeneralTaskTable.due_date.name: task.get('due_date'),
@@ -1116,7 +1117,7 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
     sql = (
         f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
         f"`content`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
-        f"`linked_ticket`, `outdated` FROM `{general_task_table_name}` WHERE _pk = {_pk}"
+        f"`linked_ticket`, `outdated`, `version` FROM `{general_task_table_name}` WHERE _pk = {_pk}"
     )
     try:
         res = seadb_api.query_rows(project_uuid, sql)

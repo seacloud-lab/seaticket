@@ -19,7 +19,7 @@ class GeneralTaskSeaDBAPI:
         table_name = GeneralTaskTable.gen_table_name(connection_id)
         sql = (
             f"SELECT `_pk`, `source_task_id`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
-            f"`others`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "
+            f"`others`, `version`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "
             f"FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
         )
         results = self.seadb_api.query_rows(project_uuid, sql).get('results', [])

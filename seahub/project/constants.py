@@ -133,8 +133,8 @@ GENERAL_TASK_MUTABLE_FIELDS = {
     'due_date',
     'content',
     'description',
+    'version',
 }
-
 
 
 class CrawlStatus:
@@ -400,7 +400,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags'],
     ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
-    ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'status', 'size', 'priority', 'assignees', 'participants', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
+    ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 

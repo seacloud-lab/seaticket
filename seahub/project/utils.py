@@ -497,7 +497,7 @@ def normalize_general_task_payload(task_data, *, partial=False):
     if not isinstance(task_data, dict):
         return payload
 
-    string_fields = ['title', 'status', 'size', 'priority', 'due_date']
+    string_fields = ['title', 'status', 'size', 'priority', 'due_date', 'version']
     list_fields = ['assignees', 'participants']
 
     for field in string_fields:

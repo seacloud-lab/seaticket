@@ -11,6 +11,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
+  GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -176,6 +177,29 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
                 ...stateReasonColumn.data,
                 options,
               };
+            }
+          }
+          if (type === CONNECTION_TYPE.GENERAL_TASK) {
+            const statusColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATUS);
+            if (statusColumnIndex > -1) {
+              const statusColumn = columns[statusColumnIndex];
+              let options = statusColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_STATUS_NAME_MAP[o.name] || o.name }));
+              columns[statusColumnIndex].data = { ...statusColumn.data, options };
+            }
+            const sizeColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.SIZE);
+            if (sizeColumnIndex > -1) {
+              const sizeColumn = columns[sizeColumnIndex];
+              let options = sizeColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_SIZE_NAME_MAP[o.name] || o.name }));
+              columns[sizeColumnIndex].data = { ...sizeColumn.data, options };
+            }
+            const priorityColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY);
+            if (priorityColumnIndex > -1) {
+              const priorityColumn = columns[priorityColumnIndex];
+              let options = priorityColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_PRIORITY_NAME_MAP[o.name] || o.name }));
+              columns[priorityColumnIndex].data = { ...priorityColumn.data, options };
             }
           }
           columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
