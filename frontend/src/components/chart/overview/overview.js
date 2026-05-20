@@ -92,7 +92,6 @@ const Overview = () => {
       const changePercent = ((currentCredit - lastMonthSameDayCredit) / lastMonthSameDayCredit) * 100;
       monthOnMonthValue = `${changePercent.toFixed(2)}%`;
     }
-    console.log(parseFloat(monthOnMonthValue), monthOnMonthValue < 0);
     return monthOnMonthValue;
   };
 

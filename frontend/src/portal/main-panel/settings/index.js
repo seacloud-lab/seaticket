@@ -50,7 +50,6 @@ const Settings = () => {
   useEffect(() => {
     portalAPI.getSettings(projectUuid).then(res => {
 
-      console.log(res.data);
       const data = res.data || {};
       setAllowAnonymous(!!data.allow_anonymous);
       setEnablePassword(!!data.enable_password_protection);
