@@ -7,10 +7,12 @@ import GroupbyItem from './groupby-item';
 import { gettext } from '@/constants';
 
 const Groupbys = ({ readOnly, groupbys, columns, onDelete, onUpdate, onMove }) => {
+
   const isEmpty = useMemo(() => {
     if (!Array.isArray(groupbys) || groupbys.length === 0) return true;
     return false;
   }, [groupbys]);
+
   const showDragBtn = useMemo(() => {
     if (readOnly) return false;
     if (!Array.isArray(groupbys) || groupbys.length === 0) return false;
@@ -19,8 +21,8 @@ const Groupbys = ({ readOnly, groupbys, columns, onDelete, onUpdate, onMove }) =
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={classnames('groupbys-list', { 'empty-groupbys-container': isEmpty })}>
-        {isEmpty && <div className="empty-groupbys-list sea-metadata-tip-default">{gettext('No groupings applied to this view.')}</div>}
+      <div className={classnames('groupbys-list', { 'd-flex align-items-center justify-content-center': isEmpty })}>
+        {isEmpty && <div className="seaqa-tip-large">{gettext('No groupings applied to this view.')}</div>}
         {!isEmpty && groupbys.map((groupby, index) => {
           return (
             <GroupbyItem

@@ -109,7 +109,7 @@
   background-color: transparent !important;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove .sea-qa-icon-svg {
+.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove .seaqa-icon-svg {
   color: var(--bs-icon-secondary-color);
 }
 
@@ -125,7 +125,7 @@
   padding: 8px 15px;
 }
 
-.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .sea-qa-select.custom-select:hover {
+.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .seaqa-select.custom-select:hover {
   border-color: rgba(0, 40, 100, 0.12);
 }
 

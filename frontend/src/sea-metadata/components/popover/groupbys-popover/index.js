@@ -113,18 +113,28 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
       boundariesElement={document.body}
     >
       <div ref={popoverRef} onClick={onPopoverInsideClick} className="sea-metadata-groupbys">
-        <Groupbys readOnly={readOnly} groupbys={groupbys} columns={columns} onDelete={deleteGroup} onUpdate={updateGroup} onMove={moveGroupbys} />
-        {!readOnly && (groupbys.length < MAX_GROUP_LEVEL) && (
-          <CommonAddTool
-            className="popover-add-tool"
-            callBack={addGroupby}
-            name={gettext('Add group')}
-          />
-        )}
-        {groupbys.length > 0 && (
-          <div className="groupbys-tools">
-            <span className="groupbys-tool-item" onClick={hideAllGroups}>{gettext('Collapse all')}</span>
-            <span className="groupbys-tool-item" onClick={showAllGroups}>{gettext('Expand all')}</span>
+        <Groupbys
+          readOnly={readOnly}
+          groupbys={groupbys}
+          columns={columns}
+          onDelete={deleteGroup}
+          onUpdate={updateGroup}
+          onMove={moveGroupbys}
+        />
+        {!readOnly && (
+          <div className="popover-add-tool">
+            {groupbys.length < MAX_GROUP_LEVEL ? (
+              <CommonAddTool
+                callBack={addGroupby}
+                name={gettext('Add group')}
+              />
+            ) : <div />}
+            {groupbys.length > 0 && (
+              <div className="groupbys-tools">
+                <span className="groupbys-tool-item" onClick={hideAllGroups}>{gettext('Collapse all')}</span>
+                <span className="groupbys-tool-item" onClick={showAllGroups}>{gettext('Expand all')}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

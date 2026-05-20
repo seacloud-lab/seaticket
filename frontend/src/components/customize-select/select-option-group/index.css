@@ -5,7 +5,7 @@
   max-height: 300px;
   min-width: 100%;
   max-width: 15rem;
-  padding: 0.5rem 0;
+  padding: 8px;
   background: #fff;
   border: 1px solid var(--bs-border-secondary-color);
   box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1);
@@ -43,10 +43,12 @@
 }
 
 .option-group .option {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   line-height: 24px;
-  padding: 0.25rem 0.75rem;
+  padding: 4px 8px;
   clear: both;
   font-weight: 400;
   text-align: inherit;
@@ -72,6 +74,10 @@
   color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
+}
+
+.option-group .option .seaqa-icon-svg.option-check-icon {
+  color: var(--bs-icon-color);
 }
 
 .option-group .option .select-option-name .single-select-option {

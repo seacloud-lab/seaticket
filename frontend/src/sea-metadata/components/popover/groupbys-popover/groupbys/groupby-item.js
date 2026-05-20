@@ -172,7 +172,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
     >
       {!readOnly && (
         <div className="delete-groupby" onClick={deleteGroupby} aria-label={gettext('Delete')}>
-          <Icon className="sea-metadata-icon" symbol="close"/>
+          <Icon className="sea-metadata-icon" symbol="close" />
         </div>
       )}
       <div className="condition">
