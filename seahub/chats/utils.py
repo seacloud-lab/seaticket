@@ -57,7 +57,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
 
     try:
         ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_result.get('thought_process', {}))
-        user_message = ChatMessages.objects.create_message(session_uuid, message_id, 'user', query, attachments=attachments)
+        user_message = ChatMessages.objects.create_message(session_uuid, message_id, 'user', query, attachments=ai_result['attachments'])
         ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
         ai_result.update({
             'user_message_id': user_message.id,
