@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
-import { Tooltip, Icon } from '@/components';
+import { Tooltip, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '@/components';
 
 const ColumnDropdownItem = ({
   disabled = false,
@@ -31,30 +30,31 @@ const ColumnDropdownItem = ({
 
   if (!disabled) {
     return (
-      <DropdownItem id={target} onClick={onChange} onMouseEnter={onMouseEnter} className={className}>
-        <Icon className="sea-metadata-icon" symbol={iconName} />
-        <span className="item-text">{title}</span>
-      </DropdownItem>
+      <CustomizeDropdownItem id={target} onClick={onChange} onMouseEnter={onMouseEnter} className={className}>
+        {iconName && (<CustomizeDropdownItemIcon className="sea-metadata-icon" symbol={iconName} />)}
+        <CustomizeDropdownItemText>{title}</CustomizeDropdownItemText>
+      </CustomizeDropdownItem>
     );
   }
 
   return (
     <>
-      <DropdownItem
+      <CustomizeDropdownItem
         className={classnames('disabled', className)}
         toggle={true}
+        disabled={true}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         id={target}
       >
-        {iconName && <Icon className="sea-metadata-icon" symbol={iconName} />}
-        <span className="item-text">{title}</span>
+        {iconName && (<CustomizeDropdownItemIcon className="sea-metadata-icon" symbol={iconName} />)}
+        <CustomizeDropdownItemText>{title}</CustomizeDropdownItemText>
         {isShowToolTip && (
           <Tooltip placement="right" target={target} delay={{ show: 0, hide: 0 }}>
             {tip}
           </Tooltip>
         )}
-      </DropdownItem>
+      </CustomizeDropdownItem>
     </>
   );
 

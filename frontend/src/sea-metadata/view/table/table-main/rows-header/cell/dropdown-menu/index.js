@@ -1,9 +1,8 @@
 import React, { createRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem as DefaultDropdownItem } from 'reactstrap';
+import { Dropdown, DropdownToggle } from 'reactstrap';
 import classnames from 'classnames';
-import ModalPortal from '@/components/modal-portal';
-import Icon from '@/components/icon';
+import { ModalPortal, Icon, CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemText } from '@/components';
 import { RenamePopover } from '../../../../../../components/popover';
 import DropdownItem from './dropdown-item';
 import { gettext } from '@/constants';
@@ -13,8 +12,6 @@ import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../..
 import context from '@/sea-metadata/context';
 import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
 import { isFunction } from '@/utils/type-detection';
-
-import './index.css';
 
 const HeaderDropdownMenu = forwardRef(({
   column, view,
@@ -155,20 +152,20 @@ const HeaderDropdownMenu = forwardRef(({
           <Icon symbol="set-up" />
           <span className="item-text">{gettext('Edit format settings')}</span>
         </DropdownToggle>
-        <DropdownMenu style={{ marginLeft: '-16px', transform: 'none' }}>
+        <CustomizeDropdownMenu style={{ marginLeft: '-16px', transform: 'none' }}>
           {options.map(option => {
             return (
-              <DefaultDropdownItem
+              <CustomizeDropdownItem
                 className="sea-metadata-column-dropdown-item"
                 toggle={false}
                 key={option.value}
                 onClick={(event) => onChangeDateFormat(event, option.value)}
               >
-                {<span>{option.label}</span>}
-              </DefaultDropdownItem>
+                <CustomizeDropdownItemText>{option.label}</CustomizeDropdownItemText>
+              </CustomizeDropdownItem>
             );
           })}
-        </DropdownMenu>
+        </CustomizeDropdownMenu>
       </Dropdown>
     );
   }, [today, column, isMenuShow, isSubMenuShow, onChangeDateFormat, openSubMenu, isPrivateColumn]);
@@ -212,7 +209,7 @@ const HeaderDropdownMenu = forwardRef(({
     // const canModifyView = context.canModifyView();
 
     return (
-      <DropdownMenu ref={menuRef} className="seaqa-dropdown-menu sea-metadata-column-dropdown-menu">
+      <CustomizeDropdownMenu ref={menuRef} className="sea-metadata-column-dropdown-menu">
         <div ref={dropdownDomRef}>
           {/* {type === CellType.SINGLE_SELECT && (
             <>
@@ -291,7 +288,7 @@ const HeaderDropdownMenu = forwardRef(({
           )}
 
         </div>
-      </DropdownMenu>
+      </CustomizeDropdownMenu>
     );
   }, [column, openRenamePopover, hideSubMenu, renderDateFormat, openOptionPopover, menuRef, dropdownDomRef, modifySort, onDelete, isPrivateColumn]);
 

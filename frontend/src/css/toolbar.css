@@ -119,10 +119,3 @@
     width: 0;
   }
 }
-
-.mobile-dropdown-item {
-  height: 3.5rem;
-  text-align: left;
-  padding: 0.25rem 1rem;
-  line-height: 3rem;
-}

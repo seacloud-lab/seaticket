@@ -32,11 +32,6 @@ const Views = ({ view, toggleView }) => {
     });
   }, [isLoading, viewsData, view]);
 
-  const isSelected = useMemo(() => {
-    if (viewID && !allViews.find(v => v._id === viewID)) return true;
-    return false;
-  }, [allViews, viewID]);
-
   const openViewNameDialog = useCallback((isRename) => {
     isRenameRef.current = Boolean(isRename);
     setIsShowViewNameDialog(true);
@@ -169,7 +164,6 @@ const Views = ({ view, toggleView }) => {
             <AllViews
               viewID={viewID}
               allViews={allViews}
-              isSelected={isSelected}
               onMove={moveView}
               toggleView={toggleView}
             />
@@ -182,7 +176,7 @@ const Views = ({ view, toggleView }) => {
             />
             <IconButton
               icon="arrow-right"
-              className={classnames('scroll-control-btn scroll-next ml-2', { 'scroll-active': canScrollNext })}
+              className={classnames('scroll-control-btn scroll-next', { 'scroll-active': canScrollNext })}
               onClick={() => onScrollControlClick('right')}
               title={gettext('Scroll to the right')}
               aria-label={gettext('Scroll to the right')}
