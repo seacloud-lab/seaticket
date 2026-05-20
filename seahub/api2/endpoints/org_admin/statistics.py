@@ -317,6 +317,18 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         month = month_index % 12 + 1
         return datetime.date(year, month, 1)
 
+    @staticmethod
+    def _get_last_month_same_day_range(today):
+        if today.month == 1:
+            last_month_date = datetime.date(today.year - 1, 12, 1)
+        else:
+            last_month_date = datetime.date(today.year, today.month - 1, 1)
+
+        _, last_day_num = calendar.monthrange(last_month_date.year, last_month_date.month)
+        same_day = min(today.day, last_day_num)
+        end_date = datetime.date(last_month_date.year, last_month_date.month, same_day)
+        return [last_month_date.isoformat(), end_date.isoformat()]
+
     def _get_monthly_credits(self, org_id, months_count=6):
         current_month_start = self._get_month_start(datetime.date.today())
         results = []
@@ -375,9 +387,11 @@ class OrgAdminAIStatisticsOverviewView(APIView):
             else:
                 last_month_date = datetime.date(today.year, today.month - 1, 1)
             last_month_range = self._get_month_range(last_month_date)
+            last_month_same_day_range = self._get_last_month_same_day_range(today)
 
             current_month_credit = self._get_total_credit_used(current_month_range, org_id)
             last_month_credit = self._get_total_credit_used(last_month_range, org_id)
+            last_month_same_day_credit = self._get_total_credit_used(last_month_same_day_range, org_id)
             month_on_month_change = current_month_credit - last_month_credit
         except Exception as e:
             logger.exception(e)
@@ -386,5 +400,6 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         return Response({
             'current_month_credit': round(current_month_credit, 0),
             'last_month_credit': round(last_month_credit, 0),
+            'last_month_same_day_credit': round(last_month_same_day_credit, 0),
             'month_on_month_change': round(month_on_month_change, 0),
         })

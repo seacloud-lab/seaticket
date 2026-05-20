@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import dayjs from '@/utils/dayjs';
 import orgAdminAPI from '@/org-admin/api';
+import classnames from 'classnames';
 import { gettext, orgID } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { CenteredLoading, EmptyTip, Icon, toaster } from '@/components';
@@ -53,6 +55,47 @@ const Overview = () => {
     [REQUEST_KEYS.DATE]: REQUEST_STATUS.LOADING,
   });
 
+  const getLastMonthSameDay = () => {
+    const today = dayjs();
+    const lastMonth = today.subtract(1, 'month');
+
+    return lastMonth.date(
+      Math.min(
+        today.date(),
+        lastMonth.daysInMonth()
+      )
+    );
+  };
+
+  const monthOnMonthTip = useMemo(() => {
+    // current
+    const currentMonth = dayjs().format('MMM');
+    const currentMonthEnd = dayjs().format('D');
+
+    // last
+    const lastMonth = dayjs().subtract(1, 'month').format('MMM');
+    const lastMonthEnd = getLastMonthSameDay().format('D');
+
+    return `(${currentMonth} 1-${currentMonthEnd} vs ${lastMonth} 1-${lastMonthEnd})`;
+  }, []);
+
+  const getMonthOnMonthValue = (current_month_credit, last_month_same_day_credit) => {
+    const currentCredit = Number(current_month_credit) || 0;
+    const lastMonthSameDayCredit = Number(last_month_same_day_credit) || 0;
+
+    let monthOnMonthValue = '--';
+    if (lastMonthSameDayCredit === 0) {
+      if (currentCredit > 0) {
+        monthOnMonthValue = '100%';
+      }
+    } else {
+      const changePercent = ((currentCredit - lastMonthSameDayCredit) / lastMonthSameDayCredit) * 100;
+      monthOnMonthValue = `${changePercent.toFixed(2)}%`;
+    }
+    console.log(parseFloat(monthOnMonthValue), monthOnMonthValue < 0);
+    return monthOnMonthValue;
+  };
+
   const setStatus = useCallback((key, status) => {
     setRequestStatus((prev) => ({
       ...prev,
@@ -61,7 +104,7 @@ const Overview = () => {
   }, []);
 
   const buildSummaryData = useCallback((summaryData = {}) => {
-    const { current_month_credit, last_month_credit, month_on_month_change } = summaryData;
+    const { current_month_credit, last_month_credit, last_month_same_day_credit } = summaryData;
 
     const newCreditHeaderData = creditSummaryData.map(item => {
       if (item.key === 'current') {
@@ -69,7 +112,7 @@ const Overview = () => {
       } else if (item.key === 'last') {
         item.value = last_month_credit || '--';
       } else if (item.key === 'month-on-month') {
-        item.value = month_on_month_change || '--';
+        item.value = getMonthOnMonthValue(current_month_credit, last_month_same_day_credit);
       }
       return item;
     });
@@ -170,7 +213,15 @@ const Overview = () => {
               <div className="title">{item.name}</div>
               <div className="icon d-flex align-items-center justify-content-center"><Icon symbol={item.icon} /></div>
             </div>
-            <div className="value">{item.value}</div>
+            <div className="tip">{item.key === 'month-on-month' ? monthOnMonthTip : ''}</div>
+            <div className="value">
+              {(item.key === 'month-on-month' && parseFloat(item.value) !== 0) && (
+                <span className={classnames('d-flex', { 'rotate-icon-180': parseFloat(item.value) < 0 })}>
+                  <Icon symbol="btn-send"/>
+                </span>
+              )}
+              {item.value}
+            </div>
           </div>
         ))}
       </div>
