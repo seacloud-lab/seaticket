@@ -963,6 +963,19 @@ class AIUsageStatistics(models.Model):
         ]
 
 
+class PortalChatUsageStatistics(models.Model):
+    date = models.DateField()
+    project_uuid = models.CharField(max_length=36)
+    model = models.CharField(max_length=64)
+    input_tokens = models.IntegerField(default=0)
+    output_tokens = models.IntegerField(default=0)
+    cost = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'portal_chat_usage_statistics'
+
 class AdditionalCredits(models.Model):
     org_id = models.IntegerField(unique=True, db_index=True)
     credits = models.FloatField(default=0)

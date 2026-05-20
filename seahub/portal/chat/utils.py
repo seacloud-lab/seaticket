@@ -9,8 +9,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from seahub.api2.utils import api_error
-from seahub.project.constants import AIScenario
-from seahub.project.models import AIUsageStatistics
+from seahub.project.models import PortalChatUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
 from seahub.portal.models import PortalChatMessages, ProjectExternalUser
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
@@ -89,10 +88,9 @@ def mark_external_chat_rate_limit(project_uuid, username):
 
 def get_project_portal_chat_credit_used(project_uuid):
     today = timezone.localdate()
-    total_cost = AIUsageStatistics.objects.filter(
+    total_cost = PortalChatUsageStatistics.objects.filter(
         date=today,
         project_uuid=uuid_str_to_32_chars(project_uuid),
-        scenario=AIScenario.PORTAL_CHAT.value,
     ).aggregate(
         total_cost=Coalesce(Sum('cost'), Value(0.0))
     )['total_cost']

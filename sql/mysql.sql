@@ -590,6 +590,20 @@ CREATE TABLE `ai_usage_statistics` (
   KEY `idx_date_org`(`date`, `org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `portal_chat_usage_statistics` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `project_uuid` varchar(36) NOT NULL,
+  `model` varchar(100) NOT NULL,
+  `input_tokens` int(11) DEFAULT NULL,
+  `output_tokens` int(11) DEFAULT NULL,
+  `cost` double NOT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_portal_chat_usage` (`date`, `project_uuid`, `model`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 CREATE TABLE `chat_message_thought_process`  (
   `id` int NOT NULL AUTO_INCREMENT,
