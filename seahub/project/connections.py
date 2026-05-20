@@ -36,10 +36,10 @@ from seahub.utils.indexer import add_connection_sync_task, manual_sync_connectio
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
 from seahub.utils.storage import if_none_match_hit, get_connection_file_head_from_s3
-from seahub.seadb_models.utils import init_github_issues_seadb_table, list_discourse_forum_replies_records, \
+from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
-    list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    list_notion_record_details, list_general_task_record_details, build_general_task_row_data, get_connection_columns
+    list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
+    get_table_name,  list_general_task_record_details, build_general_task_row_data, get_connection_columns
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -522,7 +522,7 @@ class ProjectGithubConnectionsView(APIView):
             connection_id = record.id
             seadb_api = SeaDBAPI()
             try:
-                init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
+                init_seadb_tables_from_schema('init_github_issues_seadb_table', seadb_api, project.uuid, connection_id)
             except Exception as e:
                 logger.error(e)
                 record.delete()
@@ -1215,21 +1215,21 @@ class ProjectConnectionRecordView(APIView):
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        table_cls = None
+        schema_table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            table_cls = DiscourseTopicsTable
+            schema_table_name = 'DiscourseTopicsTable'
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            table_cls = GithubIssuesTable
+            schema_table_name = 'GithubIssuesTable'
         elif project_connection.type == ConnectionType.SITE.value:
-            table_cls = WebCrawlTable
+            schema_table_name = 'WebCrawlTable'
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            table_cls = SeafileTable
+            schema_table_name = 'SeafileTable'
         elif project_connection.type == ConnectionType.EMAIL.value:
-            table_cls = ThreadTable
+            schema_table_name = 'ThreadTable'
         elif project_connection.type == ConnectionType.NOTION.value:
-            table_cls = NotionTable
+            schema_table_name = 'NotionTable'
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            table_cls = GeneralTaskTable
+            schema_table_name = 'GeneralTaskTable'
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1316,7 +1316,7 @@ class ProjectConnectionRecordView(APIView):
         if not update_row['row']:
             return Response({'success': True})
 
-        table_name = table_cls.gen_table_name(connection_id)
+        table_name = get_table_name(schema_table_name, connection_id)
 
         try:
             seadb_api.update_rows(project_uuid, table_name, [update_row])
@@ -1481,21 +1481,21 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        table_cls = None
+        schema_table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            table_cls = DiscourseTopicsTable
+            schema_table_name = 'DiscourseTopicsTable'
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            table_cls = GithubIssuesTable
+            schema_table_name = 'GithubIssuesTable'
         elif project_connection.type == ConnectionType.SITE.value:
-            table_cls = WebCrawlTable
+            schema_table_name = 'WebCrawlTable'
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            table_cls = SeafileTable
+            schema_table_name = 'SeafileTable'
         elif project_connection.type == ConnectionType.EMAIL.value:
-            table_cls = ThreadTable
+            schema_table_name = 'ThreadTable'
         elif project_connection.type == ConnectionType.NOTION.value:
-            table_cls = NotionTable
+            schema_table_name = 'NotionTable'
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            table_cls = GeneralTaskTable
+            schema_table_name = 'GeneralTaskTable'
 
         update_rows = []
         seadb_api = SeaDBAPI()
@@ -1571,7 +1571,8 @@ class ProjectConnectionRecordsView(APIView):
         if not update_rows:
             return Response({'success': True})
 
-        table_name = table_cls.gen_table_name(connection_id)
+        table_name = get_table_name(schema_table_name, connection_id)
+        seadb_api = SeaDBAPI()
 
         try:
             seadb_api.update_rows(project_uuid, table_name, update_rows)

@@ -8,6 +8,7 @@ from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
+from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data, get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
@@ -33,7 +34,6 @@ from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, \
     ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
-from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserTable
 from seahub.avatar.util import get_default_avatar_url
 
 logger = logging.getLogger(__name__)
@@ -384,13 +384,6 @@ def delete_project(project):
     except Exception as e:
         logger.error('delete project: %s error: %s', str(project_uuid), e)
 
-def get_current_table_metadata(tables, table_name):
-    for table in tables:
-        if table['name'] == table_name:
-            return table
-    return None
-
-
 def url_to_filename(url):
     """
     Convert URL to valid filename
@@ -608,12 +601,12 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
     merged = []
     seen_names = set()
     for connection_id in connection_ids:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = get_table_name('GithubIssuesTable', connection_id)
         table_meta = get_current_table_metadata(tables, table_name)
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != column_name:
+            if column.get('name') != get_column_name('GithubIssuesTable', 'issue_type'):
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -640,7 +633,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        GithubIssuesTable.issue_type.name,
+        get_column_name('GithubIssuesTable', 'issue_type'),
         'type_id',
     )
 

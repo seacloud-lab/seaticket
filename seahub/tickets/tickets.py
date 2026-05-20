@@ -22,6 +22,7 @@ from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.models import ProjectConnections
 from seahub.tickets.models import TicketViews
+from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
@@ -31,7 +32,6 @@ from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKE
     GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, ConnectionType
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
-from seahub.seadb_models.models import TicketCommentsTable, TicketsTable, DiscourseTopicsTable, GithubIssuesTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
@@ -66,7 +66,7 @@ TICKET_EVENT_IGNORED_FIELDS = frozenset({
 
 
 def _format_ticket_event_value(field_name, field_value, tag_id_to_name=None):
-    if field_name == TicketsTable.tags.name and isinstance(field_value, list):
+    if field_name == get_column_name('TicketsTable', 'tags') and isinstance(field_value, list):
         return [
             tag_id_to_name.get(str(tag_id), tag_id)
             for tag_id in field_value
@@ -83,9 +83,9 @@ def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=No
 
     has_tag_changes = False
     tag_ids = []
-    if TicketsTable.tags.name in new_row:
-        old_tags = old_row.get(TicketsTable.tags.name) or []
-        new_tags = new_row.get(TicketsTable.tags.name) or []
+    if get_column_name('TicketsTable', 'tags') in new_row:
+        old_tags = old_row.get(get_column_name('TicketsTable', 'tags')) or []
+        new_tags = new_row.get(get_column_name('TicketsTable', 'tags')) or []
         if old_tags != new_tags:
             has_tag_changes = True
             tag_ids = old_tags + new_tags
@@ -333,25 +333,25 @@ class TicketsAPIView(APIView):
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
 
             row = {
-                TicketsTable.title.name: title,
-                TicketsTable.content.name: content,
-                TicketsTable.state.name: ticket_state,
-                TicketsTable.type.name: type_name,
-                TicketsTable.substate.name: default_substate,
-                TicketsTable.priority.name: priority,
-                TicketsTable.assignees.name: assignees,
-                TicketsTable.participants.name: [username],
-                TicketsTable.tags.name: [int(tag_id) for tag_id in tag_ids],
-                TicketsTable.creator.name: username,
-                TicketsTable.comment_count.name: 0,
-                TicketsTable.created_time.name: now_datetime,
-                TicketsTable.modified_time.name: now_datetime,
-                TicketsTable.deleted.name: False,
-                TicketsTable.due_date.name: due_date,
+                get_column_name('TicketsTable', 'title'): title,
+                get_column_name('TicketsTable', 'content'): content,
+                get_column_name('TicketsTable', 'state'): ticket_state,
+                get_column_name('TicketsTable', 'type'): type_name,
+                get_column_name('TicketsTable', 'substate'): default_substate,
+                get_column_name('TicketsTable', 'priority'): priority,
+                get_column_name('TicketsTable', 'assignees'): assignees,
+                get_column_name('TicketsTable', 'participants'): [username],
+                get_column_name('TicketsTable', 'tags'): [int(tag_id) for tag_id in tag_ids],
+                get_column_name('TicketsTable', 'creator'): username,
+                get_column_name('TicketsTable', 'comment_count'): 0,
+                get_column_name('TicketsTable', 'created_time'): now_datetime,
+                get_column_name('TicketsTable', 'modified_time'): now_datetime,
+                get_column_name('TicketsTable', 'deleted'): False,
+                get_column_name('TicketsTable', 'due_date'): due_date,
             }
             if linked_connection_records is not None:
                 # keep stored value as list[str]
-                row[TicketsTable.linked_connection_records.name] = list(set(linked_connection_records or []))
+                row[get_column_name('TicketsTable', 'linked_connection_records')] = list(set(linked_connection_records or []))
 
             res = seadb_api.insert_rows(project_uuid, TABLE_TICKETS, [row])
             pks = res.get('pks', [])
@@ -369,10 +369,10 @@ class TicketsAPIView(APIView):
                         seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
                             'pk': int(ticket_pk),
                             'row': {
-                                TicketsTable.content.name: updated_content,
+                                get_column_name('TicketsTable', 'content'): updated_content,
                             }
                         }])
-                        row[TicketsTable.content.name] = updated_content
+                        row[get_column_name('TicketsTable', 'content')] = updated_content
                 except Exception as e:
                     logger.error(e)
                     try:
@@ -385,7 +385,7 @@ class TicketsAPIView(APIView):
             # sync reverse link to discourse topics and portal issues
             if linked_connection_records:
                 ticket_link_diff = {
-                    int(ticket_pk): (set(row.get(TicketsTable.linked_connection_records.name) or []), set())
+                    int(ticket_pk): (set(row.get(get_column_name('TicketsTable', 'linked_connection_records')) or []), set())
                 }
                 try:
                     sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
@@ -483,7 +483,7 @@ class TicketsAPIView(APIView):
 
         old_lcr_by_ticket_id = {}
         for r in results:
-            old_lcr_by_ticket_id[int(r.get('_pk'))] = r.get(TicketsTable.linked_connection_records.name) or []
+            old_lcr_by_ticket_id[int(r.get('_pk'))] = r.get(get_column_name('TicketsTable', 'linked_connection_records')) or []
 
         ticket_link_diff = {}
         update_rows = []
@@ -498,23 +498,23 @@ class TicketsAPIView(APIView):
                 continue
             if 'state' in row_data:
                 ticket_state_name = row_data.get('state').lower()
-                updated_row[TicketsTable.state.name] = ticket_state_name
+                updated_row[get_column_name('TicketsTable', 'state')] = ticket_state_name
                 if ticket_state_name == 'closed':
                     event_type = DataEventType.TICKET_CLOSED.value
-                    updated_row[TicketsTable.closed_time.name] = now_datetime
+                    updated_row[get_column_name('TicketsTable', 'closed_time')] = now_datetime
                 elif ticket_state_name == 'open':
                     event_type = DataEventType.TICKET_REOPENED.value
-                    updated_row[TicketsTable.closed_time.name] = ''
+                    updated_row[get_column_name('TicketsTable', 'closed_time')] = ''
             if 'substate' in row_data:
-                updated_row[TicketsTable.substate.name] = row_data.get('substate')
+                updated_row[get_column_name('TicketsTable', 'substate')] = row_data.get('substate')
             if 'tags' in row_data:
                 tags_value = row_data.get('tags')
                 if tags_value is None:
-                    updated_row[TicketsTable.tags.name] = []
+                    updated_row[get_column_name('TicketsTable', 'tags')] = []
                 else:
-                    updated_row[TicketsTable.tags.name] = [int(tag_id) for tag_id in tags_value]
+                    updated_row[get_column_name('TicketsTable', 'tags')] = [int(tag_id) for tag_id in tags_value]
             if 'type' in row_data:
-                updated_row[TicketsTable.type.name] = row_data.get('type')
+                updated_row[get_column_name('TicketsTable', 'type')] = row_data.get('type')
             if 'content' in row_data:
                 content_dict = row_data.get('content')
                 if not isinstance(content_dict, dict):
@@ -531,11 +531,11 @@ class TicketsAPIView(APIView):
                 link_urls = content_dict.get('links')
                 if link_urls and isinstance(link_urls, list):
                     file_urls = (file_urls or []) + link_urls
-                updated_row[TicketsTable.content.name] = content
+                updated_row[get_column_name('TicketsTable', 'content')] = content
             if 'linked_connection_records' in row_data:
                 new_lcr = row_data.get('linked_connection_records', [])
                 if new_lcr in (None, ''):
-                    updated_row[TicketsTable.linked_connection_records.name] = []
+                    updated_row[get_column_name('TicketsTable', 'linked_connection_records')] = []
                 elif isinstance(new_lcr, list):
                     if any((not isinstance(x, str)) for x in new_lcr):
                         error_msg = 'linked_connection_records invalid.'
@@ -544,7 +544,7 @@ class TicketsAPIView(APIView):
                         validate_linked_connection_records(new_lcr)
                     except TicketLinkValidationError as e:
                         return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                    updated_row[TicketsTable.linked_connection_records.name] = list(set(new_lcr))
+                    updated_row[get_column_name('TicketsTable', 'linked_connection_records')] = list(set(new_lcr))
                 else:
                     error_msg = 'linked_connection_records invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -552,7 +552,7 @@ class TicketsAPIView(APIView):
                 ticket_pk = int(row.get('_pk'))
                 old_lcr = old_lcr_by_ticket_id.get(ticket_pk) or []
                 old_set = set(old_lcr)
-                new_set = set(updated_row.get(TicketsTable.linked_connection_records.name) or [])
+                new_set = set(updated_row.get(get_column_name('TicketsTable', 'linked_connection_records')) or [])
                 added_items = list(new_set - old_set)
                 removed_items = list(old_set - new_set)
                 ticket_link_diff[ticket_pk] = (added_items, removed_items)
@@ -561,7 +561,7 @@ class TicketsAPIView(APIView):
                     continue
                 updated_row[key] = value
 
-            updated_row[TicketsTable.modified_time.name] = now_datetime
+            updated_row[get_column_name('TicketsTable', 'modified_time')] = now_datetime
             update_rows.append(
                 {
                     'pk': row.get('_pk'),
@@ -795,7 +795,7 @@ class TicketAPIView(APIView):
 
             convert_select_field_names_to_option_ids(metadata, ticket)
 
-            linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+            linked_connection_records = ticket.get(get_column_name('TicketsTable', 'linked_connection_records')) or []
 
             linked_records_info = build_linked_records_info_for_keys(seadb_api, project_uuid, linked_connection_records)
 
@@ -901,8 +901,8 @@ class TicketAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
-        is_update_participants = TicketsTable.participants.name in request.data
-        participants = request.data.get(TicketsTable.participants.name) or '[]'
+        is_update_participants = get_column_name('TicketsTable', 'participants') in request.data
+        participants = request.data.get(get_column_name('TicketsTable', 'participants')) or '[]'
         if is_update_participants and participants is not None:
             try:
                 participants = json.loads(participants)
@@ -960,7 +960,7 @@ class TicketAPIView(APIView):
 
             # handle diff
             new_linked_connection_records = list(set([x for x in new_linked_connection_records if x]))
-            old_linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+            old_linked_connection_records = ticket.get(get_column_name('TicketsTable', 'linked_connection_records')) or []
             if not isinstance(old_linked_connection_records, list):
                 old_linked_connection_records = []
             added_linked_records = set(new_linked_connection_records) - set(old_linked_connection_records)
@@ -993,37 +993,37 @@ class TicketAPIView(APIView):
             update_row = {}
             event_type = DataEventType.TICKET_UPDATED.value
             if title:
-                update_row[TicketsTable.title.name] = title
+                update_row[get_column_name('TicketsTable', 'title')] = title
             if content:
-                update_row[TicketsTable.content.name] = content
+                update_row[get_column_name('TicketsTable', 'content')] = content
             if is_update_type:
-                update_row[TicketsTable.type.name] = type_name
+                update_row[get_column_name('TicketsTable', 'type')] = type_name
             if is_update_substate:
-                update_row[TicketsTable.substate.name] = substate_option_name
+                update_row[get_column_name('TicketsTable', 'substate')] = substate_option_name
             if is_update_tags:
-                update_row[TicketsTable.tags.name] = tags
+                update_row[get_column_name('TicketsTable', 'tags')] = tags
             if is_update_priority:
-                update_row[TicketsTable.priority.name] = priority
+                update_row[get_column_name('TicketsTable', 'priority')] = priority
             if is_update_assignees:
-                update_row[TicketsTable.assignees.name] = assignees
+                update_row[get_column_name('TicketsTable', 'assignees')] = assignees
             if is_update_due_date:
-                update_row[TicketsTable.due_date.name] = due_date or ''
+                update_row[get_column_name('TicketsTable', 'due_date')] = due_date or ''
             if is_update_linked_connection_records:
-                update_row[TicketsTable.linked_connection_records.name] = new_linked_connection_records
+                update_row[get_column_name('TicketsTable', 'linked_connection_records')] = new_linked_connection_records
             if not is_update_participants:
-                participants = ticket.get(TicketsTable.participants.name) or []
+                participants = ticket.get(get_column_name('TicketsTable', 'participants')) or []
                 if username not in participants:
                     participants.append(username)
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if ticket_state_name or ticket_state_name == '':
                 ticket_state_name = ticket_state_name.lower()
-                update_row[TicketsTable.state.name] = ticket_state_name
+                update_row[get_column_name('TicketsTable', 'state')] = ticket_state_name
                 if ticket_state_name == 'closed':
                     event_type = DataEventType.TICKET_CLOSED.value
-                    update_row[TicketsTable.closed_time.name] = now_datetime
+                    update_row[get_column_name('TicketsTable', 'closed_time')] = now_datetime
                 elif ticket_state_name == 'open':
                     event_type = DataEventType.TICKET_REOPENED.value
-                    update_row[TicketsTable.closed_time.name] = ''
+                    update_row[get_column_name('TicketsTable', 'closed_time')] = ''
 
             old_state = (ticket.get(TicketsTable.state.name) or '').lower()
             new_state = update_row.get(TicketsTable.state.name) or old_state
@@ -1068,8 +1068,8 @@ class TicketAPIView(APIView):
                         logger.exception(e)
                         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-            update_row[TicketsTable.participants.name] = participants
-            update_row[TicketsTable.modified_time.name] = now_datetime
+            update_row[get_column_name('TicketsTable', 'participants')] = participants
+            update_row[get_column_name('TicketsTable', 'modified_time')] = now_datetime
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),
@@ -1095,39 +1095,39 @@ class TicketAPIView(APIView):
                 for activity in new_activities:
                     field_name = activity.get('field_name')
                     if field_name == 'state_substate':
-                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
-                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
-                        state_key = (state_column or {}).get('key') or TicketsTable.state.name
-                        substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
+                        state_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'state'))
+                        substate_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'substate'))
+                        state_key = (state_column or {}).get('key') or get_column_name('TicketsTable', 'state')
+                        substate_key = (substate_column or {}).get('key') or get_column_name('TicketsTable', 'substate')
                         old_value = activity.get('old_value') or {}
                         new_value = activity.get('new_value') or {}
                         if isinstance(old_value, dict):
                             activity['old_value'] = {
                                 state_key: get_option_id_by_name(
-                                    metadata, TicketsTable.state.name, old_value.get('state'),
+                                    metadata, get_column_name('TicketsTable', 'state'), old_value.get('state'),
                                     case_insensitive=True
                                 ),
                                 substate_key: get_option_id_by_name(
-                                    metadata, TicketsTable.substate.name, old_value.get('substate')
+                                    metadata, get_column_name('TicketsTable', 'substate'), old_value.get('substate')
                                 )
                             }
                         if isinstance(new_value, dict):
                             activity['new_value'] = {
                                 state_key: get_option_id_by_name(
-                                    metadata, TicketsTable.state.name, new_value.get('state'),
+                                    metadata, get_column_name('TicketsTable', 'state'), new_value.get('state'),
                                     case_insensitive=True
                                 ),
                                 substate_key: get_option_id_by_name(
-                                    metadata, TicketsTable.substate.name, new_value.get('substate')
+                                    metadata, get_column_name('TicketsTable', 'substate'), new_value.get('substate')
                                 )
                             }
                     elif field_name in (
-                        TicketsTable.state.name,
-                        TicketsTable.substate.name,
-                        TicketsTable.type.name,
+                        get_column_name('TicketsTable', 'state'),
+                        get_column_name('TicketsTable', 'substate'),
+                        get_column_name('TicketsTable', 'type'),
                     ):
                         # keep storage as option name; only return ids for frontend consistency
-                        case_insensitive = field_name == TicketsTable.state.name
+                        case_insensitive = field_name == get_column_name('TicketsTable', 'state')
                         activity['old_value'] = get_option_id_by_name(
                             metadata, field_name, activity.get('old_value'),
                             case_insensitive=case_insensitive
@@ -1137,8 +1137,8 @@ class TicketAPIView(APIView):
                             case_insensitive=case_insensitive
                         )
                     if field_name == 'state_substate':
-                        state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
-                        substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                        state_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'state'))
+                        substate_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'substate'))
                         state_key = (state_column or {}).get('key')
                         substate_key = (substate_column or {}).get('key')
                         if state_key and substate_key:
@@ -1413,13 +1413,13 @@ class TicketCommentsAPIView(APIView):
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
-                TicketCommentsTable.ticket_id.name: ticket.get('_pk'),
-                TicketCommentsTable.creator.name: username,
-                TicketCommentsTable.content.name: content,
-                TicketCommentsTable.created_time.name: now_datetime,
-                TicketCommentsTable.modified_time.name: now_datetime,
-                TicketCommentsTable.deleted.name: False,
-                TicketCommentsTable.via_agent.name: False,
+                get_column_name('TicketCommentsTable', 'ticket_id'): ticket.get('_pk'),
+                get_column_name('TicketCommentsTable', 'creator'): username,
+                get_column_name('TicketCommentsTable', 'content'): content,
+                get_column_name('TicketCommentsTable', 'created_time'): now_datetime,
+                get_column_name('TicketCommentsTable', 'modified_time'): now_datetime,
+                get_column_name('TicketCommentsTable', 'deleted'): False,
+                get_column_name('TicketCommentsTable', 'via_agent'): False,
             }
             res = seadb_api.insert_rows(project_uuid, 'ticket_comments', [row])
             pks = res.get('pks', [])
@@ -1751,51 +1751,51 @@ class TicketActivitiesAPIView(APIView):
                 thread_id = detail.get('thread_id')
                 thread_title = detail.get('thread_title', '')
             elif field_name == 'state_substate':
-                state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
-                substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
-                state_key = (state_column or {}).get('key') or TicketsTable.state.name
-                substate_key = (substate_column or {}).get('key') or TicketsTable.substate.name
+                state_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'state'))
+                substate_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'substate'))
+                state_key = (state_column or {}).get('key') or get_column_name('TicketsTable', 'state')
+                substate_key = (substate_column or {}).get('key') or get_column_name('TicketsTable', 'substate')
                 if isinstance(old_value, dict):
                     old_value = {
                         state_key: get_option_id_by_name(
-                            metadata, TicketsTable.state.name, old_value.get('state'),
+                            metadata, get_column_name('TicketsTable', 'state'), old_value.get('state'),
                             case_insensitive=True
                         ),
                         substate_key: get_option_id_by_name(
-                            metadata, TicketsTable.substate.name, old_value.get('substate')
+                            metadata, get_column_name('TicketsTable', 'substate'), old_value.get('substate')
                         )
                     }
                 if isinstance(new_value, dict):
                     new_value = {
                         state_key: get_option_id_by_name(
-                            metadata, TicketsTable.state.name, new_value.get('state'),
+                            metadata, get_column_name('TicketsTable', 'state'), new_value.get('state'),
                             case_insensitive=True
                         ),
                         substate_key: get_option_id_by_name(
-                            metadata, TicketsTable.substate.name, new_value.get('substate')
+                            metadata, get_column_name('TicketsTable', 'substate'), new_value.get('substate')
                         )
                     }
-            elif field_name in (TicketsTable.state.name, TicketsTable.substate.name, TicketsTable.type.name):
-                case_insensitive = field_name == TicketsTable.state.name
+            elif field_name in (get_column_name('TicketsTable', 'state'), get_column_name('TicketsTable', 'substate'), get_column_name('TicketsTable', 'type')):
+                case_insensitive = field_name == get_column_name('TicketsTable', 'state')
                 old_value = get_option_id_by_name(metadata, field_name, old_value, case_insensitive=case_insensitive)
                 new_value = get_option_id_by_name(metadata, field_name, new_value, case_insensitive=case_insensitive)
-            elif field_name == TicketsTable.tags.name:
+            elif field_name == get_column_name('TicketsTable', 'tags'):
                 if isinstance(old_value, list):
                     old_value = [
-                        get_option_id_by_name(metadata, TicketsTable.tags.name, v)
+                        get_option_id_by_name(metadata, get_column_name('TicketsTable', 'tags'), v)
                         for v in old_value
                     ]
                 if isinstance(new_value, list):
                     new_value = [
-                        get_option_id_by_name(metadata, TicketsTable.tags.name, v)
+                        get_option_id_by_name(metadata, get_column_name('TicketsTable', 'tags'), v)
                         for v in new_value
                     ]
             if activity_type not in GITHUB_ISSUE_ACTIVITY_TYPES and \
                     activity_type not in DISCOURSE_TOPIC_ACTIVITY_TYPES and \
                     activity_type not in EMAIL_ACTIVITY_TYPES:
                 if field_name == 'state_substate':
-                    state_column = get_column_from_columns_by_name(metadata, TicketsTable.state.name)
-                    substate_column = get_column_from_columns_by_name(metadata, TicketsTable.substate.name)
+                    state_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'state'))
+                    substate_column = get_column_from_columns_by_name(metadata, get_column_name('TicketsTable', 'substate'))
                     state_key = (state_column or {}).get('key')
                     substate_key = (substate_column or {}).get('key')
                     if state_key and substate_key:
@@ -1923,9 +1923,9 @@ class TicketMetadataAPIView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             ticket_column_name_to_return_name = {
-                TicketsTable.substate.name: 'substates',
-                TicketsTable.type.name: 'types',
-                TicketsTable.state.name: 'states'
+                get_column_name('TicketsTable', 'substate'): 'substates',
+                get_column_name('TicketsTable', 'type'): 'types',
+                get_column_name('TicketsTable', 'state'): 'states'
             }
             select_option_metadata = {}
             for column in ticket_meta.get('columns'):
@@ -2013,8 +2013,8 @@ class TicketTrashAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for ticket_id in ticket_ids:
             updated_row = {
-                TicketsTable.modified_time.name: now_datetime,
-                TicketsTable.deleted.name: False,
+                get_column_name('TicketsTable', 'modified_time'): now_datetime,
+                get_column_name('TicketsTable', 'deleted'): False,
             }
             update_rows.append(
                 {

@@ -148,7 +148,8 @@ class TestProjectConnectionsView:
         )
         request.user = project_creator
 
-        resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
+        with patch('seahub.project.connections.ProjectConnections.objects.enable_create', return_value=False):
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 500
 
@@ -165,8 +166,8 @@ class TestProjectConnectionsView:
 
         with patch('seahub.project.connections.ProjectConnections.objects.create', return_value=record), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.seadb_models.utils.init_site_seadb_table'), \
-                patch('seahub.utils.indexer.add_connection_sync_task') as add_task_mock:
+                patch('seahub.project.connections.init_seadb_tables_from_schema'), \
+                patch('seahub.project.connections.add_connection_sync_task') as add_task_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 201
@@ -873,7 +874,8 @@ class TestProjectConnectionRecordUpdate:
 
         seadb = Mock()
 
-        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
+            patch('seahub.project.connections.get_table_name', return_value=f"site_{site_connection.id}"):
             resp = ProjectConnectionRecordsView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id))
 
         assert resp.status_code == 200

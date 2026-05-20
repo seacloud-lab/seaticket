@@ -23,13 +23,13 @@ from seahub.utils.indexer import vector_search
 from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSourceType, AIScenario
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable, GeneralTaskTable
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 from seahub.settings import SITE_ROOT
 from django.http import HttpRequest
 
 
+from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
@@ -521,13 +521,13 @@ class RelatedRecordsView(APIView):
             current_category = ConnectionCategory.from_type(connection.type)
             if current_category == ConnectionCategory.ISSUE:
                 if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                    table_name = GithubIssuesTable.gen_table_name(connection_id)
+                    table_name = get_table_name('GithubIssuesTable', connection_id)
                 elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
-                    table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+                    table_name = get_table_name('DiscourseTopicsTable', connection_id)
                 elif connection.type == ConnectionType.EMAIL.value:
-                    table_name = ThreadTable.gen_table_name(connection_id)
+                    table_name = get_table_name('ThreadTable', connection_id)
                 elif connection.type == ConnectionType.GENERAL_TASK.value:
-                    table_name = GeneralTaskTable.gen_table_name(connection_id)
+                    table_name = get_table_name('GeneralTaskTable', connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'

@@ -8,3 +8,5 @@ class BaseConfig(AppConfig):
 
     def ready(self):
         super(BaseConfig, self).ready()
+        from seahub.seadb_models.schema_loader import preload_seadb_table_schemas
+        preload_seadb_table_schemas()

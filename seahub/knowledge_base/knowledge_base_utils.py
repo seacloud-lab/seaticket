@@ -3,15 +3,15 @@ import json
 from datetime import datetime
 from django.utils import timezone
 from seahub.profile.models import Profile
-from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq
 from seahub.utils import uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
+from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
 logger = logging.getLogger(__name__)
 
-TABLE_KNOWLEDGE_BASE = KnowledgeBaseTable.gen_table_name()
+TABLE_KNOWLEDGE_BASE = get_table_name('KnowledgeBaseTable', )
 
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
