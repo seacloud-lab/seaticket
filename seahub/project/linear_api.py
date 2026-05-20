@@ -43,11 +43,6 @@ class LinearAPI:
 
 
     def refresh_oauth_token(self, linear_oauth):
-        if not linear_oauth or not linear_oauth.refresh_token:
-            return None, 'refresh_token_missing'
-        if not LINEAR_CLIENT_ID or not LINEAR_CLIENT_SECRET:
-            return None, 'client_config_missing'
-
         payload = {
             'grant_type': 'refresh_token',
             'refresh_token': linear_oauth.refresh_token,

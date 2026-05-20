@@ -324,7 +324,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
             {isLinear && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
-                <div className="sea-qa-project-linear-oauth">
+                <div className="seaqa-project-linear-oauth">
                   <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
                     {isLinearOauthConnected ? gettext('Connected') : gettext('Not connected')}
                   </span>

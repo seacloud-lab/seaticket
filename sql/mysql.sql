@@ -775,3 +775,12 @@ CREATE TABLE `additional_credits_stripe_sessions` (
   UNIQUE KEY `stripe_session_id` (`stripe_session_id`),
   KEY `org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `project_linear_oauth` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(36) DEFAULT NULL,
+  `access_token` varchar(255) DEFAULT NULL,
+  `expires_in` datetime DEFAULT NULL,
+  `refresh_token` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

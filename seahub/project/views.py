@@ -232,10 +232,7 @@ def linear_oauth_callback(request):
         logger.error('Linear OAuth token missing access_token: %s', token_json)
         return render_error(request, _('Failed to authorize Linear.'))
 
-    if expires_in:
-        expires_in = timezone.now() + datetime.timedelta(seconds=int(expires_in))
-    else:
-        expires_in = timezone.now() + datetime.timedelta(days=3650)
+    expires_in = timezone.now() + datetime.timedelta(seconds=int(expires_in))
 
     ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_in, refresh_token, username)
 

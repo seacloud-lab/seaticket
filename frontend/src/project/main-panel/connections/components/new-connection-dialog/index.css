@@ -119,13 +119,13 @@
   line-height: 22px;
 }
 
-.sea-qa-project-linear-oauth {
+.seaqa-project-linear-oauth {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 }
 
-.sea-qa-project-linear-oauth .linear-oauth-status {
+.seaqa-project-linear-oauth .linear-oauth-status {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
@@ -135,7 +135,7 @@
   color: #666;
 }
 
-.sea-qa-project-linear-oauth .linear-oauth-status.connected {
+.seaqa-project-linear-oauth .linear-oauth-status.connected {
   border-color: #1eae5a;
   color: #1eae5a;
 }

@@ -431,71 +431,22 @@ def init_linear_seadb_table(seadb_api, project_uuid, connection_id):
 
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.issue_id.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.state.name
-        ],
-    )
-
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.labels.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.title.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.author.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.created_time.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.closed_time.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issues_table.deleted.name
-        ],
-    )
-
+    # add columns index
+    issue_index_columns = [
+        linear_issues_table.issue_id.name,
+        linear_issues_table.state.name,
+        linear_issues_table.labels.name,
+        linear_issues_table.title.name,
+        linear_issues_table.author.name,
+        linear_issues_table.created_time.name,
+        linear_issues_table.closed_time.name,
+        linear_issues_table.deleted.name,
+        linear_issues_table.linked_ticket.name,
+        linear_issues_table.ai_processed_time.name,
+        linear_issues_table.record_modified_time.name,
+    ]
+    for column_name in issue_index_columns:
+        seadb_api.create_column_index(project_uuid, table_id, [column_name])
 
     comments_table_name = linear_issue_comments_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, comments_table_name)
@@ -509,21 +460,12 @@ def init_linear_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issue_comments_table.issue_id.name
-        ],
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            linear_issue_comments_table.comment_id.name
-        ],
-    )
+    issue_comment_index_columns = [
+        linear_issue_comments_table.issue_id.name,
+        linear_issue_comments_table.comment_id.name
+    ]
+    for column_name in issue_comment_index_columns:
+        seadb_api.create_column_index(project_uuid, table_id, [column_name])
 
 
 def init_knowledge_base_seadb_table(seadb_api, project_uuid):
