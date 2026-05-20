@@ -11,6 +11,15 @@ import './index.css';
 
 const OPTION_HEIGHT = 32;
 
+const getComparableValue = (value) => {
+  if (!value || typeof value !== 'object') return value;
+  if (value.column && value.column.key !== undefined) return `column:${value.column.key}`;
+  if (value.sortType !== undefined) return `sortType:${value.sortType}`;
+  if (value.id !== undefined) return `id:${value.id}`;
+  if (value.key !== undefined) return `key:${value.key}`;
+  return value;
+};
+
 class OptionGroup extends Component {
 
   constructor(props) {
@@ -142,7 +151,7 @@ class OptionGroup extends Component {
   };
 
   renderOptGroup = (searchVal) => {
-    let { noOptionsPlaceholder, onChange } = this.props;
+    let { noOptionsPlaceholder, onChange, value } = this.props;
     this.filterOptions = this.props.getFilterOptions(searchVal);
     if (this.filterOptions.length === 0) {
       return (<Tip searchValue={searchVal} tip={noOptionsPlaceholder} />);
@@ -150,11 +159,17 @@ class OptionGroup extends Component {
     return this.filterOptions.map((opt, i) => {
       let key = opt.value.column ? opt.value.column.key : i;
       let isActive = this.state.activeIndex === i;
+      let isSelected = false;
+      if (value) {
+        const valueToCompare = value.value !== undefined ? value.value : value;
+        isSelected = getComparableValue(valueToCompare) === getComparableValue(opt.value);
+      }
       return (
         <Option
           key={`${key}-${i}`}
           index={i}
           isActive={isActive}
+          isSelected={isSelected}
           value={opt.value}
           onChange={onChange}
           changeIndex={this.changeIndex}

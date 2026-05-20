@@ -72,7 +72,7 @@ const HideColumnItem = ({
   return (
     <div
       ref={ref}
-      className={classNames('hide-column-item', {
+      className={classNames('hide-column-item border-radius-4 d-flex align-items-center position-relative w-100 px-2', {
         'disabled': readOnly,
         'hide-column-can-drop-top': isOver && draggingColumnIndex >= columnIndex,
         'hide-column-can-drop': isOver && draggingColumnIndex < columnIndex,
@@ -85,7 +85,7 @@ const HideColumnItem = ({
       onDragEnd={onDragEnd}
     >
       {!readOnly && canReorder && (
-        <div className="drag-hide-column-handle" draggable="true" onDragStart={onDragStart}>
+        <div className="drag-hide-column-handle border-radius-4 d-flex justify-content-center align-items-center" draggable="true" onDragStart={onDragStart}>
           <Icon symbol="drag" />
         </div>
       )}
@@ -93,6 +93,7 @@ const HideColumnItem = ({
         className="hide-column-item-switch"
         disabled={readOnly}
         checked={isHidden}
+        size='large'
         placeholder={(
           <>
             <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[column.type]} />

@@ -15,6 +15,7 @@
   -o-user-select: none;
   -ms-user-select: none;
   text-align: left;
+  font-size: 14px;
 }
 
 .seaqa-select.custom-select:focus,
@@ -102,9 +103,5 @@
 }
 
 .seaqa-customize-select .option-group .option-group-content {
-  padding:  0;
-}
-
-.seaqa-customize-select .option-group .option.active {
-  border-radius: 0;
+  padding: 8px;
 }

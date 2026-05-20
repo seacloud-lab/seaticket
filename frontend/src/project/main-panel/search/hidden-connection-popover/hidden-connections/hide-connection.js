@@ -11,7 +11,7 @@ const HideConnection = ({
 }) => {
   return (
     <div
-      className={classNames('hide-column-item', {
+      className={classNames('hide-column-item border-radius-4', {
         'disabled': readOnly,
       })}
     >

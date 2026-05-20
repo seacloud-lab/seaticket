@@ -2,6 +2,7 @@
   cursor: pointer;
 }
 
+/* small switch */
 .seaqa-switch.small .custom-switch-indicator {
   width: 22px;
   height: 12px;
@@ -14,10 +15,28 @@
   width: 8px;
 }
 
-.seaqa-switch.small .custom-switch-input:checked~.custom-switch-indicator:before {
+.seaqa-switch.large .custom-switch-input:checked~.custom-switch-indicator:before {
   left: 12px;
 }
 
+/* large switch */
+.seaqa-switch.large .custom-switch-indicator {
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.seaqa-switch.large .custom-switch-indicator:before {
+  height: 12px;
+  width: 12px;
+}
+
+.seaqa-switch.large .custom-switch-input:checked~.custom-switch-indicator:before {
+  left: 14px;
+}
+
+/* disabled switch */
 .seaqa-switch.disabled .custom-switch,
 .seaqa-switch .custom-switch-indicator.disabled {
   cursor: not-allowed;
