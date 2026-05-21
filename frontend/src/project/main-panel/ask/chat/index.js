@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import classnames from 'classnames';
 import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
-import { AttachmentObject, ChatMessage } from '../models';
+import { ChatMessage } from '../models';
 import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import ChatInput from '../chat-input';
 import ChatHistory from '../chat-history';
@@ -316,7 +316,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
         if (lastChatHistory) {
           lastChatHistory.message = {
             ...lastChatHistory.message,
-            [CHAT_MESSAGE_TYPE.ATTACHMENTS]: Array.isArray(attachments) ? attachments.map(att => new AttachmentObject(att)) : [],
+            [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
           };
           lastChatHistory._id = userMessageId;
           _chatHistories[_chatHistories.length - 1] = lastChatHistory;

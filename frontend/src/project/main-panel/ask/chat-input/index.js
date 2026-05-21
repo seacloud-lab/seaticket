@@ -174,7 +174,8 @@ const ChatInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    if (hasUploading) return;
+    const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
+    if (isUploadingAttachment) return;
     sendMessage({
       message: value,
       attachments: attachments,
@@ -331,8 +332,8 @@ const ChatInput = forwardRef(({
 
   const disabled = isReply || readOnly;
   const isSimple = width <= 673;
-  const hasUploading = false;
-  const sendDisabled = disabled || !value || hasUploading;
+  const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
+  const sendDisabled = disabled || !value || isUploadingAttachment;
 
   const domProps = canAddAttachments && !disabled ? {
     onDragStart,
@@ -402,7 +403,7 @@ const ChatInput = forwardRef(({
                   aria-label={gettext('Send')}
                 />
                 <Tooltip target={sendBtnRef} placement="top">
-                  {hasUploading ? gettext('Uploading images...') : gettext('Send')}
+                  {isUploadingAttachment ? gettext('Uploading...') : gettext('Send')}
                 </Tooltip>
               </>
             </div>

@@ -19,7 +19,6 @@ const UploadFile = forwardRef(({ fileType, onUpload }, ref) => {
         onUpload(file, base64);
         return;
       }).catch(error => {
-        console.log(error);
         toaster.warning(gettext('File upload failed'));
         inputRef.current.value = '';
       });

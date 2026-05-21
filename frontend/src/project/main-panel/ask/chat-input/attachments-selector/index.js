@@ -7,9 +7,9 @@ import {
 import { gettext } from '@/constants';
 import { searchAPI } from '@/project/api';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
+import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT } from '../../constants';
 
 import './index.css';
-import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT } from '../../constants';
 
 const AttachmentsSelector = ({
   projectUuid,
@@ -97,9 +97,7 @@ const AttachmentsSelector = ({
         />
       )}
     </>
-
   );
-
 };
 
 export default AttachmentsSelector;

@@ -2,7 +2,7 @@ import React, { useContext, useState, useCallback } from 'react';
 
 const AIChatToolsContext = React.createContext(null);
 
-export const AIChatToolsProvider = ({ projectUuid, children }) => {
+export const AIChatToolsProvider = ({ children }) => {
   const [attachments, updateAttachments] = useState([]);
 
   const removeAttachment = useCallback((attachment, index) => {

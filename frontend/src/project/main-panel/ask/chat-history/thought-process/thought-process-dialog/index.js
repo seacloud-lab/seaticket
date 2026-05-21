@@ -59,18 +59,15 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
     };
   }
 
-  const attachmentChildren = [messageNode];
-  if (attachments.length > 0) {
-    attachmentChildren.push({
-      name: gettext('Attachments'),
-      value: attachments,
-      formatter: () => (<Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
-    });
-  }
-
   let userMessage = {
     name,
-    children: attachmentChildren,
+    children: [
+      messageNode, {
+        name: gettext('Attachments'),
+        value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
+        formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+      },
+    ],
   };
   if (raw) {
     userMessage.rawChildren = [

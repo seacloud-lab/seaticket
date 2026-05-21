@@ -312,7 +312,6 @@ const Issue = ({
         setIsSubmitting(false);
       }, 1);
     }).catch(error => {
-      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
