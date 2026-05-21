@@ -1,15 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IconTooltip, Icon, CenteredLoading, IconButton } from '@/components';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { AttachmentObject } from '../../../models';
 import { CHAT_ATTACHMENT_TYPE } from '../../../constants';
 
 import './index.css';
 
-const Attachment = ({ value, index, isShowBigImage, onRemove, onReupload, openAttachment }) => {
+const Attachment = ({ attachment, index, isShowBigImage, onRemove, onReupload, openAttachment }) => {
   const [imageStyle, setImageStyle] = useState({ height: 64, width: 64 });
-  const attachment = useMemo(() => new AttachmentObject({ ...value }), [value]);
 
   const imageRef = useRef(null);
 

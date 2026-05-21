@@ -5,12 +5,13 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 import { hasOwnProperty } from '@/utils/object-utils';
 import { CHAT_ATTACHMENT_TYPE } from '../../constants';
 import { ImagePreviewer } from '@/components';
+import { AttachmentObject } from '../../models';
 
 import './index.css';
 
 const Attachments = ({
   projectUuid,
-  attachments,
+  attachments: propsAttachments,
   className,
   innerRef,
   onRemove,
@@ -20,16 +21,19 @@ const Attachments = ({
   const [attachmentIndex, setAttachmentIndex] = useState(-1);
   const [imageAttachmentIndex, setImageAttachmentIndex] = useState(-1);
 
+  const attachments = useMemo(() => {
+    if (!Array.isArray(propsAttachments) || propsAttachments.length === 0) return [];
+    return propsAttachments.filter(Boolean).map(att => att instanceof AttachmentObject ? att : new AttachmentObject(att));
+  }, [propsAttachments]);
+
   const { imageAttachments, otherAttachments } = useMemo(() => {
     let imageAttachments = [];
     let otherAttachments = [];
-    Array.isArray(attachments) && attachments.forEach(attachment => {
-      if (attachment) {
-        if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
-          imageAttachments.push(attachment);
-        } else {
-          otherAttachments.push(attachment);
-        }
+    attachments.forEach(attachment => {
+      if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
+        imageAttachments.push(attachment);
+      } else {
+        otherAttachments.push(attachment);
       }
     });
     return { imageAttachments, otherAttachments };
@@ -56,7 +60,7 @@ const Attachments = ({
     setAttachmentIndex(nextAttachmentIndex);
   }, [attachmentIndex, otherAttachments]);
 
-  if (!Array.isArray(attachments) || attachments.length === 0) return null;
+  if (attachments.length === 0) return null;
 
   let activeAttachment = null;
   if (attachmentIndex > -1) {
@@ -76,9 +80,9 @@ const Attachments = ({
         {attachments.map((attachment, index) => {
           return (
             <Attachment
-              value={attachment}
+              attachment={attachment}
               index={index}
-              key={index}
+              key={attachment.key}
               isShowBigImage={attachments.length === 1 && imageAttachments.length === 1 && !onRemove}
               onRemove={onRemove}
               onReupload={onReupload}
