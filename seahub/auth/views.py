@@ -455,3 +455,37 @@ def password_reset_complete(request, template_name='registration/password_reset_
     return render(request, template_name, {
         'login_bg_image_path': login_bg_image_path,
     })
+
+
+@login_required
+@csrf_protect
+@never_cache
+def password_change(request, template_name='registration/password_change_form.html',
+        password_change_form=PasswordChangeForm, post_change_redirect=None,
+        extra_context=None):
+
+    if post_change_redirect is None:
+        post_change_redirect = reverse('auth_password_change_done')
+
+    if request.method == 'POST':
+        form = password_change_form(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            UserOptions.objects.unset_force_passwd_change(request.user.username)
+            request.session.pop('force_passwd_change', None)
+            return HttpResponseRedirect(post_change_redirect)
+    else:
+        form = password_change_form(request.user)
+
+    context = {
+        'form': form,
+        'strong_pwd_required': int(USER_STRONG_PASSWORD_REQUIRED),
+    }
+    if extra_context is not None:
+        context.update(extra_context)
+
+    return render(request, template_name, context)
+
+
+def password_change_done(request, template_name='registration/password_change_done.html'):
+    return render(request, template_name)
