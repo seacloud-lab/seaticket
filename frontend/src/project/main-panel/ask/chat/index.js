@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, canUploadImage = true, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddAttachments, canSelectModel, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -71,12 +71,11 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
       messageInputRef.current?.focusInput();
       return;
     }
-    const allAttachments = attachments || [];
     const newChatHistories = chatHistories.slice(0);
     newChatHistories.push(new ChatMessage({
       message: {
         [CHAT_MESSAGE_TYPE.TEXT]: validMessage,
-        [CHAT_MESSAGE_TYPE.ATTACHMENTS]: allAttachments,
+        [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
       },
       isUserSpeak: true,
     }));
@@ -85,7 +84,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, attachments: allAttachments, model, clearContext });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, attachments, model, clearContext });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -94,7 +93,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, attachments: allAttachments, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, attachments, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId, createSession]);
@@ -552,9 +551,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           readOnly={readOnly}
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
-          canAddDocuments={canAddDocuments}
+          canAddAttachments={canAddAttachments}
           canSelectModel={canSelectModel}
-          canUploadImage={canUploadImage}
           sendMessage={sendMessage}
           clearContext={clearContext}
           resetClearContext={resetClearContext}

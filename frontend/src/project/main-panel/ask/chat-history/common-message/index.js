@@ -5,8 +5,8 @@ import ThoughtProcess from '../thought-process';
 import { Attachments } from '../../components';
 import AIReply from '@/project/components/ai-reply';
 import MessageOperations from '../message-operations';
-import MessageImages from './message-images';
 import { useDocuments } from '../../hooks';
+import { AttachmentObject } from '../../models';
 
 import './index.css';
 
@@ -18,26 +18,22 @@ const CommonMessage = ({
 
   const { openDocument } = useDocuments();
 
+  const attachments = useMemo(() => {
+    const _attachments = message[CHAT_MESSAGE_TYPE.ATTACHMENTS];
+    if (!Array.isArray(_attachments) || _attachments.length === 0) return [];
+    return _attachments.map(attachment => {
+      if (attachment instanceof AttachmentObject) return attachment;
+      return new AttachmentObject(attachment);
+    });
+  }, [message]);
+
   const getAIReply = useCallback(() => {
     return markdownMessageRef.current.getAIReply();
   }, [markdownMessageRef.current]);
 
-  const { imageAttachments, otherAttachments } = useMemo(() => {
-    const all = message[CHAT_MESSAGE_TYPE.ATTACHMENTS];
-    if (!Array.isArray(all)) return { imageAttachments: [], otherAttachments: [] };
-    const images = [];
-    const others = [];
-    for (const a of all) {
-      if (a && a.type === 'image' && a.path) images.push(a);
-      else others.push(a);
-    }
-    return { imageAttachments: images, otherAttachments: others };
-  }, [message]);
-
   return (
     <>
-      <MessageImages images={imageAttachments} />
-      <Attachments attachments={otherAttachments} projectUuid={projectUuid} />
+      <Attachments attachments={attachments} projectUuid={projectUuid} />
       <div className="seaqa-ai-ask-message-content">
         <ThoughtProcess
           value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]}

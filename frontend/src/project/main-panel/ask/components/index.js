@@ -1,11 +1,10 @@
 import Thinking from './thinking';
 import Attachments from './attachments';
-import { Selector, SelectorDisplay, SyncSelector } from './selector';
+import { Selector, SelectorDisplay } from './selector';
 
 export {
   Thinking,
   Attachments,
   Selector,
   SelectorDisplay,
-  SyncSelector,
 };

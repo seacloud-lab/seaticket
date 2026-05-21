@@ -4,7 +4,7 @@ import { Attachments } from '../../components';
 
 import './index.css';
 
-const AttachmentsFormatter = ({ projectUuid, value = [], onRemove }) => {
+const AttachmentsFormatter = ({ projectUuid, value = [], onRemove, onReupload }) => {
   const validValue = Array.isArray(value) ? value.filter(Boolean) : [];
   const [scrollLeft, setScrollLeft] = useState(0);
 
@@ -61,6 +61,7 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove }) => {
           projectUuid={projectUuid}
           innerRef={attachmentsRef}
           onRemove={onRemove}
+          onReupload={onReupload}
         />
       </div>
       {(scrollLeft + (ref.current?.offsetWidth || 0)) < attachmentsRef.current?.offsetWidth && (

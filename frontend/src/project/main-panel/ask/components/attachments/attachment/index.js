@@ -1,14 +1,17 @@
-import React, { useCallback, useMemo } from 'react';
-import { IconTooltip, Icon } from '@/components';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IconTooltip, Icon, CenteredLoading, IconButton } from '@/components';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { AttachmentObject } from '../../../models';
+import { CHAT_ATTACHMENT_TYPE } from '../../../constants';
 
 import './index.css';
 
-const Attachment = ({ value, index, onRemove, openAttachment }) => {
-
+const Attachment = ({ value, index, isShowBigImage, onRemove, onReupload, openAttachment }) => {
+  const [imageStyle, setImageStyle] = useState({ height: 64, width: 64 });
   const attachment = useMemo(() => new AttachmentObject({ ...value }), [value]);
+
+  const imageRef = useRef(null);
 
   const handleRemove = useCallback((event) => {
     event.stopPropagation();
@@ -22,19 +25,87 @@ const Attachment = ({ value, index, onRemove, openAttachment }) => {
     openAttachment();
   }, [openAttachment]);
 
-  const { icon, title } = attachment;
+  useEffect(() => {
+    if (attachment.type !== CHAT_ATTACHMENT_TYPE.IMAGE || !isShowBigImage || !imageRef.current) return;
+    const getOriginalSize = () => {
+      const width = imageRef.current.naturalWidth;
+      const height = imageRef.current.naturalHeight;
+      if (width >= height) {
+        if (width >= 240) {
+          setImageStyle({ width: 240, height: height * (240 / width) });
+          return;
+        }
+        if (width <= 64) return;
+      } else {
+        if (height >= 240) {
+          setImageStyle({ height: 240, width: width * (240 / height) });
+          return;
+        }
+        if (height <= 64) return;
+      }
+      setImageStyle({ width, height });
+    };
+    if (imageRef.current.complete) {
+      getOriginalSize();
+      return;
+    }
+    imageRef.current.addEventListener('load', getOriginalSize);
+    return () => {
+      imageRef.current && imageRef.current.removeEventListener('load', getOriginalSize);
+    };
+  }, [isShowBigImage, attachment.type, attachment.path]);
+
+  if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
+    const { status, path, image } = attachment;
+    return (
+      <div
+        className={classnames('seaqa-ai-chat-attachment image', { 'seaqa-ai-chat-attachment-remove-able': onRemove, 'failed': status === 'failed' })}
+        onClick={status === 'done' ? onClick : () => {}}
+        style={isShowBigImage ? imageStyle : {}}
+      >
+        <img src={path} ref={imageRef} alt={gettext('Image')} className="seaqa-ai-chat-attachment-img" />
+        {onRemove && status !== 'uploading' && (
+          <IconTooltip
+            hoverBackground={false}
+            icon="close"
+            className="mr-0 seaqa-ai-chat-attachment-remove-btn"
+            tip={gettext('Remove')}
+            size={{ btn: 16, icon: 8 }}
+            onClick={handleRemove}
+            placement="top"
+          />
+        )}
+        {status === 'uploading' && (
+          <div className="seaqa-ai-chat-attachment-uploading">
+            <CenteredLoading />
+          </div>
+        )}
+        {status === 'failed' && (
+          <div className="seaqa-ai-chat-attachment-upload-failed">
+            {onReupload && image && (<IconButton size={16} icon="refresh" className="no-hover-bg" onClick={() => onReupload(attachment)} />)}
+            <span className="seaqa-ai-chat-attachment-upload-failed-tip">{gettext('Failed')}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const { icon, title, type_name } = attachment;
 
   return (
     <div className={classnames('seaqa-ai-chat-attachment', { 'seaqa-ai-chat-attachment-remove-able': onRemove })} onClick={onClick}>
-      <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon seaqa-project-ai-attachment-icon mr-2`} />
-      <span className="text-truncate flex-1" title={title} aria-label={title}>{title}</span>
+      <div className="seaqa-ai-chat-attachment-name text-truncate" title={title} aria-label={title}>{title}</div>
+      <div className="seaqa-ai-chat-attachment-type-info text-truncate" title={type_name}>
+        <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon seaqa-project-ai-attachment-icon mr-1`} />
+        <span>{type_name}</span>
+      </div>
       {onRemove && (
         <IconTooltip
-          hoverBackground={true}
+          hoverBackground={false}
           icon="close"
           className="mr-0 seaqa-ai-chat-attachment-remove-btn"
           tip={gettext('Remove')}
-          size={{ btn: 24, icon: 12 }}
+          size={{ btn: 16, icon: 8 }}
           onClick={handleRemove}
           placement="top"
         />

@@ -46,9 +46,8 @@ const Main = ({ title, settings }) => {
                 projectName={projectName}
                 settings={settings}
                 api={chatAPI}
-                canAddDocuments={false}
+                canAddAttachments={false}
                 canSelectModel={false}
-                canUploadImage={false}
                 customHeaderTitle={gettext('Chat')}
                 renderOperation={() => (
                   <div className="d-flex">

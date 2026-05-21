@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import Attachment from './attachment';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { CHAT_ATTACHMENT_TYPE } from '../../constants';
+import { ImagePreviewer } from '@/components';
 
 import './index.css';
 
@@ -12,30 +14,53 @@ const Attachments = ({
   className,
   innerRef,
   onRemove,
+  onReupload,
   ...props
 }) => {
   const [attachmentIndex, setAttachmentIndex] = useState(-1);
+  const [imageAttachmentIndex, setImageAttachmentIndex] = useState(-1);
 
-  const openAttachment = useCallback((attachmentIndex) => {
-    setAttachmentIndex(attachmentIndex);
-  }, []);
+  const { imageAttachments, otherAttachments } = useMemo(() => {
+    let imageAttachments = [];
+    let otherAttachments = [];
+    Array.isArray(attachments) && attachments.forEach(attachment => {
+      if (attachment) {
+        if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
+          imageAttachments.push(attachment);
+        } else {
+          otherAttachments.push(attachment);
+        }
+      }
+    });
+    return { imageAttachments, otherAttachments };
+  }, [attachments]);
+
+  const openAttachment = useCallback((attachment) => {
+    if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
+      const index = imageAttachments.findIndex(otherAttachment => otherAttachment.key === attachment.key);
+      setImageAttachmentIndex(index);
+      return;
+    }
+    const index = otherAttachments.findIndex(otherAttachment => otherAttachment.key === attachment.key);
+    setAttachmentIndex(index);
+  }, [imageAttachments, otherAttachments]);
 
   const switchResource = useCallback((step) => {
     let nextAttachmentIndex = attachmentIndex + step;
-    if (nextAttachmentIndex > attachments.length - 1) {
+    if (nextAttachmentIndex > otherAttachments.length - 1) {
       nextAttachmentIndex = 0;
     }
     if (nextAttachmentIndex < 0) {
-      nextAttachmentIndex = attachments.length - 1;
+      nextAttachmentIndex = otherAttachments.length - 1;
     }
     setAttachmentIndex(nextAttachmentIndex);
-  }, [attachmentIndex, attachments]);
+  }, [attachmentIndex, otherAttachments]);
 
   if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
   let activeAttachment = null;
   if (attachmentIndex > -1) {
-    activeAttachment = attachments[attachmentIndex];
+    activeAttachment = otherAttachments[attachmentIndex];
     if (!hasOwnProperty(activeAttachment, '_id')) {
       activeAttachment._id = activeAttachment.record_id;
     }
@@ -43,15 +68,21 @@ const Attachments = ({
 
   return (
     <>
-      <div className={classnames('seaqa-ai-chat-message-attachments', className)} ref={innerRef} { ...props }>
+      <div
+        className={classnames('seaqa-ai-chat-message-attachments', className)}
+        ref={innerRef}
+        { ...props }
+      >
         {attachments.map((attachment, index) => {
           return (
             <Attachment
               value={attachment}
               index={index}
               key={index}
+              isShowBigImage={attachments.length === 1 && imageAttachments.length === 1 && !onRemove}
               onRemove={onRemove}
-              openAttachment={() => openAttachment(index)}
+              onReupload={onReupload}
+              openAttachment={() => openAttachment(attachment)}
             />
           );
         })}
@@ -63,6 +94,16 @@ const Attachments = ({
           isShowIcon={true}
           switchResource={attachments.length > 1 ? switchResource : null}
           onToggle={() => setAttachmentIndex(-1)}
+        />
+      )}
+      {imageAttachmentIndex > -1 && (
+        <ImagePreviewer
+          index={imageAttachmentIndex}
+          images={imageAttachments.map(item => item.path)}
+          onToggle={(event) => {
+            event.preventDefault();
+            setImageAttachmentIndex(-1);
+          }}
         />
       )}
     </>

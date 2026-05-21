@@ -63,6 +63,7 @@ import PathRedirection from './path-redirection';
 import CustomizeLabel from './customize-label';
 import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
 import CopyInput from './copy-input';
+import ImagePreviewer from './image-previewer';
 
 export {
   FixedWidthTable,
@@ -133,4 +134,5 @@ export {
   SecondaryBtn,
   CustomizeBtn,
   CopyInput,
+  ImagePreviewer,
 };

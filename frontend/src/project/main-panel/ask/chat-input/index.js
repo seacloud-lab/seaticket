@@ -1,18 +1,20 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { IconButton, ClickOutside, Tooltip } from '@/components';
+import slugid from 'slugid';
+import { IconButton, ClickOutside, Tooltip, UploadFile, toaster } from '@/components';
 import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_MESSAGE_TYPE } from '../constants';
-import ProjectRecordsSelector from './project-records-selector';
+import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE } from '../constants';
+import AttachmentsSelector from './attachments-selector';
+import AttachmentsFormatter from './attachments';
 import { useAIChatTools } from '../hooks';
 import AIModelSelector from './ai-model-selector';
-import AttachmentsFormatter from './attachments';
-import ImageAttachments from './image-attachments';
+import { chatAPI } from '@/project/api';
+import { AttachmentObject } from '../models';
 
 import './index.css';
 
@@ -20,9 +22,8 @@ const ChatInput = forwardRef(({
   isReply,
   readOnly,
   projectUuid,
-  canAddDocuments = true,
+  canAddAttachments = true,
   canSelectModel = true,
-  canUploadImage = true,
   clearContext,
   sendMessage,
   resetClearContext,
@@ -32,6 +33,7 @@ const ChatInput = forwardRef(({
   const [value, setValue] = useState('');
   const [selectedModel, setSelectedModel] = useState(null);
   const [width, setWidth] = useState(0);
+  const [isDragging, setDragging] = useState(false);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -39,36 +41,101 @@ const ChatInput = forwardRef(({
   const previewContentRef = useRef(null);
   const domRef = useRef(null);
   const sendBtnRef = useRef(null);
-  const uploadInputRef = useRef(null);
-  const uploadBtnRef = useRef(null);
+  const uploadFileRef = useRef(null);
 
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
-    pendingImages, addImages, removeImage, retryImage, clearImages,
   } = useAIChatTools();
 
+  const onAttachmentReupload = useCallback((attachment) => {
+    const { image, _id: attachmentId } = attachment;
+    const d = Date.now();
+    const name = 'image-' + d.toString() + image.name.slice(image.name.lastIndexOf('.'));
+    const newImage = new File([image], name, { type: image.type });
+    chatAPI.uploadChatImage(projectUuid, newImage).then(res => {
+      const finalAttachment = new AttachmentObject({
+        type: CHAT_ATTACHMENT_TYPE.IMAGE,
+        path: res.data.url,
+        status: 'done',
+        _id: attachmentId,
+      });
+      updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
+    }).catch(error => {
+      const finalAttachment = new AttachmentObject({
+        type: CHAT_ATTACHMENT_TYPE.IMAGE,
+        path: URL.createObjectURL(newImage),
+        status: 'failed',
+        _id: attachmentId,
+        image,
+      });
+      updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
+    });
+  }, []);
+
+  const onImageUpload = useCallback((image) => {
+    const d = Date.now();
+    const name = 'image-' + d.toString() + image.name.slice(image.name.lastIndexOf('.'));
+    const newImage = new File([image], name, { type: image.type });
+    const attachmentId = slugid.nice(4);
+    const tempAttachment = new AttachmentObject({
+      type: CHAT_ATTACHMENT_TYPE.IMAGE,
+      path: URL.createObjectURL(newImage),
+      status: 'uploading',
+      _id: attachmentId
+    });
+    updateAttachments(prev => [...prev, tempAttachment]);
+    chatAPI.uploadChatImage(projectUuid, newImage).then(res => {
+      const finalAttachment = new AttachmentObject({
+        type: CHAT_ATTACHMENT_TYPE.IMAGE,
+        path: res.data.url,
+        status: 'done',
+        _id: attachmentId,
+      });
+      updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
+    }).catch(error => {
+      const finalAttachment = new AttachmentObject({
+        type: CHAT_ATTACHMENT_TYPE.IMAGE,
+        path: URL.createObjectURL(newImage),
+        status: 'failed',
+        _id: attachmentId,
+        image,
+      });
+      updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
+    });
+  }, []);
+
+  const onImagesUpload = useCallback((images) => {
+    const imageAttachments = Array.isArray(attachments) ? attachments.filter(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE) : [];
+    if (imageAttachments.length >= CHAT_IMAGE_ATTACHMENT_MAX_COUNT) {
+      toaster.danger(gettext('Each message may contain a maximum of {count} images.').replace('{count}', CHAT_IMAGE_ATTACHMENT_MAX_COUNT));
+      return;
+    }
+    if ((images.length + imageAttachments.length) > CHAT_IMAGE_ATTACHMENT_MAX_COUNT) {
+      toaster.danger(gettext('Each message may contain a maximum of {count} images, additional images will not be allowed.').replace('{count}', CHAT_IMAGE_ATTACHMENT_MAX_COUNT));
+    }
+    const remainImagesCount = CHAT_IMAGE_ATTACHMENT_MAX_COUNT - imageAttachments.length;
+    const remainImages = images.slice(0, remainImagesCount);
+    remainImages.forEach(file => {
+      onImageUpload(file);
+    });
+  }, [attachments, onImageUpload]);
+
   const onPaste = useCallback((event) => {
-    if (!canUploadImage) {
+    if (!canAddAttachments) {
       inputUtils.onPaste(event);
       return;
     }
     const callBack = (pasteFiles) => {
-      const arr = Array.from(pasteFiles || []);
-      const images = arr.filter(f => f && f.type && f.type.startsWith('image/'));
-      if (images.length) addImages(images);
+      const files = Array.from(pasteFiles || []);
+      const images = files.filter(file => file && file.type && file.type.startsWith('image/'));
+      onImagesUpload(images);
     };
     inputUtils.onPaste(event, callBack);
-  }, [inputUtils, addImages, canUploadImage]);
+  }, [canAddAttachments, inputUtils, onImagesUpload]);
 
-  const onUploadClick = useCallback(() => {
-    uploadInputRef.current && uploadInputRef.current.click();
+  const onFileInputClick = useCallback(() => {
+    uploadFileRef.current && uploadFileRef.current.onClick();
   }, []);
-
-  const onFilesSelected = useCallback((event) => {
-    const files = event.target.files;
-    if (files && files.length) addImages(files);
-    event.target.value = '';
-  }, [addImages]);
 
   const onValueChange = useCallback((event) => {
     const value = event.target.value;
@@ -107,25 +174,16 @@ const ChatInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    const hasUploading = pendingImages.some(i => i.status === 'uploading');
     if (hasUploading) return;
-    const completed = pendingImages.filter(i => i.status === 'done' && i.tempUrl);
-    const imageAttachments = completed.map(i => ({
-      type: 'image',
-      path: i.tempUrl,
-      name: i.name,
-      _previewUrl: i.previewUrl,
-    }));
     sendMessage({
       message: value,
-      attachments: attachments.concat(imageAttachments),
+      attachments: attachments,
       model: selectedModel,
       clearContext
     });
     clearAttachments();
-    clearImages();
     resetClearContext();
-  }, [value, attachments, pendingImages, selectedModel, sendMessage, clearAttachments, clearImages, clearContext, resetClearContext]);
+  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -173,6 +231,53 @@ const ChatInput = forwardRef(({
     inputFocus();
   }, [inputFocus]);
 
+  const onDragStart = useCallback(() => {
+    return false;
+  }, []);
+
+  const onDragEnter = useCallback(() => {
+    return true;
+  }, []);
+
+  const onDragOver = useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setDragging(true);
+  }, []);
+
+  const onDragLeave = useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.nativeEvent.stopImmediatePropagation();
+    setDragging(false);
+  }, []);
+
+  const onDrop = useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    event.persist();
+    if (!event || !event.dataTransfer || !event.dataTransfer.files) {
+      setDragging(false);
+      return;
+    }
+    const files = event.dataTransfer.files || event.target.files;
+    if (files.length === 0) {
+      setDragging(false);
+      return;
+    }
+    let images = [];
+    for (const file of files) {
+      if (file?.type?.startsWith('image/')) {
+        images.push(file);
+      }
+    }
+    if (images.length > 0) {
+      onImagesUpload(images);
+    }
+    setDragging(false);
+  }, [onImagesUpload]);
+
   useEffect(() => {
     inputRef.current && inputRef.current.focus();
   }, []);
@@ -211,7 +316,6 @@ const ChatInput = forwardRef(({
   useEffect(() => {
     return () => {
       clearAttachments();
-      clearImages();
     };
   }, []);
 
@@ -227,17 +331,34 @@ const ChatInput = forwardRef(({
 
   const disabled = isReply || readOnly;
   const isSimple = width <= 673;
-  const hasUploading = pendingImages.some(i => i.status === 'uploading');
+  const hasUploading = false;
   const sendDisabled = disabled || !value || hasUploading;
 
+  const domProps = canAddAttachments && !disabled ? {
+    onDragStart,
+    onDragEnter,
+    onDragOver,
+    onDragLeave,
+    onDrop,
+  } : {};
+
   return (
-    <div className={classnames('seaqa-ai-ask-chat-input-wrapper', { 'disabled': disabled })} ref={domRef}>
+    <div
+      className={classnames('seaqa-ai-ask-chat-input-wrapper', { 'disabled': disabled })}
+      ref={domRef}
+      { ...domProps }
+    >
       <ClickOutside onClickOutside={onContainerBlur}>
-        <div className={classnames('seaqa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
-          <AttachmentsFormatter value={attachments} projectUuid={projectUuid} onRemove={removeAttachment} />
-          {canUploadImage && (
-            <ImageAttachments images={pendingImages} onRemove={removeImage} onRetry={retryImage} />
-          )}
+        <div
+          className={classnames('seaqa-ai-ask-chat-input-container', { 'focus': containerFocus, 'dragging': isDragging })}
+          onClick={disabled ? () => {} : handleFocus}
+        >
+          <AttachmentsFormatter
+            value={attachments}
+            projectUuid={projectUuid}
+            onRemove={removeAttachment}
+            onReupload={onAttachmentReupload}
+          />
           <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -258,31 +379,13 @@ const ChatInput = forwardRef(({
           </div>
           <div className="seaqa-ai-ask-chat-operations-container">
             <div className="seaqa-ai-ask-chat-operations-container-left">
-              {canAddDocuments && (
-                <ProjectRecordsSelector projectUuid={projectUuid} value={attachments} onChange={updateAttachments} isSimple={isSimple} />
-              )}
-              {canUploadImage && (
-                <>
-                  <input
-                    ref={uploadInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={onFilesSelected}
-                  />
-                  <IconButton
-                    disabled={disabled}
-                    ref={uploadBtnRef}
-                    icon="paperclip"
-                    className="sea-qa-ai-ask-icon-btn no-hover-bg"
-                    onClick={disabled ? () => {} : onUploadClick}
-                    aria-label={gettext('Upload image')}
-                  />
-                  <Tooltip target={uploadBtnRef} placement="top">
-                    {gettext('Upload image')}
-                  </Tooltip>
-                </>
+              {canAddAttachments && (
+                <AttachmentsSelector
+                  projectUuid={projectUuid}
+                  attachments={attachments}
+                  onChange={updateAttachments}
+                  onFileInputClick={onFileInputClick}
+                />
               )}
             </div>
             <div className="seaqa-ai-ask-chat-operations-container-right">
@@ -304,6 +407,15 @@ const ChatInput = forwardRef(({
               </>
             </div>
           </div>
+          <UploadFile fileType="image/*" onUpload={onImageUpload} ref={uploadFileRef} />
+          {canAddAttachments && isDragging && (
+            <div className="seaqa-ai-ask-chat-input-dragging-tip">
+              <IconButton icon="upload-file" size={{ btn: 32, size: 24 }} className="no-hover-bg" />
+              <div className="seaqa-ai-ask-chat-input-dragging-tip-text">
+                {gettext('Drop here')}
+              </div>
+            </div>
+          )}
         </div>
       </ClickOutside>
     </div>
