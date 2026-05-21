@@ -51,6 +51,7 @@
             isProjectAdmin: {% if is_project_admin %} true {% else %} false {% endif %},
             permission: '{{ permission }}',
             projectName: '{{ project_name|escapejs }}',
+            enableGeneralTask: {% if enable_general_task %} true {% else %} false {% endif %},
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',
             icon: '{{ icon|escapejs }}',

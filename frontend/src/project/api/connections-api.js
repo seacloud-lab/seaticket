@@ -234,6 +234,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  createConnectionRecord(projectUuid, connectionID, recordData) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
+    return this.req.post(url, recordData);
+  }
+
   modifyConnectionRecord(projectUuid, connectionID, recordID, recordData) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + recordID + '/';
     return this.req.put(url, recordData);

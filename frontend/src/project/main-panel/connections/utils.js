@@ -103,6 +103,7 @@ export const initConnectionResourceDetails = (type, record) => {
   if (type === CONNECTION_TYPE.SITE) return content;
   if (type === CONNECTION_TYPE.SEAFILE) return content;
   if (type === CONNECTION_TYPE.NOTION) return content;
+  if (type === CONNECTION_TYPE.GENERAL_TASK) return content;
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     const { author, created_time, comments } = record;
     const mainPost = {
@@ -174,14 +175,19 @@ export const generateAIOptions = ({ rows, columns, connection }, callback) => {
   const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
   if (!enableUseAI) return null;
 
-  if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL) {
+  if (
+    connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ||
+    connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM ||
+    connection?.type === CONNECTION_TYPE.EMAIL ||
+    connection?.type === CONNECTION_TYPE.GENERAL_TASK
+  ) {
     return {
       key: 'chat_issues',
       label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
       callback: () => {
         let newRows = [];
         const titleColumn = getColumnByName(columns, 'title');
-        const stateColumn = getColumnByName(columns, 'state');
+        const stateColumn = getColumnByName(columns, 'state') || getColumnByName(columns, 'status');
         const urlColumn = getColumnByName(columns, 'url');
 
         if (!titleColumn) return;

@@ -17,6 +17,7 @@ export const CONNECTION_TYPE = {
   EMAIL: 'email',
   GITHUB_ISSUE: 'github_issue',
   DISCOURSE_FORUM: 'discourse_forum',
+  GENERAL_TASK: 'general_task',
   SITE: 'site',
   SEAFILE: 'seafile',
   NOTION: 'notion',
@@ -32,6 +33,7 @@ export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
+  [CONNECTION_TYPE.GENERAL_TASK]: true,
 };
 
 export const CONNECTION_FIELD_TYPE = {
@@ -270,6 +272,29 @@ export const CONNECTION_FIELDS = {
       can_edit_multiple_times: false,
       is_custom: true
     }
+  ],
+  [CONNECTION_TYPE.GENERAL_TASK]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+    }, {
+      key: 'base_url',
+      name: gettext('API base URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    }, {
+      key: 'api_token',
+      name: gettext('API token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: false,
+      can_edit_multiple_times: false,
+      is_custom: true,
+    }
   ]
 };
 
@@ -312,8 +337,20 @@ export const CONNECTION_TYPES = [
     name: gettext('Notion'),
     help_text: gettext('Before connecting, prepare your Notion integration token and ensure you have workspace admin/owner access, plus read permissions for target pages and databases. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Notion',
+  }, {
+    type: CONNECTION_TYPE.GENERAL_TASK,
+    icon: 'general-tasks',
+    name: gettext('General tasks'),
+    help_text: gettext('Provide the base URL of your API endpoint that list tasks, create a task and so on. If any problem occurs, check the'),
+    // TODO: add General Tasks help document
+    help_link: HELP_WEB_URL + 'General-Tasks',
   }
 ];
+
+export const getAvailableConnectionTypes = (enableGeneralTask = false) => {
+  if (enableGeneralTask) return CONNECTION_TYPES;
+  return CONNECTION_TYPES.filter(typeOption => typeOption.type !== CONNECTION_TYPE.GENERAL_TASK);
+};
 
 export const CONNECTION_PAGE_SLUG_ID = {
   ALL: 'all',
@@ -330,6 +367,25 @@ export const GITHUB_STATE_REASON_NAME_MAP = {
   'completed': gettext('Completed'),
   'not_planned': gettext('Not planned'),
   'duplicate': gettext('Duplicate'),
+};
+
+export const GENERAL_TASK_STATUS_NAME_MAP = {
+  'new': gettext('New'),
+  'in_progress': gettext('In progress'),
+  'canceled': gettext('Canceled'),
+  'done': gettext('Done'),
+};
+
+export const GENERAL_TASK_SIZE_NAME_MAP = {
+  'large': gettext('Large'),
+  'medium': gettext('Medium'),
+  'small': gettext('Small'),
+};
+
+export const GENERAL_TASK_PRIORITY_NAME_MAP = {
+  'high': gettext('High'),
+  'medium': gettext('Medium'),
+  'low': gettext('Low'),
 };
 
 export const CONNECTION_SYNC_STATUS = {
@@ -378,6 +434,14 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   LINKED_TICKET: 'linked_ticket',
   TAGS: 'tags',
   PAGE_ID: 'page_id',
+  STATUS: 'status',
+  SIZE: 'size',
+  PRIORITY: 'priority',
+  ASSIGNEES: 'assignees',
+  PARTICIPANTS: 'participants',
+  VERSION: 'version',
+  OTHERS: 'others',
+  DUE_DATE: 'due_date',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -402,6 +466,10 @@ const CONNECTION_PREDEFINED_COLUMN = {
     display_name: gettext('Outdated'),
     type: CellType.CHECKBOX,
     editable: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.VERSION]: {
+    display_name: gettext('Version'),
+    type: CellType.TEXT,
   },
   [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: {
     display_name: gettext('Linked ticket'),
@@ -566,6 +634,54 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.CHECKBOX,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.GENERAL_TASK]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      editable: true,
+      is_required: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: {
+      display_name: gettext('Status'),
+      editable: true,
+      is_required: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: {
+      display_name: gettext('Size'),
+      editable: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: {
+      display_name: gettext('Priority'),
+      editable: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES]: {
+      type: CellType.COLLABORATOR,
+      display_name: gettext('Assignees'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
+      type: CellType.COLLABORATOR,
+      display_name: gettext('Participants'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.VERSION]: {
+      display_name: gettext('Version'),
+      editable: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.OTHERS]: {
+      display_name: gettext('Others'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
+      display_name: gettext('Due date'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      editable: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
@@ -580,6 +696,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
@@ -603,12 +720,14 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];
 
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
@@ -618,4 +737,5 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.GENERAL_TASK,
 ];

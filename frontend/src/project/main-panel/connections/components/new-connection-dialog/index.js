@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS } from '../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, getAvailableConnectionTypes } from '../../constants';
 import { ModalHeader, Loading, SecondaryBtn, toaster } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { getConnectionIcon } from '../../utils';
@@ -14,8 +14,7 @@ import { useConnections } from '../../hooks/connections';
 import './index.css';
 
 const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
-
-const INIT_TYPE = CONNECTION_TYPES[0].type;
+const { enableGeneralTask } = window.app.pageOptions;
 
 const initializeConfig = (newType) => {
   const fields = CONNECTION_FIELDS[newType] || [];
@@ -37,10 +36,11 @@ const initializeConfig = (newType) => {
 };
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
+  const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), [enableGeneralTask]);
   const [stepIndex, setStepIndex] = useState(0);
-  const [type, setType] = useState(INIT_TYPE);
+  const [type, setType] = useState(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type);
   const [name, setName] = useState('');
-  const [config, setConfig] = useState(initializeConfig(INIT_TYPE));
+  const [config, setConfig] = useState(initializeConfig(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type));
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
@@ -158,7 +158,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     });
   }, []);
 
-  const typeOption = CONNECTION_TYPES.find(i => i.type === type);
+  const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
 
   return (
     <Modal
@@ -198,7 +198,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         </div>
         {step.key === STEP.TYPE && (
           <div className="seaqa-project-new-connection-types">
-            {CONNECTION_TYPES.map(connection => {
+            {availableConnectionTypes.map(connection => {
               const { type: key, name } = connection;
               const isActive = key === type;
               return (

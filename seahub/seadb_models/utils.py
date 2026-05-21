@@ -1,3 +1,5 @@
+import datetime
+import json
 import logging
 
 from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
@@ -7,9 +9,95 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGenerato
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable
+    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable, \
+    GeneralTaskTable, GeneralTaskUserTable
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, tasks):
+    if not tasks:
+        return
+
+    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    table_info = get_current_table_metadata(metadata.get('tables') or [], table_name)
+    if not table_info:
+        return
+
+    table_id = table_info.get('id')
+    columns = table_info.get('columns') or []
+    column_name_to_meta = {column.get('name'): column for column in columns}
+    target_columns = [
+        GeneralTaskTable.status.name,
+        GeneralTaskTable.size.name,
+        GeneralTaskTable.priority.name,
+    ]
+
+    desired_values = {column_name: set() for column_name in target_columns}
+    for task in tasks:
+        for column_name in target_columns:
+            value = task.get(column_name)
+            if isinstance(value, list):
+                for item in value:
+                    if item:
+                        desired_values[column_name].add(str(item))
+            elif value:
+                desired_values[column_name].add(str(value))
+
+    for column_name in target_columns:
+        column_meta = column_name_to_meta.get(column_name)
+        if not column_meta:
+            continue
+        column_key = column_meta.get('key')
+        old_option_names = {
+            option.get('name')
+            for option in ((column_meta.get('data') or {}).get('options') or [])
+            if option.get('name')
+        }
+        for option_name in desired_values[column_name] - old_option_names:
+            seadb_api.add_column_option(project_uuid, {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_name': option_name,
+            })
+
+
+def build_general_task_row_data(task, sync_time=None):
+    now = sync_time or datetime.datetime.now(datetime.UTC).isoformat()
+    others = task.get('others')
+    if isinstance(others, (dict, list)):
+        others = json.dumps(others, ensure_ascii=False)
+    elif others is None:
+        others = ''
+    else:
+        others = str(others)
+
+    assignees = task.get('assignees')
+    if not isinstance(assignees, list):
+        assignees = []
+    participants = task.get('participants')
+    if not isinstance(participants, list):
+        participants = []
+
+    return {
+        GeneralTaskTable.source_task_id.name: str(task.get('task_id')).strip(),
+        GeneralTaskTable.title.name: task.get('title', ''),
+        GeneralTaskTable.status.name: task.get('status'),
+        GeneralTaskTable.size.name: task.get('size'),
+        GeneralTaskTable.priority.name: task.get('priority'),
+        GeneralTaskTable.assignees.name: assignees,
+        GeneralTaskTable.participants.name: participants,
+        GeneralTaskTable.version.name: task.get('version', ''),
+        GeneralTaskTable.others.name: others,
+        GeneralTaskTable.content.name: task.get('description') or task.get('content') or '',
+        GeneralTaskTable.due_date.name: task.get('due_date'),
+        GeneralTaskTable.modified_time.name: task.get('modified_time') or now,
+        GeneralTaskTable.created_time.name: task.get('created_time') or now,
+        GeneralTaskTable.sync_time.name: now,
+        GeneralTaskTable.record_modified_time.name: now,
+        GeneralTaskTable.deleted.name: bool(task.get('deleted', False)),
+    }
 
 
 def init_site_seadb_table(seadb_api, project_uuid, connection_id):
@@ -523,6 +611,58 @@ def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
         )
 
 
+def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in GeneralTaskTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    index_column_names = [
+        GeneralTaskTable.source_task_id.name,
+        GeneralTaskTable.title.name,
+        GeneralTaskTable.status.name,
+        GeneralTaskTable.priority.name,
+        GeneralTaskTable.modified_time.name,
+        GeneralTaskTable.created_time.name,
+        GeneralTaskTable.record_modified_time.name,
+        GeneralTaskTable.deleted.name,
+        GeneralTaskTable.linked_ticket.name,
+    ]
+
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
+
+    task_user_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, task_user_table_name)
+    table_id = res['table_id']
+    for column in GeneralTaskUserTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    for column_name in (
+        GeneralTaskUserTable.email.name,
+        GeneralTaskUserTable.record_modified_time.name,
+    ):
+        seadb_api.create_column_index(project_uuid, table_id, [column_name])
+
 def get_connection_table_name(connection_type, connection_id):
     table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
@@ -537,6 +677,8 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = ThreadTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.NOTION.value:
         table_name = NotionTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -902,6 +1044,8 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
         table_name = SeafileTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
     else:
         return []
 
@@ -965,6 +1109,28 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
         record = {}
         column_metadata = []
     return record, column_metadata, ''
+
+
+def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
+    general_task_table_name = GeneralTaskTable.gen_table_name(connection_id)
+    from seahub.tickets.ticket_utils import get_ticket_title
+    sql = (
+        f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
+        f"`content`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
+        f"`linked_ticket`, `outdated`, `version` FROM `{general_task_table_name}` WHERE _pk = {_pk}"
+    )
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results')[0]
+        column_metadata = res.get('metadata')
+        linked_ticket = record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        logger.error(f'SeaDB query error for general task details {general_task_table_name}: {e}')
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return record, column_metadata, linked_ticket_title
 
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
@@ -1105,6 +1271,8 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = SeafileTable.gen_table_name(connection_id)
     elif source_type == ConnectionType.EMAIL.value:
         table_name = ThreadTable.gen_table_name(connection_id)
+    elif source_type == ConnectionType.GENERAL_TASK.value:
+        table_name = GeneralTaskTable.gen_table_name(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
         table_name = KnowledgeBaseTable.gen_table_name()
     elif source_type == ExtraSourceType.TICKET.value:

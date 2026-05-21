@@ -26,7 +26,7 @@ from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
-    extract_email_addresses
+    extract_email_addresses, get_connection_general_task_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
@@ -35,30 +35,33 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    init_notion_seadb_table, list_notion_record_details
+    init_notion_seadb_table, list_notion_record_details, init_general_task_seadb_table, \
+    list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
-    EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
+    EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
-from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI, GitHubRepoNotFound
-
+from seahub.settings import GITHUB_WEBHOOK_SECRET, ENABLE_GENERAL_TASK
+from seahub.project.github_issues_api import GitHubAPI
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
+from seahub.project.utils import normalize_general_task_payload, create_general_task_via_adapter, update_general_task_via_adapter
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
+
 
 
 class ProjectConnectionsView(APIView):
@@ -165,6 +168,11 @@ class ProjectConnectionsView(APIView):
                 init_email_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.NOTION.value:
                 init_notion_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.GENERAL_TASK.value:
+                if not ENABLE_GENERAL_TASK:
+                    error_msg = 'General task connection is not enabled'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                init_general_task_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -526,6 +534,9 @@ class ProjectConnectionDetailsView(APIView):
             ticket_pk_to_ticket_title = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )
+        related_users = []
+        if project_connection.type == ConnectionType.GENERAL_TASK.value:
+            related_users = get_connection_general_task_related_users(project_uuid, connection_id)
 
         return Response({
             'records': records,
@@ -533,6 +544,7 @@ class ProjectConnectionDetailsView(APIView):
             'name': project_connection.name,
             'type': project_connection.type,
             'ticket_pk_to_ticket_title': ticket_pk_to_ticket_title,
+            'related_users': related_users,
         })
 
 
@@ -893,14 +905,21 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_email_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.NOTION.value:
             record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, record_id)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        related_users = []
+        if project_connection.type == ConnectionType.GENERAL_TASK.value:
+            related_users = get_connection_general_task_related_users(project_uuid, connection_id)
+
         return Response({
             'record': record,
             'columns': columns,
-            'linked_ticket_title': linked_ticket_title
+            'linked_ticket_title': linked_ticket_title,
+            'related_users': related_users,
         })
 
 
@@ -939,6 +958,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GENERAL_TASK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -957,8 +977,52 @@ class ProjectConnectionRecordView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            table_cls = GeneralTaskTable
 
         update_row = {'pk': int(record_id), 'row': {}}
+        seadb_api = SeaDBAPI()
+
+        if project_connection.type == ConnectionType.GENERAL_TASK.value:
+
+            general_task_seadb_api = GeneralTaskSeaDBAPI(project)
+            current_record = general_task_seadb_api.get_general_task_record(project_uuid, connection_id, record_id)
+            if not current_record:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Task record not found.')
+
+            changed_task_fields = {
+                field for field in GENERAL_TASK_MUTABLE_FIELDS
+                if field in row_data
+            }
+            if changed_task_fields:
+                source_task_id = current_record.get('source_task_id')
+                if not source_task_id:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Task source_task_id is missing.')
+                merged_task = {
+                    'id': source_task_id,
+                    'title': row_data.get('title', current_record.get('title', '')),
+                    'status': row_data.get('status', current_record.get('status', '')),
+                    'size': row_data.get('size', current_record.get('size', '')),
+                    'priority': row_data.get('priority', current_record.get('priority', '')),
+                    'assignees': row_data.get('assignees', current_record.get('assignees') or []),
+                    'participants': row_data.get('participants', current_record.get('participants') or []),
+                    'version': row_data.get('version', current_record.get('version', '')),
+                    'others': row_data.get('others', current_record.get('others', '')),
+                    'content': row_data.get('content', row_data.get('description', current_record.get('content', ''))),
+                    'due_date': row_data.get('due_date', current_record.get('due_date')),
+                    'created_time': current_record.get('created_time'),
+                    'modified_time': current_record.get('modified_time'),
+                    'deleted': False,
+                }
+                connection_config = decrypt_config(json.loads(project_connection.config))
+                adapter_task = update_general_task_via_adapter(
+                    connection_config,
+                    source_task_id,
+                    normalize_general_task_payload(merged_task),
+                )
+                ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
+                update_row['row'].update(build_general_task_row_data(adapter_task))
+                update_row['row']['source_task_id'] = source_task_id
 
         # Support outdated field for all connection types
         if 'outdated' in row_data:
@@ -974,7 +1038,6 @@ class ProjectConnectionRecordView(APIView):
             update_row['row']['tags'] = row_data.get('tags')
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
-        seadb_api = SeaDBAPI()
         if 'linked_ticket' in row_data and project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
             linked_ticket = row_data.get('linked_ticket')
             update_row['row']['linked_ticket'] = linked_ticket
@@ -1016,6 +1079,58 @@ class ProjectConnectionRecordsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, f'Project {project_uuid} not found.')
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            return api_error(status.HTTP_404_NOT_FOUND, f'project_connection {connection_id} not found.')
+        if project_connection.type != ConnectionType.GENERAL_TASK.value:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
+
+        task_payload = normalize_general_task_payload(request.data or {})
+        task_title = task_payload.get('title')
+        if not task_title:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Task title is required.')
+        task_payload['title'] = task_title
+        task_payload['status'] = task_payload.get('status') or 'new'
+        task_payload['priority'] = task_payload.get('priority') or 'medium'
+        task_payload['size'] = task_payload.get('size') or 'medium'
+
+        try:
+            connection_config = decrypt_config(json.loads(project_connection.config))
+            created_task = create_general_task_via_adapter(connection_config, task_payload)
+        except Exception as e:
+            logger.error(f'create general task error: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
+
+        seadb_api = SeaDBAPI()
+        row_data = build_general_task_row_data(created_task)
+        try:
+            ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
+            res = seadb_api.insert_rows(project_uuid, GeneralTaskTable.gen_table_name(connection_id), [row_data])
+            pks = res.get('pks', [])
+            if len(pks) != 1:
+                raise RuntimeError('insert_rows returned invalid pks')
+            row_data['_pk'] = pks[0]
+        except Exception as e:
+            logger.error(f'insert general task row error: {e}')
+            try:
+                manual_sync_connection({'connection_id': connection_id, 'connection_type': project_connection.type})
+            except Exception:
+                pass
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created remotely but local sync failed.')
+
+        return Response({'row': row_data}, status=status.HTTP_201_CREATED)
+
+    @require_org_context
     def put(self, request, project_uuid, connection_id):
         """Batch update connection records
         Supports updating outdated field for all connection types,
@@ -1050,6 +1165,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
+            ConnectionType.GENERAL_TASK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1068,14 +1184,56 @@ class ProjectConnectionRecordsView(APIView):
             table_cls = ThreadTable
         elif project_connection.type == ConnectionType.NOTION.value:
             table_cls = NotionTable
+        elif project_connection.type == ConnectionType.GENERAL_TASK.value:
+            table_cls = GeneralTaskTable
 
         update_rows = []
+        seadb_api = SeaDBAPI()
         for record in records_data:
             row_id = record.get('row_id')
             row_data = record.get('row', {})
             if not row_id or not isinstance(row_data, dict):
                 continue
             update_row = {'pk': int(row_id), 'row': {}}
+
+            if project_connection.type == ConnectionType.GENERAL_TASK.value:
+                general_task_seadb_api = GeneralTaskSeaDBAPI(project_uuid)
+                current_record = general_task_seadb_api.get_general_task_record(project_uuid, connection_id, row_id)
+                if not current_record:
+                    continue
+                changed_task_fields = {
+                    field for field in GENERAL_TASK_MUTABLE_FIELDS
+                    if field in row_data
+                }
+                if changed_task_fields:
+                    source_task_id = current_record.get('source_task_id')
+                    if not source_task_id:
+                        continue
+                    merged_task = {
+                        'id': source_task_id,
+                        'title': row_data.get('title', current_record.get('title', '')),
+                        'status': row_data.get('status', current_record.get('status', '')),
+                        'size': row_data.get('size', current_record.get('size', '')),
+                        'priority': row_data.get('priority', current_record.get('priority', '')),
+                        'assignees': row_data.get('assignees', current_record.get('assignees') or []),
+                        'participants': row_data.get('participants', current_record.get('participants') or []),
+                        'version': row_data.get('version', current_record.get('version', '')),
+                        'others': row_data.get('others', current_record.get('others', '')),
+                        'content': row_data.get('content', row_data.get('description', current_record.get('content', ''))),
+                        'due_date': row_data.get('due_date', current_record.get('due_date')),
+                        'created_time': current_record.get('created_time'),
+                        'modified_time': current_record.get('modified_time'),
+                        'deleted': False,
+                    }
+                    connection_config = decrypt_config(json.loads(project_connection.config))
+                    adapter_task = update_general_task_via_adapter(
+                        connection_config,
+                        source_task_id,
+                        normalize_general_task_payload(merged_task),
+                    )
+                    ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
+                    update_row['row'].update(build_general_task_row_data(adapter_task))
+                    update_row['row']['source_task_id'] = source_task_id
 
             # Support outdated field for all connection types
             if 'outdated' in row_data:
@@ -1099,7 +1257,6 @@ class ProjectConnectionRecordsView(APIView):
             return Response({'success': True})
 
         table_name = table_cls.gen_table_name(connection_id)
-        seadb_api = SeaDBAPI()
 
         try:
             seadb_api.update_rows(project_uuid, table_name, update_rows)

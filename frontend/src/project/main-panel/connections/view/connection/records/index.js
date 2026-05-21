@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback, useState, useRef } from 'react';
-import SeaMetadata from '@/sea-metadata';
+import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import SeaMetadata, { useCollaborators } from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
@@ -11,6 +11,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
+  GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -48,6 +49,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { updateAttachments } = useAIChatTools();
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
+  const { setScopedCollaborators, clearScopedCollaborators } = useCollaborators();
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
@@ -56,6 +58,16 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { tagsData, createTag } = useTags();
 
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
+  const collaboratorScopeKey = useMemo(() => {
+    if (connection?.type !== CONNECTION_TYPE.GENERAL_TASK) return '';
+    return `general-task-${connectionID}`;
+  }, [connection?.type, connectionID]);
+
+  useEffect(() => {
+    return () => {
+      clearScopedCollaborators(collaboratorScopeKey);
+    };
+  }, [clearScopedCollaborators, collaboratorScopeKey]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
     const connection = connections.find(c => c.id === connectionID);
@@ -97,6 +109,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
+          const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
+          if (connection?.type === CONNECTION_TYPE.GENERAL_TASK) {
+            setScopedCollaborators(collaboratorScopeKey, relatedUsers);
+          }
           return {
             data: {
               ...res.data,
@@ -163,6 +179,29 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
               };
             }
           }
+          if (type === CONNECTION_TYPE.GENERAL_TASK) {
+            const statusColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATUS);
+            if (statusColumnIndex > -1) {
+              const statusColumn = columns[statusColumnIndex];
+              let options = statusColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_STATUS_NAME_MAP[o.name] || o.name }));
+              columns[statusColumnIndex].data = { ...statusColumn.data, options };
+            }
+            const sizeColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.SIZE);
+            if (sizeColumnIndex > -1) {
+              const sizeColumn = columns[sizeColumnIndex];
+              let options = sizeColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_SIZE_NAME_MAP[o.name] || o.name }));
+              columns[sizeColumnIndex].data = { ...sizeColumn.data, options };
+            }
+            const priorityColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY);
+            if (priorityColumnIndex > -1) {
+              const priorityColumn = columns[priorityColumnIndex];
+              let options = priorityColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_PRIORITY_NAME_MAP[o.name] || o.name }));
+              columns[priorityColumnIndex].data = { ...priorityColumn.data, options };
+            }
+          }
           columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
             ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
             click: (row) => toggleChildrenPageSlugId(row._id),
@@ -213,6 +252,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
     // Add modifyRow/modifyRows for all connection types that support outdated editing
     if (SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection.type)) {
+      if (connection.type === CONNECTION_TYPE.GENERAL_TASK) {
+        _api.insertRow = (rowData = {}) => {
+          return connectionsAPI.createConnectionRecord(projectUuid, connectionID, rowData).then(res => res.data.row);
+        };
+      }
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
         const tableName = getTableNameByConnectionID(connectionID);
@@ -279,7 +323,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
     updateAttachments(newAttachments);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connectionID, toggleBar, updateAttachments]);
+  }, [connection?.type, connectionID, toggleBar, updateAttachments, setScopedCollaborators, collaboratorScopeKey]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;

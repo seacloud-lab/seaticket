@@ -32,6 +32,7 @@ class ConnectionType(Enum):
     EMAIL = 'email'
     GITHUB_ISSUE = 'github_issue'
     DISCOURSE_FORUM = 'discourse_forum'
+    GENERAL_TASK = 'general_task'
     SITE = 'site'
     SEAFILE = 'seafile'
     NOTION = 'notion'
@@ -111,11 +112,28 @@ CONNECTION_FIELDS = {
     ConnectionType.SEAFILE.value: [
         ConnectionField('server_url', True, False).to_dict(),
         ConnectionField('api_token', True, False).to_dict(),
-    ]
-    ,
+    ],
+    ConnectionType.GENERAL_TASK.value: [
+        ConnectionField('base_url', True, False).to_dict(),
+        ConnectionField('api_token', False, False).to_dict(),
+    ],
     ConnectionType.NOTION.value: [
         ConnectionField('integration_secret', True, False).to_dict(),
     ]
+}
+
+GENERAL_TASK_MUTABLE_FIELDS = {
+    'title',
+    'status',
+    'size',
+    'priority',
+    'assignees',
+    'participants',
+    'others',
+    'due_date',
+    'content',
+    'description',
+    'version',
 }
 
 
@@ -300,6 +318,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
+    ConnectionType.GENERAL_TASK.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -362,7 +399,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],
     ConnectionType.EMAIL.value: ['_pk', 'title', 'modified_time', 'unread', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated', 'tags'],
-    ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated']
+    ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
+    ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 
@@ -391,6 +429,7 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.GENERAL_TASK.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
