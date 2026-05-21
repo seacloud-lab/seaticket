@@ -22,7 +22,7 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.project.linear_api import LinearAPI
+from seahub.project.linear_api import LinearAPI, LinearAPIException, LinearAPIAuthException
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth
@@ -887,15 +887,30 @@ class ProjectLinearOauthStatusView(APIView):
 
         linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
         if not linear_oauth:
-            return Response({'connected': False, 'expires_in': None}, status=status.HTTP_200_OK)
-        linear_api = LinearAPI(linear_oauth.access_token)
-        if linear_oauth.expires_in and linear_oauth.expires_in <= timezone.now():
-            linear_oauth, err = linear_api.refresh_oauth_token(linear_oauth)
-            if err:
-                return Response({'connected': False, 'expires_in': linear_oauth.expires_in}, status=status.HTTP_200_OK)
+            return Response({'connected': False, 'expires_at': None}, status=status.HTTP_200_OK)
+        linear_api = LinearAPI(
+            access_token=linear_oauth.access_token,
+            refresh_token=linear_oauth.refresh_token,
+            expires_at=linear_oauth.expires_at,
+        )
+        if linear_oauth.expires_at and linear_oauth.expires_at <= timezone.now():
+            try:
+                data = linear_api.refresh_access_token()
+                linear_oauth.access_token = linear_api.access_token
+                linear_oauth.refresh_token = linear_api.refresh_token
+                linear_oauth.expires_at = LinearAPI.calc_expires_in(data.get('expires_in'))
+                linear_oauth.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+            except Exception as e:
+                logger.warning(
+                    'Linear OAuth refresh failed for project %s: %s', project_uuid, e
+                )
+                return Response(
+                    {'connected': False, 'expires_at': linear_oauth.expires_at},
+                    status=status.HTTP_200_OK,
+                )
 
-        connected = linear_oauth.expires_in > timezone.now()
-        return Response({'connected': connected, 'expires_in': linear_oauth.expires_in}, status=status.HTTP_200_OK)
+        connected = linear_oauth.expires_at > timezone.now()
+        return Response({'connected': connected, 'expires_at': linear_oauth.expires_at}, status=status.HTTP_200_OK)
 
 
 class ProjectConnectionRecordView(APIView):

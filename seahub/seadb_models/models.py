@@ -203,47 +203,6 @@ class SelectTypes:
     }
 
 
-    linear_state = {
-      "options": [
-        {
-          "id": "0001",
-          "name": "Backlog",
-          "color": "#A2A2A2",
-          "text_color": "#FFFFFF"
-        },
-        {
-          "id": "0002",
-          "name": "Todo",
-          "color": "#9F9FA2",
-          "text_color": "#FFFFFF"
-        },
-        {
-          "id": "0003",
-          "name": "In Progress",
-          "color": "#F0BF00",
-          "text_color": "#FFFFFF"
-        },
-        {
-          "id": "0004",
-          "name": "Done",
-          "color": "#5E6AD2",
-          "text_color": "#FFFFFF"
-        },
-        {
-          "id": "0005",
-          "name": "Canceled",
-          "color": "#95A2B3",
-          "text_color": "#FFFFFF"
-        },
-        {
-          "id": "0006",
-          "name": "Duplicate",
-          "color": "#95A2B3",
-          "text_color": "#FFFFFF"
-        }
-      ]
-    }
-
 class MappedColumn(object):
     def __init__(self, name, type, data=None):
         self.name = name
@@ -543,7 +502,7 @@ class LinearIssuesTable(BaseModel):
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     issue_id = MappedColumn('issue_id', PropertyTypes.TEXT)
     identifier = MappedColumn('identifier', PropertyTypes.TEXT)
-    state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, SelectTypes.linear_state)
+    state = MappedColumn('state', PropertyTypes.SINGLE_SELECT)
     author = MappedColumn('author', PropertyTypes.TEXT)
     labels = MappedColumn('labels', PropertyTypes.MULTIPLE_SELECT)
     assignees = MappedColumn('assignees', PropertyTypes.TEXT)

@@ -10,12 +10,12 @@ from urllib.parse import urlencode
 import requests
 
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.project.linear_api import LinearAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
@@ -232,31 +232,11 @@ def linear_oauth_callback(request):
         logger.error('Linear OAuth token missing access_token: %s', token_json)
         return render_error(request, _('Failed to authorize Linear.'))
 
-    expires_in = timezone.now() + datetime.timedelta(seconds=int(expires_in))
-
-    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_in, refresh_token, username)
+    expires_at = LinearAPI.calc_expires_in(expires_in)
+    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_at, refresh_token, username)
 
     request.session.pop('linear_oauth_state', None)
     request.session.pop('linear_oauth_project_uuid', None)
     request.session.pop('linear_oauth_return_to', None)
 
-    response_html = f"""
-    <html>
-      <head><title>Linear OAuth</title></head>
-      <body>
-        <script>
-          try {{
-            if (window.opener) {{
-              window.opener.postMessage({{ type: 'linear_oauth', status: 'success' }}, '*');
-              window.close();
-            }} else {{
-              window.location.href = {json.dumps(return_to)};
-            }}
-          }} catch (e) {{
-            window.location.href = {json.dumps(return_to)};
-          }}
-        </script>
-      </body>
-    </html>
-    """
-    return HttpResponse(response_html)
+    return redirect(return_to)

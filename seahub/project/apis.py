@@ -14,7 +14,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth
-from seahub.project.linear_api import LinearAPI
+from seahub.project.linear_api import LinearAPI, LinearAPIException, LinearAPIAuthException
 from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
@@ -152,13 +152,25 @@ class ProjectLinearTeams(APIView):
         linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
         if not linear_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
-        if linear_oauth.expires_in and linear_oauth.expires_in <= timezone.now():
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
 
-        linear_api = LinearAPI(linear_oauth.access_token)
-        teams, workspace_name, err = linear_api.list_teams()
-        if err:
+        linear_api = LinearAPI(
+            access_token=linear_oauth.access_token,
+            refresh_token=linear_oauth.refresh_token,
+            expires_at=linear_oauth.expires_at,
+        )
+        try:
+            teams, workspace_name = linear_api.list_teams()
+        except Exception as e:
+            logger.error('Linear API error fetching teams for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Linear teams.')
+
+        # Persist updated tokens if refreshed inside list_teams
+        if linear_api.last_token_update:
+            data = linear_api.last_token_update
+            linear_oauth.access_token = linear_api.access_token
+            linear_oauth.refresh_token = linear_api.refresh_token
+            linear_oauth.expires_at = LinearAPI.calc_expires_in(data.get('expires_in'))
+            linear_oauth.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
         if workspace_name:
             for team in teams:
                 team['workspace_name'] = workspace_name

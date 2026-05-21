@@ -46,6 +46,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
+  const oauthWindowRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const [linearTeamsVersion, setLinearTeamsVersion] = useState(0);
   const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
   const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
   const [linearOauthError, setLinearOauthError] = useState('');
@@ -188,7 +191,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         }
       };
     });
-  }, [projectUuid]);
+  }, [projectUuid, linearTeamsVersion]);
 
   const fetchLinearOauthStatus = useCallback(() => {
     setCheckingLinearOauth(true);
@@ -206,24 +209,41 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const handleConnectLinear = useCallback(() => {
     const next = window.location.href;
     const oauthUrl = `${server}/linear/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
-    window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
-  }, []);
+    oauthWindowRef.current = window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
+
+    // Start polling for OAuth status
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getLinearOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          setLinearOauthConnected(true);
+          setLinearOauthError('');
+          setLinearTeamsVersion(v => v + 1);
+          clearInterval(pollingIntervalRef.current);
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [projectUuid]);
 
   useEffect(() => {
     if (!isLinear) return;
     fetchLinearOauthStatus();
   }, [isLinear, fetchLinearOauthStatus]);
 
+  // Cleanup polling and popup on unmount or when Linear type changes
   useEffect(() => {
-    if (!isLinear) return;
-    const handler = (event) => {
-      if (event?.data?.type === 'linear_oauth' && event?.data?.status === 'success') {
-        fetchLinearOauthStatus();
+    return () => {
+      clearInterval(pollingIntervalRef.current);
+      if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+        oauthWindowRef.current.close();
       }
     };
-    window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
-  }, [isLinear, fetchLinearOauthStatus]);
+  }, []);
 
 
   return (

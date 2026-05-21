@@ -66,11 +66,14 @@ urlpatterns = [
     re_path(r'^api/v1/project/connection-details/$', ProjectConnectionDetailByTokenView.as_view(), name='api-v1-connection-details-by-token'),
     re_path(r'^api/v1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v1-connection-row-details-by-token'),
 
-    #sync data
+    # connection webhook
     re_path(r'^webhook/github/$', GithubWebhookView.as_view(), name='github_webhook'),
+    re_path(r'^webhook/discourse/$', DiscourseWebhookView.as_view(), name='discourse_webhook'),
+
+    # new connection dialog info
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/repositories/$', ProjectGithubRepositories.as_view(), name='api-v1-project-github-repositories'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear/teams/$', ProjectLinearTeams.as_view(), name='api-v1-project-linear-teams'),
-    re_path(r'^webhook/discourse/$', DiscourseWebhookView.as_view(), name='discourse_webhook'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear-oauth/$', ProjectLinearOauthStatusView.as_view(), name='api-v1-linear-oauth-status'),
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),
@@ -78,7 +81,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/sync/$', ProjectConnectionSyncView.as_view(), name='api-v1-connection-sync'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v1-connection-details'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/query-status/$', ProjectConnectionsStatusView.as_view(), name='api-v1-connection-status'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear-oauth/$', ProjectLinearOauthStatusView.as_view(), name='api-v1-linear-oauth-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/logs/$', ProjectConnectionLogView.as_view(), name='api-v1-connection-logs'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/$', ProjectConnectionRecordsView.as_view(), name='api-v1-connection-records'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/(?P<record_id>\d+)/$', ProjectConnectionRecordView.as_view(), name='api-v1-connection-record'),

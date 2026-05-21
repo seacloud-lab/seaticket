@@ -1034,35 +1034,34 @@ class ProjectIssuesStatistics(models.Model):
 
 class ProjectLinearOauthManager(models.Manager):
     def get_by_project_uuid(self, project_uuid):
-        return self.filter(project_uuid=project_uuid).order_by('-expires_in').first()
+        return self.filter(project_uuid=project_uuid).first()
 
-    def upsert_token(self, project_uuid, access_token, expires_in, refresh_token, username=None):
+    def upsert_token(self, project_uuid, access_token, expires_at, refresh_token, username=None):
         record = self.filter(project_uuid=project_uuid).first()
         if record:
             record.access_token = access_token
             record.refresh_token = refresh_token
-            record.expires_in = expires_in
-            update_fields = ['access_token', 'expires_in', 'refresh_token']
+            record.expires_at = expires_at
+            update_fields = ['access_token', 'expires_at', 'refresh_token']
             record.save(update_fields=update_fields)
             return record
         record = super(ProjectLinearOauthManager, self).create(
             project_uuid=project_uuid,
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_in=expires_in,
+            expires_at=expires_at,
         )
         record.save()
         return record
 
 
 class ProjectLinearOauth(models.Model):
-    project_uuid = models.CharField(max_length=36)
+    project_uuid = models.UUIDField(unique=True, db_index=True)
     access_token = models.CharField(max_length=255)
     refresh_token = models.CharField(max_length=255)
-    expires_in = models.DateTimeField()
+    expires_at = models.DateTimeField()
 
     objects = ProjectLinearOauthManager()
 
     class Meta:
         db_table = 'project_linear_oauth'
-        unique_together = [['project_uuid']]
