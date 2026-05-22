@@ -36,7 +36,6 @@
   flex-direction: column;
   overflow-y: auto;
   min-height: 100px;
-  max-height: 240px;
   width: 100%;
   padding: 0 8px;
 }
@@ -64,14 +63,11 @@
 .sea-metadata-all-views-popover .sea-metadata-all-views-item .sea-metadata-all-views-item-drag-btn {
   height: 24px;
   width: 14px;
-  color: #999;
+  cursor: grab !important;
 }
 
-.sea-metadata-all-views-popover .sea-metadata-all-views-item .sea-metadata-all-views-item-drag-btn {
-  height: 24px;
-  width: 14px;
-  color: #999;
-  cursor: grab !important;
+.sea-metadata-all-views-popover .sea-metadata-all-views-item .sea-metadata-all-views-item-drag-btn .seaqa-icon-svg {
+  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-all-views-popover .sea-metadata-all-views-item .sea-metadata-all-views-item-left {

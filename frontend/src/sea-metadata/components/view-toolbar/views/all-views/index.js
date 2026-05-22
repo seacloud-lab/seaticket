@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useMemo } from 'react';
+import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 import classnames from 'classnames';
 import { SearchInput, IconButton, CustomizeDropdownItemText, CustomizePopover, EmptyTip } from '@/components';
 import { gettext, KeyCodes, mediaUrl } from '@/constants';
@@ -12,13 +12,13 @@ const AllViews = ({
   onMove,
   toggleView,
 }) => {
-  const [isShowDropdownMenu, setIsShowDropdownMenu] = useState(false);
+  const [isShowAllViewsPopover, setIsShowAllViewsPopover] = useState(false);
   const [dropRelativePosition, setDropRelativePosition] = useState('');
   const [currentOverViewId, setCurrentOverViewId] = useState('');
   const [searchValue, setSearchValue] = useState('');
+  const [maxHeight, setMaxHeight] = useState(window.innerHeight - 100);
 
   const viewRef = useRef(null);
-  const menuStyle = useRef({});
   const enteredCounter = useRef(0);
 
   const canManageView = context.getSetting('canManageView', true);
@@ -67,16 +67,15 @@ const AllViews = ({
     setCurrentOverViewId('');
   }, [dropRelativePosition, onMove]);
 
-  const openDropdownMenu = useCallback(() => {
-    const { left, bottom } = viewRef.current.getBoundingClientRect();
-    menuStyle.current = { left, top: bottom + 12 }; // 12 is (view item height) - (all views button height)
-    setIsShowDropdownMenu(true);
+  const openAllViewsPopover = useCallback(() => {
+    setMaxHeight(window.innerHeight - 100);
+    setIsShowAllViewsPopover(true);
   }, []);
 
-  const closeDropdown = useCallback(() => {
-    setIsShowDropdownMenu(false);
+  const closeAllViewsPopover = useCallback(() => {
+    setIsShowAllViewsPopover(false);
     setSearchValue('');
-  }, [isShowDropdownMenu]);
+  }, [isShowAllViewsPopover]);
 
   const views = useMemo(() => {
     if (searchValue) {
@@ -100,22 +99,33 @@ const AllViews = ({
     setSearchValue(newSearchValue);
   }, [searchValue]);
 
+  useEffect(() => {
+    if (!isShowAllViewsPopover) return;
+    const updateMaxHeight = () => {
+      setMaxHeight(window.innerHeight - 100);
+    };
+    window.addEventListener('resize', updateMaxHeight);
+    return () => {
+      window.removeEventListener('resize', updateMaxHeight);
+    };
+  }, [isShowAllViewsPopover]);
+
   return (
     <>
       <IconButton
         icon="arrow-down"
         className="sea-metadata-all-views-btn"
         ref={viewRef}
-        onClick={openDropdownMenu}
+        onClick={openAllViewsPopover}
       />
-      {isShowDropdownMenu && (
+      {isShowAllViewsPopover && (
         <CustomizePopover
           target={viewRef}
           className="sea-metadata-all-views-popover"
-          hidePopover={closeDropdown}
-          hidePopoverWithEsc={closeDropdown}
+          hidePopover={closeAllViewsPopover}
+          hidePopoverWithEsc={closeAllViewsPopover}
         >
-          <div className={classnames('sea-metadata-all-views-container', { 'pb-2': views.length === 0 })}>
+          <div className={classnames('sea-metadata-all-views-container', { 'pb-2': views.length === 0 })} style={{ maxHeight }}>
             <div className="sea-metadata-all-views-search-wrapper">
               <SearchInput
                 autoFocus={true}
@@ -127,7 +137,7 @@ const AllViews = ({
                 onChange={onSearchValueChange}
               />
             </div>
-            <div className="sea-metadata-all-views-content-wrapper">
+            <div className="sea-metadata-all-views-content-wrapper" >
               {views.map((view) => {
                 return (
                   <div
