@@ -55,6 +55,13 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 
+TICKET_EVENT_IGNORED_FIELDS = frozenset({
+    TicketsTable.comment_count.name,
+    TicketsTable.modified_time.name,
+    TicketsTable.closed_time.name,
+})
+
+
 def _format_ticket_event_value(field_name, field_value, tag_id_to_name=None):
     if field_name == TicketsTable.tags.name and isinstance(field_value, list):
         return [
@@ -84,6 +91,8 @@ def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=No
         tag_id_to_name = build_tag_id_to_name_map(seadb_api, project_uuid, tag_ids)
 
     for field_name, field_value in new_row.items():
+        if field_name in TICKET_EVENT_IGNORED_FIELDS:
+            continue
         old_field_value = old_row.get(field_name)
         if old_field_value == field_value:
             continue
@@ -95,6 +104,12 @@ def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=No
         'old_value': old_value or None,
         'new_value': new_value or None,
     }
+
+
+def has_ticket_event_changes(event):
+    if not isinstance(event, dict):
+        return False
+    return bool(event.get('old_value')) or bool(event.get('new_value'))
 
 
 class TicketsAPIView(APIView):
@@ -386,16 +401,18 @@ class TicketsAPIView(APIView):
         )
 
         send_ticket_update_msg(project_uuid, added=1)
-        send_data_update_msg(
-            project_uuid,
-            ticket_pk,
-            event=build_ticket_data_event(
-                DataEventType.TICKET_ADDED.value,
-                new_row=row,
-                seadb_api=seadb_api,
-                project_uuid=project_uuid,
-            ),
+        added_event = build_ticket_data_event(
+            DataEventType.TICKET_ADDED.value,
+            new_row=row,
+            seadb_api=seadb_api,
+            project_uuid=project_uuid,
         )
+        if has_ticket_event_changes(added_event):
+            send_data_update_msg(
+                project_uuid,
+                ticket_pk,
+                event=added_event,
+            )
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
@@ -537,13 +554,16 @@ class TicketsAPIView(APIView):
                     'row': updated_row,
                 }
             )
-            ticket_events[int(row.get('_pk'))] = build_ticket_data_event(
+            ticket_id = int(row.get('_pk'))
+            ticket_event = build_ticket_data_event(
                 event_type,
                 old_row=row,
                 new_row=updated_row,
                 seadb_api=seadb_api,
                 project_uuid=project_uuid,
             )
+            if has_ticket_event_changes(ticket_event):
+                ticket_events[ticket_id] = ticket_event
 
         if ticket_link_diff:
             try:
@@ -601,10 +621,13 @@ class TicketsAPIView(APIView):
 
         for update_row in update_rows:
             ticket_id = int(update_row.get('pk'))
+            ticket_event = ticket_events.get(ticket_id)
+            if not ticket_event:
+                continue
             send_data_update_msg(
                 project_uuid,
                 ticket_id,
-                event=ticket_events.get(ticket_id),
+                event=ticket_event,
             )
 
         return Response({'success': True})
@@ -1032,17 +1055,19 @@ class TicketAPIView(APIView):
                 )
 
         send_ticket_update_msg(project_uuid, updated=1)
-        send_data_update_msg(
-            project_uuid,
-            ticket.get('_pk'),
-            event=build_ticket_data_event(
-                event_type,
-                old_row=ticket,
-                new_row=update_row,
-                seadb_api=seadb_api,
-                project_uuid=project_uuid,
-            ),
+        ticket_event = build_ticket_data_event(
+            event_type,
+            old_row=ticket,
+            new_row=update_row,
+            seadb_api=seadb_api,
+            project_uuid=project_uuid,
         )
+        if has_ticket_event_changes(ticket_event):
+            send_data_update_msg(
+                project_uuid,
+                ticket.get('_pk'),
+                event=ticket_event,
+            )
 
         # Rename activity_type to type_description for frontend
         for activity in new_activities:

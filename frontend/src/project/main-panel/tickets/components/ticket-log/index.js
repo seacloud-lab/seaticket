@@ -39,7 +39,7 @@ const LOG_TYPE = {
   GITHUB_ISSUE_COMMENT_ADDED: 'github_issue_comment_added',
 
   DISCOURSE_TOPIC_UPDATED: 'discourse_topic_updated',
-  DISCOURSE_TOPIC_REPLY_ADDED: 'discourse_topic_reply_added',
+  DISCOURSE_TOPIC_COMMENT_ADDED: 'discourse_topic_comment_added',
 
   EMAIL_MESSAGE_ADDED: 'email_message_added',
 };
@@ -66,7 +66,7 @@ const LOG_ICONS = {
   [LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED]: 'dot-circle-stroked',
 
   [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'dot-circle-stroked',
-  [LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED]: 'dot-circle-stroked',
 
   [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'dot-circle-stroked',
 };
@@ -461,8 +461,18 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
       case LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED: {
         const ref = renderGithubIssueRef(issue_number, issue_url);
-        const count = typeof new_value === 'number' ? new_value : 1;
-        return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}{gettext('added')}</span>;
+        const isLegacyNumber = typeof new_value === 'number';
+        const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
+        const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
+        const author = isObjectValue ? new_value.author : '';
+        return (
+          <span>
+            {gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}
+            {count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}
+            {gettext('added')}
+            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
+          </span>
+        );
       }
       case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
         const ref = renderDiscourseTopicRef(topic_id, topic_url);
@@ -477,10 +487,20 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           </>
         );
       }
-      case LOG_TYPE.DISCOURSE_TOPIC_REPLY_ADDED: {
+      case LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED: {
         const ref = renderDiscourseTopicRef(topic_id, topic_url);
-        const count = typeof new_value === 'number' ? new_value : 1;
-        return <span>{gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}{count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}{gettext('added')}</span>;
+        const isLegacyNumber = typeof new_value === 'number';
+        const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
+        const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
+        const author = isObjectValue ? new_value.author : '';
+        return (
+          <span>
+            {gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}
+            {count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}
+            {gettext('added')}
+            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
+          </span>
+        );
       }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
         const count = typeof new_value === 'number' ? new_value : 1;

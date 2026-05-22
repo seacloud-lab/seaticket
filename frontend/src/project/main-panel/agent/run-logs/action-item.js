@@ -118,9 +118,6 @@ const ActionItem = React.memo(({
       case 'suggest_modify_type': {
         return 'suitable-issue-type';
       }
-      case 'suggest_add_comment': {
-        return 'comment-filled';
-      }
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
       }
@@ -136,7 +133,7 @@ const ActionItem = React.memo(({
       case ACTION_TYPE.EVENTS:
         return (
           <div className="action-content action-content-events">
-            <div className="action-label">{gettext('Events')}</div>
+            <div className="action-label">{gettext('Event')}</div>
             {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
           </div>
         );

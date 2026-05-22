@@ -405,8 +405,6 @@ class AgentActionConfirmView(APIView):
 
         if tool_name == 'suggest_notify_assignee':
             return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, content, username)
-        elif tool_name == 'suggest_add_comment':
-            return self._execute_add_comment(seadb_api, project, project_uuid, ticket_id, content, username)
         else:
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
@@ -1160,77 +1158,6 @@ class AgentActionConfirmView(APIView):
         logger.info(f'Agent notified assignees for ticket #{ticket_id}')
         return f'Notification sent to {len(assignees)} assignee(s).'
 
-    def _execute_add_comment(self, seadb_api, project, project_uuid, ticket_id, content, creator):
-        """
-        Add a comment to the ticket.
-        """
-        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
-        if not ticket:
-            logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
-            return f'Ticket #{ticket_id} not found'
-
-        now = timezone.now().isoformat()
-
-        row = {
-            TicketCommentsTable.ticket_id.name: ticket_id,
-            TicketCommentsTable.content.name: content,
-            TicketCommentsTable.creator.name: creator,
-            TicketCommentsTable.created_time.name: now,
-            TicketCommentsTable.modified_time.name: now,
-            TicketCommentsTable.deleted.name: False,
-            TicketCommentsTable.via_agent.name: True,
-        }
-
-        try:
-            result = seadb_api.insert_rows(project_uuid, TicketCommentsTable.gen_table_name(), [row])
-            pks = result.get('pks', [])
-            if len(pks) != 1:
-                raise RuntimeError('Failed to create ticket comment')
-            comment_id = pks[0]
-
-            # Keep ticket counters/participants in sync, same as tickets.py.
-            count_sql = (
-                f"SELECT COUNT(*) as count FROM `{TicketCommentsTable.gen_table_name()}` "
-                f"WHERE `ticket_id` = {ticket_id} AND `deleted` = False"
-            )
-            ticket_comments_count = seadb_api.query_rows(project_uuid, count_sql).get('results')[0].get('count')
-            participants = ticket.get(TicketsTable.participants.name) or []
-            if creator not in participants:
-                participants.append(creator)
-
-            ticket_update = {
-                'pk': ticket_id,
-                'row': {
-                    TicketsTable.comment_count.name: ticket_comments_count,
-                    TicketsTable.modified_time.name: now,
-                    TicketsTable.participants.name: participants,
-                }
-            }
-            seadb_api.update_rows(project_uuid, TicketsTable.gen_table_name(), [ticket_update])
-
-            # Notify related users (assignees + participants), same as tickets.py.
-            assignees = ticket.get(TicketsTable.assignees.name) or []
-            related_users = set(assignees) | set(participants)
-            if related_users:
-                ticket_commented.send(
-                    sender=None,
-                    project_uuid=project_uuid,
-                    related_users=list(related_users),
-                    msg_type=MSG_TYPE_TICKET_COMMENTED,
-                    from_user_id=creator,
-                    ticket_id=ticket_id,
-                    comment_id=comment_id,
-                    comment_content=(content or '')[:100] + '...',
-                    ticket_title=ticket.get(TicketsTable.title.name),
-                    workspace_id=project.workspace_id,
-                    project_name=project.project_name,
-                )
-
-            logger.info(f'Added agent comment #{comment_id} to ticket #{ticket_id}')
-            return f'Comment added (ID: {comment_id})'
-        except Exception as e:
-            logger.error(f'Failed to add comment to ticket #{ticket_id}: {e}')
-            raise
 
 class AgentActionUpdateView(APIView):
     """
