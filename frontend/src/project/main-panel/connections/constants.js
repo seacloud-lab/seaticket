@@ -674,7 +674,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
       display_name: gettext('Due date'),
       type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
       editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
