@@ -18,6 +18,7 @@ const Views = ({ view, toggleView }) => {
 
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
+  const isDidMount = useRef(false);
 
   const { isLoading, viewsData, viewID, insertView, modifyView, moveView, duplicateView, deleteView, getViewById } = useViewsData();
 
@@ -123,8 +124,7 @@ const Views = ({ view, toggleView }) => {
     });
   }, [insertView]);
 
-  const handleToggleViewForAllViews = useCallback((viewID, viewIndex) => {
-    toggleView(viewID);
+  const updateScrollBySelectView = useCallback((viewID, viewIndex) => {
     if (!viewsNavContainerRef.current) return;
     const { offsetWidth, scrollWidth } = viewsNavContainerRef.current;
     if (viewIndex === 0) {
@@ -135,9 +135,7 @@ const Views = ({ view, toggleView }) => {
       viewsNavContainerRef.current.scrollLeft = scrollWidth - offsetWidth;
       return;
     }
-    const view = allViews[viewIndex];
-    if (!view) return;
-    const targetViewElement = document.getElementById(`sea-metadata-view-${view._id}`);
+    const targetViewElement = document.getElementById(`sea-metadata-view-${viewID}`);
     if (!targetViewElement) return;
     const { left: viewsLeft } = viewsNavContainerRef.current.getBoundingClientRect();
     const { left: viewLeft } = targetViewElement.getBoundingClientRect();
@@ -153,7 +151,7 @@ const Views = ({ view, toggleView }) => {
       }
       viewsNavContainerRef.current.scrollLeft = totalWidth > offsetWidth ? totalWidth - offsetWidth : 0;
     }
-  }, [allViews, toggleView]);
+  }, []);
 
   useEffect(() => {
     checkAvailableScrollType();
@@ -172,6 +170,15 @@ const Views = ({ view, toggleView }) => {
       dom && resizeObserver.unobserve(dom);
     };
   }, []);
+
+  useEffect(() => {
+    if (!view?._id) return;
+    if (isDidMount.current) return;
+    const viewIndex = allViews.findIndex(v => v._id === viewID);
+    if (viewIndex === -1) return;
+    updateScrollBySelectView(viewID, viewIndex);
+    isDidMount.current = true;
+  }, [view]);
 
   const deleteAble = allViews.length > 1 && context.canDeleteView();
   const moveAble = context.canMoveView();
@@ -208,7 +215,10 @@ const Views = ({ view, toggleView }) => {
               viewID={viewID}
               allViews={allViews}
               onMove={moveView}
-              toggleView={handleToggleViewForAllViews}
+              toggleView={(viewID, viewIndex) => {
+                toggleView(viewID);
+                updateScrollBySelectView(viewID, viewIndex);
+              }}
             />
             <IconButton
               icon="arrow-left"
