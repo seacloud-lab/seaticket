@@ -159,6 +159,10 @@ def get_project_related_users(owner):
 
 
 def get_connection_general_task_related_users(project_uuid, connection_id):
+    cache_key = f'gt_related_users_{project_uuid}_{connection_id}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
@@ -166,7 +170,8 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     try:
         sql = f"SELECT `email`, `name` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
-    except Exception:
+    except Exception as e:
+        logger.error(f'get connection general task related users error: {e}')
         return []
 
     for item in results:
@@ -180,7 +185,9 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
             'avatar_url': default_avatar_url,
         }
 
-    return list(related_users.values())
+    result = list(related_users.values())
+    cache.set(cache_key, result, 60)
+    return result
 
 
 def convert_project_trash_names(project):
