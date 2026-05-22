@@ -8,6 +8,7 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionDetailsView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
     ProjectConnectionReplyEmailView, ProjectConnectionReplyDiscourseView, ConnectionFileView, GithubIssueView, \
+    ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
     DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
@@ -71,6 +72,9 @@ urlpatterns = [
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/login/$', ProjectEmailOAuthLoginView.as_view(), name='api-v1-connection-email-oauth-login'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/query/$', ProjectEmailOAuthQueryView.as_view(), name='api-v1-connection-email-oauth-query'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/callback/$', ProjectEmailOAuthCallbackView.as_view(), name='api-v1-connection-email-oauth-callback'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/$', ProjectConnectionView.as_view(), name='api-v1-connection'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/sync/$', ProjectConnectionSyncView.as_view(), name='api-v1-connection-sync'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v1-connection-details'),

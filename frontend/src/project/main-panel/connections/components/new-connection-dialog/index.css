@@ -118,3 +118,36 @@
   font-size: 14px;
   line-height: 22px;
 }
+
+.seaqa-project-connection-advanced-options {
+  margin-top: 4px;
+}
+
+.seaqa-project-connection-advanced-options-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-color: #ddd;
+  color: #444;
+}
+
+.seaqa-project-connection-advanced-options-icon-expanded {
+  transform: rotate(180deg);
+}
+
+.seaqa-project-connection-oauth-tip {
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.seaqa-project-connection-oauth-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0 8px;
+  color: #666;
+  font-size: 14px;
+}

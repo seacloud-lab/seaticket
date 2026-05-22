@@ -7,12 +7,86 @@ import {
   SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES, GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP,
   GENERAL_TASK_PRIORITY_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG, GITHUB_STATE_REASON_NAME_MAP,
   GITHUB_STATE_OPTION_NAME_MAP,
+  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, getDefaultEmailOAuthConfig,
 } from './constants';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
+
+export const shouldDisplayEmailField = (field, provider, showAdvancedOptions) => {
+  if (field.providers && !field.providers.includes(provider)) return false;
+  if (field.is_advanced_option && !showAdvancedOptions) return false;
+  return true;
+};
+
+export const getVisibleEmailFields = (fields, provider, showAdvancedOptions) => {
+  return fields.reduce((acc, field) => {
+    if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
+      if (field.providers && !field.providers.includes(provider)) return acc;
+      const children = field.children.filter(child => shouldDisplayEmailField(child, provider, showAdvancedOptions));
+      if (children.length === 0) return acc;
+      acc.push({ ...field, children });
+      return acc;
+    }
+
+    if (!shouldDisplayEmailField(field, provider, showAdvancedOptions)) return acc;
+    acc.push(field);
+    return acc;
+  }, []);
+};
+
+export const getEmailProvider = (config = {}) => {
+  return config.server_provider || EMAIL_SERVER_PROVIDER.GENERAL;
+};
+
+export const isOAuthEmailProvider = (provider) => {
+  return provider === EMAIL_SERVER_PROVIDER.MICROSOFT || provider === EMAIL_SERVER_PROVIDER.GMAIL;
+};
+
+export const getEmailOAuthCallbackUrl = (projectUuid) => {
+  return `${server}/api/v1/project/${projectUuid}/connections/email/oauth/callback/`;
+};
+
+export const populateEmailOAuthDefaults = (config = {}, provider) => {
+  if (provider !== EMAIL_SERVER_PROVIDER.MICROSOFT && provider !== EMAIL_SERVER_PROVIDER.GMAIL) return config;
+
+  const nextConfig = { ...config };
+  const defaultOAuthConfig = getDefaultEmailOAuthConfig(provider);
+  ['authority_url', 'token_url', 'authority_args', 'scopes'].forEach((oauthKey) => {
+    const oldValue = nextConfig[oauthKey];
+    if (oldValue !== undefined && oldValue !== null && oldValue !== '') return;
+    nextConfig[oauthKey] = defaultOAuthConfig[oauthKey];
+  });
+
+  return nextConfig;
+};
+
+export const sanitizeEmailConfigByProvider = (config = {}) => {
+  const provider = getEmailProvider(config);
+  const nextConfig = { ...config, server_provider: provider };
+
+  if (provider === EMAIL_SERVER_PROVIDER.MICROSOFT) {
+    delete nextConfig.sender_name;
+    delete nextConfig.sender_email;
+    delete nextConfig.smtp_host;
+    delete nextConfig.smtp_port;
+    delete nextConfig.imap_host;
+    delete nextConfig.imap_port;
+    delete nextConfig.username;
+    delete nextConfig.password;
+    return populateEmailOAuthDefaults(nextConfig, provider);
+  }
+
+  delete nextConfig.client_id;
+  delete nextConfig.client_secret;
+  delete nextConfig.authority_url;
+  delete nextConfig.token_url;
+  delete nextConfig.authority_args;
+  delete nextConfig.scopes;
+  return nextConfig;
+};
 
 export const getConnectionIcon = (type) => {
   if (!type) return null;

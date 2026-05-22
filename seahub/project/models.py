@@ -14,7 +14,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
-    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
+    CONNECTION_FIELDS, CONNECTION_DEFAULT_DETAILS, ConnectionType, \
+    GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -22,6 +23,30 @@ from seahub.utils.hasher import AESPasswordHasher
 from seahub.utils import normalize_cache_key
 
 logger = logging.getLogger(__name__)
+
+
+def get_required_connection_fields(connection_type, config=None):
+    if connection_type != ConnectionType.EMAIL.value:
+        return [field for field in CONNECTION_FIELDS.get(connection_type, []) if field.get('is_required')]
+
+    if isinstance(config, str):
+        config = json.loads(config)
+
+    config = config or {}
+    provider = config.get('server_provider') or GENERAL_EMAIL_PROVIDER
+
+    if provider in OAUTH_EMAIL_PROVIDERS:
+        return [
+            {'key': 'client_id', 'is_required': True, 'is_unique': False},
+            {'key': 'client_secret', 'is_required': True, 'is_unique': False},
+            {'key': 'authority_url', 'is_required': True, 'is_unique': False},
+            {'key': 'token_url', 'is_required': True, 'is_unique': False},
+            {'key': 'scopes', 'is_required': True, 'is_unique': False},
+            {'key': 'authority_args', 'is_required': True, 'is_unique': False},
+            {'key': 'refresh_token', 'is_required': True, 'is_unique': False},
+        ]
+
+    return [field for field in CONNECTION_FIELDS.get(connection_type, []) if field.get('is_required')]
 
 
 def generate_random_string_lower_digits(length):
@@ -42,7 +67,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token']
 
 
 def encrypt_config(config):
@@ -495,18 +520,13 @@ class ProjectConnectionsManager(models.Manager):
         if not records:
             return True
 
-        fields = CONNECTION_FIELDS.get(connection_type, [])
-        required_fields = [f for f in fields if f.get('is_required')]
+        required_fields = get_required_connection_fields(connection_type, config)
+        for field in required_fields:
+            key = field.get('key', '')
+            if not config.get(key, ''):
+                return False
 
-        flag = True
-        if required_fields:
-            for field in required_fields:
-                key = field.get('key', '')
-                if not config.get(key, ''):
-                    flag = False
-                break
-
-        return flag
+        return True
 
     def enable_create(self, project_uuid, connection_type, config):
         """ check enable create

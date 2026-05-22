@@ -78,6 +78,16 @@ class ConnectionsAPI {
     return this._sendPostRequest(url, form);
   }
 
+  startEmailOAuth(projectUuid, { name, config }) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/email/oauth/login/';
+    return this.req.post(url, { name, config });
+  }
+
+  queryEmailOAuth(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/email/oauth/query/';
+    return this.req.get(url);
+  }
+
   modifyConnection(projectUuid, connectionID, { name, config }) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();

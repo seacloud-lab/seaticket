@@ -71,7 +71,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   const getConnection = useCallback((connectionID) => {
     const validConnectionId = Number(connectionID);
     return connections.find(c => c.id === validConnectionId);
-  }, [connections]);
+  }, [connections, projectUuid, toggleConnectionDialog]);
 
   const deleteConnection = useCallback((connectionID) => {
     const activeConnectionIndex = connections.findIndex(c => c.id === Number(connectionID));
@@ -122,7 +122,16 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     toggleConnectionDialog(false);
   }, []);
 
-  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowConnectionDialog = false, callback) => {
+  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowConnectionDialog = false, callback, preloadedConnection = null) => {
+    if (preloadedConnection) {
+      const newConnections = [...connections, preloadedConnection];
+      setConnections(newConnections);
+      toggleConnectionDialog(isShowConnectionDialog);
+      isFunction(callback) && callback(preloadedConnection);
+      resetSubmittingState && resetSubmittingState();
+      return;
+    }
+
     connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
       const connection = new Connection(res.data.record);
       const newConnections = [...connections, connection];
@@ -282,7 +291,6 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
             <NewConnectionDialog
               onToggle={closeConnectionDialog}
               onSubmit={createConnection}
-              modifyConnection={modifyConnection}
             />
           )}
         </>

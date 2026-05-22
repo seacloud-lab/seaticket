@@ -44,6 +44,7 @@ from seahub.project.utils import (
     extract_email_addresses,
     collect_github_issue_type_options,
     get_current_table_metadata,
+    persist_project_connection_config,
 )
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
@@ -949,6 +950,9 @@ class AgentActionConfirmView(APIView):
         except EmailSendError as e:
             logger.error('Reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
             return 'Failed to send email.'
+
+        if send_res.get('config_updated'):
+            persist_project_connection_config(project_connection, config)
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         email_data = {
