@@ -68,15 +68,6 @@ const Views = ({ view, toggleView }) => {
     return childrenTotalWidth > containerWidth;
   }, []);
 
-  useEffect(() => {
-    setViewsScroll(isContainerOverflowing());
-    const handleResize = () => {
-      setViewsScroll(isContainerOverflowing());
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isContainerOverflowing]);
-
   const onScroll = useCallback(() => {
     checkAvailableScrollType();
   }, [checkAvailableScrollType]);
@@ -126,9 +117,61 @@ const Views = ({ view, toggleView }) => {
     }, 16);
   }, []);
 
+  const handleInsertView = useCallback((name) => {
+    return insertView(name).then(view => {
+      setTimeout(() => viewsNavContainerRef.current.scrollLeft = 100000, 10);
+    });
+  }, [insertView]);
+
+  const handleToggleViewForAllViews = useCallback((viewID, viewIndex) => {
+    toggleView(viewID);
+    if (!viewsNavContainerRef.current) return;
+    const { offsetWidth, scrollWidth } = viewsNavContainerRef.current;
+    if (viewIndex === 0) {
+      viewsNavContainerRef.current.scrollLeft = 0;
+      return;
+    }
+    if (viewIndex === allViews.length - 1) {
+      viewsNavContainerRef.current.scrollLeft = scrollWidth - offsetWidth;
+      return;
+    }
+    const view = allViews[viewIndex];
+    if (!view) return;
+    const targetViewElement = document.getElementById(`sea-metadata-view-${view._id}`);
+    if (!targetViewElement) return;
+    const { left: viewsLeft } = viewsNavContainerRef.current.getBoundingClientRect();
+    const { left: viewLeft } = targetViewElement.getBoundingClientRect();
+    const left = viewLeft - viewsLeft;
+
+    // Judge whether the target element is within the visible area
+    if (left < 0 || left > offsetWidth) {
+      const childElements = viewsNavContainerRef.current.children;
+      let totalWidth = 0;
+      for (let index = 0; index <= viewIndex; index++) {
+        if (!childElements[index]) break;
+        totalWidth += childElements[index].offsetWidth;
+      }
+      viewsNavContainerRef.current.scrollLeft = totalWidth > offsetWidth ? totalWidth - offsetWidth : 0;
+    }
+  }, [allViews, toggleView]);
+
   useEffect(() => {
     checkAvailableScrollType();
   }, [allViews, checkAvailableScrollType]);
+
+  useEffect(() => {
+    const dom = viewsNavContainerRef.current;
+    const handleResize = () => {
+      if (!dom) return;
+      setViewsScroll(isContainerOverflowing());
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    dom && resizeObserver.observe(dom);
+
+    return () => {
+      dom && resizeObserver.unobserve(dom);
+    };
+  }, []);
 
   const deleteAble = allViews.length > 1 && context.canDeleteView();
   const moveAble = context.canMoveView();
@@ -165,7 +208,7 @@ const Views = ({ view, toggleView }) => {
               viewID={viewID}
               allViews={allViews}
               onMove={moveView}
-              toggleView={toggleView}
+              toggleView={handleToggleViewForAllViews}
             />
             <IconButton
               icon="arrow-left"
@@ -197,7 +240,7 @@ const Views = ({ view, toggleView }) => {
           title={isRenameRef.current ? gettext('Rename view') : gettext('New view')}
           value={isRenameRef.current ? (getViewById(view._id)?.name || '') : ''}
           onToggle={closeViewNameDialog}
-          onSubmit={isRenameRef.current ? (name) => modifyView(view._id, { name }) : insertView}
+          onSubmit={isRenameRef.current ? (name) => modifyView(view._id, { name }) : handleInsertView}
         />
       )}
     </>

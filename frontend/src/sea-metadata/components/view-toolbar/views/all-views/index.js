@@ -138,11 +138,14 @@ const AllViews = ({
               />
             </div>
             <div className="sea-metadata-all-views-content-wrapper" >
-              {views.map((view) => {
+              {views.map((view, index) => {
                 return (
                   <div
                     key={view._id}
-                    onClick={() => toggleView(view._id)}
+                    onClick={() => {
+                      toggleView(view._id, index);
+                      closeAllViewsPopover();
+                    }}
                     className={classnames('sea-metadata-all-views-item', {
                       'sea-metadata-all-views-item-next-position-before': dropRelativePosition === 'before' && currentOverViewId === view._id,
                       'sea-metadata-all-views-item-next-position-after': dropRelativePosition === 'after' && currentOverViewId === view._id,
