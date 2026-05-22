@@ -145,6 +145,7 @@ const ViewItem = ({
           'sea-metadata-view-next-position-after': dropRelativePosition === 'after'
         })}
         ref={containerRef}
+        id={`sea-metadata-view-${view._id}`}
         { ...props }
       >
         <div
