@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
+import base64
 import logging
 import json
+import mimetypes
 import requests
 import jwt
 import uuid
@@ -18,6 +21,8 @@ from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.utils.storage import get_project_file_from_s3
+from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 from seahub.project.constants import ConnectionType, ExtraSourceType
 
 logger = logging.getLogger(__name__)
@@ -52,7 +57,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
 
     try:
         ChatMessageThoughtProcess.objects.create_thought_process(session_uuid, message_id, ai_result.get('thought_process', {}))
-        user_message = ChatMessages.objects.create_message(session_uuid, message_id, 'user', query, attachments=attachments)
+        user_message = ChatMessages.objects.create_message(session_uuid, message_id, 'user', query, attachments=ai_result['attachments'])
         ai_reply_message = ChatMessages.objects.create_message(session_uuid, message_id, 'assistant', ai_result['ai_reply'], sources=json.dumps(ai_result['sources']))
         ai_result.update({
             'user_message_id': user_message.id,
@@ -221,3 +226,56 @@ def strip_content_details_from_attachments(attachments):
         attachment.pop('comments', None)
         attachment.pop('emails', None)
     return new_attachments
+
+
+def split_image_and_other_attachments(project_uuid, attachments):
+    """Split mixed attachments into temp image paths and non-image attachments.
+
+    Returns (temp_image_paths, other_attachments). Image items whose path is
+    not a temp upload URL owned by this project are dropped.
+    """
+    if not isinstance(attachments, list):
+        return [], []
+    prefix = f'/upload-file/project/{project_uuid}/'
+    temp_paths = []
+    others = []
+    for a in attachments:
+        if isinstance(a, dict) and a.get('type') == 'image':
+            path = a.get('path')
+            if isinstance(path, str) and path.startswith(prefix):
+                temp_paths.append(path)
+        else:
+            others.append(a)
+    return temp_paths[:CHAT_IMAGE_MAX_COUNT], others
+
+
+def build_image_attachments(permanent_image_paths):
+    return [
+        {'type': 'image', 'path': p, 'name': os.path.basename(p)}
+        for p in permanent_image_paths
+    ]
+
+
+class ImageProcessingError(Exception):
+    pass
+
+
+def build_ai_images_payload(project_uuid, permanent_image_paths):
+    payload = []
+    file_prefix = f'/file/project/{project_uuid}/'
+    for path in permanent_image_paths:
+        if not isinstance(path, str) or not path.startswith(file_prefix):
+            raise ImageProcessingError(f'Invalid image path: {path}')
+        file_path = path[len(file_prefix):]
+        name = os.path.basename(file_path)
+        mime_type, _ = mimetypes.guess_type(name)
+        if not mime_type or not mime_type.startswith('image/'):
+            raise ImageProcessingError(f'Unsupported image type: {name}')
+        try:
+            body = get_project_file_from_s3(project_uuid, file_path)
+            data = base64.b64encode(body.read()).decode('ascii')
+        except Exception as e:
+            logger.warning(f'Failed to read image {file_path} from s3: {e}')
+            raise ImageProcessingError(f'Failed to read image: {name}')
+        payload.append({'name': name, 'mime_type': mime_type, 'data': data})
+    return payload

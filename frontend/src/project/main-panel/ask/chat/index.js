@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddDocuments, canSelectModel, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canAddAttachments, canSelectModel, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -304,7 +304,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
 
       const _updateChatHistories = (chatHistories, _data, _message_id_prefix = '') => {
         const _chatHistories = chatHistories.slice(0);
-        const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = _data;
+        const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, attachments } = _data;
         const messageIndex = _chatHistories.findIndex(c => c._id === aiReplyMessageId);
         if (messageIndex > -1) return;
         let newChatData = {
@@ -312,8 +312,14 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           [CHAT_MESSAGE_TYPE.SOURCES]: sources,
           [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: _data.thought_process,
         };
-        if (_chatHistories[_chatHistories.length - 1]) {
-          _chatHistories[_chatHistories.length - 1]._id = userMessageId;
+        let lastChatHistory = chatHistories[_chatHistories.length - 1];
+        if (lastChatHistory) {
+          lastChatHistory.message = {
+            ...lastChatHistory.message,
+            [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
+          };
+          lastChatHistory._id = userMessageId;
+          _chatHistories[_chatHistories.length - 1] = lastChatHistory;
         }
         _chatHistories.push(new ChatMessage({
           _id: _message_id_prefix + aiReplyMessageId,
@@ -551,7 +557,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, canA
           readOnly={readOnly}
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
-          canAddDocuments={canAddDocuments}
+          canAddAttachments={canAddAttachments}
           canSelectModel={canSelectModel}
           sendMessage={sendMessage}
           clearContext={clearContext}

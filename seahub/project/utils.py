@@ -26,6 +26,7 @@ from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
+from seahub.utils.storage import delete_record_attachments_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
@@ -212,6 +213,15 @@ def replace_file_url_in_content(content, new_file_urls_dict):
 
 def delete_sessions(session_uuids):
     try:
+        session_project_map = dict(
+            ChatSessions.objects.filter(session_uuid__in=session_uuids).values_list('session_uuid', 'project_uuid')
+        )
+        for session_uuid, project_uuid in session_project_map.items():
+            try:
+                delete_record_attachments_from_s3(project_uuid, 'chat', session_uuid)
+            except Exception as e:
+                logger.warning('clean s3 chat images for session %s error: %s', session_uuid, e)
+
         ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
         ChatMessageThoughtProcess.objects.filter(session_uuid__in=session_uuids).delete()
         ChatSessions.objects.filter(session_uuid__in=session_uuids).delete()

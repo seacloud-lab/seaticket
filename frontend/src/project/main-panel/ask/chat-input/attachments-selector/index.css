@@ -1,0 +1,11 @@
+.seaqa-ask-chat-attachments-selector {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 10px !important;
+  border-radius: 8px;
+}
+
+.seaqa-ask-chat-attachments-selector .seaqa-icon-svg-plus {
+  height: 14px !important;
+  width: 14px !important;
+}

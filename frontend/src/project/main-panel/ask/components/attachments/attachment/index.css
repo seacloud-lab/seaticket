@@ -1,22 +1,47 @@
 .seaqa-ai-chat-attachment {
-  height: 36px;
-  max-width: 240px;
+  height: 64px;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
-  padding: 0 12px;
   border-radius: 8px;
   background-color: #F7F7F5;
   flex-shrink: 0;
   cursor: pointer;
+  gap: 4px;
+  border: 1px solid var(--bs-border-tertiary-color);
 }
 
-.seaqa-ai-chat-attachment.seaqa-ai-chat-attachment-remove-able {
-  padding-right: 6px;
+.seaqa-ai-chat-attachment:not(.image) {
+  padding: 8px 12px;
+  flex-direction: column;
+  max-width: 200px;
+}
+
+.seaqa-ai-chat-attachment-remove-able {
+  position: relative;
+}
+
+.seaqa-ai-chat-attachment:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04));
+}
+
+.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-name {
+  width: 100%;
+  font-weight: 500;
+}
+
+.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-type-info {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-ai-chat-attachment .seaqa-project-ai-attachment-icon {
   color: var(--bs-icon-color);
+  height: 12px;
+  width: 12px;
 }
 
 .seaqa-ai-chat-attachment .seaqa-project-ai-attachment-icon.seaqa-project-ticket-state-circle-check-icon {
@@ -27,20 +52,73 @@
   color: var(--ticket-close-color);
 }
 
-.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn {
+/* image attachment */
+.seaqa-ai-chat-attachment.image {
+  width: 64px;
+  padding: 0;
+}
+
+.seaqa-ai-chat-attachment.image img {
+  width: 100%;
+  height: 100%;
+}
+
+/* image loading */
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-uploading,
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-upload-failed {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: all;
+  z-index: 1;
+}
+
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-uploading .seaqa-loading-icon {
+  height: 16px;
+  width: 16px;
+}
+
+/* image failed */
+.seaqa-ai-chat-attachment.image.failed {
+  border-color: #CD201F;
+}
+
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-upload-failed {
   display: flex;
-  margin-left: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #fff;
+}
+
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-upload-failed .seaqa-icon-svg-refresh {
+  color: #fff;
+}
+
+.seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-upload-failed .seaqa-ai-chat-attachment-upload-failed-tip {
+  font-size: 12px;
+}
+
+/* remove */
+.seaqa-ai-chat-attachment:hover .seaqa-ai-chat-attachment-remove-btn {
+  display: flex;
+  z-index: 2;
+}
+
+.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn .seaqa-icon-svg,
 .seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn:hover .seaqa-icon-svg {
-  color: var(--bs-icon-color) !important;
-}
-
-.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn:hover {
-  background-color: var(--option-bg-color);
-}
-
-.seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-remove-btn .seaqa-icon-svg {
-  margin-top: 0;
+  color: #fff !important;
 }

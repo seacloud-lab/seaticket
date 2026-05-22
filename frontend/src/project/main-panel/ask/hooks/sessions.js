@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { ChatSession } from '../models';
+import { AttachmentObject, ChatSession } from '../models';
 import { useAskPage } from './page-type';
-import { ASK_PAGE_SLUG_ID, SESSION_TAB_TYPE } from '../constants';
+import { ASK_PAGE_SLUG_ID, CHAT_ATTACHMENT_TYPE, SESSION_TAB_TYPE } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../constants';
 
@@ -81,11 +81,20 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
     setSessions(_updateSessions);
     setTeamSessions(_updateSessions);
 
+    const attachmentsForServer = Array.isArray(attachments) && attachments.length > 0 ? attachments.filter(attachment => {
+      if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) return attachment.status === 'done';
+      return true;
+    }).map(attachment => {
+      if (attachment instanceof AttachmentObject) return attachment.to_json();
+      const newAttachment = new AttachmentObject(attachment);
+      return newAttachment.to_json();
+    }) : null;
+
     const params = {
       project_uuid: projectUuid,
       query: problem,
       session_uuid: sessionId,
-      attachments: attachments,
+      attachments: attachmentsForServer,
       model: model,
       clear_context: clearContext,
       stream: true,
