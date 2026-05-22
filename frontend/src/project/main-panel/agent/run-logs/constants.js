@@ -31,7 +31,6 @@ const ACTION_ICON_MAPPER = {
 // Tool names that carry a user-editable content payload
 const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_notify_assignee': true,
-  'suggest_add_comment': true,
   'suggest_reply': true,
   'suggest_create_ticket': true,
   'suggest_modify_type': true,
