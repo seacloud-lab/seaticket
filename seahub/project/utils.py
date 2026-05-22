@@ -290,7 +290,7 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = GeneralTaskUserTable.gen_table_name(connection_id)
+    table_name = get_table_name('GeneralTaskUserTable', connection_id)
     try:
         sql = f"SELECT `email`, `name` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])

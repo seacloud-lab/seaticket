@@ -17,7 +17,7 @@ def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, t
     if not tasks:
         return
 
-    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    table_name = get_table_name('GeneralTaskTable', connection_id)
     metadata = seadb_api.get_base_metadata(project_uuid)
     table_info = get_current_table_metadata(metadata.get('tables') or [], table_name)
     if not table_info:
@@ -27,9 +27,9 @@ def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, t
     columns = table_info.get('columns') or []
     column_name_to_meta = {column.get('name'): column for column in columns}
     target_columns = [
-        GeneralTaskTable.status.name,
-        GeneralTaskTable.size.name,
-        GeneralTaskTable.priority.name,
+        get_column_name('GeneralTaskTable', 'status'),
+        get_column_name('GeneralTaskTable', 'size'),
+        get_column_name('GeneralTaskTable', 'priority'),
     ]
 
     desired_values = {column_name: set() for column_name in target_columns}
@@ -78,24 +78,23 @@ def build_general_task_row_data(task, sync_time=None):
     if not isinstance(participants, list):
         participants = []
     return {
-        GeneralTaskTable.source_task_id.name: task.get('task_id') or task.get('id'),
-        GeneralTaskTable.url.name: task.get('url'),
-        GeneralTaskTable.title.name: task.get('title', ''),
-        GeneralTaskTable.status.name: task.get('status'),
-        GeneralTaskTable.size.name: task.get('size'),
-        GeneralTaskTable.priority.name: task.get('priority'),
-        GeneralTaskTable.assignees.name: assignees,
-        GeneralTaskTable.participants.name: participants,
-        GeneralTaskTable.version.name: task.get('version', ''),
-        GeneralTaskTable.others.name: others,
-        GeneralTaskTable.content.name: task.get('description') or task.get('content') or '',
-        GeneralTaskTable.due_date.name: task.get('due_date'),
-        GeneralTaskTable.modified_time.name: task.get('modified_time') or task.get('_mtime'),
-        GeneralTaskTable.created_time.name: task.get('created_time') or task.get('_ctime'),
-        GeneralTaskTable.sync_time.name: now,
-        GeneralTaskTable.record_modified_time.name: now,
-        GeneralTaskTable.deleted.name: bool(task.get('deleted', False)),
-        GeneralTaskTable.linked_ticket.name: int(task.get('linked_ticket')) if task.get('linked_ticket') else None,
+        get_column_name('GeneralTaskTable', 'source_task_id'): str(task.get('task_id')).strip(),
+        get_column_name('GeneralTaskTable', 'url'): str(task.get('url') or '').strip(),
+        get_column_name('GeneralTaskTable', 'title'): task.get('title', ''),
+        get_column_name('GeneralTaskTable', 'status'): task.get('status'),
+        get_column_name('GeneralTaskTable', 'size'): task.get('size'),
+        get_column_name('GeneralTaskTable', 'priority'): task.get('priority'),
+        get_column_name('GeneralTaskTable', 'assignees'): assignees,
+        get_column_name('GeneralTaskTable', 'participants'): participants,
+        get_column_name('GeneralTaskTable', 'version'): task.get('version', ''),
+        get_column_name('GeneralTaskTable', 'others'): others,
+        get_column_name('GeneralTaskTable', 'content'): task.get('description') or task.get('content') or '',
+        get_column_name('GeneralTaskTable', 'due_date'): task.get('due_date'),
+        get_column_name('GeneralTaskTable', 'modified_time'): task.get('modified_time') or now,
+        get_column_name('GeneralTaskTable', 'created_time'): task.get('created_time') or now,
+        get_column_name('GeneralTaskTable', 'sync_time'): now,
+        get_column_name('GeneralTaskTable', 'record_modified_time'): now,
+        get_column_name('GeneralTaskTable', 'deleted'): bool(task.get('deleted', False)),
     }
 
 
@@ -207,56 +206,40 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
 
 
 def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
-    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    schema = get_seadb_table_schemas()
+    table_defs = (schema.get('tables') or {})
+
+    general_task_schema = table_defs.get('GeneralTaskTable') or {}
+    table_name = get_table_name('GeneralTaskTable', connection_id)
     res = seadb_api.create_table(project_uuid, table_name)
     table_id = res['table_id']
-    for column in GeneralTaskTable.get_fields():
+    for column_name, column_schema in (general_task_schema.get('columns') or {}).items():
         mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
+            'column_name': column_name,
+            'column_type': column_schema.get('column_type'),
         }
-        if column.data:
-            mapped_column['column_data'] = column.data
+        if column_schema.get('column_data'):
+            mapped_column['column_data'] = column_schema.get('column_data')
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    index_column_names = [
-        GeneralTaskTable.source_task_id.name,
-        GeneralTaskTable.title.name,
-        GeneralTaskTable.status.name,
-        GeneralTaskTable.priority.name,
-        GeneralTaskTable.modified_time.name,
-        GeneralTaskTable.created_time.name,
-        GeneralTaskTable.record_modified_time.name,
-        GeneralTaskTable.deleted.name,
-        GeneralTaskTable.linked_ticket.name,
-    ]
+    for index_item in general_task_schema.get('indexes', []):
+        seadb_api.create_column_index(project_uuid, table_id, _normalize_index(index_item))
 
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-    task_user_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
+    task_user_schema = table_defs.get('GeneralTaskUserTable') or {}
+    task_user_table_name = get_table_name('GeneralTaskUserTable', connection_id)
     res = seadb_api.create_table(project_uuid, task_user_table_name)
     table_id = res['table_id']
-    for column in GeneralTaskUserTable.get_fields():
+    for column_name, column_schema in (task_user_schema.get('columns') or {}).items():
         mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
+            'column_name': column_name,
+            'column_type': column_schema.get('column_type'),
         }
-        if column.data:
-            mapped_column['column_data'] = column.data
+        if column_schema.get('column_data'):
+            mapped_column['column_data'] = column_schema.get('column_data')
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    for column_name in (
-        GeneralTaskUserTable.email.name,
-        GeneralTaskUserTable.record_modified_time.name,
-    ):
-        seadb_api.create_column_index(project_uuid, table_id, [column_name])
+    for index_item in task_user_schema.get('indexes', []):
+        seadb_api.create_column_index(project_uuid, table_id, _normalize_index(index_item))
 
 def get_connection_table_name(connection_type, connection_id):
     schema_table_name = SCHEMA_TABLE_NAME_CONNECTION.get(connection_type)
@@ -694,7 +677,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
-    general_task_table_name = GeneralTaskTable.gen_table_name(connection_id)
+    general_task_table_name = get_table_name('GeneralTaskTable', connection_id)
     from seahub.tickets.ticket_utils import get_ticket_title
     sql = (
         f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
@@ -869,7 +852,7 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
     results = {}
     for result in seadb_api.query_rows(project_uuid, sql).get('results', []):
         results[result['_pk']] = {
-            'title': result['title'],
+            get_column_name('GeneralTaskTable', 'title'): result['title'],
             'ai_summary': result['ai_summary']
         }
     return results

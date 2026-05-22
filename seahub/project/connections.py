@@ -1399,7 +1399,8 @@ class ProjectConnectionRecordsView(APIView):
         seadb_api = SeaDBAPI()
         row_data = build_general_task_row_data(created_task)
         try:
-            res = seadb_api.insert_rows(project_uuid, GeneralTaskTable.gen_table_name(connection_id), [row_data])
+            ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
+            res = seadb_api.insert_rows(project_uuid, get_table_name('GeneralTaskTable', connection_id), [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 raise RuntimeError('insert_rows returned invalid pks')
