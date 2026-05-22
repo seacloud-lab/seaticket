@@ -59,6 +59,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   const recordRef = useRef(null);
   const linkedTicketTitle = useRef('');
+  const autoMarkedReadRecordIdRef = useRef(childrenPageSlugId);
 
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
   const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
@@ -216,6 +217,22 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       }),
     );
   }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
+
+  const unreadColumn = useMemo(() => {
+    return getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
+  }, [columns]);
+
+  useEffect(() => {
+    if (connection?.type !== CONNECTION_TYPE.EMAIL || !record || !unreadColumn || autoMarkedReadRecordIdRef.current === null) return;
+
+    const isUnread = getCellValueByColumn(record, unreadColumn);
+    if (!isUnread) return;
+
+    handleOthersChange({ [unreadColumn.name]: false }, () => {
+      autoMarkedReadRecordIdRef.current = null;
+      modifyLocalRow(connectionTableName, childrenPageSlugId, { [unreadColumn.key]: false });
+    });
+  }, [connection?.type, handleOthersChange, record, unreadColumn, connectionTableName, modifyLocalRow]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = {
