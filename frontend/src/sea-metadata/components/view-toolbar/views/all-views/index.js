@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useMemo } from 'react';
 import classnames from 'classnames';
-import { SearchInput, IconButton, CustomizeDropdownItemIcon, CustomizeDropdownItemText, CustomizePopover, EmptyTip } from '@/components';
+import { SearchInput, IconButton, CustomizeDropdownItemText, CustomizePopover, EmptyTip } from '@/components';
 import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import context from '@/sea-metadata/context';
 
@@ -144,7 +144,7 @@ const AllViews = ({
                     onDrop={(event) => {onDrop(event, view._id);}}
                   >
                     <div className="sea-metadata-all-views-item-left text-truncate" draggable={true} title={view.name}>
-                      {canManageView && (<CustomizeDropdownItemIcon symbol="drag" className="mr-3" />)}
+                      {canManageView && (<IconButton icon="drag" className="sea-metadata-all-views-item-drag-btn mr-3" />)}
                       <CustomizeDropdownItemText>{view.name}</CustomizeDropdownItemText>
                     </div>
                     <IconButton icon={view._id === viewID ? 'check-mark-option' : ''} className="no-hover-bg" />
