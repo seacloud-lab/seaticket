@@ -355,7 +355,8 @@ class TestPortalIssueMetadataView:
         }
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.get_current_table_metadata', return_value=issue_meta):
+                patch('seahub.portal.apis.get_current_table_metadata', return_value=issue_meta), \
+                patch('seahub.portal.apis.get_column_name', side_effect=lambda _table, name: name):
             resp = PortalIssueMetadataView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
