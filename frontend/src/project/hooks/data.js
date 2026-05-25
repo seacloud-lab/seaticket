@@ -388,7 +388,7 @@ export const DataProvider = ({
       let table = data[tableName];
       let _rowUpdate = { ...rowUpdate };
       if (table) {
-        if (res.data.row) {
+        if (res?.data?.row) {
           const columns = Object.values(table?.key_column_map || {});
           const rowUpdateCallback = convertRowToKeyValue(res.data.row, { data: { columns }, typesData });
           _rowUpdate = { ...rowUpdate, ...rowUpdateCallback };
