@@ -46,6 +46,7 @@ def project_creator(real_project):
         username=owner,
         is_authenticated=True,
         is_active=True,
+        is_staff=False,
         permissions=SimpleNamespace(can_add_project=lambda: True),
         org=SimpleNamespace(org_id=1),
     )

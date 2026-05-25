@@ -165,7 +165,7 @@ class TestProjectConnectionsView:
         with patch('seahub.project.connections.ProjectConnections.objects.create', return_value=record), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.seadb_models.utils.init_site_seadb_table'), \
-                patch('seahub.project.connections.add_connection_sync_task') as add_task_mock:
+                patch('seahub.utils.indexer.add_connection_sync_task') as add_task_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 201
