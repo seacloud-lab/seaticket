@@ -587,6 +587,7 @@ class AgentActionConfirmView(APIView):
                 reply_content,
             )
             comment_id = result.get('id')
+            comment_author = result.get('author', '')
             comment_created_at = result.get('created_at', '')
             logger.info(f'Added reply comment #{comment_id} to GitHub issue {ctx["record_id"]}')
         except Exception as e:
@@ -614,7 +615,7 @@ class AgentActionConfirmView(APIView):
             comment_row = {
                 GithubIssueCommentsTable.comment_id.name: comment_id,
                 GithubIssueCommentsTable.issue_id.name: ctx['issue_id'],
-                GithubIssueCommentsTable.author.name: ctx['author'],
+                GithubIssueCommentsTable.author.name: comment_author,
                 GithubIssueCommentsTable.content.name: reply_content,
                 GithubIssueCommentsTable.created_time.name: comment_created_at,
                 GithubIssueCommentsTable.modified_time.name: comment_created_at,
