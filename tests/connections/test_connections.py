@@ -164,7 +164,7 @@ class TestProjectConnectionsView:
 
         with patch('seahub.project.connections.ProjectConnections.objects.create', return_value=record), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.project.connections.init_site_seadb_table'), \
+                patch('seahub.seadb_models.utils.init_site_seadb_table'), \
                 patch('seahub.project.connections.add_connection_sync_task') as add_task_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 
@@ -318,6 +318,8 @@ class TestProjectEmailOAuthCallbackView:
         )
         request.user = project_creator
         request.session = session
+        request.is_mobile = False
+        request.is_tablet = False
 
         oauth_session = Mock()
         oauth_session.fetch_token.return_value = {
