@@ -103,7 +103,7 @@ const Attachments = ({
       {imageAttachmentIndex > -1 && (
         <ImagePreviewer
           index={imageAttachmentIndex}
-          images={imageAttachments.map(item => item.path)}
+          images={imageAttachments.map(item => item.preview_path || item.path)}
           onToggle={(event) => {
             event.preventDefault();
             setImageAttachmentIndex(-1);

@@ -19,6 +19,7 @@ class AttachmentObject {
     if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       this.status = object.status || 'done'; // uploading, failed, done
       this.path = object.path || object.value || '';
+      this.preview_path = object.preview_path || '';
       this.image = object.image || null;
       this.icon = 'image';
     }

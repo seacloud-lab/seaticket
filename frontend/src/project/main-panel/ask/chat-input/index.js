@@ -88,6 +88,7 @@ const ChatInput = forwardRef(({
       const finalAttachment = new AttachmentObject({
         type: CHAT_ATTACHMENT_TYPE.IMAGE,
         path: res.data.url,
+        preview_path: URL.createObjectURL(newImage),
         status: 'done',
         _id: attachmentId,
       });
