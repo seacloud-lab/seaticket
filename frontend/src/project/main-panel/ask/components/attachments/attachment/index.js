@@ -54,14 +54,14 @@ const Attachment = ({ attachment, index, isShowBigImage, onRemove, onReupload, o
   }, [isShowBigImage, attachment.type, attachment.path]);
 
   if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
-    const { status, path, image } = attachment;
+    const { status, preview_path, path, image } = attachment;
     return (
       <div
         className={classnames('seaqa-ai-chat-attachment image', { 'seaqa-ai-chat-attachment-remove-able': onRemove, 'failed': status === 'failed' })}
         onClick={status === 'done' ? onClick : () => {}}
         style={isShowBigImage ? imageStyle : {}}
       >
-        <img src={path} ref={imageRef} alt={gettext('Image')} className="seaqa-ai-chat-attachment-img" />
+        <img src={preview_path || path} ref={imageRef} alt={gettext('Image')} className="seaqa-ai-chat-attachment-img" />
         {onRemove && status !== 'uploading' && (
           <IconTooltip
             hoverBackground={false}
