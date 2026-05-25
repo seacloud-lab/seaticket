@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
-import ProcessDetails from './process-details';
+import ProcessDetails from '@/project/components/thought-process/process-details';
 import { isObject } from '@/utils/type-detection';
 import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 import { Attachments } from '../../../components';
@@ -410,7 +410,13 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         {!isLoading && (
           <div className="seaqa-ai-thought-process">
             {value.map((v, index) => {
-              return (<ProcessDetails value={v} key={index} />);
+              return (
+                <ProcessDetails
+                  value={v}
+                  key={index}
+                  statisticsPrimaryKey={THOUGHT_PROCESS_TYPE.STATISTICS.key}
+                />
+              );
             })}
           </div>
         )}

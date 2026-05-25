@@ -705,6 +705,8 @@ LLM_MODELS = [
     for model in validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS)) if not model.get('hidden', False)
 ]
 
+THOUGHT_PROCESS_ENABLED = configs.get('THOUGHT_PROCESS', {}).get('enabled', False)
+
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 

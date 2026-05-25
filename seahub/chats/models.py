@@ -66,6 +66,8 @@ class ChatSessions(models.Model):
 class ChatMessageThoughtProcessManager(models.Manager):
     def create_thought_process(self, session_uuid, message_id, thought_process):
         """Create a new chat message"""
+        if not thought_process:
+            return None
         record = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
@@ -75,7 +77,8 @@ class ChatMessageThoughtProcessManager(models.Manager):
         return record
     
     def get_thought_process_from_session_uuid_and_message_id(self, session_uuid, message_id):
-        return self.filter(session_uuid=session_uuid, message_id=message_id).first().to_dict()['thought_process']
+        record = self.filter(session_uuid=session_uuid, message_id=message_id).first()
+        return record.to_dict()['thought_process'] if record else {}
 
     def get_thought_process_from_session_uuid_and_message_ids(self, session_uuid, message_ids):
         """

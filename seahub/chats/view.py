@@ -221,8 +221,6 @@ class ChatMessagesView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         
-        developer_mode = project.to_dict()['settings'].get('developer_mode', False)
-
         workspace = project.workspace
 
         username = request.user.username
@@ -240,13 +238,12 @@ class ChatMessagesView(APIView):
 
             message_ids = set([message.message_id for message in messages])
 
-            if developer_mode:
-                message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
+            message_id_thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
 
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if developer_mode and message.role == 'assistant':
+                if message.role == 'assistant':
                     thought_process = message_id_thought_process_map.get(message.message_id, {})
                     if thought_process:
                         data['thought_process'] = thought_process
@@ -301,8 +298,7 @@ class ChatView(APIView):
                 'session_uuid': session_uuid
             }
 
-            if project.to_dict()['settings'].get('developer_mode', False):
-                result['thought_process'] = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(session_uuid, ai_reply['message_id'])
+            result['thought_process'] = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(session_uuid, ai_reply['message_id'])
 
             return Response(result)
 

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import ActionItem from './action-item';
 import RunStatisticsDialog from './run-statistics-dialog';
+import ThoughtProcessDialog from './thought-process-dialog';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
 import IconTooltip from '@/components/icon-tooltip';
@@ -14,6 +15,7 @@ import { ResourceDetailsDialog } from '@/project/components';
 import { getResourceIconURL } from '@/project/utils';
 
 const { projectUuid } = window.app.pageOptions;
+const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
 const RunCardHeader = ({ item }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
@@ -143,6 +145,7 @@ const RunCard = ({
   const [isExpanded, setIsExpanded] = useState(isCardExpanded);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
+  const [showThoughtProcessDialog, setShowThoughtProcessDialog] = useState(false);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
@@ -162,6 +165,16 @@ const RunCard = ({
 
   const handleCloseStatistics = useCallback(() => {
     setShowStatisticsDialog(false);
+  }, []);
+
+  const handleShowThoughtProcess = useCallback((e) => {
+    e.stopPropagation();
+    setShowThoughtProcessDialog(true);
+    setDropdownOpen(false);
+  }, []);
+
+  const handleCloseThoughtProcess = useCallback(() => {
+    setShowThoughtProcessDialog(false);
   }, []);
 
   return (
@@ -211,6 +224,11 @@ const RunCard = ({
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>
+              {thoughtProcessEnabled && (
+                <DropdownItem onClick={handleShowThoughtProcess}>
+                  {gettext('Thought process')}
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </Dropdown>
           <IconTooltip
@@ -258,13 +276,13 @@ const RunCard = ({
               }).map((action, actionIndex) => (
                 <ActionItem
                   key={action.id || actionIndex}
-                  action={action}
-                  runId={id}
-                  onConfirm={onConfirmAction}
-                  onCancel={onCancelAction}
-                  onViewContent={onViewContent}
-                />
-              ))}
+                    action={action}
+                    runId={id}
+                    onConfirm={onConfirmAction}
+                    onCancel={onCancelAction}
+                    onViewContent={onViewContent}
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -280,6 +298,9 @@ const RunCard = ({
       }
       {showStatisticsDialog && (
         <RunStatisticsDialog run={run} onToggle={handleCloseStatistics} />
+      )}
+      {showThoughtProcessDialog && (
+        <ThoughtProcessDialog runId={id} onToggle={handleCloseThoughtProcess} />
       )}
     </div>
   );

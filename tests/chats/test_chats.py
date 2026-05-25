@@ -1,4 +1,3 @@
-import json
 from unittest.mock import patch
 from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView
 from seahub.chats.models import ChatSessions, ChatMessages
@@ -149,9 +148,7 @@ class TestChatMessagesView:
         assert user_msg['attachments'][0]['foo'] == 1
 
         assistant_msg = next(m for m in resp.data['messages'] if m['role'] == 'assistant')
-        settings_dict = json.loads(project.settings) if project.settings else {}
-        if settings_dict.get('developer_mode', False):
-            assert assistant_msg['thought_process'] == {'x': 1}
+        assert assistant_msg['thought_process'] == {'x': 1}
 
 
 class TestChatView:
