@@ -40,14 +40,6 @@ const Settings = ({
         />
       )}
       <SwitchSettingsItem
-        title={gettext('Developer mode')}
-        placeholder={gettext('Developer mode')}
-        tip={gettext('Enable developer mode to show advanced features for development and debugging purposes.')}
-        value={settings.developer_mode || false}
-        className="mb-4"
-        onChange={(value, callback) => modifySettings({ developer_mode: value }, callback)}
-      />
-      <SwitchSettingsItem
         title={gettext('Support portal')}
         placeholder={gettext('Support portal')}
         tip={gettext('Enable support portal')}

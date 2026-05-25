@@ -290,8 +290,7 @@ class AgentRunDetailView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            settings = project.to_dict().get('settings', {})
-            include_details = settings.get('developer_mode', False) and request.GET.get('include_details') == 'true'
+            include_details = request.GET.get('include_details') == 'true'
             result = get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=include_details)
         except ValueError as e:
             logger.error(f'Error getting agent run detail: {e}')

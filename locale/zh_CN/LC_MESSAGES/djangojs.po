@@ -2667,17 +2667,6 @@ msgstr "请输入搜索关键词"
 msgid "No results"
 msgstr "没有结果"
 
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:21
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:29
-msgid "Developer mode"
-msgstr "开发者模式"
-
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:32
-msgid ""
-"Enable developer mode to show advanced features for development and "
-"debugging purposes."
-msgstr "启用开发者模式，以显示用于开发和调试的高级功能。"
-
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:122
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:214
 msgid "opened"

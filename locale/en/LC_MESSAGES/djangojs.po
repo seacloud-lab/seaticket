@@ -2650,17 +2650,6 @@ msgstr ""
 msgid "No results"
 msgstr ""
 
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:21
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:29
-msgid "Developer mode"
-msgstr ""
-
-#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:32
-msgid ""
-"Enable developer mode to show advanced features for development and "
-"debugging purposes."
-msgstr ""
-
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:122
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:214
 msgid "opened"

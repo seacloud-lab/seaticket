@@ -5,14 +5,16 @@ import ThoughtProcessDialog from './thought-process-dialog';
 
 import './index.css';
 
-const ThoughtProcess = ({ value, projectUuid, projectName, workspaceID, settings }) => {
+const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
+
+const ThoughtProcess = ({ value, projectUuid, projectName, workspaceID }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
   const openDetails = useCallback(() => {
     setIsShowDetails(true);
   }, []);
 
-  if (!settings.developer_mode || !value) return null;
+  if (!thoughtProcessEnabled || !value) return null;
 
   return (
     <>
@@ -29,7 +31,6 @@ const ThoughtProcess = ({ value, projectUuid, projectName, workspaceID, settings
           projectUuid={projectUuid}
           projectName={projectName}
           workspaceID={workspaceID}
-          settings={settings}
           onToggle={() => setIsShowDetails(false)}
         />
       )}

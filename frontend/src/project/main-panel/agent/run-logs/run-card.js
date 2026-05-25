@@ -15,6 +15,7 @@ import { ResourceDetailsDialog } from '@/project/components';
 import { getResourceIconURL } from '@/project/utils';
 
 const { projectUuid } = window.app.pageOptions;
+const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
 const RunCardHeader = ({ item }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
@@ -116,7 +117,6 @@ const RunCard = ({
   onConfirmAction,
   onCancelAction,
   onViewContent,
-  developerMode,
 }) => {
   const { id, started_at, items = [], actions = [], events } = run;
   const eventTypes = getUniqueEventTypes(events);
@@ -224,7 +224,7 @@ const RunCard = ({
               <DropdownItem onClick={handleShowStatistics}>
                 {gettext('Running log details')}
               </DropdownItem>
-              {developerMode && (
+              {thoughtProcessEnabled && (
                 <DropdownItem onClick={handleShowThoughtProcess}>
                   {gettext('Thought process')}
                 </DropdownItem>
@@ -260,7 +260,6 @@ const RunCard = ({
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}
-                    developerMode={developerMode}
                   />
                 ))}
               </div>
@@ -277,14 +276,13 @@ const RunCard = ({
               }).map((action, actionIndex) => (
                 <ActionItem
                   key={action.id || actionIndex}
-                  action={action}
-                  runId={id}
-                  onConfirm={onConfirmAction}
-                  onCancel={onCancelAction}
-                  onViewContent={onViewContent}
-                  developerMode={developerMode}
-                />
-              ))}
+                    action={action}
+                    runId={id}
+                    onConfirm={onConfirmAction}
+                    onCancel={onCancelAction}
+                    onViewContent={onViewContent}
+                  />
+                ))}
             </div>
           )}
         </div>

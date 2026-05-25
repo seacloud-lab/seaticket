@@ -52,6 +52,7 @@
             permission: '{{ permission }}',
             projectName: '{{ project_name|escapejs }}',
             enableGeneralTask: {% if enable_general_task %} true {% else %} false {% endif %},
+            thoughtProcessEnabled: {% if thought_process_enabled %} true {% else %} false {% endif %},
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',
             icon: '{{ icon|escapejs }}',
