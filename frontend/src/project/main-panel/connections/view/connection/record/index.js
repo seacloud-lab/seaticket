@@ -210,6 +210,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       () => connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, recordID, update).then(res => {
         setRecord({ ...record, ...update });
         callback && callback();
+        return res;
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
         toaster.danger(errorMessage);
@@ -219,8 +220,9 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
 
   const unreadColumn = useMemo(() => {
+    if (permission !== PERMISSION_TYPES.READ_WRITE) return null;
     return getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
-  }, [columns]);
+  }, [columns, permission]);
 
   useEffect(() => {
     if (connection?.type !== CONNECTION_TYPE.EMAIL || !record || !unreadColumn || autoMarkedReadRecordIdRef.current === null) return;
@@ -230,7 +232,6 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
     handleOthersChange({ [unreadColumn.name]: false }, () => {
       autoMarkedReadRecordIdRef.current = null;
-      modifyLocalRow(connectionTableName, childrenPageSlugId, { [unreadColumn.key]: false });
     });
   }, [connection?.type, handleOthersChange, record, unreadColumn, connectionTableName, modifyLocalRow]);
 
