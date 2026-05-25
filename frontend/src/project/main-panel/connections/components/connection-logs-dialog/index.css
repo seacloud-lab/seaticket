@@ -12,3 +12,8 @@
   padding: 0px;
   overflow: hidden;
 }
+
+.connection-logs-dialog .modal-content .modal-body .connection-logs-content {
+  height: 100%;
+  overflow-y: auto;
+}
