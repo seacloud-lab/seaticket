@@ -22,7 +22,7 @@ from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtPr
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
     record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments, \
     split_image_and_other_attachments, build_image_attachments, build_ai_images_payload, \
-    ImageProcessingError
+    ImageProcessingError, generate_session_title
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -392,6 +392,8 @@ class ChatView(APIView):
             error_msg = 'There are unfinished tasks in the current session, please try again later.'
             return api_error(status.HTTP_409_CONFLICT, error_msg)
 
+        should_generate_title = ChatMessages.objects.get_messages_by_session(session_uuid).count() == 0
+
         try:
             message_id = gen_message_id(session.session_uuid)
         except Exception as e:
@@ -474,7 +476,7 @@ class ChatView(APIView):
         if stream:
             try:
                 return StreamingHttpResponse(
-                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), session_uuid, message_id, query, attachments),
+                    process_stream_ai_reply(chat_task_id_info, get_ai_reply(params), session_uuid, message_id, query, attachments, project_uuid=project_uuid, org_id=org_id, should_generate_title=should_generate_title),
                     content_type='text/event-stream',
                     headers={
                         'Cache-Control': 'no-cache',
@@ -499,5 +501,13 @@ class ChatView(APIView):
             }
 
         response = record_message_to_db(ai_response, session_uuid, message_id, query, attachments)
+        if should_generate_title:
+            response['session_name'] = generate_session_title(
+                session_uuid=session_uuid,
+                project_uuid=project_uuid,
+                org_id=org_id,
+                query=query,
+                ai_reply=response.get('ai_reply', ''),
+            )
         cache.delete(chat_task_id_info)
         return Response(response)

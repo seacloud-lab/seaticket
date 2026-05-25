@@ -255,6 +255,9 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
         return;
       }
       const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
+      if (data.session_name) {
+        modifyLocalSession(reply_session_id, { name: data.session_name });
+      }
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
       let newChatData = {
@@ -305,6 +308,9 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       const _updateChatHistories = (chatHistories, _data, _message_id_prefix = '') => {
         const _chatHistories = chatHistories.slice(0);
         const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, attachments } = _data;
+        if (_data.session_name) {
+          modifyLocalSession(reply_session_id, { name: _data.session_name });
+        }
         const messageIndex = _chatHistories.findIndex(c => c._id === aiReplyMessageId);
         if (messageIndex > -1) return;
         let newChatData = {
