@@ -270,15 +270,15 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   return (
     <>
-      <div className={classnames('seaqa-connection--record-details', { 'small': isSmallScreen })} ref={recordRef}>
-        <div className="seaqa-connection--record-details-header">
+      <div className={classnames('seaqa-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
+        <div className="seaqa-connection-record-details-header">
           {isRenaming ? (
             <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={modifyGitHubRecord} />
           ) : (
             <>
-              <div className="seaqa-connection--record-details-header-left">
+              <div className="seaqa-connection-record-details-header-left">
                 {title && (<div className="text-truncate d-inline-block" title={title}>{title}</div>)}
-                {title && isOutdated && (<Option option={{ name: gettext('Outdated'), color: '#999', text_color: '#fff' }} className="seaqa-connection--record-outdated-option" />)}
+                {title && isOutdated && (<Option option={{ name: gettext('Outdated'), color: '#999', text_color: '#fff' }} className="seaqa-connection-record-outdated-option" />)}
                 {url && (
                   <IconButton
                     className="open-in-new-tab-btn"
@@ -296,7 +296,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
                   />
                 )}
               </div>
-              <div className="seaqa-connection--record-details-header-right">
+              <div className="seaqa-connection-record-details-header-right">
                 {tools.length > 0 && (
                   <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
                     <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
@@ -324,8 +324,8 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
             </>
           )}
         </div>
-        <div className={classnames('seaqa-connection--record-details-body', { 'empty': !record })}>
-          <div className="seaqa-connection--record-details-container">
+        <div className={classnames('seaqa-connection-record-details-body', { 'empty': !record })}>
+          <div className="seaqa-connection-record-details-container">
             <ConnectionResourceDetails
               resource={resource}
               connection={connection}
@@ -335,7 +335,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
             />
           </div>
           {record && (
-            <div className="seaqa-connection--record-details-others">
+            <div className="seaqa-connection-record-details-others">
               <ConnectionResourceOtherDetails
                 connection={connection}
                 record={record}
