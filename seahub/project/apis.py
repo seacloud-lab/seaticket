@@ -156,6 +156,7 @@ class ProjectLinearTeams(APIView):
         linear_api = LinearAPI(
             access_token=linear_oauth.access_token,
             refresh_token=linear_oauth.refresh_token,
+            project_uuid=project_uuid,
             expires_at=linear_oauth.expires_at,
         )
         try:
@@ -164,13 +165,6 @@ class ProjectLinearTeams(APIView):
             logger.error('Linear API error fetching teams for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Linear teams.')
 
-        # Persist updated tokens if refreshed inside list_teams
-        if linear_api.last_token_update:
-            data = linear_api.last_token_update
-            linear_oauth.access_token = linear_api.access_token
-            linear_oauth.refresh_token = linear_api.refresh_token
-            linear_oauth.expires_at = LinearAPI.calc_expires_in(data.get('expires_in'))
-            linear_oauth.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
         if workspace_name:
             for team in teams:
                 team['workspace_name'] = workspace_name

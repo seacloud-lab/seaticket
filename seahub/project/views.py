@@ -233,7 +233,7 @@ def linear_oauth_callback(request):
         return render_error(request, _('Failed to authorize Linear.'))
 
     expires_at = LinearAPI.calc_expires_in(expires_in)
-    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_at, refresh_token, username)
+    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_at, refresh_token)
 
     request.session.pop('linear_oauth_state', None)
     request.session.pop('linear_oauth_project_uuid', None)

@@ -3,6 +3,7 @@ import logging
 
 import requests
 
+from seahub.project.models import ProjectLinearOauth
 from seahub.settings import LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET
 
 logger = logging.getLogger(__name__)
@@ -21,22 +22,21 @@ class LinearAPI:
         self,
         access_token: str,
         refresh_token: str = "",
+        project_uuid: str = "",
         expires_at=None,
         timeout: int = 60,
+        token_refresh_buffer_seconds: int = 5 * 60
     ):
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.project_uuid = project_uuid
         self.expires_at = expires_at
         self.client_id = LINEAR_CLIENT_ID
         self.client_secret = LINEAR_CLIENT_SECRET
         self.api_url = "https://api.linear.app/graphql"
         self.token_url = "https://api.linear.app/oauth/token"
         self.timeout = timeout
-        self._last_token_update = None
-
-    @property
-    def last_token_update(self):
-        return self._last_token_update
+        self.token_refresh_buffer_seconds = token_refresh_buffer_seconds
 
     def _headers(self):
         return {
@@ -64,13 +64,17 @@ class LinearAPI:
         self.access_token = access_token
         self.refresh_token = data.get("refresh_token")
 
-        self._last_token_update = data
+        expires_at = self.calc_expires_in(data.get("expires_in"))
+        ProjectLinearOauth.objects.upsert_token(self.project_uuid, access_token, expires_at, self.refresh_token)
+
         return data
 
     def _is_expired(self):
         """Check if the token is expired."""
-        now = datetime.datetime.now(datetime.timezone.utc)
-        return now >= self.expires_at
+        expires_at = datetime.datetime.strptime(self.expires_at, "%Y-%m-%d %H:%M:%S")
+        now_datetime = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        refresh_threshold = expires_at - datetime.timedelta(seconds=self.token_refresh_buffer_seconds)
+        return now_datetime >= refresh_threshold
 
     def list_teams(self):
         """List Linear teams for the authenticated user.

@@ -890,6 +890,7 @@ class ProjectLinearOauthStatusView(APIView):
             return Response({'connected': False, 'expires_at': None}, status=status.HTTP_200_OK)
         linear_api = LinearAPI(
             access_token=linear_oauth.access_token,
+            project_uuid=project_uuid,
             refresh_token=linear_oauth.refresh_token,
             expires_at=linear_oauth.expires_at,
         )

@@ -1036,7 +1036,7 @@ class ProjectLinearOauthManager(models.Manager):
     def get_by_project_uuid(self, project_uuid):
         return self.filter(project_uuid=project_uuid).first()
 
-    def upsert_token(self, project_uuid, access_token, expires_at, refresh_token, username=None):
+    def upsert_token(self, project_uuid, access_token, expires_at, refresh_token):
         record = self.filter(project_uuid=project_uuid).first()
         if record:
             record.access_token = access_token
