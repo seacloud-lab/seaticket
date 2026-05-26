@@ -20,10 +20,10 @@ class LinearAPIAuthException(LinearAPIException):
 class LinearAPI:
     def __init__(
         self,
-        access_token: str,
-        refresh_token: str = "",
-        project_uuid: str = "",
-        expires_at=None,
+        access_token,
+        refresh_token,
+        project_uuid,
+        expires_at,
         timeout: int = 60,
         token_refresh_buffer_seconds: int = 5 * 60
     ):
@@ -63,16 +63,19 @@ class LinearAPI:
 
         self.access_token = access_token
         self.refresh_token = data.get("refresh_token")
-
         expires_at = self.calc_expires_in(data.get("expires_in"))
+        self.expires_at = expires_at
+
         ProjectLinearOauth.objects.upsert_token(self.project_uuid, access_token, expires_at, self.refresh_token)
 
         return data
 
     def _is_expired(self):
         """Check if the token is expired."""
-        expires_at = datetime.datetime.strptime(self.expires_at, "%Y-%m-%d %H:%M:%S")
-        now_datetime = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        expires_at = self.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
+        now_datetime = datetime.datetime.now(datetime.timezone.utc)
         refresh_threshold = expires_at - datetime.timedelta(seconds=self.token_refresh_buffer_seconds)
         return now_datetime >= refresh_threshold
 
@@ -119,8 +122,6 @@ class LinearAPI:
     def calc_expires_in(expires_in):
         """Calculate absolute expiry datetime from expires_in seconds.
         Returns an aware datetime or None."""
-        if not expires_in:
-            return None
         expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
             seconds=int(expires_in)
         )

@@ -899,8 +899,7 @@ class ProjectLinearOauthStatusView(APIView):
                 data = linear_api.refresh_access_token()
                 linear_oauth.access_token = linear_api.access_token
                 linear_oauth.refresh_token = linear_api.refresh_token
-                linear_oauth.expires_at = LinearAPI.calc_expires_in(data.get('expires_in'))
-                linear_oauth.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+                linear_oauth.expires_at = linear_api.expires_at
             except Exception as e:
                 logger.warning(
                     'Linear OAuth refresh failed for project %s: %s', project_uuid, e
