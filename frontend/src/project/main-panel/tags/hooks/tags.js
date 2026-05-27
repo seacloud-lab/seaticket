@@ -85,6 +85,7 @@ export const TagsProvider = ({ projectUuid, api = projectAPI, children }) => {
   const modifyTag = useCallback((tagID, update) => {
     return projectAPI.modifyTag(projectUuid, tagID, update).then(res => {
       applyModifyTags({ [tagID]: update });
+      return res;
     });
   }, [projectUuid, applyModifyTags]);
 
