@@ -136,7 +136,7 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
       options: [
         { value: EMAIL_SERVER_PROVIDER.GENERAL, label: gettext('General email provider') },
-        { value: EMAIL_SERVER_PROVIDER.MICROSOFT, label: gettext('Microsoft email provider') },
+        { value: EMAIL_SERVER_PROVIDER.MICROSOFT, label: gettext('Microsoft (Microsoft 365 and Outlook)') },
       ],
       default_value: EMAIL_SERVER_PROVIDER.GENERAL,
       tip: gettext('The authentication type for third-party account login via email service provider. For most email service providers, you can use \"General Email Service Provider\", which authenticates via username and password; for Gmail accounts, users can choose either \"General Email Service Provider\" or \"Gmail\", the latter authenticating the Google account using OAuth2 mode; for MS365 and Outlook email users, only the \"Microsoft (Microsoft 365 and Outlook)\" mode can be selected for account authentication via OAuth2.')

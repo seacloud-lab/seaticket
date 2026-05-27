@@ -12,6 +12,7 @@ import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import Connection from '../../models/connection';
 import { useConnections } from '../../hooks/connections';
+import Switch from '@/components/switch';
 
 import './index.css';
 
@@ -86,16 +87,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }), [columns]);
 
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
+
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
+
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
   }, [isEmail, config.server_provider]);
+
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
   }, [isEmail, config.server_provider]);
+
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
   }, [customColumns]);
+
   const advancedCustomColumns = useMemo(() => {
     return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
@@ -249,7 +255,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
 
   const renderConnectionField = useCallback((column) => {
-    const { type, key, children } = column;
+    const { type, key, children, is_advanced_option } = column;
     if (type === CONNECTION_FIELD_TYPE.GROUP) {
       return (
         <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
@@ -276,7 +282,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
 
-    return <ConnectionConfigEditor column={column} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />;
+    return (
+      <ConnectionConfigEditor
+        className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
+        column={column}
+        api={api}
+        key={key}
+        row={row}
+        readonly={isSubmitting}
+        onChange={onConfigChange}
+      />
+    );
   }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories]);
 
   return (
@@ -338,7 +354,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {basicCustomColumns.map(renderConnectionField)}
+            {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>
                 <Label>{gettext('OAuth callback URL')}</Label>
@@ -351,18 +367,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 </div>
               </FormGroup>
             )}
+            {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
             {isMicrosoftEmailProvider && (
-              <div className="seaqa-project-connection-advanced-options">
-                <Button
-                  type="button"
-                  color="secondary"
-                  outline
-                  className="seaqa-project-connection-advanced-options-btn"
-                  onClick={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
-                >
-                  <span>{gettext('Advanced options')}</span>
-                  <i className={classnames('dtable-font dtable-icon-down3 ml-2', { 'seaqa-project-connection-advanced-options-icon-expanded': showEmailAdvancedOptions })} />
-                </Button>
+              <div className="seaqa-project-connection-advanced-options mb-3">
+                <Switch
+                  checked={showEmailAdvancedOptions}
+                  onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
+                  placeholder={gettext('Advanced options')}
+                  textPosition="right"
+                />
               </div>
             )}
             {advancedCustomColumns.map(renderConnectionField)}

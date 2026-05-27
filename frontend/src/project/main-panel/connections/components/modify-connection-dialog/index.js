@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getEmailOAuthCallbackUrl, isOAuthEmailProvider } from '../../utils';
-import { ModalHeader, toaster } from '@/components';
+import { ModalHeader, toaster, Switch } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
 import '../new-connection-dialog/index.css';
@@ -40,26 +40,33 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
 
   const type = useMemo(() => record.type, [record]);
+
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'repository'));
     if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions));
     return withEditReadonlyDefaults(_columns);
   }, [type, config, showEmailAdvancedOptions]);
+
   const customColumns = useMemo(() => columns.filter(c => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
     return c.is_custom;
   }), [columns]);
+
   const isMicrosoftEmailProvider = useMemo(() => {
     return type === CONNECTION_TYPE.EMAIL && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
   }, [type, config]);
+
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
   }, [customColumns]);
+
   const advancedCustomColumns = useMemo(() => {
     return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
+
   const callbackUrl = useMemo(() => getEmailOAuthCallbackUrl(window.app.pageOptions.projectUuid), []);
+
   const isOAuthEmail = useMemo(() => {
     return type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(getEmailProvider(config));
   }, [type, config]);
@@ -136,7 +143,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   }, [record, name, config, onSubmit, onToggle]);
 
   const renderConnectionField = useCallback((column) => {
-    const { type, key, children, is_edit_readonly } = column;
+    const { type, key, children, is_edit_readonly, is_advanced_option } = column;
     if (type === CONNECTION_FIELD_TYPE.GROUP) {
       return (
         <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
@@ -157,6 +164,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
     return (
       <ConnectionConfigEditor
+        className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
         column={column}
         key={key}
         row={config}
@@ -183,7 +191,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </Label>
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
-        {basicCustomColumns.map(renderConnectionField)}
+        {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
         {isOAuthEmail && (
           <FormGroup>
             <Label>{gettext('OAuth callback URL')}</Label>
@@ -196,18 +204,15 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
             </div>
           </FormGroup>
         )}
+        {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
         {isMicrosoftEmailProvider && (
-          <div className="seaqa-project-connection-advanced-options">
-            <Button
-              type="button"
-              color="secondary"
-              outline
-              className="seaqa-project-connection-advanced-options-btn"
-              onClick={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
-            >
-              <span>{gettext('Advanced options')}</span>
-              <i className={`dtable-font dtable-icon-down3 ml-2 ${showEmailAdvancedOptions ? 'seaqa-project-connection-advanced-options-icon-expanded' : ''}`} />
-            </Button>
+          <div className="seaqa-project-connection-advanced-options mb-3">
+            <Switch
+              checked={showEmailAdvancedOptions}
+              onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
+              placeholder={gettext('Advanced options')}
+              textPosition="right"
+            />
           </div>
         )}
         {advancedCustomColumns.map(renderConnectionField)}
