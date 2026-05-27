@@ -272,8 +272,8 @@ export const generateFindRelatedIssuesOption = ({ row, connection }, callback) =
 };
 
 export const generateLinkAnExistingTicketOption = ({ row, columns, connection }, callback) => {
-  const enableCreateRelatedTicket = SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES.includes(connection?.type);
-  if (!enableCreateRelatedTicket) return null;
+  const enableLinkAnExistingTicket = SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableLinkAnExistingTicket) return null;
 
   const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
   if (!column) return null;
