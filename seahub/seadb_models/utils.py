@@ -79,9 +79,9 @@ def build_general_task_row_data(task, sync_time=None):
     participants = task.get('participants')
     if not isinstance(participants, list):
         participants = []
-
     return {
         GeneralTaskTable.source_task_id.name: str(task.get('task_id')).strip(),
+        GeneralTaskTable.url.name: str(task.get('url') or '').strip(),
         GeneralTaskTable.title.name: task.get('title', ''),
         GeneralTaskTable.status.name: task.get('status'),
         GeneralTaskTable.size.name: task.get('size'),
@@ -1116,7 +1116,7 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
     from seahub.tickets.ticket_utils import get_ticket_title
     sql = (
         f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
-        f"`content`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
+        f"`content`, `url`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
         f"`linked_ticket`, `outdated`, `version` FROM `{general_task_table_name}` WHERE _pk = {_pk}"
     )
     try:

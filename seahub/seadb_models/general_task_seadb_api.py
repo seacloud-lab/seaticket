@@ -18,7 +18,7 @@ class GeneralTaskSeaDBAPI:
     def get_general_task_record(self, project_uuid, connection_id, record_id):
         table_name = GeneralTaskTable.gen_table_name(connection_id)
         sql = (
-            f"SELECT `_pk`, `source_task_id`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
+            f"SELECT `_pk`, `source_task_id`, `url`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
             f"`others`, `version`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "
             f"FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
         )
