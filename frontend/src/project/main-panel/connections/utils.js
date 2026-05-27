@@ -74,7 +74,8 @@ export const getOriginalPageUrl = (connection, row, columns) => {
       return getDiscourseOriginalPageUrl(connection, row, columns);
     }
     case CONNECTION_TYPE.SITE:
-    case CONNECTION_TYPE.GITHUB_ISSUE: {
+    case CONNECTION_TYPE.GITHUB_ISSUE:
+    case CONNECTION_TYPE.GENERAL_TASK: {
       const urlColumn = getColumnByName(columns, 'url');
       const url = getCellValueByColumn(row, urlColumn) || '';
       return url;
