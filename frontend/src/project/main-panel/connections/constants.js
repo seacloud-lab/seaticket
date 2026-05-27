@@ -660,7 +660,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
       type: CellType.COLLABORATOR,
       display_name: gettext('Participants'),
-      editable: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.VERSION]: {
       display_name: gettext('Version'),
