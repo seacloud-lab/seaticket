@@ -109,7 +109,8 @@
 
 /* seafile */
 .seaqa-connection-record-details .seaqa-connection-seafile-resource-details .sf-slate-viewer-article-container .article,
-.seaqa-connection-record-details .seaqa-connection-site-resource-details .sf-slate-viewer-article-container .article {
+.seaqa-connection-record-details .seaqa-connection-site-resource-details .sf-slate-viewer-article-container .article,
+.seaqa-connection-record-details .seaqa-connection-general_task-resource-details .sf-slate-viewer-article-container .article {
   max-width: 100%;
   padding: 0 !important;
 }

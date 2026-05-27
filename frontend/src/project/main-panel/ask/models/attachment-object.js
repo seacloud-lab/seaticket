@@ -36,6 +36,8 @@ class AttachmentObject {
       this.type_name = gettext('Notion');
     } else if (this.type === CHAT_ATTACHMENT_TYPE.SITE) {
       this.type_name = gettext('Site');
+    } else if (this.type === CHAT_ATTACHMENT_TYPE.GENERAL_TASK) {
+      this.type_name = gettext('General tasks');
     } else if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       this.type_name = 'Image';
     }

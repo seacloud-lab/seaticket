@@ -1,0 +1,18 @@
+.seaqa-single-select-settings-formatter {
+  min-height: 38px;
+  width: 100%;
+  padding: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  border-radius: 3px;
+}
+
+.seaqa-single-select-settings-formatter.valid {
+  padding: 5px 0 ;
+}
+
+.seaqa-single-select-settings-formatter .option {
+  margin-bottom: 4px;
+  margin-top: 4px;
+}
