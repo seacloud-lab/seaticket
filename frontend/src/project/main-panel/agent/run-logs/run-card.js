@@ -276,13 +276,13 @@ const RunCard = ({
               }).map((action, actionIndex) => (
                 <ActionItem
                   key={action.id || actionIndex}
-                    action={action}
-                    runId={id}
-                    onConfirm={onConfirmAction}
-                    onCancel={onCancelAction}
-                    onViewContent={onViewContent}
-                  />
-                ))}
+                  action={action}
+                  runId={id}
+                  onConfirm={onConfirmAction}
+                  onCancel={onCancelAction}
+                  onViewContent={onViewContent}
+                />
+              ))}
             </div>
           )}
         </div>
