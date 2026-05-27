@@ -10,10 +10,11 @@
 }
 
 .sea-metadata-sort-popover .sorts-list .option-group {
-  margin-top: 4px;
+  margin-top: 3px;
   overflow: auto;
   max-height: 360px;
-  width: 200px;
+  min-width: 200px;
+  max-width: 480px;
   padding: 0px;
 }
 
@@ -92,4 +93,5 @@
 
 .sea-metadata-sort-popover .popover-add-tool .customize-add-tool .customize-add-tool-icon {
   margin-right: 8px;
+  font-size: 14px;
 }

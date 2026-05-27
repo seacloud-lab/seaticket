@@ -1,10 +1,9 @@
 .customize-add-tool {
-  color: #666666;
+  color: #212529;
   display: flex;
   align-items: center;
   height: 40px;
   font-size: 14px;
-  font-weight: 500;
   background: #fff;
   padding: 0 1rem;
   border-bottom-left-radius: 3px;
@@ -30,4 +29,5 @@
   margin-right: 14px;
   font-size: 12px;
   font-weight: 600;
+  color: #666;
 }

@@ -116,7 +116,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
             size={32}
             autoFocus={true}
             isShowClearIcon={true}
-            isShowSearchIcon={true}
+            isShowSearchIcon={false}
           />
         </div>
         <HiddenColumns

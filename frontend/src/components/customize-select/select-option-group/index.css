@@ -9,7 +9,7 @@
   background: #fff;
   border: 1px solid var(--bs-border-secondary-color);
   box-shadow: 0 6px 14px rgba(000, 000, 000, 0.1);
-  border-radius: 8px;
+  border-radius: 4px;
   z-index: 10001;
 }
 
