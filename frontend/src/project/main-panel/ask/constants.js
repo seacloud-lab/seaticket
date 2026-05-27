@@ -65,4 +65,14 @@ export const CHAT_ATTACHMENT_TYPE = {
   IMAGE: 'image',
 };
 
+export const CHAT_ATTACHMENT_SOURCE = {
+  IMAGE: 'image',
+  SOURCE: 'source',
+};
+
+export const DEFAULT_ALLOWED_ATTACHMENT_SOURCES = [
+  CHAT_ATTACHMENT_SOURCE.IMAGE,
+  CHAT_ATTACHMENT_SOURCE.SOURCE,
+];
+
 export const CHAT_IMAGE_ATTACHMENT_MAX_COUNT = 2;

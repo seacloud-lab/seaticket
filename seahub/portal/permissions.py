@@ -115,3 +115,23 @@ class PortalChatPermission(BasePermission):
                 return False
             return True
         return False
+
+
+class PortalUploadPermission(PortalChatPermission):
+    pass
+
+
+class PortalFilePermission(BasePermission):
+    def has_permission(self, request, view):
+        file_path = getattr(view, 'kwargs', {}).get('file_path', '') or ''
+
+        if file_path.startswith('attachments/portal-chat/'):
+            return PortalChatPermission().has_permission(request, view)
+
+        if file_path.startswith('attachments/portal-issue/'):
+            return PortalIssuePermission().has_permission(request, view)
+
+        if file_path.startswith('attachments/knowledgebase/'):
+            return PortalKnowledgeBasePermission().has_permission(request, view)
+
+        return False

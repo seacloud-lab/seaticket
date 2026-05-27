@@ -58,8 +58,9 @@ def gen_tmp_upload_file_path(project_uuid, file_path):
     return os.path.join(tmp_dir, file_name)
 
 
-def upload_file_to_tmp_dir(project_uuid, file):
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
+def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
+    subdir_prefix = (subdir.strip('/') + '/') if subdir else ''
+    file_path = subdir_prefix + datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     with open(tmp_upload_file_path, 'wb') as fd:
         for chunk in iter(lambda: file.read(1024 * 1024), b''):
@@ -97,6 +98,38 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
 
     return new_file_urls_dict
 
+
+def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, record_id):
+    portal_prefix = f'/upload-file/portal/{project_uuid}/'
+    new_file_urls_dict = {}
+    for file_url in file_urls:
+        if not isinstance(file_url, str) or not file_url.startswith(portal_prefix):
+            continue
+        file_name = os.path.basename(file_url)
+        rel = file_url[len(portal_prefix):]
+        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, f'portal/{rel}')
+        if not os.path.exists(tmp_upload_file_path):
+            logger.warning(tmp_upload_file_path + ' not exists.')
+            continue
+
+        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
+        if check_file_exists_from_s3(s3_file_path):
+            logger.warning(s3_file_path + ' already exists.')
+            continue
+
+        s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path,
+                              ExtraArgs={'Metadata': {'username': username}})
+
+        new_file_url = f'/file/portal/{project_uuid}/{final_file_path}'
+        new_file_urls_dict[new_file_url] = file_url
+
+        try:
+            os.remove(tmp_upload_file_path)
+        except Exception as e:
+            logger.error(e)
+
+    return new_file_urls_dict
 
 
 def upload_portal_logo_file_to_s3(project_uuid, file):

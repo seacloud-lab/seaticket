@@ -8,12 +8,12 @@ import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE } from '../constants';
+import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
 import AttachmentsSelector from './attachments-selector';
 import AttachmentsFormatter from './attachments';
 import { useAIChatTools } from '../hooks';
 import AIModelSelector from './ai-model-selector';
-import { chatAPI } from '@/project/api';
+import { chatAPI as defaultChatAPI } from '@/project/api';
 import { AttachmentObject } from '../models';
 
 import './index.css';
@@ -22,12 +22,17 @@ const ChatInput = forwardRef(({
   isReply,
   readOnly,
   projectUuid,
-  canAddAttachments = true,
+  allowedAttachmentSources = DEFAULT_ALLOWED_ATTACHMENT_SOURCES,
   canSelectModel = true,
   clearContext,
   sendMessage,
   resetClearContext,
+  api,
 }, ref) => {
+  const chatAPI = api || defaultChatAPI;
+  const allowImageAttachments = Array.isArray(allowedAttachmentSources) && allowedAttachmentSources.includes(CHAT_ATTACHMENT_SOURCE.IMAGE);
+  const allowSourceAttachments = Array.isArray(allowedAttachmentSources) && allowedAttachmentSources.includes(CHAT_ATTACHMENT_SOURCE.SOURCE);
+  const canAddAttachments = allowImageAttachments || allowSourceAttachments;
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [value, setValue] = useState('');
@@ -122,7 +127,7 @@ const ChatInput = forwardRef(({
   }, [attachments, onImageUpload]);
 
   const onPaste = useCallback((event) => {
-    if (!canAddAttachments) {
+    if (!allowImageAttachments) {
       inputUtils.onPaste(event);
       return;
     }
@@ -132,7 +137,7 @@ const ChatInput = forwardRef(({
       onImagesUpload(images);
     };
     inputUtils.onPaste(event, callBack);
-  }, [canAddAttachments, inputUtils, onImagesUpload]);
+  }, [allowImageAttachments, inputUtils, onImagesUpload]);
 
   const onFileInputClick = useCallback(() => {
     uploadFileRef.current && uploadFileRef.current.onClick();
@@ -336,7 +341,7 @@ const ChatInput = forwardRef(({
   const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
   const sendDisabled = disabled || !value || isUploadingAttachment;
 
-  const domProps = canAddAttachments && !disabled ? {
+  const domProps = allowImageAttachments && !disabled ? {
     onDragStart,
     onDragEnter,
     onDragOver,
@@ -387,6 +392,7 @@ const ChatInput = forwardRef(({
                   attachments={attachments}
                   onChange={updateAttachments}
                   onFileInputClick={onFileInputClick}
+                  canAddSources={allowSourceAttachments}
                 />
               )}
             </div>
@@ -410,7 +416,7 @@ const ChatInput = forwardRef(({
             </div>
           </div>
           <UploadFile fileType="image/*" onUpload={onImageUpload} ref={uploadFileRef} />
-          {canAddAttachments && isDragging && (
+          {allowImageAttachments && isDragging && (
             <div className="seaqa-ai-ask-chat-input-dragging-tip">
               <IconButton icon="upload-file" size={{ btn: 32, size: 24 }} className="no-hover-bg" />
               <div className="seaqa-ai-ask-chat-input-dragging-tip-text">

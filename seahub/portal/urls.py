@@ -11,7 +11,10 @@ from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
     PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
-    PortalChatView
+    PortalChatView,
+)
+from .files import (
+    PortalUploadFileView, GetPortalUploadFileView, PortalFileView,
 )
 
 
@@ -61,6 +64,11 @@ urlpatterns = [
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
+
+    # portal upload file
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/upload-file/$', PortalUploadFileView.as_view(), name='api-v1-portal-upload-file'),
+    re_path(r'^upload-file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.+)$', GetPortalUploadFileView.as_view(), name='api-v1-get-portal-upload-file'),
+    re_path(r'^file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', PortalFileView.as_view(), name='api-v1-get-portal-file'),
 
 
     # portal issues API
