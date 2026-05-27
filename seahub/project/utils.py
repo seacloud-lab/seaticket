@@ -449,7 +449,8 @@ def extract_email_addresses(address_text):
             addresses.append(email)
     return addresses
 
-def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
+def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids, column_name, extra_id_field):
+    """Merge select-column options from GitHub issue tables across connections."""
     if not connection_ids:
         return []
 
@@ -468,7 +469,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != GithubIssuesTable.issue_type.name:
+            if column.get('name') != column_name:
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -479,15 +480,36 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
                 if key in seen_names:
                     continue
                 seen_names.add(key)
-                merged.append({
+                entry = {
                     'id': option.get('id'),
                     'name': name,
                     'color': option.get('color') or '',
                     'text_color': option.get('text_color') or option.get('textColor') or '',
                     'border_color': option.get('border_color') or option.get('borderColor') or '',
-                    'type_id': option.get('type_id') or '',
-                })
+                }
+                entry[extra_id_field] = option.get(extra_id_field) or ''
+                merged.append(entry)
     return merged
+
+
+def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
+    return _collect_github_issue_column_options(
+        seadb_api,
+        project_uuid,
+        connection_ids,
+        GithubIssuesTable.issue_type.name,
+        'type_id',
+    )
+
+
+def collect_github_issue_label_options(seadb_api, project_uuid, connection_ids):
+    return _collect_github_issue_column_options(
+        seadb_api,
+        project_uuid,
+        connection_ids,
+        GithubIssuesTable.labels.name,
+        'label_id',
+    )
 
 
 # general task utils

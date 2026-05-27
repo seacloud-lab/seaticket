@@ -43,6 +43,7 @@ from seahub.project.utils import (
     check_project_permission,
     extract_email_addresses,
     collect_github_issue_type_options,
+    collect_github_issue_label_options,
     get_current_table_metadata,
 )
 from seahub.notifications.signal_handler import (
@@ -417,6 +418,9 @@ class AgentActionConfirmView(APIView):
         elif tool_name == 'suggest_modify_type':
             suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
             return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, suggestion_text)
+        elif tool_name == 'suggest_assign_labels':
+            suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
+            return self._execute_github_suggest_assign_labels(seadb_api, project_uuid, source_id, suggestion_text)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -526,7 +530,10 @@ class AgentActionConfirmView(APIView):
             return None
 
         issues_table = GithubIssuesTable.gen_table_name(connection_id)
-        sql = f"SELECT issue_number, author, issue_id, comment_count FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        sql = (
+            f"SELECT issue_number, author, issue_id, comment_count, labels "
+            f"FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
+        )
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])
         if not issues:
@@ -549,6 +556,7 @@ class AgentActionConfirmView(APIView):
             'issue_number': issue_number,
             'issue_id': issue.get('issue_id'),
             'comment_count': issue.get('comment_count') or 0,
+            'labels': issue.get('labels') or [],
         }
 
     def _execute_github_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
@@ -614,6 +622,145 @@ class AgentActionConfirmView(APIView):
         if match:
             return match.group(1).strip()
         return ''
+
+    @staticmethod
+    def _parse_suggested_labels(suggestion_text):
+        if not suggestion_text:
+            return []
+        suggest_assign_labels_re = re.compile(r'Suggest assigning labels (\[.*?\]) to this GitHub issue\.$')
+        match = suggest_assign_labels_re.search(suggestion_text.strip())
+        if not match:
+            return []
+        try:
+            labels = json.loads(match.group(1))
+        except Exception:
+            return []
+        if not isinstance(labels, list):
+            return []
+        normalized = []
+        seen = set()
+        for label in labels:
+            name = str(label).strip()
+            if not name:
+                continue
+            key = name.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            normalized.append(name)
+        return normalized
+
+    @staticmethod
+    def _normalize_issue_labels(raw_labels):
+        if isinstance(raw_labels, list):
+            labels = raw_labels
+        elif isinstance(raw_labels, str):
+            value = raw_labels.strip()
+            if not value:
+                labels = []
+            else:
+                try:
+                    parsed = json.loads(value)
+                    labels = parsed if isinstance(parsed, list) else [value]
+                except Exception:
+                    labels = [part.strip() for part in value.split(',') if part.strip()]
+        else:
+            labels = []
+
+        normalized = []
+        seen = set()
+        for label in labels:
+            name = str(label).strip()
+            if not name:
+                continue
+            key = name.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            normalized.append(name)
+        return normalized
+
+    @staticmethod
+    def _filter_labels_by_options(labels, available_options):
+        option_map = {
+            (opt.get('name') or '').strip().lower(): (opt.get('name') or '').strip()
+            for opt in (available_options or [])
+            if (opt.get('name') or '').strip()
+        }
+        if not option_map:
+            return labels
+
+        filtered = []
+        for label in labels:
+            canonical = option_map.get((label or '').strip().lower())
+            if canonical:
+                filtered.append(canonical)
+        return filtered
+
+    def _execute_github_suggest_assign_labels(self, seadb_api, project_uuid, source_id, suggestion_text=''):
+        ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
+        if not ctx:
+            return f'Failed to get GitHub issue context for {source_id}.'
+
+        labels = self._parse_suggested_labels(suggestion_text)
+        if not labels:
+            logger.error(
+                'Cannot parse suggested labels from suggestion_text for GitHub issue %s: %r',
+                ctx['record_id'],
+                suggestion_text,
+            )
+            return f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.'
+
+        available = collect_github_issue_label_options(
+            seadb_api, project_uuid, [ctx['connection_id']]
+        )
+        final_labels = self._filter_labels_by_options(labels, available)
+        if not final_labels:
+            return (
+                'No valid labels were found in this suggestion. '
+                'Please refresh repository labels and try again.'
+            )
+
+        try:
+            issue_data = ctx['github_api'].update_issue(
+                ctx['owner'],
+                ctx['repo'],
+                ctx['issue_number'],
+                labels=final_labels,
+            )
+            applied_labels = issue_data.get('labels') or final_labels
+        except requests.HTTPError as e:
+            status_code = getattr(e.response, 'status_code', None)
+            if status_code == 422:
+                logger.error(
+                    'GitHub rejected labels %r for issue %s (422).', final_labels, ctx['record_id']
+                )
+                return (
+                    f'GitHub rejected labels {final_labels} (422). '
+                    'Some labels may not exist in the repository. '
+                    'Please sync labels and try again.'
+                )
+            logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}'
+        except Exception as e:
+            logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
+            return f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}'
+
+        try:
+            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+            github_seadb_api.update_issue_record(
+                project_uuid,
+                ctx['connection_id'],
+                ctx['record_id'],
+                issue_data,
+            )
+        except Exception as e:
+            logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
+
+        return (
+            f'Labels updated for GitHub issue {ctx["record_id"]}: '
+            f'{json.dumps(applied_labels, ensure_ascii=False)}.'
+        )
 
     def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
