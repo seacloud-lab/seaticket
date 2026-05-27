@@ -174,40 +174,32 @@ export const generatorRowClassName = (row, columns = []) => {
 export const generateAIOptions = ({ rows, columns, connection }, callback) => {
   const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
   if (!enableUseAI) return null;
+  const isGeneralTask = connection.type === CONNECTION_TYPE.GENERAL_TASK;
 
-  if (
-    connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ||
-    connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM ||
-    connection?.type === CONNECTION_TYPE.EMAIL ||
-    connection?.type === CONNECTION_TYPE.GENERAL_TASK
-  ) {
-    return {
-      key: 'chat_issues',
-      label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
-      callback: () => {
-        let newRows = [];
-        const titleColumn = getColumnByName(columns, 'title');
-        const stateColumn = getColumnByName(columns, 'state') || getColumnByName(columns, 'status');
-        const urlColumn = getColumnByName(columns, 'url');
+  return {
+    key: isGeneralTask ? 'chat_tasks' : 'chat_issues',
+    label: rows.length === 1 ? (isGeneralTask ? gettext('Chat task') : gettext('Chat issue')) : (isGeneralTask ? gettext('Chat tasks') : gettext('Chat issues')),
+    callback: () => {
+      let newRows = [];
+      const titleColumn = getColumnByName(columns, 'title');
+      const stateColumn = getColumnByName(columns, 'state') || getColumnByName(columns, 'status');
+      const urlColumn = getColumnByName(columns, 'url');
 
-        if (!titleColumn) return;
-        rows.forEach(row => {
-          const newRow = {
-            _pk: row._id || row._pk,
-            title: getCellValueByColumn(row, titleColumn),
-            state: getCellValueByColumn(row, stateColumn),
-            url: getCellValueByColumn(row, urlColumn),
-            connection_id: connection?.id,
-            type: connection?.type,
-          };
-          newRows.push(newRow);
-        });
-        callback && callback(newRows);
-      }
-    };
-  }
-
-  return null;
+      if (!titleColumn) return;
+      rows.forEach(row => {
+        const newRow = {
+          _pk: row._id || row._pk,
+          title: getCellValueByColumn(row, titleColumn),
+          state: getCellValueByColumn(row, stateColumn),
+          url: getCellValueByColumn(row, urlColumn),
+          connection_id: connection?.id,
+          type: connection?.type,
+        };
+        newRows.push(newRow);
+      });
+      callback && callback(newRows);
+    }
+  };
 };
 
 export const generateMarkAsOutdatedOptions = ({ rows, columns, connection }, callback) => {

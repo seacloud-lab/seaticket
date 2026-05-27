@@ -10,7 +10,7 @@ import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
-  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
+  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
   GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
 } from '../../../constants';
 import { toaster } from '@/components';
@@ -99,6 +99,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         rows: gettext('discourse forums'),
         Row: gettext('Discourse forum'),
         Rows: gettext('Discourse forums'),
+      };
+    }
+    if (connectionType === CONNECTION_TYPE.GENERAL_TASK) {
+      return {
+        row: gettext('general task'),
+        rows: gettext('general tasks'),
+        Row: gettext('General task'),
+        Rows: gettext('General tasks'),
       };
     }
     return {};
@@ -250,13 +258,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         return modifyView(tableName, viewID, viewData, () => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData));
       },
     };
-    // Add modifyRow/modifyRows for all connection types that support outdated editing
-    if (SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection.type)) {
-      if (connection.type === CONNECTION_TYPE.GENERAL_TASK) {
-        _api.insertRow = (rowData = {}) => {
-          return connectionsAPI.createConnectionRecord(projectUuid, connectionID, rowData).then(res => res.data.row);
-        };
-      }
+    // Add modifyRow/modifyRows for all connection types that support editing
+    if (SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES.includes(connection.type)) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
         const tableName = getTableNameByConnectionID(connectionID);

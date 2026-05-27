@@ -19,14 +19,18 @@ import { BAR_TYPE } from '@/project/constants';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
+import {
+  CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE,
+  GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
+} from '../../../constants';
 import { connectionsAPI } from '@/project/api';
-import { getColumnByName } from '@/sea-metadata/utils/column';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
 import Rename from './rename';
+import { CellType } from '@/sea-metadata';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
@@ -176,9 +180,35 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   const updateResource = useCallback(({ record, columns, linked_ticket_title }) => {
     linkedTicketTitle.current = linked_ticket_title;
-    setColumns(columns);
+    if (connection.type === CONNECTION_TYPE.GENERAL_TASK) {
+      const optionColumnsConfig = {
+        [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: GENERAL_TASK_STATUS_NAME_MAP,
+        [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: GENERAL_TASK_SIZE_NAME_MAP,
+        [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: GENERAL_TASK_PRIORITY_NAME_MAP,
+      };
+
+      let validColumns = columns.slice(0);
+      Object.keys(optionColumnsConfig).forEach(name => {
+        const statusColumnIndex = validColumns.findIndex(c => c.name === name);
+        if (statusColumnIndex !== -1) {
+          const statusColumn = validColumns[statusColumnIndex];
+          const options = getColumnOptions(statusColumn);
+          const config = optionColumnsConfig[name] || {};
+          validColumns[statusColumnIndex] = {
+            ...statusColumn,
+            data: {
+              ...statusColumn.data,
+              options: options.map(o => ({ ...o, display_name: config[o.name] || '' })),
+            }
+          };
+        }
+      });
+      setColumns(validColumns);
+    } else {
+      setColumns(columns);
+    }
     setRecord(record);
-  }, []);
+  }, [connection]);
 
   const modifyGitHubRecord = useCallback((update, callback) => {
     const localRowUpdate = convertRowToKeyValue(update, { data: { columns } });
@@ -203,7 +233,18 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     Object.keys(update).forEach((name) => {
       const column = getColumnByName(columns, name);
       if (column) {
-        localRowUpdate[column.key] = getCellValueByColumn(update, column);
+        if (column.type === CellType.SINGLE_SELECT) {
+          const value = getCellValueByColumn(update, column);
+          if (value) {
+            const options = getColumnOptions(column);
+            const option = getOption(options, value);
+            localRowUpdate[column.key] = option.id;
+          } else {
+            localRowUpdate[column.key] = null;
+          }
+        } else {
+          localRowUpdate[column.key] = getCellValueByColumn(update, column);
+        }
       }
     });
     modifyRow(connectionTableName, recordID, localRowUpdate,
@@ -267,13 +308,14 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   const isSmallScreen = record && containerWidth < 904;
   const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
   const isOutdated = getCellValueByColumn(record, outdatedColumn);
+  const isSupportModifyTitle = connection.type === CONNECTION_TYPE.GITHUB_ISSUE || connection.type === CONNECTION_TYPE.GENERAL_TASK;
 
   return (
     <>
       <div className={classnames('seaqa-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
         <div className="seaqa-connection-record-details-header">
           {isRenaming ? (
-            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={modifyGitHubRecord} />
+            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={connection.type === CONNECTION_TYPE.GITHUB_ISSUE ? modifyGitHubRecord : handleOthersChange} />
           ) : (
             <>
               <div className="seaqa-connection-record-details-header-left">
@@ -287,7 +329,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
                     onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
                   />
                 )}
-                {title && connection.type === CONNECTION_TYPE.GITHUB_ISSUE && permission === PERMISSION_TYPES.READ_WRITE && (
+                {title && isSupportModifyTitle && permission === PERMISSION_TYPES.READ_WRITE && (
                   <IconButton
                     className="open-in-new-tab-btn"
                     icon="rename"
