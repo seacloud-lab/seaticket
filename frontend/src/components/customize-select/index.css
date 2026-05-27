@@ -4,7 +4,7 @@
 
 .seaqa-select.custom-select {
   display: flex;
-  padding: 0 10px;
+  padding: 0 16px;
   border-radius: 4px;
   align-items: center;
   justify-content: space-between;
@@ -104,4 +104,6 @@
 
 .seaqa-customize-select .option-group .option-group-content {
   padding: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 0;
 }

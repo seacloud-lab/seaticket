@@ -73,7 +73,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
             <span className="sea-metadata-filter-header-icon">
               <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} />
             </span>
-            <span className="select-option-name">{name}</span>
+            <span className="select-option-name mr-4">{name}</span>
           </>
         )
       };
