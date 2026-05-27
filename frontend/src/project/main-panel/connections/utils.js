@@ -4,6 +4,7 @@ import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
   SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
+  SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES,
 } from './constants';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -271,8 +272,8 @@ export const generateFindRelatedIssuesOption = ({ row, connection }, callback) =
 };
 
 export const generateLinkAnExistingTicketOption = ({ row, columns, connection }, callback) => {
-  const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
-  if (!enableCreateRelatedTicket) return null;
+  const enableLinkAnExistingTicket = SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES.includes(connection?.type);
+  if (!enableLinkAnExistingTicket) return null;
 
   const column = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
   if (!column) return null;
