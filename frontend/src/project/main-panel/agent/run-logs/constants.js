@@ -34,6 +34,7 @@ const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_reply': true,
   'suggest_create_ticket': true,
   'suggest_modify_type': true,
+  'suggest_assign_labels': true,
 };
 
 export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER, RUN_STATUS };
