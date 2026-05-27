@@ -23,6 +23,14 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
       className="seaqa-color-selector-popover"
       hidePopover={onToggle}
       hidePopoverWithEsc={onToggle}
+      modifiers={[
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 4],
+          }
+        }
+      ]}
     >
       <div className="seaqa-color-selector-container" onMouseDown={(e) => e && e.stopPropagation()}>
         {SELECT_OPTION_COLORS.map((option) => {
