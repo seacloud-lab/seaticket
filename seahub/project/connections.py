@@ -1320,10 +1320,6 @@ class ProjectConnectionRecordsView(APIView):
         if not isinstance(description_dict, dict):
             error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        description = description_dict.get('text')
-        if not description:
-            error_msg = 'description invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         file_urls = description_dict.get('images')
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
@@ -1334,7 +1330,7 @@ class ProjectConnectionRecordsView(APIView):
 
         try:
             connection_config = decrypt_config(json.loads(project_connection.config))
-            image_data_map = prepare_image_data_for_adapter(project_uuid, task_payload.get('description'))
+            image_data_map = prepare_image_data_for_adapter(project_uuid, description_dict)
             if image_data_map:
                 task_payload['image_data_map'] = image_data_map
             created_task = create_general_task_via_adapter(connection_config, task_payload)

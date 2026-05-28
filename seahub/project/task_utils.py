@@ -1,9 +1,8 @@
 import base64
-import os
 import re
 import requests
 
-from seahub.utils.storage import gen_tmp_upload_file_path, get_project_file_from_s3
+from seahub.utils.storage import get_project_file_from_s3
 
 
 _IMAGE_MARKDOWN_RE = re.compile(r'!\[([^\]]*)\]\(([^\)]+)\)')
@@ -32,25 +31,19 @@ def prepare_image_data_for_adapter(project_uuid, description):
     if not isinstance(description, dict):
         return None
     text = description.get('text', '')
-    file_urls = set((description.get('images') or []) + (description.get('links') or []))
-    # Also extract image URLs from markdown in text
-    for _alt, url in _IMAGE_MARKDOWN_RE.findall(text):
-        file_urls.add(url)
+    images = set(description.get('images'))
+    if not images:
+        # Also extract image URLs from markdown in text
+        for _alt, url in _IMAGE_MARKDOWN_RE.findall(text):
+            images.add(url)
+    if not images:
+        return None
     image_data_map = {}
-    tmp_prefix = f'/upload-file/project/{project_uuid}/'
     file_prefix = f'/file/project/{project_uuid}/'
-    for file_url in file_urls:
-        if file_url.startswith(tmp_prefix):
-            file_path = file_url[len(tmp_prefix):]
-            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
-            if not os.path.exists(tmp_upload_file_path):
-                continue
-            with open(tmp_upload_file_path, 'rb') as f:
-                image_data_map[file_url] = base64.b64encode(f.read()).decode('utf-8')
-        elif file_url.startswith(file_prefix):
-            file_path = file_url[len(file_prefix):]
-            body = get_project_file_from_s3(project_uuid, file_path)
-            image_data_map[file_url] = base64.b64encode(body.read()).decode('utf-8')
+    for file_url in images:
+        file_path = file_url[len(file_prefix):]
+        body = get_project_file_from_s3(project_uuid, file_path)
+        image_data_map[file_url] = base64.b64encode(body.read()).decode('utf-8')
     return image_data_map if image_data_map else None
 
 

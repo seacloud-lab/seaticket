@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { getPreviewContent } from '@seafile/seafile-editor';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
 import { connectionsAPI } from '@/project/api';
@@ -72,19 +73,14 @@ const getTicketContent = (ticket) => {
 };
 
 const buildDescriptionDict = (text) => {
-  const trimmed = (text || '').trim();
-  const images = [];
-  const imageRegex = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g;
-  let match;
-  while ((match = imageRegex.exec(text)) !== null) {
-    images.push(match[2]);
-  }
+  const raw = (text || '').trim();
+  const { previewText, images, links, checklist } = getPreviewContent(raw);
   return {
-    text: trimmed,
-    preview: trimmed.slice(0, 200),
+    text: raw,
+    preview: previewText,
     images,
-    links: [],
-    checklist: { total: 0, completed: 0 },
+    links,
+    checklist,
   };
 };
 
@@ -208,7 +204,7 @@ const CreateTaskDialog = ({
       } else {
         markTablesViewExpired([TICKET_TABLE_NAME]);
       }
-      toaster.success(gettext('Dev task created'));
+      toaster.success(gettext('Task created'));
       onSubmitCallback && onSubmitCallback({ linkedKey, linkedRecord, row, connection: selectedConnection });
       onClose();
     }).catch((error) => {
@@ -262,7 +258,7 @@ const CreateTaskDialog = ({
               <div className="seaqa-create-task-dialog-other-settings">
                 <FormGroup>
                   <Label for="devTaskConnection">
-                    {gettext('Dev task connection')}
+                    {gettext('Task connection')}
                     <span className="required-tip" title={gettext('Required')}>{'*'}</span>
                   </Label>
                   <Input
