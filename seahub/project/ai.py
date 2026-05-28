@@ -24,7 +24,7 @@ from seahub.project.constants import ConnectionType, ConnectionCategory, ExtraSo
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable, GeneralTaskTable,\
-    LinearIssuesTable
+    LinearIssueTable
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data, list_linear_issue_record_details
 from seahub.utils.decorators import require_org_context
 
@@ -548,7 +548,7 @@ class RelatedRecordsView(APIView):
                 elif connection.type == ConnectionType.GENERAL_TASK.value:
                     table_name = GeneralTaskTable.gen_table_name(connection_id)
                 elif connection.type == ConnectionType.LINEAR.value:
-                    table_name = LinearIssuesTable.gen_table_name(connection_id)
+                    table_name = LinearIssueTable.gen_table_name(connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'

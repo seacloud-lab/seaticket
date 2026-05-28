@@ -1059,7 +1059,7 @@ class ProjectLinearOauth(models.Model):
     project_uuid = models.UUIDField(unique=True, db_index=True)
     access_token = models.CharField(max_length=255)
     refresh_token = models.CharField(max_length=255)
-    expires_at = models.DateTimeField()
+    expires_at = models.DateTimeField(db_index=True)
 
     objects = ProjectLinearOauthManager()
 

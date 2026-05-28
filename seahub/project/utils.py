@@ -16,7 +16,6 @@ from django.core.cache import cache
 
 from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
-from seahub.utils.user_permissions import get_user_role
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -28,7 +27,6 @@ from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_record_attachments_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
-from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
 from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserTable

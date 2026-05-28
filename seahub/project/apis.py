@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -14,7 +13,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth
-from seahub.project.linear_api import LinearAPI, LinearAPIException, LinearAPIAuthException
+from seahub.project.linear_api import LinearAPI
 from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
@@ -155,10 +154,9 @@ class ProjectLinearTeams(APIView):
 
         linear_api = LinearAPI(
             access_token=linear_oauth.access_token,
-            refresh_token=linear_oauth.refresh_token,
-            project_uuid=project_uuid,
-            expires_at=linear_oauth.expires_at,
+            refresh_token=linear_oauth.refresh_token
         )
+
         try:
             teams, workspace_name = linear_api.list_teams()
         except Exception as e:

@@ -497,7 +497,7 @@ class GeneralTaskUserTable(BaseModel):
         return ConnectionType.GENERAL_TASK.value + '_user_' + str(connection_id)
 
 
-class LinearIssuesTable(BaseModel):
+class LinearIssueTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     issue_id = MappedColumn('issue_id', PropertyTypes.TEXT)

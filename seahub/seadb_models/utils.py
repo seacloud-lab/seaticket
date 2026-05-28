@@ -10,7 +10,7 @@ from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
     KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable, \
-    GeneralTaskTable, GeneralTaskUserTable, LinearIssuesTable, LinearIssueCommentsTable
+    GeneralTaskTable, GeneralTaskUserTable, LinearIssueTable, LinearIssueCommentsTable
 
 logger = logging.getLogger(__name__)
 
@@ -414,12 +414,12 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
 
 
 def init_linear_seadb_table(seadb_api, project_uuid, connection_id):
-    linear_issues_table = LinearIssuesTable
-    issues_table_name = linear_issues_table.gen_table_name(connection_id)
+    linear_issue_table = LinearIssueTable
+    issue_table_name = linear_issue_table.gen_table_name(connection_id)
     linear_issue_comments_table = LinearIssueCommentsTable
-    res = seadb_api.create_table(project_uuid, issues_table_name)
+    res = seadb_api.create_table(project_uuid, issue_table_name)
     table_id = res['table_id']
-    for column in linear_issues_table.get_fields():
+    for column in linear_issue_table.get_fields():
 
         mapped_column = {
             'column_name': column.name,
@@ -433,17 +433,17 @@ def init_linear_seadb_table(seadb_api, project_uuid, connection_id):
 
     # add columns index
     issue_index_columns = [
-        linear_issues_table.issue_id.name,
-        linear_issues_table.state.name,
-        linear_issues_table.labels.name,
-        linear_issues_table.title.name,
-        linear_issues_table.author.name,
-        linear_issues_table.created_time.name,
-        linear_issues_table.closed_time.name,
-        linear_issues_table.deleted.name,
-        linear_issues_table.linked_ticket.name,
-        linear_issues_table.ai_processed_time.name,
-        linear_issues_table.record_modified_time.name,
+        linear_issue_table.issue_id.name,
+        linear_issue_table.state.name,
+        linear_issue_table.labels.name,
+        linear_issue_table.title.name,
+        linear_issue_table.author.name,
+        linear_issue_table.created_time.name,
+        linear_issue_table.closed_time.name,
+        linear_issue_table.deleted.name,
+        linear_issue_table.linked_ticket.name,
+        linear_issue_table.ai_processed_time.name,
+        linear_issue_table.record_modified_time.name,
     ]
     for column_name in issue_index_columns:
         seadb_api.create_column_index(project_uuid, table_id, [column_name])
@@ -735,7 +735,7 @@ def get_connection_table_name(connection_type, connection_id):
     elif connection_type == ConnectionType.GENERAL_TASK.value:
         table_name = GeneralTaskTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.LINEAR.value:
-        table_name = LinearIssuesTable.gen_table_name(connection_id)
+        table_name = LinearIssueTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -1104,7 +1104,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
     elif connection_type == ConnectionType.GENERAL_TASK.value:
         table_name = GeneralTaskTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.LINEAR.value:
-        table_name = LinearIssuesTable.gen_table_name(connection_id)
+        table_name = LinearIssueTable.gen_table_name(connection_id)
     else:
         return []
 
@@ -1158,7 +1158,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
 
 def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
-    issue_table_name = LinearIssuesTable.gen_table_name(connection_id)
+    issue_table_name = LinearIssueTable.gen_table_name(connection_id)
     comments_table_name = LinearIssueCommentsTable.gen_table_name(connection_id)
     issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, identifier, state, labels FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
@@ -1358,7 +1358,7 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
     elif source_type == ConnectionType.GENERAL_TASK.value:
         table_name = GeneralTaskTable.gen_table_name(connection_id)
     elif source_type == ConnectionType.LINEAR.value:
-        table_name = LinearIssuesTable.gen_table_name()
+        table_name = LinearIssueTable.gen_table_name(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
         table_name = KnowledgeBaseTable.gen_table_name()
     elif source_type == ExtraSourceType.TICKET.value:

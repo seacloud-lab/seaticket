@@ -783,5 +783,6 @@ CREATE TABLE `project_linear_oauth` (
   `refresh_token` varchar(255) NOT NULL,
   `expires_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `project_linear_oauth_project_uuid_uniq` (`project_uuid`)
+  UNIQUE KEY `project_linear_oauth_project_uuid_uniq` (`project_uuid`),
+  KEY `project_linear_oauth_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

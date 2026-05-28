@@ -3,18 +3,9 @@ import logging
 
 import requests
 
-from seahub.project.models import ProjectLinearOauth
 from seahub.settings import LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET
 
 logger = logging.getLogger(__name__)
-
-
-class LinearAPIException(Exception):
-    pass
-
-
-class LinearAPIAuthException(LinearAPIException):
-    pass
 
 
 class LinearAPI:
@@ -22,21 +13,15 @@ class LinearAPI:
         self,
         access_token,
         refresh_token,
-        project_uuid,
-        expires_at,
-        timeout: int = 60,
-        token_refresh_buffer_seconds: int = 5 * 60
+        timeout: int = 60
     ):
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.project_uuid = project_uuid
-        self.expires_at = expires_at
         self.client_id = LINEAR_CLIENT_ID
         self.client_secret = LINEAR_CLIENT_SECRET
         self.api_url = "https://api.linear.app/graphql"
         self.token_url = "https://api.linear.app/oauth/token"
         self.timeout = timeout
-        self.token_refresh_buffer_seconds = token_refresh_buffer_seconds
 
     def _headers(self):
         return {
@@ -59,32 +44,16 @@ class LinearAPI:
         )
         response.raise_for_status()
         data = response.json() or {}
-        access_token = data.get("access_token")
 
-        self.access_token = access_token
-        self.refresh_token = data.get("refresh_token")
         expires_at = self.calc_expires_in(data.get("expires_in"))
-        self.expires_at = expires_at
+        access_token = data.get("access_token")
+        refresh_token = data.get("refresh_token")
 
-        ProjectLinearOauth.objects.upsert_token(self.project_uuid, access_token, expires_at, self.refresh_token)
-
-        return data
-
-    def _is_expired(self):
-        """Check if the token is expired."""
-        expires_at = self.expires_at
-        if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
-        now_datetime = datetime.datetime.now(datetime.timezone.utc)
-        refresh_threshold = expires_at - datetime.timedelta(seconds=self.token_refresh_buffer_seconds)
-        return now_datetime >= refresh_threshold
+        return {'access_token': access_token, 'refresh_token': refresh_token, 'expires_at': expires_at}
 
     def list_teams(self):
         """List Linear teams for the authenticated user.
-        Returns (teams, workspace_name).
-        Raises LinearAPIException or LinearAPIAuthException on failure."""
-        if self._is_expired():
-            self.refresh_access_token()
+        Returns (teams, workspace_name)."""
 
         query = """
         query Teams {
@@ -125,4 +94,4 @@ class LinearAPI:
         expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
             seconds=int(expires_in)
         )
-        return expires_at.replace(microsecond=0)
+        return expires_at

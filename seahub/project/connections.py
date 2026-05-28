@@ -22,7 +22,6 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.project.linear_api import LinearAPI, LinearAPIException, LinearAPIAuthException
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth
@@ -47,7 +46,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable, LinearIssuesTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable, LinearIssueTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
@@ -888,29 +887,8 @@ class ProjectLinearOauthStatusView(APIView):
         linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
         if not linear_oauth:
             return Response({'connected': False, 'expires_at': None}, status=status.HTTP_200_OK)
-        linear_api = LinearAPI(
-            access_token=linear_oauth.access_token,
-            project_uuid=project_uuid,
-            refresh_token=linear_oauth.refresh_token,
-            expires_at=linear_oauth.expires_at,
-        )
-        if linear_oauth.expires_at and linear_oauth.expires_at <= timezone.now():
-            try:
-                data = linear_api.refresh_access_token()
-                linear_oauth.access_token = linear_api.access_token
-                linear_oauth.refresh_token = linear_api.refresh_token
-                linear_oauth.expires_at = linear_api.expires_at
-            except Exception as e:
-                logger.warning(
-                    'Linear OAuth refresh failed for project %s: %s', project_uuid, e
-                )
-                return Response(
-                    {'connected': False, 'expires_at': linear_oauth.expires_at},
-                    status=status.HTTP_200_OK,
-                )
-
-        connected = linear_oauth.expires_at > timezone.now()
-        return Response({'connected': connected, 'expires_at': linear_oauth.expires_at}, status=status.HTTP_200_OK)
+        
+        return Response({'connected': True, 'expires_at': linear_oauth.expires_at}, status=status.HTTP_200_OK)
 
 
 class ProjectConnectionRecordView(APIView):
@@ -1034,7 +1012,7 @@ class ProjectConnectionRecordView(APIView):
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_cls = GeneralTaskTable
         elif project_connection.type == ConnectionType.LINEAR.value:
-            table_cls = LinearIssuesTable
+            table_cls = LinearIssueTable
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1244,7 +1222,7 @@ class ProjectConnectionRecordsView(APIView):
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_cls = GeneralTaskTable
         elif project_connection.type == ConnectionType.LINEAR.value:
-            table_cls = LinearIssuesTable
+            table_cls = LinearIssueTable
 
         update_rows = []
         seadb_api = SeaDBAPI()
