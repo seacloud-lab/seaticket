@@ -4,7 +4,9 @@ import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
   SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
-  SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES,
+  SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES, GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP,
+  GENERAL_TASK_PRIORITY_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG, GITHUB_STATE_REASON_NAME_MAP,
+  GITHUB_STATE_OPTION_NAME_MAP,
 } from './constants';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -353,4 +355,91 @@ export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
       }
     }
   }
+};
+
+
+export const formatColumns = (connection, sourceColumns, { collaborators = [] } = {}) => {
+  if (!connection || !Array.isArray(sourceColumns) || sourceColumns.length === 0) return [];
+  const type = connection.type;
+  const columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
+  const notDisplayColumnNames = [
+    CONNECTION_PREDEFINED_COLUMN_NAME._PK,
+    CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
+    CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
+    CONNECTION_PREDEFINED_COLUMN_NAME.URL,
+    CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
+  ];
+  let targetColumns = sourceColumns.slice(0);
+  targetColumns = targetColumns
+    .filter(c => !notDisplayColumnNames.includes(c.name))
+    .map(c => ({ ...c, ...columnConfig[c.name] }));
+
+  if (type === CONNECTION_TYPE.GENERAL_TASK) {
+    const optionColumnsConfig = {
+      [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: GENERAL_TASK_STATUS_NAME_MAP,
+      [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: GENERAL_TASK_SIZE_NAME_MAP,
+      [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: GENERAL_TASK_PRIORITY_NAME_MAP,
+    };
+    const collaboratorsColumns = [
+      CONNECTION_PREDEFINED_COLUMN_NAME.ASSIGNEES,
+      CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS,
+    ];
+
+    Object.keys(optionColumnsConfig).forEach(name => {
+      const statusColumnIndex = targetColumns.findIndex(c => c.name === name);
+      if (statusColumnIndex !== -1) {
+        const statusColumn = targetColumns[statusColumnIndex];
+        const options = getColumnOptions(statusColumn);
+        const config = optionColumnsConfig[name] || {};
+        targetColumns[statusColumnIndex] = {
+          ...statusColumn,
+          data: {
+            ...statusColumn.data,
+            options: options.map(o => ({ ...o, display_name: config[o.name] || '' })),
+          }
+        };
+      }
+    });
+
+    collaboratorsColumns.forEach(columnName => {
+      const columnIndex = targetColumns.findIndex(c => c.name === columnName);
+      if (columnIndex > -1) {
+        const column = targetColumns[columnIndex];
+        targetColumns[columnIndex].data = { ...column.data, collaborators };
+      }
+    });
+    return targetColumns;
+  }
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    const stateColumnIndex = targetColumns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+    let stateColumn;
+    if (stateColumnIndex > -1) {
+      stateColumn = targetColumns[stateColumnIndex];
+      let options = stateColumn.data?.options || [];
+      options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
+      targetColumns[stateColumnIndex].data = { ...stateColumn.data, options };
+    }
+
+    const stateReasonColumnIndex = targetColumns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
+    if (stateReasonColumnIndex > -1) {
+      const stateReasonColumn = targetColumns[stateReasonColumnIndex];
+      let options = stateReasonColumn.data?.options || [];
+      options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
+      const stateOptions = getColumnOptions(stateColumn);
+      const openStateOption = getOption(stateOptions, 'open');
+      const closeStateOption = getOption(stateOptions, 'closed');
+
+      targetColumns[stateReasonColumnIndex].data = {
+        cascade_column_key: stateColumn.key,
+        cascade_settings: {
+          [openStateOption?.id]: options.slice(3).map(o => o.id),
+          [closeStateOption?.id]: options.slice(0, 3).map(o => o.id),
+        },
+        ...stateReasonColumn.data,
+        options,
+      };
+    }
+    return targetColumns;
+  }
+  return targetColumns;
 };

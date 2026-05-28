@@ -72,7 +72,7 @@ const SingleSelectSettings = ({
     <>
       <div className={classnames('seaqa-settings-item', className)}>
         <CustomizeLabel icon="single-select">
-          {column?.name}
+          {column?.display_name || column?.name}
         </CustomizeLabel>
         <div className={classnames('seaqa-single-select-settings-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
           {option ? <Option option={option} /> : <div className="seaqa-tip-default">{gettext('No option')}</div>}

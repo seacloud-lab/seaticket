@@ -1,8 +1,9 @@
-import React, { forwardRef, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useCallback, useRef, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@constants';
 import Main from '@/components/collaborator-editor/main';
 import { useCollaborators } from '../../../hooks';
+import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
 
@@ -18,7 +19,12 @@ const CollaboratorEditor = forwardRef(({
   const editorRef = useRef(null);
   const mainRef = useRef(null);
 
-  const { collaborators } = useCollaborators();
+  const { collaborators: globalCollaborators } = useCollaborators();
+
+  const collaborators = useMemo(() => {
+    if (hasOwnProperty(column?.data || {}, 'collaborators') && Array.isArray(column.data.collaborators)) return column.data.collaborators;
+    return globalCollaborators || [];
+  }, [column, globalCollaborators]);
 
   const blur = useCallback(() => {
     onCommit && onCommit();

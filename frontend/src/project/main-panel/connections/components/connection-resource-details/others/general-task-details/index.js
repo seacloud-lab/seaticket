@@ -61,8 +61,23 @@ const GeneralTaskDetails = ({
       <SingleSelectSettings id="status-editor-popover" isReadonly={isReadonly} value={getCellValueByColumn(record, statusColumn)} column={statusColumn} onChange={onStatusChange} />
       <SingleSelectSettings id="priority-editor-popover" isReadonly={isReadonly} value={getCellValueByColumn(record, priorityColumn)} column={priorityColumn} onChange={onPriorityChange} />
       <SingleSelectSettings id="size-editor-popover" isReadonly={isReadonly} value={getCellValueByColumn(record, sizeColumn)} column={sizeColumn} onChange={onSizeChange} />
-      <CollaboratorsSettings id="assignees-editor-popover" isReadonly={isReadonly} title={gettext('Assignees')} value={getCellValueByColumn(record, assigneesColumn) || []} onChange={onAssigneesChange} />
-      <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={getCellValueByColumn(record, participantsColumn) || []} onChange={onParticipantsChange} />
+      <CollaboratorsSettings
+        id="assignees-editor-popover"
+        isReadonly={isReadonly}
+        title={gettext('Assignees')}
+        tip={gettext('No one assigned')}
+        value={getCellValueByColumn(record, assigneesColumn) || []}
+        useCollaborators={() => ({ ...assigneesColumn.data })}
+        onChange={onAssigneesChange}
+      />
+      <CollaboratorsSettings
+        isReadonly={true}
+        title={gettext('Participants')}
+        tip={gettext('No participants')}
+        value={getCellValueByColumn(record, participantsColumn) || []}
+        useCollaborators={() => ({ ...participantsColumn.data })}
+        onChange={onParticipantsChange}
+      />
       <TextSettings isReadonly={isReadonly} column={versionColumn} value={getCellValueByColumn(record, versionColumn) || ''} onChange={onVersionChange} />
       <DueDateSettings isReadonly={isReadonly} value={getCellValueByColumn(record, dueDateColumn)} onChange={onDueDateChange} />
       <LinkedTicket

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@/components';
+import { mediaUrl } from '@/constants';
 
 import './index.css';
 
@@ -23,7 +24,7 @@ const Collaborator = ({ enableDelete = false, collaborator, onDelete }) => {
   return (
     <div className="sea-metadata-ui collaborator-item" title={collaborator.name}>
       <span className="collaborator-avatar">
-        <img className="collaborator-avatar-icon" alt={collaborator.name} src={collaborator.avatar_url} />
+        <img className="collaborator-avatar-icon" alt={collaborator.name} src={collaborator.avatar_url || `${mediaUrl}avatars/default.png`} />
       </span>
       <span className="collaborator-name">{collaborator.name}</span>
       {enableDelete && (

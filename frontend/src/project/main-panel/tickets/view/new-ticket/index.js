@@ -21,6 +21,7 @@ import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { useData, useTags } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 
@@ -206,7 +207,15 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           </div>
           <div className="seaqa-project-ticket-other-settings">
             <PrioritySettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
-            <CollaboratorsSettings id="assignees-editor-popover" isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
+            <CollaboratorsSettings
+              id="assignees-editor-popover"
+              isReadonly={isSubmitting}
+              title={gettext('Assignees')}
+              value={assignees}
+              tip={gettext('No one assigned')}
+              useCollaborators={useCollaborators}
+              onChange={setAssignees}
+            />
             <TagsSettings
               id="tags-editor-popover"
               isReadonly={isSubmitting}
@@ -239,6 +248,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               isReadonly={isSubmitting}
               title={gettext('Participants')}
               value={participants}
+              tip={gettext('No participants')}
+              useCollaborators={useCollaborators}
               onChange={setParticipants}
             />
           </div>

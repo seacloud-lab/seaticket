@@ -7,7 +7,7 @@ import {
   getTableName, generateAIOptions, generateFindRelatedIssuesOption,
   generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption,
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
-  generateMarkAsOutdatedOptions,
+  generateMarkAsOutdatedOptions, formatColumns,
 } from '../../../utils';
 import { useData, useMetadata, useTags } from '@/project/hooks';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
@@ -19,10 +19,7 @@ import { BAR_TYPE } from '@/project/constants';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import {
-  CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE,
-  GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
-} from '../../../constants';
+import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
 import { connectionsAPI } from '@/project/api';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
@@ -31,6 +28,7 @@ import { CellType } from '@/sea-metadata';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import User from '@/models/user';
 
 import './index.css';
 
@@ -178,35 +176,12 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     });
   }, [title, columns, childrenPageSlugId, connection, record, modifyRowLink]);
 
-  const updateResource = useCallback(({ record, columns, linked_ticket_title }) => {
+  const updateResource = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     linkedTicketTitle.current = linked_ticket_title;
-    if (connection.type === CONNECTION_TYPE.GENERAL_TASK) {
-      const optionColumnsConfig = {
-        [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: GENERAL_TASK_STATUS_NAME_MAP,
-        [CONNECTION_PREDEFINED_COLUMN_NAME.SIZE]: GENERAL_TASK_SIZE_NAME_MAP,
-        [CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY]: GENERAL_TASK_PRIORITY_NAME_MAP,
-      };
-
-      let validColumns = columns.slice(0);
-      Object.keys(optionColumnsConfig).forEach(name => {
-        const statusColumnIndex = validColumns.findIndex(c => c.name === name);
-        if (statusColumnIndex !== -1) {
-          const statusColumn = validColumns[statusColumnIndex];
-          const options = getColumnOptions(statusColumn);
-          const config = optionColumnsConfig[name] || {};
-          validColumns[statusColumnIndex] = {
-            ...statusColumn,
-            data: {
-              ...statusColumn.data,
-              options: options.map(o => ({ ...o, display_name: config[o.name] || '' })),
-            }
-          };
-        }
-      });
-      setColumns(validColumns);
-    } else {
-      setColumns(columns);
-    }
+    const relatedUsers = Array.isArray(related_users) && related_users.length > 0 ? related_users : [];
+    const collaborators = relatedUsers.map(user => new User(user));
+    const targetColumns = formatColumns(connection, columns, { collaborators });
+    setColumns(targetColumns);
     setRecord(record);
   }, [connection]);
 

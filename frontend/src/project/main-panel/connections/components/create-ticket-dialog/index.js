@@ -13,6 +13,7 @@ import { TICKET_STATE, TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets
 import { useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 
@@ -156,7 +157,14 @@ const CreateTicketDialog = ({
             </div>
             <div className="seaqa-create-ticket-dialog-other-settings">
               <PrioritySettings isReadonly={isLoading} value={priority} onChange={setPriority} />
-              <CollaboratorsSettings isReadonly={isLoading} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
+              <CollaboratorsSettings
+                isReadonly={isLoading}
+                title={gettext('Assignees')}
+                value={assignees}
+                tip={gettext('No one assigned')}
+                useCollaborators={useCollaborators}
+                onChange={setAssignees}
+              />
               <TagsSettings
                 isReadonly={isLoading}
                 value={tags}
@@ -191,6 +199,8 @@ const CreateTicketDialog = ({
                 isReadonly={isLoading}
                 title={gettext('Participants')}
                 value={participants}
+                tip={gettext('No participants')}
+                useCollaborators={useCollaborators}
                 onChange={setParticipants}
               />
             </div>

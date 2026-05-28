@@ -275,6 +275,7 @@ export const DataProvider = ({
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const linkedRecords = res?.data?.linked_records || {};
+      const relatedUsers = res?.data?.related_users || [];
       const columns = res?.data?.columns || [];
       let rowIds = is_reload ? [] : [...(view?.rows || [])];
       let id_row_map = { ...table.id_row_map };
@@ -301,7 +302,7 @@ export const DataProvider = ({
       setData(data => {
         const newData = deepcopy(data);
         let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
-        newData[tableName] = { ..._table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records };
+        newData[tableName] = { ..._table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records, related_users: relatedUsers };
 
         if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
           const ticketTable = newData[TICKET_TABLE_NAME];
@@ -341,6 +342,7 @@ export const DataProvider = ({
             columns: view.columns.map(cKey => table.key_column_map[cKey]).filter(Boolean),
             linked_records: table.linked_records,
             has_more: view.has_more,
+            related_users: table?.related_users || [],
           }
         });
       });
