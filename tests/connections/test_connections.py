@@ -9,6 +9,7 @@ from seahub.project.connections import (
     ProjectConnectionView,
     ProjectConnectionSyncView,
     ProjectConnectionDetailsView,
+    ProjectConnectionRelatedUsersView,
     ProjectConnectionLogView,
     ProjectConnectionsStatusView,
     ProjectConnectionRecordView,
@@ -550,6 +551,47 @@ class TestProjectConnectionDetailsView:
         list_mock.assert_called_once()
 
 
+class TestProjectConnectionRelatedUsersView:
+
+    def test_get_permission_denied(self, factory, no_org_user, real_project, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/related-users/")
+        request.user = no_org_user
+
+        resp = ProjectConnectionRelatedUsersView.as_view()(
+            request, project_uuid=str(project.uuid), connection_id=str(site_connection.id)
+        )
+
+        assert resp.status_code == 403
+
+    def test_get_invalid_connection_type(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/related-users/")
+        request.user = project_creator
+
+        resp = ProjectConnectionRelatedUsersView.as_view()(
+            request, project_uuid=str(project.uuid), connection_id=str(site_connection.id)
+        )
+
+        assert resp.status_code == 400
+
+    def test_get_success(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='general_task')
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{connection.id}/related-users/")
+        request.user = project_creator
+
+        with patch('seahub.project.connections.get_connection_general_task_related_users', return_value=[
+            {'email': 'dev@example.com', 'name': 'Dev User', 'avatar_url': '/avatar.png'}
+        ]):
+            resp = ProjectConnectionRelatedUsersView.as_view()(
+                request, project_uuid=str(project.uuid), connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 200
+        assert resp.data['related_users'][0]['email'] == 'dev@example.com'
+
+
 class TestProjectConnectionLogView:
 
     def test_get_format_log(self, factory, project_creator, real_project, connection_factory):
@@ -685,6 +727,116 @@ class TestProjectConnectionRecordsView:
 
         assert resp.status_code == 200
         assert resp.data['success'] is True
+
+    def test_post_create_general_task_with_linked_ticket_success(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        general_task_connection = connection_factory(
+            connection_type='general_task',
+            config=json.dumps({'base_url': 'http://adapter.example.com'}),
+        )
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/{general_task_connection.id}/records/",
+            data={'title': 'Task from ticket', 'linked_ticket': 10},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+        seadb.insert_rows.return_value = {'pks': [88]}
+
+        with patch('seahub.project.connections.decrypt_config', return_value={'base_url': 'http://adapter.example.com'}), \
+                patch('seahub.project.connections.create_general_task_via_adapter', return_value={
+                    'id': 'remote-1',
+                    'title': 'Task from ticket',
+                    'status': 'new',
+                    'size': 'medium',
+                    'priority': 'medium',
+                }), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.connections.ensure_general_task_column_options'), \
+                patch('seahub.project.connections.get_ticket', return_value=({'_pk': 10, 'linked_connection_records': []}, {})), \
+                patch('seahub.project.connections.check_ticket_link_changes', return_value=(Mock(), [])) as check_link_mock, \
+                patch('seahub.project.connections.sync_links_in_connection') as sync_link_mock:
+            resp = ProjectConnectionRecordsView.as_view()(
+                request,
+                project_uuid=project.uuid,
+                connection_id=str(general_task_connection.id)
+            )
+
+        assert resp.status_code == 201
+        assert resp.data['row']['_pk'] == 88
+        assert resp.data['row']['linked_ticket'] == 10
+        inserted_row = seadb.insert_rows.call_args.args[2][0]
+        assert inserted_row['source_task_id'] == 'remote-1'
+        seadb.update_rows.assert_called_once_with(project.uuid, 'tickets', [{
+            'pk': 10,
+            'row': {'linked_connection_records': [f'{general_task_connection.id}_88']}
+        }])
+        check_link_mock.assert_called_once()
+        sync_link_mock.assert_called_once()
+
+    def test_post_create_general_task_keeps_existing_ticket_links(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        general_task_connection = connection_factory(
+            connection_type='general_task',
+            config=json.dumps({'base_url': 'http://adapter.example.com'}),
+        )
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/{general_task_connection.id}/records/",
+            data={'title': 'Task from ticket', 'linked_ticket': 10},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+        seadb.insert_rows.return_value = {'pks': [99]}
+
+        with patch('seahub.project.connections.decrypt_config', return_value={'base_url': 'http://adapter.example.com'}), \
+                patch('seahub.project.connections.create_general_task_via_adapter', return_value={
+                    'id': 'remote-2',
+                    'title': 'Task from ticket',
+                    'status': 'new',
+                    'size': 'medium',
+                    'priority': 'medium',
+                }), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.connections.ensure_general_task_column_options'), \
+                patch('seahub.project.connections.get_ticket', return_value=({'_pk': 10, 'linked_connection_records': ['1_100', '2_200']}, {})), \
+                patch('seahub.project.connections.check_ticket_link_changes', return_value=(Mock(), [])), \
+                patch('seahub.project.connections.sync_links_in_connection'):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request,
+                project_uuid=project.uuid,
+                connection_id=str(general_task_connection.id)
+            )
+
+        assert resp.status_code == 201
+        seadb.update_rows.assert_called_once_with(project.uuid, 'tickets', [{
+            'pk': 10,
+            'row': {'linked_connection_records': ['1_100', '2_200', f'{general_task_connection.id}_99']}
+        }])
+
+    def test_post_create_general_task_invalid_linked_ticket(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        general_task_connection = connection_factory(
+            connection_type='general_task',
+            config=json.dumps({'base_url': 'http://adapter.example.com'}),
+        )
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/{general_task_connection.id}/records/",
+            data={'title': 'Task from ticket', 'linked_ticket': 'abc'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ProjectConnectionRecordsView.as_view()(
+            request,
+            project_uuid=project.uuid,
+            connection_id=str(general_task_connection.id)
+        )
+
+        assert resp.status_code == 400
+        assert 'linked_ticket invalid' in resp.data['error_msg']
 
 
 class TestConnectionFileView:

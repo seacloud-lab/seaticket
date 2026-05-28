@@ -97,6 +97,7 @@ def build_general_task_row_data(task, sync_time=None):
         GeneralTaskTable.sync_time.name: now,
         GeneralTaskTable.record_modified_time.name: now,
         GeneralTaskTable.deleted.name: bool(task.get('deleted', False)),
+        GeneralTaskTable.linked_ticket.name: int(task.get('linked_ticket')),
     }
 
 

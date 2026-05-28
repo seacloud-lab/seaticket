@@ -39,7 +39,8 @@ export const generatorRowsMoreTool = ({
   chatTicketsByAI,
   findRelatedIssues,
   context,
-  createKnowledgeBaseRecord
+  createKnowledgeBaseRecord,
+  createTask,
 }) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
@@ -79,6 +80,14 @@ export const generatorRowsMoreTool = ({
       label: gettext('Create knowledge base record'),
       key: 'create_kb_record',
       callback: () => createKnowledgeBaseRecord(rows[0]),
+    });
+  }
+
+  if (rows.length === 1 && createTask) {
+    children.push({
+      label: gettext('Create task'),
+      key: 'create_task',
+      callback: () => createTask(rows[0]),
     });
   }
 
@@ -141,14 +150,34 @@ export const generatorRowsMoreTool = ({
   };
 };
 
-export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord }) => {
+export const generatorTicketsRowsTools = ({
+  rows,
+  columns,
+  workspaceID,
+  projectName,
+  modifyRows,
+  chatTicketsByAI,
+  findRelatedIssues,
+  context,
+  createKnowledgeBaseRecord,
+  createTask,
+}) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
     const tool = generatorTicketCopyLinkTool({ ticket: row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord });
+  const moreTool = generatorRowsMoreTool({
+    rows,
+    columns,
+    modifyRows,
+    chatTicketsByAI,
+    findRelatedIssues,
+    context,
+    createKnowledgeBaseRecord,
+    createTask,
+  });
   tools.push(moreTool);
   return tools;
 };
@@ -229,6 +258,7 @@ export const generatorTicketsContextMenuOptions = ({
   permission,
   findRelatedIssues,
   createKnowledgeBaseRecord,
+  createTask,
   canDeleteRow
 }) => {
   let list = [];
@@ -274,6 +304,13 @@ export const generatorTicketsContextMenuOptions = ({
           label: gettext('Create knowledge base record'),
           key: 'create_kb_record',
           callback: () => createKnowledgeBaseRecord(rows[0]),
+        });
+      }
+      if (rows.length === 1 && createTask) {
+        list.push({
+          label: gettext('Create task'),
+          key: 'create_task',
+          callback: () => createTask(rows[0]),
         });
       }
       list.push('Divider');
@@ -357,6 +394,13 @@ export const generatorTicketsContextMenuOptions = ({
       label: gettext('Create knowledge base record'),
       key: 'create_kb_record',
       callback: () => createKnowledgeBaseRecord(row),
+    });
+  }
+  if (createTask) {
+    list.push({
+      label: gettext('Create task'),
+      key: 'create_task',
+      callback: () => createTask(row),
     });
   }
   list.push('Divider');

@@ -1,0 +1,34 @@
+.seaqa-create-task-dialog {
+  max-width: 850px;
+  height: 550px;
+}
+
+.seaqa-create-task-dialog .modal-content {
+  height: 100%;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-left-settings {
+  flex: 1;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-other-settings {
+  width: 316px;
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+  height: 388px;
+  overflow-y: auto;
+}
+
+.seaqa-create-task-dialog .seaqa-task-content {
+  height: 250px;
+}
+
+.seaqa-create-task-dialog .modal-footer .btn {
+  height: 38px;
+}
+
+.seaqa-create-task-dialog .modal-footer .seaqa-loading-icon {
+  width: 16px;
+  height: 16px;
+}

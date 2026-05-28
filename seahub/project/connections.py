@@ -52,14 +52,15 @@ from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopi
     SeafileTable, WebCrawlTable, ThreadTable, NotionTable, GeneralTaskTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
-from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
+from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
+    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
-from seahub.project.utils import normalize_general_task_payload, create_general_task_via_adapter, update_general_task_via_adapter
+from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, prepare_image_data_for_adapter
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -710,6 +711,37 @@ class ProjectConnectionDetailsView(APIView):
         })
 
 
+class ProjectConnectionRelatedUsersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, connection_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.GENERAL_TASK.value:
+            error_msg = 'Only general task connections support related users.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        related_users = get_connection_general_task_related_users(project_uuid, connection_id)
+        return Response({'related_users': related_users})
+
+
 class GithubWebhookView(APIView):
     throttle_classes = (UserRateThrottle,)
 
@@ -1170,17 +1202,20 @@ class ProjectConnectionRecordView(APIView):
                     'participants': row_data.get('participants', current_record.get('participants') or []),
                     'version': row_data.get('version', current_record.get('version', '')),
                     'others': row_data.get('others', current_record.get('others', '')),
-                    'content': row_data.get('content', row_data.get('description', current_record.get('content', ''))),
+                    'description': row_data.get('description', current_record.get('content', '')),
                     'due_date': row_data.get('due_date', current_record.get('due_date')),
                     'created_time': current_record.get('created_time'),
                     'modified_time': current_record.get('modified_time'),
                     'deleted': False,
                 }
                 connection_config = decrypt_config(json.loads(project_connection.config))
+                image_data_map = prepare_image_data_for_adapter(project_uuid, merged_task.get('description'))
+                if image_data_map:
+                    merged_task['image_data_map'] = image_data_map
                 adapter_task = update_general_task_via_adapter(
                     connection_config,
                     source_task_id,
-                    normalize_general_task_payload(merged_task),
+                    merged_task,
                 )
                 ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                 update_row['row'].update(build_general_task_row_data(adapter_task))
@@ -1242,6 +1277,9 @@ class ProjectConnectionRecordsView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid, connection_id):
+        """
+        Create a new record for a general task connection.
+        """
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, f'Project {project_uuid} not found.')
@@ -1257,7 +1295,7 @@ class ProjectConnectionRecordsView(APIView):
         if project_connection.type != ConnectionType.GENERAL_TASK.value:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
 
-        task_payload = normalize_general_task_payload(request.data or {})
+        task_payload = request.data
         task_title = task_payload.get('title')
         if not task_title:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Task title is required.')
@@ -1266,8 +1304,39 @@ class ProjectConnectionRecordsView(APIView):
         task_payload['priority'] = task_payload.get('priority') or 'medium'
         task_payload['size'] = task_payload.get('size') or 'medium'
 
+        linked_ticket = request.data.get('linked_ticket')
+        if linked_ticket in ('', None):
+            linked_ticket = None
+        elif not isinstance(linked_ticket, int):
+            try:
+                linked_ticket = int(linked_ticket)
+            except Exception:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'linked_ticket invalid.')
+        
+        description_dict = task_payload.get('description')
+        if not description_dict:
+            error_msg = 'description invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(description_dict, dict):
+            error_msg = 'description invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        description = description_dict.get('text')
+        if not description:
+            error_msg = 'description invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = description_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = description_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
+
         try:
             connection_config = decrypt_config(json.loads(project_connection.config))
+            image_data_map = prepare_image_data_for_adapter(project_uuid, task_payload.get('description'))
+            if image_data_map:
+                task_payload['image_data_map'] = image_data_map
             created_task = create_general_task_via_adapter(connection_config, task_payload)
         except Exception as e:
             logger.error(f'create general task error: {e}')
@@ -1275,6 +1344,7 @@ class ProjectConnectionRecordsView(APIView):
 
         seadb_api = SeaDBAPI()
         row_data = build_general_task_row_data(created_task)
+        print(row_data, '---row data')
         try:
             ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
             res = seadb_api.insert_rows(project_uuid, GeneralTaskTable.gen_table_name(connection_id), [row_data])
@@ -1289,6 +1359,32 @@ class ProjectConnectionRecordsView(APIView):
             except Exception:
                 pass
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created remotely but local sync failed.')
+
+        if linked_ticket is not None:
+            try:
+                ticket, _ = get_ticket(seadb_api, project_uuid, linked_ticket)
+                if not ticket:
+                    return api_error(status.HTTP_404_NOT_FOUND, 'Ticket not found.')
+
+                linked_record_key = f'{connection_id}_{row_data["_pk"]}'
+                ticket_link_diff = {int(linked_ticket): ({linked_record_key}, set())}
+                sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+
+                old_value = ticket.get('linked_connection_records', []) or []
+                if not isinstance(old_value, list):
+                    old_value = []
+                new_value = list(dict.fromkeys(old_value + [linked_record_key]))
+                seadb_api.update_rows(project_uuid, 'tickets', [{
+                    'pk': ticket.get('_pk'),
+                    'row': {'linked_connection_records': new_value}
+                }])
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+                row_data['linked_ticket'] = linked_ticket
+            except TicketLinkValidationError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            except Exception as e:
+                logger.error(f'link created general task to ticket error: {e}')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created but link sync failed.')
 
         return Response({'row': row_data}, status=status.HTTP_201_CREATED)
 
@@ -1359,6 +1455,7 @@ class ProjectConnectionRecordsView(APIView):
             update_row = {'pk': int(row_id), 'row': {}}
 
             if project_connection.type == ConnectionType.GENERAL_TASK.value:
+                # sync to remote seatable task
                 general_task_seadb_api = GeneralTaskSeaDBAPI(project_uuid)
                 current_record = general_task_seadb_api.get_general_task_record(project_uuid, connection_id, row_id)
                 if not current_record:
@@ -1381,17 +1478,20 @@ class ProjectConnectionRecordsView(APIView):
                         'participants': row_data.get('participants', current_record.get('participants') or []),
                         'version': row_data.get('version', current_record.get('version', '')),
                         'others': row_data.get('others', current_record.get('others', '')),
-                        'content': row_data.get('content', row_data.get('description', current_record.get('content', ''))),
+                        'description': row_data.get('description', current_record.get('content', '')),
                         'due_date': row_data.get('due_date', current_record.get('due_date')),
                         'created_time': current_record.get('created_time'),
                         'modified_time': current_record.get('modified_time'),
                         'deleted': False,
                     }
                     connection_config = decrypt_config(json.loads(project_connection.config))
+                    image_data_map = prepare_image_data_for_adapter(project_uuid, merged_task.get('description'))
+                    if image_data_map:
+                        merged_task['image_data_map'] = image_data_map
                     adapter_task = update_general_task_via_adapter(
                         connection_config,
                         source_task_id,
-                        normalize_general_task_payload(merged_task),
+                        merged_task,
                     )
                     ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                     update_row['row'].update(build_general_task_row_data(adapter_task))
