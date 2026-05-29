@@ -178,36 +178,6 @@ class ConvertRecordToTicket(APIView):
                     Title: {title}
                     Body: {body_content}
                 """
-            case ConnectionType.LINEAR.value:
-                seadb_api = SeaDBAPI()
-                issue_record = list_linear_issue_record_details(
-                    seadb_api, project_uuid, connection_id, record_id
-                )
-                title = issue_record.get('title', '')
-                default_title = title
-                body_content = issue_record.get('content', '') or ''
-                for comment in issue_record.get('comments', []) or []:
-                    if not comment.get('content'):
-                        continue
-                    content_to_add = comment.get('content')
-                    if body_content:
-                        content_to_add = '\n\n' + content_to_add
-                    if len(body_content) + len(content_to_add) > MAX_LENGTH:
-                        break
-                    body_content += content_to_add
-
-                issue_title = issue_record.get('title', '')
-                config = json.loads(connection.config)
-                workspace_name = config.get('workspace_name', '')
-                identifier = issue_record.get('identifier', '')
-                slug = '-'.join(str(issue_title).strip().split()) if issue_title else ''
-                related_url = f'https://linear.app/{workspace_name}/issue/{identifier}/{slug}' if workspace_name and identifier and slug else ''
-
-                record_detail = f"""
-                    **Ticket Information:**
-                    Title: {title}
-                    Body: {body_content}
-                """
         if not record_detail:
             error_msg = 'Record detail not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -547,8 +517,6 @@ class RelatedRecordsView(APIView):
                     table_name = ThreadTable.gen_table_name(connection_id)
                 elif connection.type == ConnectionType.GENERAL_TASK.value:
                     table_name = GeneralTaskTable.gen_table_name(connection_id)
-                elif connection.type == ConnectionType.LINEAR.value:
-                    table_name = LinearIssueTable.gen_table_name(connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'
