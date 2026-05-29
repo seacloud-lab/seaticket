@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { gettext } from '@/constants';
@@ -8,7 +8,6 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import { useData } from '@/project/hooks';
-import { useCollaborators } from '@/sea-metadata';
 import { TICKET_TABLE_NAME } from '../../constants';
 import { generatorTicketURL } from '../../utils';
 import { CollaboratorsSettings, DueDateSettings } from '../ticket-settings';
@@ -101,7 +100,6 @@ const CreateTaskDialog = ({
 }) => {
   const { connections } = useConnections();
   const { markTablesViewExpired } = useData();
-  const { collaborators, setScopedCollaborators, clearScopedCollaborators } = useCollaborators();
 
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMessage, setErrMessage] = useState('');
@@ -115,15 +113,20 @@ const CreateTaskDialog = ({
   const [participants, setParticipants] = useState('');
   const [version, setVersion] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [relatedUsers, setRelatedUsers] = useState([]);
 
   const generalTaskConnections = useMemo(() => {
     return (connections || []).filter(connection => connection.type === CONNECTION_TYPE.GENERAL_TASK);
   }, [connections]);
 
-  const collaboratorScopeKey = useMemo(() => {
-    if (!connectionId) return '';
-    return `create-general-task-${connectionId}`;
-  }, [connectionId]);
+  const useTaskCollaborators = useCallback(() => {
+    return {
+      collaborators: relatedUsers,
+      collaboratorsCache: {},
+      updateCollaboratorsCache: () => {},
+      queryUser: null,
+    };
+  }, [relatedUsers]);
 
   useEffect(() => {
     if (generalTaskConnections.length === 0) return;
@@ -136,18 +139,18 @@ const CreateTaskDialog = ({
     let isCancelled = false;
     connectionsAPI.getConnectionRelatedUsers(projectUuid, connectionId).then((res) => {
       if (isCancelled) return;
-      const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
-      setScopedCollaborators(collaboratorScopeKey, relatedUsers);
+      const nextRelatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
+      setRelatedUsers(nextRelatedUsers);
     }).catch(() => {
       if (isCancelled) return;
-      clearScopedCollaborators(collaboratorScopeKey);
+      setRelatedUsers([]);
     });
 
     return () => {
       isCancelled = true;
-      clearScopedCollaborators(collaboratorScopeKey);
+      setRelatedUsers([]);
     };
-  }, [projectUuid, connectionId, collaboratorScopeKey, setScopedCollaborators, clearScopedCollaborators]);
+  }, [projectUuid, connectionId]);
 
   useEffect(() => {
     const ticketTitle = ticket?.title || '';
@@ -180,7 +183,7 @@ const CreateTaskDialog = ({
       status,
       size,
       priority,
-      assignees: normalizeCollaboratorEmails(assignees, collaborators),
+      assignees: normalizeCollaboratorEmails(assignees, relatedUsers),
       participants: parseCollaborators(participants),
       version: version.trim(),
       due_date: dueDate || '',
@@ -328,6 +331,8 @@ const CreateTaskDialog = ({
                     title={gettext('Assignees')}
                     value={assignees}
                     className="mb-3"
+                    tip={gettext('No one assigned')}
+                    useCollaborators={useTaskCollaborators}
                     onChange={setAssignees}
                   />
                 </FormGroup>

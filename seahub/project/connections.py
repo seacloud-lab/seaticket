@@ -39,7 +39,7 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    list_notion_record_details, list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data
+    list_notion_record_details, list_general_task_record_details, build_general_task_row_data
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
