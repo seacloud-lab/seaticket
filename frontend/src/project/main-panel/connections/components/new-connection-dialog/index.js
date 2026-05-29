@@ -1,15 +1,18 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, getAvailableConnectionTypes } from '../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
+import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
 import { ModalHeader, Loading, SecondaryBtn, toaster } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
-import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
+import Connection from '../../models/connection';
 import { useConnections } from '../../hooks/connections';
+import Switch from '@/components/switch';
 
 import './index.css';
 
@@ -35,7 +38,7 @@ const initializeConfig = (newType) => {
   return defaultConfig;
 };
 
-const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
+const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), [enableGeneralTask]);
   const [stepIndex, setStepIndex] = useState(0);
   const [type, setType] = useState(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type);
@@ -44,8 +47,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
+  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
+  const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
+  const emailOAuthIntervalRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -71,8 +77,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
-    return _columns;
-  }, [type]);
+    if (type !== CONNECTION_TYPE.EMAIL) return _columns;
+    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions);
+  }, [type, config.server_provider, showEmailAdvancedOptions]);
 
   const customColumns = useMemo(() => columns.filter(c => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
@@ -80,7 +87,24 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }), [columns]);
 
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
+
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
+
+  const isMicrosoftEmailProvider = useMemo(() => {
+    return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
+  }, [isEmail, config.server_provider]);
+
+  const isOAuthEmail = useMemo(() => {
+    return isEmail && isOAuthEmailProvider(getEmailProvider(config));
+  }, [isEmail, config.server_provider]);
+
+  const basicCustomColumns = useMemo(() => {
+    return customColumns.filter(column => !column.is_advanced_option);
+  }, [customColumns]);
+
+  const advancedCustomColumns = useMemo(() => {
+    return customColumns.filter(column => column.is_advanced_option);
+  }, [customColumns]);
 
   const step = useMemo(() => {
     return STEPS[stepIndex];
@@ -100,6 +124,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     }) : true;
   }, [name, config, customColumns]);
 
+  const callbackUrl = useMemo(() => {
+    return getEmailOAuthCallbackUrl(projectUuid);
+  }, []);
+
+  const stopEmailOAuthPolling = useCallback(() => {
+    if (emailOAuthIntervalRef.current) {
+      window.clearInterval(emailOAuthIntervalRef.current);
+      emailOAuthIntervalRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => stopEmailOAuthPolling();
+  }, [stopEmailOAuthPolling]);
+
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
     if (newValue === name) return;
@@ -108,8 +147,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const onTypeChange = useCallback((newType) => {
     if (type === newType) return;
-    setConfig(initializeConfig(newType));
+    let nextConfig = initializeConfig(newType);
+    if (newType === CONNECTION_TYPE.EMAIL) {
+      nextConfig = populateEmailOAuthDefaults(nextConfig, getEmailProvider(nextConfig));
+    }
+    setConfig(nextConfig);
     setType(newType);
+    setShowEmailAdvancedOptions(false);
 
     if (newType === CONNECTION_TYPE.GITHUB_ISSUE) {
       setIsLoadingRepositories(true);
@@ -129,23 +173,73 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
+
+    if (key === 'server_provider') {
+      const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
+      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
+      setShowEmailAdvancedOptions(false);
+      return;
+    }
+
     setConfig({ ...config, [key]: value });
   }, [config]);
 
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
     let _config = { ...config };
+    if (type === CONNECTION_TYPE.EMAIL) {
+      _config = sanitizeEmailConfigByProvider(_config);
+    }
     if (isGithub) {
       const repository = _config.repository.repository;
       delete _config['repository'];
       _config['repository'] = repository['html_url'];
       _config['installation_id'] = repository['installation_id'];
     }
+    if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
+      connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
+        const authorizationUrl = res.data?.auth_url;
+        if (!authorizationUrl) {
+          setSubmitting(false);
+          toaster.danger(gettext('Failed to fetch authorization url'));
+          return;
+        }
+
+        window.open(authorizationUrl, '_blank', 'width=600,height=700');
+        setWaitingEmailOAuth(true);
+        stopEmailOAuthPolling();
+        emailOAuthIntervalRef.current = window.setInterval(() => {
+          connectionsAPI.queryEmailOAuth(projectUuid).then((progressRes) => {
+            if (progressRes.data?.status !== 'success') return;
+            stopEmailOAuthPolling();
+            setWaitingEmailOAuth(false);
+            setSubmitting(false);
+            const connection = new Connection(progressRes.data.record);
+            onSubmit({ type, name: name.trim(), config: _config }, null, false, null, connection);
+          }).catch((error) => {
+            stopEmailOAuthPolling();
+            setWaitingEmailOAuth(false);
+            setSubmitting(false);
+            toaster.danger(Utils.getErrorMsg(error));
+          });
+        }, 2000);
+      }).catch((error) => {
+        setSubmitting(false);
+        toaster.danger(Utils.getErrorMsg(error));
+      });
+      return;
+    }
+
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, onSubmit, onToggle, modifyConnection]);
+  }, [name, type, config, onSubmit, stopEmailOAuthPolling]);
+
+  const onCopyCallbackUrl = useCallback(() => {
+    copy(callbackUrl);
+    toaster.success(gettext('Connection URL has been copied to clipboard'), { duration: 2 });
+  }, [callbackUrl]);
 
   const listGitHubRepositories = useCallback(() => {
     return connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
@@ -159,6 +253,47 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, []);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
+
+  const renderConnectionField = useCallback((column) => {
+    const { type, key, children, is_advanced_option } = column;
+    if (type === CONNECTION_FIELD_TYPE.GROUP) {
+      return (
+        <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
+          {children.map((child, index) => (
+            <ConnectionConfigEditor
+              className="mx-0 px-0 width-half"
+              column={child}
+              key={`${key}-${index}`}
+              row={config}
+              readonly={isSubmitting}
+              onChange={onConfigChange}
+            />
+          ))}
+        </Row>
+      );
+    }
+
+    let api = null;
+    let row = { ...config };
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'repository' && isGithub) {
+      api = listGitHubRepositories;
+      if (row[key]) {
+        row[key] = row[key].value;
+      }
+    }
+
+    return (
+      <ConnectionConfigEditor
+        className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
+        column={column}
+        api={api}
+        key={key}
+        row={row}
+        readonly={isSubmitting}
+        onChange={onConfigChange}
+      />
+    );
+  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories]);
 
   return (
     <Modal
@@ -219,36 +354,37 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {customColumns.map(c => {
-              const { type, key, children } = c;
-              if (type === CONNECTION_FIELD_TYPE.GROUP) {
-                return (
-                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
-                    {children.map((child, index) => (
-                      <ConnectionConfigEditor
-                        className="mx-0 px-0 width-half"
-                        column={child}
-                        key={`${key}-${index}`}
-                        row={config}
-                        readonly={isSubmitting}
-                        onChange={onConfigChange}
-                      />
-                    ))}
-                  </Row>
-                );
-              }
-              let api = null;
-              let row = { ...config };
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
-                api = listGitHubRepositories;
-                if (row[key]) {
-                  row[key] = row[key].value;
-                }
-              }
-              return ((
-                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
-              ));
-            })}
+            {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
+            {isOAuthEmail && (
+              <FormGroup>
+                <Label>{gettext('OAuth callback URL')}</Label>
+                <div className="seaqa-project-connection-oauth-tip">{gettext('Use this callback URL in your email provider OAuth app configuration. It is read-only and must match exactly.')}</div>
+                <div className="input-group">
+                  <Input value={callbackUrl} disabled={true} />
+                  <div className="input-group-append">
+                    <Button type="button" onClick={onCopyCallbackUrl}>{gettext('Copy')}</Button>
+                  </div>
+                </div>
+              </FormGroup>
+            )}
+            {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
+            {isMicrosoftEmailProvider && (
+              <div className="seaqa-project-connection-advanced-options mb-3">
+                <Switch
+                  checked={showEmailAdvancedOptions}
+                  onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
+                  placeholder={gettext('Advanced options')}
+                  textPosition="right"
+                />
+              </div>
+            )}
+            {advancedCustomColumns.map(renderConnectionField)}
+            {isWaitingEmailOAuth && (
+              <div className="seaqa-project-connection-oauth-pending">
+                <Loading />
+                <div className="mt-3">{gettext('Waiting for OAuth authorization to complete...')}</div>
+              </div>
+            )}
           </div>
         )}
 
@@ -277,36 +413,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {customColumns.map(c => {
-              const { type, key, children } = c;
-              if (type === CONNECTION_FIELD_TYPE.GROUP) {
-                return (
-                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
-                    {children.map((child, index) => (
-                      <ConnectionConfigEditor
-                        className="mx-0 px-0 width-half"
-                        column={child}
-                        key={`${key}-${index}`}
-                        row={config}
-                        readonly={isSubmitting}
-                        onChange={onConfigChange}
-                      />
-                    ))}
-                  </Row>
-                );
-              }
-              let api = null;
-              let row = { ...config };
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
-                api = listGitHubRepositories;
-                if (row[key]) {
-                  row[key] = row[key].value;
-                }
-              }
-              return ((
-                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
-              ));
-            })}
+            {customColumns.map(renderConnectionField)}
           </div>
         )}
       </ModalBody>
@@ -319,7 +426,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       {stepIndex === 1 && (
         <ModalFooter>
           <Button color="secondary" onClick={() => setStepIndex(0)}>{gettext('Previous')}</Button>
-          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || isWaitingEmailOAuth || !isValid || !name}>{gettext('Submit')}</Button>
         </ModalFooter>
       )}
     </Modal>
@@ -330,7 +437,6 @@ NewConnectionDialog.propTypes = {
   connection: PropTypes.object,
   connections: PropTypes.array,
   onSubmit: PropTypes.func.isRequired,
-  modifyConnection: PropTypes.func,
   onToggle: PropTypes.func.isRequired
 };
 

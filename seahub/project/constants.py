@@ -27,6 +27,14 @@ EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
+EMAIL_OAUTH_SESSION_KEY = 'oauth_email_connection'
+
+GENERAL_EMAIL_PROVIDER = 'general_email_provider'
+MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
+GMAIL_EMAIL_PROVIDER = 'Gmail'
+
+OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
+
 # connection types
 class ConnectionType(Enum):
     EMAIL = 'email'

@@ -5,6 +5,7 @@ import smtplib
 import ssl
 import imaplib
 import re
+import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -345,12 +346,13 @@ class _OAuthEmailSender(_EmailSenderBase):
 
     def __init__(self, config):
         self.config = config
+        self.config_updated = False
         self.client_id = config.get('client_id')
         self.client_secret = config.get('client_secret')
         self.refresh_token = config.get('refresh_token')
         self.access_token = config.get('access_token')
         self.sender_name = config.get('sender_name', '')
-        self.sender_email = config.get('sender_email') or config.get('username')
+        self.sender_email = config.get('sender_email')
         self.expires_at = config.get('expires_at')
         self.token_url = config.get('token_url')
         self.scopes = config.get('scopes')
@@ -403,6 +405,7 @@ class _OAuthEmailSender(_EmailSenderBase):
         self.config['access_token'] = new_access_token
         self.config['expires_at'] = new_expires_at
         self.config['refresh_token'] = new_refresh_token
+        self.config_updated = True
 
     def _do_send_email(self, msg_obj):
         """Subclasses implement this to send email via their API"""
@@ -432,7 +435,11 @@ class _OAuthEmailSender(_EmailSenderBase):
         else:
             logger.info('Email sending success!')
 
-        return {'success': True, 'message_id': message_id}
+        return {
+            'success': success,
+            'message_id': message_id,
+            'config_updated': self.config_updated,
+        }
 
 
 class GmailSender(_OAuthEmailSender):
@@ -443,16 +450,37 @@ class GmailSender(_OAuthEmailSender):
     def _do_send_email(self, msg_obj):
         msg_string = msg_obj.as_string()
 
+        metadata = {}
+
+        boundary = 'mail_boundary'
+
+        body_parts = [
+            f'--{boundary}',
+            'Content-Type: application/json; charset=UTF-8',
+            '',
+            json.dumps(metadata),
+            f'--{boundary}',
+            f'Content-Type: message/rfc822',
+            '',
+            msg_string,
+            f'--{boundary}--'
+        ]
+        request_body = '\r\n'.join(body_parts)
+
         headers = {
             'Authorization': f'Bearer {self.access_token}',
-            'Content-Type': 'message/rfc822'
+            'Content-Type': f'multipart/related; boundary={boundary}'
         }
 
-        return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_string, headers=headers)
+        return requests.post(
+            self.EMAIL_SENDING_ENDPOINT, 
+            data=request_body, 
+            headers=headers
+        )
 
 
 class MicrosoftSender(_OAuthEmailSender):
-    """Microsoft/Outlook API email sender"""
+    """Microsoft API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
 
@@ -501,7 +529,7 @@ def get_email_sender_from_config(config):
         )
     elif server_provider == 'Gmail':
         return GmailSender(config)
-    elif server_provider in ('Microsoft', 'Outlook'):
+    elif server_provider == 'Microsoft':
         return MicrosoftSender(config)
     else:
         logger.error('Invalid server_provider: %s', server_provider)

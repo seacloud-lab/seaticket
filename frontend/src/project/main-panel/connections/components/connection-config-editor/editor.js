@@ -41,6 +41,7 @@ const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange
         <CustomizeSelect
           value={option}
           options={options}
+          disabled={readonly}
           onChange={(newValue) => onChange(key, newValue)}
         />
       );
@@ -51,6 +52,7 @@ const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange
           value={value}
           api={api}
           placeholder={placeholder}
+          disabled={readonly}
           onChange={(newValue) => onChange(key, newValue)}
         />
       );

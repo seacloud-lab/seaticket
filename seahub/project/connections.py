@@ -10,7 +10,9 @@ from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse, HttpResponseNotModified
+from django.shortcuts import render
 from django.utils import timezone
+from requests_oauthlib import OAuth2Session
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -22,21 +24,22 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
+from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
-    extract_email_addresses, get_connection_general_task_related_users
+    extract_email_addresses, get_email_oauth_callback_url, is_oauth_email_provider, create_connection, \
+    fetch_oauth_email_sender_info, EmailOAuthProfileError, persist_project_connection_config, \
+    get_connection_general_task_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
 from seahub.utils.storage import if_none_match_hit, get_connection_file_head_from_s3
-from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
-    init_github_issues_seadb_table, list_discourse_forum_replies_records, \
-    list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    init_notion_seadb_table, list_notion_record_details, init_general_task_seadb_table, \
-    list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data
+from seahub.seadb_models.utils import init_github_issues_seadb_table, list_discourse_forum_replies_records, \
+    list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
+    list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
+    list_notion_record_details, list_general_task_record_details, ensure_general_task_column_options, build_general_task_row_data
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -44,13 +47,14 @@ from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
+from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, EmailTable, GeneralTaskTable
+    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, GeneralTaskTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
-from seahub.settings import GITHUB_WEBHOOK_SECRET, ENABLE_GENERAL_TASK
+from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
@@ -141,50 +145,208 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         config = json.loads(config)
-        enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
-        if not enable_create:
-            error_msg = 'Name or config is not unique'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        if connection_type == ConnectionType.EMAIL.value and is_oauth_email_provider(config.get('server_provider')):
+            error_msg = 'OAuth email connections must be authorized before creation.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            record = ProjectConnections.objects.create(request.user.username, project_uuid, connection_type, name, config)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        record, error_response = create_connection(project, request.user.username, connection_type, name, config)
+        if error_response:
+            return error_response
 
-        connection_id = record.id
-        seadb_api = SeaDBAPI()
-        try:
-            if connection_type == ConnectionType.SITE.value:
-                init_site_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-                init_discourse_forum_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-                init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.SEAFILE.value:
-                init_seafile_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.EMAIL.value:
-                init_email_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.NOTION.value:
-                init_notion_seadb_table(seadb_api, project.uuid, connection_id)
-            elif connection_type == ConnectionType.GENERAL_TASK.value:
-                if not ENABLE_GENERAL_TASK:
-                    error_msg = 'General task connection is not enabled'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                init_general_task_seadb_table(seadb_api, project.uuid, connection_id)
-        except Exception as e:
-            logger.error(e)
-            record.delete()
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        params = {
-            'connection_id': connection_id,
-            'type': connection_type,
-        }
-        add_connection_sync_task(params)
         return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
+
+
+class ProjectEmailOAuthLoginView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        if not request.user.permissions.can_add_project():
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        oauth_payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+        if error_response:
+            return error_response
+
+        name = oauth_payload['name']
+        config = oauth_payload['config']
+        if ProjectConnections.objects.filter(project_uuid=project.uuid, name=name, deleted=False).exists():
+            return api_error(status.HTTP_400_BAD_REQUEST, f'Connection name {name} already exists.')
+
+        callback_url = get_email_oauth_callback_url(project_uuid)
+        try:
+            session = OAuth2Session(
+                client_id=config.get('client_id'),
+                scope=config.get('scopes'),
+                redirect_uri=callback_url,
+            )
+            authorization_url, state = session.authorization_url(config.get('authority_url'))
+            for key, value in config.get('authority_args', {}).items():
+                authorization_url += f'&{key}={value}'
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch authorization url')
+
+        EmailOAuthUtils.set_oauth_session(request, {
+            'oauth_state': state,
+            'status': 'in-progress',
+            'name': name,
+            'config': config,
+            'connection_id': None,
+            'error_msg': '',
+        })
+        return Response({'auth_url': authorization_url})
+
+
+class ProjectEmailOAuthQueryView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        oauth_data = EmailOAuthUtils.get_oauth_session(request)
+        if not oauth_data:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        status_value = oauth_data.get('status')
+        if status_value == 'failure':
+            return api_error(status.HTTP_401_UNAUTHORIZED, oauth_data.get('error_msg') or 'OAuth authorization failed.')
+
+        response_data = {'status': status_value or 'in-progress'}
+        if status_value == 'success':
+            connection_id = oauth_data.get('connection_id')
+            record = ProjectConnections.objects.get_connection_by_id(connection_id) if connection_id else None
+            if not record:
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Connection information not found.')
+            response_data['record'] = record.to_dict()
+
+        return Response(response_data)
+
+
+class ProjectEmailOAuthCallbackView(APIView):
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        oauth_data = EmailOAuthUtils.get_oauth_session(request)
+        if not oauth_data:
+            return render(request, 'error.html', {'error_msg': _('Request not found')})
+
+        if oauth_data.get('status') == 'success':
+            return render(request, 'authorization_success.html')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            EmailOAuthUtils.set_oauth_failure(request, 'Project not found.')
+            return render(request, 'error.html', {'error_msg': _('Project not found.')})
+
+        workspace = project.workspace
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            EmailOAuthUtils.set_oauth_failure(request, 'Permission denied.')
+            return render(request, 'error.html', {'error_msg': _('Permission denied.')})
+
+        config = oauth_data.get('config') or {}
+        name = oauth_data.get('name')
+        if not all([config, name, oauth_data.get('oauth_state')]):
+            error_msg = 'Invalid request, please try again later'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        request_state = request.GET.get('state')
+        if not request_state or request_state != oauth_data.get('oauth_state'):
+            error_msg = 'OAuth request is expired or has been replaced by a newer authorization.'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        callback_url = get_email_oauth_callback_url(project_uuid)
+        authorization_response_url = settings.SERVICE_URL.rstrip('/') + request.get_full_path()
+
+        try:
+            session = OAuth2Session(
+                client_id=config.get('client_id'),
+                scope=config.get('scopes'),
+                state=oauth_data.get('oauth_state'),
+                redirect_uri=callback_url,
+            )
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'OAuth verification failed, please check your connection configurations'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        try:
+            token = session.fetch_token(
+                config.get('token_url'),
+                client_secret=config.get('client_secret'),
+                authorization_response=authorization_response_url,
+            )
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Failed to request token, please check your connection configurations'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        refresh_token = token.get('refresh_token')
+        if not refresh_token:
+            error_msg = 'Failed to request token'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        final_config = dict(config)
+        final_config['refresh_token'] = refresh_token
+        if token.get('access_token'):
+            final_config['access_token'] = token.get('access_token')
+        if token.get('expires_at'):
+            final_config['expires_at'] = token.get('expires_at')
+
+        try:
+            final_config.update(fetch_oauth_email_sender_info(final_config, token.get('access_token')))
+        except EmailOAuthProfileError as e:
+            logger.error(e)
+            error_msg = 'Failed to fetch sender profile, please check your connection configurations'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        record, error_response = create_connection(project, username, ConnectionType.EMAIL.value, name, final_config)
+        if error_response:
+            error_msg = 'Internal Server Error'
+            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+        oauth_data['status'] = 'success'
+        oauth_data['connection_id'] = record.id
+        oauth_data['config'] = final_config
+        oauth_data['error_msg'] = ''
+        EmailOAuthUtils.set_oauth_session(request, oauth_data)
+
+        return render(request, 'authorization_success.html', {
+            'name': name,
+            'nickname': email2nickname(username),
+        })
 
 
 class ProjectGithubConnectionsView(APIView):
@@ -245,8 +407,8 @@ class ProjectGithubConnectionsView(APIView):
 
             enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
             if not enable_create:
-                error_msg = 'Name or config is not unique'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+                error_msg = 'Please check input'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             try:
                 record = ProjectConnections.objects.create(request.user.username, project_uuid, connection_type, name, config)
@@ -1430,6 +1592,9 @@ class ProjectConnectionReplyEmailView(APIView):
             logger.error('reply email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)
             error_msg = 'Failed to send email.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if send_res.get('config_updated'):
+            persist_project_connection_config(project_connection, config)
 
         sender_name = config.get('sender_name', '')
         # Get Fastmail EMAILID if available

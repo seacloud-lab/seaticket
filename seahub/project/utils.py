@@ -1,3 +1,4 @@
+import json
 import re
 import logging
 import hashlib
@@ -6,36 +7,40 @@ import json
 from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
+from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
-    AdditionalCredits
+    AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.core.cache import cache
+from rest_framework import status
 
 from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
-from seahub.utils.user_permissions import get_user_role
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
-from seahub.api2.utils import get_user_common_info
+from seahub.api2.utils import api_error, get_user_common_info
 from seahub.utils import normalize_cache_key
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_record_attachments_from_s3
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
-from seahub.constants import TEAM_STARTER, TEAM_PRO, TEAM_BUSINESS, TEAM_ENTERPRISE
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, ConnectionType, AIScenario
+from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, \
+    ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
 from seahub.seadb_models.models import GithubIssuesTable, GeneralTaskUserTable
 from seahub.avatar.util import get_default_avatar_url
 
-
 logger = logging.getLogger(__name__)
+
+
+class EmailOAuthProfileError(Exception):
+    pass
 
 # Connection types that support linked_ticket
 LINKED_TICKET_SUPPORT_TYPES = [
@@ -45,8 +50,126 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.GENERAL_TASK.value,
 ]
 
+
+def get_email_oauth_callback_url(project_uuid):
+    service_url = SERVICE_URL.rstrip('/')
+    return f'{service_url}/api/v1/project/{project_uuid}/connections/email/oauth/callback/'
+
+
+def is_oauth_email_provider(provider):
+    return provider in OAUTH_EMAIL_PROVIDERS
+
+
+def persist_project_connection_config(project_connection, config):
+    project_connection.config = encrypt_config(config)
+    project_connection.save(update_fields=['config'])
+
+
+def fetch_oauth_email_sender_info(config, access_token):
+    provider = config.get('server_provider')
+    headers = {'Authorization': f'Bearer {access_token}'}
+
+    try:
+        if provider == GMAIL_EMAIL_PROVIDER:
+            response = requests.get(
+                'https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs',
+                headers=headers,
+                timeout=10,
+            )
+            response.raise_for_status()
+            send_as_list = response.json().get('sendAs') or []
+            sender_info = next(
+                (item for item in send_as_list if item.get('isPrimary') or item.get('isDefault')),
+                send_as_list[0] if send_as_list else None,
+            )
+            if not sender_info:
+                raise EmailOAuthProfileError('No Gmail sender profile found.')
+
+            sender_email = sender_info.get('sendAsEmail')
+            if not sender_email:
+                raise EmailOAuthProfileError('No Gmail sender email found.')
+
+            return {
+                'sender_name': sender_info.get('displayName', ''),
+                'sender_email': sender_email,
+                'username': sender_email,
+            }
+
+        if provider == MICROSOFT_EMAIL_PROVIDER:
+            response = requests.get(
+                'https://graph.microsoft.com/v1.0/me',
+                headers=headers,
+                timeout=10,
+            )
+            response.raise_for_status()
+            sender_info = response.json()
+            sender_email = sender_info.get('mail') or sender_info.get('userPrincipalName')
+            if not sender_email:
+                raise EmailOAuthProfileError('No Microsoft sender email found.')
+
+            return {
+                'sender_name': sender_info.get('displayName', ''),
+                'sender_email': sender_email,
+                'username': sender_email,
+            }
+    except requests.RequestException as e:
+        logger.exception('Failed to fetch sender profile for provider %s: %s', provider, e)
+        raise EmailOAuthProfileError('Failed to fetch sender profile.') from e
+
+    raise EmailOAuthProfileError(f'Unsupported OAuth email provider: {provider}')
+
+
+def create_connection(project, username, connection_type, name, config):
+    from seahub.project.models import ProjectConnections
+    from seahub.project.seadb_api import SeaDBAPI
+    from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
+        init_github_issues_seadb_table, init_seafile_seadb_table, init_email_seadb_table, \
+        init_notion_seadb_table, init_general_task_seadb_table
+    from seahub.utils.indexer import add_connection_sync_task
+
+    project_uuid = project.uuid
+    enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
+    if not enable_create:
+        return None, api_error(status.HTTP_400_BAD_REQUEST, 'Please check input')
+
+    try:
+        record = ProjectConnections.objects.create(username, project_uuid, connection_type, name, config)
+    except Exception as e:
+        logger.error(e)
+        return None, api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    connection_id = record.id
+    seadb_api = SeaDBAPI()
+    init_table_funcs = {
+        ConnectionType.SITE.value: init_site_seadb_table,
+        ConnectionType.DISCOURSE_FORUM.value: init_discourse_forum_seadb_table,
+        ConnectionType.GITHUB_ISSUE.value: init_github_issues_seadb_table,
+        ConnectionType.SEAFILE.value: init_seafile_seadb_table,
+        ConnectionType.EMAIL.value: init_email_seadb_table,
+        ConnectionType.NOTION.value: init_notion_seadb_table,
+        ConnectionType.GENERAL_TASK.value: init_general_task_seadb_table
+    }
+
+    if connection_type == ConnectionType.GENERAL_TASK.value and not ENABLE_GENERAL_TASK:
+        return None, api_error(status.HTTP_400_BAD_REQUEST, 'General task connection is not enabled')
+
+    try:
+        init_table_func = init_table_funcs.get(connection_type)
+        if init_table_func:
+            init_table_func(seadb_api, project_uuid, connection_id)
+    except Exception as e:
+        logger.error(e)
+        record.delete()
+        return None, api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+    params = {
+        'connection_id': connection_id,
+        'type': connection_type,
+    }
+    add_connection_sync_task(params)
+    return record, None
+
 def check_project_limit(workspace, request):
-    from seahub.settings import PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
     org_id = workspace.org_id
     if org_id != -1 and not request.user.permissions.can_use_advanced_permissions():
         org_project_count = Projects.objects.filter(deleted=False, workspace__org_id=org_id).select_related('workspace').count()

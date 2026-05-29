@@ -3,6 +3,79 @@ import CellType from '@/sea-metadata/constants/column/type';
 import { DATE_FORMAT_MAP } from '@/sea-metadata/constants/column';
 import { TICKET_TABLE_NAME } from '../tickets/constants';
 
+export const EMAIL_SERVER_PROVIDER = {
+  GENERAL: 'general_email_provider',
+  GMAIL: 'Gmail',
+  MICROSOFT: 'Microsoft',
+};
+
+const EMAIL_GOOGLE_OAUTH_CONFIG = {
+  AUTH_URL: 'https://accounts.google.com/o/oauth2/v2/auth',
+  TOKEN_URL: 'https://oauth2.googleapis.com/token',
+  AUTH_KWARGS: {
+    access_type: 'offline',
+    prompt: 'consent',
+  }
+};
+
+const EMAIL_MICROSOFT_OAUTH_CONFIG = {
+  AUTH_URL: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+  TOKEN_URL: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+  AUTH_KWARGS: {
+    response_mode: 'query',
+    prompt: 'consent',
+  }
+};
+
+export const EMAIL_SERVICE_TYPE_KEY_MAP = {
+  [EMAIL_SERVER_PROVIDER.GMAIL]: 'gmail',
+  [EMAIL_SERVER_PROVIDER.MICROSOFT]: 'microsoft',
+};
+
+export const EMAIL_SCOPES_MAP = {
+  gmail: [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/gmail.settings.basic',
+  ],
+  microsoft: [
+    'openid',
+    'profile',
+    'email',
+    'offline_access',
+    'User.Read',
+    'Mail.Read',
+    'Mail.Send',
+  ],
+};
+
+export const EMAIL_AUTH_KWARGS_MAP = {
+  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.AUTH_KWARGS,
+  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.AUTH_KWARGS,
+};
+
+export const EMAIL_AUTH_URLS_MAP = {
+  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.AUTH_URL,
+  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.AUTH_URL,
+};
+
+export const EMAIL_TOKEN_URLS_MAP = {
+  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.TOKEN_URL,
+  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.TOKEN_URL,
+};
+
+export const getDefaultEmailOAuthConfig = (provider) => {
+  const key = EMAIL_SERVICE_TYPE_KEY_MAP[provider];
+  if (!key) return {};
+
+  return {
+    authority_url: EMAIL_AUTH_URLS_MAP[key] || '',
+    token_url: EMAIL_TOKEN_URLS_MAP[key] || '',
+    scopes: EMAIL_SCOPES_MAP[key] || [],
+    authority_args: EMAIL_AUTH_KWARGS_MAP[key] || {},
+  };
+};
+
 export const STEP = {
   TYPE: 'type',
   CONFIG: 'config',
@@ -62,10 +135,11 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       options: [
-        { value: 'general_email_provider', label: gettext('General email provider') }
+        { value: EMAIL_SERVER_PROVIDER.GENERAL, label: gettext('General email provider') },
+        { value: EMAIL_SERVER_PROVIDER.MICROSOFT, label: gettext('Microsoft (Microsoft 365 and Outlook)') },
       ],
-      default_value: 'general_email_provider',
-      tip: gettext('The authentication type for third-party accounts to log in to the email service provider. For most email service providers, you can use \"General Email Service Provider\", which is authenticated by username and password; for Gmail accounts, users can choose \"General Email Service Provider\" or \"Gmail\", the latter will authenticate Google accounts in OAuth2 mode; for MS365 mailbox users, only \"Outlook\" mode can be selected to authenticate accounts through OAuth2"')
+      default_value: EMAIL_SERVER_PROVIDER.GENERAL,
+      tip: gettext('The authentication type for third-party account login via email service provider. For most email service providers, you can use \"General Email Service Provider\", which authenticates via username and password; for Gmail accounts, users can choose either \"General Email Service Provider\" or \"Gmail\", the latter authenticating the Google account using OAuth2 mode; for MS365 and Outlook email users, only the \"Microsoft (Microsoft 365 and Outlook)\" mode can be selected for account authentication via OAuth2.')
     }, {
       key: 'sender_name',
       name: gettext('"From" display name (optional)'),
@@ -73,6 +147,7 @@ export const CONNECTION_FIELDS = {
       is_required: false,
       is_display: true,
       is_custom: true,
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
       tip: gettext('The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: \'Bill Smith <william.smith@example.com>\''),
     }, {
       key: 'sender_email',
@@ -81,10 +156,50 @@ export const CONNECTION_FIELDS = {
       is_required: false,
       is_display: true,
       is_custom: true,
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
       tip: gettext('The address is the full email address of the sender. It need not be identical to the username of the account.')
+    }, {
+      key: 'client_id',
+      name: gettext('Client ID'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+      is_edit_readonly: true,
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+    }, {
+      key: 'client_secret',
+      name: gettext('Client secret'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+      is_edit_readonly: true,
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+    }, {
+      key: 'authority_url',
+      name: gettext('Authority URL'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_display: true,
+      is_custom: true,
+      is_edit_readonly: true,
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      is_advanced_option: true,
+    }, {
+      key: 'token_url',
+      name: gettext('Token URL'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_display: true,
+      is_custom: true,
+      is_edit_readonly: true,
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      is_advanced_option: true,
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
       key: '1',
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
       children: [
         {
           key: 'smtp_host',
@@ -93,6 +208,7 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_display: true,
           is_custom: true,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
         }, {
           key: 'smtp_port',
           name: gettext('SMTP port'),
@@ -100,12 +216,14 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_display: true,
           is_custom: true,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
           default_value: 587,
         }
       ]
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
       key: '2',
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
       children: [
         {
           key: 'imap_host',
@@ -114,6 +232,7 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_display: true,
           is_custom: true,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
         }, {
           key: 'imap_port',
           name: gettext('IMAP port'),
@@ -121,12 +240,14 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_display: true,
           is_custom: true,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
           default_value: 993,
         }
       ]
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
       key: '3',
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
       children: [
         {
           key: 'username',
@@ -134,6 +255,7 @@ export const CONNECTION_FIELDS = {
           type: CONNECTION_FIELD_TYPE.TEXT,
           is_required: true,
           is_custom: true,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
           tip: gettext('The username is the email address of the account.'),
         }, {
           key: 'password',
@@ -142,6 +264,7 @@ export const CONNECTION_FIELDS = {
           is_required: true,
           is_custom: true,
           can_edit_multiple_times: false,
+          providers: [EMAIL_SERVER_PROVIDER.GENERAL],
           tip: gettext('The password for your email account. For some email providers, you may need to create an app password and use that app password here.'),
         }
       ]
@@ -151,6 +274,7 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.NUMBER,
       is_required: false,
       is_custom: true,
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.MICROSOFT],
       placeholder: '5',
       default_value: 5,
     },
