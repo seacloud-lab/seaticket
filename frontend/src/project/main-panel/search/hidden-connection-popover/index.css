@@ -38,6 +38,7 @@
   width: 100%;
   overflow: auto;
   padding: .5rem 0;
+  max-height: 320px;
 }
 
 .seaqa-hide-popover .hide-list .hide-list-title {
