@@ -69,6 +69,107 @@ logger = logging.getLogger(__name__)
 
 
 
+class GitHubIssueUpdateError(Exception):
+    def __init__(self, error_msg, status_code):
+        super().__init__(error_msg)
+        self.error_msg = error_msg
+        self.status_code = status_code
+
+
+def normalize_github_issue_state_update(state=None, state_reason=None):
+    update_state = state.lower() if isinstance(state, str) else None
+    update_state_reason = state_reason.lower() if isinstance(state_reason, str) else None
+    if update_state_reason is not None and update_state is None:
+        if update_state_reason == 'reopened':
+            update_state = 'open'
+        elif update_state_reason in ('completed', 'not_planned', 'duplicate'):
+            update_state = 'closed'
+        else:
+            raise GitHubIssueUpdateError('state_reason is invalid.', status.HTTP_400_BAD_REQUEST)
+    return update_state, update_state_reason
+
+
+def update_github_issue_record(
+    project_uuid,
+    connection_id,
+    record_pk,
+    *,
+    title=None,
+    labels=None,
+    issue_type=None,
+    state=None,
+    state_reason=None,
+    seadb_api=None,
+):
+    project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+    if not project_connection:
+        raise GitHubIssueUpdateError(
+            f'project_connection {connection_id} not found.',
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    if project_connection.type != ConnectionType.GITHUB_ISSUE.value:
+        raise GitHubIssueUpdateError('Connection type invalid.', status.HTTP_400_BAD_REQUEST)
+
+    if not project_connection.is_active:
+        raise GitHubIssueUpdateError('Connection is inactive.', status.HTTP_400_BAD_REQUEST)
+
+    update_state, update_state_reason = normalize_github_issue_state_update(
+        state=state,
+        state_reason=state_reason,
+    )
+
+    config = decrypt_config(json.loads(project_connection.config))
+    installation_id = config.get('installation_id')
+    if not installation_id:
+        raise GitHubIssueUpdateError('GitHub auth config missing.', status.HTTP_400_BAD_REQUEST)
+
+    seadb_api = seadb_api or SeaDBAPI()
+    issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, record_pk)
+    issue_number = issue_record.get('issue_number')
+    if not issue_number:
+        raise GitHubIssueUpdateError('GitHub issue not found.', status.HTTP_404_NOT_FOUND)
+
+    server_url = config.get('repository')
+    try:
+        path = urlparse(server_url).path
+        parts = path.strip('/').split('/')
+        repo_owner, repo_name = parts[0], parts[1]
+    except Exception as e:
+        logger.error(f'Github repository is invalid {e}')
+        raise GitHubIssueUpdateError('Github repository is invalid.', status.HTTP_400_BAD_REQUEST)
+
+    try:
+        github_api = GitHubAPI(installation_id=installation_id)
+        issue_data = github_api.update_issue(
+            repo_owner,
+            repo_name,
+            issue_number,
+            title=title if title else None,
+            labels=labels if labels is not None else None,
+            state=update_state,
+            state_reason=update_state_reason,
+            issue_type=issue_type if issue_type is not None else None,
+        )
+    except Exception as e:
+        logger.error(f'github issue update error: {e}')
+        response = getattr(e, 'response', None)
+        if response is not None and response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
+            raise GitHubIssueUpdateError('Too many requests.', status.HTTP_429_TOO_MANY_REQUESTS)
+        raise GitHubIssueUpdateError('Internal Server Error', status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    try:
+        github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        github_seadb_api.update_issue_record(project_uuid, connection_id, record_pk, issue_data)
+    except Exception as e:
+        logger.error(f'update github issue in seadb error: {e}')
+        if e.args and e.args[0] == 409:
+            raise GitHubIssueUpdateError('Conflict with another transaction', status.HTTP_409_CONFLICT)
+        raise GitHubIssueUpdateError('Internal Server Error', status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return issue_data
+
+
 class ProjectConnectionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -864,78 +965,23 @@ class GithubIssueView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if project_connection.type != ConnectionType.GITHUB_ISSUE.value:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type invalid.')
-
-        if not project_connection.is_active:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection is inactive.')
-
-        # GitHub requires `state` to be present when updating `state_reason`.
-        update_state = state.lower() if isinstance(state, str) else None
-        update_state_reason = state_reason.lower() if isinstance(state_reason, str) else None
-        if update_state_reason is not None and update_state is None:
-            if update_state_reason == 'reopened':
-                update_state = 'open'
-            elif update_state_reason in ('completed', 'not_planned', 'duplicate'):
-                update_state = 'closed'
-            else:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'state_reason is invalid.')
-
-        config = decrypt_config(json.loads(project_connection.config))
-        installation_id = config.get('installation_id')
-        if not installation_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'GitHub auth config missing.')
-
         seadb_api = SeaDBAPI()
         try:
-            issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
-        except Exception as e:
-            logger.error(f'get github issue details error: {e}')
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        issue_number = issue_record.get('issue_number')
-        server_url = config.get('repository')
-        try:
-            path = urlparse(server_url).path
-            parts = path.strip("/").split("/")
-            repo_owner, repo_name = parts[0], parts[1]
-        except Exception as e:
-            logger.error(f"Github repository is invalid {e}")
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Github repository is invalid.')
-
-        try:
-            github_api = GitHubAPI(installation_id=installation_id)
-            issue_data = github_api.update_issue(
-                repo_owner,
-                repo_name,
-                issue_number,
-                title=title if title else None,
-                labels=labels if labels is not None else None,
-                state=update_state,
-                state_reason=update_state_reason,
-                issue_type=issue_type if issue_type is not None else None
+            issue_data = update_github_issue_record(
+                project_uuid,
+                connection_id,
+                _pk,
+                title=title,
+                labels=labels,
+                issue_type=issue_type,
+                state=state,
+                state_reason=state_reason,
+                seadb_api=seadb_api,
             )
+        except GitHubIssueUpdateError as e:
+            return api_error(e.status_code, e.error_msg)
         except Exception as e:
             logger.error(f'github issue update error: {e}')
-            response = getattr(e, 'response', None)
-            if response is not None and response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
-                error_msg = 'Too many requests.'
-                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        try:
-            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-            github_seadb_api.update_issue_record(project_uuid, connection_id, _pk, issue_data)
-        except Exception as e:
-            logger.error(f'update github issue in seadb error: {e}')
-            if e.args and e.args[0] == 409:
-                error_msg = 'Conflict with another transaction'
-                return api_error(status.HTTP_409_CONFLICT, error_msg)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'issue': issue_data}, status=status.HTTP_200_OK)

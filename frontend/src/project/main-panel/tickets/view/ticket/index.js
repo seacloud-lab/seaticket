@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from 'reactstrap';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, toaster, EmptyTip } from '@/components';
+import { CenteredLoading, toaster, EmptyTip, IconTooltip } from '@/components';
 import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
   AUTO_UPDATE_PARTICIPANTS_KEY,
@@ -37,7 +37,7 @@ import { useNotification } from '@/components/common/notification/hooks/notifica
 import { hasOwnProperty } from '@/utils/object-utils';
 import { useCollaborators } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getTableName } from '@/project/main-panel/connections/utils';
+import { getTableName, getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
@@ -58,6 +58,9 @@ const Ticket = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
+  const [closeGithubIssuesWarning, setCloseGithubIssuesWarning] = useState(null);
+  const [pendingStateUpdate, setPendingStateUpdate] = useState(null);
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { connections } = useConnections();
@@ -112,7 +115,13 @@ const Ticket = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const modifyTicket = useCallback((ticketID, data) => {
+  const isOpenLinkedGithubIssuesWarning = useCallback((error) => {
+    const response = error?.response;
+    const warning = response?.data || {};
+    return response?.status === 409 && warning?.warning_type === 'open_linked_github_issues';
+  }, []);
+
+  const modifyTicket = useCallback((ticketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const dataKeys = Object.keys(data);
     const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
@@ -129,6 +138,9 @@ const Ticket = ({
       }
       serverData[columnName] = value;
     });
+    if (confirmCloseLinkedGithubIssues) {
+      serverData.confirm_close_linked_github_issues = true;
+    }
 
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
       let update = { ...data };
@@ -152,6 +164,17 @@ const Ticket = ({
       return update;
     });
   }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
+
+  const tryCloseTicketState = useCallback((state = '', substate = '', { confirmCloseLinkedGithubIssues = false } = {}) => {
+    return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues }).catch(error => {
+      if (!confirmCloseLinkedGithubIssues && isOpenLinkedGithubIssuesWarning(error)) {
+        setPendingStateUpdate({ state, substate });
+        setCloseGithubIssuesWarning(error.response?.data || {});
+        return null;
+      }
+      throw error;
+    });
+  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning]);
 
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;
@@ -306,13 +329,13 @@ const Ticket = ({
   }, [ticket, modifyTicket]);
 
   const onStateChange = useCallback((state = '', substate = '') => {
-    modifyTicket(ticket.id, { state, substate }).then(res => {
+    tryCloseTicketState(state, substate).then(res => {
       // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket, modifyTicket]);
+  }, [tryCloseTicketState]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).then(res => {
@@ -414,7 +437,7 @@ const Ticket = ({
 
   const toggleState = useCallback((state = '', substate = '') => {
     const modifyState = () => {
-      modifyTicket(ticket.id, { state, substate }).then(res => {
+      tryCloseTicketState(state, substate).then(res => {
         // todo
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -427,7 +450,54 @@ const Ticket = ({
     }
 
     modifyState();
-  }, [ticket, comment, modifyTicket, onSubmitComment]);
+  }, [comment, tryCloseTicketState, onSubmitComment]);
+
+  const closeGithubIssuesWarningDialog = useCallback(() => {
+    if (isConfirmingClose) return;
+    setCloseGithubIssuesWarning(null);
+    setPendingStateUpdate(null);
+  }, [isConfirmingClose]);
+
+  const confirmCloseTicketAndGithubIssues = useCallback(() => {
+    if (!pendingStateUpdate) {
+      closeGithubIssuesWarningDialog();
+      return;
+    }
+    setIsConfirmingClose(true);
+    const { state, substate } = pendingStateUpdate;
+    tryCloseTicketState(
+      state,
+      substate,
+      { confirmCloseLinkedGithubIssues: true }
+    ).then(() => {
+      setCloseGithubIssuesWarning(null);
+      setPendingStateUpdate(null);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    }).finally(() => {
+      setIsConfirmingClose(false);
+    });
+  }, [pendingStateUpdate, tryCloseTicketState, closeGithubIssuesWarningDialog]);
+
+  const renderWarningIssueTypeImage = useCallback((type) => {
+    const connectionType = type || 'github_issue';
+    return (
+      <img src={getConnectionIcon(connectionType)} alt="" className="connection-icon" />
+    );
+  }, []);
+
+  const renderWarningIssueStateIcon = useCallback((issueState) => {
+    if (!issueState) return null;
+    const stateName = String(issueState).toLowerCase();
+    if (stateName === 'open' || stateName === '0001') {
+      return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
+    }
+    if (stateName === 'closed' || stateName === '0002') {
+      return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
+    }
+    return null;
+  }, []);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
     modifyComment(ticket.id, commentID, content).then(newComment => {
@@ -678,6 +748,42 @@ const Ticket = ({
           onClose={() => setIsShowCreateTaskDialog(false)}
           onSubmitCallback={handleTaskCreated}
         />
+      )}
+      {closeGithubIssuesWarning && (
+        <Modal isOpen={true} toggle={closeGithubIssuesWarningDialog}>
+          <ModalHeader toggle={closeGithubIssuesWarningDialog}>{gettext('Linked GitHub issues are still open')}</ModalHeader>
+          <ModalBody>
+            <p className="mb-2">
+              {gettext('Confirm to close this ticket and close linked GitHub issues at the same time.')}
+            </p>
+            {(closeGithubIssuesWarning.tickets || []).map((ticketWarning) => (
+              <div key={ticketWarning.ticket_id} className="mb-2">
+                <div className="fw-bold">
+                  {gettext('Ticket')} #{ticketWarning.ticket_id}: {ticketWarning.ticket_title || ''}
+                </div>
+                <div className="close-github-issues-warning-content">
+                  {(ticketWarning.open_github_issues || []).map((issue) => (
+                    <div className="link-item" key={`${issue.connection_id}-${issue.record_pk}`}>
+                      {renderWarningIssueTypeImage(issue.type)}
+                      <span className="link-item-name" title={issue.title || ''}>
+                        #{issue.record_pk} {issue.title || ''}
+                      </span>
+                      {renderWarningIssueStateIcon(issue.state)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={closeGithubIssuesWarningDialog} disabled={isConfirmingClose}>
+              {gettext('Cancel')}
+            </Button>
+            <Button color="primary" onClick={confirmCloseTicketAndGithubIssues} disabled={isConfirmingClose}>
+              {gettext('Confirm and close')}
+            </Button>
+          </ModalFooter>
+        </Modal>
       )}
     </div>
   );
