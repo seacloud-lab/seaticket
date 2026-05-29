@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
-import SeaMetadata, { useCollaborators } from '@/sea-metadata';
+import React, { useMemo, useCallback, useState, useRef } from 'react';
+import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
@@ -9,9 +9,8 @@ import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
-  CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
-  CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES, CONNECTION_COLUMNS_WIDTH_CONFIG,
-  GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP, GENERAL_TASK_PRIORITY_NAME_MAP,
+  CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES,
+  CONNECTION_COLUMNS_WIDTH_CONFIG,
 } from '../../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -20,8 +19,9 @@ import {
   generateAIOptions, generateMarkAsOutdatedOptions, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateCreateRelatedTicketOption,
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
+  formatColumns,
 } from '../../../utils';
-import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useData, useTags, useMetadata } from '@/project/hooks';
@@ -31,6 +31,7 @@ import { Utils } from '@/utils/utils';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import User from '@/models/user';
 
 import './index.css';
 
@@ -49,7 +50,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { updateAttachments } = useAIChatTools();
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
-  const { setScopedCollaborators, clearScopedCollaborators } = useCollaborators();
   const {
     data,
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
@@ -58,16 +58,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { tagsData, createTag } = useTags();
 
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
-  const collaboratorScopeKey = useMemo(() => {
-    if (connection?.type !== CONNECTION_TYPE.GENERAL_TASK) return '';
-    return `general-task-${connectionID}`;
-  }, [connection?.type, connectionID]);
-
-  useEffect(() => {
-    return () => {
-      clearScopedCollaborators(collaboratorScopeKey);
-    };
-  }, [clearScopedCollaborators, collaboratorScopeKey]);
 
   const getTableNameByConnectionID = useCallback((connectionID) => {
     const connection = connections.find(c => c.id === connectionID);
@@ -117,10 +107,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       getMetadata: (...params) => {
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
-          const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
-          if (connection?.type === CONNECTION_TYPE.GENERAL_TASK) {
-            setScopedCollaborators(collaboratorScopeKey, relatedUsers);
-          }
           return {
             data: {
               ...res.data,
@@ -130,100 +116,44 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         })).then(res => {
           const { records } = res.data;
           const linked_records = res?.data?.linked_records || {};
-          const type = connection?.type;
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
           allColumns.current = columns;
-          let notDisplayColumnNames = [
-            CONNECTION_PREDEFINED_COLUMN_NAME._PK,
-            CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
-            CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
-            CONNECTION_PREDEFINED_COLUMN_NAME.URL,
-            CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
-          ];
-          let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
-          if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-            const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
-            if (typeColum) {
-              const options = typeColum.data?.options || [];
-              const _typesData = options.map(o => ({ ...o, _id: o.id }));
-              setTypesData({
-                rows: _typesData,
-                id_row_map: _typesData.reduce((pre, cur) => {
-                  pre[cur._id] = cur;
-                  return pre;
-                }, {})
-              });
-              context.setSetting('typeColumnKey', typeColum.key);
-            }
 
-            const stateColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
-            let stateColumn;
-            if (stateColumnIndex > -1) {
-              stateColumn = columns[stateColumnIndex];
-              context.setSetting('stateColumnKey', stateColumn.key);
-              let options = stateColumn.data?.options || [];
-              options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
-              columns[stateColumnIndex].data = { ...stateColumn.data, options };
-            }
-
-            const stateReasonColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
-            if (stateReasonColumnIndex > -1) {
-              const stateReasonColumn = columns[stateReasonColumnIndex];
-              let options = stateReasonColumn.data?.options || [];
-              options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
-              const stateOptions = getColumnOptions(stateColumn);
-              const openStateOption = getOption(stateOptions, 'open');
-              const closeStateOption = getOption(stateOptions, 'closed');
-
-              columns[stateReasonColumnIndex].data = {
-                cascade_column_key: stateColumn.key,
-                cascade_settings: {
-                  [openStateOption?.id]: options.slice(3).map(o => o.id),
-                  [closeStateOption?.id]: options.slice(0, 3).map(o => o.id),
-                },
-                ...stateReasonColumn.data,
-                options,
-              };
-            }
-          }
-          if (type === CONNECTION_TYPE.GENERAL_TASK) {
-            const statusColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATUS);
-            if (statusColumnIndex > -1) {
-              const statusColumn = columns[statusColumnIndex];
-              let options = statusColumn.data?.options || [];
-              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_STATUS_NAME_MAP[o.name] || o.name }));
-              columns[statusColumnIndex].data = { ...statusColumn.data, options };
-            }
-            const sizeColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.SIZE);
-            if (sizeColumnIndex > -1) {
-              const sizeColumn = columns[sizeColumnIndex];
-              let options = sizeColumn.data?.options || [];
-              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_SIZE_NAME_MAP[o.name] || o.name }));
-              columns[sizeColumnIndex].data = { ...sizeColumn.data, options };
-            }
-            const priorityColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.PRIORITY);
-            if (priorityColumnIndex > -1) {
-              const priorityColumn = columns[priorityColumnIndex];
-              let options = priorityColumn.data?.options || [];
-              options = options.map(o => ({ ...o, display_name: GENERAL_TASK_PRIORITY_NAME_MAP[o.name] || o.name }));
-              columns[priorityColumnIndex].data = { ...priorityColumn.data, options };
-            }
-          }
-          columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
-            ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
-            click: (row) => toggleChildrenPageSlugId(row._id),
-          };
-          columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
-          const tagsColumn = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
+          const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
+          const collaborators = relatedUsers.map(user => new User(user));
+          const targetColumns = formatColumns(connection, columns, { collaborators });
+          const tagsColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
+          const stateColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+          if (stateColumn) {
+            context.setSetting('stateColumnKey', stateColumn.key);
+          }
+          const typeColum = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
+          if (typeColum) {
+            const options = typeColum.data?.options || [];
+            const _typesData = options.map(o => ({ ...o, _id: o.id }));
+            setTypesData({
+              rows: _typesData,
+              id_row_map: _typesData.reduce((pre, cur) => {
+                pre[cur._id] = cur;
+                return pre;
+              }, {})
+            });
+            context.setSetting('typeColumnKey', typeColum.key);
+          }
+          const titleColumnIndex = targetColumns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TITLE);
+          if (titleColumnIndex > -1) {
+            targetColumns[titleColumnIndex].click = (row) => toggleChildrenPageSlugId(row._id);
+          }
+
           return {
             data: {
               ...res?.data,
               rows,
-              columns: columns,
+              columns: targetColumns,
               linked_records,
             }
           };
@@ -326,7 +256,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
     updateAttachments(newAttachments);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connection?.type, connectionID, toggleBar, updateAttachments, setScopedCollaborators, collaboratorScopeKey]);
+  }, [connection?.type, connectionID, toggleBar, updateAttachments]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;

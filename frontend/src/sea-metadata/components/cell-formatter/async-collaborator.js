@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Collaborator from '@/components/collaborator/collaborator';
-import { mediaUrl as globalMediaUrl } from '@/constants';
+import { mediaUrl } from '@/constants';
 import { isValidEmail } from '@/utils/validate';
 
-const AsyncCollaborator = ({ value, mediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache }) => {
+const AsyncCollaborator = ({ value, api, collaborators, collaboratorsCache, updateCollaboratorsCache }) => {
   const [collaborator, setCollaborator] = useState(null);
 
   useEffect(() => {
@@ -19,9 +19,7 @@ const AsyncCollaborator = ({ value, mediaUrl, api, collaborators, collaboratorsC
       return () => isMounted = false;
     }
 
-    const avatarBaseUrl = mediaUrl || globalMediaUrl || '';
-    const normalizedAvatarBaseUrl = avatarBaseUrl.endsWith('/') ? avatarBaseUrl.slice(0, -1) : avatarBaseUrl;
-    const defaultAvatarUrl = `${normalizedAvatarBaseUrl}/avatars/default.png`;
+    const defaultAvatarUrl = `${mediaUrl}avatars/default.png`;
     if (value === 'anonymous') {
       collaborator = {
         name: 'anonymous',

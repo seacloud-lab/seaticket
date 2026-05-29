@@ -33,6 +33,7 @@ import { useData, useTags, useMetadata } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 
@@ -583,7 +584,15 @@ const Ticket = ({
         </div>
         <div className="seaqa-project-ticket-other-settings">
           <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
+          <CollaboratorsSettings
+            id="assignees-editor-popover"
+            isReadonly={!editable}
+            title={gettext('Assignees')}
+            value={assignees}
+            tip={gettext('No one assigned')}
+            useCollaborators={useCollaborators}
+            onChange={onAssigneesChange}
+          />
           <TagsSettings
             id="tags-editor-popover"
             isReadonly={!editable}
@@ -596,7 +605,14 @@ const Ticket = ({
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          <CollaboratorsSettings isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
+          <CollaboratorsSettings
+            isReadonly={!editable}
+            title={gettext('Participants')}
+            value={participants}
+            useCollaborators={useCollaborators}
+            tip={gettext('No participants')}
+            onChange={onParticipantsChange}
+          />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
         </div>
       </div>

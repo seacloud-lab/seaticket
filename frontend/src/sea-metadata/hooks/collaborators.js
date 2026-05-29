@@ -16,25 +16,7 @@ export const CollaboratorsProvider = ({
   children
 }) => {
   const [collaboratorsCache, setCollaboratorsCache] = useState(propsCollaboratorsCache);
-  const [baseCollaborators, setBaseCollaborators] = useState(propsCollaborators);
-  const [scopedCollaboratorsMap, setScopedCollaboratorsMap] = useState({});
-  const collaborators = useMemo(() => {
-    const emailUserMap = {};
-    baseCollaborators.forEach((user) => {
-      if (user?.email) {
-        emailUserMap[user.email] = user;
-      }
-    });
-    Object.values(scopedCollaboratorsMap).forEach((users) => {
-      if (!Array.isArray(users)) return;
-      users.forEach((user) => {
-        if (user?.email) {
-          emailUserMap[user.email] = user;
-        }
-      });
-    });
-    return Object.values(emailUserMap);
-  }, [baseCollaborators, scopedCollaboratorsMap]);
+  const [collaborators, setCollaborators] = useState(propsCollaborators);
   const queryUser = useMemo(() => {
     const userService = new UserService({ mediaUrl, api: listUserInfo });
     return userService.queryUser;
@@ -46,42 +28,11 @@ export const CollaboratorsProvider = ({
     propsUpdateCollaboratorsCache && propsUpdateCollaboratorsCache(user);
   }, [collaboratorsCache, propsUpdateCollaboratorsCache]);
 
-  const setScopedCollaborators = useCallback((scopeKey, users) => {
-    if (!scopeKey) return;
-    const validUsers = Array.isArray(users) ? users.filter(user => user?.email) : [];
-    setScopedCollaboratorsMap((prevScopedCollaboratorsMap) => {
-      return {
-        ...prevScopedCollaboratorsMap,
-        [scopeKey]: validUsers,
-      };
-    });
-    if (validUsers.length > 0) {
-      setCollaboratorsCache((prevCollaboratorsCache) => {
-        const nextCollaboratorsCache = { ...prevCollaboratorsCache };
-        validUsers.forEach((user) => {
-          nextCollaboratorsCache[user.email] = user;
-          propsUpdateCollaboratorsCache && propsUpdateCollaboratorsCache(user);
-        });
-        return nextCollaboratorsCache;
-      });
-    }
-  }, [propsUpdateCollaboratorsCache]);
-
-  const clearScopedCollaborators = useCallback((scopeKey) => {
-    if (!scopeKey) return;
-    setScopedCollaboratorsMap((prevScopedCollaboratorsMap) => {
-      if (!prevScopedCollaboratorsMap[scopeKey]) return prevScopedCollaboratorsMap;
-      const nextScopedCollaboratorsMap = { ...prevScopedCollaboratorsMap };
-      delete nextScopedCollaboratorsMap[scopeKey];
-      return nextScopedCollaboratorsMap;
-    });
-  }, []);
-
   useEffect(() => {
     if (!getCollaborators) return;
     getCollaborators().then(res => {
       const collaborators = Array.isArray(res?.data?.user_list) ? res.data.user_list.map(user => new User(user)) : [];
-      setBaseCollaborators(collaborators);
+      setCollaborators(collaborators);
     });
   }, [getCollaborators]);
 
@@ -117,8 +68,6 @@ export const CollaboratorsProvider = ({
       collaborators,
       collaboratorsCache,
       updateCollaboratorsCache,
-      setScopedCollaborators,
-      clearScopedCollaborators,
       getCollaborator,
       queryUser,
     }}>

@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Collaborator, AsyncCollaborator, CollaboratorEditor, CustomizeLabel } from '@/components';
-import { useCollaborators } from '@/sea-metadata';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isA } from '@/utils/hotkey';
 
@@ -14,6 +13,8 @@ const CollaboratorsSettings = ({
   value,
   className = 'mb-4',
   title = gettext('Collaborators'),
+  tip = gettext('No collaborators'),
+  useCollaborators,
   onChange,
 }) => {
   const [isShowAssigneesEditor, setIsShowAssigneesEditor] = useState(false);
@@ -61,6 +62,15 @@ const CollaboratorsSettings = ({
     };
   }, [onHotKey]);
 
+  const CollaboratorComponent = queryUser ? AsyncCollaborator : Collaborator;
+  const CollaboratorComponentProps = queryUser ? {
+    collaborators,
+    collaboratorsCache,
+    updateCollaboratorsCache,
+    api: queryUser,
+  } : {
+  };
+
   return (
     <>
       <div className={classnames('seaqa-settings-item', className)}>
@@ -74,21 +84,17 @@ const CollaboratorsSettings = ({
         >
           {value.length > 0 ? value.map(assignee => {
             if (!assignee) return null;
+            const email = typeof assignee === 'string' ? assignee : assignee.email;
+            const collaborator = collaborators.find(c => c.email === email);
+            if (!queryUser && !collaborator) return null;
             return (
-              <AsyncCollaborator
-                value={typeof assignee === 'string' ? assignee : assignee.email}
-                key={assignee}
-                collaborators={collaborators}
-                collaboratorsCache={collaboratorsCache}
-                updateCollaboratorsCache={updateCollaboratorsCache}
-                api={queryUser}
-              >
+              <CollaboratorComponent key={email} value={email} collaborator={collaborator} { ...CollaboratorComponentProps }>
                 {!isReadonly && (
                   <Collaborator.RemoveBtn callback={(event) => deleteAssignee(event, assignee)}/>
                 )}
-              </AsyncCollaborator>
+              </CollaboratorComponent>
             );
-          }) : (<div className="seaqa-tip-default">{gettext('No one assigned')}</div>)}
+          }) : (<div className="seaqa-tip-default">{tip}</div>)}
         </div>
       </div>
       {!isReadonly && isShowAssigneesEditor && (

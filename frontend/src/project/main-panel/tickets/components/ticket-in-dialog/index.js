@@ -20,6 +20,7 @@ import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { getRowById, convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { TICKET_TYPE, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
 import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/project/main-panel/portal-issues/constants';
+import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 
@@ -243,7 +244,15 @@ const TicketInDialog = ({
         <div className="seaqa-project-ticket-other-settings">
           <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           {!isPortalIssue && (
-            <CollaboratorsSettings id="ticket-dialog-assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
+            <CollaboratorsSettings
+              id="ticket-dialog-assignees-editor-popover"
+              isReadonly={!editable}
+              title={gettext('Assignees')}
+              value={assignees}
+              tip={gettext('No one assigned')}
+              useCollaborators={useCollaborators}
+              onChange={onAssigneesChange}
+            />
           )}
           <TagsSettings
             isReadonly={!editable}
@@ -259,7 +268,15 @@ const TicketInDialog = ({
             <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           )}
           {!isPortalIssue && (
-            <CollaboratorsSettings id="ticket-dialog-participants-editor-popover" isReadonly={!editable} title={gettext('Participants')} value={participants} onChange={onParticipantsChange} />
+            <CollaboratorsSettings
+              id="ticket-dialog-participants-editor-popover"
+              isReadonly={!editable}
+              title={gettext('Participants')}
+              value={participants}
+              tip={gettext('No participants')}
+              useCollaborators={useCollaborators}
+              onChange={onParticipantsChange}
+            />
           )}
           <LinkSettings
             value={ticketType === TICKET_TYPE ? ticket.linked_connection_records : [ticket.linked_ticket]}
