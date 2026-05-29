@@ -34,9 +34,9 @@ export const formatDetailsJSONValue = (value) => {
 export const shouldHighlightDetailsAsJSON = (fieldKey) => JSON_HIGHLIGHT_DETAIL_KEYS.has(fieldKey);
 
 export const THOUGHT_PROCESS_DETAIL_FIELDS = [
-  { key: 'tool_arguments', label: gettext('• Arguments') },
-  { key: 'observation', label: gettext('• Observation') },
-  { key: 'error', label: gettext('• Error') },
+  { key: 'tool_arguments', label: gettext('Arguments') },
+  { key: 'observation', label: gettext('Observation') },
+  { key: 'error', label: gettext('Error') },
 ];
 
 export const hasToolDetailsContent = (action) => {

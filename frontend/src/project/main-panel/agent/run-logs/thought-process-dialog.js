@@ -84,7 +84,7 @@ const buildDetailsChildren = (details, options = {}) => {
       if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
 
       return {
-        name: field.label,
+        name: `• ${field.label}`,
         value: shouldHighlightDetailsAsJSON(field.key) ? formatDetailsJSONValue(fieldValue) : formatDetailsValue(fieldValue),
         formatter: shouldHighlightDetailsAsJSON(field.key) ? JSONDetailValueFormatter : DetailValueFormatter,
       };
