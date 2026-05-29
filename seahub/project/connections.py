@@ -1206,18 +1206,20 @@ class ProjectConnectionRecordView(APIView):
                     'due_date': row_data.get('due_date', current_record.get('due_date')),
                     'created_time': current_record.get('created_time'),
                     'modified_time': current_record.get('modified_time'),
+                    'url': current_record.get('url'),
+                    'linked_ticket': row_data.get('linked_ticket', current_record.get('linked_ticket')),
                     'deleted': False,
                 }
                 connection_config = decrypt_config(json.loads(project_connection.config))
                 image_data_map = prepare_image_data_for_adapter(project_uuid, merged_task.get('description'))
                 if image_data_map:
                     merged_task['image_data_map'] = image_data_map
-                adapter_task = update_general_task_via_adapter(
-                    connection_config,
-                    source_task_id,
-                    merged_task,
-                )
-                update_row['row'].update(build_general_task_row_data(adapter_task))
+                try:
+                    update_general_task_via_adapter(connection_config, source_task_id, merged_task)
+                except ValueError as e:
+                    logger.warning(f'update general task adapter error: {e}')
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to update general task.')
+                update_row['row'].update(build_general_task_row_data(merged_task))
                 update_row['row']['source_task_id'] = source_task_id
 
         # Support outdated field for all connection types
@@ -1475,18 +1477,20 @@ class ProjectConnectionRecordsView(APIView):
                         'due_date': row_data.get('due_date', current_record.get('due_date')),
                         'created_time': current_record.get('created_time'),
                         'modified_time': current_record.get('modified_time'),
-                        'deleted': False,
+                        'url': current_record.get('url'),
+                        'linked_ticket': row_data.get('linked_ticket', current_record.get('linked_ticket')),
+                        'deleted': False
                     }
                     connection_config = decrypt_config(json.loads(project_connection.config))
                     image_data_map = prepare_image_data_for_adapter(project_uuid, merged_task.get('description'))
                     if image_data_map:
                         merged_task['image_data_map'] = image_data_map
-                    adapter_task = update_general_task_via_adapter(
-                        connection_config,
-                        source_task_id,
-                        merged_task,
-                    )
-                    update_row['row'].update(build_general_task_row_data(adapter_task))
+                    try:
+                        update_general_task_via_adapter(connection_config, source_task_id, merged_task)
+                    except ValueError as e:
+                        logger.warning(f'batch update general task adapter error: {e}')
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+                    update_row['row'].update(build_general_task_row_data(merged_task))
                     update_row['row']['source_task_id'] = source_task_id
 
             # Support outdated field for all connection types

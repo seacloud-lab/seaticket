@@ -1,5 +1,4 @@
 import base64
-import re
 import requests
 
 from seahub.utils.storage import get_project_file_from_s3
@@ -62,6 +61,9 @@ def update_general_task_via_adapter(connection_config, source_task_id, task_payl
     endpoint = build_general_task_endpoint(connection_config.get('base_url'), source_task_id)
     headers = get_general_task_headers(connection_config)
     response = requests.post(endpoint, json=task_payload, headers=headers, timeout=60)
+
+    if response.status_code == 404:
+        raise ValueError(f'General task {source_task_id} not found in adapter.')
     if response.status_code >= 400:
         raise ValueError(response.text or 'Update general task failed.')
     updated_task = response.json() if response.content else {}
