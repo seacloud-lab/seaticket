@@ -1,4 +1,3 @@
-import datetime
 import logging
 import json
 from email.utils import make_msgid
@@ -34,7 +33,6 @@ from seahub.seadb_models.models import (
     GithubIssuesTable,
     ThreadTable,
     GithubIssueCommentsTable,
-    TicketCommentsTable,
     TicketsTable,
 )
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
@@ -46,10 +44,9 @@ from seahub.project.utils import (
     get_current_table_metadata,
 )
 from seahub.notifications.signal_handler import (
-    MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
-    MSG_TYPE_TICKET_COMMENTED,
+    MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
 )
-from seahub.tickets.signals import agent_notify_assignees, ticket_commented
+from seahub.tickets.signals import agent_notify_assignees
 from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -114,9 +111,7 @@ def _build_items_map_from_actions(actions, include_details=False):
                 'phase': action.get('phase', ''),
                 'prompt': action.get('prompt', ''),
                 'step': action.get('step'),
-                'is_max_step': action.get('is_max_step'),
                 'tool_arguments': action.get('tool_arguments', ''),
-                'forced_tool_call': action.get('forced_tool_call'),
                 'observation': action.get('observation', ''),
             })
         items_map[key]['actions'].append(action_data)
@@ -145,7 +140,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
             actions_limit = per_page * 30
             details_field = ''
             if include_details:
-                details_field = ', `phase`, `prompt`, `step`, `is_max_step`, `tool_arguments`, `forced_tool_call`, `observation`'
+                details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
                 f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \
@@ -197,7 +192,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
         
         details_field = ''
         if include_details:
-            details_field = ', `phase`, `prompt`, `step`, `is_max_step`, `tool_arguments`, `forced_tool_call`, `observation`'
+            details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
             f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \

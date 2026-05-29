@@ -34,7 +34,6 @@ export const formatDetailsJSONValue = (value) => {
 export const shouldHighlightDetailsAsJSON = (fieldKey) => JSON_HIGHLIGHT_DETAIL_KEYS.has(fieldKey);
 
 export const THOUGHT_PROCESS_DETAIL_FIELDS = [
-  { key: 'prompt', label: gettext('• Prompt') },
   { key: 'tool_arguments', label: gettext('• Arguments') },
   { key: 'observation', label: gettext('• Observation') },
   { key: 'error', label: gettext('• Error') },

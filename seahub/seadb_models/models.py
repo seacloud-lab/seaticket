@@ -557,10 +557,8 @@ class AgentActionsTable(BaseModel):
     action_type = MappedColumn('action_type', PropertyTypes.TEXT)    # analysis / tool_call / suggestion
     status = MappedColumn('status', PropertyTypes.TEXT)              # action status, i.e., pending / confirmed / cancelled / executed / completed
     step = MappedColumn('step', PropertyTypes.INT)
-    is_max_step = MappedColumn('is_max_step', PropertyTypes.BOOL)
     tool_name = MappedColumn('tool_name', PropertyTypes.TEXT)        # notify_assignee / add_comment / suggest_create_ticket etc.
     tool_arguments = MappedColumn('tool_arguments', PropertyTypes.TEXT)   # arguments of the tool call
-    forced_tool_call = MappedColumn('forced_tool_call', PropertyTypes.BOOL)
     observation = MappedColumn('observation', PropertyTypes.TEXT)    # tool execution result
     suggestion_content = MappedColumn('suggestion_content', PropertyTypes.TEXT) # suggestion content in editor
     sources = MappedColumn('sources', PropertyTypes.TEXT)            # JSON array of references used by analysis action
