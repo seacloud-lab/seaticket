@@ -19,6 +19,158 @@
   width: 100%;
 }
 
+.agent-thought-process-tabs {
+  margin: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.agent-thought-process-tabs .nav-link {
+  cursor: pointer;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #666;
+  padding: 10px 16px;
+  margin-bottom: -1px;
+}
+
+.agent-thought-process-tabs .nav-link.active {
+  color: #212529;
+  border-color: #212529;
+  font-weight: 600;
+}
+
+.agent-thought-process-tab-content {
+  padding-top: 16px;
+}
+
+.agent-thought-process-tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agent-thought-process-section {
+  width: 100%;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order,
+.agent-thought-process-collapsible-item .seaqa-ai-thought-process-order {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order {
+  height: 40px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.agent-thought-process-collapsible-item .seaqa-ai-thought-process-order {
+  height: 40px;
+  align-items: center;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.agent-thought-process-collapsible-item .seaqa-ai-thought-process-order-title {
+  display: inline-flex;
+  align-items: center;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order .seaqa-icon-btn,
+.agent-thought-process-collapsible-item .seaqa-ai-thought-process-order .seaqa-icon-btn {
+  height: 10px;
+  width: 10px;
+  padding: 0;
+  margin-right: 6px;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order.primary-order-container > .seaqa-icon-btn {
+  margin-right: 0;
+}
+
+.agent-thought-process-section-body {
+  padding: 16px;
+  padding-bottom: 16px;
+}
+
+.agent-thought-process-action-list,
+.agent-thought-process-result-list,
+.agent-thought-process-suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-thought-process-result-card,
+.agent-thought-process-collapsible-item {
+  width: 100%;
+}
+
+.agent-thought-process-result-card {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.agent-thought-process-item-content {
+  padding-left: 16px;
+}
+
+.agent-thought-process-item-content > * {
+  margin-bottom: 0;
+}
+
+.agent-thought-process-suggestion-group + .agent-thought-process-suggestion-group {
+  margin-top: 12px;
+}
+
+.agent-thought-process-suggestion-entry + .agent-thought-process-suggestion-entry {
+  margin-top: 8px;
+}
+
+.agent-thought-process-detail-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.agent-thought-process-list-item + .agent-thought-process-list-item {
+  margin-top: 12px;
+}
+
+.agent-thought-process-field-label {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
+.agent-thought-process-field-value {
+  margin: 0;
+}
+
+.agent-thought-process-markdown .article {
+  padding: 0;
+}
+
+.agent-thought-process-result-list .agent-thought-process-markdown,
+.agent-thought-process-detail-list .agent-thought-process-markdown {
+  margin-bottom: 0;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order.primary-order-container:not(:first-child) {
+  margin-top: 0;
+}
+
+.agent-thought-process-section .seaqa-ai-thought-process-order.primary-order-container:not(:first-child)::before {
+  display: none;
+}
+
 .agent-thought-process-loading {
   min-height: 160px;
 }

@@ -459,6 +459,7 @@ class ChatView(APIView):
             'llm_model': request.data.get('model'),
             'stream': stream,
             'project_prompt': project_prompt,
+            'username': username # used for kb generator
         }
 
         task_info = {

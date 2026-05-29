@@ -442,7 +442,6 @@ class SearchView(APIView):
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
             'connection_ids': connection_ids,
-            'username': username,
             'extra_sources': extra_sources,
             'count': count,
             'time_from': time_from,
