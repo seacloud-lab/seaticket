@@ -1,14 +1,63 @@
 .seaqa-create-task-dialog {
   max-width: 850px;
-  height: 550px;
 }
 
 .seaqa-create-task-dialog .modal-content {
-  height: 100%;
+  height: min(550px, calc(100vh - 3.5rem));
+  display: flex;
+  overflow: hidden;
+}
+
+.seaqa-create-task-dialog .modal-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-body {
+  padding-bottom: 1rem;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-error {
+  flex-shrink: 0;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bs-danger);
+  font-size: 13px;
+  line-height: 18px;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-error.is-visible {
+  visibility: visible;
+  border-color: rgba(var(--bs-danger-rgb), 0.16);
+  background: rgba(var(--bs-danger-rgb), 0.08);
+}
+
+.seaqa-create-task-dialog .seaqa-create-task-dialog-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .seaqa-create-task-dialog .seaqa-create-task-dialog-left-settings {
   flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .seaqa-create-task-dialog .seaqa-create-task-dialog-other-settings {
@@ -16,12 +65,14 @@
   display: flex;
   flex-direction: column;
   padding-left: 16px;
-  height: 388px;
+  min-width: 316px;
+  min-height: 0;
   overflow-y: auto;
 }
 
 .seaqa-create-task-dialog .seaqa-task-content {
   height: 250px;
+  min-height: 250px;
 }
 
 .seaqa-create-task-dialog .modal-footer .btn {
@@ -31,4 +82,32 @@
 .seaqa-create-task-dialog .modal-footer .seaqa-loading-icon {
   width: 16px;
   height: 16px;
+}
+
+@media (max-width: 767.98px) {
+  .seaqa-create-task-dialog {
+    max-width: calc(100vw - 1rem);
+  }
+
+  .seaqa-create-task-dialog .modal-content {
+    height: calc(100vh - 1rem);
+  }
+
+  .seaqa-create-task-dialog .seaqa-create-task-dialog-content {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .seaqa-create-task-dialog .seaqa-create-task-dialog-left-settings {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .seaqa-create-task-dialog .seaqa-create-task-dialog-other-settings {
+    width: 100%;
+    min-width: 0;
+    padding-left: 0;
+    margin-top: 16px;
+    overflow: visible;
+  }
 }

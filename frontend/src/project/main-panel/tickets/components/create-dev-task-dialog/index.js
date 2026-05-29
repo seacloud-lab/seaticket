@@ -11,7 +11,7 @@ import { useData } from '@/project/hooks';
 import { useCollaborators } from '@/sea-metadata';
 import { TICKET_TABLE_NAME } from '../../constants';
 import { generatorTicketURL } from '../../utils';
-import { CollaboratorsSettings } from '../ticket-settings';
+import { CollaboratorsSettings, DueDateSettings } from '../ticket-settings';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
@@ -218,14 +218,20 @@ const CreateTaskDialog = ({
   return (
     <Modal className="seaqa-create-task-dialog" isOpen={true} toggle={onClose}>
       <ModalHeader toggle={onClose}>{gettext('Create task')}</ModalHeader>
-      <ModalBody>
+      <ModalBody className="seaqa-create-task-dialog-body">
         {generalTaskConnections.length === 0 && (
           <CenteredError>{gettext('No task connection available.')}</CenteredError>
         )}
         {generalTaskConnections.length > 0 && (
-          <>
-            {errorMessage && <CenteredError>{errorMessage}</CenteredError>}
-            <div className="d-flex">
+          <div className="seaqa-create-task-dialog-layout">
+            <div
+              className={`seaqa-create-task-dialog-error ${errorMessage ? 'is-visible' : ''}`}
+              role="alert"
+              aria-live="polite"
+            >
+              {errorMessage}
+            </div>
+            <div className="seaqa-create-task-dialog-content d-flex">
               <div className="seaqa-create-task-dialog-left-settings">
                 <Form>
                   <FormGroup>
@@ -326,17 +332,6 @@ const CreateTaskDialog = ({
                   />
                 </FormGroup>
                 <FormGroup>
-                  <Label for="devTaskParticipants">{gettext('Participants')}</Label>
-                  <Input
-                    type="text"
-                    id="devTaskParticipants"
-                    value={participants}
-                    readOnly={isSubmitting}
-                    onChange={(event) => setParticipants(event.target.value)}
-                    placeholder={gettext('Separate multiple values with commas')}
-                  />
-                </FormGroup>
-                <FormGroup>
                   <Label for="devTaskVersion">{gettext('Version')}</Label>
                   <Input
                     type="text"
@@ -346,20 +341,15 @@ const CreateTaskDialog = ({
                     onChange={(event) => setVersion(event.target.value)}
                   />
                 </FormGroup>
-                <FormGroup className="mb-0">
-                  <Label for="devTaskDueDate">{gettext('Due date')}</Label>
-                  <Input
-                    type="text"
-                    id="devTaskDueDate"
-                    value={dueDate}
-                    readOnly={isSubmitting}
-                    onChange={(event) => setDueDate(event.target.value)}
-                    placeholder="YYYY-MM-DD HH:mm:ss"
-                  />
-                </FormGroup>
+                <DueDateSettings
+                  isReadonly={isSubmitting}
+                  value={dueDate}
+                  className="mb-0"
+                  onChange={setDueDate}
+                />
               </div>
             </div>
-          </>
+          </div>
         )}
       </ModalBody>
       <ModalFooter>
