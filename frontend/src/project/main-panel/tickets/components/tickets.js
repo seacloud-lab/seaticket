@@ -243,7 +243,6 @@ const Tickets = ({
     const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
     const contentColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
     const assigneesColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
-    const participantsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS);
     const dueDateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE);
     const priorityColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.PRIORITY);
 
@@ -252,7 +251,6 @@ const Tickets = ({
       title: titleColumn ? (getCellValueByColumn(ticket, titleColumn) || '') : (ticket?.title || ''),
       content: contentColumn ? getCellValueByColumn(ticket, contentColumn) : ticket?.content,
       assignees: assigneesColumn ? (getCellValueByColumn(ticket, assigneesColumn) || []) : (ticket?.assignees || []),
-      participants: participantsColumn ? (getCellValueByColumn(ticket, participantsColumn) || []) : (ticket?.participants || []),
       due_date: dueDateColumn ? getCellValueByColumn(ticket, dueDateColumn) : ticket?.due_date,
       priority: priorityColumn ? getCellValueByColumn(ticket, priorityColumn) : ticket?.priority,
       linked_connection_records: ticket?.[getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS)?.key] || ticket?.linked_connection_records || [],

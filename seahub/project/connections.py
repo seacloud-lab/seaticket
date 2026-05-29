@@ -1217,7 +1217,6 @@ class ProjectConnectionRecordView(APIView):
                     source_task_id,
                     merged_task,
                 )
-                ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                 update_row['row'].update(build_general_task_row_data(adapter_task))
                 update_row['row']['source_task_id'] = source_task_id
 
@@ -1340,9 +1339,7 @@ class ProjectConnectionRecordsView(APIView):
 
         seadb_api = SeaDBAPI()
         row_data = build_general_task_row_data(created_task)
-        print(row_data, '---row data')
         try:
-            ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
             res = seadb_api.insert_rows(project_uuid, GeneralTaskTable.gen_table_name(connection_id), [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
@@ -1489,7 +1486,6 @@ class ProjectConnectionRecordsView(APIView):
                         source_task_id,
                         merged_task,
                     )
-                    ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [adapter_task])
                     update_row['row'].update(build_general_task_row_data(adapter_task))
                     update_row['row']['source_task_id'] = source_task_id
 
