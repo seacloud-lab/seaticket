@@ -21,6 +21,7 @@ from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
 from seahub.utils.storage import get_project_file_from_s3
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 from seahub.project.constants import ConnectionType, ExtraSourceType
@@ -163,6 +164,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
     github_issues = []
     discourse_issues = []
     email_issues = []
+    general_tasks = []
 
     for attachment in attachments:
         try:
@@ -189,6 +191,10 @@ def get_attachments(seadb_api, project_uuid, attachments):
             email_issues.append(attachment)
         elif attachment.get('type') == ConnectionType.DISCOURSE_FORUM.value:
             discourse_issues.append(attachment)
+
+        # tasks
+        elif attachment.get('type') == ConnectionType.GENERAL_TASK.value:
+            general_tasks.append(attachment)
 
     results = []
     ## documents
@@ -218,7 +224,12 @@ def get_attachments(seadb_api, project_uuid, attachments):
     if discourse_issues:
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         results += discourse_seadb_api.get_whole_discourse_data(discourse_issues)
-    
+
+    # tasks
+    if general_tasks:
+        general_tasks_seadb_api = GeneralTaskSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += general_tasks_seadb_api.get_whole_general_tasks_data(general_tasks)
+
     return results
 
 def strip_content_details_from_attachments(attachments):
