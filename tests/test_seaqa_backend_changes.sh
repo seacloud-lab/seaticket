@@ -1,47 +1,41 @@
 #!/bin/bash
 
-test_fn()
+is_skipped_path()
 {
-    FN=$1
-    shift;
-    echo "Testing $FN..."
+    local file_path="$1"
 
-    patt="frontend*"
-    [[ $FN == $patt ]] && return 0
-
-    patt="media*"
-    [[ $FN == $patt ]] && return 0
-
-    patt="static*"
-    [[ $FN == $patt ]] && return 0
-
-    patt="locale*"
-    [[ $FN == $patt ]] && return 0
-
-    return 1
+    case "$file_path" in
+        frontend/*|media/*|static/*|locale/*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
-if test -z "$GITHUB_BASE_REF"; then
+if [ -z "${GITHUB_BASE_REF:-}" ]; then
     echo "GITHUB_BASE_REF is empty, run backend tests by default."
     exit 0
 fi
 
-git fetch origin $GITHUB_BASE_REF
-FILES=`git diff --name-only origin/$GITHUB_BASE_REF`
+git fetch origin "$GITHUB_BASE_REF"
+FILES="$(git diff --name-only "origin/$GITHUB_BASE_REF")"
 
 echo "$FILES"
 
-for i in $FILES
+while IFS= read -r file_path
 do
-    test_fn $i
-    retval=$?
+    [ -z "$file_path" ] && continue
+    echo "Testing $file_path..."
 
-    if [ "$retval" == 1 ]; then
-        echo "File changes need to trigger backend tests."
+    if ! is_skipped_path "$file_path"; then
+        echo "Backend tests triggered by changed file: $file_path"
         exit 0
     fi
-
-done
+done <<EOF
+$FILES
+EOF
 
 echo "Static/media/frontend/locale only changes should not trigger backend tests."
 exit 1

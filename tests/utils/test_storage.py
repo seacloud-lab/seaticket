@@ -1,4 +1,5 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
+from types import SimpleNamespace
 
 from seahub.utils.storage import upload_portal_logo_file_to_s3
 
@@ -21,7 +22,10 @@ def test_upload_portal_logo_file_to_s3_uses_project_path(tmp_path, monkeypatch):
         called["key"] = key
         called["extra_args"] = ExtraArgs
 
-    monkeypatch.setattr("seahub.utils.storage.s3_client.upload_file", _fake_upload_file)
+    monkeypatch.setattr(
+        "seahub.utils.storage.s3_client",
+        SimpleNamespace(upload_file=_fake_upload_file),
+    )
 
     file_url = upload_portal_logo_file_to_s3(project_uuid, upload_file)
 
