@@ -131,6 +131,7 @@ const ActionItem = React.memo(({
 
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
+    const isFailedStatus = status === ACTION_STATUS.FAILED;
 
     switch (type) {
       case ACTION_TYPE.EVENTS:
@@ -204,10 +205,20 @@ const ActionItem = React.memo(({
                   </Button>
                 </div>
               )}
-              {isCompletedStatus && (
-                <div className="tool-result suggestion-tool-result" style={{ background: '#EDF8E2', marginLeft: '22px' }}>
-                  <span className="status-completed">
-                    <Icon symbol="check-circle-filled" />
+              {(isCompletedStatus || isFailedStatus) && (
+                <div
+                  className={classnames('tool-result suggestion-tool-result', {
+                    'suggestion-tool-result-success': isCompletedStatus,
+                    'suggestion-tool-result-failed': isFailedStatus,
+                  })}
+                  style={{ marginLeft: '22px' }}
+                >
+                  <span className={classnames({
+                    'status-completed': isCompletedStatus,
+                    'status-failed': isFailedStatus,
+                  })}
+                  >
+                    <Icon symbol={isFailedStatus ? 'close' : 'check-circle-filled'} />
                   </span>
                   <span className="result-text">{result}</span>
                 </div>
@@ -255,6 +266,7 @@ const ActionItem = React.memo(({
         'action-expanded': isExpanded,
         'action-pending': status === ACTION_STATUS.PENDING,
         'action-completed': status === ACTION_STATUS.COMPLETED,
+        'action-failed': status === ACTION_STATUS.FAILED,
         'action-cancelled': status === ACTION_STATUS.CANCELLED,
       })}
     >
