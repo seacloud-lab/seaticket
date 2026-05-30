@@ -437,8 +437,8 @@ class TestAgentActionConfirmView:
                 'tool_name': 'suggest_reply',
                 'source_type': 'email',
                 'source_id': f'{connection.id}_10',
-                'content': 'reply body',
-                'suggestion_text': '',
+                'result': '',
+                'suggestion_content': 'reply body',
             }]
         }
 
