@@ -15,7 +15,7 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, content, result, tool_name, suggestion_text, sources } = action;
+  const { id, type, status, result, tool_name, sources } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -134,16 +134,16 @@ const ActionItem = React.memo(({
         return (
           <div className="action-content action-content-events">
             <div className="action-label">{gettext('Event')}</div>
-            {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
+            {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
           </div>
         );
       case ACTION_TYPE.ANALYSIS:
         return (
           <div className="action-content action-content-analysis">
             <div className="action-label">{gettext('Analysis')}</div>
-            {content && (
+            {result && (
               <AIReply
-                message={{ ai_reply: content, sources: Array.isArray(sources) ? sources : [] }}
+                message={{ ai_reply: result, sources: Array.isArray(sources) ? sources : [] }}
                 projectUuid={projectUuid}
                 projectName={projectName}
               />
@@ -163,7 +163,7 @@ const ActionItem = React.memo(({
                     <Icon symbol="check-mark" />
                   </span>
                 )}
-                <span className="tool-call-content">{content}</span>
+                <span className="tool-call-content">{result}</span>
               </div>
             )}
           </div>
@@ -176,7 +176,7 @@ const ActionItem = React.memo(({
             <div className="action-card">
               <div className="action-card-header d-flex align-items-center">
                 <Icon symbol={renderSuggestionIcon() } className="mr-2" />
-                <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{suggestion_text}</span>
+                <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{result}</span>
                 {hasEditableContent && status !== ACTION_STATUS.CANCELLED && (
                   <IconTooltip
                     icon="edit"
@@ -218,7 +218,7 @@ const ActionItem = React.memo(({
           <div className="action-content">
             <div className="action-label">{gettext('Error')}</div>
             <div className="action-text">
-              {formatErrorMessage(content)}
+              {formatErrorMessage(result)}
             </div>
           </div>
         );
@@ -236,13 +236,13 @@ const ActionItem = React.memo(({
             </div>
             {isThoughtExpanded &&
               <div className="action-text action-text-thought">
-                {content && <CustomizeMarkdownViewer value={content} showTOC={false} />}
+                {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
               </div>
             }
           </div>
         );
       default:
-        return <div className="action-content">{content || result}</div>;
+        return <div className="action-content">{result}</div>;
     }
   };
 

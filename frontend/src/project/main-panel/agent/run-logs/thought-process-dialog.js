@@ -24,7 +24,7 @@ const PRIMARY_SECTION = {
 };
 const PHASE_ORDER = ['prelude', 'analysis', 'handling'];
 const PHASE_LABELS = {
-  prelude: gettext('Events'),
+  prelude: gettext('Event'),
   analysis: gettext('Analysis'),
   handling: gettext('Handling'),
 };
@@ -40,6 +40,10 @@ const DetailValueFormatter = ({ className, value }) => (
   <pre className={`${className} agent-thought-process-pre`}>{value}</pre>
 );
 
+const PromptValueFormatter = ({ className, value }) => (
+  <div className={`${className} agent-thought-process-prompt`}>{value}</div>
+);
+
 const JSONDetailValueFormatter = ({ className, value }) => (
   <AIReply
     className={className}
@@ -49,17 +53,38 @@ const JSONDetailValueFormatter = ({ className, value }) => (
   />
 );
 
-const buildDetailsChildren = (details) => {
+const hasDetailValue = (value) => value !== undefined && value !== null && value !== '';
+
+const buildPrompt = (phase, actions = []) => {
+  const promptActions = actions.filter((action) => hasDetailValue(action?.prompt));
+  if (promptActions.length !== 1) return null;
+
+  return {
+    id: `phase-${phase}-prompt`,
+    name: gettext('Prompt'),
+    children: [
+      {
+        value: promptActions[0].prompt,
+        formatter: PromptValueFormatter,
+      }
+    ],
+  };
+};
+
+const buildDetailsChildren = (details, options = {}) => {
   if (!details || typeof details !== 'object') return [];
+
+  const { excludePrompt = false } = options;
 
   return THOUGHT_PROCESS_DETAIL_FIELDS
     .map((field) => {
+      if (excludePrompt && field.key === 'prompt') return null;
       if (!hasOwnKey(details, field.key)) return null;
       const fieldValue = details[field.key];
       if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
 
       return {
-        name: field.label,
+        name: `• ${field.label}`,
         value: shouldHighlightDetailsAsJSON(field.key) ? formatDetailsJSONValue(fieldValue) : formatDetailsValue(fieldValue),
         formatter: shouldHighlightDetailsAsJSON(field.key) ? JSONDetailValueFormatter : DetailValueFormatter,
       };
@@ -67,8 +92,7 @@ const buildDetailsChildren = (details) => {
     .filter(Boolean);
 };
 
-const getValidPhase = (details) => {
-  const phase = details?.phase;
+const getValidPhase = (phase) => {
   if (typeof phase !== 'string') return null;
   const normalizedPhase = phase.toLowerCase();
   return PHASE_ORDER.includes(normalizedPhase) ? normalizedPhase : null;
@@ -87,8 +111,8 @@ const buildPhaseGroupedActionNodes = (actions = []) => {
   }, {});
 
   actions.forEach((action) => {
-    if (!hasToolDetailsContent(action?.details)) return;
-    const phase = getValidPhase(action.details);
+    if (!hasToolDetailsContent(action)) return;
+    const phase = getValidPhase(action.phase);
     if (!phase) return;
     actionsByPhase[phase].push(action);
   });
@@ -97,16 +121,19 @@ const buildPhaseGroupedActionNodes = (actions = []) => {
     const phaseActions = actionsByPhase[phase];
     if (phaseActions.length === 0) return null;
 
+    const promptNode = buildPrompt(phase, phaseActions);
+    const shouldExcludeActionPrompt = Boolean(promptNode);
+
     const actionNodes = phaseActions.map((action, actionIndex) => ({
       id: action.id || `${phase}-action-${actionIndex}`,
       name: getActionTitle(action, actionIndex),
-      children: buildDetailsChildren(action.details),
+      children: buildDetailsChildren(action, { excludePrompt: shouldExcludeActionPrompt }),
     }));
 
     return {
       id: `phase-${phase}`,
       name: PHASE_LABELS[phase],
-      children: actionNodes,
+      children: promptNode ? [promptNode, ...actionNodes] : actionNodes,
     };
   }).filter(Boolean);
 };

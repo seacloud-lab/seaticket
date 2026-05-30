@@ -1,4 +1,3 @@
-import datetime
 import logging
 import json
 from email.utils import make_msgid
@@ -34,7 +33,6 @@ from seahub.seadb_models.models import (
     GithubIssuesTable,
     ThreadTable,
     GithubIssueCommentsTable,
-    TicketCommentsTable,
     TicketsTable,
 )
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
@@ -47,10 +45,9 @@ from seahub.project.utils import (
     persist_project_connection_config,
 )
 from seahub.notifications.signal_handler import (
-    MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
-    MSG_TYPE_TICKET_COMMENTED,
+    MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
 )
-from seahub.tickets.signals import agent_notify_assignees, ticket_commented
+from seahub.tickets.signals import agent_notify_assignees
 from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
@@ -84,18 +81,6 @@ def _parse_action_sources(raw_sources):
         return []
     return sources if isinstance(sources, list) else []
 
-def _parse_action_details(details):
-    if not details:
-        return {}
-    if isinstance(details, dict):
-        return details
-    try:
-        parsed = json.loads(details)
-        return parsed if isinstance(parsed, dict) else {}
-    except Exception:
-        return {}
-
-
 def _build_items_map_from_actions(actions, include_details=False):
     """build the items map from actions"""
     items_map = {}
@@ -114,19 +99,22 @@ def _build_items_map_from_actions(actions, include_details=False):
             'id': action['_pk'],
             'type': action.get('action_type', ''),
             'tool_name': action.get('tool_name', ''),
-            'content': action.get('content', ''),
             'result': action.get('result', ''),
             'status': action.get('status', ''),
-            'suggestion_text': action.get('suggestion_text', ''),
+            'suggestion_content': action.get('suggestion_content', ''),
             'sources': _parse_action_sources(action.get('sources')),
             'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
         }
         if include_details:
-            details = _parse_action_details(action.get('details', ''))
-            if details:
-                action_data['details'] = details
+            action_data.update({
+                'phase': action.get('phase', ''),
+                'prompt': action.get('prompt', ''),
+                'step': action.get('step'),
+                'tool_arguments': action.get('tool_arguments', ''),
+                'observation': action.get('observation', ''),
+            })
         items_map[key]['actions'].append(action_data)
     return items_map
 
@@ -151,9 +139,11 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
         if run_ids:
             run_ids_str = ','.join(str(r) for r in run_ids)
             actions_limit = per_page * 30
-            details_field = ', `details`' if include_details else ''
+            details_field = ''
+            if include_details:
+                details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-                f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
+                f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
                 f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
@@ -201,9 +191,11 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
             raise ValueError('Run not found.')
         run = runs[0]
         
-        details_field = ', `details`' if include_details else ''
+        details_field = ''
+        if include_details:
+            details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-            f"`action_type`, `tool_name`, `content`, `result`, `status`, `suggestion_text`, " \
+            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
             f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{AgentActionsTable.gen_table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -337,7 +329,7 @@ class AgentActionConfirmView(APIView):
             seadb_api = SeaDBAPI()
 
             # 1. Get action details from SeaDB
-            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `content`, `suggestion_text` " \
+            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `result`, `suggestion_content` " \
                 f"FROM `{AgentActionsTable.gen_table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
@@ -357,24 +349,25 @@ class AgentActionConfirmView(APIView):
             tool_name = action['tool_name']
             source_type = action.get('source_type', 'ticket')
             source_id = action.get('source_id', '')
-            content = action['content']
+            result_text = action.get('result', '')
+            suggestion_content = action.get('suggestion_content', '')
 
             # 3. Dispatch to the appropriate handler based on source_type and tool_name
             if source_type == 'ticket':
                 execution_result = self._execute_ticket_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                    seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
                 )
             elif source_type == ConnectionType.GITHUB_ISSUE.value:
                 execution_result = self._execute_github_issue_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, action, username
+                    seadb_api, project, project_uuid, source_id, tool_name, result_text, suggestion_content, username
                 )
             elif source_type == ConnectionType.DISCOURSE_FORUM.value:
                 execution_result = self._execute_discourse_topic_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                    seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
                 )
             elif source_type == ConnectionType.EMAIL.value:
                 execution_result = self._execute_email_action(
-                    seadb_api, project, project_uuid, source_id, tool_name, content, username
+                    seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
                 )
             else:
                 logger.warning(f'Unknown source_type {source_type!r} for action {action_id}')
@@ -415,7 +408,7 @@ class AgentActionConfirmView(APIView):
             'github_issue_types': issue_types,
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+    def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
         """Dispatch ticket-source actions to the appropriate handler."""
         try:
             ticket_id = int(source_id)
@@ -424,38 +417,36 @@ class AgentActionConfirmView(APIView):
             return f'Invalid ticket source_id: {source_id}'
 
         if tool_name == 'suggest_notify_assignee':
-            return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, content, username)
+            return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, suggestion_content, username)
         else:
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, action, username):
+    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, result_text, suggestion_content, username):
         """Dispatch GitHub issue actions to the appropriate handler."""
-        content = action.get('content', '') if isinstance(action, dict) else ''
         if tool_name == 'suggest_reply':
-            return self._execute_github_suggest_reply(seadb_api, project_uuid, source_id, content)
+            return self._execute_github_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         elif tool_name == 'suggest_modify_type':
-            suggestion_text = action.get('suggestion_text', '') if isinstance(action, dict) else ''
-            return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, suggestion_text)
+            return self._execute_github_suggest_modify_type(seadb_api, project, project_uuid, source_id, result_text)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
             logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+    def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
         if tool_name == 'suggest_reply':
-            return self._execute_discourse_suggest_reply(seadb_api, project, project_uuid, source_id, content, username)
+            return self._execute_discourse_suggest_reply(seadb_api, project, project_uuid, source_id, suggestion_content, username)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
             logger.warning(f'Unknown discourse_topic tool_name: {tool_name!r}')
             return f'Unknown tool_name: {tool_name}'
 
-    def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, content, username):
+    def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
         """Dispatch email-thread actions to the appropriate handler."""
         if tool_name == 'suggest_reply':
-            return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, content)
+            return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username)
         else:
@@ -628,24 +619,24 @@ class AgentActionConfirmView(APIView):
         return f'Resolution comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
 
     @staticmethod
-    def _parse_suggested_type(suggestion_text):
-        if not suggestion_text:
+    def _parse_suggested_type(result_text):
+        if not result_text:
             return ''
-        match = re.search(r'to "(.+?)" for this GitHub issue\.', suggestion_text)
+        match = re.search(r'to "(.+?)" for this GitHub issue\.', result_text)
         if match:
             return match.group(1).strip()
         return ''
 
-    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, result_text=''):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return f'Failed to get GitHub issue context for {ctx["record_id"]}.'
 
-        suggested_type = self._parse_suggested_type(suggestion_text)
+        suggested_type = self._parse_suggested_type(result_text)
         if not suggested_type:
             logger.error(
-                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
-                f'{suggestion_text!r}'
+                f'Cannot parse suggested_type from result for GitHub issue {ctx["record_id"]}: '
+                f'{result_text!r}'
             )
             return f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
 
@@ -1194,9 +1185,9 @@ class AgentActionUpdateView(APIView):
 
     @require_org_context
     def patch(self, request, project_uuid, run_id, action_id):
-        content = request.data.get('content')
-        if content is None:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'content is required.')
+        suggestion_content = request.data.get('suggestion_content')
+        if suggestion_content is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'suggestion_content is required.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -1225,14 +1216,14 @@ class AgentActionUpdateView(APIView):
 
             update_data = [{
                 'pk': int(action_id),
-                'row': {'content': str(content)}
+                'row': {'suggestion_content': str(suggestion_content)}
             }]
             seadb_api.update_rows(project_uuid, AgentActionsTable.gen_table_name(), update_data)
 
             return Response({
                 'success': True,
                 'action_id': action_id,
-                'content': content,
+                'suggestion_content': suggestion_content,
             }, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)

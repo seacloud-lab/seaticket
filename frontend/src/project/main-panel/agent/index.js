@@ -65,8 +65,8 @@ const Agent = ({ title, settings, modifySettings }) => {
     });
   }, [getRunIdByActionId, updateRunLog]);
 
-  const handleUpdateContent = useCallback((runId, actionId, content) => {
-    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { content }).then(() => {
+  const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
+    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then(() => {
       toaster.success(gettext('Content updated'));
       updateRunLog(runId);
     }).catch(err => {

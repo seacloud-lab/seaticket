@@ -23,7 +23,7 @@ const RunLogs = ({
 
   const handleViewContent = useCallback((action, runId) => {
     setViewContentModal({ action, runId });
-    const initialContent = action.content || action.suggestion_text || '';
+    const initialContent = action.suggestion_content || '';
     initialContentRef.current = initialContent;
     setEditContent(initialContent);
   }, []);

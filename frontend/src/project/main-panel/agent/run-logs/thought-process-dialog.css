@@ -33,3 +33,8 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.agent-thought-process-prompt {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

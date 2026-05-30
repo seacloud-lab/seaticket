@@ -168,8 +168,7 @@ class ChatMessages(models.Model):
     class Meta:
         db_table = 'chat_messages'
         indexes = [
-            models.Index(fields=['session_uuid', 'created_at']),
-            models.Index(fields=['session_uuid', 'role', '-created_at', '-as_context'])
+            models.Index(fields=['session_uuid', 'created_at'])
         ]
 
     def to_dict(self):
