@@ -116,7 +116,10 @@ const ActionItem = React.memo(({
         return 'ticket-filled';
       }
       case 'suggest_modify_type': {
-        return 'suitable-issue-type';
+        return 'suitable-issue-type-or-lables';
+      }
+      case 'suggest_assign_labels': {
+        return 'suitable-issue-type-or-lables';
       }
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
