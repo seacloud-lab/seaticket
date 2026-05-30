@@ -122,15 +122,13 @@ def fetch_oauth_email_sender_info(config, access_token):
 def create_connection(project, username, connection_type, name, config):
     from seahub.project.models import ProjectConnections
     from seahub.project.seadb_api import SeaDBAPI
-    from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
-        init_github_issues_seadb_table, init_seafile_seadb_table, init_email_seadb_table, \
-        init_notion_seadb_table, init_general_task_seadb_table
-    from seahub.utils.indexer import add_connection_sync_task
+    from seahub.seadb_models.utils import init_seadb_tables_from_schema, init_general_task_seadb_table
+    from seahub.project.connections import add_connection_sync_task
 
     project_uuid = project.uuid
     enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
     if not enable_create:
-        return None, api_error(status.HTTP_400_BAD_REQUEST, 'Please check input')
+        return None, api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Please check input')
 
     try:
         record = ProjectConnections.objects.create(username, project_uuid, connection_type, name, config)
@@ -141,12 +139,24 @@ def create_connection(project, username, connection_type, name, config):
     connection_id = record.id
     seadb_api = SeaDBAPI()
     init_table_funcs = {
-        ConnectionType.SITE.value: init_site_seadb_table,
-        ConnectionType.DISCOURSE_FORUM.value: init_discourse_forum_seadb_table,
-        ConnectionType.GITHUB_ISSUE.value: init_github_issues_seadb_table,
-        ConnectionType.SEAFILE.value: init_seafile_seadb_table,
-        ConnectionType.EMAIL.value: init_email_seadb_table,
-        ConnectionType.NOTION.value: init_notion_seadb_table,
+        ConnectionType.SITE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_site_seadb_table', api, project_uuid, connection_id
+        ),
+        ConnectionType.DISCOURSE_FORUM.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_discourse_forum_seadb_table', api, project_uuid, connection_id
+        ),
+        ConnectionType.GITHUB_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_github_issues_seadb_table', api, project_uuid, connection_id
+        ),
+        ConnectionType.SEAFILE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_seafile_seadb_table', api, project_uuid, connection_id
+        ),
+        ConnectionType.EMAIL.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_email_seadb_table', api, project_uuid, connection_id
+        ),
+        ConnectionType.NOTION.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            'init_notion_seadb_table', api, project_uuid, connection_id
+        ),
         ConnectionType.GENERAL_TASK.value: init_general_task_seadb_table
     }
 

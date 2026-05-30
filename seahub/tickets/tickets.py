@@ -59,9 +59,9 @@ logger = logging.getLogger(__name__)
 
 
 TICKET_EVENT_IGNORED_FIELDS = frozenset({
-    TicketsTable.comment_count.name,
-    TicketsTable.modified_time.name,
-    TicketsTable.closed_time.name,
+    get_column_name('TicketsTable', 'comment_count'),
+    get_column_name('TicketsTable', 'modified_time'),
+    get_column_name('TicketsTable', 'closed_time'),
 })
 
 

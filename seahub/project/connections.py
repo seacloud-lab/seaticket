@@ -48,8 +48,6 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.oauth_utils import EmailOAuthUtils
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, \
-    SeafileTable, WebCrawlTable, ThreadTable, NotionTable, GeneralTaskTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
