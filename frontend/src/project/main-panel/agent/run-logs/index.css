@@ -407,6 +407,14 @@
   border-radius: 4px;
 }
 
+.suggestion-tool-result-success {
+  background: #EDF8E2;
+}
+
+.suggestion-tool-result-failed {
+  background: #FDECEC;
+}
+
 .suggestion-tool-result .result-text {
   font-size: 12px;
   line-height: 20px;
@@ -416,6 +424,12 @@
 
 .status-completed svg {
   color: #5EBA00;
+  width: 12px;
+  height: 12px;
+}
+
+.status-failed svg {
+  color: #D93025;
   width: 12px;
   height: 12px;
 }

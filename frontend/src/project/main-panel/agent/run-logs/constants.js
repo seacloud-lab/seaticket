@@ -9,6 +9,7 @@ const ACTION_STATUS = {
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
   EXECUTED: 'executed',
+  FAILED: 'failed',
 };
 
 const ACTION_TYPE = {
