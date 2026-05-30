@@ -101,7 +101,7 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
 
 def upload_portal_logo_file_to_s3(project_uuid, file):
     final_file_path = gen_portal_logo_file_path()
-    s3_file_path = gen_s3_file_path(project_uuid, final_file_path)
+    s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
