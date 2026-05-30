@@ -153,7 +153,7 @@ class ChatMessages(models.Model):
     ]
 
     id = models.BigAutoField(primary_key=True)
-    session_uuid = models.CharField(max_length=36, null=False)
+    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
     message_id = models.CharField(max_length=4, null=False)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
@@ -167,9 +167,6 @@ class ChatMessages(models.Model):
 
     class Meta:
         db_table = 'chat_messages'
-        indexes = [
-            models.Index(fields=['session_uuid', 'created_at'])
-        ]
 
     def to_dict(self):
         try:

@@ -552,7 +552,7 @@ CREATE TABLE `chat_messages` (
   `updated_at` datetime(6) DEFAULT NULL,
   `as_context` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_session_uuid_created_at` (`session_uuid` ASC, `created_at` ASC)
+  KEY `idx_session_uuid` (`session_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_api_token` (
