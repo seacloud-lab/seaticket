@@ -756,7 +756,7 @@ class AgentActionConfirmView(APIView):
     def _execute_github_suggest_assign_labels(self, seadb_api, project_uuid, source_id, result_text=''):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
-            return f'Failed to get GitHub issue context for {source_id}.'
+            return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
         labels = self._parse_suggested_labels(result_text)
         if not labels:
@@ -765,16 +765,15 @@ class AgentActionConfirmView(APIView):
                 ctx['record_id'],
                 result_text,
             )
-            return f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.'
+            return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
 
         available = collect_github_issue_label_options(
             seadb_api, project_uuid, [ctx['connection_id']]
         )
         final_labels = self._filter_labels_by_options(labels, available)
         if not final_labels:
-            return (
-                'No valid labels were found in this suggestion. '
-                'Please refresh repository labels and try again.'
+            return self._failed_execution(
+                'No valid labels were found in this suggestion. Please refresh repository labels and try again.'
             )
 
         try:
@@ -791,16 +790,14 @@ class AgentActionConfirmView(APIView):
                 logger.error(
                     'GitHub rejected labels %r for issue %s (422).', final_labels, ctx['record_id']
                 )
-                return (
-                    f'GitHub rejected labels {final_labels} (422). '
-                    'Some labels may not exist in the repository. '
-                    'Please sync labels and try again.'
+                return self._failed_execution(
+                    f'GitHub rejected labels {final_labels} (422). Some labels may not exist in the repository. Please sync labels and try again.'
                 )
             logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
-            return f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}'
+            return self._failed_execution(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
         except Exception as e:
             logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
-            return f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}'
+            return self._failed_execution(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
@@ -813,9 +810,8 @@ class AgentActionConfirmView(APIView):
         except Exception as e:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
-        return (
-            f'Labels updated for GitHub issue {ctx["record_id"]}: '
-            f'{json.dumps(applied_labels, ensure_ascii=False)}.'
+        return self._successful_execution(
+            f'Labels updated for GitHub issue {ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
         )
 
     def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, result_text=''):
