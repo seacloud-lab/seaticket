@@ -42,14 +42,28 @@ export default class WorkspaceMemberDialog extends React.Component {
     });
   }
 
+  getRoleText = (role) => {
+    switch (role) {
+      case 'Owner':
+        return gettext('Owner');
+      case 'Admin':
+        return gettext('Admin');
+      case 'Member':
+      default:
+        return '';
+    }
+  };
+
   getMembers = () => {
     const { groupMembers } = this.state;
     return groupMembers.map((member, index) => {
-      let { avatar_url, name } = member;
+      let { avatar_url, name, role } = member;
+      const roleText = this.getRoleText(role);
       return (
         <div key={index} className="member-details">
           <img src={avatar_url} alt={name} className="member-avatar" />
           <span className="member-name">{name}</span>
+          {roleText && <span className="member-role">{roleText}</span>}
         </div>
       );
     });
