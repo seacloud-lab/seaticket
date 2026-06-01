@@ -6,7 +6,7 @@ from django.http import StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
-from seahub.portal.utils import portal_endpoint, finalize_visitor_session_response
+from seahub.portal.utils import portal_endpoint
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -101,7 +101,7 @@ class PortalChatSessionView(APIView):
 
         session, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             session.session_name = session_name
@@ -116,7 +116,7 @@ class PortalChatSessionView(APIView):
         """Delete portal chat session"""
         _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             delete_portal_sessions([session_uuid])
@@ -137,7 +137,7 @@ class PortalChatMessagesView(APIView):
         """Retrieve the message list of the portal chat session"""
         _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
@@ -170,7 +170,7 @@ class PortalChatView(APIView):
         try:
             _, error = _get_session_or_error(session_uuid, request.identity['username'])
             if error:
-                return finalize_visitor_session_response(error, request.identity)
+                return error
 
             chat_task_id_info = gen_portal_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
@@ -222,7 +222,7 @@ class PortalChatView(APIView):
         if request.identity['is_external_user']:
             rate_limit_error = check_external_chat_rate_limit(project_uuid, request.identity['username'])
             if rate_limit_error:
-                return finalize_visitor_session_response(rate_limit_error, request.identity)
+                return rate_limit_error
 
         visitor_uuid = request.identity.get('visitor_uuid', '')
         ip = ''
@@ -230,7 +230,7 @@ class PortalChatView(APIView):
             ip = get_remote_ip(request)
             rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
             if rate_limit_error:
-                return finalize_visitor_session_response(rate_limit_error, request.identity)
+                return rate_limit_error
 
         project_credit_used = get_project_portal_chat_credit_used(project_uuid)
         if project_credit_used >= portal_settings['daily_chat_credit_limit']:
@@ -240,7 +240,7 @@ class PortalChatView(APIView):
 
         session, error = _get_session_or_error(session_uuid, username)
         if error:
-            return finalize_visitor_session_response(error, request.identity)
+            return error
 
         current_session_uuid = session.session_uuid
         if clear_context:
