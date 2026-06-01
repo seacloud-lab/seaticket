@@ -13,6 +13,7 @@ const StateSettings = ({
   state,
   substate,
   className = 'mb-4',
+  sameWidthWithTarget = 240,
   onChange,
   useMetadataContext,
 }) => {
@@ -32,11 +33,11 @@ const StateSettings = ({
       return {
         value: currentStateOption.id + '__' + substate._id,
         label: (
-          <div>
+          <>
             <Option option={currentStateOption} />
             <span className="mx-2">{'-'}</span>
             <Option option={substate} />
-          </div>
+          </>
         )
       };
     });
@@ -104,7 +105,7 @@ const StateSettings = ({
           id="state-editor-popover"
           className="seaqa-settings-popover seaqa-state-settings-popover"
           target={editorRef}
-          sameWidthWithTarget={240}
+          sameWidthWithTarget={sameWidthWithTarget}
           isMultiple={false}
           isSearchEnabled={false}
           value={`${state}__${substate}`}

@@ -261,7 +261,13 @@ const TicketInDialog = ({
             createTag={createTag}
             onChange={onTagsChange}
           />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={() => metadata} onChange={onStateChange} />
+          <StateSettings
+            isReadonly={!editable}
+            state={state}
+            substate={substate}
+            sameWidthWithTarget={'fit-content'}
+            useMetadataContext={() => metadata}
+            onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={() => metadata} onChange={onSubstateChange} />
           <TypeSettings id="ticket-dialog-type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={() => metadata} onChange={onTypeChange} />
           {!isPortalIssue && (
