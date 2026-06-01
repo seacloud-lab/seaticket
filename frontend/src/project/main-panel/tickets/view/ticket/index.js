@@ -205,6 +205,10 @@ const Ticket = ({
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));
+      const linkedRecordsInfo = res.data.linked_records_info || {};
+      if (Object.keys(linkedRecordsInfo).length > 0) {
+        setLinkedRecords(prevLinkedRecords => ({ ...prevLinkedRecords, ...linkedRecordsInfo }));
+      }
 
       // update activities to immediately display new changes
       const newActivities = res.data.activities || [];

@@ -867,6 +867,7 @@ class TicketAPIView(APIView):
         ticket_state_name = request.data.get('state')
         confirm_close_linked_github_issues = request.data.get(TICKET_CLOSE_CONFIRM_FIELD)
         confirm_close_linked_github_issues = bool(confirm_close_linked_github_issues)
+        updated_linked_records_info = None
 
         is_update_type = 'type' in request.data
         type_name = request.data.get('type') or None
@@ -1059,6 +1060,11 @@ class TicketAPIView(APIView):
                                 'open_github_issues': grouped_open_issues[0].get('open_github_issues') or [],
                             }],
                         )
+                        updated_linked_records_info = build_linked_records_info_for_keys(
+                            seadb_api,
+                            project_uuid,
+                            close_candidates[0].get('linked_connection_records') or [],
+                        )
                     except TicketCloseValidationError as e:
                         return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     except Exception as e:
@@ -1190,6 +1196,8 @@ class TicketAPIView(APIView):
             'row': update_row,
             'activities': new_activities
         }
+        if updated_linked_records_info is not None:
+            return_dict['linked_records_info'] = updated_linked_records_info
         return Response(return_dict)
 
     @require_org_context
