@@ -39,7 +39,7 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, \
-    list_notion_record_details, list_general_task_record_details, build_general_task_row_data
+    list_notion_record_details, list_general_task_record_details, build_general_task_row_data, get_connection_columns
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -711,7 +711,7 @@ class ProjectConnectionDetailsView(APIView):
         })
 
 
-class ProjectConnectionRelatedUsersView(APIView):
+class ProjectConnectionMetaView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -738,8 +738,19 @@ class ProjectConnectionRelatedUsersView(APIView):
             error_msg = 'Only general task connections support related users.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        related_users = get_connection_general_task_related_users(project_uuid, connection_id)
-        return Response({'related_users': related_users})
+        try:
+            seadb_api = SeaDBAPI()
+            columns = get_connection_columns(seadb_api, project_uuid, project_connection)
+            related_users = get_connection_general_task_related_users(project_uuid, connection_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'related_users': related_users,
+            'columns': columns,
+        })
 
 
 class GithubWebhookView(APIView):

@@ -122,7 +122,7 @@ class ConnectionsAPI {
   }
 
   getConnectionRelatedUsers(projectUuid, connectionID) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/related-users/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/meta/';
     return this.req.get(url);
   }
 
