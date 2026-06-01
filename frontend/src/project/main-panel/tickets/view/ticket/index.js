@@ -216,17 +216,6 @@ const Ticket = ({
     });
   }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
-  const tryCloseTicketState = useCallback((state = '', substate = '', { confirmCloseLinkedGithubIssues = false } = {}) => {
-    return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues }).catch(error => {
-      if (!confirmCloseLinkedGithubIssues && isOpenLinkedGithubIssuesWarning(error)) {
-        setPendingStateUpdate({ state, substate });
-        setCloseGithubIssuesWarning(buildCloseGithubIssuesWarning(error.response?.data || {}));
-        return null;
-      }
-      throw error;
-    });
-  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning, buildCloseGithubIssuesWarning]);
-
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;
     if (!participants.includes(user.email)) {
@@ -380,13 +369,18 @@ const Ticket = ({
   }, [ticket, modifyTicket]);
 
   const onStateChange = useCallback((state = '', substate = '') => {
-    tryCloseTicketState(state, substate).then(res => {
+    modifyTicket(ticket.id, { state, substate }).then(res => {
       // todo
     }).catch(error => {
+      if (isOpenLinkedGithubIssuesWarning(error)) {
+        setPendingStateUpdate({ state, substate });
+        setCloseGithubIssuesWarning(buildCloseGithubIssuesWarning(error.response?.data || {}));
+        return;
+      }
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [tryCloseTicketState]);
+  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning, buildCloseGithubIssuesWarning]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).then(res => {
@@ -488,9 +482,14 @@ const Ticket = ({
 
   const toggleState = useCallback((state = '', substate = '') => {
     const modifyState = () => {
-      tryCloseTicketState(state, substate).then(res => {
+      modifyTicket(ticket.id, { state, substate }).then(res => {
         // todo
       }).catch(error => {
+        if (isOpenLinkedGithubIssuesWarning(error)) {
+          setPendingStateUpdate({ state, substate });
+          setCloseGithubIssuesWarning(buildCloseGithubIssuesWarning(error.response?.data || {}));
+          return;
+        }
         const errorMessage = Utils.getErrorMsg(error);
         toaster.danger(errorMessage);
       });
@@ -501,7 +500,7 @@ const Ticket = ({
     }
 
     modifyState();
-  }, [comment, tryCloseTicketState, onSubmitComment]);
+  }, [comment, ticket, modifyTicket, onSubmitComment, isOpenLinkedGithubIssuesWarning, buildCloseGithubIssuesWarning]);
 
   const closeGithubIssuesWarningDialog = useCallback(() => {
     if (isConfirmingClose) return;
@@ -516,11 +515,7 @@ const Ticket = ({
     }
     setIsConfirmingClose(true);
     const { state, substate } = pendingStateUpdate;
-    tryCloseTicketState(
-      state,
-      substate,
-      { confirmCloseLinkedGithubIssues: true }
-    ).then(() => {
+    modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(() => {
       setCloseGithubIssuesWarning(null);
       setPendingStateUpdate(null);
     }).catch(error => {
@@ -529,7 +524,7 @@ const Ticket = ({
     }).finally(() => {
       setIsConfirmingClose(false);
     });
-  }, [pendingStateUpdate, tryCloseTicketState, closeGithubIssuesWarningDialog]);
+  }, [pendingStateUpdate, ticket, modifyTicket, closeGithubIssuesWarningDialog]);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
     modifyComment(ticket.id, commentID, content).then(newComment => {
