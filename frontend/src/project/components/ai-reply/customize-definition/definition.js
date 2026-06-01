@@ -52,12 +52,12 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
       </div>
       <div className="seaqa-ai-chat-customize-definition-content-divider"></div>
       <div className="d-flex align-items-center justify-content-between">
-        <div className="d-flex align-items-center">
-          <div className="seaqa-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
+        <div className="d-flex align-items-center flex-1 o-hidden">
+          <div className="seaqa-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center flex-shrink-0">
             <img src={icon} alt="" />
           </div>
           {(mtime) && (
-            <div className="seaqa-ai-chat-customize-definition-mtime text-truncate" title={formatWithTimezone(mtime)}>
+            <div className="seaqa-ai-chat-customize-definition-mtime text-truncate flex-1" title={formatWithTimezone(mtime)}>
               {`${gettext('Updated')} ${dayjs(mtime).fromNow()}`}
             </div>
           )}

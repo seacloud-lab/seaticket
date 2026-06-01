@@ -34,6 +34,7 @@
   background-color: var(--bs-th-fifth-bg);
   flex-shrink: 0;
   color: var(--bs-body-secondary-color);
+  margin-left: 6px;
 }
 
 .seaqa-ai-chat-customize-definition .seaqa-ai-chat-customize-definition-simple-info {
