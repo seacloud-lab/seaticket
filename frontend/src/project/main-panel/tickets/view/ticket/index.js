@@ -41,6 +41,28 @@ import { getTableName, getConnectionIcon } from '@/project/main-panel/connection
 
 import './index.css';
 
+const GITHUB_ISSUE_CONNECTION_TYPE = 'github_issue';
+
+const parseLinkedRecordKey = (key) => {
+  const [connectionID, recordPK] = String(key || '').split('_');
+  if (!connectionID || !recordPK || connectionID === 'portal') return null;
+
+  const parsedConnectionID = Number(connectionID);
+  const parsedRecordPK = Number(recordPK);
+  if (Number.isNaN(parsedConnectionID) || Number.isNaN(parsedRecordPK)) return null;
+
+  return {
+    connection_id: parsedConnectionID,
+    record_pk: parsedRecordPK,
+  };
+};
+
+const isGithubIssueClosed = (issueState) => {
+  if (!issueState) return false;
+  const stateName = String(issueState).trim().toLowerCase();
+  return stateName === 'closed' || stateName === '0002';
+};
+
 const Ticket = ({
   editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
   toggleBar, togglePageSlugId
@@ -121,6 +143,34 @@ const Ticket = ({
     return response?.status === 409 && warning?.warning_type === 'open_linked_github_issues';
   }, []);
 
+  const buildCloseGithubIssuesWarning = useCallback((warning = {}) => {
+    const openGithubIssues = (ticket?.linked_connection_records || []).map((linkedRecordKey) => {
+      const linkedRecord = linkedRecords[linkedRecordKey] || {};
+      if (linkedRecord.connection_type !== GITHUB_ISSUE_CONNECTION_TYPE || isGithubIssueClosed(linkedRecord.state)) {
+        return null;
+      }
+
+      const parsedKey = parseLinkedRecordKey(linkedRecordKey);
+      if (!parsedKey) return null;
+
+      return {
+        ...parsedKey,
+        title: linkedRecord.title || '',
+        state: linkedRecord.state,
+        type: linkedRecord.connection_type,
+      };
+    }).filter(Boolean);
+
+    return {
+      ...warning,
+      tickets: [{
+        ticket_id: ticket?.id || ticketID,
+        ticket_title: ticket?.title || '',
+        open_github_issues: openGithubIssues,
+      }],
+    };
+  }, [ticket, ticketID, linkedRecords]);
+
   const modifyTicket = useCallback((ticketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const dataKeys = Object.keys(data);
@@ -169,12 +219,12 @@ const Ticket = ({
     return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues }).catch(error => {
       if (!confirmCloseLinkedGithubIssues && isOpenLinkedGithubIssuesWarning(error)) {
         setPendingStateUpdate({ state, substate });
-        setCloseGithubIssuesWarning(error.response?.data || {});
+        setCloseGithubIssuesWarning(buildCloseGithubIssuesWarning(error.response?.data || {}));
         return null;
       }
       throw error;
     });
-  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning]);
+  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning, buildCloseGithubIssuesWarning]);
 
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;

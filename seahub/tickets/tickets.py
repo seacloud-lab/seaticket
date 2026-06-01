@@ -1042,7 +1042,7 @@ class TicketAPIView(APIView):
                 )
                 if grouped_open_issues:
                     if not confirm_close_linked_github_issues:
-                        warning_payload = build_ticket_close_warning_response(grouped_open_issues)
+                        warning_payload = build_ticket_close_warning_response()
                         return Response(warning_payload, status=status.HTTP_409_CONFLICT)
                     try:
                         ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)

@@ -286,18 +286,20 @@ def collect_open_linked_github_issues_for_tickets(seadb_api, project_uuid, ticke
     return grouped_open_issues
 
 
-def build_ticket_close_warning_response(grouped_open_issues):
+def build_ticket_close_warning_response(grouped_open_issues=None):
     """Build the 409 response body when closing tickets with open linked GitHub issues.
 
     The client should show a confirmation dialog and retry with
     ``confirm_close_linked_github_issues`` set to true.
     """
-    return {
+    response = {
         'error_msg': 'Some linked GitHub issues are still open.',
         'warning_type': TICKET_CLOSE_WARNING_TYPE,
         'confirm_field': TICKET_CLOSE_CONFIRM_FIELD,
-        'tickets': grouped_open_issues,
     }
+    if grouped_open_issues is not None:
+        response['tickets'] = grouped_open_issues
+    return response
 
 
 def get_ticket_table_columns(seadb_api, project_uuid):
