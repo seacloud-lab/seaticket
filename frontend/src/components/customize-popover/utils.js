@@ -39,9 +39,14 @@ export const generatorModifiers = ({ modifiers, sameWidthWithTarget = false }) =
     fn: ({ state }) => {
       if (state.elements.reference) {
         const width = state.elements.reference.getBoundingClientRect().width;
-        const validWidth = Math.max(sameWidthWithTarget, width);
-        state.styles.popper.width = `${validWidth}px`;
-        state.styles.popper.maxWidth = `${validWidth}px`;
+        if (sameWidthWithTarget === 'fit-content') {
+          state.styles.popper.width = `${sameWidthWithTarget}`;
+          state.styles.popper.maxWidth = `${sameWidthWithTarget}`;
+        } else {
+          const validWidth = Math.max(sameWidthWithTarget, width);
+          state.styles.popper.width = `${validWidth}px`;
+          state.styles.popper.maxWidth = `${validWidth}px`;
+        }
       }
     },
   };
