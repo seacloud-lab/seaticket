@@ -71,6 +71,9 @@ class ChatAPI {
     validParams.query = params.query;
     validParams.session_uuid = params.session_uuid;
     validParams.stream = params.stream;
+    if (Array.isArray(params.attachments)) {
+      validParams.attachments = params.attachments;
+    }
     const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
     return this.req.post(url, validParams);
   }
@@ -138,6 +141,9 @@ class ChatAPI {
     validParams.query = params.query;
     validParams.session_uuid = params.session_uuid;
     validParams.stream = params.stream;
+    if (Array.isArray(params.attachments)) {
+      validParams.attachments = params.attachments;
+    }
     const url = this.server + '/api/v1/portal/' + params?.project_uuid + '/chat/';
     return this._handleEventStreamRequest(url, validParams, options);
   }
@@ -175,6 +181,13 @@ class ChatAPI {
   getChatMessageByStream(projectUuid, sessionId, streamed_length, options) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamed_length;
     return this._handleEventStreamRequest(url, undefined, options);
+  }
+
+  uploadChatImage(projectUuid, file, onUploadProgress) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/upload-file/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.req.post(url, formData, { onUploadProgress });
   }
 
 }

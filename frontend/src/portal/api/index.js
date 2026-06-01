@@ -138,7 +138,7 @@ class PortalAPI {
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/upload-file/';
     const formData = new FormData();
     formData.append('file', file);
     return this._sendPostRequest(url, formData, { onUploadProgress });

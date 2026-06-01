@@ -98,7 +98,7 @@ body {
   justify-content: space-between;
   padding: 0px 16px;
   height: 56px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .seaqa-portal-side-panel-logo {

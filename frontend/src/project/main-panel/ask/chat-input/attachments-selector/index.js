@@ -16,6 +16,7 @@ const AttachmentsSelector = ({
   attachments = [],
   onChange: propsOnChange,
   onFileInputClick,
+  canAddSources = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -72,17 +73,19 @@ const AttachmentsSelector = ({
           </Tooltip>
         )}
         <CustomizeDropdownMenu fixed={true} modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}>
-          <CustomizeDropdownItem onClick={openSelector}>
-            <CustomizeDropdownItemIcon symbol="plus" />
-            <CustomizeDropdownItemText>{gettext('Add tickets and docs')}</CustomizeDropdownItemText>
-          </CustomizeDropdownItem>
+          {canAddSources && (
+            <CustomizeDropdownItem onClick={openSelector}>
+              <CustomizeDropdownItemIcon symbol="plus" />
+              <CustomizeDropdownItemText>{gettext('Add tickets and docs')}</CustomizeDropdownItemText>
+            </CustomizeDropdownItem>
+          )}
           <CustomizeDropdownItem onClick={onFileInputClick} disabled={images.length >= CHAT_IMAGE_ATTACHMENT_MAX_COUNT} >
             <CustomizeDropdownItemIcon symbol="image"/>
             <CustomizeDropdownItemText>{gettext('Upload image')}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
         </CustomizeDropdownMenu>
       </Dropdown>
-      {isShowSelector && (
+      {canAddSources && isShowSelector && (
         <SyncOptionEditor
           className="seaqa-ai-chat-selector-display-editor "
           target={ref}

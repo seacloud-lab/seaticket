@@ -14,6 +14,8 @@ from seahub.project.models import AIUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
 from seahub.portal.models import PortalChatMessages, ProjectExternalUser
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
+from seahub.chats.utils import strip_content_details_from_attachments
+from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 
 logger = logging.getLogger(__name__)
 
@@ -187,18 +189,20 @@ def gen_portal_chat_task_id(session_uuid):
     return f"portal_chat_{session_uuid.replace('-', '')}"
 
 
-def build_portal_message_result(ai_result, session_uuid, message_id, query):
+def build_portal_message_result(ai_result, session_uuid, message_id, query, attachments=None):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
 
     ai_result.pop('answer', None)
+    stripped_attachments = strip_content_details_from_attachments(attachments or [])
     ai_result.update({
         'session_uuid': session_uuid,
+        'attachments': stripped_attachments,
     })
 
     try:
         user_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, 'user', query
+            session_uuid, message_id, 'user', query, attachments=stripped_attachments,
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
             session_uuid, message_id, 'assistant', ai_result['ai_reply']
@@ -213,7 +217,7 @@ def build_portal_message_result(ai_result, session_uuid, message_id, query):
     return ai_result
 
 
-def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query):
+def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments=None):
     has_recorded_result = False
     error_msg = None
     try:
@@ -226,11 +230,11 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
                 # use if - else instead of json.loads() to avoid performance issues
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
-                    item = f'data: {json.dumps({"results": build_portal_message_result(results, session_uuid, message_id, query)})}\n\n'
+                    item = f'data: {json.dumps({"results": build_portal_message_result(results, session_uuid, message_id, query, attachments)})}\n\n'
                     has_recorded_result = True
                 elif content.startswith('[ERROR: ') and content.endswith(']'):
                     error_msg = content[1:-1]
-                    item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": error_msg, "sources": []}, session_uuid, message_id, query)})}\n\n'
+                    item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": error_msg, "sources": []}, session_uuid, message_id, query, attachments)})}\n\n'
                     has_recorded_result = True
                 else:
                     if not line_str.endswith('\n\n'):
@@ -245,7 +249,7 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
     except Exception as e:
         logger.exception(f'Portal streaming response is interrupted: {e}')
         if not has_recorded_result:
-            item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, session_uuid, message_id, query)})}\n\n'
+            item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, session_uuid, message_id, query, attachments)})}\n\n'
             try:
                 yield item
             except:
@@ -255,3 +259,16 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
         except:
             pass
     cache.delete(chat_task_id_info)
+
+
+def extract_portal_chat_image_urls(project_uuid, attachments):
+    if not isinstance(attachments, list):
+        return []
+    portal_prefix = f'/upload-file/portal/{project_uuid}/'
+    urls = []
+    for a in attachments:
+        if isinstance(a, dict) and a.get('type') == 'image':
+            path = a.get('path')
+            if isinstance(path, str) and path.startswith(portal_prefix):
+                urls.append(path)
+    return urls[:CHAT_IMAGE_MAX_COUNT]

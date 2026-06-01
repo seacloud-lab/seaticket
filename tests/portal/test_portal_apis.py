@@ -98,7 +98,7 @@ class TestPortalIssuesView:
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
-                patch('seahub.portal.apis.upload_files_to_s3', side_effect=Exception('boom')):
+                patch('seahub.portal.apis.upload_portal_files_to_s3', side_effect=Exception('boom')):
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 500
@@ -145,7 +145,7 @@ class TestPortalIssuesView:
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
-                patch('seahub.portal.apis.upload_files_to_s3', return_value={'http://x/a.png': 's3://a'}), \
+                patch('seahub.portal.apis.upload_portal_files_to_s3', return_value={'http://x/a.png': 's3://a'}), \
                 patch('seahub.portal.apis.replace_file_url_in_content', return_value='x'):
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 

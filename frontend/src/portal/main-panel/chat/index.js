@@ -46,7 +46,7 @@ const Main = ({ title, settings }) => {
                 projectName={projectName}
                 settings={settings}
                 api={chatAPI}
-                canAddAttachments={false}
+                allowedAttachmentSources={['image']}
                 canSelectModel={false}
                 customHeaderTitle={gettext('Chat')}
                 renderOperation={() => (

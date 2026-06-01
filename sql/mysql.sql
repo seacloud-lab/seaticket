@@ -727,6 +727,7 @@ CREATE TABLE `portal_chat_messages` (
   `message_id` VARCHAR(4) DEFAULT NULL,
   `role` VARCHAR(20) NOT NULL,
   `content` LONGTEXT,
+  `attachments` LONGTEXT DEFAULT NULL,
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6),
   `as_context` TINYINT(1) NOT NULL DEFAULT 1,

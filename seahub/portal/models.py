@@ -147,13 +147,14 @@ class PortalChatSessions(models.Model):
 
 class PortalChatMessagesManager(models.Manager):
 
-    def create_message(self, session_uuid, message_id, role, content, as_context=True):
+    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[]):
         message = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
             role=role,
             content=content,
             as_context=as_context,
+            attachments=json.dumps(attachments),
         )
         message.save()
         return message
@@ -177,6 +178,7 @@ class PortalChatMessages(models.Model):
     message_id = models.CharField(max_length=4, null=True)
     role = models.CharField(max_length=20)
     content = models.TextField(null=True)
+    attachments = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     as_context = models.BooleanField(default=True)
@@ -190,12 +192,19 @@ class PortalChatMessages(models.Model):
         ]
 
     def to_dict(self):
+        try:
+            attachments = json.loads(self.attachments) if self.attachments else []
+        except (TypeError, ValueError):
+            attachments = []
+        if not isinstance(attachments, list):
+            attachments = []
         return {
             'id': self.id,
             'session_uuid': self.session_uuid,
             'message_id': self.message_id,
             'role': self.role,
             'content': self.content,
+            'attachments': attachments,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'as_context': self.as_context,

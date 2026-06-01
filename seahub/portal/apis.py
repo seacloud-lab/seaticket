@@ -25,7 +25,7 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
+from seahub.utils.storage import upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
     upload_portal_logo_file_to_s3, gen_portal_logo_file_path, get_project_file_from_s3, get_project_file_head_from_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
@@ -60,6 +60,24 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+
+
+def _replace_kb_file_urls_for_portal(project_uuid, value):
+    if not isinstance(value, str):
+        return value
+
+    project_prefix = f'/file/project/{project_uuid}/attachments/knowledgebase/'
+    portal_prefix = f'/file/portal/{project_uuid}/attachments/knowledgebase/'
+    return value.replace(project_prefix, portal_prefix)
+
+
+def _serialize_portal_kb_record(project_uuid, record):
+    if not isinstance(record, dict):
+        return record
+
+    portal_record = record.copy()
+    portal_record['content'] = _replace_kb_file_urls_for_portal(project_uuid, portal_record.get('content'))
+    return portal_record
 
 
 class PortalLogoView(APIView):
@@ -318,7 +336,7 @@ class PortalIssuesView(APIView):
 
             if file_urls:
                 try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(portal_issue_pk))
+                    new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
@@ -716,7 +734,7 @@ class PortalIssueView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -928,7 +946,7 @@ class PortalIssueCommentsView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1040,7 +1058,7 @@ class PortalIssueCommentView(APIView):
          # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1240,6 +1258,7 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        records = [_serialize_portal_kb_record(project_uuid, record) for record in records]
         return Response({'records': records, 'columns': columns})
 
 
@@ -1273,7 +1292,7 @@ class PortalKnowledgeBaseRecordView(APIView):
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        return Response({'record': record})
+        return Response({'record': _serialize_portal_kb_record(project_uuid, record)})
 
 
 class PortalUserListView(APIView):

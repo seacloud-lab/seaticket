@@ -6,6 +6,7 @@ from django.http import StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
+from seahub.portal.utils import portal_endpoint
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -13,6 +14,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
+from seahub.utils.storage import upload_portal_files_to_s3
 from seahub.project.models import Projects
 from seahub.project.constants import AIScenario
 from seahub.project.utils import check_ai_limit, check_same_org_permission, delete_portal_sessions
@@ -21,6 +23,7 @@ from seahub.portal.chat.utils import (
     build_portal_message_result,
     check_anonymous_chat_rate_limit,
     check_external_chat_rate_limit,
+    extract_portal_chat_image_urls,
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
@@ -31,23 +34,15 @@ from seahub.portal.chat.utils import (
     process_portal_stream_ai_reply,
 )
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
-from seahub.portal.visitor_session import (
-    clear_visitor_cookie,
-    load_visitor_session,
-    set_visitor_cookie,
-    touch_visitor_session,
+from seahub.chats.utils import (
+    build_ai_images_payload,
+    build_image_attachments,
+    get_ai_reply,
+    ImageProcessingError,
 )
-from seahub.chats.utils import get_ai_reply
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 
 logger = logging.getLogger(__name__)
-
-def _get_project_or_error(project_uuid):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
-    if not project:
-        return None, api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-    return project, None
-
 
 def _get_session_or_error(session_uuid, username):
     session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
@@ -57,88 +52,13 @@ def _get_session_or_error(session_uuid, username):
         return None, api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
     return session, None
 
-def _build_visitor_session_error():
-    response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')
-    response.data['error_code'] = 'visitor_session_expired'
-    clear_visitor_cookie(response)
-    return response
-
-def _get_request_identity(request, project_uuid):
-    user = getattr(request, 'user', None)
-    if user and getattr(user, 'is_authenticated', False):
-        project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
-        workspace = getattr(project, 'workspace', None)
-        if workspace and check_same_org_permission(user, workspace):
-            return {
-                'username': user.username,
-                'is_external_user': False,
-                'is_anonymous': False,
-            }, None
-
-    external_username = get_portal_external_username(request, project_uuid)
-    if external_username:
-        return {
-            'username': external_username,
-            'is_external_user': True,
-            'is_anonymous': False,
-        }, None
-
-    visitor_session = load_visitor_session(request)
-    if visitor_session.get('status') != 'active':
-        return None, _build_visitor_session_error()
-
-    visitor_uuid = visitor_session['visitor_uuid']
-    touched_session = touch_visitor_session(
-        visitor_uuid,
-        visitor_session['session_data'],
-        refresh_cookie=visitor_session['should_refresh_cookie'],
-    )
-    if not touched_session:
-        return None, _build_visitor_session_error()
-
-    return {
-        'username': visitor_uuid,
-        'visitor_uuid': visitor_uuid,
-        'is_external_user': False,
-        'is_anonymous': True,
-        'should_refresh_cookie': visitor_session['should_refresh_cookie'],
-        'visitor_session': touched_session,
-    }, None
-
-def _finalize_visitor_session_response(response, identity):
-    if not identity or not identity.get('is_anonymous'):
-        return response
-
-    if identity.get('should_refresh_cookie'):
-        set_visitor_cookie(response, identity['visitor_uuid'])
-    return response
-
-def _portal_chat_view(func):
-    def wrapper(self, request, *args, **kwargs):
-        project_uuid = kwargs.get('project_uuid')
-
-        project, error = _get_project_or_error(project_uuid)
-        if error:
-            return error
-
-        identity, error = _get_request_identity(request, project_uuid)
-        if error:
-            return error
-
-        request.project = project
-        request.identity = identity
-
-        response = func(self, request, *args, **kwargs)
-        return _finalize_visitor_session_response(response, identity)
-    return wrapper
-
 
 class PortalChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @_portal_chat_view
+    @portal_endpoint
     def get(self, request, project_uuid):
         try:
             sessions = PortalChatSessions.objects.get_sessions_by_project(project_uuid, request.identity['username'])
@@ -148,7 +68,7 @@ class PortalChatSessionsView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-    @_portal_chat_view
+    @portal_endpoint
     def post(self, request, project_uuid):
         """Create a new portal chat session"""
         session_name = request.data.get('session_name', '')
@@ -172,7 +92,7 @@ class PortalChatSessionView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @_portal_chat_view
+    @portal_endpoint
     def put(self, request, project_uuid, session_uuid):
         """Modify portal chat session"""
         session_name = request.data.get('session_name', '')
@@ -181,7 +101,7 @@ class PortalChatSessionView(APIView):
 
         session, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return _finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             session.session_name = session_name
@@ -191,12 +111,12 @@ class PortalChatSessionView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-    @_portal_chat_view
+    @portal_endpoint
     def delete(self, request, project_uuid, session_uuid):
         """Delete portal chat session"""
         _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return _finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             delete_portal_sessions([session_uuid])
@@ -212,12 +132,12 @@ class PortalChatMessagesView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @_portal_chat_view
+    @portal_endpoint
     def get(self, request, project_uuid, session_uuid):
         """Retrieve the message list of the portal chat session"""
         _, error = _get_session_or_error(session_uuid, request.identity['username'])
         if error:
-            return _finalize_visitor_session_response(error, request.identity)
+            return error
 
         try:
             messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
@@ -241,7 +161,7 @@ class PortalChatView(APIView):
     permission_classes = (PortalChatPermission,)
     throttle_classes = (UserRateThrottle,)
 
-    @_portal_chat_view
+    @portal_endpoint
     def get(self, request, project_uuid):
         session_uuid = request.GET.get('session_uuid')
         if not session_uuid:
@@ -250,7 +170,7 @@ class PortalChatView(APIView):
         try:
             _, error = _get_session_or_error(session_uuid, request.identity['username'])
             if error:
-                return _finalize_visitor_session_response(error, request.identity)
+                return error
 
             chat_task_id_info = gen_portal_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
@@ -272,7 +192,7 @@ class PortalChatView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-    @_portal_chat_view
+    @portal_endpoint
     def post(self, request, project_uuid):
         """Send message and get AI reply"""
         query = request.data.get('query')
@@ -302,7 +222,7 @@ class PortalChatView(APIView):
         if request.identity['is_external_user']:
             rate_limit_error = check_external_chat_rate_limit(project_uuid, request.identity['username'])
             if rate_limit_error:
-                return _finalize_visitor_session_response(rate_limit_error, request.identity)
+                return rate_limit_error
 
         visitor_uuid = request.identity.get('visitor_uuid', '')
         ip = ''
@@ -310,7 +230,7 @@ class PortalChatView(APIView):
             ip = get_remote_ip(request)
             rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
             if rate_limit_error:
-                return _finalize_visitor_session_response(rate_limit_error, request.identity)
+                return rate_limit_error
 
         project_credit_used = get_project_portal_chat_credit_used(project_uuid)
         if project_credit_used >= portal_settings['daily_chat_credit_limit']:
@@ -320,7 +240,7 @@ class PortalChatView(APIView):
 
         session, error = _get_session_or_error(session_uuid, username)
         if error:
-            return _finalize_visitor_session_response(error, request.identity)
+            return error
 
         current_session_uuid = session.session_uuid
         if clear_context:
@@ -337,6 +257,51 @@ class PortalChatView(APIView):
             logger.exception(f'Failure to generate message id: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
 
+        raw_attachments = request.data.get('attachments', [])
+        temp_image_urls = extract_portal_chat_image_urls(project_uuid, raw_attachments)
+
+        attachments = []
+        ai_attachments = []
+        if temp_image_urls:
+            image_names = [u.rsplit('/', 1)[-1] for u in temp_image_urls if isinstance(u, str)]
+            if len(image_names) != len(set(image_names)):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Images with the same name are not allowed.')
+
+            try:
+                record_id = f'{current_session_uuid}/{message_id}'
+                new_url_map = upload_portal_files_to_s3(project_uuid, temp_image_urls, username, 'portal-chat', record_id)
+                permanent_image_paths = list(new_url_map.keys())
+            except Exception as e:
+                logger.exception(f'Failed to upload images to S3: {e}')
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+
+            if len(permanent_image_paths) != len(temp_image_urls):
+                logger.warning(
+                    f'Image upload incomplete: requested={len(temp_image_urls)} succeeded={len(permanent_image_paths)}'
+                )
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+
+            attachments = build_image_attachments(permanent_image_paths)
+
+            # build_ai_images_payload validates against /file/project/ before
+            # reading from S3. The S3 object is the same; only the URL wrapper
+            # differs. Rewrite locally so we don't have to teach the shared
+            # helper about portal URLs.
+            portal_file_prefix = f'/file/portal/{project_uuid}/'
+            project_file_prefix = f'/file/project/{project_uuid}/'
+            ai_payload_paths = [
+                project_file_prefix + p[len(portal_file_prefix):]
+                for p in permanent_image_paths
+            ]
+            try:
+                ai_images_payload = build_ai_images_payload(project_uuid, ai_payload_paths)
+            except ImageProcessingError as e:
+                logger.warning(f'Image processing failed: {e}')
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
+            image_data_by_name = {img['name']: img for img in ai_images_payload}
+            ai_attachments = [{**a, **image_data_by_name.get(a['name'], {})} for a in attachments]
+
         chat_sources = portal_settings['chat_allowed_sources']
 
         chat_task_id_info = gen_portal_chat_task_id(current_session_uuid)
@@ -348,7 +313,7 @@ class PortalChatView(APIView):
             'session_uuid': current_session_uuid,
             'message_id': message_id,
             'query': query,
-            'attachments': [],
+            'attachments': ai_attachments,
             'org_id': org_id,
             'connection_ids': chat_sources['connection_ids'],
             'extra_sources': chat_sources['extra_sources'],
@@ -365,6 +330,7 @@ class PortalChatView(APIView):
         task_info = {
             'user_input': {
                 'message': query,
+                'attachments': attachments,
             }
         }
         cache.set(chat_task_id_info, task_info, AI_REPLY_TIMEOUT)
@@ -378,6 +344,7 @@ class PortalChatView(APIView):
                         current_session_uuid,
                         message_id,
                         query,
+                        attachments,
                     ),
                     content_type='text/event-stream',
                     headers={
@@ -400,4 +367,4 @@ class PortalChatView(APIView):
 
         cache.delete(chat_task_id_info)
 
-        return Response(build_portal_message_result(ai_response, current_session_uuid, message_id, query))
+        return Response(build_portal_message_result(ai_response, current_session_uuid, message_id, query, attachments))

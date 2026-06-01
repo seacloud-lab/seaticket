@@ -361,6 +361,15 @@ def delete_sessions(session_uuids):
 
 def delete_portal_sessions(session_uuids):
     try:
+        session_project_map = dict(
+            PortalChatSessions.objects.filter(session_uuid__in=session_uuids).values_list('session_uuid', 'project_uuid')
+        )
+        for session_uuid, project_uuid in session_project_map.items():
+            try:
+                delete_record_attachments_from_s3(project_uuid, 'portal-chat', session_uuid)
+            except Exception as e:
+                logger.warning('clean s3 portal chat images for session %s error: %s', session_uuid, e)
+
         PortalChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
         PortalChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
     except Exception as e:
