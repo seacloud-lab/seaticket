@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { ticketsAPI } from '../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useMetadata } from '../hooks';
@@ -34,10 +33,7 @@ import { getTableName } from '@/project/main-panel/connections/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
-import { IconTooltip } from '@/components';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
-
-import './tickets.css';
+import CloseLinkedGithubIssuesWarningDialog from './close-linked-github-issues-warning-dialog';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -394,25 +390,6 @@ const Tickets = ({
     });
   }, [api, pendingBatchRowsData, pendingBatchIsCopyPaste, closeBatchWarningDialog, onRefresh]);
 
-  const renderWarningIssueTypeImage = useCallback((type) => {
-    const connectionType = type || 'github_issue';
-    return (
-      <img src={getConnectionIcon(connectionType)} alt="" className="connection-icon" />
-    );
-  }, []);
-
-  const renderWarningIssueStateIcon = useCallback((issueState) => {
-    if (!issueState) return null;
-    const stateName = String(issueState).toLowerCase();
-    if (stateName === 'open' || stateName === '0001') {
-      return <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />;
-    }
-    if (stateName === 'closed' || stateName === '0002') {
-      return <IconTooltip icon="check-circle-stroked" tip={gettext('Closed')} placement="bottom" />;
-    }
-    return null;
-  }, []);
-
   if (isLoading) return (<CenteredLoading />);
 
   return (
@@ -488,42 +465,13 @@ const Tickets = ({
           onSubmitCallback={handleTaskCreated}
         />
       )}
-      {batchCloseGithubIssuesWarning && (
-        <Modal isOpen={true} toggle={closeBatchWarningDialog}>
-          <ModalHeader toggle={closeBatchWarningDialog}>{gettext('Linked GitHub issues are still open')}</ModalHeader>
-          <ModalBody>
-            <p className="mb-2">
-              {gettext('Confirm to continue closing these tickets and close linked GitHub issues at the same time.')}
-            </p>
-            {(batchCloseGithubIssuesWarning.tickets || []).map((ticketWarning) => (
-              <div key={ticketWarning.ticket_id} className="mb-2">
-                <div className="fw-bold">
-                  {gettext('Ticket')} #{ticketWarning.ticket_id}: {ticketWarning.ticket_title || ''}
-                </div>
-                <div className="batch-close-github-issues-warning-content">
-                  {(ticketWarning.open_github_issues || []).map((issue) => (
-                    <div className="link-item" key={`${issue.connection_id}-${issue.record_pk}`}>
-                      {renderWarningIssueTypeImage(issue.type)}
-                      <span className="link-item-name" title={issue.title || ''}>
-                        #{issue.record_pk} {issue.title || ''}
-                      </span>
-                      {renderWarningIssueStateIcon(issue.state)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={closeBatchWarningDialog} disabled={isConfirmingBatchClose}>
-              {gettext('Cancel')}
-            </Button>
-            <Button color="primary" onClick={confirmBatchCloseTicketAndGithubIssues} disabled={isConfirmingBatchClose}>
-              {gettext('Confirm and close')}
-            </Button>
-          </ModalFooter>
-        </Modal>
-      )}
+      <CloseLinkedGithubIssuesWarningDialog
+        warning={batchCloseGithubIssuesWarning}
+        description={gettext('Confirm to continue closing these tickets and close linked GitHub issues at the same time.')}
+        isConfirming={isConfirmingBatchClose}
+        onCancel={closeBatchWarningDialog}
+        onConfirm={confirmBatchCloseTicketAndGithubIssues}
+      />
     </>
   );
 };
