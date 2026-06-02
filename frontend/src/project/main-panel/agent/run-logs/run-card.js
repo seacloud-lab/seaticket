@@ -135,11 +135,14 @@ const RunCard = ({
     isCardExpanded = true;
   }
   else if (run.status === RUN_STATUS.COMPLETED) {
-    const noPending = !items.some(item => (item.actions || []).some(action => action.status === ACTION_STATUS.PENDING));
+    const allActions = collectRunActions(run);
+    const hasPending = allActions.some(action => action?.status === ACTION_STATUS.PENDING);
+    const hasFailed = allActions.some(action => action?.status === ACTION_STATUS.FAILED);
     const hasSuggestion = runHasSuggestionAction(run);
-    isShowDone = noPending && hasSuggestion;
-    isShowNoActionNeeded = noPending && !hasSuggestion;
-    isCardExpanded = !noPending;
+    const noPending = !hasPending;
+    isShowDone = noPending && !hasFailed && hasSuggestion;
+    isShowNoActionNeeded = noPending && !hasFailed && !hasSuggestion;
+    isCardExpanded = hasFailed || !noPending;
   }
 
   const [isExpanded, setIsExpanded] = useState(isCardExpanded);
