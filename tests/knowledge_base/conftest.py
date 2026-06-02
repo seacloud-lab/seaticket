@@ -91,7 +91,7 @@ def knowledge_base_schema_helpers():
         return name[:-5].lower() if name.endswith('Table') else name.lower()
 
     with patch('seahub.knowledge_base.knowledge_base.get_table_name', side_effect=_table_name), \
-            patch('seahub.knowledge_base.knowledge_base.get_column_name', side_effect=lambda _table, column_name: column_name):
+            patch('seahub.knowledge_base.knowledge_base.get_seadb_column_name', side_effect=lambda _table, column_name: column_name):
         yield
 
 

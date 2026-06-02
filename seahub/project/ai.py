@@ -29,7 +29,7 @@ from seahub.settings import SITE_ROOT
 from django.http import HttpRequest
 
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 

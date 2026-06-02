@@ -8,7 +8,7 @@ from seahub.utils import mq
 from seahub.utils import uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 TABLE_KNOWLEDGE_BASE = get_table_name('KnowledgeBaseTable', )

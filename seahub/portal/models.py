@@ -14,7 +14,7 @@ from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
 import logging
 
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 

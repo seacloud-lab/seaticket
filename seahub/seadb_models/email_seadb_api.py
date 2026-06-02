@@ -7,7 +7,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 
@@ -152,20 +152,20 @@ class EmailSeaDBAPI:
         sender_email = email_data['sender_email']
 
         email_row = {
-            get_column_name('EmailTable', 'email_from'): formataddr((sender_name, sender_email)) if sender_name else sender_email,
-            get_column_name('EmailTable', 'email_to'): email_data.get('email_to', ''),
-            get_column_name('EmailTable', 'title'): email_data.get('subject', ''),
-            get_column_name('EmailTable', 'cc'): email_data.get('cc') or '',
-            get_column_name('EmailTable', 'content'): email_data.get('content', ''),
-            get_column_name('EmailTable', 'text_content'): email_data.get('content', ''),
-            get_column_name('EmailTable', 'html_content'): email_data.get('html_content') or '',
-            get_column_name('EmailTable', 'reply_to_message_id'): email_data.get('reply_to_message_id') or '',
-            get_column_name('EmailTable', 'is_sender'): True,
-            get_column_name('EmailTable', 'deleted'): False,
-            get_column_name('EmailTable', 'thread_id'): thread_id,
-            get_column_name('EmailTable', 'message_id'): email_data.get('message_id') or '',
-            get_column_name('EmailTable', 'origin_thread_id'): email_data.get('origin_thread_id') or '',
-            get_column_name('EmailTable', 'email_id'): email_data.get('email_id') or '',
+            get_seadb_column_name('EmailTable', 'email_from'): formataddr((sender_name, sender_email)) if sender_name else sender_email,
+            get_seadb_column_name('EmailTable', 'email_to'): email_data.get('email_to', ''),
+            get_seadb_column_name('EmailTable', 'title'): email_data.get('subject', ''),
+            get_seadb_column_name('EmailTable', 'cc'): email_data.get('cc') or '',
+            get_seadb_column_name('EmailTable', 'content'): email_data.get('content', ''),
+            get_seadb_column_name('EmailTable', 'text_content'): email_data.get('content', ''),
+            get_seadb_column_name('EmailTable', 'html_content'): email_data.get('html_content') or '',
+            get_seadb_column_name('EmailTable', 'reply_to_message_id'): email_data.get('reply_to_message_id') or '',
+            get_seadb_column_name('EmailTable', 'is_sender'): True,
+            get_seadb_column_name('EmailTable', 'deleted'): False,
+            get_seadb_column_name('EmailTable', 'thread_id'): thread_id,
+            get_seadb_column_name('EmailTable', 'message_id'): email_data.get('message_id') or '',
+            get_seadb_column_name('EmailTable', 'origin_thread_id'): email_data.get('origin_thread_id') or '',
+            get_seadb_column_name('EmailTable', 'email_id'): email_data.get('email_id') or '',
         }
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
@@ -173,9 +173,9 @@ class EmailSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(thread_id),
             'row': {
-                get_column_name('ThreadTable', 'modified_time'): now,
-                get_column_name('ThreadTable', 'record_modified_time'): now,
-                get_column_name('ThreadTable', 'unread'): False,
+                get_seadb_column_name('ThreadTable', 'modified_time'): now,
+                get_seadb_column_name('ThreadTable', 'record_modified_time'): now,
+                get_seadb_column_name('ThreadTable', 'unread'): False,
             }
         }])
         return pks[0] if pks else None

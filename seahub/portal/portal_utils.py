@@ -9,7 +9,7 @@ from seahub.project.constants import PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 PORTAL_ISSUE_COMMENT_COLUMNS = ['_pk', 'issue_id', 'content', 'creator', 'created_time', 'modified_time', 'deleted']
 logger = logging.getLogger(__name__)
 

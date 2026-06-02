@@ -17,7 +17,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 from seahub.tickets.ticket_utils import update_select_option, get_column_from_columns_by_name, \
     add_select_option, batch_delete_select_option
 from seahub.utils.decorators import require_org_context
@@ -64,7 +64,7 @@ class PortalIssueSubstatesAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # substate_column = get_column_data('PortalIssuesTable', 'substate')
+        # substate_column = get_seadb_column_data('PortalIssuesTable', 'substate')
         column_data = substate_column.get('data') or {}
         cascade_settings = column_data.get('cascade_settings') or {}
         cascade_column_key = column_data.get('cascade_column_key')

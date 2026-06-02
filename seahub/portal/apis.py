@@ -23,7 +23,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
 from seahub.utils.storage import upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
@@ -313,18 +313,18 @@ class PortalIssuesView(APIView):
                     logger.error(e)
 
             row = {
-                get_column_name('PortalIssuesTable', 'title'): title,
-                get_column_name('PortalIssuesTable', 'content'): content,
-                get_column_name('PortalIssuesTable', 'state'): portal_issue_state,
-                get_column_name('PortalIssuesTable', 'type'): type_name if type_name else None,
-                get_column_name('PortalIssuesTable', 'substate'): default_substate,
-                get_column_name('PortalIssuesTable', 'priority'): priority,
-                get_column_name('PortalIssuesTable', 'tags'): tag_ids,
-                get_column_name('PortalIssuesTable', 'creator'): username,
-                get_column_name('PortalIssuesTable', 'comment_count'): 0,
-                get_column_name('PortalIssuesTable', 'created_time'): now_datetime,
-                get_column_name('PortalIssuesTable', 'modified_time'): now_datetime,
-                get_column_name('PortalIssuesTable', 'deleted'): False,
+                get_seadb_column_name('PortalIssuesTable', 'title'): title,
+                get_seadb_column_name('PortalIssuesTable', 'content'): content,
+                get_seadb_column_name('PortalIssuesTable', 'state'): portal_issue_state,
+                get_seadb_column_name('PortalIssuesTable', 'type'): type_name if type_name else None,
+                get_seadb_column_name('PortalIssuesTable', 'substate'): default_substate,
+                get_seadb_column_name('PortalIssuesTable', 'priority'): priority,
+                get_seadb_column_name('PortalIssuesTable', 'tags'): tag_ids,
+                get_seadb_column_name('PortalIssuesTable', 'creator'): username,
+                get_seadb_column_name('PortalIssuesTable', 'comment_count'): 0,
+                get_seadb_column_name('PortalIssuesTable', 'created_time'): now_datetime,
+                get_seadb_column_name('PortalIssuesTable', 'modified_time'): now_datetime,
+                get_seadb_column_name('PortalIssuesTable', 'deleted'): False,
             }
             res = seadb_api.insert_rows(project_uuid, portal_issues_table_name, [row])
             pks = res.get('pks', [])
@@ -342,10 +342,10 @@ class PortalIssuesView(APIView):
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
                             'pk': int(portal_issue_pk),
                             'row': {
-                                get_column_name('PortalIssuesTable', 'content'): updated_content,
+                                get_seadb_column_name('PortalIssuesTable', 'content'): updated_content,
                             }
                         }])
-                        row[get_column_name('PortalIssuesTable', 'content')] = updated_content
+                        row[get_seadb_column_name('PortalIssuesTable', 'content')] = updated_content
                 except Exception as e:
                     logger.error(e)
                     try:
@@ -430,24 +430,24 @@ class PortalIssuesView(APIView):
             if 'state' in row_data:
                 issue_state_name = row_data.get('state')
                 issue_state_name = issue_state_name.lower() if issue_state_name else ''
-                updated_row[get_column_name('PortalIssuesTable', 'state')] = issue_state_name
+                updated_row[get_seadb_column_name('PortalIssuesTable', 'state')] = issue_state_name
                 if issue_state_name == 'closed':
-                    updated_row[get_column_name('PortalIssuesTable', 'closed_time')] = now_datetime
+                    updated_row[get_seadb_column_name('PortalIssuesTable', 'closed_time')] = now_datetime
                 elif issue_state_name == 'open':
-                    updated_row[get_column_name('PortalIssuesTable', 'closed_time')] = ''
+                    updated_row[get_seadb_column_name('PortalIssuesTable', 'closed_time')] = ''
 
             if 'substate' in row_data:
-                updated_row[get_column_name('PortalIssuesTable', 'substate')] = row_data.get('substate') or None
+                updated_row[get_seadb_column_name('PortalIssuesTable', 'substate')] = row_data.get('substate') or None
 
             if 'tags' in row_data:
                 tags_value = row_data.get('tags')
                 if tags_value is None:
-                    updated_row[get_column_name('PortalIssuesTable', 'tags')] = []
+                    updated_row[get_seadb_column_name('PortalIssuesTable', 'tags')] = []
                 else:
-                    updated_row[get_column_name('PortalIssuesTable', 'tags')] = [int(tag_id) for tag_id in tags_value]
+                    updated_row[get_seadb_column_name('PortalIssuesTable', 'tags')] = [int(tag_id) for tag_id in tags_value]
 
             if 'type' in row_data:
-                updated_row[get_column_name('PortalIssuesTable', 'type')] = row_data.get('type') or None
+                updated_row[get_seadb_column_name('PortalIssuesTable', 'type')] = row_data.get('type') or None
 
             for key, value in row_data.items():
                 if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
@@ -457,7 +457,7 @@ class PortalIssuesView(APIView):
             if not updated_row:
                 continue
 
-            updated_row[get_column_name('PortalIssuesTable', 'modified_time')] = now_datetime
+            updated_row[get_seadb_column_name('PortalIssuesTable', 'modified_time')] = now_datetime
             update_rows.append({
                 'pk': issue.get('_pk'),
                 'row': updated_row,
@@ -745,25 +745,25 @@ class PortalIssueView(APIView):
         try:
             update_row = {}
             if title:
-                update_row[get_column_name('PortalIssuesTable', 'title')] = title
+                update_row[get_seadb_column_name('PortalIssuesTable', 'title')] = title
             if content:
-                update_row[get_column_name('PortalIssuesTable', 'content')] = content
+                update_row[get_seadb_column_name('PortalIssuesTable', 'content')] = content
             if is_update_type:
-                update_row[get_column_name('PortalIssuesTable', 'type')] = type_name
+                update_row[get_seadb_column_name('PortalIssuesTable', 'type')] = type_name
             if is_update_substate:
-                update_row[get_column_name('PortalIssuesTable', 'substate')] = substate_option_name
+                update_row[get_seadb_column_name('PortalIssuesTable', 'substate')] = substate_option_name
             if is_update_tags:
-                update_row[get_column_name('PortalIssuesTable', 'tags')] = tags
+                update_row[get_seadb_column_name('PortalIssuesTable', 'tags')] = tags
             if is_update_priority:
-                update_row[get_column_name('PortalIssuesTable', 'priority')] = priority
+                update_row[get_seadb_column_name('PortalIssuesTable', 'priority')] = priority
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if issue_state_name or issue_state_name == '':
                 issue_state_name = issue_state_name.lower()
-                update_row[get_column_name('PortalIssuesTable', 'state')] = issue_state_name
+                update_row[get_seadb_column_name('PortalIssuesTable', 'state')] = issue_state_name
                 if issue_state_name == 'closed':
-                    update_row[get_column_name('PortalIssuesTable', 'closed_time')] = now_datetime
+                    update_row[get_seadb_column_name('PortalIssuesTable', 'closed_time')] = now_datetime
                 elif issue_state_name == 'open':
-                    update_row[get_column_name('PortalIssuesTable', 'closed_time')] = ''
+                    update_row[get_seadb_column_name('PortalIssuesTable', 'closed_time')] = ''
 
             # Handle linked_ticket (link/unlink portal issue to/from a ticket)
             if is_update_linked_ticket:
@@ -804,7 +804,7 @@ class PortalIssueView(APIView):
                     else:
                         update_row['linked_ticket'] = None
 
-            update_row[get_column_name('PortalIssuesTable', 'modified_time')] = now_datetime
+            update_row[get_seadb_column_name('PortalIssuesTable', 'modified_time')] = now_datetime
             update_rows = [
                 {
                     'pk': issue.get('_pk'),
@@ -957,12 +957,12 @@ class PortalIssueCommentsView(APIView):
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
-                get_column_name('PortalIssueCommentsTable', 'issue_id'): issue.get('_pk'),
-                get_column_name('PortalIssueCommentsTable', 'creator'): username,
-                get_column_name('PortalIssueCommentsTable', 'content'): content,
-                get_column_name('PortalIssueCommentsTable', 'created_time'): now_datetime,
-                get_column_name('PortalIssueCommentsTable', 'modified_time'): now_datetime,
-                get_column_name('PortalIssueCommentsTable', 'deleted'): False,
+                get_seadb_column_name('PortalIssueCommentsTable', 'issue_id'): issue.get('_pk'),
+                get_seadb_column_name('PortalIssueCommentsTable', 'creator'): username,
+                get_seadb_column_name('PortalIssueCommentsTable', 'content'): content,
+                get_seadb_column_name('PortalIssueCommentsTable', 'created_time'): now_datetime,
+                get_seadb_column_name('PortalIssueCommentsTable', 'modified_time'): now_datetime,
+                get_seadb_column_name('PortalIssueCommentsTable', 'deleted'): False,
             }
             portal_issue_comment_table_name = get_table_name('PortalIssueCommentsTable', )
             res = seadb_api.insert_rows(project_uuid, portal_issue_comment_table_name, [row])
@@ -1340,9 +1340,9 @@ class PortalIssueMetadataView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             portal_issue_column_name_to_return_name = {
-                get_column_name('PortalIssuesTable', 'substate'): 'substates',
-                get_column_name('PortalIssuesTable', 'type'): 'types',
-                get_column_name('PortalIssuesTable', 'state'): 'states'
+                get_seadb_column_name('PortalIssuesTable', 'substate'): 'substates',
+                get_seadb_column_name('PortalIssuesTable', 'type'): 'types',
+                get_seadb_column_name('PortalIssuesTable', 'state'): 'states'
             }
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
@@ -2071,8 +2071,8 @@ class PortalIssueTrashAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for issue_id in issue_ids:
             updated_row = {
-                get_column_name('PortalIssuesTable', 'modified_time'): now_datetime,
-                get_column_name('PortalIssuesTable', 'deleted'): False,
+                get_seadb_column_name('PortalIssuesTable', 'modified_time'): now_datetime,
+                get_seadb_column_name('PortalIssuesTable', 'deleted'): False,
             }
             update_rows.append({
                 'pk': int(issue_id),

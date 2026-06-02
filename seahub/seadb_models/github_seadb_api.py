@@ -5,7 +5,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 
@@ -51,12 +51,12 @@ class GitHubSeaDBAPI:
         update_row = {
             'pk': int(record_pk),
             'row': {
-                get_column_name('GithubIssuesTable', 'title'): issue_data.get('title', ''),
-                get_column_name('GithubIssuesTable', 'labels'): issue_data.get('labels', []),
-                get_column_name('GithubIssuesTable', 'issue_type'): issue_data.get('issue_type', ''),
-                get_column_name('GithubIssuesTable', 'state'): issue_data.get('state', ''),
-                get_column_name('GithubIssuesTable', 'state_reason'): issue_data.get('state_reason', ''),
-                get_column_name('GithubIssuesTable', 'record_modified_time'): now_datetime,
+                get_seadb_column_name('GithubIssuesTable', 'title'): issue_data.get('title', ''),
+                get_seadb_column_name('GithubIssuesTable', 'labels'): issue_data.get('labels', []),
+                get_seadb_column_name('GithubIssuesTable', 'issue_type'): issue_data.get('issue_type', ''),
+                get_seadb_column_name('GithubIssuesTable', 'state'): issue_data.get('state', ''),
+                get_seadb_column_name('GithubIssuesTable', 'state_reason'): issue_data.get('state_reason', ''),
+                get_seadb_column_name('GithubIssuesTable', 'record_modified_time'): now_datetime,
             }
         }
 

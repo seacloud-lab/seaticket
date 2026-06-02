@@ -20,7 +20,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg
 from seahub.utils.decorators import require_org_context
@@ -87,14 +87,14 @@ class KnowledgeBasesAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
-                get_column_name('KnowledgeBaseTable', 'title'): title,
-                get_column_name('KnowledgeBaseTable', 'content'): content_text,
-                get_column_name('KnowledgeBaseTable', 'tags'): tag_ids,
-                get_column_name('KnowledgeBaseTable', 'creator'): username,
-                get_column_name('KnowledgeBaseTable', 'created_time'): now_datetime,
-                get_column_name('KnowledgeBaseTable', 'last_modifier'): username,
-                get_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
-                get_column_name('KnowledgeBaseTable', 'deleted'): False,
+                get_seadb_column_name('KnowledgeBaseTable', 'title'): title,
+                get_seadb_column_name('KnowledgeBaseTable', 'content'): content_text,
+                get_seadb_column_name('KnowledgeBaseTable', 'tags'): tag_ids,
+                get_seadb_column_name('KnowledgeBaseTable', 'creator'): username,
+                get_seadb_column_name('KnowledgeBaseTable', 'created_time'): now_datetime,
+                get_seadb_column_name('KnowledgeBaseTable', 'last_modifier'): username,
+                get_seadb_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
+                get_seadb_column_name('KnowledgeBaseTable', 'deleted'): False,
              }
             res = seadb_api.insert_rows(project_uuid, get_table_name('KnowledgeBaseTable', ), [row])
             pks = res.get('pks', [])
@@ -115,10 +115,10 @@ class KnowledgeBasesAPIView(APIView):
                 seadb_api.update_rows(project_uuid, get_table_name('KnowledgeBaseTable', ), [{
                     'pk': int(insert_row_pk),
                     'row': {
-                        get_column_name('KnowledgeBaseTable', 'content'): updated_content,
+                        get_seadb_column_name('KnowledgeBaseTable', 'content'): updated_content,
                     }
                 }])
-                row[get_column_name('KnowledgeBaseTable', 'content')] = updated_content
+                row[get_seadb_column_name('KnowledgeBaseTable', 'content')] = updated_content
             except Exception as e:
                 logger.error(e)
                 seadb_api.delete_rows(project_uuid, get_table_name('KnowledgeBaseTable', ), [int(insert_row_pk)])
@@ -215,9 +215,9 @@ class KnowledgeBasesAPIView(APIView):
             update_rows.append({
                 'pk': r_id,
                 'row': {
-                    get_column_name('KnowledgeBaseTable', 'deleted'): True,
-                    get_column_name('KnowledgeBaseTable', 'last_modifier'): username,
-                    get_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
+                    get_seadb_column_name('KnowledgeBaseTable', 'deleted'): True,
+                    get_seadb_column_name('KnowledgeBaseTable', 'last_modifier'): username,
+                    get_seadb_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
                 }
             })
         try:
@@ -275,14 +275,14 @@ class KnowledgeBaseAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         if is_update_tags:
-            row[get_column_name('KnowledgeBaseTable', 'tags')] = tags
+            row[get_seadb_column_name('KnowledgeBaseTable', 'tags')] = tags
 
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
                 error_msg = 'title invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[get_column_name('KnowledgeBaseTable', 'title')] = title
+            row[get_seadb_column_name('KnowledgeBaseTable', 'title')] = title
 
         if 'content' in request.data:
             raw_content = request.data.get('content')
@@ -304,7 +304,7 @@ class KnowledgeBaseAPIView(APIView):
                     logger.error(e)
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            row[get_column_name('KnowledgeBaseTable', 'content')] = content_text
+            row[get_seadb_column_name('KnowledgeBaseTable', 'content')] = content_text
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -327,8 +327,8 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        row[get_column_name('KnowledgeBaseTable', 'last_modifier')] = username
-        row[get_column_name('KnowledgeBaseTable', 'modified_time')] = datetime.datetime.now(datetime.UTC).isoformat()
+        row[get_seadb_column_name('KnowledgeBaseTable', 'last_modifier')] = username
+        row[get_seadb_column_name('KnowledgeBaseTable', 'modified_time')] = datetime.datetime.now(datetime.UTC).isoformat()
 
         update_rows = [
             {
@@ -433,8 +433,8 @@ class KnowledgeBasesTrashAPIView(APIView):
                 update_rows.append({
                     'pk': int(r_id),
                     'row': {
-                        get_column_name('KnowledgeBaseTable', 'deleted'): False,
-                        get_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
+                        get_seadb_column_name('KnowledgeBaseTable', 'deleted'): False,
+                        get_seadb_column_name('KnowledgeBaseTable', 'modified_time'): now_datetime,
                     }
                 })
             if update_rows:

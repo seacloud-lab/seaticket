@@ -17,7 +17,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 from seahub.utils.ai_client import (
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
@@ -189,7 +189,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
         if include_details:
             details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-            f"`action_type`, `tool_name`, result`, `status`, `suggestion_content`, " \
+            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
             f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{get_table_name('AgentActionsTable', )}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -637,8 +637,8 @@ class AgentActionConfirmView(APIView):
             update_row = {
                 'pk': ctx['record_id'],
                 'row': {
-                    get_column_name('GithubIssuesTable', 'comment_count'): new_comment_count,
-                    get_column_name('GithubIssuesTable', 'record_modified_time'): now_datetime,
+                    get_seadb_column_name('GithubIssuesTable', 'comment_count'): new_comment_count,
+                    get_seadb_column_name('GithubIssuesTable', 'record_modified_time'): now_datetime,
                 }
             }
             seadb_api.update_rows(project_uuid, issues_table, [update_row])
@@ -648,12 +648,12 @@ class AgentActionConfirmView(APIView):
         try:
             comments_table = get_table_name('GithubIssueCommentsTable', ctx['connection_id'])
             comment_row = {
-                get_column_name('GithubIssueCommentsTable', 'comment_id'): comment_id,
-                get_column_name('GithubIssueCommentsTable', 'issue_id'): ctx['issue_id'],
-                get_column_name('GithubIssueCommentsTable', 'author'): comment_author,
-                get_column_name('GithubIssueCommentsTable', 'content'): reply_content,
-                get_column_name('GithubIssueCommentsTable', 'created_time'): comment_created_at,
-                get_column_name('GithubIssueCommentsTable', 'modified_time'): comment_created_at,
+                get_seadb_column_name('GithubIssueCommentsTable', 'comment_id'): comment_id,
+                get_seadb_column_name('GithubIssueCommentsTable', 'issue_id'): ctx['issue_id'],
+                get_seadb_column_name('GithubIssueCommentsTable', 'author'): comment_author,
+                get_seadb_column_name('GithubIssueCommentsTable', 'content'): reply_content,
+                get_seadb_column_name('GithubIssueCommentsTable', 'created_time'): comment_created_at,
+                get_seadb_column_name('GithubIssueCommentsTable', 'modified_time'): comment_created_at,
             }
             seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
         except Exception as e:
@@ -931,16 +931,16 @@ class AgentActionConfirmView(APIView):
 
         now = timezone.now().isoformat()
         ticket_row = {
-            get_column_name('TicketsTable', 'title'): ticket_title,
-            get_column_name('TicketsTable', 'content'): ticket_content,
-            get_column_name('TicketsTable', 'state'): 'open',
-            get_column_name('TicketsTable', 'substate'): 'New',
-            get_column_name('TicketsTable', 'priority'): 0,
-            get_column_name('TicketsTable', 'creator'): username,
-            get_column_name('TicketsTable', 'created_time'): now,
-            get_column_name('TicketsTable', 'modified_time'): now,
-            get_column_name('TicketsTable', 'deleted'): False,
-            get_column_name('TicketsTable', 'linked_connection_records'): [source_id],
+            get_seadb_column_name('TicketsTable', 'title'): ticket_title,
+            get_seadb_column_name('TicketsTable', 'content'): ticket_content,
+            get_seadb_column_name('TicketsTable', 'state'): 'open',
+            get_seadb_column_name('TicketsTable', 'substate'): 'New',
+            get_seadb_column_name('TicketsTable', 'priority'): 0,
+            get_seadb_column_name('TicketsTable', 'creator'): username,
+            get_seadb_column_name('TicketsTable', 'created_time'): now,
+            get_seadb_column_name('TicketsTable', 'modified_time'): now,
+            get_seadb_column_name('TicketsTable', 'deleted'): False,
+            get_seadb_column_name('TicketsTable', 'linked_connection_records'): [source_id],
         }
         try:
             insert_result = seadb_api.insert_rows(project_uuid, get_table_name('TicketsTable', ), [ticket_row])
@@ -1338,7 +1338,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
             return self._failed_execution(f'Ticket #{ticket_id} not found')
 
-        assignees = ticket.get(get_column_name('TicketsTable', 'assignees')) or []
+        assignees = ticket.get(get_seadb_column_name('TicketsTable', 'assignees')) or []
         if not assignees:
             logger.info(f'Ticket #{ticket_id} has no assignees, skip notify.')
             return self._failed_execution(f'Ticket #{ticket_id} has no assignees')
@@ -1350,7 +1350,7 @@ class AgentActionConfirmView(APIView):
             msg_type=MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
             from_user_id=operator,
             ticket_id=ticket_id,
-            ticket_title=ticket.get(get_column_name('TicketsTable', 'title')),
+            ticket_title=ticket.get(get_seadb_column_name('TicketsTable', 'title')),
             message=message,
             workspace_id=project.workspace_id,
             project_name=project.project_name,
@@ -1632,7 +1632,7 @@ def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, gith
 
     issue_type_column = None
     for column in table_meta.get('columns') or []:
-        if column.get('name') == get_column_name('GithubIssuesTable', 'issue_type'):
+        if column.get('name') == get_seadb_column_name('GithubIssuesTable', 'issue_type'):
             issue_type_column = column
             break
     if not issue_type_column:

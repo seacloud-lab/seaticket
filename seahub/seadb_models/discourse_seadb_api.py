@@ -6,7 +6,7 @@ from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_CO
 from seahub.project.constants import ConnectionType
 
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 class DiscourseSeaDBAPI:
@@ -147,12 +147,12 @@ class DiscourseSeaDBAPI:
         topics_table_name = get_table_name('DiscourseTopicsTable', connection_id)
 
         reply_row = {
-            get_column_name('DiscourseRepliesTable', 'topic_id'): topic_id,
-            get_column_name('DiscourseRepliesTable', 'post_number'): reply_data.get('post_number', 0),
-            get_column_name('DiscourseRepliesTable', 'content'): reply_data.get('content', ''),
-            get_column_name('DiscourseRepliesTable', 'author'): reply_data.get('author', ''),
-            get_column_name('DiscourseRepliesTable', 'modified_time'): now,
-            get_column_name('DiscourseRepliesTable', 'accepted_answer'): False,
+            get_seadb_column_name('DiscourseRepliesTable', 'topic_id'): topic_id,
+            get_seadb_column_name('DiscourseRepliesTable', 'post_number'): reply_data.get('post_number', 0),
+            get_seadb_column_name('DiscourseRepliesTable', 'content'): reply_data.get('content', ''),
+            get_seadb_column_name('DiscourseRepliesTable', 'author'): reply_data.get('author', ''),
+            get_seadb_column_name('DiscourseRepliesTable', 'modified_time'): now,
+            get_seadb_column_name('DiscourseRepliesTable', 'accepted_answer'): False,
         }
 
         result = self.seadb_api.insert_rows(project_uuid, replies_table_name, [reply_row])
@@ -161,7 +161,7 @@ class DiscourseSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, topics_table_name, [{
             'pk': int(reply_data.get('topic_pk', 0)),
             'row': {
-                get_column_name('DiscourseTopicsTable', 'record_modified_time'): now,
+                get_seadb_column_name('DiscourseTopicsTable', 'record_modified_time'): now,
             }
         }])
 

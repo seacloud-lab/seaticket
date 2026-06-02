@@ -20,7 +20,7 @@ from seahub.portal.portal_utils import get_portal_issue
 
 
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 class TicketLinkValidationError(Exception):
     """Ticket link validation error"""
     pass

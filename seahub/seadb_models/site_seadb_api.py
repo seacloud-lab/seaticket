@@ -7,7 +7,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
-from seahub.seadb_models.utils import get_table_name, get_column_name, get_column_data
+from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
 logger = logging.getLogger(__name__)
 
 
