@@ -28,6 +28,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   const currentSessionId = useRef('');
   const newSessionProblem = useRef('');
   const aiReplyStreamTimer = useRef('');
+  const pendingTitleQueryBySession = useRef({});
+  const requestedTitleSessionSet = useRef(new Set());
 
   const { isShowSessions, sessions, teamSessions, createSession, modifyLocalSession, getChatMessage } = useSessions();
   const { togglePageSlugId } = useAskPage();
@@ -65,6 +67,28 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
+  const triggerTitleGeneration = useCallback((targetSessionId, aiReply = '') => {
+    const query = pendingTitleQueryBySession.current[targetSessionId];
+    if (!query) return;
+    if (requestedTitleSessionSet.current.has(targetSessionId)) return;
+    if (!api?.generateChatSessionTitle) return;
+
+    requestedTitleSessionSet.current.add(targetSessionId);
+    api.generateChatSessionTitle(projectUuid, targetSessionId, {
+      query,
+      ai_reply: aiReply || '',
+    }).then((res) => {
+      const sessionName = res?.data?.session_name;
+      if (sessionName) {
+        modifyLocalSession(targetSessionId, { name: sessionName });
+      }
+    }).catch(() => {
+      // ignore title generation error to avoid blocking chat flow
+    }).finally(() => {
+      delete pendingTitleQueryBySession.current[targetSessionId];
+    });
+  }, [api, projectUuid, modifyLocalSession]);
+
   const sendMessage = useCallback(({ message, attachments, model, clearContext }) => {
     const validMessage = message.trim();
     if (!validMessage) {
@@ -89,6 +113,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
     }
     createSession(validMessage.slice(0, 100)).then(session => {
       const newSessionId = session._id;
+      pendingTitleQueryBySession.current[newSessionId] = validMessage;
       currentSessionId.current = newSessionId;
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
@@ -255,9 +280,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
         return;
       }
       const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
-      if (data.session_name) {
-        modifyLocalSession(reply_session_id, { name: data.session_name });
-      }
+      triggerTitleGeneration(reply_session_id, ai_reply);
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
       let newChatData = {
@@ -308,9 +331,6 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       const _updateChatHistories = (chatHistories, _data, _message_id_prefix = '') => {
         const _chatHistories = chatHistories.slice(0);
         const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, attachments } = _data;
-        if (_data.session_name) {
-          modifyLocalSession(reply_session_id, { name: _data.session_name });
-        }
         const messageIndex = _chatHistories.findIndex(c => c._id === aiReplyMessageId);
         if (messageIndex > -1) return;
         let newChatData = {
@@ -392,6 +412,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
         if (results) {
           _newChatHistories = _newChatHistories.slice(0, -1);
           _updateChatHistories(_newChatHistories, results);
+          triggerTitleGeneration(reply_session_id, results.ai_reply || fullText);
         }
 
         if (done) {
@@ -499,7 +520,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       unsubscribeAIReply();
       unsubscribeAIStreamReply();
     };
-  }, [sessionId, chatHistories, modifyLocalSession]);
+  }, [sessionId, chatHistories, modifyLocalSession, triggerTitleGeneration]);
 
   useEffect(() => {
     aiReplyStreamTimer.current && clearTimeout(aiReplyStreamTimer.current);

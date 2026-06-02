@@ -1,14 +1,6 @@
 from unittest.mock import patch
-from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView
+from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView, ChatSessionTitleView
 from seahub.chats.models import ChatSessions, ChatMessages
-
-
-class _FakeStreamResponse:
-    def iter_lines(self):
-        return iter([
-            b'data: {"results": {"answer": "stream ok", "sources": []}}',
-            b'data: [DONE]',
-        ])
 
 
 class TestChatSessionsView:
@@ -245,66 +237,91 @@ class TestChatView:
         assert resp.status_code == 200
         assert resp.data['sources'][0]['connection_id'] == site_connection.id
 
-    def test_post_non_stream_generates_title_for_first_round(self, factory, project_creator, real_project):
+
+class TestChatSessionTitleView:
+
+    def test_post_success(self, factory, project_creator, real_project, chat_session):
         project = real_project
         request = factory.post(
-            '/api/v1/ai/chat/',
-            data={'project_uuid': str(project.uuid), 'query': 'how to fix sync error', 'stream': False},
-            format='json'
-        )
-        request.user = project_creator
-
-        ai_response = {'ai_reply': 'Try updating client config.', 'sources': []}
-        with patch('seahub.chats.view.get_ai_reply', return_value=ai_response), \
-             patch('seahub.chats.view.generate_session_title', return_value='Fix sync error') as mock_title:
-            resp = ChatView.as_view()(request)
-
-        assert resp.status_code == 200
-        assert resp.data['session_name'] == 'Fix sync error'
-        mock_title.assert_called_once()
-
-    def test_post_non_stream_skips_title_generation_after_first_round(self, factory, project_creator, real_project):
-        session = ChatSessions.objects.create_session(
-            project_uuid=str(real_project.uuid),
-            session_name='seed title',
-            username=project_creator.username,
-        )
-        ChatMessages.objects.create_message(session.session_uuid, 'm1', 'user', 'hello')
-        ChatMessages.objects.create_message(session.session_uuid, 'm1', 'assistant', 'hi', sources='[]')
-
-        request = factory.post(
-            '/api/v1/ai/chat/',
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
             data={
-                'project_uuid': str(real_project.uuid),
-                'session_uuid': session.session_uuid,
-                'query': 'follow up question',
-                'stream': False,
+                'project_uuid': str(project.uuid),
+                'query': 'how to fix sync error',
+                'ai_reply': 'Try updating client config.',
             },
             format='json'
         )
         request.user = project_creator
 
-        ai_response = {'ai_reply': 'follow up answer', 'sources': []}
-        with patch('seahub.chats.view.get_ai_reply', return_value=ai_response), \
-             patch('seahub.chats.view.generate_session_title') as mock_title:
-            resp = ChatView.as_view()(request)
+        with patch('seahub.chats.view.generate_session_title', return_value='Fix sync error') as mock_title:
+            resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
 
         assert resp.status_code == 200
-        assert 'session_name' not in resp.data
-        mock_title.assert_not_called()
+        assert resp.data['success'] is True
+        assert resp.data['session_name'] == 'Fix sync error'
+        mock_title.assert_called_once()
 
-    def test_post_stream_result_contains_generated_session_name(self, factory, project_creator, real_project):
+    def test_post_missing_project_uuid(self, factory, project_creator, chat_session):
         request = factory.post(
-            '/api/v1/ai/chat/',
-            data={'project_uuid': str(real_project.uuid), 'query': 'stream test', 'stream': True},
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'query': 'q', 'ai_reply': 'a'},
             format='json'
         )
         request.user = project_creator
 
-        with patch('seahub.chats.view.get_ai_reply', return_value=_FakeStreamResponse()), \
-             patch('seahub.chats.utils.generate_session_title', return_value='Stream title'):
-            resp = ChatView.as_view()(request)
-            payload = b''.join(resp.streaming_content).decode('utf-8')
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
 
-        assert resp.status_code == 200
-        assert '"session_name": "Stream title"' in payload
+        assert resp.status_code == 400
+
+    def test_post_missing_query(self, factory, project_creator, real_project, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_missing_ai_reply(self, factory, project_creator, real_project, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_session_not_found(self, factory, project_creator, real_project):
+        request = factory.post(
+            '/api/v1/chat/sessions/s1/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q', 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid='s1')
+
+        assert resp.status_code == 404
+
+    def test_post_permission_denied_for_non_owner(self, factory, project_creator, real_project):
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='seed',
+            username='another-user',
+        )
+        request = factory.post(
+            f'/api/v1/chat/sessions/{session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q', 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=session.session_uuid)
+
+        assert resp.status_code == 403

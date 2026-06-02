@@ -13,6 +13,7 @@ from django.core.cache import cache
 from urllib.parse import urljoin
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages, ChatSessions
+from seahub.portal.models import PortalChatSessions
 from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 from seahub.knowledge_base.knowledge_base_utils import get_whole_knowledge_bases_data
 from seahub.tickets.ticket_utils import get_whole_tickets_data
@@ -72,7 +73,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
 
     return ai_result
 
-def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments, project_uuid=None, org_id=-1, should_generate_title=False):
+def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments):
     has_recorded_result = False
     enconter_generator_exit = False
     error_msg = None
@@ -86,19 +87,8 @@ def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, messag
                 # use if - else instead of json.loads() to avoid performance issues
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
-                    recorded_result = record_message_to_db(results, session_uuid, message_id, query, attachments)
-                    if should_generate_title:
-                        session_name = generate_session_title(
-                            session_uuid=session_uuid,
-                            project_uuid=project_uuid,
-                            org_id=org_id,
-                            query=query,
-                            ai_reply=recorded_result.get('ai_reply', '')
-                        )
-                        if session_name:
-                            recorded_result['session_name'] = session_name
                     item = f'data: {json.dumps({
-                        "results": recorded_result
+                        "results": record_message_to_db(results, session_uuid, message_id, query, attachments)
                     })}\n\n'
                     has_recorded_result = True
                 elif content.startswith('[ERROR: ') and content.endswith(']'):
@@ -183,8 +173,7 @@ def format_chat_title(title, fallback=''):
     return fallback
 
 
-def generate_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
-    session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+def _generate_session_title(session, project_uuid, org_id, query, ai_reply, scenario):
     if not session:
         return ''
 
@@ -195,7 +184,7 @@ def generate_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
             'org_id': org_id,
             'query': query,
             'ai_reply': ai_reply,
-            'scenario': AIScenario.CHAT.value,
+            'scenario': scenario,
         })
     except Exception as e:
         logger.warning(f'Generate chat title failed: {e}')
@@ -208,6 +197,30 @@ def generate_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
     session.session_name = final_title
     session.save()
     return session.session_name
+
+
+def generate_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
+    session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+    return _generate_session_title(
+        session=session,
+        project_uuid=project_uuid,
+        org_id=org_id,
+        query=query,
+        ai_reply=ai_reply,
+        scenario=AIScenario.CHAT.value,
+    )
+
+
+def generate_portal_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
+    session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
+    return _generate_session_title(
+        session=session,
+        project_uuid=project_uuid,
+        org_id=org_id,
+        query=query,
+        ai_reply=ai_reply,
+        scenario=AIScenario.PORTAL_CHAT.value,
+    )
 
 def get_attachments(seadb_api, project_uuid, attachments):
     knowledge_base_ids = []

@@ -163,6 +163,11 @@ class ChatAPI {
     return this.req.put(url, update);
   }
 
+  generateChatSessionTitle(projectUuid, sessionUuid, params) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/generate-title/';
+    return this.req.post(url, params);
+  }
+
   deleteChatSession(projectUuid, sessionUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/sessions/' + sessionUuid + '/';
     return this.req.delete(url);

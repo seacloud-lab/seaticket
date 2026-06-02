@@ -39,6 +39,7 @@ from seahub.chats.utils import (
     build_image_attachments,
     get_ai_reply,
     ImageProcessingError,
+    generate_portal_session_title,
 )
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 
@@ -124,6 +125,39 @@ class PortalChatSessionView(APIView):
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalChatSessionTitleView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalChatPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def post(self, request, project_uuid, session_uuid):
+        if 'query' not in request.data:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'query parameter is required.')
+        query = request.data.get('query')
+
+        if 'ai_reply' not in request.data:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'ai_reply parameter is required.')
+        ai_reply = request.data.get('ai_reply', '')
+
+        _, error = _get_session_or_error(session_uuid, request.identity['username'])
+        if error:
+            return error
+
+        org_id = getattr(getattr(request.project, 'workspace', None), 'org_id', -1) or -1
+        session_name = generate_portal_session_title(
+            session_uuid=session_uuid,
+            project_uuid=project_uuid,
+            org_id=org_id,
+            query=query,
+            ai_reply=ai_reply,
+        )
+        return Response({
+            'success': True,
+            'session_name': session_name,
+        })
 
 
 class PortalChatMessagesView(APIView):
