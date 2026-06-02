@@ -40,7 +40,7 @@ const TicketInDialog = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const [linkedRecords, setLinkedRecords] = useState({});
 
-  const { getTableByName, modifyLocalRow, markTablesViewExpired } = useData();
+  const { getTableByName, modifyLocalRow } = useData();
   const { tagsData, createTag } = useTags();
 
   const ticketRef = useRef(null);
@@ -65,22 +65,15 @@ const TicketInDialog = ({
     const table = getTableByName(tableName, null);
     const cacheColumns = Object.values(table?.key_column_map || {});
     const validColumns = propsColumns.length > 0 ? propsColumns : cacheColumns;
-    if (!table || validColumns.length === 0) {
-      markTablesViewExpired([tableName]);
-      return;
-    }
+    if (!table || validColumns.length === 0) return;
 
     const localRowUpdate = convertRowToKeyValue(update, { data: { columns: validColumns }, typesData, tagsData });
-    if (Object.keys(localRowUpdate).length === 0) {
-      markTablesViewExpired([tableName]);
-      return;
-    }
+    if (Object.keys(localRowUpdate).length === 0) return;
 
     modifyLocalRow(tableName, currentTicketID, localRowUpdate);
     const eventBus = context.eventBus;
     eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
-    markTablesViewExpired([tableName]);
-  }, [getTableByName, modifyLocalRow, markTablesViewExpired, propsColumns, typesData, tagsData]);
+  }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData]);
 
   const modifyTicket = useCallback((currentTicketID, data) => {
     let serverData = {};
