@@ -28,7 +28,7 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.AI_SUMMARY]: {
     display_name: gettext('AI summary'),
     type: CellType.TEXT,
-    is_hover_show_content: true,
+    // is_hover_show_content: true,
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.AI_PROCESSED_TIME]: {
     display_name: gettext('AI processed time'),
