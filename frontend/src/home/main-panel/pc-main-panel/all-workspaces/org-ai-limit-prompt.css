@@ -1,10 +1,10 @@
 .org-ai-limit-wrapper {
   margin: 10px 24px 0px 24px;
-	height: 44px;
-	background-color: rgba(252, 100, 64, 0.08);
-	border: 1px solid rgba(252, 100, 64, 0.2);
-	border-radius: 8px;
-	padding: 0px 10px 0px 16px;
+  height: 44px;
+  background-color: rgba(252, 100, 64, 0.08);
+  border: 1px solid rgba(252, 100, 64, 0.2);
+  border-radius: 8px;
+  padding: 0px 10px 0px 16px;
 }
 
 .org-ai-limit-wrapper .org-ai-limit-name .seaqa-icon-svg {

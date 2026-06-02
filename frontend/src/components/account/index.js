@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import toaster from '../toaster';
 import { Utils } from '@/utils/utils';
 import { isEnter, isEsc } from '@/utils/hotkey';
@@ -110,7 +111,8 @@ class Account extends Component {
           apiCallsUsageRate: resp.data.api_calls_usage_rate,
           aiCredit: resp.data.ai_credit,
           aiCreditUsed: resp.data.ai_credit_used,
-          aiUsageRate: resp.data.ai_usage_rate
+          aiUsageRate: resp.data.ai_usage_rate,
+          aiCreditExceed: resp.data.ai_credit_exceed
         });
       }).catch(error => {
         let errMessage = Utils.getErrorMsg(error);
@@ -218,7 +220,7 @@ class Account extends Component {
                 <div className="account-info-card">
                   <p className='account-info-card-title'>{gettext('AI credit used')}</p>
                   <div className="d-flex align-items-center gap-1">
-                    <span className='account-info-card-used'>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
+                    <span className={classNames('account-info-card-used', { 'exceed': this.state.aiCreditExceed })}>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
                     <span className='account-info-card-total'> / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</span>
                   </div>
                 </div>

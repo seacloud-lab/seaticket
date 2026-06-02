@@ -165,9 +165,11 @@ class AccountInfo(APIView):
                 org_id = request.user.org.org_id
                 info['ai_credit'] = get_ai_credit_by_org_id(org_id)
                 info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
+                info['ai_credit_exceed'] = check_ai_limit(org_id)
             else: # system admin mode
                 info['ai_credit'] = -1
                 info['ai_credit_used'] = 0
+                info['ai_credit_exceed'] = False
 
             if info['ai_credit'] <= 0:
                 info['ai_usage_rate'] = '0%'
