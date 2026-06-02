@@ -14,7 +14,7 @@ from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
 import logging
 
 
-from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema
 logger = logging.getLogger(__name__)
 
 
@@ -248,7 +248,7 @@ class PortalIssueViewsManager(models.Manager):
         from seahub.project.seadb_api import SeaDBAPI
         from seahub.seadb_models.utils import get_seadb_table_columns
         seadb_api = SeaDBAPI()
-        columns = get_seadb_table_columns(seadb_api, project_uuid, get_table_name('PortalIssuesTable', ))
+        columns = get_seadb_table_columns(seadb_api, project_uuid, get_table_name_from_schema('PortalIssuesTable', ))
         views = details.get('views', [])
         for v in views:
             basic_filters = v.get('basic_filters', [])

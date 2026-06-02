@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
-from seahub.seadb_models.utils import get_table_name, get_seadb_column_name, get_seadb_column_data, get_current_table_metadata
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema, get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
@@ -300,7 +300,7 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = get_table_name('GeneralTaskUserTable', connection_id)
+    table_name = get_table_name_from_schema('GeneralTaskUserTable', connection_id)
     try:
         sql = f"SELECT `email`, `name` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
@@ -611,12 +611,12 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
     merged = []
     seen_names = set()
     for connection_id in connection_ids:
-        table_name = get_table_name('GithubIssuesTable', connection_id)
+        table_name = get_table_name_from_schema('GithubIssuesTable', connection_id)
         table_meta = get_current_table_metadata(tables, table_name)
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != get_seadb_column_name('GithubIssuesTable', 'issue_type'):
+            if column.get('name') != get_column_name_from_schema('GithubIssuesTable', 'issue_type'):
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -643,7 +643,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        get_seadb_column_name('GithubIssuesTable', 'issue_type'),
+        get_column_name_from_schema('GithubIssuesTable', 'issue_type'),
         'type_id',
     )
 

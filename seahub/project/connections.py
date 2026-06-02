@@ -39,7 +39,7 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
-    get_table_name,  list_general_task_record_details, build_general_task_row_data, get_connection_columns
+    get_table_name_from_schema,  list_general_task_record_details, build_general_task_row_data, get_connection_columns
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -1314,7 +1314,7 @@ class ProjectConnectionRecordView(APIView):
         if not update_row['row']:
             return Response({'success': True})
 
-        table_name = get_table_name(schema_table_name, connection_id)
+        table_name = get_table_name_from_schema(schema_table_name, connection_id)
 
         try:
             seadb_api.update_rows(project_uuid, table_name, [update_row])
@@ -1398,7 +1398,7 @@ class ProjectConnectionRecordsView(APIView):
         row_data = build_general_task_row_data(created_task)
         try:
             ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
-            res = seadb_api.insert_rows(project_uuid, get_table_name('GeneralTaskTable', connection_id), [row_data])
+            res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema('GeneralTaskTable', connection_id), [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 raise RuntimeError('insert_rows returned invalid pks')
@@ -1570,7 +1570,7 @@ class ProjectConnectionRecordsView(APIView):
         if not update_rows:
             return Response({'success': True})
 
-        table_name = get_table_name(schema_table_name, connection_id)
+        table_name = get_table_name_from_schema(schema_table_name, connection_id)
         seadb_api = SeaDBAPI()
 
         try:

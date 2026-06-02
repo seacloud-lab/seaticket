@@ -74,6 +74,6 @@ def _snake_table_name(name, connection_id=None):
 @pytest.fixture(autouse=True)
 def project_schema_helpers():
     with pytest.MonkeyPatch.context() as mp:
-        mp.setattr('seahub.project.tags.get_table_name', _snake_table_name)
-        mp.setattr('seahub.project.tags.get_seadb_column_name', lambda _table, column_name: column_name)
+        mp.setattr('seahub.project.tags.get_table_name_from_schema', _snake_table_name)
+        mp.setattr('seahub.project.tags.get_column_name_from_schema', lambda _table, column_name: column_name)
         yield

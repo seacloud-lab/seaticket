@@ -120,8 +120,8 @@ def _snake_table_name(name, connection_id=None):
 
 @pytest.fixture(autouse=True)
 def ticket_schema_helpers():
-    with patch('seahub.tickets.tickets.get_table_name', side_effect=_snake_table_name), \
-            patch('seahub.tickets.tickets.get_seadb_column_name', side_effect=lambda _table, column_name: column_name), \
-            patch('seahub.tickets.ticket_utils.get_table_name', side_effect=_snake_table_name), \
-            patch('seahub.tickets.ticket_utils.get_seadb_column_name', side_effect=lambda _table, column_name: column_name):
+    with patch('seahub.tickets.tickets.get_table_name_from_schema', side_effect=_snake_table_name), \
+            patch('seahub.tickets.tickets.get_column_name_from_schema', side_effect=lambda _table, column_name: column_name), \
+            patch('seahub.tickets.ticket_utils.get_table_name_from_schema', side_effect=_snake_table_name), \
+            patch('seahub.tickets.ticket_utils.get_column_name_from_schema', side_effect=lambda _table, column_name: column_name):
         yield
