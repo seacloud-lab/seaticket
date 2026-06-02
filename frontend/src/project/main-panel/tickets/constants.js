@@ -167,7 +167,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.TEXT,
     display_name: gettext('AI Summary'),
     editable: false,
-    is_hover_show_content: true,
+    // is_hover_show_content: true,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.AI_PROCESSED_TIME]: {
     type: CellType.DATE,
