@@ -596,6 +596,7 @@ class OrgAdminInviteUsers(APIView):
         inviter = request.user.username
 
         for email in email_list:
+            new_user = None
             if not is_valid_email(email):
                 result['failed'].append({'email': email, 'error_msg': 'Email invalid.'})
                 continue
@@ -612,6 +613,10 @@ class OrgAdminInviteUsers(APIView):
             invitation = Invitation.objects.add(inviter=inviter, accepter=email)
             send_success = invitation.send_to(email=email)
             if not send_success:
+                invitation.delete()
+                if new_user:
+                    unset_org_user(org_id, new_user.username)
+                    new_user.delete()
                 result['failed'].append({
                     'email': email,
                     'error_msg': _('Failed to send email, email service is not properly configured, please contact administrator.'),
