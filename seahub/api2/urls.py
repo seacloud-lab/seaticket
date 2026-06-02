@@ -15,5 +15,6 @@ urlpatterns = [
     # RESTful API
     re_path(r'^accounts/(?P<email>\S+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/$', Account.as_view(), name="api2-account"),
     re_path(r'^account/info/$', AccountInfo.as_view()),
+    re_path(r'^account/ai-limit/$', AccountAILimitInfo.as_view()),
     re_path(r'^search-user/$', SearchUser.as_view(), name='search-user'),
 ]

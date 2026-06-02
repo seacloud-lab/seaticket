@@ -217,10 +217,10 @@ class Account extends Component {
               {window.app.pageOptions.orgID && this.state.aiCredit !== undefined && (
                 <div className="account-info-card">
                   <p className='account-info-card-title'>{gettext('AI credit used')}</p>
-                  <p>
+                  <div className="d-flex align-items-center gap-1">
                     <span className='account-info-card-used'>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
                     <span className='account-info-card-total'> / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</span>
-                  </p>
+                  </div>
                 </div>
               )}
             </div>

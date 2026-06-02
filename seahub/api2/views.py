@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
 from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
-    convert_cost_to_credit, get_total_ai_credit_by_org_id
+    convert_cost_to_credit, get_total_ai_credit_by_org_id, check_ai_limit
 
 
 logger = logging.getLogger(__name__)
@@ -231,3 +231,30 @@ class AccountInfo(APIView):
                 username, collaborate_email_interval)
 
         return Response(self._get_account_info(request))
+
+
+class AccountAILimitInfo(APIView):
+    """Check whether current account/org exceeds AI credit limit."""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, format=None):
+        if not getattr(settings, 'SEAQA_AI_INNER_SERVER_URL', ''):
+            return Response({
+                'is_exceed': False,
+                'ai_credit_used': 0,
+            })
+
+        org_id = request.user.org.org_id if is_org_context(request) else -1
+        is_exceed = check_ai_limit(org_id)
+
+        if org_id >= 0:
+            ai_credit_used = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
+        else:
+            ai_credit_used = 0
+
+        return Response({
+            'is_exceed': is_exceed,
+            'ai_credit_used': ai_credit_used,
+        })
