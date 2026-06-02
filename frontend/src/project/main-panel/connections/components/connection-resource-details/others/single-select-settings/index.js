@@ -42,7 +42,7 @@ const SingleSelectSettings = ({
   }, []);
 
   const handleChange = useCallback((newOptionId) => {
-    if (option.id === newOptionId) {
+    if (option && option.id === newOptionId) {
       onChange(null);
       return;
     }
