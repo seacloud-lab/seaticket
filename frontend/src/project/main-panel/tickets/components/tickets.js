@@ -8,7 +8,7 @@ import {
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_TABLE_NAME, TICKET_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
-import { BAR_TYPE } from '@/project/constants';
+import { BAR_TYPE, EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
@@ -31,7 +31,6 @@ import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import eventBus from '@/utils/event-bus';
 
 const Tickets = ({
