@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
 import User from '@/models/user';
@@ -33,7 +33,6 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   const { connections } = useConnections();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
   const { tagsData } = useTags();
-  const linkedTicketTitle = useRef('');
 
   const connection = useMemo(() => {
     return connections.find(c => c.id === resource?.connection_id);
@@ -41,11 +40,9 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
 
   useEffect(() => {
     setConnectionDetails(null);
-    linkedTicketTitle.current = '';
   }, [resource?._id, resource?.connection_id]);
 
   const updateResourceDetails = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
-    linkedTicketTitle.current = linked_ticket_title || '';
     const details = { record, columns, linked_ticket_title, related_users };
     setConnectionDetails(details);
     onUpdateResourceDetails && onUpdateResourceDetails(record);
@@ -66,6 +63,15 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
       _pk: resource?._id
     };
   }, [connectionDetails, connection, resource]);
+
+  const syncRecordDetails = useCallback((recordUpdate = {}, linkedTicketTitle) => {
+    setConnectionDetails((current) => current ? {
+      ...current,
+      linked_ticket_title: linkedTicketTitle !== undefined ? linkedTicketTitle : current.linked_ticket_title,
+      record: { ...current.record, ...recordUpdate },
+    } : current);
+    onUpdateResourceDetails && onUpdateResourceDetails({ ...(connectionDetails?.record || {}), ...recordUpdate });
+  }, [connectionDetails, onUpdateResourceDetails]);
 
   const handleOthersChange = useCallback((update, callback) => {
     if (!connection || !connectionDetails?.record || targetColumns.length === 0) return;
@@ -96,19 +102,12 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
         : connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, recordID, update);
 
       return request.then((res) => {
-        if (Object.prototype.hasOwnProperty.call(update, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET)) {
-          linkedTicketTitle.current = '';
-        }
         const eventBus = context.eventBus;
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, recordID, localRowUpdate);
-        setConnectionDetails((current) => current ? {
-          ...current,
-          linked_ticket_title: Object.prototype.hasOwnProperty.call(update, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET)
-            ? ''
-            : current.linked_ticket_title,
-          record: { ...current.record, ...update },
-        } : current);
-        onUpdateResourceDetails && onUpdateResourceDetails({ ...connectionDetails.record, ...update });
+        syncRecordDetails(
+          update,
+          Object.prototype.hasOwnProperty.call(update, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET) ? '' : undefined
+        );
         callback && callback();
         return res;
       }).catch((error) => {
@@ -118,7 +117,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
         throw error;
       });
     });
-  }, [connection, connectionDetails, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, onUpdateResourceDetails]);
+  }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, syncRecordDetails]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = { [ticket._pk]: ticket.title };
@@ -130,18 +129,12 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
     const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
 
     insertRowByLink(TICKET_TABLE_NAME, getTableName(connection), linkedUpdateRecord, rowId, rowUpdateData, () => {
-      linkedTicketTitle.current = ticket.title;
-      setConnectionDetails((current) => current ? {
-        ...current,
-        linked_ticket_title: ticket.title,
-        record: { ...current.record, ...nextRecordUpdate },
-      } : current);
-      onUpdateResourceDetails && onUpdateResourceDetails({ ...connectionDetails.record, ...nextRecordUpdate });
+      syncRecordDetails(nextRecordUpdate, ticket.title);
       const eventBus = context.eventBus;
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
     });
-  }, [connection, connectionDetails, targetColumns, insertRowByLink, resource?._id, onUpdateResourceDetails]);
+  }, [connection, targetColumns, insertRowByLink, resource?._id, syncRecordDetails]);
 
   const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
     if (!connection || !connectionDetails?.record) return;
@@ -165,13 +158,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
       linkedRecords: connectionLinkedUpdate,
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then((res) => {
-        linkedTicketTitle.current = ticket.title;
-        setConnectionDetails((current) => current ? {
-          ...current,
-          linked_ticket_title: ticket.title,
-          record: { ...current.record, ...nextRecordUpdate },
-        } : current);
-        onUpdateResourceDetails && onUpdateResourceDetails({ ...connectionDetails.record, ...nextRecordUpdate });
+        syncRecordDetails(nextRecordUpdate, ticket.title);
         const eventBus = context.eventBus;
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: connectionLinkedUpdate }, false);
@@ -184,7 +171,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
         throw error;
       });
     });
-  }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, onUpdateResourceDetails]);
+  }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, syncRecordDetails]);
 
   const linkedTicketTools = useMemo(() => {
     if (!rowForActions || !connection || targetColumns.length === 0 || permission !== PERMISSION_TYPES.READ_WRITE) return [];
@@ -206,14 +193,14 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
             updateResource={updateResourceDetails}
           />
         </div>
-        {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connection && connectionDetails?.record && (
+        {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connectionDetails?.record && (
           <div className="seaqa-resource-connection-details-dialog-others">
             <ConnectionResourceOtherDetails
               connection={connection}
               record={connectionDetails.record}
               columns={targetColumns}
               projectUuid={projectUuid}
-              linkedTicketTitle={connectionDetails.linked_ticket_title || linkedTicketTitle.current}
+              linkedTicketTitle={connectionDetails.linked_ticket_title || ''}
               tagsData={tagsData}
               onChange={handleOthersChange}
               isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
@@ -222,7 +209,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
           </div>
         )}
       </div>
-      {isTicketDialogOpen && rowForActions && connection && (
+      {isTicketDialogOpen && rowForActions && (
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={{ _id: resource._id }}
