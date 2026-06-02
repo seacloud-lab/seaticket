@@ -35,8 +35,12 @@ def token_view(request, token):
 
     if request.method == 'POST':
         passwd = request.POST.get('password', '')
-        if not passwd:
+        passwd2 = request.POST.get('password2', '')
+        if not passwd or not passwd2:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        if passwd != passwd2:
+            messages.error(request, _("Passwords don't match"))
+            return render(request, 'invitations/token_view.html', {'iv': i, })
 
         from seahub.auth.utils import get_virtual_id_by_email
         vid = get_virtual_id_by_email(i.accepter)
