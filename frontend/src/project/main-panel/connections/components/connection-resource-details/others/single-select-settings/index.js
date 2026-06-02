@@ -42,7 +42,7 @@ const SingleSelectSettings = ({
   }, []);
 
   const handleChange = useCallback((newOptionId) => {
-    if (option.id === newOptionId) {
+    if (option && option.id === newOptionId) {
       onChange(null);
       return;
     }
@@ -85,7 +85,7 @@ const SingleSelectSettings = ({
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
-          value={value}
+          value={option?.id || null}
           placeholder={gettext('Search option')}
           emptyTip={gettext('No options')}
           options={options}

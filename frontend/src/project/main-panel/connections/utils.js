@@ -431,7 +431,6 @@ export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
   }
 };
 
-
 export const formatColumns = (connection, sourceColumns, { collaborators = [] } = {}) => {
   if (!connection || !Array.isArray(sourceColumns) || sourceColumns.length === 0) return [];
   const type = connection.type;

@@ -16,21 +16,23 @@ import toaster from '@/components/toaster';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
+  convertTicketToTask, convertTicketToKb,
 } from '../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import RelatedIssuesDialog from './related-issues-dialog';
 import CreateKBRecordDialog from './create-kb-record-dialog';
-import CreateTaskDialog from './create-dev-task-dialog';
+import CreateTaskDialog from './create-task-dialog';
 import { isFunction } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { getTableName } from '@/project/main-panel/connections/utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import eventBus from '@/utils/event-bus';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -57,7 +59,7 @@ const Tickets = ({
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, modifyLocalRow, markTablesViewExpired, getTableByName,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
   } = useData();
 
   const metadataRef = useRef(null);
@@ -66,18 +68,11 @@ const Tickets = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
-
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
-  const [kbSourceTicket, setKbSourceTicket] = useState(null);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [taskSourceTicket, setTaskSourceTicket] = useState(null);
-
-  const hasTaskConnection = useMemo(() => {
-    return (connections || []).some(connection => connection.type === CONNECTION_TYPE.GENERAL_TASK);
-  }, [connections]);
 
   const handleExpandRow = useCallback((ticket) => {
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setCurrentTicket(ticket);
     setIsShowTicketDetailsDialog(true);
   }, [projectUuid]);
 
@@ -216,74 +211,39 @@ const Tickets = ({
   const createKnowledgeBaseRecord = useCallback((ticket) => {
     if (!ticket) return;
 
-    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-    const contentColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
-
-    const title = titleColumn ? (getCellValueByColumn(ticket, titleColumn) || '') : (ticket?.title || '');
-
-    const rawContent = contentColumn ? getCellValueByColumn(ticket, contentColumn) : ticket?.content;
-    let content = '';
-    if (rawContent && typeof rawContent === 'object') {
-      content = rawContent.text || rawContent.preview || '';
-    } else {
-      content = rawContent || '';
-    }
-
-    setKbSourceTicket({
-      _id: ticket._id,
-      title,
-      content,
-    });
+    setCurrentTicket(ticket);
     setIsShowCreateKBRecordDialog(true);
   }, []);
 
   const createTask = useCallback((ticket) => {
-    if (!ticket || !hasTaskConnection) return;
-
-    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-    const contentColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
-    const assigneesColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
-    const dueDateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE);
-    const priorityColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.PRIORITY);
-
-    setTaskSourceTicket({
-      _id: ticket._id,
-      title: titleColumn ? (getCellValueByColumn(ticket, titleColumn) || '') : (ticket?.title || ''),
-      content: contentColumn ? getCellValueByColumn(ticket, contentColumn) : ticket?.content,
-      assignees: assigneesColumn ? (getCellValueByColumn(ticket, assigneesColumn) || []) : (ticket?.assignees || []),
-      due_date: dueDateColumn ? getCellValueByColumn(ticket, dueDateColumn) : ticket?.due_date,
-      priority: priorityColumn ? getCellValueByColumn(ticket, priorityColumn) : ticket?.priority,
-      linked_connection_records: ticket?.[getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS)?.key] || ticket?.linked_connection_records || [],
-    });
+    if (!ticket) return;
+    setCurrentTicket(ticket);
     setIsShowCreateTaskDialog(true);
-  }, [hasTaskConnection]);
+  }, []);
 
-  const handleTaskCreated = useCallback(({ linkedKey, linkedRecord, row, connection }) => {
-    if (!taskSourceTicket || !linkedKey) return;
+  const handleTaskCreated = useCallback(({ task, connection }) => {
+    if (!currentTicket) return;
     const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
     if (!linkedConnectionRecordsColumn) return;
 
-    const table = getTableByName(TICKET_TABLE_NAME);
-    const latestTicketRow = table?.id_row_map?.[String(taskSourceTicket._id)] || currentTicket || taskSourceTicket;
-    const oldValue = latestTicketRow?.[linkedConnectionRecordsColumn.key] || latestTicketRow?.linked_connection_records || [];
-    const nextValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, linkedKey])) : [linkedKey];
-    modifyLocalRow(TICKET_TABLE_NAME, taskSourceTicket._id, { [linkedConnectionRecordsColumn.key]: nextValue });
-    context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecord }, false);
+    const newValueKey = `${connection.id}_${task._pk}`;
+    const oldValue = getCellValueByColumn(currentTicket, linkedConnectionRecordsColumn);
+    const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
+    const update = { [linkedConnectionRecordsColumn.key]: newValue };
 
-    if (connection && row?._pk) {
-      const connectionTableName = getTableName(connection);
-      if (connectionTableName) {
-        markTablesViewExpired([connectionTableName]);
-      }
-    }
+    // update cache
+    const connectionTableName = getTableName(connection);
+    const linked_records = { [newValueKey]: task.title };
+    insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, update, () => {
+      // update current details dialog
+      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, { [linkedConnectionRecordsColumn.name]: newValue }, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } } );
 
-    if (currentTicket && currentTicket._id === taskSourceTicket._id) {
-      setCurrentTicket({
-        ...currentTicket,
-        [linkedConnectionRecordsColumn.key]: nextValue,
-      });
-    }
-  }, [currentTicket, taskSourceTicket, modifyLocalRow, getTableByName, markTablesViewExpired]);
+      // update current view display
+      const metadataEventBus = context.eventBus;
+      metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, update);
+      metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
+    });
+  }, [currentTicket, insertRowByLink]);
 
   const createRowsTools = useCallback((props) => {
     let params = {
@@ -293,7 +253,8 @@ const Tickets = ({
       chatTicketsByAI,
       togglePageSlugId,
       createKnowledgeBaseRecord,
-      createTask: hasTaskConnection ? createTask : undefined,
+      connections,
+      createTask,
     };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
@@ -302,7 +263,10 @@ const Tickets = ({
       return customizeCreateRowsTools(params);
     }
     return generatorTicketsRowsTools(params);
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord, createTask, hasTaskConnection]);
+  }, [
+    workspaceID, projectName, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord, createTask
+  ]);
 
   const createContextMenuOptions = useCallback((props) => {
     let params = {
@@ -312,7 +276,8 @@ const Tickets = ({
       chatTicketsByAI,
       togglePageSlugId,
       createKnowledgeBaseRecord,
-      createTask: hasTaskConnection ? createTask : undefined,
+      connections,
+      createTask,
     };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
@@ -321,7 +286,10 @@ const Tickets = ({
       return customizeCreateContextMenuOptions(params);
     }
     return generatorTicketsContextMenuOptions(params);
-  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask, hasTaskConnection]);
+  }, [
+    projectName, workspaceID, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask,
+  ]);
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
@@ -344,9 +312,13 @@ const Tickets = ({
       projectName,
       findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
       createKnowledgeBaseRecord,
-      createTask: hasTaskConnection ? createTask : undefined,
+      connections,
+      createTask,
     });
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, createTask, hasTaskConnection, metadataAPI]);
+  }, [
+    workspaceID, projectName, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI, createTask,
+  ]);
 
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
@@ -361,7 +333,7 @@ const Tickets = ({
       newIndex = ticketsData.length - 1;
     }
     const ticket = ticketsData[newIndex];
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setCurrentTicket(ticket);
   }, [currentTicket, metadataRef]);
 
   const onCloseRelatedIssuesDialog = useCallback(() => {
@@ -412,7 +384,7 @@ const Tickets = ({
       {isShowTicketDetailsDialog && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}
-          resource={currentTicket}
+          resource={{ ...currentTicket, type: TICKET_TYPE }}
           columns={allColumns.current}
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
@@ -420,25 +392,27 @@ const Tickets = ({
           createMoreOptions={createMoreOptions}
         />
       )}
-      {isShowCreateKBRecordDialog && kbSourceTicket && (
+      {isShowCreateKBRecordDialog && currentTicket && (
         <CreateKBRecordDialog
           projectUuid={projectUuid}
-          ticket={kbSourceTicket}
+          ticket={convertTicketToKb(currentTicket, allColumns.current)}
           onClose={() => {
             setIsShowCreateKBRecordDialog(false);
-            setKbSourceTicket(null);
+            if (isShowTicketDetailsDialog) return;
+            setCurrentTicket(null);
           }}
         />
       )}
-      {isShowCreateTaskDialog && taskSourceTicket && (
+      {isShowCreateTaskDialog && currentTicket && (
         <CreateTaskDialog
           projectUuid={projectUuid}
           workspaceID={workspaceID}
           projectName={projectName}
-          ticket={taskSourceTicket}
+          ticket={convertTicketToTask(currentTicket, allColumns.current)}
           onClose={() => {
             setIsShowCreateTaskDialog(false);
-            setTaskSourceTicket(null);
+            if (isShowTicketDetailsDialog) return;
+            setCurrentTicket(null);
           }}
           onSubmitCallback={handleTaskCreated}
         />

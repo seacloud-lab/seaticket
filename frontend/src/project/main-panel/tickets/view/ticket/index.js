@@ -10,7 +10,7 @@ import {
   AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
-import { generatorTicketsContextMenuOptions } from '../../utils';
+import { convertTicketToKb, generatorTicketsContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -25,7 +25,7 @@ import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../
 import StatusToggleButton from './status-toggle-btn';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
-import CreateTaskDialog from '../../components/create-dev-task-dialog';
+import CreateTaskDialog from '../../components/create-task-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
@@ -36,7 +36,8 @@ import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { useCollaborators } from '@/sea-metadata';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getTableName } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
@@ -56,20 +57,14 @@ const Ticket = ({
   const [linkedRecords, setLinkedRecords] = useState({});
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
-  const [kbSourceTicket, setKbSourceTicket] = useState(null);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [taskSourceTicket, setTaskSourceTicket] = useState(null);
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { connections } = useConnections();
-  const { modifyLocalRow, getTableByName, deleteRow } = useData();
+  const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink } = useData();
   const { tagsData, createTag } = useTags();
   const { updateAttachments } = useAIChatTools();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
-
-  const hasTaskConnection = useMemo(() => {
-    return (connections || []).some(connection => connection.type === CONNECTION_TYPE.GENERAL_TASK);
-  }, [connections]);
 
   const lastTicketID = useRef('');
 
@@ -200,46 +195,44 @@ const Ticket = ({
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 
-  const findRelatedIssues = useCallback((row) => {
-    if (!row) return;
+  const findRelatedIssues = useCallback(() => {
     setIsShowRelatedIssuesDialog(true);
   }, []);
 
-  const createKnowledgeBaseRecord = useCallback((row) => {
-    if (!row) return;
-    setKbSourceTicket({
-      _id: row._id || row.id,
-      title: row.title || '',
-      content: (typeof row.content === 'object' ? (row.content?.text || row.content?.preview || '') : (row.content || '')),
-    });
+  const createKnowledgeBaseRecord = useCallback(() => {
     setIsShowCreateKBRecordDialog(true);
   }, []);
 
-  const createTask = useCallback((row) => {
-    if (!row || !hasTaskConnection) return;
-    setTaskSourceTicket({
-      _id: row._id || row.id,
-      title: row.title || '',
-      content: row.content || '',
-      assignees: row.assignees || [],
-      participants: row.participants || [],
-      due_date: row.due_date || '',
-      priority: row.priority,
-      linked_connection_records: row.linked_connection_records || [],
-    });
+  const createTask = useCallback(() => {
     setIsShowCreateTaskDialog(true);
-  }, [hasTaskConnection]);
+  }, []);
 
-  const handleTaskCreated = useCallback(({ linkedKey, linkedRecord }) => {
-    if (!ticket || !linkedKey) return;
-    const currentLinkedRecords = Array.isArray(ticket.linked_connection_records) ? ticket.linked_connection_records : [];
-    const nextLinkedRecords = Array.from(new Set([...currentLinkedRecords, linkedKey]));
-    const update = { linked_connection_records: nextLinkedRecords };
+  const handleTaskCreated = useCallback(({ task, connection }) => {
+    if (!ticket) return;
+
+    const newValueKey = `${connection.id}_${task._pk}`;
+    const oldValue = ticket.linked_connection_records || [];
+    const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
+
+    // update cache
+    const table = getTableByName(TICKET_TABLE_NAME);
+    const columns = Object.values(table.key_column_map);
+    if (columns.length > 0) {
+      const linkedConnectionRecordsColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
+      const update = { [linkedConnectionRecordsColumn.key]: newValue };
+      const connectionTableName = getTableName(connection);
+      const linked_records = { [newValueKey]: task.title };
+      insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, ticketID, update, () => {
+        // nothing todo
+      });
+    }
+
+    const update = { linked_connection_records: newValue };
     const newTicket = ticket._update(update);
-    handleUpdateRowsCacheData(ticket._id, update);
+
     setTicket(deepCopy(newTicket));
-    setLinkedRecords((prev) => ({ ...prev, ...linkedRecord }));
-  }, [ticket, handleUpdateRowsCacheData]);
+    setLinkedRecords((prev) => ({ ...prev, [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }));
+  }, [ticket, ticketID, getTableByName, insertRowByLink]);
 
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
@@ -268,7 +261,8 @@ const Ticket = ({
       projectName,
       findRelatedIssues,
       createKnowledgeBaseRecord,
-      createTask: hasTaskConnection ? createTask : undefined,
+      connections,
+      createTask,
     }).filter(item => item.key !== 'open_ticket');
     if (options[options.length - 1] !== 'Divider') {
       options.push('Divider');
@@ -279,7 +273,10 @@ const Ticket = ({
       callback: () => setIsShowKeyboardShortcuts(true),
     });
     return options;
-  }, [ticket, getTableByName, deleteRow, chatTicketsByAI, projectUuid, workspaceID, projectName, findRelatedIssues, createKnowledgeBaseRecord, createTask, hasTaskConnection]);
+  }, [
+    ticket, projectUuid, workspaceID, projectName, connections,
+    getTableByName, deleteRow, chatTicketsByAI, findRelatedIssues, createKnowledgeBaseRecord, createTask
+  ]);
 
   const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
@@ -665,26 +662,20 @@ const Ticket = ({
           onClose={() => setIsShowRelatedIssuesDialog(false)}
         />
       )}
-      {isShowCreateKBRecordDialog && kbSourceTicket && (
+      {isShowCreateKBRecordDialog && (
         <CreateKBRecordDialog
           projectUuid={projectUuid}
-          ticket={kbSourceTicket}
-          onClose={() => {
-            setIsShowCreateKBRecordDialog(false);
-            setKbSourceTicket(null);
-          }}
+          ticket={convertTicketToKb(ticket)}
+          onClose={() => setIsShowCreateKBRecordDialog(false)}
         />
       )}
-      {isShowCreateTaskDialog && taskSourceTicket && (
+      {isShowCreateTaskDialog && (
         <CreateTaskDialog
           projectUuid={projectUuid}
           workspaceID={workspaceID}
           projectName={projectName}
-          ticket={taskSourceTicket}
-          onClose={() => {
-            setIsShowCreateTaskDialog(false);
-            setTaskSourceTicket(null);
-          }}
+          ticket={ticket}
+          onClose={() => setIsShowCreateTaskDialog(false)}
           onSubmitCallback={handleTaskCreated}
         />
       )}
