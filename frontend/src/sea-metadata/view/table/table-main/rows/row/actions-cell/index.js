@@ -58,7 +58,7 @@ class ActionsCell extends Component {
         onMouseEnter={this.onCellMouseEnter}
         onMouseLeave={this.onCellMouseLeave}
       >
-        {!isSelected && (<div className="sea-metadata-table-column-content row-index text-truncate">{index + 1}</div>)}
+        {!isSelected && (<div className="sea-metadata-table-column-content row-index">{index + 1}</div>)}
         <div className="sea-metadata-table-column-content actions-checkbox">
           <div className="select-cell-checkbox-container" onClick={this.props.onSelectRow}>
             <input
