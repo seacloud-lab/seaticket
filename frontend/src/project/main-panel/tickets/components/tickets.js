@@ -379,8 +379,11 @@ const Tickets = ({
     setCurrentTicket(null);
   }, [isShowTicketDetailsDialog]);
 
-  const closeWarningDialog = useCallback(() => {
+  const closeWarningDialog = useCallback(({ shouldRestoreRow = false } = {}) => {
     if (isConfirmingClose) return;
+    if (shouldRestoreRow) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
+    }
     setCloseGithubIssuesWarning(null);
     setPendingRowCloseData(null);
   }, [isConfirmingClose]);
@@ -409,8 +412,11 @@ const Tickets = ({
     });
   }, [api, modifyRow, pendingRowCloseData, closeWarningDialog, onRefresh]);
 
-  const closeBatchWarningDialog = useCallback(() => {
+  const closeBatchWarningDialog = useCallback(({ shouldRestoreRows = false } = {}) => {
     if (isConfirmingBatchClose) return;
+    if (shouldRestoreRows) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
+    }
     setBatchCloseGithubIssuesWarning(null);
     setPendingBatchRowsData(null);
     setPendingBatchIsCopyPaste(false);
@@ -516,14 +522,14 @@ const Tickets = ({
         warning={closeGithubIssuesWarning}
         description={gettext('Confirm to close this ticket and close linked GitHub issues at the same time.')}
         isConfirming={isConfirmingClose}
-        onCancel={closeWarningDialog}
+        onCancel={() => closeWarningDialog({ shouldRestoreRow: true })}
         onConfirm={confirmCloseTicketAndGithubIssues}
       />
       <CloseLinkedGithubIssuesWarningDialog
         warning={batchCloseGithubIssuesWarning}
         description={gettext('Confirm to continue closing these tickets and close linked GitHub issues at the same time.')}
         isConfirming={isConfirmingBatchClose}
-        onCancel={closeBatchWarningDialog}
+        onCancel={() => closeBatchWarningDialog({ shouldRestoreRows: true })}
         onConfirm={confirmBatchCloseTicketAndGithubIssues}
       />
     </>
