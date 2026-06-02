@@ -257,6 +257,6 @@ class AccountAILimitInfo(APIView):
             ai_credit_used = 0
 
         return Response({
-            'is_exceed': is_exceed,
-            'ai_credit_used': ai_credit_used,
+            'is_exceed': True or is_exceed,
+            'ai_credit_used': 163 or ai_credit_used,
         })

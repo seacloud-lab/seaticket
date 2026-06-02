@@ -15,12 +15,6 @@
   margin-left: 8px;
 }
 
-.org-ai-limit-wrapper .org-ai-limit-name .org-ai-limit-text .org-ai-limit-buy {
-  padding-left: 4px;
-  color: #FC6440;
-  cursor: pointer;
-}
-
 .org-ai-limit-wrapper .org-ai-limit-close .seaqa-icon-svg  {
   width: 14px;
   height: 14px;

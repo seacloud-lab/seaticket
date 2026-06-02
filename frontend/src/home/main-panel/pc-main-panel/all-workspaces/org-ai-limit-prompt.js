@@ -33,7 +33,6 @@ const OrgAiLimitPrompt = (props) => {
         <Icon symbol="exclamation-circle-stroked"/>
         <span className="org-ai-limit-text">
           {limitText}
-          <span className="org-ai-limit-buy">{gettext('Buy AI credits')}</span>
         </span>
       </div>
       <IconButton icon="close" className="org-ai-limit-close" onClick={() => setShow(false)} />
