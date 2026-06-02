@@ -71,6 +71,9 @@ const Tickets = ({
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
+  const [closeGithubIssuesWarning, setCloseGithubIssuesWarning] = useState(null);
+  const [pendingRowCloseData, setPendingRowCloseData] = useState(null);
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const [batchCloseGithubIssuesWarning, setBatchCloseGithubIssuesWarning] = useState(null);
   const [pendingBatchRowsData, setPendingBatchRowsData] = useState(null);
   const [pendingBatchIsCopyPaste, setPendingBatchIsCopyPaste] = useState(false);
@@ -174,7 +177,21 @@ const Tickets = ({
         if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
           delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
         }
-        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData });
+        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData }).catch(error => {
+          if (isOpenLinkedGithubIssuesWarning(error)) {
+            setCloseGithubIssuesWarning(error?.response?.data || {});
+            setPendingRowCloseData({
+              rowID: row_id,
+              rowUpdate: row_update,
+              rowData,
+              isCopyPaste: Boolean(isCopyPaste),
+              typesData,
+            });
+            // Suppress server-operator failure toast; confirmation modal handles this flow.
+            return;
+          }
+          throw error;
+        });
       };
     }
     if (isFunction(api.modifyRows)) {
@@ -362,6 +379,36 @@ const Tickets = ({
     setCurrentTicket(null);
   }, [isShowTicketDetailsDialog]);
 
+  const closeWarningDialog = useCallback(() => {
+    if (isConfirmingClose) return;
+    setCloseGithubIssuesWarning(null);
+    setPendingRowCloseData(null);
+  }, [isConfirmingClose]);
+
+  const confirmCloseTicketAndGithubIssues = useCallback(() => {
+    if (!pendingRowCloseData) {
+      closeWarningDialog();
+      return;
+    }
+    const { rowID, rowUpdate, rowData, isCopyPaste, typesData } = pendingRowCloseData;
+    setIsConfirmingClose(true);
+    modifyRow(
+      TICKET_TABLE_NAME,
+      rowID,
+      rowUpdate,
+      () => api.modifyRow(rowID, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste),
+      { typesData }
+    ).then(() => {
+      closeWarningDialog();
+      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
+      onRefresh && onRefresh();
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsConfirmingClose(false);
+    });
+  }, [api, modifyRow, pendingRowCloseData, closeWarningDialog, onRefresh]);
+
   const closeBatchWarningDialog = useCallback(() => {
     if (isConfirmingBatchClose) return;
     setBatchCloseGithubIssuesWarning(null);
@@ -465,6 +512,13 @@ const Tickets = ({
           onSubmitCallback={handleTaskCreated}
         />
       )}
+      <CloseLinkedGithubIssuesWarningDialog
+        warning={closeGithubIssuesWarning}
+        description={gettext('Confirm to close this ticket and close linked GitHub issues at the same time.')}
+        isConfirming={isConfirmingClose}
+        onCancel={closeWarningDialog}
+        onConfirm={confirmCloseTicketAndGithubIssues}
+      />
       <CloseLinkedGithubIssuesWarningDialog
         warning={batchCloseGithubIssuesWarning}
         description={gettext('Confirm to continue closing these tickets and close linked GitHub issues at the same time.')}
