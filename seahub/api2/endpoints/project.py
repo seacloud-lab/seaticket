@@ -206,10 +206,10 @@ class ProjectsView(APIView):
         try:
             seadb_api = SeaDBAPI()
             seadb_api.create_base(project.uuid)
-            init_seadb_tables_from_schema('init_ticket_seadb_table', seadb_api, project.uuid)
-            init_seadb_tables_from_schema('init_knowledge_base_seadb_table', seadb_api, project.uuid)
-            init_seadb_tables_from_schema('init_tag_seadb_table', seadb_api, project.uuid)
-            init_seadb_tables_from_schema('init_agent_seadb_table', seadb_api, project.uuid)
+            init_seadb_tables_from_schema(['TicketsTable', 'TicketCommentsTable', 'TicketActivitiesTable'], seadb_api, project.uuid)
+            init_seadb_tables_from_schema(['KnowledgeBaseTable'], seadb_api, project.uuid)
+            init_seadb_tables_from_schema(['TagTable'], seadb_api, project.uuid)
+            init_seadb_tables_from_schema(['AgentRunsTable', 'AgentActionsTable'], seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

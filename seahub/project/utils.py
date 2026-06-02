@@ -140,22 +140,22 @@ def create_connection(project, username, connection_type, name, config):
     seadb_api = SeaDBAPI()
     init_table_funcs = {
         ConnectionType.SITE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_site_seadb_table', api, project_uuid, connection_id
+            ['WebCrawlTable'], api, project_uuid, connection_id
         ),
         ConnectionType.DISCOURSE_FORUM.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_discourse_forum_seadb_table', api, project_uuid, connection_id
+            ['DiscourseTopicsTable', 'DiscourseRepliesTable'], api, project_uuid, connection_id
         ),
         ConnectionType.GITHUB_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_github_issues_seadb_table', api, project_uuid, connection_id
+            ['GithubIssuesTable', 'GithubIssueCommentsTable'], api, project_uuid, connection_id
         ),
         ConnectionType.SEAFILE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_seafile_seadb_table', api, project_uuid, connection_id
+            ['SeafileTable'], api, project_uuid, connection_id
         ),
         ConnectionType.EMAIL.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_email_seadb_table', api, project_uuid, connection_id
+            ['EmailTable', 'ThreadTable'], api, project_uuid, connection_id
         ),
         ConnectionType.NOTION.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            'init_notion_seadb_table', api, project_uuid, connection_id
+            ['NotionTable'], api, project_uuid, connection_id
         ),
         ConnectionType.GENERAL_TASK.value: init_general_task_seadb_table
     }

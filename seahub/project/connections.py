@@ -520,7 +520,7 @@ class ProjectGithubConnectionsView(APIView):
             connection_id = record.id
             seadb_api = SeaDBAPI()
             try:
-                init_seadb_tables_from_schema('init_github_issues_seadb_table', seadb_api, project.uuid, connection_id)
+                init_seadb_tables_from_schema(['GithubIssuesTable', 'GithubIssueCommentsTable'], seadb_api, project.uuid, connection_id)
             except Exception as e:
                 logger.error(e)
                 record.delete()

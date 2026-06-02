@@ -155,11 +155,9 @@ def get_seadb_column_data(schema_table_name, column_name):
     return {}
 
 
-def init_seadb_tables_from_schema(schema_key, seadb_api, project_uuid, connection_id=None):
+def init_seadb_tables_from_schema(schema_table_names, seadb_api, project_uuid, connection_id=None):
     schema = get_seadb_table_schemas()
     table_defs = schema.get('tables') or {}
-    init_groups = schema.get('init_groups') or {}
-    schema_table_names = init_groups.get(schema_key, [])
     for schema_table_name in schema_table_names:
         table_schema = table_defs.get(schema_table_name) or {}
         table_name = _resolve_table_name_by_schema_table_key(table_schema.get('table_name', ''), connection_id)
@@ -194,7 +192,7 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
     portal_issues_table = get_current_table_metadata(tables_metadata, portal_issues_table_name)
 
     if not portal_issues_table:
-        init_seadb_tables_from_schema('init_portal_issues_seadb_table', seadb_api, project_uuid)
+        init_seadb_tables_from_schema(['PortalIssuesTable', 'PortalIssueCommentsTable'], seadb_api, project_uuid)
 
 
 def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
@@ -737,7 +735,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, knowledge_base_table_name)
     if not table_metadata:
-        init_seadb_tables_from_schema('init_knowledge_base_seadb_table', seadb_api, project_uuid)
+        init_seadb_tables_from_schema(['KnowledgeBaseTable'], seadb_api, project_uuid)
         metadata = seadb_api.get_base_metadata(project_uuid)
         tables_metadata = metadata.get('tables') or []
         table_metadata = get_current_table_metadata(tables_metadata, knowledge_base_table_name)
