@@ -1,35 +1,46 @@
+import os
 import sys
 import logging
 import argparse
+sys.path.append('/opt/seaticket/seaqa-web')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
+import django
 
-sys.path.append('/opt/seaticket/seaqa-indexer/')
-
-from sqlalchemy import text
-
-from seaqa_indexer.utils.seaqa_db import SeaqaDB
-from seaqa_indexer.db import init_db_session_class
-from seaqa_indexer.index.utils import init_logging
-
-from seaqa_indexer.utils.seadb_api import SeaDBAPI
-from seaqa_indexer.seadb_models.models import PropertyTypes
+django.setup()
+from seahub.project.models import Projects
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.seadb_models.models import PropertyTypes
 
 logger = logging.getLogger(__name__)
 
 
-class ColumnManager:
+def init_logging(args):
+    level = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+    }.get(args.loglevel, logging.INFO)
+    format = '[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s'
+    logging.basicConfig(
+        format=format,
+        datefmt='%Y-%m-%d %H:%M:%S',
+        level=level,
+        stream=args.logfile,
+        force=True
+    )
 
+
+class TableManager:
     def __init__(self):
-        self.db_session_class = init_db_session_class()
-        self.seaqa_db = SeaqaDB(self.db_session_class)
         self.seadb_api = SeaDBAPI()
     
     def update_agent_actions_table(self, project_uuid):
         base_info = self.seadb_api.get_base_metadata(project_uuid)
         table = next((t for t in base_info['tables'] if t['name'] == 'agent_actions'), None)
-        if not table:
-            return
-        actions_table_id = table['id']
-        self.seadb_api.delete_table(project_uuid, actions_table_id)
+        if table:
+            actions_table_id = table['id']
+            self.seadb_api.delete_table(project_uuid, actions_table_id)
 
         res = self.seadb_api.create_table(project_uuid, 'agent_actions')
         actions_table_id = res['table_id']
@@ -58,37 +69,30 @@ class ColumnManager:
             self.seadb_api.add_column(project_uuid, actions_table_id, column)
         
         self.seadb_api.create_column_index(
-        project_uuid,
-        actions_table_id,
-        ['run_id', 'created_at'],
-    )
-
+            project_uuid,
+            actions_table_id,
+            ['run_id', 'created_at'],
+        )
+        logger.info('finish update project_uuid: %s agent_actions table', project_uuid)
+    
     
     def get_projects_by_page(self, limit, start):
-        with self.db_session_class() as session:
-            sql = """SELECT uuid FROM projects ORDER BY id LIMIT :limit offset :start"""
-            projects = session.execute(text(sql), {'limit':limit, 'start': start}).fetchall()
-            return projects
+        return Projects.objects.order_by('id').values_list('uuid', flat=True)[start:start + limit]
     
     def update(self):
         limit = 1000
         start = 0
         while True:
-            projects = self.get_projects_by_page(limit, start)
-
-            for project in projects:
-                project_uuid = project.uuid
+            project_uuids = self.get_projects_by_page(limit, start)
+            for project_uuid in project_uuids:
                 logger.info('start to update agent_actions for project %s', project_uuid)
                 try:
-                    self.update_agent_actions_table(project_uuid)
+                    self.update_agent_actions_table(str(project_uuid))
                 except Exception as e:
                     logger.exception("project_uuid:%s fail to update agent_actions table error: %s", project_uuid, e)
-            
             start += limit
-
-            if len(projects) < limit:
+            if len(project_uuids) < limit:
                 break
-
 
 
 def create_parser():
@@ -113,14 +117,12 @@ def create_parser():
 
 def main():
     parser = create_parser()
-
     args = parser.parse_args()
-
     init_logging(args)
 
     try:
-        column_manager = ColumnManager()
-        column_manager.update()
+        table_manager = TableManager()
+        table_manager.update()
     except Exception as e:
         logger.exception(f"upgrade agent_actions table failed: {e}")
         sys.exit(1)
