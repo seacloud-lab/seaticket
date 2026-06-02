@@ -2,12 +2,10 @@
   height: 64px;
   overflow: hidden;
   display: inline-flex;
-  align-items: center;
   border-radius: 8px;
   background-color: #F7F7F5;
   flex-shrink: 0;
   cursor: pointer;
-  gap: 4px;
   border: 1px solid var(--bs-border-tertiary-color);
 }
 
@@ -15,9 +13,11 @@
   padding: 8px 12px;
   flex-direction: column;
   max-width: 200px;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
-.seaqa-ai-chat-attachment-remove-able {
+.seaqa-ai-chat-attachment.seaqa-ai-chat-attachment-remove-able {
   position: relative;
 }
 
@@ -28,6 +28,11 @@
 .seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-name {
   width: 100%;
   font-weight: 500;
+  line-height: 24px;
+}
+
+.seaqa-ai-chat-attachment.seaqa-ai-chat-attachment-remove-able:not(.image):hover .seaqa-ai-chat-attachment-name {
+  width: calc(100% - 16px);
 }
 
 .seaqa-ai-chat-attachment .seaqa-ai-chat-attachment-type-info {
@@ -36,6 +41,7 @@
   align-items: center;
   font-size: 12px;
   color: var(--bs-icon-color);
+  line-height: 20px;
 }
 
 .seaqa-ai-chat-attachment .seaqa-project-ai-attachment-icon {
