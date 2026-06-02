@@ -367,9 +367,11 @@ class ChatView(APIView):
             logger.warning(f'Failure to get extra contents: {e}')
 
         session_uuid = request.data.get('session_uuid')
+        is_new_session = False
         if not session_uuid:
             session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
             session_uuid = session.session_uuid
+            is_new_session = True
         else:
             session = ChatSessions.objects.get_session_by_uuid(session_uuid)
             if not session:
@@ -392,7 +394,7 @@ class ChatView(APIView):
             error_msg = 'There are unfinished tasks in the current session, please try again later.'
             return api_error(status.HTTP_409_CONFLICT, error_msg)
 
-        should_generate_title = ChatMessages.objects.get_messages_by_session(session_uuid).count() == 0
+        should_generate_title = is_new_session
 
         try:
             message_id = gen_message_id(session.session_uuid)
