@@ -22,10 +22,9 @@
 }
 
 .seaqa-create-task-dialog .seaqa-create-task-other-settings {
-  width: 316px;
+  width: 30%;
   display: flex;
   flex-direction: column;
-  min-width: 316px;
   min-height: 0;
 }
 
