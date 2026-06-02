@@ -13,6 +13,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from urllib.parse import urlparse
 
+from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
@@ -1418,11 +1419,12 @@ class AgentActionCancelView(APIView):
 
             # Update action status to cancelled
             now = timezone.now().isoformat()
+            nickname = email2nickname(username)
             update_data = [{
                 'pk': int(action_id),
                 'row': {
                     'status': 'cancelled',
-                    'result': f'Cancelled by {username}',
+                    'result': f'Cancelled by {nickname}',
                     'executed_at': now,
                 }
             }]
