@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
 from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
-    convert_cost_to_credit, check_ai_limit
+    convert_cost_to_credit
 
 
 logger = logging.getLogger(__name__)
@@ -165,11 +165,9 @@ class AccountInfo(APIView):
                 org_id = request.user.org.org_id
                 info['ai_credit'] = get_ai_credit_by_org_id(org_id)
                 info['ai_credit_used'] = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
-                info['ai_credit_exceed'] = check_ai_limit(org_id)
             else: # system admin mode
                 info['ai_credit'] = -1
                 info['ai_credit_used'] = 0
-                info['ai_credit_exceed'] = False
 
             if info['ai_credit'] <= 0:
                 info['ai_usage_rate'] = '0%'
@@ -180,6 +178,7 @@ class AccountInfo(APIView):
 
     def get(self, request, format=None):
         return Response(self._get_account_info(request))
+        
     def put(self, request, format=None):
         """Update account info.
         """

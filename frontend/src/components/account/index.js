@@ -7,6 +7,7 @@ import { isEnter, isEsc } from '@/utils/hotkey';
 import { isWorkWeChat } from '@/utils/wechat-utils';
 import userAPI from '@/api/user-api';
 import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
+import { aiCreditExceededAmount } from '@/constants/config';
 import IconBtn from '../icon-button';
 import Icon from '../icon';
 
@@ -112,7 +113,6 @@ class Account extends Component {
           aiCredit: resp.data.ai_credit,
           aiCreditUsed: resp.data.ai_credit_used,
           aiUsageRate: resp.data.ai_usage_rate,
-          aiCreditExceed: resp.data.ai_credit_exceed
         });
       }).catch(error => {
         let errMessage = Utils.getErrorMsg(error);
@@ -220,7 +220,7 @@ class Account extends Component {
                 <div className="account-info-card">
                   <p className='account-info-card-title'>{gettext('AI credit used')}</p>
                   <div className="d-flex align-items-center gap-1">
-                    <span className={classNames('account-info-card-used', { 'exceed': this.state.aiCreditExceed })}>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
+                    <span className={classNames('account-info-card-used', { 'exceed': aiCreditExceededAmount > 0 })}>{this.state.aiCreditUsed.toFixed(0) || 0}</span>
                     <span className='account-info-card-total'> / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</span>
                   </div>
                 </div>
