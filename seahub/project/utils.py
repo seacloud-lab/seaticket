@@ -656,7 +656,7 @@ def collect_github_issue_label_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        GithubIssuesTable.labels.name,
+        get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'),
         'label_id',
     )
 

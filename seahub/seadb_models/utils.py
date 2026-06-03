@@ -15,6 +15,107 @@ from seahub.seadb_models.models import SchemaTableNames
 logger = logging.getLogger(__name__)
 
 
+SCHEMA_TABLE_NAME_CONNECTION = {
+    ConnectionType.GITHUB_ISSUE.value: SchemaTableNames.GITHUB_ISSUES,
+    ConnectionType.DISCOURSE_FORUM.value: SchemaTableNames.DISCOURSE_TOPICS,
+    ConnectionType.SITE.value: SchemaTableNames.WEB_CRAWL,
+    ConnectionType.SEAFILE.value: SchemaTableNames.SEAFILE,
+    ConnectionType.EMAIL.value: SchemaTableNames.THREAD,
+    ConnectionType.NOTION.value: SchemaTableNames.NOTION,
+}
+
+class TableNameInvalidError(Exception):
+    pass
+
+
+class ColumnNameInvalidError(Exception):
+    pass
+
+
+def _resolve_table_name_by_table_name_schema(table_name_schema, connection_id=None):
+    if '{connection_id}' in table_name_schema:
+        if connection_id is None:
+            raise ValueError(f'connection_id is required for table name: {table_name_schema}')
+        return table_name_schema.format(connection_id=connection_id)
+    return table_name_schema
+
+
+def get_table_name_from_schema(schema_table_name, connection_id=None):
+    schema = get_seadb_table_schemas()
+    tables = schema.get('tables') or {}
+    table_schema = tables.get(schema_table_name) or {}
+    table_name_schema = table_schema.get('table_name')
+    table_name = _resolve_table_name_by_table_name_schema(table_name_schema, connection_id)
+    if not table_name:
+        raise TableNameInvalidError()
+    return table_name
+
+
+def get_column_name_from_schema(schema_table_name, column_name):
+    """Return the column_name defined in YAML schema, or empty string if column not found. O(1) dict lookup."""
+    schema = get_seadb_table_schemas()
+    tables = schema.get('tables') or {}
+    table_schema = tables.get(schema_table_name) or {}
+    columns = table_schema.get('columns') or {}
+    if not column_name in columns:
+        raise ColumnNameInvalidError()
+    return column_name
+
+
+def get_column_data_from_schema(schema_table_name, column_name):
+    """Return the column_data config for the specified column from YAML schema. O(1) dict lookup."""
+    schema = get_seadb_table_schemas()
+    tables = schema.get('tables') or {}
+    table_schema = tables.get(schema_table_name) or {}
+    columns = table_schema.get('columns') or {}
+    col = columns.get(column_name)
+    if col:
+        return col.get('column_data') or {}
+    return {}
+
+
+def init_seadb_tables_from_schema(schema_table_names, seadb_api, project_uuid, connection_id=None):
+    schema = get_seadb_table_schemas()
+    table_defs = schema.get('tables') or {}
+    for schema_table_name in schema_table_names:
+        table_schema = table_defs.get(schema_table_name) or {}
+        table_name = _resolve_table_name_by_table_name_schema(table_schema.get('table_name', ''), connection_id)
+        res = seadb_api.create_table(project_uuid, table_name)
+        table_id = res['table_id']
+
+        # Build cascade mapping from column-level cascade_source_column declarations
+        cascade_map = {}  # target_column_name -> source_column_name
+        for column_name, column in table_schema.get('columns', {}).items():
+            cascade_source = (column.get('column_data') or {}).get('cascade_source_column')
+            if cascade_source:
+                cascade_map[column_name] = cascade_source
+        cascade_source_columns = set(cascade_map.values())
+        source_column_keys = {}  # source_column_name -> seadb_key
+
+        for column_name, column in table_schema.get('columns', {}).items():
+            mapped_column = deepcopy(column)
+            mapped_column['column_name'] = column_name
+
+            # If this column is a cascade target and we have the source's SeaDB key, inject it
+            if column_name in cascade_map:
+                source_col_name = cascade_map[column_name]
+                source_key = source_column_keys.get(source_col_name)
+                if source_key:
+                    mapped_column.setdefault('column_data', {})
+                    mapped_column['column_data']['cascade_column_key'] = source_key
+                # Remove the YAML-only hint from data sent to SeaDB
+                mapped_column.get('column_data', {}).pop('cascade_source_column', None)
+
+            added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+            # Record the SeaDB key if this column acts as a cascade source
+            if column_name in cascade_source_columns:
+                source_column_keys[column_name] = added_column['column_key']
+
+        for index_item in table_schema.get('indexes', []):
+            seadb_api.create_column_index(project_uuid, table_id, index_item)
+
+
 def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, tasks):
     if not tasks:
         return
@@ -106,97 +207,6 @@ def get_current_table_metadata(tables, table_name):
             return table
     return None
 
-SCHEMA_TABLE_NAME_CONNECTION = {
-    ConnectionType.GITHUB_ISSUE.value: SchemaTableNames.GITHUB_ISSUES,
-    ConnectionType.DISCOURSE_FORUM.value: SchemaTableNames.DISCOURSE_TOPICS,
-    ConnectionType.SITE.value: SchemaTableNames.WEB_CRAWL,
-    ConnectionType.SEAFILE.value: SchemaTableNames.SEAFILE,
-    ConnectionType.EMAIL.value: SchemaTableNames.THREAD,
-    ConnectionType.NOTION.value: SchemaTableNames.NOTION,
-}
-
-
-def _resolve_table_name_by_schema_table_key(schema_table_name, connection_id=None):
-    if '{connection_id}' in schema_table_name:
-        if connection_id is None:
-            raise ValueError(f'connection_id is required for table name: {schema_table_name}')
-        return schema_table_name.format(connection_id=connection_id)
-    return schema_table_name
-
-
-def get_table_name_from_schema(schema_table_name, connection_id=None):
-    schema = get_seadb_table_schemas()
-    tables = schema.get('tables') or {}
-    table_schema = tables.get(schema_table_name) or {}
-    table_name_schema = table_schema.get('table_name')
-    if table_name_schema:
-        return _resolve_table_name_by_schema_table_key(table_name_schema, connection_id)
-    return ''
-
-
-def get_column_name_from_schema(schema_table_name, column_name):
-    """Return the column_name defined in YAML schema, or empty string if column not found. O(1) dict lookup."""
-    schema = get_seadb_table_schemas()
-    tables = schema.get('tables') or {}
-    table_schema = tables.get(schema_table_name) or {}
-    columns = table_schema.get('columns') or {}
-    if column_name in columns:
-        return column_name
-    return ''
-
-
-def get_column_data_from_schema(schema_table_name, column_name):
-    """Return the column_data config for the specified column from YAML schema. O(1) dict lookup."""
-    schema = get_seadb_table_schemas()
-    tables = schema.get('tables') or {}
-    table_schema = tables.get(schema_table_name) or {}
-    columns = table_schema.get('columns') or {}
-    col = columns.get(column_name)
-    if col:
-        return col.get('column_data') or {}
-    return {}
-
-
-def init_seadb_tables_from_schema(schema_table_names, seadb_api, project_uuid, connection_id=None):
-    schema = get_seadb_table_schemas()
-    table_defs = schema.get('tables') or {}
-    for schema_table_name in schema_table_names:
-        table_schema = table_defs.get(schema_table_name) or {}
-        table_name = _resolve_table_name_by_schema_table_key(table_schema.get('table_name', ''), connection_id)
-        res = seadb_api.create_table(project_uuid, table_name)
-        table_id = res['table_id']
-
-        # Build cascade mapping from column-level cascade_source_column declarations
-        cascade_map = {}  # target_column_name -> source_column_name
-        for column_name, column in table_schema.get('columns', {}).items():
-            cascade_source = (column.get('column_data') or {}).get('cascade_source_column')
-            if cascade_source:
-                cascade_map[column_name] = cascade_source
-        cascade_source_columns = set(cascade_map.values())
-        source_column_keys = {}  # source_column_name -> seadb_key
-
-        for column_name, column in table_schema.get('columns', {}).items():
-            mapped_column = deepcopy(column)
-            mapped_column['column_name'] = column_name
-
-            # If this column is a cascade target and we have the source's SeaDB key, inject it
-            if column_name in cascade_map:
-                source_col_name = cascade_map[column_name]
-                source_key = source_column_keys.get(source_col_name)
-                if source_key:
-                    mapped_column.setdefault('column_data', {})
-                    mapped_column['column_data']['cascade_column_key'] = source_key
-                # Remove the YAML-only hint from data sent to SeaDB
-                mapped_column.get('column_data', {}).pop('cascade_source_column', None)
-
-            added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-            # Record the SeaDB key if this column acts as a cascade source
-            if column_name in cascade_source_columns:
-                source_column_keys[column_name] = added_column['column_key']
-
-        for index_item in table_schema.get('indexes', []):
-            seadb_api.create_column_index(project_uuid, table_id, index_item)
 
 def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
     metadata = seadb_api.get_base_metadata(project_uuid)

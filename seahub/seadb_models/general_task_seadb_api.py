@@ -31,7 +31,7 @@ class GeneralTaskSeaDBAPI:
     
     def get_tasks_by_pks(self, connection_id, pks):
         """Retrieve task for the specified _pk."""
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id=connection_id)
         pks_str = ', '.join([
             str(pk)
             for pk in pks
