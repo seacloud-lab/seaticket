@@ -43,7 +43,6 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
 
   const updateResourceDetails = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     const details = { record, columns, linked_ticket_title, related_users };
-    console.log('setConnectionDetails', details);
     setConnectionDetails(details);
     onUpdateResourceDetails && onUpdateResourceDetails(record);
   }, [onUpdateResourceDetails]);
