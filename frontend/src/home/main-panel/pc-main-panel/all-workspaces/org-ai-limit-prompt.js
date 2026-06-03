@@ -1,31 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import userAPI from '@/api/user-api';
-import { Utils } from '@/utils/utils';
+import { aiCreditExceededAmount } from '@/constants/config';
 import { gettext } from '../../../../constants';
-import { IconButton, Icon, toaster } from '@/components';
+import { IconButton, Icon } from '@/components';
 
 import './org-ai-limit-prompt.css';
 
 const OrgAiLimitPrompt = (props) => {
   const { isDesktop } = props;
-  const [show, setShow] = useState(false);
-  const [creditUsed, setCreditUsed] = useState(0);
-
-  useEffect(() => {
-    userAPI.getAILimitInfo().then(res => {
-      const { is_exceed, ai_credit_used } = res.data;
-      setShow(is_exceed);
-      setCreditUsed(ai_credit_used);
-    }).catch(error => {
-      const errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  }, []);
+  const [show, setShow] = useState(aiCreditExceededAmount > 0);
 
   if (!show) return null;
 
-  const limitText = gettext('AI credits over limit — You are %s credits over your limit. Replenish your credits now to resume full service.').replace('%s', creditUsed);
+  const limitText = gettext('AI credits over limit — You are %s credits over your limit. Replenish your credits now to resume full service.').replace('%s', aiCreditExceededAmount);
 
   return (
     <div className={`org-ai-limit-wrapper d-flex justify-content-between align-items-center ${isDesktop ? '' : 'mobile-org-ai-limit-wrapper'}`}>

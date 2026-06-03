@@ -61,6 +61,7 @@
             customNavItems: {% if custom_nav_items %} JSON.parse('{{ custom_nav_items | escapejs }}') {% else %} {{'[]'}} {% endif %},
             disableAddingPersonalProjects: {% if disable_adding_personal_projects %} true {% else %} false {% endif %},
             trashCleanExpireDays: '{{trash_clean_expire_days}}',
+            aiCreditExceededAmount: {{ ai_credit_exceeded_amount|floatformat:"0" }},
         }
      };
     var performance = window.performance;
@@ -72,4 +73,3 @@
 {% render_bundle 'home' 'js' %}
 </body>
 </html>
-

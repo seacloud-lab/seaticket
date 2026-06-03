@@ -23,6 +23,7 @@ from seahub.settings import SITE_TITLE, LOGO_PATH, LOGO_WIDTH, LOGO_HEIGHT,\
 from seahub.constants import DEFAULT_ADMIN
 from seahub.utils import get_site_name, get_service_url
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
+from seahub.project.utils import get_ai_credit_exceeded_amount_by_org_id
 
 
 try:
@@ -88,6 +89,11 @@ def base(request):
 
         avatar_url, is_default, date_uploaded = api_avatar_url(username)
 
+    if org and org.org_id >= 0:
+        ai_credit_exceeded_amount = round(get_ai_credit_exceeded_amount_by_org_id(org.org_id), 0)
+    else:
+        ai_credit_exceeded_amount = 0
+
     result = {
         'version': SEAQA_VERSION,
         'site_title': SITE_TITLE,
@@ -116,7 +122,8 @@ def base(request):
         'is_tablet': request.is_tablet,
         'privacy_policy_link': PRIVACY_POLICY_LINK,
         'terms_of_service_link': TERMS_OF_SERVICE_LINK,
-        'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL
+        'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL,
+        'ai_credit_exceeded_amount': ai_credit_exceeded_amount,
     }
 
     if request.user.is_staff:

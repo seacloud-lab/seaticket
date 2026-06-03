@@ -47,6 +47,7 @@ export const projectName = window.app.pageOptions.projectName;
 
 export const isOrgContext = window.app.pageOptions.isOrgContext;
 export const orgName = window.app.pageOptions.orgName;
+export const aiCreditExceededAmount = window.app.pageOptions.aiCreditExceededAmount || 0;
 
 export const useExternalTeamAdmin = window.app.pageOptions.useExternalTeamAdmin;
 export const orgSamlConnected = window.app.pageOptions.orgSamlConnected;

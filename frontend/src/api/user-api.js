@@ -86,11 +86,6 @@ class UserAPI {
     return this.req.get(url);
   }
 
-  getAILimitInfo() {
-    const url = this.server + '/api2/account/ai-limit/';
-    return this.req.get(url);
-  }
-
 }
 
 const userAPI = new UserAPI();
