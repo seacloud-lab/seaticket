@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema, get_current_table_metadata
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema, get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess

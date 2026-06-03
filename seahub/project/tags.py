@@ -14,7 +14,7 @@ from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.tickets.ticket_utils import TABLE_TICKETS, get_column_from_columns_by_name, filter_tickets_by_select, \
     build_linked_record_titles_map
 from seahub.utils.decorators import require_org_context

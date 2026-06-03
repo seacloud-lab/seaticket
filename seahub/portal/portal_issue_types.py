@@ -13,7 +13,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, batch_delete_select_option, \
     get_column_from_columns_by_name
 from seahub.project.seadb_api import SeaDBAPI

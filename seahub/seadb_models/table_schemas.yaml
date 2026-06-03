@@ -281,7 +281,7 @@ tables:
       substate:
         column_type: single-select
         column_data:
-          cascade_column_key: ''
+          cascade_source_column: state
           cascade_settings:
             '0001':
             - '0010'
@@ -377,9 +377,6 @@ tables:
     - due_date
     - ai_processed_time
     - modified_time
-    cascade:
-      source_column: state
-      target_column: substate
     table_name: tickets
   TicketCommentsTable:
     columns:
@@ -587,7 +584,7 @@ tables:
       substate:
         column_type: single-select
         column_data:
-          cascade_column_key: ''
+          cascade_source_column: state
           cascade_settings:
             '0001':
             - '0010'
@@ -670,9 +667,6 @@ tables:
     - deleted
     - ai_processed_time
     - modified_time
-    cascade:
-      source_column: state
-      target_column: substate
     table_name: portal_issues
   PortalIssueCommentsTable:
     columns:
@@ -720,17 +714,25 @@ tables:
         column_type: text
       source_title:
         column_type: text
-      action_type:
+      phase:
         column_type: text
-      tool_name:
-        column_type: text
-      content:
+      prompt:
         column_type: text
       result:
         column_type: text
+      action_type:
+        column_type: text
       status:
         column_type: text
-      suggestion_text:
+      step:
+        column_type: int64
+      tool_name:
+        column_type: text
+      tool_arguments:
+        column_type: text
+      observation:
+        column_type: text
+      suggestion_content:
         column_type: text
       sources:
         column_type: text
@@ -792,6 +794,8 @@ tables:
   GeneralTaskTable:
     columns:
       source_task_id:
+        column_type: text
+      url:
         column_type: text
       title:
         column_type: text

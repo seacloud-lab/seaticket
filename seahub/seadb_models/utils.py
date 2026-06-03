@@ -143,7 +143,7 @@ def get_column_name_from_schema(schema_table_name, column_name):
     return ''
 
 
-def get_column_data _from_schema(schema_table_name, column_name):
+def get_column_data_from_schema(schema_table_name, column_name):
     """Return the column_data config for the specified column from YAML schema. O(1) dict lookup."""
     schema = get_seadb_table_schemas()
     tables = schema.get('tables') or {}
@@ -164,21 +164,34 @@ def init_seadb_tables_from_schema(schema_table_names, seadb_api, project_uuid, c
         res = seadb_api.create_table(project_uuid, table_name)
         table_id = res['table_id']
 
-        cascade = table_schema.get('cascade') or {}
-        source_column = cascade.get('source_column')
-        target_column = cascade.get('target_column')
-        source_column_key = None
+        # Build cascade mapping from column-level cascade_source_column declarations
+        cascade_map = {}  # target_column_name -> source_column_name
+        for column_name, column in table_schema.get('columns', {}).items():
+            cascade_source = (column.get('column_data') or {}).get('cascade_source_column')
+            if cascade_source:
+                cascade_map[column_name] = cascade_source
+        cascade_source_columns = set(cascade_map.values())
+        source_column_keys = {}  # source_column_name -> seadb_key
 
         for column_name, column in table_schema.get('columns', {}).items():
             mapped_column = deepcopy(column)
             mapped_column['column_name'] = column_name
-            if column_name == target_column and source_column_key:
-                mapped_column.setdefault('column_data', {})
-                mapped_column['column_data']['cascade_column_key'] = source_column_key
+
+            # If this column is a cascade target and we have the source's SeaDB key, inject it
+            if column_name in cascade_map:
+                source_col_name = cascade_map[column_name]
+                source_key = source_column_keys.get(source_col_name)
+                if source_key:
+                    mapped_column.setdefault('column_data', {})
+                    mapped_column['column_data']['cascade_column_key'] = source_key
+                # Remove the YAML-only hint from data sent to SeaDB
+                mapped_column.get('column_data', {}).pop('cascade_source_column', None)
 
             added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
-            if column_name == source_column:
-                source_column_key = added_column['column_key']
+
+            # Record the SeaDB key if this column acts as a cascade source
+            if column_name in cascade_source_columns:
+                source_column_keys[column_name] = added_column['column_key']
 
         for index_item in table_schema.get('indexes', []):
             seadb_api.create_column_index(project_uuid, table_id, index_item)

@@ -20,7 +20,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg
 from seahub.utils.decorators import require_org_context

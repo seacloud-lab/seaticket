@@ -17,7 +17,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data _from_schema
+from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.utils.ai_client import (
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
