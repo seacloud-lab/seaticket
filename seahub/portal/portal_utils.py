@@ -10,13 +10,16 @@ from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 
 
 from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
+
+from seahub.seadb_models.models import SchemaTableNames
+
 PORTAL_ISSUE_COMMENT_COLUMNS = ['_pk', 'issue_id', 'content', 'creator', 'created_time', 'modified_time', 'deleted']
 logger = logging.getLogger(__name__)
 
 
 def get_portal_issue(seadb_api, project_uuid, issue_id):
     display_columns_join = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
-    sql = f"SELECT {display_columns_join} FROM `{get_table_name_from_schema('PortalIssuesTable', )}` WHERE `_pk` = {issue_id}"
+    sql = f"SELECT {display_columns_join} FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` WHERE `_pk` = {issue_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -24,20 +27,20 @@ def get_portal_issue(seadb_api, project_uuid, issue_id):
 def get_portal_issues(seadb_api, project_uuid, issue_ids):
     display_columns_join = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
     issue_ids_str = ','.join(map(str, issue_ids))
-    sql = f"SELECT {display_columns_join} FROM `{get_table_name_from_schema('PortalIssuesTable', )}` WHERE `_pk` IN ({issue_ids_str})"
+    sql = f"SELECT {display_columns_join} FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` WHERE `_pk` IN ({issue_ids_str})"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows, res.get('metadata')
 
 def get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end):
     comment_columns_join = ', '.join(PORTAL_ISSUE_COMMENT_COLUMNS)
-    issue_comments_sql = f"SELECT {comment_columns_join} FROM `{get_table_name_from_schema('PortalIssueCommentsTable', )}` WHERE `issue_id` = {issue_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
+    issue_comments_sql = f"SELECT {comment_columns_join} FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, )}` WHERE `issue_id` = {issue_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
     issue_comments_data = seadb_api.query_rows(project_uuid, issue_comments_sql).get('results')
     return issue_comments_data
 
 def get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_id):
     comment_columns_join = ', '.join(PORTAL_ISSUE_COMMENT_COLUMNS)
-    sql = f"SELECT {comment_columns_join} FROM `{get_table_name_from_schema('PortalIssueCommentsTable', )}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_id}"
+    sql = f"SELECT {comment_columns_join} FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, )}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_id}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
@@ -45,7 +48,7 @@ def get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_id
 def get_portal_issue_counts_group_by_column_name(seadb_api, project_uuid, column_name, column_type='single-select'):
     sql = (
         f"SELECT {column_name}, COUNT(*) AS count "
-        f"FROM `{get_table_name_from_schema('PortalIssuesTable', )}` "
+        f"FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` "
         "WHERE (`deleted` = False OR `deleted` is NULL)"
         f"GROUP BY {column_name}"
     )
@@ -71,7 +74,7 @@ def filter_portal_issues_by_select(seadb_api, project_uuid, column_name, names):
     names_str = ', '.join(f"'{n}'" for n in names)
     display_columns_join = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
     sql = (
-        f"SELECT {display_columns_join} FROM `{get_table_name_from_schema('PortalIssuesTable', )}` "
+        f"SELECT {display_columns_join} FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` "
         f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -83,7 +86,7 @@ def filter_portal_issues_by_select(seadb_api, project_uuid, column_name, names):
 def check_portal_issue_comment_creation_interval(seadb_api, project_uuid, username, issue_id, deleted=False):
     """Limit portal issue comment creation to once every 30 seconds per creator per issue."""
     previous_comment_sql = (
-        f"SELECT `_pk`, `created_time` FROM `{get_table_name_from_schema('PortalIssueCommentsTable', )}` WHERE `creator` = '{username}' "
+        f"SELECT `_pk`, `created_time` FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, )}` WHERE `creator` = '{username}' "
         f"AND `issue_id` = {issue_id} AND `deleted` = {deleted} "
         f"ORDER BY `_pk` DESC LIMIT 1"
     )

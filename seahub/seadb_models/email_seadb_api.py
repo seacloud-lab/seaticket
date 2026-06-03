@@ -8,6 +8,9 @@ from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_CO
 from seahub.project.constants import ConnectionType
 
 from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
+
+from seahub.seadb_models.models import SchemaTableNames
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +20,7 @@ class EmailSeaDBAPI:
         self.seadb_api = seadb_api or SeaDBAPI(timeout=timeout)
 
     def get_email_by_pk(self, connection_id, _pk):
-        table_name = get_table_name_from_schema('EmailTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.EMAIL, connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `message_id`, `origin_thread_id`, attachments " \
               f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -25,7 +28,7 @@ class EmailSeaDBAPI:
         return result[0] if result else {}
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
-        table_name = get_table_name_from_schema('EmailTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.EMAIL, connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
             f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id` FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY `modified_time` ASC"
         if limit is not None:
@@ -36,7 +39,7 @@ class EmailSeaDBAPI:
         return []
 
     def get_thread_by_pk(self, connection_id, _pk):
-        table_name = get_table_name_from_schema('ThreadTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.THREAD, connection_id)
         sql = "SELECT `_pk`, `title`, `linked_ticket` " \
             f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -48,7 +51,7 @@ class EmailSeaDBAPI:
             str(_pk)
             for _pk in _pks
         ])
-        table_name = get_table_name_from_schema('ThreadTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.THREAD, connection_id)
         sql = "SELECT `_pk`, `title`, `modified_time` " \
             f"FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -59,7 +62,7 @@ class EmailSeaDBAPI:
             str(thread_id)
             for thread_id in thread_ids
         ])
-        table_name = get_table_name_from_schema('EmailTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.EMAIL, connection_id)
         sql = "SELECT `thread_id`, `email_from`, `email_to`, `content`, `modified_time` " \
             f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY `modified_time` ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -145,27 +148,27 @@ class EmailSeaDBAPI:
 
     def save_reply_email(self, project_uuid, connection_id, thread_id, email_data):
         now = datetime.datetime.now(datetime.UTC).isoformat()
-        email_table_name = get_table_name_from_schema('EmailTable', connection_id)
-        thread_table_name = get_table_name_from_schema('ThreadTable', connection_id)
+        email_table_name = get_table_name_from_schema(SchemaTableNames.EMAIL, connection_id)
+        thread_table_name = get_table_name_from_schema(SchemaTableNames.THREAD, connection_id)
 
         sender_name = email_data.get('sender_name', '')
         sender_email = email_data['sender_email']
 
         email_row = {
-            get_column_name_from_schema('EmailTable', 'email_from'): formataddr((sender_name, sender_email)) if sender_name else sender_email,
-            get_column_name_from_schema('EmailTable', 'email_to'): email_data.get('email_to', ''),
-            get_column_name_from_schema('EmailTable', 'title'): email_data.get('subject', ''),
-            get_column_name_from_schema('EmailTable', 'cc'): email_data.get('cc') or '',
-            get_column_name_from_schema('EmailTable', 'content'): email_data.get('content', ''),
-            get_column_name_from_schema('EmailTable', 'text_content'): email_data.get('content', ''),
-            get_column_name_from_schema('EmailTable', 'html_content'): email_data.get('html_content') or '',
-            get_column_name_from_schema('EmailTable', 'reply_to_message_id'): email_data.get('reply_to_message_id') or '',
-            get_column_name_from_schema('EmailTable', 'is_sender'): True,
-            get_column_name_from_schema('EmailTable', 'deleted'): False,
-            get_column_name_from_schema('EmailTable', 'thread_id'): thread_id,
-            get_column_name_from_schema('EmailTable', 'message_id'): email_data.get('message_id') or '',
-            get_column_name_from_schema('EmailTable', 'origin_thread_id'): email_data.get('origin_thread_id') or '',
-            get_column_name_from_schema('EmailTable', 'email_id'): email_data.get('email_id') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'email_from'): formataddr((sender_name, sender_email)) if sender_name else sender_email,
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'email_to'): email_data.get('email_to', ''),
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'title'): email_data.get('subject', ''),
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'cc'): email_data.get('cc') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'content'): email_data.get('content', ''),
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'text_content'): email_data.get('content', ''),
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'html_content'): email_data.get('html_content') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'reply_to_message_id'): email_data.get('reply_to_message_id') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'is_sender'): True,
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'deleted'): False,
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'thread_id'): thread_id,
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'message_id'): email_data.get('message_id') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'origin_thread_id'): email_data.get('origin_thread_id') or '',
+            get_column_name_from_schema(SchemaTableNames.EMAIL, 'email_id'): email_data.get('email_id') or '',
         }
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
@@ -173,9 +176,9 @@ class EmailSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(thread_id),
             'row': {
-                get_column_name_from_schema('ThreadTable', 'modified_time'): now,
-                get_column_name_from_schema('ThreadTable', 'record_modified_time'): now,
-                get_column_name_from_schema('ThreadTable', 'unread'): False,
+                get_column_name_from_schema(SchemaTableNames.THREAD, 'modified_time'): now,
+                get_column_name_from_schema(SchemaTableNames.THREAD, 'record_modified_time'): now,
+                get_column_name_from_schema(SchemaTableNames.THREAD, 'unread'): False,
             }
         }])
         return pks[0] if pks else None

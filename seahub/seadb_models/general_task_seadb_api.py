@@ -8,6 +8,9 @@ from seahub.seadb_models.utils import get_table_name_from_schema
 from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
+from seahub.seadb_models.models import SchemaTableNames
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +20,7 @@ class GeneralTaskSeaDBAPI:
         self.seadb_api = seadb_api or SeaDBAPI(timeout=timeout)
 
     def get_general_task_record(self, project_uuid, connection_id, record_id):
-        table_name = get_table_name_from_schema('GeneralTaskTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id)
         sql = (
             f"SELECT `_pk`, `source_task_id`, `url`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
             f"`others`, `version`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "

@@ -36,6 +36,9 @@ from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CAC
     ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
 from seahub.avatar.util import get_default_avatar_url
 
+from seahub.seadb_models.models import SchemaTableNames
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -140,22 +143,22 @@ def create_connection(project, username, connection_type, name, config):
     seadb_api = SeaDBAPI()
     init_table_funcs = {
         ConnectionType.SITE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['WebCrawlTable'], api, project_uuid, connection_id
+            [SchemaTableNames.WEB_CRAWL], api, project_uuid, connection_id
         ),
         ConnectionType.DISCOURSE_FORUM.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['DiscourseTopicsTable', 'DiscourseRepliesTable'], api, project_uuid, connection_id
+            [SchemaTableNames.DISCOURSE_TOPICS, SchemaTableNames.DISCOURSE_REPLIES], api, project_uuid, connection_id
         ),
         ConnectionType.GITHUB_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['GithubIssuesTable', 'GithubIssueCommentsTable'], api, project_uuid, connection_id
+            [SchemaTableNames.GITHUB_ISSUES, SchemaTableNames.GITHUB_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
         ConnectionType.SEAFILE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['SeafileTable'], api, project_uuid, connection_id
+            [SchemaTableNames.SEAFILE], api, project_uuid, connection_id
         ),
         ConnectionType.EMAIL.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['EmailTable', 'ThreadTable'], api, project_uuid, connection_id
+            [SchemaTableNames.EMAIL, SchemaTableNames.THREAD], api, project_uuid, connection_id
         ),
         ConnectionType.NOTION.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            ['NotionTable'], api, project_uuid, connection_id
+            [SchemaTableNames.NOTION], api, project_uuid, connection_id
         ),
         ConnectionType.GENERAL_TASK.value: init_general_task_seadb_table
     }
@@ -300,7 +303,7 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = get_table_name_from_schema('GeneralTaskUserTable', connection_id)
+    table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK_USER, connection_id)
     try:
         sql = f"SELECT `email`, `name` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
@@ -611,12 +614,12 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
     merged = []
     seen_names = set()
     for connection_id in connection_ids:
-        table_name = get_table_name_from_schema('GithubIssuesTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
         table_meta = get_current_table_metadata(tables, table_name)
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != get_column_name_from_schema('GithubIssuesTable', 'issue_type'):
+            if column.get('name') != get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'):
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -643,7 +646,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        get_column_name_from_schema('GithubIssuesTable', 'issue_type'),
+        get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'),
         'type_id',
     )
 

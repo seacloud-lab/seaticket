@@ -56,6 +56,9 @@ from seahub.avatar.settings import AVATAR_MAX_SIZE
 
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
     send_portal_issue_update_msg, check_portal_issue_comment_creation_interval
+
+from seahub.seadb_models.models import SchemaTableNames
+
 logger = logging.getLogger(__name__)
 
 
@@ -293,7 +296,7 @@ class PortalIssuesView(APIView):
             default_substate = ''
             cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
             cached_default_substate = cache.get(cache_key, None)
-            portal_issues_table_name = get_table_name_from_schema('PortalIssuesTable', )
+            portal_issues_table_name = get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )
             if cached_default_substate is not None:
                 default_substate = cached_default_substate
             else:
@@ -313,18 +316,18 @@ class PortalIssuesView(APIView):
                     logger.error(e)
 
             row = {
-                get_column_name_from_schema('PortalIssuesTable', 'title'): title,
-                get_column_name_from_schema('PortalIssuesTable', 'content'): content,
-                get_column_name_from_schema('PortalIssuesTable', 'state'): portal_issue_state,
-                get_column_name_from_schema('PortalIssuesTable', 'type'): type_name if type_name else None,
-                get_column_name_from_schema('PortalIssuesTable', 'substate'): default_substate,
-                get_column_name_from_schema('PortalIssuesTable', 'priority'): priority,
-                get_column_name_from_schema('PortalIssuesTable', 'tags'): tag_ids,
-                get_column_name_from_schema('PortalIssuesTable', 'creator'): username,
-                get_column_name_from_schema('PortalIssuesTable', 'comment_count'): 0,
-                get_column_name_from_schema('PortalIssuesTable', 'created_time'): now_datetime,
-                get_column_name_from_schema('PortalIssuesTable', 'modified_time'): now_datetime,
-                get_column_name_from_schema('PortalIssuesTable', 'deleted'): False,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'title'): title,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'content'): content,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'state'): portal_issue_state,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'type'): type_name if type_name else None,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'substate'): default_substate,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'priority'): priority,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'tags'): tag_ids,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'creator'): username,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'comment_count'): 0,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'created_time'): now_datetime,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'modified_time'): now_datetime,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'deleted'): False,
             }
             res = seadb_api.insert_rows(project_uuid, portal_issues_table_name, [row])
             pks = res.get('pks', [])
@@ -342,10 +345,10 @@ class PortalIssuesView(APIView):
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
                             'pk': int(portal_issue_pk),
                             'row': {
-                                get_column_name_from_schema('PortalIssuesTable', 'content'): updated_content,
+                                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'content'): updated_content,
                             }
                         }])
-                        row[get_column_name_from_schema('PortalIssuesTable', 'content')] = updated_content
+                        row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'content')] = updated_content
                 except Exception as e:
                     logger.error(e)
                     try:
@@ -400,7 +403,7 @@ class PortalIssuesView(APIView):
             issue_id_to_row[row_id] = row
 
         try:
-            portal_issues_table_name = get_table_name_from_schema('PortalIssuesTable', )
+            portal_issues_table_name = get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )
             issue_ids = issue_id_to_row.keys()
             issue_ids_str = ','.join(str(issue_id) for issue_id in issue_ids)
             sql = f"""
@@ -430,24 +433,24 @@ class PortalIssuesView(APIView):
             if 'state' in row_data:
                 issue_state_name = row_data.get('state')
                 issue_state_name = issue_state_name.lower() if issue_state_name else ''
-                updated_row[get_column_name_from_schema('PortalIssuesTable', 'state')] = issue_state_name
+                updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'state')] = issue_state_name
                 if issue_state_name == 'closed':
-                    updated_row[get_column_name_from_schema('PortalIssuesTable', 'closed_time')] = now_datetime
+                    updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'closed_time')] = now_datetime
                 elif issue_state_name == 'open':
-                    updated_row[get_column_name_from_schema('PortalIssuesTable', 'closed_time')] = ''
+                    updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'closed_time')] = ''
 
             if 'substate' in row_data:
-                updated_row[get_column_name_from_schema('PortalIssuesTable', 'substate')] = row_data.get('substate') or None
+                updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'substate')] = row_data.get('substate') or None
 
             if 'tags' in row_data:
                 tags_value = row_data.get('tags')
                 if tags_value is None:
-                    updated_row[get_column_name_from_schema('PortalIssuesTable', 'tags')] = []
+                    updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'tags')] = []
                 else:
-                    updated_row[get_column_name_from_schema('PortalIssuesTable', 'tags')] = [int(tag_id) for tag_id in tags_value]
+                    updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'tags')] = [int(tag_id) for tag_id in tags_value]
 
             if 'type' in row_data:
-                updated_row[get_column_name_from_schema('PortalIssuesTable', 'type')] = row_data.get('type') or None
+                updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'type')] = row_data.get('type') or None
 
             for key, value in row_data.items():
                 if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
@@ -457,7 +460,7 @@ class PortalIssuesView(APIView):
             if not updated_row:
                 continue
 
-            updated_row[get_column_name_from_schema('PortalIssuesTable', 'modified_time')] = now_datetime
+            updated_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'modified_time')] = now_datetime
             update_rows.append({
                 'pk': issue.get('_pk'),
                 'row': updated_row,
@@ -531,7 +534,7 @@ class PortalIssuesView(APIView):
 
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), update_rows)
+                seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), update_rows)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -745,25 +748,25 @@ class PortalIssueView(APIView):
         try:
             update_row = {}
             if title:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'title')] = title
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'title')] = title
             if content:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'content')] = content
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'content')] = content
             if is_update_type:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'type')] = type_name
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'type')] = type_name
             if is_update_substate:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'substate')] = substate_option_name
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'substate')] = substate_option_name
             if is_update_tags:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'tags')] = tags
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'tags')] = tags
             if is_update_priority:
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'priority')] = priority
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'priority')] = priority
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if issue_state_name or issue_state_name == '':
                 issue_state_name = issue_state_name.lower()
-                update_row[get_column_name_from_schema('PortalIssuesTable', 'state')] = issue_state_name
+                update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'state')] = issue_state_name
                 if issue_state_name == 'closed':
-                    update_row[get_column_name_from_schema('PortalIssuesTable', 'closed_time')] = now_datetime
+                    update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'closed_time')] = now_datetime
                 elif issue_state_name == 'open':
-                    update_row[get_column_name_from_schema('PortalIssuesTable', 'closed_time')] = ''
+                    update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'closed_time')] = ''
 
             # Handle linked_ticket (link/unlink portal issue to/from a ticket)
             if is_update_linked_ticket:
@@ -804,14 +807,14 @@ class PortalIssueView(APIView):
                     else:
                         update_row['linked_ticket'] = None
 
-            update_row[get_column_name_from_schema('PortalIssuesTable', 'modified_time')] = now_datetime
+            update_row[get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'modified_time')] = now_datetime
             update_rows = [
                 {
                     'pk': issue.get('_pk'),
                     'row': update_row
                 }
             ]
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), update_rows)
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -854,7 +857,7 @@ class PortalIssueView(APIView):
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 }
             }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [update_row])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [update_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -957,14 +960,14 @@ class PortalIssueCommentsView(APIView):
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
-                get_column_name_from_schema('PortalIssueCommentsTable', 'issue_id'): issue.get('_pk'),
-                get_column_name_from_schema('PortalIssueCommentsTable', 'creator'): username,
-                get_column_name_from_schema('PortalIssueCommentsTable', 'content'): content,
-                get_column_name_from_schema('PortalIssueCommentsTable', 'created_time'): now_datetime,
-                get_column_name_from_schema('PortalIssueCommentsTable', 'modified_time'): now_datetime,
-                get_column_name_from_schema('PortalIssueCommentsTable', 'deleted'): False,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'issue_id'): issue.get('_pk'),
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'creator'): username,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'content'): content,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'created_time'): now_datetime,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'modified_time'): now_datetime,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, 'deleted'): False,
             }
-            portal_issue_comment_table_name = get_table_name_from_schema('PortalIssueCommentsTable', )
+            portal_issue_comment_table_name = get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, )
             res = seadb_api.insert_rows(project_uuid, portal_issue_comment_table_name, [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
@@ -980,7 +983,7 @@ class PortalIssueCommentsView(APIView):
                     'modified_time': now_datetime,
                     },
                 }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [update_issue])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [update_issue])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1076,7 +1079,7 @@ class PortalIssueCommentView(APIView):
                     'modified_time': comment_data.get('modified_time'),
                 },
             }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssueCommentsTable', ), [issue_comment_update])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, ), [issue_comment_update])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1090,7 +1093,7 @@ class PortalIssueCommentView(APIView):
                 'pk': issue.get('_pk'),
                 'row': update_row,
             }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [issue_update])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [issue_update])
         except Exception as e:
             logger.error(e)
 
@@ -1132,7 +1135,7 @@ class PortalIssueCommentView(APIView):
                     'modified_time': now_datetime,
                 },
             }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssueCommentsTable', ), [update_issue_comment])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, ), [update_issue_comment])
 
             update_issue = {
                 'pk': issue.get('_pk'),
@@ -1140,7 +1143,7 @@ class PortalIssueCommentView(APIView):
                     'modified_time': now_datetime,
                 }
             }
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [update_issue])
+            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [update_issue])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1175,7 +1178,7 @@ class PortalTagsView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            table_name = get_table_name_from_schema('TagTable', )
+            table_name = get_table_name_from_schema(SchemaTableNames.TAG, )
             sql = "SELECT `_pk`, `name`, `color`, `text_color`, `description` " \
                 f"FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -1336,13 +1339,13 @@ class PortalIssueMetadataView(APIView):
     def get(self, request, project_uuid):
         seadb_api = SeaDBAPI()
         try:
-            portal_issues_table_name = get_table_name_from_schema('PortalIssuesTable', )
+            portal_issues_table_name = get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             portal_issue_column_name_to_return_name = {
-                get_column_name_from_schema('PortalIssuesTable', 'substate'): 'substates',
-                get_column_name_from_schema('PortalIssuesTable', 'type'): 'types',
-                get_column_name_from_schema('PortalIssuesTable', 'state'): 'states'
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'substate'): 'substates',
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'type'): 'types',
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'state'): 'states'
             }
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
@@ -2071,8 +2074,8 @@ class PortalIssueTrashAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for issue_id in issue_ids:
             updated_row = {
-                get_column_name_from_schema('PortalIssuesTable', 'modified_time'): now_datetime,
-                get_column_name_from_schema('PortalIssuesTable', 'deleted'): False,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'modified_time'): now_datetime,
+                get_column_name_from_schema(SchemaTableNames.PORTAL_ISSUES, 'deleted'): False,
             }
             update_rows.append({
                 'pk': int(issue_id),
@@ -2081,7 +2084,7 @@ class PortalIssueTrashAPIView(APIView):
 
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), update_rows)
+                seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), update_rows)
             except Exception as e:
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
@@ -2108,7 +2111,7 @@ class PortalIssueTrashAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            portal_issues_table_name = get_table_name_from_schema('PortalIssuesTable', )
+            portal_issues_table_name = get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )
             seadb_api = SeaDBAPI()
             sql = f"SELECT _pk, `linked_ticket` FROM `{portal_issues_table_name}` WHERE `deleted` = True"
             res = seadb_api.query_rows(project_uuid, sql)
@@ -2164,7 +2167,7 @@ class PortalIssueTrashAPIView(APIView):
 
             # Delete portal issue comments
             for issue_id in need_delete_ids:
-                comment_sql = f"DELETE FROM `{get_table_name_from_schema('PortalIssueCommentsTable', )}` WHERE `issue_id` = {int(issue_id)}"
+                comment_sql = f"DELETE FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUE_COMMENTS, )}` WHERE `issue_id` = {int(issue_id)}"
                 seadb_api.query_rows(project_uuid, comment_sql)
 
             # Hard delete portal issues

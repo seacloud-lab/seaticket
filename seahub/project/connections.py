@@ -60,6 +60,9 @@ from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIExc
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, prepare_image_data_for_adapter
 
+from seahub.seadb_models.models import SchemaTableNames
+
+
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -520,7 +523,7 @@ class ProjectGithubConnectionsView(APIView):
             connection_id = record.id
             seadb_api = SeaDBAPI()
             try:
-                init_seadb_tables_from_schema(['GithubIssuesTable', 'GithubIssueCommentsTable'], seadb_api, project.uuid, connection_id)
+                init_seadb_tables_from_schema([SchemaTableNames.GITHUB_ISSUES, SchemaTableNames.GITHUB_ISSUE_COMMENTS], seadb_api, project.uuid, connection_id)
             except Exception as e:
                 logger.error(e)
                 record.delete()
@@ -1215,19 +1218,19 @@ class ProjectConnectionRecordView(APIView):
 
         schema_table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            schema_table_name = 'DiscourseTopicsTable'
+            schema_table_name = SchemaTableNames.DISCOURSE_TOPICS
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            schema_table_name = 'GithubIssuesTable'
+            schema_table_name = SchemaTableNames.GITHUB_ISSUES
         elif project_connection.type == ConnectionType.SITE.value:
-            schema_table_name = 'WebCrawlTable'
+            schema_table_name = SchemaTableNames.WEB_CRAWL
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            schema_table_name = 'SeafileTable'
+            schema_table_name = SchemaTableNames.SEAFILE
         elif project_connection.type == ConnectionType.EMAIL.value:
-            schema_table_name = 'ThreadTable'
+            schema_table_name = SchemaTableNames.THREAD
         elif project_connection.type == ConnectionType.NOTION.value:
-            schema_table_name = 'NotionTable'
+            schema_table_name = SchemaTableNames.NOTION
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            schema_table_name = 'GeneralTaskTable'
+            schema_table_name = SchemaTableNames.GENERAL_TASK
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1398,7 +1401,7 @@ class ProjectConnectionRecordsView(APIView):
         row_data = build_general_task_row_data(created_task)
         try:
             ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
-            res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema('GeneralTaskTable', connection_id), [row_data])
+            res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id), [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 raise RuntimeError('insert_rows returned invalid pks')
@@ -1482,19 +1485,19 @@ class ProjectConnectionRecordsView(APIView):
 
         schema_table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            schema_table_name = 'DiscourseTopicsTable'
+            schema_table_name = SchemaTableNames.DISCOURSE_TOPICS
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            schema_table_name = 'GithubIssuesTable'
+            schema_table_name = SchemaTableNames.GITHUB_ISSUES
         elif project_connection.type == ConnectionType.SITE.value:
-            schema_table_name = 'WebCrawlTable'
+            schema_table_name = SchemaTableNames.WEB_CRAWL
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            schema_table_name = 'SeafileTable'
+            schema_table_name = SchemaTableNames.SEAFILE
         elif project_connection.type == ConnectionType.EMAIL.value:
-            schema_table_name = 'ThreadTable'
+            schema_table_name = SchemaTableNames.THREAD
         elif project_connection.type == ConnectionType.NOTION.value:
-            schema_table_name = 'NotionTable'
+            schema_table_name = SchemaTableNames.NOTION
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            schema_table_name = 'GeneralTaskTable'
+            schema_table_name = SchemaTableNames.GENERAL_TASK
 
         update_rows = []
         seadb_api = SeaDBAPI()

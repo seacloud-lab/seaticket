@@ -21,6 +21,9 @@ from seahub.portal.portal_utils import get_portal_issue
 
 
 from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
+
+from seahub.seadb_models.models import SchemaTableNames
+
 class TicketLinkValidationError(Exception):
     """Ticket link validation error"""
     pass
@@ -40,8 +43,8 @@ class TicketLinkSyncPlan:
     portal_issue_ids: List[int] = field(default_factory=list)
 
 
-TABLE_TICKETS = get_table_name_from_schema('TicketsTable', )
-TABLE_TICKET_COMMENTS = get_table_name_from_schema('TicketCommentsTable', )
+TABLE_TICKETS = get_table_name_from_schema(SchemaTableNames.TICKETS, )
+TABLE_TICKET_COMMENTS = get_table_name_from_schema(SchemaTableNames.TICKET_COMMENTS, )
 logger = logging.getLogger(__name__)
 TICKET_CLOSE_CONFIRM_FIELD = 'confirm_close_linked_github_issues'
 TICKET_CLOSE_WARNING_TYPE = 'open_linked_github_issues'
@@ -124,7 +127,7 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
     if portal_issue_ids:
         try:
             ids_str = ','.join([str(i) for i in portal_issue_ids])
-            sql = f"SELECT _pk, title FROM `{get_table_name_from_schema('PortalIssuesTable', )}` WHERE `_pk` IN ({ids_str})"
+            sql = f"SELECT _pk, title FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` WHERE `_pk` IN ({ids_str})"
             res = seadb_api.query_rows(project_uuid, sql)
             for row in (res.get('results') or []):
                 _pk = row.get('_pk')
@@ -169,7 +172,7 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
     if portal_issue_ids:
         try:
             ids_str = ','.join([str(i) for i in portal_issue_ids])
-            sql = f"SELECT _pk, title FROM `{get_table_name_from_schema('PortalIssuesTable', )}` WHERE `_pk` IN ({ids_str})"
+            sql = f"SELECT _pk, title FROM `{get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, )}` WHERE `_pk` IN ({ids_str})"
             res = seadb_api.query_rows(project_uuid, sql)
             for row in (res.get('results') or []):
                 _pk = row.get('_pk')
@@ -536,7 +539,7 @@ def build_tag_id_to_name_map(seadb_api, project_uuid, tag_ids):
         return {}
 
     tag_ids_str = ', '.join(str(tag_id) for tag_id in sorted(unique_tag_ids))
-    sql = f"SELECT `_pk`, `name` FROM `{get_table_name_from_schema('TagTable', )}` WHERE `_pk` IN ({tag_ids_str})"
+    sql = f"SELECT `_pk`, `name` FROM `{get_table_name_from_schema(SchemaTableNames.TAG, )}` WHERE `_pk` IN ({tag_ids_str})"
     rows = seadb_api.query_rows(project_uuid, sql).get('results') or []
     return {
         str(row.get('_pk')): row.get('name') or row.get('_pk')
@@ -690,7 +693,7 @@ def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
 
 def delete_ticket_activities_by_ids(seadb_api, project_uuid, ticket_ids):
     ticket_ids_str = ", ".join(map(str, ticket_ids))
-    sql = f"DELETE FROM `{get_table_name_from_schema('TicketActivitiesTable', )}` WHERE `ticket_id` IN ({ticket_ids_str})"
+    sql = f"DELETE FROM `{get_table_name_from_schema(SchemaTableNames.TICKET_ACTIVITIES, )}` WHERE `ticket_id` IN ({ticket_ids_str})"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
 
@@ -900,7 +903,7 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
     if not rows:
         return []
 
-    res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema('TicketActivitiesTable', ), rows)
+    res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.TICKET_ACTIVITIES, ), rows)
     pks = res.get('pks', [])
 
     # Build activity list with the returned pks
@@ -922,7 +925,7 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
 
 
 def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50):
-    sql = f"SELECT `_pk`, `activity_type`, `detail`, `creator`, `created_time` FROM `{get_table_name_from_schema('TicketActivitiesTable', )}` WHERE `ticket_id` = {ticket_id} ORDER BY `created_time` ASC LIMIT {limit} OFFSET {start}"
+    sql = f"SELECT `_pk`, `activity_type`, `detail`, `creator`, `created_time` FROM `{get_table_name_from_schema(SchemaTableNames.TICKET_ACTIVITIES, )}` WHERE `ticket_id` = {ticket_id} ORDER BY `created_time` ASC LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql)
     return res.get('results', [])
 
@@ -1135,7 +1138,7 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     if not portal_issue.get('linked_ticket'):
                         ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                         if ticket_id:
-                            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [{
+                            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [{
                                 'pk': int(portal_issue_id),
                                 'row': {
                                     'linked_ticket': int(ticket_id),
@@ -1155,7 +1158,7 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     if portal_issue.get('linked_ticket'):
                         actual_linked = int(portal_issue.get('linked_ticket'))
                         if actual_linked == expected_ticket_id:
-                            seadb_api.update_rows(project_uuid, get_table_name_from_schema('PortalIssuesTable', ), [{
+                            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ), [{
                                 'pk': int(portal_issue_id),
                                 'row': {
                                     'linked_ticket': None,

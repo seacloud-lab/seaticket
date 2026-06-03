@@ -5,6 +5,9 @@ from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
 from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
+
+from seahub.seadb_models.models import SchemaTableNames
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +18,7 @@ class SeafileSeaDBAPI:
 
     def get_seafiles_by_pks(self, connection_id, pks):
         """Retrieve issue for the specified _pk."""
-        table_name = get_table_name_from_schema('SeafileTable', connection_id)
+        table_name = get_table_name_from_schema(SchemaTableNames.SEAFILE, connection_id)
         pks_str = ', '.join([
             str(pk)
             for pk in pks

@@ -165,8 +165,8 @@ class TestProjectConnectionsView:
         seadb_api = Mock()
 
         with patch('seahub.project.connections.ProjectConnections.objects.create', return_value=record), \
-                patch('seahub.project.connections.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.project.connections.init_seadb_tables_from_schema'), \
+                patch('seahub.project.seadb_api.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.seadb_models.utils.init_seadb_tables_from_schema'), \
                 patch('seahub.project.connections.add_connection_sync_task') as add_task_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 

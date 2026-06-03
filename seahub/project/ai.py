@@ -30,6 +30,9 @@ from django.http import HttpRequest
 
 
 from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
+
+from seahub.seadb_models.models import SchemaTableNames
+
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
@@ -521,13 +524,13 @@ class RelatedRecordsView(APIView):
             current_category = ConnectionCategory.from_type(connection.type)
             if current_category == ConnectionCategory.ISSUE:
                 if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                    table_name = get_table_name_from_schema('GithubIssuesTable', connection_id)
+                    table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
                 elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
-                    table_name = get_table_name_from_schema('DiscourseTopicsTable', connection_id)
+                    table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
                 elif connection.type == ConnectionType.EMAIL.value:
-                    table_name = get_table_name_from_schema('ThreadTable', connection_id)
+                    table_name = get_table_name_from_schema(SchemaTableNames.THREAD, connection_id)
                 elif connection.type == ConnectionType.GENERAL_TASK.value:
-                    table_name = get_table_name_from_schema('GeneralTaskTable', connection_id)
+                    table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'
