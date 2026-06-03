@@ -21,6 +21,8 @@ import { getRowById, convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { TICKET_TYPE, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
 import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/project/main-panel/portal-issues/constants';
 import { useCollaborators } from '@/sea-metadata';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -202,6 +204,18 @@ const TicketInDialog = ({
       ticketDom && resizeObserver.unobserve(ticketDom);
     };
   }, [isLoading, ticket]);
+
+  useEffect(() => {
+    const localChanged = (ticket, linkedRecords) => {
+      setTicket(cur => ({ ...cur, ...ticket }));
+      setLinkedRecords(cur => ({ ...cur, ...linkedRecords }));
+    };
+
+    const unsubscribeLocalChanged = eventBus.subscribe(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, localChanged);
+    return () => {
+      unsubscribeLocalChanged();
+    };
+  }, []);
 
   if (isLoading) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);

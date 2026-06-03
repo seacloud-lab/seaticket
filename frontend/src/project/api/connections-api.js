@@ -121,6 +121,11 @@ class ConnectionsAPI {
     return this.req.get(url, { params: params });
   }
 
+  getConnectionMetadata(projectUuid, connectionID, signal) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/meta/';
+    return this.req.get(url, { signal: signal });
+  }
+
   getConnectionLogs(projectUuid, connectionID) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/logs/';
     return this.req.get(url);

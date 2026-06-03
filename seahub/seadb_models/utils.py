@@ -80,8 +80,8 @@ def build_general_task_row_data(task, sync_time=None):
     if not isinstance(participants, list):
         participants = []
     return {
-        GeneralTaskTable.source_task_id.name: str(task.get('task_id')).strip(),
-        GeneralTaskTable.url.name: str(task.get('url') or '').strip(),
+        GeneralTaskTable.source_task_id.name: task.get('task_id') or task.get('id'),
+        GeneralTaskTable.url.name: task.get('url'),
         GeneralTaskTable.title.name: task.get('title', ''),
         GeneralTaskTable.status.name: task.get('status'),
         GeneralTaskTable.size.name: task.get('size'),
@@ -92,11 +92,12 @@ def build_general_task_row_data(task, sync_time=None):
         GeneralTaskTable.others.name: others,
         GeneralTaskTable.content.name: task.get('description') or task.get('content') or '',
         GeneralTaskTable.due_date.name: task.get('due_date'),
-        GeneralTaskTable.modified_time.name: task.get('modified_time') or now,
-        GeneralTaskTable.created_time.name: task.get('created_time') or now,
+        GeneralTaskTable.modified_time.name: task.get('modified_time') or task.get('_mtime'),
+        GeneralTaskTable.created_time.name: task.get('created_time') or task.get('_ctime'),
         GeneralTaskTable.sync_time.name: now,
         GeneralTaskTable.record_modified_time.name: now,
         GeneralTaskTable.deleted.name: bool(task.get('deleted', False)),
+        GeneralTaskTable.linked_ticket.name: int(task.get('linked_ticket')) if task.get('linked_ticket') else None,
     }
 
 

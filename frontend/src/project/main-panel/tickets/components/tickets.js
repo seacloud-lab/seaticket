@@ -8,7 +8,7 @@ import {
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_TABLE_NAME, TICKET_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
-import { BAR_TYPE } from '@/project/constants';
+import { BAR_TYPE, EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
@@ -16,17 +16,22 @@ import toaster from '@/components/toaster';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
+  convertTicketToTask, convertTicketToKb,
 } from '../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import RelatedIssuesDialog from './related-issues-dialog';
 import CreateKBRecordDialog from './create-kb-record-dialog';
+import CreateTaskDialog from './create-task-dialog';
 import { isFunction } from '@/utils/type-detection';
 import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { getTableName } from '@/project/main-panel/connections/utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import eventBus from '@/utils/event-bus';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -49,10 +54,11 @@ const Tickets = ({
     typesData, createType,
     substatesData, createSubstate,
   } = useMetadata();
+  const { connections } = useConnections();
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
   } = useData();
 
   const metadataRef = useRef(null);
@@ -61,12 +67,11 @@ const Tickets = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
-
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
-  const [kbSourceTicket, setKbSourceTicket] = useState(null);
+  const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
 
   const handleExpandRow = useCallback((ticket) => {
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setCurrentTicket(ticket);
     setIsShowTicketDetailsDialog(true);
   }, [projectUuid]);
 
@@ -205,29 +210,51 @@ const Tickets = ({
   const createKnowledgeBaseRecord = useCallback((ticket) => {
     if (!ticket) return;
 
-    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-    const contentColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
-
-    const title = titleColumn ? (getCellValueByColumn(ticket, titleColumn) || '') : (ticket?.title || '');
-
-    const rawContent = contentColumn ? getCellValueByColumn(ticket, contentColumn) : ticket?.content;
-    let content = '';
-    if (rawContent && typeof rawContent === 'object') {
-      content = rawContent.text || rawContent.preview || '';
-    } else {
-      content = rawContent || '';
-    }
-
-    setKbSourceTicket({
-      _id: ticket._id,
-      title,
-      content,
-    });
+    setCurrentTicket(ticket);
     setIsShowCreateKBRecordDialog(true);
   }, []);
 
+  const createTask = useCallback((ticket) => {
+    if (!ticket) return;
+    setCurrentTicket(ticket);
+    setIsShowCreateTaskDialog(true);
+  }, []);
+
+  const handleTaskCreated = useCallback(({ task, connection }) => {
+    if (!currentTicket) return;
+    const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
+    if (!linkedConnectionRecordsColumn) return;
+
+    const newValueKey = `${connection.id}_${task._pk}`;
+    const oldValue = getCellValueByColumn(currentTicket, linkedConnectionRecordsColumn);
+    const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
+    const update = { [linkedConnectionRecordsColumn.key]: newValue };
+
+    // update cache
+    const connectionTableName = getTableName(connection);
+    const linked_records = { [newValueKey]: task.title };
+    insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, update, () => {
+      // update current details dialog
+      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, { [linkedConnectionRecordsColumn.name]: newValue }, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } } );
+
+      // update current view display
+      const metadataEventBus = context.eventBus;
+      metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, update);
+      metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
+    });
+  }, [currentTicket, insertRowByLink]);
+
   const createRowsTools = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId, createKnowledgeBaseRecord };
+    let params = {
+      ...props,
+      projectName,
+      workspaceID,
+      chatTicketsByAI,
+      togglePageSlugId,
+      createKnowledgeBaseRecord,
+      connections,
+      createTask,
+    };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -235,10 +262,22 @@ const Tickets = ({
       return customizeCreateRowsTools(params);
     }
     return generatorTicketsRowsTools(params);
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord]);
+  }, [
+    workspaceID, projectName, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord, createTask
+  ]);
 
   const createContextMenuOptions = useCallback((props) => {
-    let params = { ...props, projectName, workspaceID, chatTicketsByAI, togglePageSlugId, createKnowledgeBaseRecord };
+    let params = {
+      ...props,
+      projectName,
+      workspaceID,
+      chatTicketsByAI,
+      togglePageSlugId,
+      createKnowledgeBaseRecord,
+      connections,
+      createTask,
+    };
     if (canFindRelatedIssues) {
       params.findRelatedIssues = findRelatedIssues;
     }
@@ -246,7 +285,10 @@ const Tickets = ({
       return customizeCreateContextMenuOptions(params);
     }
     return generatorTicketsContextMenuOptions(params);
-  }, [projectName, workspaceID, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord]);
+  }, [
+    projectName, workspaceID, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask,
+  ]);
 
   const createMoreOptions = useCallback((resource) => {
     const row = resource;
@@ -269,8 +311,13 @@ const Tickets = ({
       projectName,
       findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
       createKnowledgeBaseRecord,
+      connections,
+      createTask,
     });
-  }, [workspaceID, projectName, canFindRelatedIssues, chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI]);
+  }, [
+    workspaceID, projectName, canFindRelatedIssues, connections,
+    chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI, createTask,
+  ]);
 
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
@@ -285,7 +332,7 @@ const Tickets = ({
       newIndex = ticketsData.length - 1;
     }
     const ticket = ticketsData[newIndex];
-    setCurrentTicket({ ...ticket, type: TICKET_TYPE });
+    setCurrentTicket(ticket);
   }, [currentTicket, metadataRef]);
 
   const onCloseRelatedIssuesDialog = useCallback(() => {
@@ -336,7 +383,7 @@ const Tickets = ({
       {isShowTicketDetailsDialog && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}
-          resource={currentTicket}
+          resource={{ ...currentTicket, type: TICKET_TYPE }}
           columns={allColumns.current}
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
@@ -344,14 +391,29 @@ const Tickets = ({
           createMoreOptions={createMoreOptions}
         />
       )}
-      {isShowCreateKBRecordDialog && kbSourceTicket && (
+      {isShowCreateKBRecordDialog && currentTicket && (
         <CreateKBRecordDialog
           projectUuid={projectUuid}
-          ticket={kbSourceTicket}
+          ticket={convertTicketToKb(currentTicket, allColumns.current)}
           onClose={() => {
             setIsShowCreateKBRecordDialog(false);
-            setKbSourceTicket(null);
+            if (isShowTicketDetailsDialog) return;
+            setCurrentTicket(null);
           }}
+        />
+      )}
+      {isShowCreateTaskDialog && currentTicket && (
+        <CreateTaskDialog
+          projectUuid={projectUuid}
+          workspaceID={workspaceID}
+          projectName={projectName}
+          ticket={convertTicketToTask(currentTicket, allColumns.current)}
+          onClose={() => {
+            setIsShowCreateTaskDialog(false);
+            if (isShowTicketDetailsDialog) return;
+            setCurrentTicket(null);
+          }}
+          onSubmitCallback={handleTaskCreated}
         />
       )}
     </>

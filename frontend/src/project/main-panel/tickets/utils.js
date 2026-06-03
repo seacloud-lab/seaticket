@@ -8,6 +8,8 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_TICKET_COLUMN_NAME, AUTO_UPDATE_PARTICIPANTS_KEY } from './constants';
 import { TicketForAI } from './models';
+import { isObject } from '@/utils/type-detection';
+import { CONNECTION_TYPE } from '../connections/constants';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
@@ -39,7 +41,9 @@ export const generatorRowsMoreTool = ({
   chatTicketsByAI,
   findRelatedIssues,
   context,
-  createKnowledgeBaseRecord
+  createKnowledgeBaseRecord,
+  connections,
+  createTask,
 }) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
@@ -79,6 +83,14 @@ export const generatorRowsMoreTool = ({
       label: gettext('Create knowledge base record'),
       key: 'create_kb_record',
       callback: () => createKnowledgeBaseRecord(rows[0]),
+    });
+  }
+
+  if (rows.length === 1 && createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
+    children.push({
+      label: gettext('Create task'),
+      key: 'create_task',
+      callback: () => createTask(rows[0]),
     });
   }
 
@@ -141,18 +153,39 @@ export const generatorRowsMoreTool = ({
   };
 };
 
-export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord }) => {
+export const generatorTicketsRowsTools = ({
+  rows,
+  columns,
+  workspaceID,
+  projectName,
+  modifyRows,
+  chatTicketsByAI,
+  findRelatedIssues,
+  context,
+  createKnowledgeBaseRecord,
+  connections,
+  createTask,
+}) => {
   let tools = [];
   if (rows.length === 1) {
     const row = rows[0];
     const tool = generatorTicketCopyLinkTool({ ticket: row, workspaceID, projectName });
     tools.push(tool);
   }
-  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI, findRelatedIssues, context, createKnowledgeBaseRecord });
+  const moreTool = generatorRowsMoreTool({
+    rows,
+    columns,
+    modifyRows,
+    chatTicketsByAI,
+    findRelatedIssues,
+    context,
+    createKnowledgeBaseRecord,
+    connections,
+    createTask,
+  });
   tools.push(moreTool);
   return tools;
 };
-
 
 export const cascadeUpdate = (table, rowId, rowUpdate, oldRowData) => {
   const row = getRowById(table, rowId);
@@ -229,7 +262,9 @@ export const generatorTicketsContextMenuOptions = ({
   permission,
   findRelatedIssues,
   createKnowledgeBaseRecord,
-  canDeleteRow
+  canDeleteRow,
+  connections,
+  createTask,
 }) => {
   let list = [];
 
@@ -274,6 +309,13 @@ export const generatorTicketsContextMenuOptions = ({
           label: gettext('Create knowledge base record'),
           key: 'create_kb_record',
           callback: () => createKnowledgeBaseRecord(rows[0]),
+        });
+      }
+      if (rows.length === 1 && createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
+        list.push({
+          label: gettext('Create task'),
+          key: 'create_task',
+          callback: () => createTask(rows[0]),
         });
       }
       list.push('Divider');
@@ -359,6 +401,13 @@ export const generatorTicketsContextMenuOptions = ({
       callback: () => createKnowledgeBaseRecord(row),
     });
   }
+  if (createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
+    list.push({
+      label: gettext('Create task'),
+      key: 'create_task',
+      callback: () => createTask(row),
+    });
+  }
   list.push('Divider');
 
   list.push({
@@ -386,4 +435,51 @@ export const generatorTicketsContextMenuOptions = ({
   }
 
   return list;
+};
+
+export const convertTicketToKb = (ticket, columns) => {
+  if (!ticket || !Array.isArray(columns) || columns.length === 0) return {};
+  const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+  const contentColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
+
+  const title = getCellValueByColumn(ticket, titleColumn) || ticket?.title || '';
+  let content = getCellValueByColumn(ticket, contentColumn) || ticket?.content || '';
+  if (content && isObject(content)) {
+    content = content.text || '';
+  }
+
+  return {
+    _id: ticket._id,
+    title,
+    content,
+  };
+};
+
+export const convertTicketToTask = (ticket, columns) => {
+  if (!ticket || !Array.isArray(columns) || columns.length === 0) return {};
+  const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+  const contentColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
+  const assigneesColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
+  const dueDateColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE);
+  const priorityColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.PRIORITY);
+  const statusColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.STATE);
+
+  let content = getCellValueByColumn(ticket, contentColumn) || ticket?.content || '';
+  if (content && isObject(content)) {
+    content = content.text || '';
+  }
+
+  const status = getCellValueByColumn(ticket, statusColumn) || ticket?.state || null;
+  const statusOptions = getColumnOptions(statusColumn);
+  const statusOption = getOption(statusOptions, status);
+
+  return {
+    _id: ticket._id,
+    title: getCellValueByColumn(ticket, titleColumn) || ticket?.title || '',
+    content,
+    assignees: getCellValueByColumn(ticket, assigneesColumn) || ticket.assignees || [],
+    due_date: getCellValueByColumn(ticket, dueDateColumn) || ticket?.due_date || null,
+    priority: getCellValueByColumn(ticket, priorityColumn) || ticket?.priority || null,
+    status: statusOption?.name || null,
+  };
 };

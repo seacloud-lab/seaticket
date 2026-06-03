@@ -18,7 +18,7 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
 
   useEffect(() => {
     const ticketTitle = ticket?.title || '';
-    const ticketContent = typeof ticket?.content === 'object' ? (ticket?.content?.text || '') : (ticket?.content || '');
+    const ticketContent = ticket?.content || '';
     const ticketId = ticket?._id;
 
     setLoading(true);

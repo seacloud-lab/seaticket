@@ -3,13 +3,13 @@
   width: 100%;
   padding: 6px 0;
   display: flex;
-  flex-wrap: wrap;
   margin-bottom: 8px;
   border-radius: 3px;
 }
 
 .seaqa-single-select-settings-formatter.valid {
   padding: 5px 0 ;
+  align-items: center;
 }
 
 .seaqa-single-select-settings-formatter .option {

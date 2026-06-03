@@ -623,7 +623,6 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
                 merged.append(entry)
     return merged
 
-
 def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
     return _collect_github_issue_column_options(
         seadb_api,

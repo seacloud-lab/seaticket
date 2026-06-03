@@ -9,6 +9,7 @@ from seahub.project.connections import (
     ProjectConnectionView,
     ProjectConnectionSyncView,
     ProjectConnectionDetailsView,
+    ProjectConnectionMetaView,
     ProjectConnectionLogView,
     ProjectConnectionsStatusView,
     ProjectConnectionRecordView,
@@ -548,6 +549,50 @@ class TestProjectConnectionDetailsView:
         assert 'records' in resp.data
         assert resp.data['records'][0]['_pk'] == 1
         list_mock.assert_called_once()
+
+
+class TestProjectConnectionMetaView:
+
+    def test_get_permission_denied(self, factory, no_org_user, real_project, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/meta/")
+        request.user = no_org_user
+
+        resp = ProjectConnectionMetaView.as_view()(
+            request, project_uuid=str(project.uuid), connection_id=str(site_connection.id)
+        )
+
+        assert resp.status_code == 403
+
+    def test_get_invalid_connection_type(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/meta/")
+        request.user = project_creator
+
+        resp = ProjectConnectionMetaView.as_view()(
+            request, project_uuid=str(project.uuid), connection_id=str(site_connection.id)
+        )
+
+        assert resp.status_code == 400
+
+    def test_get_success(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='general_task')
+        request = factory.get(f"/api/v1/project/{project.uuid}/connections/{connection.id}/meta/")
+        request.user = project_creator
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
+                patch('seahub.project.connections.get_connection_columns', return_value=[{'key': 'status'}]), \
+                patch('seahub.project.connections.get_connection_general_task_related_users', return_value=[
+                    {'email': 'dev@example.com', 'name': 'Dev User', 'avatar_url': '/avatar.png'}
+                ]):
+            resp = ProjectConnectionMetaView.as_view()(
+                request, project_uuid=str(project.uuid), connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 200
+        assert resp.data['related_users'][0]['email'] == 'dev@example.com'
+        assert resp.data['columns'][0]['key'] == 'status'
 
 
 class TestProjectConnectionLogView:
