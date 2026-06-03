@@ -6,6 +6,8 @@ class User {
     this.avatar_url = obj.avatar_url || '';
     this.contact_email = obj.contact_email || null;
     this.name_pinyin = obj.name_pinyin || '';
+    this.is_admin = obj.is_admin || false;
+    this.role = obj.role || '';
   }
 
 }
