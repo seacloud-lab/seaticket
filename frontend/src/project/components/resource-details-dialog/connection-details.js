@@ -34,9 +34,8 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
   const { tagsData } = useTags();
 
-  const connection = useMemo(() => {
-    return connections.find(c => c.id === resource?.connection_id);
-  }, [connections, resource?.connection_id]);
+  const connection = useMemo(() => connections.find(c => c.id === resource?.connection_id), [connections, resource?.connection_id]);
+  const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
 
   useEffect(() => {
     setConnectionDetails(null);
@@ -44,6 +43,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
 
   const updateResourceDetails = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     const details = { record, columns, linked_ticket_title, related_users };
+    console.log('setConnectionDetails', details);
     setConnectionDetails(details);
     onUpdateResourceDetails && onUpdateResourceDetails(record);
   }, [onUpdateResourceDetails]);
@@ -54,15 +54,6 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
     const collaborators = relatedUsers.map(user => new User(user));
     return formatColumns(connection, connectionDetails.columns, { collaborators });
   }, [connection, connectionDetails]);
-
-  const rowForActions = useMemo(() => {
-    if (!connectionDetails?.record || !connection) return null;
-    return {
-      ...connectionDetails.record,
-      _id: resource?._id + '',
-      _pk: resource?._id
-    };
-  }, [connectionDetails, connection, resource]);
 
   const syncRecordDetails = useCallback((recordUpdate = {}, linkedTicketTitle) => {
     setConnectionDetails((current) => current ? {
@@ -76,9 +67,8 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   const handleOthersChange = useCallback((update, callback) => {
     if (!connection || !connectionDetails?.record || targetColumns.length === 0) return;
 
-    const recordID = Number(resource._id);
-    const tableName = getTableName(connection);
     let localRowUpdate = {};
+    const recordID = Number(resource._id);
     Object.keys(update).forEach((name) => {
       const column = getColumnByName(targetColumns, name);
       if (!column) return;
@@ -96,7 +86,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
       localRowUpdate[column.key] = getCellValueByColumn(update, column, { tagsData });
     });
 
-    modifyRow(tableName, recordID, localRowUpdate, () => {
+    modifyRow(connectionTableName, recordID, localRowUpdate, () => {
       const request = connection.type === CONNECTION_TYPE.GITHUB_ISSUE
         ? connectionsAPI.modifyGithubIssue(projectUuid, connection.id, recordID, update)
         : connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, recordID, update);
@@ -117,7 +107,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
         throw error;
       });
     });
-  }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, syncRecordDetails]);
+  }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, connectionTableName, syncRecordDetails]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = { [ticket._pk]: ticket.title };
@@ -125,10 +115,9 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
     if (!linkColumn) return;
 
     const rowId = resource._id;
-    const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk };
     const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
-
-    insertRowByLink(TICKET_TABLE_NAME, getTableName(connection), linkedUpdateRecord, rowId, rowUpdateData, () => {
+    insertRowByLink(TICKET_TABLE_NAME, connectionTableName, linkedUpdateRecord, rowId, rowUpdateData, () => {
+      const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk };
       syncRecordDetails(nextRecordUpdate, ticket.title);
       const eventBus = context.eventBus;
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
@@ -137,27 +126,24 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   }, [connection, targetColumns, insertRowByLink, resource?._id, syncRecordDetails]);
 
   const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
-    if (!connection || !connectionDetails?.record) return;
     const linkedTicketColumn = getColumnByName(targetColumns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-    const titleColumn = getColumnByName(targetColumns, CONNECTION_PREDEFINED_COLUMN_NAME.TITLE);
-    if (!linkedTicketColumn || !titleColumn) return;
-    const rowId = connectionDetails.record._id;
     const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
-    const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket.id };
+    const rowId = resource._id;
     const connectionLinkedUpdate = { [ticket.id]: ticket.title };
 
     modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket.id),
       rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connection.id}_${rowId}`] },
-      linkedRecords: { [`${connection.id}_${rowId}`]: getCellValueByColumn(connectionDetails.record, titleColumn) }
+      linkedRecords: { [`${connection.id}_${rowId}`]: connectionDetails.record.title }
     }, {
-      tableName: getTableName(connection),
+      tableName: connectionTableName,
       rowId,
       rowUpdate,
       linkedRecords: connectionLinkedUpdate,
     }, () => {
       return connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then((res) => {
+        const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket.id };
         syncRecordDetails(nextRecordUpdate, ticket.title);
         const eventBus = context.eventBus;
         eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
@@ -174,12 +160,14 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, syncRecordDetails]);
 
   const linkedTicketTools = useMemo(() => {
-    if (!rowForActions || !connection || targetColumns.length === 0 || permission !== PERMISSION_TYPES.READ_WRITE) return [];
+    if (!connectionDetails?.record) return [];
+    const row = { ...connectionDetails.record, _id: resource?._id + '', _pk: resource?._id };
+    const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     return [
-      generateCreateRelatedTicketOption({ row: rowForActions, columns: targetColumns, connection }, () => setTicketDialogOpen(true)),
-      generateLinkAnExistingTicketOption({ row: rowForActions, columns: targetColumns, connection }, () => setIsShowTicketsDialog(true)),
+      isRw && generateCreateRelatedTicketOption({ row, columns: targetColumns, connection }, () => setTicketDialogOpen(true)),
+      isRw && generateLinkAnExistingTicketOption({ row, columns: targetColumns, connection }, () => setIsShowTicketsDialog(true)),
     ].filter(Boolean);
-  }, [rowForActions, permission, targetColumns, connection]);
+  }, [connection, connectionDetails, permission, targetColumns, resource]);
 
   return (
     <>
@@ -209,7 +197,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
           </div>
         )}
       </div>
-      {isTicketDialogOpen && rowForActions && (
+      {isTicketDialogOpen && (
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={{ _id: resource._id }}
