@@ -127,3 +127,8 @@
 .github-issue-type-selector.seaqa-select .selected-option {
   background: inherit;
 }
+
+.option-group-github-issue-type-selector.option-group {
+  padding-left: 0px;
+  padding-right: 0px;
+}

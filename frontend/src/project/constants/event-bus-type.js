@@ -16,4 +16,6 @@ export const EVENT_BUS_TYPE = {
   IMPORT_KB_XLSX: 'import_kb_xlsx',
   PORTAL_ISSUES_PAGE: 'portal_issues_page',
   MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify_local_record_in_dialog',
+  MODIFY_LOCAL_RECORD: 'modify_local_record',
+  MODIFY_LOCAL_RECORDS: 'modify_local_records',
 };

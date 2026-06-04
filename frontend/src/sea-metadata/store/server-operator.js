@@ -30,10 +30,15 @@ class ServerOperator {
         context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
           if (res?.data?.row) {
             operation.row_update = { ...row_update, ...res.data.row };
+            operation.is_update_local = true;
           }
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to modify {row}') });
+          if (error?.response?.status === 409) {
+            callback({ operation, is_restore: true });
+          } else {
+            callback({ operation, error: context.translate('Failed to modify {row}') });
+          }
         });
         break;
       }
@@ -48,7 +53,9 @@ class ServerOperator {
           context.modifyRows(rowsData, is_copy_paste, { data, typesData, tagsData }).then(res => {
             callback({ operation });
           }).catch(error => {
-            if (error.response && error.response.status === 413) {
+            if (error?.response?.status === 409) {
+              callback({ operation, is_restore: true });
+            } else if (error.response && error.response.status === 413) {
               callback({ operation, error: gettext('Number of rows exceeds the limit of 1000') });
             } else {
               callback({ operation, error: context.translate('Failed to modify {rows}') });

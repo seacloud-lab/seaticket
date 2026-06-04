@@ -385,6 +385,40 @@ export const DataProvider = ({
     modifyLocalRows(tableName, [{ row_id: rowId, row: rowUpdate }]);
   }, [modifyLocalRows]);
 
+  const modifyTablesRows = useCallback((updates = [], isNeedConvertKeyValue = false) => {
+    if (!Array.isArray(updates) || updates.length === 0) return;
+
+    const _updateTableData = (data, tableUpdate) => {
+      const { name = '', rows = [] } = tableUpdate || {};
+      let table = data[name];
+      if (table) {
+        const columns = Object.values(table?.key_column_map || {});
+        const idRowMap = table.id_row_map;
+        let _id_row_map = {};
+        Array.isArray(rows) && rows.forEach(rowUpdate => {
+          const { row_id, row: rowData } = rowUpdate;
+          const row = isNeedConvertKeyValue ? convertRowToKeyValue(rowData, { data: { columns } }) : rowData;
+          const oldRow = idRowMap[row_id];
+          _id_row_map[row_id] = { ...oldRow, ...row };
+        });
+
+        data[name] = {
+          ...table,
+          id_row_map: { ...idRowMap, ..._id_row_map },
+        };
+      }
+    };
+
+    setData(data => {
+      const newData = deepcopy(data);
+      updates.forEach(tableUpdate => {
+        _updateTableData(newData, tableUpdate);
+      });
+      newData.version = newData.version + 1;
+      return newData;
+    });
+  }, []);
+
   const modifyRow = useCallback((tableName, rowId, rowUpdate, api, { typesData } = {}) => {
     return api().then(res => {
       let table = data[tableName];
@@ -653,6 +687,7 @@ export const DataProvider = ({
       deleteRow,
       deleteRows,
       restoreRows,
+      modifyTablesRows,
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>

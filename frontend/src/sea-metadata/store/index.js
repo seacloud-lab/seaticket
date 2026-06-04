@@ -235,7 +235,14 @@ class Store {
     this.serverOperator.applyOperation(operation, { data: this.data, typesData: this.typesData, tagsData: this.tagsData }, this.sendOperationCallback.bind(this, undoRedoHandler));
   }
 
-  sendOperationCallback = (undoRedoHandler, { operation, error }) => {
+  sendOperationCallback = (undoRedoHandler, { operation, is_restore, error }) => {
+    if (is_restore) {
+      this.restoreOperation(operation);
+      this.undo = this.undo.filter(o => o.id !== operation.id);
+      this.sendNextOperation(undoRedoHandler);
+      return;
+    }
+
     if (error) {
       if (operation && operation.fail_callback) {
         operation.fail_callback(error);
@@ -315,6 +322,13 @@ class Store {
     } });
   }
 
+  restoreOperation(operation) {
+    if (this.isReadonly) return;
+    const restore = operation.restore();
+    if (!restore) return;
+    this.applyOperation(restore);
+  }
+
   // row
   insertRow(rowData, { success_callback, fail_callback } = {}) {
     const type = OPERATION_TYPE.INSERT_ROW;
@@ -337,7 +351,9 @@ class Store {
       is_copy_paste,
       fail_callback,
       success_callback: (operation) => {
-        this.modifyLocalRow(row_id, operation.row_update);
+        if (operation.is_update_local) {
+          this.modifyLocalRow(row_id, operation.row_update);
+        }
         success_callback && success_callback();
       },
     });

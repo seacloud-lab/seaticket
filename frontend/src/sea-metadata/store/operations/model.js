@@ -1,7 +1,9 @@
 import deepCopy from 'deep-copy';
+import slugid from 'slugid';
 import { OPERATION_ATTRIBUTES } from './constants';
 import apply from './apply';
 import invert from './invert';
+import restore from './restore';
 
 class Operation {
 
@@ -13,6 +15,7 @@ class Operation {
     attributes.forEach((param) => {
       this[param] = newOperation[param];
     });
+    this.id = slugid.nice();
     this.success_callback = newOperation.success_callback;
     this.fail_callback = newOperation.fail_callback;
   }
@@ -27,6 +30,10 @@ class Operation {
 
   invert() {
     return invert(this);
+  }
+
+  restore() {
+    return restore(this);
   }
 
   set(key, value) {
