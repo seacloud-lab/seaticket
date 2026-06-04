@@ -101,6 +101,7 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyR
                       isOpen={isSubOpen && subMenuKey === childKey}
                       menu={item}
                       onShow={openSubMenu}
+                      onToggle={onSubMenuToggle}
                       onParentToggle={onMoreToggle}
                     />
                   );
