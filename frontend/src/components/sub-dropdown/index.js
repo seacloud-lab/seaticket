@@ -16,6 +16,7 @@ const SubDropdown = ({
   isOpen,
   onShow,
   onToggle,
+  onParentToggle,
 }) => {
   return (
     <Dropdown
@@ -41,7 +42,14 @@ const SubDropdown = ({
             return (<CustomizeDropdownItem key={key} divider />);
           }
           return (
-            <CustomizeDropdownItem className={className} key={key} onClick={callback ? callback : null}>
+            <CustomizeDropdownItem
+              className={className}
+              key={key}
+              onClick={callback ? (event) => {
+                callback(event);
+                onParentToggle(event);
+              } : null}
+            >
               {hasOwnProperty(item, 'icon') ? (
                 <>
                   {icon ? (<Icon symbol={icon} className="mr-2" />) : (<span className="mr-2" style={{ height: 16, width: 16, display: 'inline-block' }}></span>)}

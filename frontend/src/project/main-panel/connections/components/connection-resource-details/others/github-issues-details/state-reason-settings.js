@@ -7,7 +7,7 @@ import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isEsc, isShiftS } from '@/utils/hotkey';
 import { GITHUB_STATE_REASON_NAME_MAP } from '../../../../constants';
 
-import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';
+import '@/project/main-panel/tickets/components/ticket-settings/state-settings/index.css';
 
 const StateReasonSettings = ({
   id,
@@ -73,7 +73,7 @@ const StateReasonSettings = ({
         <CustomizeLabel icon="single-select">
           {gettext('State reason')}
         </CustomizeLabel>
-        <div className={classnames('ticket-types-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
+        <div className={classnames('ticket-state-formatter', { 'valid': option, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
           {option ? <Option option={option} /> : <div className="seaqa-tip-default">{gettext('No types')}</div>}
         </div>
       </div>
@@ -85,8 +85,8 @@ const StateReasonSettings = ({
           sameWidthWithTarget={240}
           isMultiple={false}
           value={option?.id}
-          placeholder={gettext('Search type')}
-          emptyTip={gettext('No types')}
+          placeholder={gettext('Search options')}
+          emptyTip={gettext('No options')}
           options={options}
           onChange={onTypeChange}
           onToggle={closeEditor}
