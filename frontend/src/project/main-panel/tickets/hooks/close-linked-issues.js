@@ -35,6 +35,7 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
   const onSubmit = useCallback(() => {
     if (!isFunction(callbackRef.current)) {
       return new Promise((resolve, reject) => {
+        setIsShowCloseGitHubIssuesWarningDialog(false);
         resolve({
           data: { success: true }
         });
