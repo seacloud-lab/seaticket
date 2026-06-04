@@ -55,16 +55,18 @@ const JSONDetailValueFormatter = ({ className, value }) => (
 
 const hasDetailValue = (value) => value !== undefined && value !== null && value !== '';
 
-const buildPrompt = (phase, actions = []) => {
-  const promptActions = actions.filter((action) => hasDetailValue(action?.prompt));
-  if (promptActions.length !== 1) return null;
+const hasPhaseContextContent = (action) => hasDetailValue(action?.prompt) || hasDetailValue(action?.input);
+
+const buildPhaseTextNode = (phase, actions = [], field, label) => {
+  const phaseActions = actions.filter((action) => hasDetailValue(action?.[field]));
+  if (phaseActions.length !== 1) return null;
 
   return {
-    id: `phase-${phase}-prompt`,
-    name: gettext('Prompt'),
+    id: `phase-${phase}-${field}`,
+    name: label,
     children: [
       {
-        value: promptActions[0].prompt,
+        value: phaseActions[0][field],
         formatter: PromptValueFormatter,
       }
     ],
@@ -111,7 +113,7 @@ const buildPhaseGroupedActionNodes = (actions = []) => {
   }, {});
 
   actions.forEach((action) => {
-    if (!hasToolDetailsContent(action)) return;
+    if (!hasToolDetailsContent(action) && !hasPhaseContextContent(action)) return;
     const phase = getValidPhase(action.phase);
     if (!phase) return;
     actionsByPhase[phase].push(action);
@@ -121,19 +123,26 @@ const buildPhaseGroupedActionNodes = (actions = []) => {
     const phaseActions = actionsByPhase[phase];
     if (phaseActions.length === 0) return null;
 
-    const promptNode = buildPrompt(phase, phaseActions);
+    const promptNode = buildPhaseTextNode(phase, phaseActions, 'prompt', gettext('Prompt'));
+    const inputNode = buildPhaseTextNode(phase, phaseActions, 'input', gettext('Input'));
     const shouldExcludeActionPrompt = Boolean(promptNode);
+    const phaseContextNodes = [promptNode, inputNode].filter(Boolean);
 
-    const actionNodes = phaseActions.map((action, actionIndex) => ({
-      id: action.id || `${phase}-action-${actionIndex}`,
-      name: getActionTitle(action, actionIndex),
-      children: buildDetailsChildren(action, { excludePrompt: shouldExcludeActionPrompt }),
-    }));
+    const actionNodes = phaseActions.map((action, actionIndex) => {
+      const children = buildDetailsChildren(action, { excludePrompt: shouldExcludeActionPrompt });
+      if (children.length === 0) return null;
+
+      return {
+        id: action.id || `${phase}-action-${actionIndex}`,
+        name: getActionTitle(action, actionIndex),
+        children,
+      };
+    }).filter(Boolean);
 
     return {
       id: `phase-${phase}`,
       name: PHASE_LABELS[phase],
-      children: promptNode ? [promptNode, ...actionNodes] : actionNodes,
+      children: [...phaseContextNodes, ...actionNodes],
     };
   }).filter(Boolean);
 };
