@@ -358,6 +358,8 @@ def close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads):
     for payload in (ticket_close_payloads or []):
         state_reason = payload.get('state_reason')
         open_github_issues = payload.get('open_github_issues') or []
+        # The GitHub REST API does not natively support a single batch 
+        # or bulk PATCH endpoint for updating multiple issues at once.
         for issue in open_github_issues:
             update_github_issue_record(
                 project_uuid,
