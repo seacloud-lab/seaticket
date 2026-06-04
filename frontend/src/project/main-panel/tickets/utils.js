@@ -34,6 +34,26 @@ export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }
   };
 };
 
+export const updateLinkedRecordsForClosedGitHubIssues = (linkedRecords, issues, stateReason) => {
+  if (!linkedRecords || !Array.isArray(issues) || issues.length === 0) return linkedRecords || {};
+
+  const nextLinkedRecords = { ...linkedRecords };
+  issues.forEach(issue => {
+    const { connection_id, record_pk } = issue;
+    const key = `${connection_id}_${record_pk}`;
+    if (!nextLinkedRecords[key]) return;
+    const closedIssueUpdate = { state: 'closed' };
+    if (stateReason !== undefined) {
+      closedIssueUpdate.state_reason = stateReason;
+    }
+    nextLinkedRecords[key] = {
+      ...nextLinkedRecords[key],
+      ...closedIssueUpdate,
+    };
+  });
+  return nextLinkedRecords;
+};
+
 export const generatorRowsMoreTool = ({
   rows,
   columns,

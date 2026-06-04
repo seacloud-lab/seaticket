@@ -12,7 +12,7 @@ import {
 import { BAR_TYPE } from '@/project/constants';
 import {
   convertTicketToKb, generatorTicketsContextMenuOptions, isOpenLinkedGithubIssuesWarning,
-  convertSubstateToGitHubStateReason,
+  convertSubstateToGitHubStateReason, updateLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
@@ -458,19 +458,7 @@ const Ticket = ({
       callback && callback();
       const issues = tickets.map(ticket => ticket.open_github_issues).flat();
       modifyLocalGitHubIssuesClosed(issues, connections, stateReason);
-      let linkedRecordsUpdate = {};
-      issues.forEach(issue => {
-        const { connection_id, record_pk } = issue;
-        const key = `${connection_id}_${record_pk}`;
-        linkedRecordsUpdate[key] = { state: 'closed' };
-      });
-      setLinkedRecords(pre => {
-        let cur = { ...pre };
-        Object.keys(pre).forEach(key => {
-          cur[key] = { ...cur[key], ...linkedRecordsUpdate[key] };
-        });
-        return cur;
-      });
+      setLinkedRecords(pre => updateLinkedRecordsForClosedGitHubIssues(pre, issues, stateReason));
       setIsShowCloseGitHubIssuesWarningDialog(false);
       closeLinkedGitHubIssuesWarning.current = null;
     }).catch(error => {

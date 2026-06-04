@@ -25,7 +25,10 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import CloseLinkedGitHubIssuesWarningDialog from '../close-linked-github-issues-warning-dialog';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import { isOpenLinkedGithubIssuesWarning, convertSubstateToGitHubStateReason } from '../../utils';
+import {
+  isOpenLinkedGithubIssuesWarning, convertSubstateToGitHubStateReason,
+  updateLinkedRecordsForClosedGitHubIssues,
+} from '../../utils';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
 
 import './index.css';
@@ -251,20 +254,7 @@ const TicketInDialog = ({
         }
       }
 
-      // update linkedRecords
-      let linkedRecordsUpdate = {};
-      issues.forEach(issue => {
-        const { connection_id, record_pk } = issue;
-        const key = `${connection_id}_${record_pk}`;
-        linkedRecordsUpdate[key] = { state: 'closed' };
-      });
-      setLinkedRecords(pre => {
-        let cur = { ...pre };
-        Object.keys(pre).forEach(key => {
-          cur[key] = { ...cur[key], ...linkedRecordsUpdate[key] };
-        });
-        return cur;
-      });
+      setLinkedRecords(pre => updateLinkedRecordsForClosedGitHubIssues(pre, issues, stateReason));
 
       setIsShowCloseGitHubIssuesWarningDialog(false);
       closeLinkedGitHubIssuesWarning.current = null;
