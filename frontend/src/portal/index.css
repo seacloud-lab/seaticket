@@ -136,7 +136,7 @@ body {
 }
 
 .seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab {
-  font-size: 16px
+  font-size: 16px;
 }
 
 .seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
