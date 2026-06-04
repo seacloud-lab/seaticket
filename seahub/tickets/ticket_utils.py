@@ -249,7 +249,6 @@ def collect_open_linked_github_issues(seadb_api, project_uuid, ticket_id, linked
             if record_pk is None:
                 continue
             open_issues.append({
-                'ticket_id': int(ticket_id),
                 'connection_id': int(connection_id),
                 'record_pk': int(record_pk),
                 'title': record.get('title') or '',
