@@ -34,26 +34,6 @@ export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }
   };
 };
 
-export const updateLinkedRecordsForClosedGitHubIssues = (linkedRecords, issues, stateReason) => {
-  if (!linkedRecords || !Array.isArray(issues) || issues.length === 0) return linkedRecords || {};
-
-  const nextLinkedRecords = { ...linkedRecords };
-  issues.forEach(issue => {
-    const { connection_id, record_pk } = issue;
-    const key = `${connection_id}_${record_pk}`;
-    if (!nextLinkedRecords[key]) return;
-    const closedIssueUpdate = { state: 'closed' };
-    if (stateReason !== undefined) {
-      closedIssueUpdate.state_reason = stateReason;
-    }
-    nextLinkedRecords[key] = {
-      ...nextLinkedRecords[key],
-      ...closedIssueUpdate,
-    };
-  });
-  return nextLinkedRecords;
-};
-
 export const generatorRowsMoreTool = ({
   rows,
   columns,
@@ -516,4 +496,20 @@ export const convertSubstateToGitHubStateReason = (substate = '') => {
   if (validSubstate.includes('duplicate')) return 'duplicate';
   if (validSubstate.includes('not planned')) return 'not_planned';
   return 'completed';
+};
+
+export const generatorLinkedRecordsForClosedGitHubIssues = (linkedRecords, issues) => {
+  if (!linkedRecords || !Array.isArray(issues) || issues.length === 0) return linkedRecords || {};
+  const newLinkedRecords = { ...linkedRecords };
+  issues.forEach(issue => {
+    const { connection_id, record_pk } = issue;
+    const key = `${connection_id}_${record_pk}`;
+    if (!newLinkedRecords[key]) return;
+    const closedIssueUpdate = { state: 'closed' };
+    newLinkedRecords[key] = {
+      ...newLinkedRecords[key],
+      ...closedIssueUpdate,
+    };
+  });
+  return newLinkedRecords;
 };

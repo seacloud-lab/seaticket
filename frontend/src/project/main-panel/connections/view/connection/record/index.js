@@ -279,8 +279,11 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   }, [isConnectionsPageLoading, record]);
 
   useEffect(() => {
-    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, (update) => {
-      setRecord(pre => ({ ...pre, ...update }));
+    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, (recordId, update) => {
+      setRecord(record => {
+        if (record._pk !== recordId) return record;
+        return { ...record, ...update };
+      });
     });
     return () => {
       unsubscribe();

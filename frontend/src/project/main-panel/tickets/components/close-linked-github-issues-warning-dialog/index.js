@@ -20,10 +20,8 @@ const CloseLinkedGitHubIssuesWarningDialog = ({ tickets, onToggle, onSubmit }) =
   const handleSubmit = useCallback(() => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    onSubmit && onSubmit((error) => {
-      if (error) {
-        toaster.danger(Utils.getErrorMsg(error));
-      }
+    onSubmit().catch(error => {
+      toaster.danger(Utils.getErrorMsg(error));
       setIsSubmitting(false);
     });
   }, [isSubmitting, onSubmit]);

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ticketsAPI } from '../../../api';
 import SeaMetadata from '@/sea-metadata';
-import { useMetadata } from '../hooks';
+import { useCloseLinkedIssues, useMetadata } from '../hooks';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
@@ -32,7 +32,6 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import eventBus from '@/utils/event-bus';
-import CloseLinkedGitHubIssuesWarningDialog from './close-linked-github-issues-warning-dialog';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -59,19 +58,18 @@ const Tickets = ({
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink, modifyLocalGitHubIssuesClosed,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
   } = useData();
+  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
-  const closeLinkedGitHubIssuesWarning = useRef(null);
 
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
 
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket(ticket);
@@ -168,16 +166,17 @@ const Tickets = ({
         return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData }).catch(error => {
           if (isOpenLinkedGithubIssuesWarning(error)) {
             const data = error?.response?.data || {};
-            closeLinkedGitHubIssuesWarning.current = {
-              tickets: data.tickets || [],
+            const tickets = data.tickets || [];
+            openCloseLinkedGitHubIssuesWarningDialog({
+              tickets,
+              stateReason: '',
               callback: () => {
                 return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste), { typesData }).then(res => {
                   const eventBus = context.eventBus;
                   eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
                 });
               },
-            };
-            setIsShowCloseGitHubIssuesWarningDialog(true);
+            });
           }
           throw error;
         });
@@ -189,8 +188,10 @@ const Tickets = ({
         return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste)).catch(error => {
           if (isOpenLinkedGithubIssuesWarning(error)) {
             const data = error?.response?.data || {};
-            closeLinkedGitHubIssuesWarning.current = {
-              tickets: data.tickets || [],
+            const tickets = data.tickets || [];
+            openCloseLinkedGitHubIssuesWarningDialog({
+              tickets,
+              stateReason: '',
               callback: () => {
                 return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste, { confirm_close_linked_github_issues: true })).then(res => {
                   const eventBus = context.eventBus;
@@ -202,8 +203,7 @@ const Tickets = ({
                   eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
                 });
               },
-            };
-            setIsShowCloseGitHubIssuesWarningDialog(true);
+            });
           }
           throw error;
         });
@@ -221,7 +221,7 @@ const Tickets = ({
 
     return _api;
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 
@@ -379,24 +379,6 @@ const Tickets = ({
     setCurrentTicket(null);
   }, [isShowTicketDetailsDialog]);
 
-  const onCloseWarningDialog = useCallback(() => {
-    setIsShowCloseGitHubIssuesWarningDialog(false);
-    closeLinkedGitHubIssuesWarning.current = null;
-  }, []);
-
-  const handleCloseLinkedGithubIssues = useCallback((callback) => {
-    const { callback: modify, tickets } = closeLinkedGitHubIssuesWarning.current;
-    modify && modify().then(res => {
-      callback && callback();
-      const issues = tickets.map(ticket => ticket.open_github_issues).flat();
-      modifyLocalGitHubIssuesClosed(issues, connections);
-      setIsShowCloseGitHubIssuesWarningDialog(false);
-      closeLinkedGitHubIssuesWarning.current = null;
-    }).catch(error => {
-      callback && callback(error);
-    });
-  }, [connections, modifyLocalGitHubIssuesClosed]);
-
   if (isLoading) return (<CenteredLoading />);
 
   return (
@@ -470,13 +452,6 @@ const Tickets = ({
             setCurrentTicket(null);
           }}
           onSubmitCallback={handleTaskCreated}
-        />
-      )}
-      {isShowCloseGitHubIssuesWarningDialog && (
-        <CloseLinkedGitHubIssuesWarningDialog
-          tickets={closeLinkedGitHubIssuesWarning.current.tickets}
-          onToggle={onCloseWarningDialog}
-          onSubmit={handleCloseLinkedGithubIssues}
         />
       )}
     </>

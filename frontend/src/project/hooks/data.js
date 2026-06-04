@@ -8,7 +8,7 @@ import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/
 import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
-import { MetadataProvider } from '../main-panel/tickets/hooks';
+import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
 import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks';
 import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
@@ -723,7 +723,9 @@ export const DataProvider = ({
                 <ConnectionsProvider projectUuid={projectUuid} api={api}>
                   <PortalIssuesMetadataProvider projectUuid={projectUuid} enablePortal={enablePortal}>
                     <AnalyzeTaskProvider>
-                      {children}
+                      <CloseLinkedIssuesProvider>
+                        {children}
+                      </CloseLinkedIssuesProvider>
                     </AnalyzeTaskProvider>
                   </PortalIssuesMetadataProvider>
                 </ConnectionsProvider>
