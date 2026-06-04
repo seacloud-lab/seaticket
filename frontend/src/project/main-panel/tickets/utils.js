@@ -483,3 +483,17 @@ export const convertTicketToTask = (ticket, columns) => {
     status: statusOption?.name || null,
   };
 };
+
+export const isOpenLinkedGithubIssuesWarning = (error) => {
+  const response = error?.response || {};
+  const warning = response?.data || {};
+  return response.status === 409 && warning.warning_type === 'open_linked_github_issues';
+};
+
+export const convertSubstateToGitHubStateReason = (substate = '') => {
+  if (!substate) return 'completed';
+  const validSubstate = substate.toLowerCase();
+  if (validSubstate.includes('duplicate')) return 'duplicate';
+  if (validSubstate.includes('not planned')) return 'not_planned';
+  return 'completed';
+};

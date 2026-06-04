@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
@@ -6,7 +6,7 @@ import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import { useConnectionsPage, useConnections } from '../../../hooks';
 import { gettext } from '@/constants';
-import { BAR_TYPE } from '@/project/constants';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES,
@@ -23,7 +23,7 @@ import {
 } from '../../../utils';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
-import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
+import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
@@ -32,6 +32,7 @@ import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import User from '@/models/user';
+import eventBus from '@/utils/event-bus';
 
 import './index.css';
 
@@ -238,6 +239,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     data, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, getMetadata,
     modifyRows, modifyRow, toggleChildrenPageSlugId,
   ]);
+
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleCreateRelatedTicket = useCallback((row) => {
     if (!row) return;
@@ -462,8 +465,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, [createContextMenuOptions, modifyRowsByDetailsMenu]);
 
-  const localStorageName = useMemo(() => `seaqa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
-
   const handleExpandRow = useCallback((row) => {
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
     setIsShowRowDetailsDialog(true);
@@ -537,6 +538,21 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setIsShowRelatedIssuesDialog(false);
     setIsShowTicketsDialog(false);
     setCurrentRow({});
+  }, []);
+
+  useEffect(() => {
+    const applyRecordsModify = (_updates, isNeedConvertKeyValue = true) => {
+      let idRecordUpdates = isNeedConvertKeyValue ? {} : _updates;
+      isNeedConvertKeyValue && Object.keys(_updates).forEach(recordId => {
+        const record = _updates[recordId];
+        idRecordUpdates[recordId] = convertRowToKeyValue(record, { data: { columns: allColumns.current } });
+      });
+      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRecordUpdates);
+    };
+    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORDS, applyRecordsModify);
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return (

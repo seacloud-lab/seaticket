@@ -23,6 +23,10 @@ import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/
 import { useCollaborators } from '@/sea-metadata';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import CloseLinkedGitHubIssuesWarningDialog from '../close-linked-github-issues-warning-dialog';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { isOpenLinkedGithubIssuesWarning, convertSubstateToGitHubStateReason } from '../../utils';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
@@ -41,11 +45,14 @@ const TicketInDialog = ({
   const [ticket, setTicket] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [linkedRecords, setLinkedRecords] = useState({});
+  const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
 
-  const { getTableByName, modifyLocalRow } = useData();
+  const { getTableByName, modifyLocalRow, modifyLocalGitHubIssuesClosed } = useData();
   const { tagsData, createTag } = useTags();
+  const { connections } = useConnections();
 
   const ticketRef = useRef(null);
+  const closeLinkedGitHubIssuesWarning = useRef(null);
 
   const ticketMetadata = useTicketMetadata();
   const portalIssuesMetadata = usePortalIssuesMetadata();
@@ -65,19 +72,25 @@ const TicketInDialog = ({
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
     const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
     const table = getTableByName(tableName, null);
+    if (!table) return;
     const cacheColumns = Object.values(table?.key_column_map || {});
     const validColumns = propsColumns.length > 0 ? propsColumns : cacheColumns;
-    if (!table || validColumns.length === 0) return;
+    if (validColumns.length === 0) return;
 
     const localRowUpdate = convertRowToKeyValue(update, { data: { columns: validColumns }, typesData, tagsData });
     if (Object.keys(localRowUpdate).length === 0) return;
 
     modifyLocalRow(tableName, currentTicketID, localRowUpdate);
-    const eventBus = context.eventBus;
-    eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
+
+    // current is not table, not need to update
+    const pathname = window.location.pathname;
+    if (pathname.endsWith('/tickets/') || pathname.endsWith('/portal-issues/')) {
+      const eventBus = context.eventBus;
+      eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
+    }
   }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData]);
 
-  const modifyTicket = useCallback((currentTicketID, data) => {
+  const modifyTicket = useCallback((currentTicketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const typeColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.TYPE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE;
     const stateColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.STATE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE;
@@ -95,6 +108,9 @@ const TicketInDialog = ({
       }
       serverData[columnName] = value;
     });
+    if (confirmCloseLinkedGithubIssues) {
+      serverData.confirm_close_linked_github_issues = true;
+    }
 
     const modifyPromise = ticketType === TICKET_TYPE ? ticketsAPI.modifyProjectTicket(projectUuid, currentTicketID, serverData) : portalAPI.modifyPortalIssue(projectUuid, currentTicketID, serverData);
     return modifyPromise.then(() => {
@@ -137,9 +153,21 @@ const TicketInDialog = ({
 
   const onStateChange = useCallback((state = '', substate = '') => {
     modifyTicket(ticket.id, { state, substate }).catch(error => {
+      if (isOpenLinkedGithubIssuesWarning(error) && ticketType === TICKET_TYPE) {
+        const data = error?.response?.data || {};
+        closeLinkedGitHubIssuesWarning.current = {
+          tickets: data.tickets || [],
+          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+          callback: () => {
+            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true });
+          },
+        };
+        setIsShowCloseGitHubIssuesWarningDialog(true);
+        return;
+      }
       handleModifyError(error);
     });
-  }, [ticket, modifyTicket, handleModifyError]);
+  }, [ticket, ticketType, substatesData, modifyTicket, handleModifyError]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).catch(error => {
@@ -171,6 +199,64 @@ const TicketInDialog = ({
       handleModifyError(error);
     });
   }, [ticket, modifyTicket, handleModifyError]);
+
+  const onCloseWarningDialog = useCallback(() => {
+    setIsShowCloseGitHubIssuesWarningDialog(false);
+    closeLinkedGitHubIssuesWarning.current = null;
+  }, []);
+
+  const handleCloseLinkedGithubIssues = useCallback((callback) => {
+    const { callback: modify, tickets, stateReason } = closeLinkedGitHubIssuesWarning.current;
+
+    modify && modify().then(res => {
+      callback && callback();
+      const pathname = window.location.pathname;
+
+      // update connection table cache
+      const issues = tickets.map(ticket => ticket.open_github_issues).flat();
+      modifyLocalGitHubIssuesClosed(issues, connections, stateReason);
+
+      // current is connection table, update current view
+      const connectionTableReg = /\/connections\/(\d+)\/$/;
+      const connectionTableMatch = pathname.match(connectionTableReg);
+      if (connectionTableMatch) {
+        const connectionId = Number(connectionTableMatch[1]);
+        const currentConnectionIssues = issues.filter(issue => issue.connection_id === connectionId);
+        if (currentConnectionIssues.length > 0) {
+          const record = {
+            [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: 'closed',
+            [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: stateReason,
+          };
+          const idRecordUpdates = currentConnectionIssues.reduce((_update, cur) => {
+            _update[cur.record_pk + ''] = record;
+            return _update;
+          }, {});
+          eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORDS, idRecordUpdates);
+        }
+      }
+
+      // current is connection record details, update record details
+      const connectionTableRecordReg = /\/connections\/(\d+)\/records\/(\d+)\/$/;
+      const connectionTableRecordMatch = pathname.match(connectionTableRecordReg);
+      if (connectionTableRecordMatch) {
+        const connectionId = Number(connectionTableRecordMatch[1]);
+        const recordId = Number(connectionTableRecordMatch[2]);
+        const currentConnectionIssue = issues.find(issue => issue.connection_id === connectionId && issue.record_pk === recordId);
+        if (currentConnectionIssue) {
+          const record = {
+            [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: 'closed',
+            [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: stateReason,
+          };
+          eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, record);
+        }
+      }
+
+      setIsShowCloseGitHubIssuesWarningDialog(false);
+      closeLinkedGitHubIssuesWarning.current = null;
+    }).catch(error => {
+      callback && callback(error);
+    });
+  }, [connections, modifyLocalGitHubIssuesClosed]);
 
   useEffect(() => {
     setLoading(true);
@@ -226,78 +312,87 @@ const TicketInDialog = ({
 
   const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   return (
-    <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
-      <div className="seaqa-project-ticket-content-wrapper">
-        <div className="seaqa-project-ticket-comment-container-wrapper">
-          <Comment
-            isSmallScreen={isSmallScreen}
-            comment={ticket}
-            isShowStatus={true}
-            readonly={true}
-            lang={lang}
-          />
-          {comments.map(comment => {
-            return (
-              <Comment
-                key={comment.id}
-                isSmallScreen={isSmallScreen}
-                readonly={true}
-                comment={comment}
-                projectUuid={projectUuid}
+    <>
+      <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
+        <div className="seaqa-project-ticket-content-wrapper">
+          <div className="seaqa-project-ticket-comment-container-wrapper">
+            <Comment
+              isSmallScreen={isSmallScreen}
+              comment={ticket}
+              isShowStatus={true}
+              readonly={true}
+              lang={lang}
+            />
+            {comments.map(comment => {
+              return (
+                <Comment
+                  key={comment.id}
+                  isSmallScreen={isSmallScreen}
+                  readonly={true}
+                  comment={comment}
+                  projectUuid={projectUuid}
+                />
+              );
+            })}
+          </div>
+          <div className="seaqa-project-ticket-other-settings">
+            <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
+            {!isPortalIssue && (
+              <CollaboratorsSettings
+                id="ticket-dialog-assignees-editor-popover"
+                isReadonly={!editable}
+                title={gettext('Assignees')}
+                value={assignees}
+                tip={gettext('No one assigned')}
+                useCollaborators={useCollaborators}
+                onChange={onAssigneesChange}
               />
-            );
-          })}
-        </div>
-        <div className="seaqa-project-ticket-other-settings">
-          <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          {!isPortalIssue && (
-            <CollaboratorsSettings
-              id="ticket-dialog-assignees-editor-popover"
+            )}
+            <TagsSettings
               isReadonly={!editable}
-              title={gettext('Assignees')}
-              value={assignees}
-              tip={gettext('No one assigned')}
-              useCollaborators={useCollaborators}
-              onChange={onAssigneesChange}
+              value={tags}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={onTagsChange}
             />
-          )}
-          <TagsSettings
-            isReadonly={!editable}
-            value={tags}
-            tagsData={tagsData}
-            createTag={createTag}
-            onChange={onTagsChange}
-          />
-          <StateSettings
-            isReadonly={!editable}
-            state={state}
-            substate={substate}
-            sameWidthWithTarget={'fit-content'}
-            useMetadataContext={() => metadata}
-            onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={() => metadata} onChange={onSubstateChange} />
-          <TypeSettings id="ticket-dialog-type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={() => metadata} onChange={onTypeChange} />
-          {!isPortalIssue && (
-            <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          )}
-          {!isPortalIssue && (
-            <CollaboratorsSettings
-              id="ticket-dialog-participants-editor-popover"
+            <StateSettings
               isReadonly={!editable}
-              title={gettext('Participants')}
-              value={participants}
-              tip={gettext('No participants')}
-              useCollaborators={useCollaborators}
-              onChange={onParticipantsChange}
+              state={state}
+              substate={substate}
+              sameWidthWithTarget={'fit-content'}
+              useMetadataContext={() => metadata}
+              onChange={onStateChange} />
+            <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={() => metadata} onChange={onSubstateChange} />
+            <TypeSettings id="ticket-dialog-type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={() => metadata} onChange={onTypeChange} />
+            {!isPortalIssue && (
+              <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
+            )}
+            {!isPortalIssue && (
+              <CollaboratorsSettings
+                id="ticket-dialog-participants-editor-popover"
+                isReadonly={!editable}
+                title={gettext('Participants')}
+                value={participants}
+                tip={gettext('No participants')}
+                useCollaborators={useCollaborators}
+                onChange={onParticipantsChange}
+              />
+            )}
+            <LinkSettings
+              value={ticketType === TICKET_TYPE ? ticket.linked_connection_records : [ticket.linked_ticket]}
+              linkedRecords={linkedRecords}
             />
-          )}
-          <LinkSettings
-            value={ticketType === TICKET_TYPE ? ticket.linked_connection_records : [ticket.linked_ticket]}
-            linkedRecords={linkedRecords}
-          />
+          </div>
         </div>
       </div>
-    </div>
+      {isShowCloseGitHubIssuesWarningDialog && (
+        <CloseLinkedGitHubIssuesWarningDialog
+          tickets={closeLinkedGitHubIssuesWarning.current.tickets}
+          onToggle={onCloseWarningDialog}
+          onSubmit={handleCloseLinkedGithubIssues}
+        />
+      )}
+    </>
   );
 
 };

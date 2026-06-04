@@ -10,7 +10,10 @@ import {
   AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
-import { convertTicketToKb, generatorTicketsContextMenuOptions } from '../../utils';
+import {
+  convertTicketToKb, generatorTicketsContextMenuOptions, isOpenLinkedGithubIssuesWarning,
+  convertSubstateToGitHubStateReason,
+} from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -38,7 +41,7 @@ import { hasOwnProperty } from '@/utils/object-utils';
 import { useCollaborators } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getTableName } from '@/project/main-panel/connections/utils';
-import CloseLinkedGithubIssuesWarningDialog from '../../components/close-linked-github-issues-warning-dialog';
+import CloseLinkedGitHubIssuesWarningDialog from '../../components/close-linked-github-issues-warning-dialog';
 
 import './index.css';
 
@@ -59,18 +62,17 @@ const Ticket = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [closeGithubIssuesWarning, setCloseGithubIssuesWarning] = useState(null);
-  const [pendingStateUpdate, setPendingStateUpdate] = useState(null);
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+  const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { connections } = useConnections();
-  const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink } = useData();
+  const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink, modifyLocalGitHubIssuesClosed } = useData();
   const { tagsData, createTag } = useTags();
   const { updateAttachments } = useAIChatTools();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
 
   const lastTicketID = useRef('');
+  const closeLinkedGitHubIssuesWarning = useRef(null);
 
   const user = useMemo(() => {
     return {
@@ -116,12 +118,6 @@ const Ticket = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const isOpenLinkedGithubIssuesWarning = useCallback((error) => {
-    const response = error?.response;
-    const warning = response?.data || {};
-    return response?.status === 409 && warning?.warning_type === 'open_linked_github_issues';
-  }, []);
-
   const modifyTicket = useCallback((ticketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const dataKeys = Object.keys(data);
@@ -327,14 +323,21 @@ const Ticket = ({
       // todo
     }).catch(error => {
       if (isOpenLinkedGithubIssuesWarning(error)) {
-        setPendingStateUpdate({ state, substate });
-        setCloseGithubIssuesWarning(error.response?.data || null);
+        const data = error?.response?.data || {};
+        closeLinkedGitHubIssuesWarning.current = {
+          tickets: data.tickets || [],
+          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+          callback: () => {
+            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true });
+          },
+        };
+        setIsShowCloseGitHubIssuesWarningDialog(true);
         return;
       }
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket, modifyTicket, isOpenLinkedGithubIssuesWarning]);
+  }, [ticket, substatesData, modifyTicket]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).then(res => {
@@ -435,50 +438,32 @@ const Ticket = ({
   }, [comment, ticket, commentEditorRef, createComment]);
 
   const toggleState = useCallback((state = '', substate = '') => {
-    const modifyState = () => {
-      modifyTicket(ticket.id, { state, substate }).then(res => {
-        // todo
-      }).catch(error => {
-        if (isOpenLinkedGithubIssuesWarning(error)) {
-          setPendingStateUpdate({ state, substate });
-          setCloseGithubIssuesWarning(error.response?.data || null);
-          return;
-        }
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-      });
-    };
     if (comment && comment?.text) {
-      onSubmitComment(modifyState);
+      onSubmitComment(() => onStateChange(state, substate));
       return;
     }
 
-    modifyState();
-  }, [comment, ticket, modifyTicket, onSubmitComment, isOpenLinkedGithubIssuesWarning]);
+    onStateChange(state, substate);
+  }, [comment, onSubmitComment, onStateChange]);
 
-  const closeGithubIssuesWarningDialog = useCallback(() => {
-    if (isConfirmingClose) return;
-    setCloseGithubIssuesWarning(null);
-    setPendingStateUpdate(null);
-  }, [isConfirmingClose]);
+  const onCloseWarningDialog = useCallback(() => {
+    setIsShowCloseGitHubIssuesWarningDialog(false);
+    closeLinkedGitHubIssuesWarning.current = null;
+  }, []);
 
-  const confirmCloseTicketAndGithubIssues = useCallback(() => {
-    if (!pendingStateUpdate) {
-      closeGithubIssuesWarningDialog();
-      return;
-    }
-    setIsConfirmingClose(true);
-    const { state, substate } = pendingStateUpdate;
-    modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(() => {
-      setCloseGithubIssuesWarning(null);
-      setPendingStateUpdate(null);
+  const handleCloseLinkedGithubIssues = useCallback((callback) => {
+    const { callback: modify, tickets, stateReason } = closeLinkedGitHubIssuesWarning.current;
+
+    modify && modify().then(res => {
+      callback && callback();
+      const issues = tickets.map(ticket => ticket.open_github_issues).flat();
+      modifyLocalGitHubIssuesClosed(issues, connections, stateReason);
+      setIsShowCloseGitHubIssuesWarningDialog(false);
+      closeLinkedGitHubIssuesWarning.current = null;
     }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    }).finally(() => {
-      setIsConfirmingClose(false);
+      callback && callback(error);
     });
-  }, [pendingStateUpdate, ticket, modifyTicket, closeGithubIssuesWarningDialog]);
+  }, [connections, modifyLocalGitHubIssuesClosed]);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
     modifyComment(ticket.id, commentID, content).then(newComment => {
@@ -730,13 +715,13 @@ const Ticket = ({
           onSubmitCallback={handleTaskCreated}
         />
       )}
-      <CloseLinkedGithubIssuesWarningDialog
-        warning={closeGithubIssuesWarning}
-        description={gettext('Confirm to close this ticket and close linked GitHub issues at the same time.')}
-        isConfirming={isConfirmingClose}
-        onCancel={closeGithubIssuesWarningDialog}
-        onConfirm={confirmCloseTicketAndGithubIssues}
-      />
+      {isShowCloseGitHubIssuesWarningDialog && (
+        <CloseLinkedGitHubIssuesWarningDialog
+          tickets={closeLinkedGitHubIssuesWarning.current.tickets}
+          onToggle={onCloseWarningDialog}
+          onSubmit={handleCloseLinkedGithubIssues}
+        />
+      )}
     </div>
   );
 };

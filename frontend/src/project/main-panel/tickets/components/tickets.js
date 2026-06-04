@@ -14,7 +14,7 @@ import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import toaster from '@/components/toaster';
 import {
-  generatorTicketsRowsTools,
+  generatorTicketsRowsTools, isOpenLinkedGithubIssuesWarning,
   cascadeUpdate, generatorTicketsContextMenuOptions,
   convertTicketToTask, convertTicketToKb,
 } from '../utils';
@@ -32,8 +32,7 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import eventBus from '@/utils/event-bus';
-import { Utils } from '@/utils/utils';
-import CloseLinkedGithubIssuesWarningDialog from './close-linked-github-issues-warning-dialog';
+import CloseLinkedGitHubIssuesWarningDialog from './close-linked-github-issues-warning-dialog';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -60,35 +59,24 @@ const Tickets = ({
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink, modifyLocalGitHubIssuesClosed,
   } = useData();
 
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
+  const closeLinkedGitHubIssuesWarning = useRef(null);
 
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [closeGithubIssuesWarning, setCloseGithubIssuesWarning] = useState(null);
-  const [pendingRowCloseData, setPendingRowCloseData] = useState(null);
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
-  const [batchCloseGithubIssuesWarning, setBatchCloseGithubIssuesWarning] = useState(null);
-  const [pendingBatchRowsData, setPendingBatchRowsData] = useState(null);
-  const [pendingBatchIsCopyPaste, setPendingBatchIsCopyPaste] = useState(false);
-  const [isConfirmingBatchClose, setIsConfirmingBatchClose] = useState(false);
+  const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
 
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket(ticket);
     setIsShowTicketDetailsDialog(true);
   }, [projectUuid]);
-
-  const isOpenLinkedGithubIssuesWarning = useCallback((error) => {
-    const response = error?.response;
-    const warning = response?.data || {};
-    return response?.status === 409 && warning?.warning_type === 'open_linked_github_issues';
-  }, []);
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -179,16 +167,17 @@ const Tickets = ({
         }
         return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData }).catch(error => {
           if (isOpenLinkedGithubIssuesWarning(error)) {
-            setCloseGithubIssuesWarning(error?.response?.data || {});
-            setPendingRowCloseData({
-              rowID: row_id,
-              rowUpdate: row_update,
-              rowData,
-              isCopyPaste: Boolean(isCopyPaste),
-              typesData,
-            });
-            // Suppress server-operator failure toast; confirmation modal handles this flow.
-            return;
+            const data = error?.response?.data || {};
+            closeLinkedGitHubIssuesWarning.current = {
+              tickets: data.tickets || [],
+              callback: () => {
+                return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste), { typesData }).then(res => {
+                  const eventBus = context.eventBus;
+                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
+                });
+              },
+            };
+            setIsShowCloseGitHubIssuesWarningDialog(true);
           }
           throw error;
         });
@@ -199,11 +188,22 @@ const Tickets = ({
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
         return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste)).catch(error => {
           if (isOpenLinkedGithubIssuesWarning(error)) {
-            setBatchCloseGithubIssuesWarning(error?.response?.data || {});
-            setPendingBatchRowsData(rowsData);
-            setPendingBatchIsCopyPaste(Boolean(isCopyPaste));
-            // Suppress server-operator failure toast; confirmation modal handles this flow.
-            return;
+            const data = error?.response?.data || {};
+            closeLinkedGitHubIssuesWarning.current = {
+              tickets: data.tickets || [],
+              callback: () => {
+                return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste, { confirm_close_linked_github_issues: true })).then(res => {
+                  const eventBus = context.eventBus;
+                  let idRowsUpdate = {};
+                  rowsUpdate.forEach(rowUpdate => {
+                    const { row_id, row } = rowUpdate;
+                    idRowsUpdate[row_id] = row;
+                  });
+                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
+                });
+              },
+            };
+            setIsShowCloseGitHubIssuesWarningDialog(true);
           }
           throw error;
         });
@@ -221,7 +221,7 @@ const Tickets = ({
 
     return _api;
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, isOpenLinkedGithubIssuesWarning]);
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 
@@ -379,69 +379,23 @@ const Tickets = ({
     setCurrentTicket(null);
   }, [isShowTicketDetailsDialog]);
 
-  const closeWarningDialog = useCallback(({ shouldRestoreRow = false } = {}) => {
-    if (isConfirmingClose) return;
-    if (shouldRestoreRow) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
-    }
-    setCloseGithubIssuesWarning(null);
-    setPendingRowCloseData(null);
-  }, [isConfirmingClose]);
+  const onCloseWarningDialog = useCallback(() => {
+    setIsShowCloseGitHubIssuesWarningDialog(false);
+    closeLinkedGitHubIssuesWarning.current = null;
+  }, []);
 
-  const confirmCloseTicketAndGithubIssues = useCallback(() => {
-    if (!pendingRowCloseData) {
-      closeWarningDialog();
-      return;
-    }
-    const { rowID, rowUpdate, rowData, isCopyPaste, typesData } = pendingRowCloseData;
-    setIsConfirmingClose(true);
-    modifyRow(
-      TICKET_TABLE_NAME,
-      rowID,
-      rowUpdate,
-      () => api.modifyRow(rowID, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste),
-      { typesData }
-    ).then(() => {
-      closeWarningDialog();
-      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
-      onRefresh && onRefresh();
-    }).catch((error) => {
-      toaster.danger(Utils.getErrorMsg(error));
-    }).finally(() => {
-      setIsConfirmingClose(false);
+  const handleCloseLinkedGithubIssues = useCallback((callback) => {
+    const { callback: modify, tickets } = closeLinkedGitHubIssuesWarning.current;
+    modify && modify().then(res => {
+      callback && callback();
+      const issues = tickets.map(ticket => ticket.open_github_issues).flat();
+      modifyLocalGitHubIssuesClosed(issues, connections);
+      setIsShowCloseGitHubIssuesWarningDialog(false);
+      closeLinkedGitHubIssuesWarning.current = null;
+    }).catch(error => {
+      callback && callback(error);
     });
-  }, [api, modifyRow, pendingRowCloseData, closeWarningDialog, onRefresh]);
-
-  const closeBatchWarningDialog = useCallback(({ shouldRestoreRows = false } = {}) => {
-    if (isConfirmingBatchClose) return;
-    if (shouldRestoreRows) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
-    }
-    setBatchCloseGithubIssuesWarning(null);
-    setPendingBatchRowsData(null);
-    setPendingBatchIsCopyPaste(false);
-  }, [isConfirmingBatchClose]);
-
-  const confirmBatchCloseTicketAndGithubIssues = useCallback(() => {
-    if (!pendingBatchRowsData || pendingBatchRowsData.length === 0) {
-      closeBatchWarningDialog();
-      return;
-    }
-    setIsConfirmingBatchClose(true);
-    api.modifyRows(
-      pendingBatchRowsData,
-      pendingBatchIsCopyPaste,
-      { confirm_close_linked_github_issues: true }
-    ).then(() => {
-      closeBatchWarningDialog();
-      context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA, false);
-      onRefresh && onRefresh();
-    }).catch((error) => {
-      toaster.danger(Utils.getErrorMsg(error));
-    }).finally(() => {
-      setIsConfirmingBatchClose(false);
-    });
-  }, [api, pendingBatchRowsData, pendingBatchIsCopyPaste, closeBatchWarningDialog, onRefresh]);
+  }, [connections, modifyLocalGitHubIssuesClosed]);
 
   if (isLoading) return (<CenteredLoading />);
 
@@ -518,20 +472,13 @@ const Tickets = ({
           onSubmitCallback={handleTaskCreated}
         />
       )}
-      <CloseLinkedGithubIssuesWarningDialog
-        warning={closeGithubIssuesWarning}
-        description={gettext('Confirm to close this ticket and close linked GitHub issues at the same time.')}
-        isConfirming={isConfirmingClose}
-        onCancel={() => closeWarningDialog({ shouldRestoreRow: true })}
-        onConfirm={confirmCloseTicketAndGithubIssues}
-      />
-      <CloseLinkedGithubIssuesWarningDialog
-        warning={batchCloseGithubIssuesWarning}
-        description={gettext('Confirm to continue closing these tickets and close linked GitHub issues at the same time.')}
-        isConfirming={isConfirmingBatchClose}
-        onCancel={() => closeBatchWarningDialog({ shouldRestoreRows: true })}
-        onConfirm={confirmBatchCloseTicketAndGithubIssues}
-      />
+      {isShowCloseGitHubIssuesWarningDialog && (
+        <CloseLinkedGitHubIssuesWarningDialog
+          tickets={closeLinkedGitHubIssuesWarning.current.tickets}
+          onToggle={onCloseWarningDialog}
+          onSubmit={handleCloseLinkedGithubIssues}
+        />
+      )}
     </>
   );
 };

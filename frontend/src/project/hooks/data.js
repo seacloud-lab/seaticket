@@ -18,6 +18,8 @@ import { TagsProvider } from '../main-panel/tags/hooks/tags';
 import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 import { isFunction } from '@/utils/type-detection';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '../main-panel/connections/constants';
+import { getTableName } from '../main-panel/connections/utils';
 
 const DataContext = React.createContext(null);
 
@@ -419,6 +421,29 @@ export const DataProvider = ({
     });
   }, []);
 
+  const modifyLocalGitHubIssuesClosed = useCallback((issues, connections, stateReason = 'completed') => {
+    let tablesUpdate = [];
+    Array.isArray(issues) && issues.forEach(issue => {
+      const { connection_id, record_pk } = issue;
+      const tableIndex = tablesUpdate.findIndex(t => t.connection_id === connection_id);
+      const row = {
+        [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: 'closed',
+        [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: stateReason,
+      };
+      const rowUpdate = { row_id: record_pk + '', row };
+      if (tableIndex === -1) {
+        tablesUpdate.push({ connection_id, rows: [rowUpdate] });
+      } else {
+        tablesUpdate[tableIndex].rows.push(rowUpdate);
+      }
+    });
+    tablesUpdate = tablesUpdate.map(tableUpdate => {
+      const connection = connections.find(c => c.id === tableUpdate.connection_id);
+      return { name: getTableName(connection), rows: tableUpdate.rows };
+    });
+    modifyTablesRows(tablesUpdate, true);
+  }, [modifyTablesRows]);
+
   const modifyRow = useCallback((tableName, rowId, rowUpdate, api, { typesData } = {}) => {
     return api().then(res => {
       let table = data[tableName];
@@ -688,6 +713,7 @@ export const DataProvider = ({
       deleteRows,
       restoreRows,
       modifyTablesRows,
+      modifyLocalGitHubIssuesClosed,
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
