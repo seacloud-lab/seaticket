@@ -165,6 +165,15 @@ class ChatAPI {
     return this.req.put(url, data);
   }
 
+  generateChatSessionTitle(projectUuid, sessionUuid, params) {
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/generate-title/';
+    const data = {
+      ...params,
+      project_uuid: projectUuid,
+    };
+    return this.req.post(url, data);
+  }
+
   getChatMessages(projectUuid, sessionUuid) {
     const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/messages/?project_uuid=' + projectUuid;
     return this.req.get(url);

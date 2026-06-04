@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView
+from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView, ChatSessionTitleView
 from seahub.chats.models import ChatSessions, ChatMessages
 
 
@@ -236,3 +236,92 @@ class TestChatView:
 
         assert resp.status_code == 200
         assert resp.data['sources'][0]['connection_id'] == site_connection.id
+
+
+class TestChatSessionTitleView:
+
+    def test_post_success(self, factory, project_creator, real_project, chat_session):
+        project = real_project
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={
+                'project_uuid': str(project.uuid),
+                'query': 'how to fix sync error',
+                'ai_reply': 'Try updating client config.',
+            },
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.chats.view.generate_session_title', return_value='Fix sync error') as mock_title:
+            resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 200
+        assert resp.data['success'] is True
+        assert resp.data['session_name'] == 'Fix sync error'
+        mock_title.assert_called_once()
+
+    def test_post_missing_project_uuid(self, factory, project_creator, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'query': 'q', 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_missing_query(self, factory, project_creator, real_project, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_missing_ai_reply(self, factory, project_creator, real_project, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_session_not_found(self, factory, project_creator, real_project):
+        request = factory.post(
+            '/api/v1/chat/sessions/s1/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q', 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid='s1')
+
+        assert resp.status_code == 404
+
+    def test_post_permission_denied_for_non_owner(self, factory, project_creator, real_project):
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='seed',
+            username='another-user',
+        )
+        request = factory.post(
+            f'/api/v1/chat/sessions/{session.session_uuid}/generate-title/',
+            data={'project_uuid': str(real_project.uuid), 'query': 'q', 'ai_reply': 'a'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionTitleView.as_view()(request, session_uuid=session.session_uuid)
+
+        assert resp.status_code == 403

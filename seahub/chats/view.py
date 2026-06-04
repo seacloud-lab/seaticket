@@ -22,7 +22,7 @@ from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtPr
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
     record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments, \
     split_image_and_other_attachments, build_image_attachments, build_ai_images_payload, \
-    ImageProcessingError
+    ImageProcessingError, generate_session_title
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -200,6 +200,62 @@ class ChatSessionView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+
+class ChatSessionTitleView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, session_uuid):
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if 'query' not in request.data:
+            error_msg = 'query parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        query = request.data.get('query')
+
+        if 'ai_reply' not in request.data:
+            error_msg = 'ai_reply parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        ai_reply = request.data.get('ai_reply', '')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+        if not session:
+            error_msg = 'Session not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if session.username != username:
+            error_msg = 'Permission denied. Only the session owner can modify this session.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        session_name = generate_session_title(
+            session_uuid=session_uuid,
+            project_uuid=project_uuid,
+            org_id=org_id,
+            query=query,
+            ai_reply=ai_reply,
+        )
+        return Response({
+            'success': True,
+            'session_name': session_name,
+        })
 
 
 class ChatMessagesView(APIView):

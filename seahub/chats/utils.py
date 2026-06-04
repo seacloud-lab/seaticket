@@ -12,7 +12,8 @@ from copy import deepcopy
 from django.core.cache import cache
 from urllib.parse import urljoin
 from seahub.chats.constants import AI_REPLY_TIMEOUT
-from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages
+from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages, ChatSessions
+from seahub.portal.models import PortalChatSessions
 from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 from seahub.knowledge_base.knowledge_base_utils import get_whole_knowledge_bases_data
 from seahub.tickets.ticket_utils import get_whole_tickets_data
@@ -22,9 +23,10 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
+from seahub.utils.ai_client import get_chat_title
 from seahub.utils.storage import get_project_file_from_s3
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
-from seahub.project.constants import ConnectionType, ExtraSourceType
+from seahub.project.constants import ConnectionType, ExtraSourceType, AIScenario
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +157,70 @@ def get_ai_reply(params):
             'sources': resp_json.get('sources', []),
             'thought_process': resp_json.get('thought_process', {})
         }
+
+
+def format_chat_title(title, fallback=''):
+    title = (title or '').strip().replace('\r', ' ').replace('\n', ' ')
+    title = title.strip('\'"')
+    title = ' '.join(title.split())
+    title = title.rstrip('.,!?;:，。！？；：')
+    title = title[:60]
+    if title:
+        return title
+
+    fallback = ' '.join((fallback or '').strip().split())
+    fallback = fallback[:60]
+    return fallback
+
+
+def _generate_session_title(session, project_uuid, org_id, query, ai_reply, scenario):
+    if not session:
+        return ''
+
+    fallback = query or session.session_name
+    try:
+        generated_title = get_chat_title({
+            'project_uuid': project_uuid,
+            'org_id': org_id,
+            'query': query,
+            'ai_reply': ai_reply,
+            'scenario': scenario,
+        })
+    except Exception as e:
+        logger.warning(f'Generate chat title failed: {e}')
+        generated_title = ''
+
+    final_title = format_chat_title(generated_title, fallback=fallback)
+    if not final_title:
+        return session.session_name
+
+    session.session_name = final_title
+    session.save()
+    return session.session_name
+
+
+def generate_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
+    session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+    return _generate_session_title(
+        session=session,
+        project_uuid=project_uuid,
+        org_id=org_id,
+        query=query,
+        ai_reply=ai_reply,
+        scenario=AIScenario.CHAT.value,
+    )
+
+
+def generate_portal_session_title(session_uuid, project_uuid, org_id, query, ai_reply):
+    session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
+    return _generate_session_title(
+        session=session,
+        project_uuid=project_uuid,
+        org_id=org_id,
+        query=query,
+        ai_reply=ai_reply,
+        scenario=AIScenario.PORTAL_CHAT.value,
+    )
 
 def get_attachments(seadb_api, project_uuid, attachments):
     knowledge_base_ids = []

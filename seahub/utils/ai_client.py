@@ -5,6 +5,7 @@ import jwt
 import requests
 from urllib.parse import urljoin
 
+from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.settings import SEAQA_AI_INNER_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
@@ -49,3 +50,12 @@ def rank_related_records(params):
     resp_json = resp.json()
     ranked_ids = resp_json.get('ranked_ids', [])
     return ranked_ids
+
+
+def get_chat_title(params):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/generate-chat-title')
+    resp = requests.post(url, json=params, headers=headers, timeout=AI_REPLY_TIMEOUT)
+    if resp.status_code != 200:
+        raise Exception(f'generate chat title error status: {resp.status_code} body: {resp.text}')
+    return resp.json().get('title', '')

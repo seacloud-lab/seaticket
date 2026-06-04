@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from seahub.portal.chat.apis import (
     PortalChatSessionsView,
     PortalChatView,
+    PortalChatSessionTitleView,
 )
 from seahub.portal.visitor_session import create_visitor_session
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
@@ -209,3 +210,88 @@ class TestPortalChatSessionsAnonymous:
         session_names = [s['session_name'] for s in resp.data['sessions']]
         assert 'session-a' in session_names
         assert 'session-b' not in session_names
+
+
+class TestPortalChatSessionTitleViewAnonymous:
+
+    def test_generate_title_success(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='New chat',
+            username=visitor['visitor_uuid'],
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/{session.session_uuid}/generate-title/',
+            data=json.dumps({'query': 'how to fix sync error', 'ai_reply': 'Try updating client config.'}),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.generate_portal_session_title', return_value='Fix sync error') as mock_title:
+            resp = PortalChatSessionTitleView.as_view()(
+                request, project_uuid=str(real_project.uuid), session_uuid=session.session_uuid
+            )
+
+        assert resp.status_code == 200
+        assert resp.data['success'] is True
+        assert resp.data['session_name'] == 'Fix sync error'
+        mock_title.assert_called_once()
+
+    def test_generate_title_permission_denied_for_other_visitor(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor_a = create_visitor_session()
+        visitor_b = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='New chat',
+            username=visitor_a['visitor_uuid'],
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/{session.session_uuid}/generate-title/',
+            data=json.dumps({'query': 'q', 'ai_reply': 'a'}),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor_b['visitor_uuid'])
+
+        resp = PortalChatSessionTitleView.as_view()(
+            request, project_uuid=str(real_project.uuid), session_uuid=session.session_uuid
+        )
+
+        assert resp.status_code == 403
+
+    def test_generate_title_missing_query_or_ai_reply(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='New chat',
+            username=visitor['visitor_uuid'],
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+
+        request_missing_query = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/{session.session_uuid}/generate-title/',
+            data=json.dumps({'ai_reply': 'a'}),
+            content_type='application/json',
+        )
+        request_missing_query.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+        resp_missing_query = PortalChatSessionTitleView.as_view()(
+            request_missing_query, project_uuid=str(real_project.uuid), session_uuid=session.session_uuid
+        )
+
+        request_missing_ai_reply = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/{session.session_uuid}/generate-title/',
+            data=json.dumps({'query': 'q'}),
+            content_type='application/json',
+        )
+        request_missing_ai_reply.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+        resp_missing_ai_reply = PortalChatSessionTitleView.as_view()(
+            request_missing_ai_reply, project_uuid=str(real_project.uuid), session_uuid=session.session_uuid
+        )
+
+        assert resp_missing_query.status_code == 400
+        assert resp_missing_ai_reply.status_code == 400
