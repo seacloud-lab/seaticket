@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
 from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
-    convert_cost_to_credit, get_total_ai_credit_by_org_id
+    convert_cost_to_credit
 
 
 logger = logging.getLogger(__name__)
@@ -178,7 +178,7 @@ class AccountInfo(APIView):
 
     def get(self, request, format=None):
         return Response(self._get_account_info(request))
-
+        
     def put(self, request, format=None):
         """Update account info.
         """

@@ -445,6 +445,18 @@ def get_ai_cost_by_org_id(org_id):
         cache.set(cache_key, cost, cache_timeout)
     return cost
 
+
+def get_ai_credit_exceeded_amount_by_org_id(org_id):
+    if org_id < 0:
+        return 0
+
+    credit = get_total_ai_credit_by_org_id(org_id)
+    if credit < 0:
+        return 0
+
+    used_credit = convert_cost_to_credit(get_ai_cost_by_org_id(org_id))
+    return max(used_credit - credit, 0)
+
 def check_ai_limit(org_id):
     if org_id >= 0:
         # Organization user

@@ -1,0 +1,25 @@
+.org-ai-limit-wrapper {
+  margin: 10px 24px 0px 24px;
+  height: 44px;
+  background-color: rgba(252, 100, 64, 0.08);
+  border: 1px solid rgba(252, 100, 64, 0.2);
+  border-radius: 8px;
+  padding: 0px 10px 0px 16px;
+}
+
+.org-ai-limit-wrapper .org-ai-limit-name .seaqa-icon-svg {
+  color: #FC6440;
+}
+
+.org-ai-limit-wrapper .org-ai-limit-name .org-ai-limit-text {
+  margin-left: 8px;
+}
+
+.org-ai-limit-wrapper .org-ai-limit-close .seaqa-icon-svg  {
+  width: 14px;
+  height: 14px;
+}
+
+.mobile-org-ai-limit-wrapper {
+  height: unset;
+}

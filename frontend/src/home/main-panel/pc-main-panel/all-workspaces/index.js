@@ -7,6 +7,7 @@ import CreateGroupDialog from '../../../dialog/create-group-dialog';
 import { Utils } from '@/utils/utils';
 import SessionStorage from '@/utils/session-utils';
 import OrgTitle from './org-title';
+import OrgAiLimitPrompt from './org-ai-limit-prompt';
 
 class AllWorkspaces extends React.Component {
 
@@ -82,6 +83,7 @@ class AllWorkspaces extends React.Component {
                 onCreateGroupToggle={this.onCreateGroupToggle}
               />
             }
+            <OrgAiLimitPrompt isDesktop={isDesktop} />
             <div
               className={`${isDesktop ? '' : 'p-0'} cur-view-content`}
               onScroll={Utils.debounce(this.onScroll)}

@@ -127,6 +127,10 @@
   line-height: 28px;
 }
 
+.account-info-card .account-info-card-used.exceed {
+  color: #FC6440;
+}
+
 .account-info-card .account-info-card-total {
   color: #666;
   font-size: 12px;
