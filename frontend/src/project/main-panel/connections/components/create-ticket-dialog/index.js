@@ -100,7 +100,7 @@ const CreateTicketDialog = ({
     setLoading(true);
     convertToTicket(projectUuid, row._id).then(res => {
       let { title, content, assignees, type, tags, priority, related_url } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, related_url: '', ...res?.data };
-      const suffix = `${gettext('Related record')}: ${related_url || ''}`;
+      const suffix = `${gettext('Linked record')}: ${related_url || ''}`;
       const initContent = content ? `${content}\n\n${suffix}` : suffix;
       setTitle(title || '');
       setContent(initContent || '');

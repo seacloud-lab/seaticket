@@ -13,7 +13,7 @@ import { generatorIssuesContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
-  PERMISSION_TYPES, server, siteRoot,
+  PERMISSION_TYPES,
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import {
@@ -563,15 +563,7 @@ const Issue = ({
           useMetadataContext={usePortalIssuesMetadata}
           onClose={() => setIsShowCreateTicketDialog(false)}
           convertToTicket={() => {
-            return portalAPI.convertPortalIssueToTicket(projectUuid, issueID).then(res => {
-              const relatedUrl = `${server}${siteRoot}`;
-              return {
-                data: {
-                  ...res?.data,
-                  related_url: relatedUrl + (res?.data?.related_url || '').slice(1)
-                }
-              };
-            });
+            return portalAPI.convertPortalIssueToTicket(projectUuid, issueID);
           }}
           onSubmitCallback={(ticket) => createTicketCallback(ticket, issue)}
         />
