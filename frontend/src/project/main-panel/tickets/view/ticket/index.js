@@ -458,6 +458,19 @@ const Ticket = ({
       callback && callback();
       const issues = tickets.map(ticket => ticket.open_github_issues).flat();
       modifyLocalGitHubIssuesClosed(issues, connections, stateReason);
+      let linkedRecordsUpdate = {};
+      issues.forEach(issue => {
+        const { connection_id, record_pk } = issue;
+        const key = `${connection_id}_${record_pk}`;
+        linkedRecordsUpdate[key] = { state: 'closed' };
+      });
+      setLinkedRecords(pre => {
+        let cur = { ...pre };
+        Object.keys(pre).forEach(key => {
+          cur[key] = { ...cur[key], ...linkedRecordsUpdate[key] };
+        });
+        return cur;
+      });
       setIsShowCloseGitHubIssuesWarningDialog(false);
       closeLinkedGitHubIssuesWarning.current = null;
     }).catch(error => {
