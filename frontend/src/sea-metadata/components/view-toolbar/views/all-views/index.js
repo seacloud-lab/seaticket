@@ -112,12 +112,16 @@ const AllViews = ({
 
   return (
     <>
-      <IconButton
-        icon="arrow-down"
-        className="sea-metadata-all-views-btn"
-        ref={viewRef}
-        onClick={openAllViewsPopover}
-      />
+      <span className="sea-metadata-all-views-btn-wrapper">
+        <IconButton
+          icon="arrow-down"
+          className="sea-metadata-all-views-btn"
+          ref={viewRef}
+          onClick={openAllViewsPopover}
+        >
+          {gettext('All views')}
+        </IconButton>
+      </span>
       {isShowAllViewsPopover && (
         <CustomizePopover
           target={viewRef}

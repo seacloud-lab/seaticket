@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { IconButton, CustomizeNameDialog } from '@/components';
 import { useViewsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
@@ -9,6 +8,7 @@ import context from '@/sea-metadata/context';
 import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
+import './view-buttons.css';
 
 const Views = ({ view, toggleView }) => {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -188,6 +188,17 @@ const Views = ({ view, toggleView }) => {
   return (
     <>
       <div className="sea-metadata-views">
+        {canViewsScroll && canScrollPrev && (
+          <div className="sea-metadata-views-nav-scroll-btns d-flex align-items-center mr-2">
+            <IconButton
+              icon="arrow-left"
+              className='scroll-control-btn'
+              onClick={() => onScrollControlClick('left')}
+              title={gettext('Scroll to the left')}
+              aria-label={gettext('Scroll to the left')}
+            />
+          </div>
+        )}
         <div className="sea-metadata-views-nav-container" ref={viewsNavContainerRef} onScroll={onScroll} onWheel={onWheel}>
           {allViews.map(v => {
             const isSelect = isFunction(toggleView) && v._id === viewID;
@@ -211,6 +222,14 @@ const Views = ({ view, toggleView }) => {
         </div>
         {canViewsScroll && (
           <div className="sea-metadata-views-nav-scroll-btns d-flex align-items-center mr-2">
+            {canScrollNext &&
+            <IconButton
+              icon="arrow-right"
+              className='scroll-control-btn'
+              onClick={() => onScrollControlClick('right')}
+              title={gettext('Scroll to the right')}
+              aria-label={gettext('Scroll to the right')}
+            />}
             <AllViews
               viewID={viewID}
               allViews={allViews}
@@ -219,20 +238,6 @@ const Views = ({ view, toggleView }) => {
                 toggleView(viewID);
                 updateScrollBySelectView(viewID, viewIndex);
               }}
-            />
-            <IconButton
-              icon="arrow-left"
-              className={classnames('scroll-control-btn scroll-prev', { 'scroll-active': canScrollPrev })}
-              onClick={() => onScrollControlClick('left')}
-              title={gettext('Scroll to the left')}
-              aria-label={gettext('Scroll to the left')}
-            />
-            <IconButton
-              icon="arrow-right"
-              className={classnames('scroll-control-btn scroll-next', { 'scroll-active': canScrollNext })}
-              onClick={() => onScrollControlClick('right')}
-              title={gettext('Scroll to the right')}
-              aria-label={gettext('Scroll to the right')}
             />
           </div>
         )}

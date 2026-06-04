@@ -16,15 +16,3 @@
   scrollbar-width: none;
   display: inline-flex;
 }
-
-.sea-metadata-views .sea-metadata-views-nav-scroll-btns {
-  gap: 8px;
-}
-
-.sea-metadata-views .sea-metadata-views-nav-scroll-btns .scroll-active {
-  background-color: rgba(0, 0, 0, .04);
-}
-
-.sea-metadata-views .sea-metadata-views-nav-scroll-btns .scroll-active:hover {
-  background-color: rgba(0, 0, 0, .08);
-}
