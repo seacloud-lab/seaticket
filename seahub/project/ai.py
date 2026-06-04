@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
+from urllib.parse import quote
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -26,10 +26,34 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable, GeneralTaskTable
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
+from seahub.settings import SITE_ROOT
+from django.http import HttpRequest
 
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
+
+
+def build_project_page_related_url(request, project, page_path) -> str:
+    site_root = SITE_ROOT.rstrip('/')
+    project_name = quote(project.project_name, safe='')
+    path = (
+        f'{site_root}/workspace/{project.workspace_id}/project/{project_name}/'
+        f'{page_path.lstrip("/")}'
+    )
+    return request.build_absolute_uri(path)
+
+
+def build_connection_record_related_url(request, project, connection_id, record_id):
+    return build_project_page_related_url(
+        request, project, f'connections/{connection_id}/records/{record_id}/'
+    )
+
+
+def build_portal_issue_related_url(request, project, issue_id):
+    return build_project_page_related_url(
+        request, project, f'portal-issues/{issue_id}/'
+    )
 
 
 class ConvertRecordToTicket(APIView):
@@ -82,6 +106,7 @@ class ConvertRecordToTicket(APIView):
 
         record_detail = ''
         default_title = ''
+        related_url = build_connection_record_related_url(request, project, connection_id, record_id)
         match connection.type:
             case ConnectionType.DISCOURSE_FORUM.value:
                 discourse_db_api = DiscourseSeaDBAPI(project_uuid)
@@ -90,10 +115,6 @@ class ConvertRecordToTicket(APIView):
                 )
                 title = topic.get('title', '') if topic else ''
                 topic_id = topic.get('topic_id') if topic else ''
-                slug = topic.get('slug') if topic else ''
-                config = json.loads(connection.config)
-                discourse_forum_url = config.get('url')
-                related_url = discourse_forum_url.rstrip('/') + '/t/' + slug + '/' + str(topic_id)
                 default_title = title
                 replies = discourse_db_api.get_replies_by_topic_id(
                     connection_id, topic_id
@@ -124,10 +145,6 @@ class ConvertRecordToTicket(APIView):
                 title = issue[0].get('title', '') if issue else ''
                 default_title = title
                 body_content = (issue[0].get('content') or '') if issue else ''
-                config = json.loads(connection.config)
-                repository = config.get('repository')
-                issue_number = issue[0].get('issue_number')
-                related_url = f'{repository}/issues/' + str(issue_number)
                 issue_id = issue[0].get('issue_id')
                 comments = github_db_api.get_comments_by_issue_id(
                     connection_id, issue_id
@@ -155,9 +172,6 @@ class ConvertRecordToTicket(APIView):
                     connection_id, record_id
                 )
                 title = ''
-                email_id = emails[0].get('email_id') if emails else ''
-                origin_thread_id = emails[0].get('origin_thread_id') if emails else ''
-                related_url = f'https://app.fastmail.com/mail/all/{origin_thread_id}.{email_id}' if origin_thread_id and email_id else ''
                 for email in emails:
                     if not title:
                         title = email.get('title')
@@ -289,8 +303,7 @@ class ConvertPortalIssueToTicket(APIView):
             logger.error(f'AI service error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'AI service error.')
 
-        # Build related URL (portal issue link)
-        related_url = f'/portal/{project_uuid}/issue/{issue_id}'
+        related_url = build_portal_issue_related_url(request, project, issue_id)
 
         return Response({
             'title': ai_title,

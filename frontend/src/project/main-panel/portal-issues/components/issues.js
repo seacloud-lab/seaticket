@@ -10,7 +10,7 @@ import {
   PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE,
 } from '../constants';
 import { BAR_TYPE } from '@/project/constants';
-import { gettext, server, siteRoot } from '@/constants';
+import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import toaster from '@/components/toaster';
@@ -378,15 +378,7 @@ const Issues = ({
           useMetadataContext={usePortalIssuesMetadata}
           onClose={onCloseCreateTicketDialog}
           convertToTicket={() => {
-            return portalAPI.convertPortalIssueToTicket(projectUuid, currentIssue._id).then(res => {
-              const relatedUrl = `${server}${siteRoot}`;
-              return {
-                data: {
-                  ...res?.data,
-                  related_url: relatedUrl + (res?.data?.related_url || '').slice(1)
-                }
-              };
-            });
+            return portalAPI.convertPortalIssueToTicket(projectUuid, currentIssue._id);
           }}
           onSubmitCallback={(ticket) => createTicketCallback(ticket, currentIssue)}
         />
