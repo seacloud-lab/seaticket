@@ -1,3 +1,4 @@
+import datetime
 import json
 import hmac
 import hashlib
@@ -12,6 +13,7 @@ from seahub.project.connections import (
     ProjectConnectionMetaView,
     ProjectConnectionLogView,
     ProjectConnectionsStatusView,
+    ProjectConfluenceOauthStatusView,
     ProjectConnectionRecordView,
     ProjectConnectionRecordsView,
     GithubWebhookView,
@@ -20,6 +22,7 @@ from seahub.project.connections import (
     ProjectEmailOAuthCallbackView,
 )
 from seahub.project.agent import AgentActionConfirmView
+from seahub.project.models import ProjectConfluenceOauth
 from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
@@ -174,6 +177,32 @@ class TestProjectConnectionsView:
         assert 'record' in resp.data
         assert resp.data['record']['id'] == 11
         add_task_mock.assert_called_once()
+
+    def test_post_confluence_requires_workspace_id(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/",
+            data={'name': 'cf1', 'config': json.dumps({}), 'type': 'confluence'}
+        )
+        request.user = project_creator
+
+        resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'workspace_id invalid.'
+
+    def test_post_confluence_requires_oauth(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/",
+            data={'name': 'cf1', 'config': json.dumps({'workspace_id': 'workspace-1'}), 'type': 'confluence'}
+        )
+        request.user = project_creator
+
+        resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Confluence OAuth authorization is required.'
 
 
 class TestProjectConnectionView:
@@ -748,6 +777,35 @@ class TestProjectConnectionsStatusView:
 
         assert resp.status_code == 200
         assert str(c1.id) in [str(k) for k in resp.data.keys()]
+
+
+class TestProjectConfluenceOauthStatusView:
+
+    def test_get_returns_false_when_not_connected(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/project/{project.uuid}/confluence-oauth/")
+        request.user = project_creator
+
+        resp = ProjectConfluenceOauthStatusView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 200
+        assert resp.data == {'connected': False}
+
+    def test_get_returns_true_when_connected(self, factory, project_creator, real_project):
+        project = real_project
+        ProjectConfluenceOauth.objects.create(
+            project_uuid=project.uuid,
+            access_token='access-token',
+            refresh_token='refresh-token',
+            expires_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
+        )
+        request = factory.get(f"/api/v1/project/{project.uuid}/confluence-oauth/")
+        request.user = project_creator
+
+        resp = ProjectConfluenceOauthStatusView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 200
+        assert resp.data == {'connected': True}
 
 
 class TestProjectConnectionRecordView:

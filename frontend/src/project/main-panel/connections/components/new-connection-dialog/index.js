@@ -49,6 +49,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState([]);
+  const [isWaitingConfluenceOAuth, setWaitingConfluenceOAuth] = useState(false);
+  const [confluenceWorkspacesVersion, setConfluenceWorkspacesVersion] = useState(0);
+  const [isConfluenceOauthConnected, setConfluenceOauthConnected] = useState(false);
+  const [isCheckingConfluenceOauth, setCheckingConfluenceOauth] = useState(false);
+  const [confluenceOauthError, setConfluenceOauthError] = useState('');
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
@@ -58,6 +63,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
   const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
   const [linearOauthError, setLinearOauthError] = useState('');
+  const confluenceOauthIntervalRef = useRef(null);
+  const confluenceOauthWindowRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -96,6 +103,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
+  const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
@@ -120,6 +128,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     if (isLinear && !isLinearOauthConnected) return false;
+    if (isConfluence && !isConfluenceOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -130,7 +139,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected]);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -143,9 +152,22 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, []);
 
+  const stopConfluenceOAuthPolling = useCallback(() => {
+    if (confluenceOauthIntervalRef.current) {
+      window.clearInterval(confluenceOauthIntervalRef.current);
+      confluenceOauthIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    return () => stopEmailOAuthPolling();
-  }, [stopEmailOAuthPolling]);
+    return () => {
+      stopEmailOAuthPolling();
+      stopConfluenceOAuthPolling();
+      if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
+        confluenceOauthWindowRef.current.close();
+      }
+    };
+  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -179,6 +201,24 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, [type]);
 
+  const fetchConfluenceOauthStatus = useCallback(() => {
+    setCheckingConfluenceOauth(true);
+    return connectionsAPI.getConfluenceOauthStatus(projectUuid).then((res) => {
+      setConfluenceOauthConnected(Boolean(res?.data?.connected));
+      setConfluenceOauthError('');
+    }).catch(() => {
+      setConfluenceOauthConnected(false);
+      setConfluenceOauthError(gettext('Failed to check Confluence authorization status.'));
+    }).finally(() => {
+      setCheckingConfluenceOauth(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isConfluence) return;
+    fetchConfluenceOauthStatus();
+  }, [isConfluence, fetchConfluenceOauthStatus]);
+
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
 
@@ -203,6 +243,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       delete _config['repository'];
       _config['repository'] = repository['html_url'];
       _config['installation_id'] = repository['installation_id'];
+    }
+    if (isConfluence) {
+      const workspace = _config.workspace_id;
+      if (workspace && workspace.workspace) {
+        _config['workspace_id'] = workspace.workspace.id;
+        _config['workspace_name'] = workspace.workspace.name;
+        _config['workspace_url'] = workspace.workspace.url;
+      }
     }
     if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
       connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
@@ -251,7 +299,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, onSubmit, stopEmailOAuthPolling]);
+  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -268,6 +316,48 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       };
     });
   }, []);
+
+  const listConfluenceWorkspaces = useCallback(() => {
+    if (!isConfluenceOauthConnected) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listConfluenceWorkspaces(projectUuid).then((res) => {
+      const workspaces = res?.data?.workspaces || [];
+      return {
+        data: {
+          options: workspaces.map((workspace) => ({
+            value: workspace.id,
+            workspace,
+            label: workspace.name,
+            name: workspace.name,
+          })),
+        }
+      };
+    });
+  }, [projectUuid, confluenceWorkspacesVersion, isConfluenceOauthConnected]);
+
+  const handleConnectConfluence = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/confluence/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    confluenceOauthWindowRef.current = window.open(oauthUrl, 'confluence-oauth', 'width=800,height=700');
+    setWaitingConfluenceOAuth(true);
+    stopConfluenceOAuthPolling();
+    confluenceOauthIntervalRef.current = window.setInterval(() => {
+      connectionsAPI.getConfluenceOauthStatus(projectUuid).then((res) => {
+        if (!res?.data?.connected) return;
+        stopConfluenceOAuthPolling();
+        setWaitingConfluenceOAuth(false);
+        setConfluenceOauthConnected(true);
+        setConfluenceOauthError('');
+        setConfluenceWorkspacesVersion((value) => value + 1);
+        if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
+          confluenceOauthWindowRef.current.close();
+        }
+      }).catch(() => {
+        // Keep polling
+      });
+    }, 2000);
+  }, [projectUuid, stopConfluenceOAuthPolling]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -400,6 +490,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'workspace_id' && isConfluence) {
+      api = isConfluenceOauthConnected ? listConfluenceWorkspaces : null;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
 
     return (
       <ConnectionConfigEditor
@@ -412,7 +508,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
-  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected]);
+  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected,  isConfluence, isConfluenceOauthConnected]);
 
   return (
     <Modal
@@ -529,6 +625,25 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </div>
             )}
             {advancedCustomColumns.map(renderConnectionField)}
+            {isConfluence && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-connection-oauth-status">
+                  <span className={classnames('oauth-status-badge', { connected: isConfluenceOauthConnected })}>
+                    {isConfluenceOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  </span>
+                  <Button
+                    color="primary"
+                    className="ml-2"
+                    disabled={isSubmitting || isCheckingConfluenceOauth || isWaitingConfluenceOAuth}
+                    onClick={handleConnectConfluence}
+                  >
+                    {isConfluenceOauthConnected ? gettext('Reconnect Confluence') : gettext('Connect Confluence')}
+                  </Button>
+                </div>
+                {confluenceOauthError && <div className="text-danger mt-2">{confluenceOauthError}</div>}
+              </FormGroup>
+            )}
             {isWaitingEmailOAuth && (
               <div className="seaqa-project-connection-oauth-pending">
                 <Loading />
@@ -555,6 +670,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                   {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
                 </div>
               </FormGroup>
+            )}
+            {isWaitingConfluenceOAuth && (
+              <div className="seaqa-project-connection-oauth-pending">
+                <Loading />
+                <div className="mt-3">{gettext('Waiting for Confluence authorization to complete...')}</div>
+              </div>
             )}
           </div>
         )}
@@ -609,7 +730,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       {stepIndex === 1 && (
         <ModalFooter>
           <Button color="secondary" onClick={() => setStepIndex(0)}>{gettext('Previous')}</Button>
-          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || isWaitingEmailOAuth || !isValid || !name}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}>{gettext('Submit')}</Button>
         </ModalFooter>
       )}
     </Modal>

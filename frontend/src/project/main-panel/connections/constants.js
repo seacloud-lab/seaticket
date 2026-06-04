@@ -95,12 +95,14 @@ export const CONNECTION_TYPE = {
   SEAFILE: 'seafile',
   NOTION: 'notion',
   LINEAR: 'linear',
+  CONFLUENCE: 'confluence',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.SITE]: true,
   [CONNECTION_TYPE.SEAFILE]: true,
   [CONNECTION_TYPE.NOTION]: true,
+  [CONNECTION_TYPE.CONFLUENCE]: true,
 };
 
 export const ISSUE_CONNECTION_TYPE_MAP = {
@@ -402,6 +404,23 @@ export const CONNECTION_FIELDS = {
       is_custom: true
     }
   ],
+  [CONNECTION_TYPE.CONFLUENCE]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+    }, {
+      key: 'workspace_id',
+      name: gettext('Workspace'),
+      placeholder: gettext('Select a workspace'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    }
+  ],
   [CONNECTION_TYPE.GENERAL_TASK]: [
     {
       key: 'name',
@@ -498,6 +517,12 @@ export const CONNECTION_TYPES = [
     help_text: gettext('Before connecting, prepare your Notion integration token and ensure you have workspace admin/owner access, plus read permissions for target pages and databases. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Notion',
     sub_types: CONNECTION_SUB_TYPE_MAP.documents,
+  }, {
+    type: CONNECTION_TYPE.CONFLUENCE,
+    icon: 'sites',
+    name: gettext('Confluence'),
+    help_text: gettext('Authorize SeaTicket with your Atlassian account, then choose the workspace to sync all pages from that workspace. If any problem occurs, check the'),
+    help_link: HELP_WEB_URL + 'Confluence',
   }, {
     type: CONNECTION_TYPE.GENERAL_TASK,
     icon: 'general-tasks',
@@ -802,6 +827,39 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     ...CONNECTION_PREDEFINED_COLUMN,
   },
+  [CONNECTION_TYPE.CONFLUENCE]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      click: (row) => {
+        if (row && row.url) {
+          window.open(row.url);
+        }
+      }
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
+      display_name: gettext('Modified time'),
+      type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATOR]: {
+      display_name: gettext('Creator'),
+      type: CellType.TEXT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIER]: {
+      display_name: gettext('Last modifier'),
+      type: CellType.TEXT,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]: {
+      display_name: gettext('Outdated'),
+      type: CellType.CHECKBOX,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
+  },
   [CONNECTION_TYPE.GENERAL_TASK]: {
     [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Title'),
@@ -931,6 +989,7 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.CONFLUENCE,
 ];
 
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
@@ -954,6 +1013,7 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   // CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   // CONNECTION_TYPE.NOTION,
+  // CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
 ];
@@ -971,6 +1031,7 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.CONFLUENCE,
 ];
 
 export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
@@ -980,6 +1041,7 @@ export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
+  CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
 ];

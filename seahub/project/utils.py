@@ -171,6 +171,9 @@ def create_connection(project, username, connection_type, name, config):
         ConnectionType.LINEAR.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.LINEAR_ISSUES, SchemaTables.LINEAR_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
+        ConnectionType.CONFLUENCE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.CONFLUENCE], api, project_uuid, connection_id
+        ),
     }
 
     if connection_type == ConnectionType.GENERAL_TASK.value and not ENABLE_GENERAL_TASK:

@@ -163,6 +163,7 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.SITE:
     case CONNECTION_TYPE.GITHUB_ISSUE:
+    case CONNECTION_TYPE.CONFLUENCE:
     case CONNECTION_TYPE.GENERAL_TASK: {
       const urlColumn = getColumnByName(columns, 'url');
       const url = getCellValueByColumn(row, urlColumn) || '';
@@ -196,6 +197,7 @@ export const initConnectionResourceDetails = (type, record) => {
   if (type === CONNECTION_TYPE.SITE) return content;
   if (type === CONNECTION_TYPE.SEAFILE) return content;
   if (type === CONNECTION_TYPE.NOTION) return content;
+  if (type === CONNECTION_TYPE.CONFLUENCE) return content;
   if (type === CONNECTION_TYPE.GENERAL_TASK) return content;
   if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
     const { author, created_time, comments } = record;
