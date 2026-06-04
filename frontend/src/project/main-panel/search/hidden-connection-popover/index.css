@@ -62,7 +62,7 @@
 }
 
 .seaqa-hide-popover .hide-list .hide-column-item:hover {
-  background: var(--bs-tr-hover-bg)
+  background: var(--bs-tr-hover-bg);
 }
 
 .seaqa-hide-popover .hide-list .hide-column-item:not(.disabled):hover,

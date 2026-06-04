@@ -45,7 +45,7 @@
 }
 
 .seaqa-ai-chat-customize-definitions-popover .seaqa-ai-chat-customize-definitions-title .seaqa-ai-chat-customize-definitions-index .sources-count-text {
-  color: var(--bs-body-secondary-color)
+  color: var(--bs-body-secondary-color);
 }
 
 .seaqa-ai-chat-customize-definitions-popover .seaqa-ai-chat-customize-definitions-title .seaqa-ai-chat-customize-definitions-index-btn {

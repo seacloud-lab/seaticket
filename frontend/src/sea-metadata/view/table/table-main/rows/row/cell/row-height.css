@@ -88,11 +88,11 @@
 .sea-metadata-table-row-height-56-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container {
   max-height: 52px;
   align-content: flex-start;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 
 .sea-metadata-table-row-height-56-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container .sea-metadata-tag {
-  margin-bottom: 5px
+  margin-bottom: 5px;
 }
 
 /* 88 */
@@ -181,11 +181,11 @@
 .sea-metadata-table-row-height-88-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container {
   max-height: 52px;
   align-content: flex-start;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 
 .sea-metadata-table-row-height-88-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container .sea-metadata-tag {
-  margin-bottom: 5px
+  margin-bottom: 5px;
 }
 
 /* 128 */
@@ -299,11 +299,11 @@
 .sea-metadata-table-row-height-128-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container {
   max-height: 52px;
   align-content: flex-start;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 
 .sea-metadata-table-row-height-128-cell .sea-metadata-tags-formatter .sea-metadata-ui-tags-container .sea-metadata-tag {
-  margin-bottom: 5px
+  margin-bottom: 5px;
 }
 
 /* link */

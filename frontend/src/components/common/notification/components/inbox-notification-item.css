@@ -20,7 +20,7 @@
 
 .inbox-notification-item .inbox-notification-item-header {
   display: flex;
-  align-items: center
+  align-items: center;
 }
 
 .inbox-notification-item .notification-header-info {

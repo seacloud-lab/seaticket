@@ -28,7 +28,7 @@
 }
 
 .seaqa-resource-details-dialog .modal-content .modal-header .seaqa-modal-close.close {
-  flex: unset
+  flex: unset;
 }
 
 .seaqa-resource-details-dialog .modal-header .open-in-new-tab-btn {

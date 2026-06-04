@@ -444,7 +444,7 @@ input.short-input {
 }
 
 #lang-context:hover {
-  background-color: rgba(0, 0, 0, 0.04)
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 #lang-context .seaqa-html-icon-svg svg {
@@ -929,7 +929,7 @@ input.short-input {
 }
 
 .org-register-panel-wrapper .login-form-wrapper > ul:last-of-type li {
-  margin-top: 4px
+  margin-top: 4px;
 }
 
 .org-register-panel-wrapper .login-form-wrapper .btn-block {
@@ -1043,7 +1043,7 @@ input.short-input {
 .org-register-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
 .individual-register-panel .login-form-wrapper input::-webkit-input-placeholder,
 .portal-login-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder { /* Chrome, Safari */
-  color: #868E96
+  color: #868E96;
 }
 
 .login-panel-wrapper .login-form-wrapper input::-moz-placeholder,
@@ -1799,4 +1799,3 @@ a.sf-popover-item {
 .page-form-panel .form-foot {
   margin-top: 2.5rem;
 }
-
