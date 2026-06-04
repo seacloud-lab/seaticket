@@ -48,7 +48,7 @@
 }
 
 .sea-metadata-filters-list .filter-conjunction {
-  width: 72px;
+  width: 80px;
 }
 
 .sea-metadata-filters-list .filter-conjunction-readonly {
@@ -56,7 +56,7 @@
 }
 
 .sea-metadata-filters-list .filter-container {
-  width: calc(100% - 72px);
+  width: calc(100% - 80px);
   display: flex;
 }
 

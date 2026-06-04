@@ -16,6 +16,7 @@
   -ms-user-select: none;
   text-align: left;
   font-size: 14px;
+  background-color: #fff;
 }
 
 .seaqa-select.custom-select:focus,
