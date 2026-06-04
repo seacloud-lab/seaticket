@@ -4,8 +4,6 @@ import classnames from 'classnames';
 import { getDateDisplayString } from '../../../utils/column';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
-import './index.css';
-
 const DateFormatter = ({ value, format, className, children: emptyFormatter }) => {
 
   const displayValue = useMemo(() => {
@@ -15,7 +13,7 @@ const DateFormatter = ({ value, format, className, children: emptyFormatter }) =
   if (!displayValue) return emptyFormatter || null;
   return (
     <div
-      className={classnames('sea-metadata-ui cell-formatter-container date-formatter', className)}
+      className={classnames('sea-metadata-ui cell-formatter-container', className)}
       title={formatWithTimezone(value)}
     >
       {displayValue}

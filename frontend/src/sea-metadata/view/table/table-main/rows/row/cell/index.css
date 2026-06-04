@@ -128,7 +128,6 @@
   position: absolute;
 }
 
-.sea-metadata-table-cell .sea-metadata-date-formatter,
 .sea-metadata-table-cell .sea-metadata-number-formatter,
 .sea-metadata-table-cell .sea-metadata-duration-formatter {
   width: 100%;

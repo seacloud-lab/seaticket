@@ -4,13 +4,11 @@ import classnames from 'classnames';
 import dayjs from 'dayjs';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
-import './index.css';
-
-const CTimeFormatter = ({ value, className, column, children: emptyFormatter }) => {
+const CTimeFormatter = ({ value, className, children: emptyFormatter }) => {
   if (!value) return emptyFormatter || null;
   return (
     <div
-      className={classnames('sea-metadata-ui cell-formatter-container ctime-formatter', className, { 'justify-content-start': column.width < 150 })}
+      className={classnames('sea-metadata-ui cell-formatter-container w-100 d-inline-flex justify-content-start', className)}
       title={formatWithTimezone(value)}
     >
       {dayjs(value).format('YYYY-MM-DD HH:mm:ss')}
