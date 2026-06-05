@@ -5,7 +5,7 @@ import { Popover, PopoverBody } from 'reactstrap';
 import SearchInput from '@/components/search-input';
 import { Icon, Switch } from '@/components';
 import { gettext } from '@/constants';
-import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP } from '@/project/main-panel/connections/constants';
+import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
@@ -54,6 +54,7 @@ const getSourceSection = (source) => {
   if (source.id === TICKET_SOURCE_ID) return 'issues';
   if (DOCUMENT_CONNECTION_TYPE_MAP[source.type]) return 'documents';
   if (ISSUE_CONNECTION_TYPE_MAP[source.type]) return 'issues';
+  if (TASK_CONNECTION_TYPE_MAP[source.type]) return 'tasks';
   return 'others';
 };
 
@@ -96,6 +97,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value, onChange }) =>
   const sections = {
     documents: [],
     issues: [],
+    tasks: [],
     others: [],
   };
 
@@ -106,6 +108,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value, onChange }) =>
   const sectionList = [
     { key: 'documents', title: gettext('Documents'), items: sections.documents },
     { key: 'issues', title: gettext('Issues'), items: sections.issues },
+    { key: 'tasks', title: gettext('Task'), items: sections.tasks },
     { key: 'others', title: gettext('Other'), items: sections.others },
   ].filter((section) => section.items.length > 0);
 

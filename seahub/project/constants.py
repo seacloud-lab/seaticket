@@ -429,6 +429,7 @@ KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'tags', 'ai_summary', 'ai_
 class ConnectionCategory:
     ISSUE = 'issue'
     DOCUMENT = 'document'
+    TASK = 'task'
     OTHER = 'other'
 
     # Category to connection types mapping
@@ -437,11 +438,13 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
-            ConnectionType.GENERAL_TASK.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
             ConnectionType.SITE.value,
+        ],
+        TASK: [
+            ConnectionType.GENERAL_TASK.value,
         ]
     }
 
@@ -454,6 +457,7 @@ class ConnectionCategory:
 
 ISSUE_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.ISSUE]
 DOCUMENT_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.DOCUMENT]
+TASK_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.TASK]
 
 
 ITEMS_SEARCH_QUERY_TYPES_SUPPORT = [

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideConnection from './hide-connection';
-import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP } from '../../../connections/constants';
+import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '../../../connections/constants';
 
 const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChange }) => {
 
@@ -17,6 +17,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
       if (connection.id === '__ticket__') return false;
       if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return true;
       if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return false;
+      if (TASK_CONNECTION_TYPE_MAP[connection.type]) return false;
       return false;
     });
   }, [connections]);
@@ -26,6 +27,16 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
       if (connection.id === '__ticket__') return true;
       if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return false;
       if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return true;
+      if (TASK_CONNECTION_TYPE_MAP[connection.type]) return false;
+      return false;
+    });
+  }, [connections]);
+
+  const taskConnections = useMemo(() => {
+    return connections.filter((connection) => {
+      if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return false;
+      if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return false;
+      if (TASK_CONNECTION_TYPE_MAP[connection.type]) return true;
       return false;
     });
   }, [connections]);
@@ -47,6 +58,18 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
       })}
       {issueConnections.length > 0 && <div className="hide-list-title">{window.gettext('Issues')}</div>}
       {issueConnections.length > 0 && issueConnections.map((connection) => {
+        return (
+          <HideConnection
+            key={connection.key}
+            readOnly={readOnly}
+            isHidden={!hiddenConnectionIDs.includes(connection.id)}
+            connection={connection}
+            onChange={onChange}
+          />
+        );
+      })}
+      {taskConnections.length > 0 && <div className="hide-list-title">{window.gettext('Task')}</div>}
+      {taskConnections.length > 0 && taskConnections.map((connection) => {
         return (
           <HideConnection
             key={connection.key}
