@@ -259,9 +259,9 @@ const Tickets = ({
   }, []);
 
   const handleTaskCreated = useCallback(({ task, connection }) => {
-    if (!currentTicket) return Promise.resolve();
+    if (!currentTicket) return;
     const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
-    if (!linkedConnectionRecordsColumn) return Promise.resolve();
+    if (!linkedConnectionRecordsColumn) return;
 
     const newValueKey = `${connection.id}_${task._pk}`;
     const oldValue = getCellValueByColumn(currentTicket, linkedConnectionRecordsColumn);
@@ -280,7 +280,7 @@ const Tickets = ({
       metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, update);
       metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
     });
-    return Promise.resolve();
+    return;
   }, [currentTicket, insertRowByLink]);
 
   const createRowsTools = useCallback((props) => {
