@@ -1456,7 +1456,7 @@ class ProjectConnectionRecordsView(APIView):
                     project_uuid, connection_id, row_data.get('_pk'),
                     ConnectionType.GENERAL_TASK.value,
                     {
-                        'type': 'general_task_created',
+                        'type': 'general_task_added',
                         'old_value': None,
                         'new_value': {'title': row_data.get('title')},
                     }

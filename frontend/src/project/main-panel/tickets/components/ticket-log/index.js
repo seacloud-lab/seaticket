@@ -33,7 +33,7 @@ const LOG_TYPE = {
   ASSIGNEES_REMOVED: 'assignees_removed',
   ASSIGNEES_CHANGED: 'assignees_changed',
 
-  GENERAL_TASK_CREATED: 'general_task_created',
+  GENERAL_TASK_ADDED: 'general_task_added',
   GENERAL_TASK_UPDATED: 'general_task_updated',
 
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
@@ -63,7 +63,7 @@ const LOG_ICONS = {
   [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
 
-  [LOG_TYPE.GENERAL_TASK_CREATED]: 'dot-circle-stroked',
+  [LOG_TYPE.GENERAL_TASK_ADDED]: 'dot-circle-stroked',
   [LOG_TYPE.GENERAL_TASK_UPDATED]: 'dot-circle-stroked',
 
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
@@ -509,7 +509,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
 
       // linked info
-      case LOG_TYPE.GENERAL_TASK_CREATED: {
+      case LOG_TYPE.GENERAL_TASK_ADDED: {
         const ref = renderGeneralTaskRef(activity);
         return (
           <span>{gettext('General task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>

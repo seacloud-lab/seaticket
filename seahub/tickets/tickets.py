@@ -1761,10 +1761,9 @@ class TicketActivitiesAPIView(APIView):
                 field_key = activity_type
                 task_id = detail.get('task_id')
                 task_title = detail.get('task_title', '')
-                connection_name = detail.get('connection_name', '')
                 connection_id = detail.get('connection_id')
-                if connection_id and connection_id not in general_task_related_users_cache:
-                    general_task_related_users_cache[connection_id] = get_connection_general_task_related_users(
+                if connection_id and connection_id not in general_task_related_users:
+                    general_task_related_users[connection_id] = get_connection_general_task_related_users(
                         project_uuid, connection_id
                     )
             elif field_name == 'state_substate':
@@ -1845,8 +1844,7 @@ class TicketActivitiesAPIView(APIView):
             elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
                 activity_item['task_id'] = task_id
                 activity_item['task_title'] = task_title
-                activity_item['connection_name'] = connection_name
-                activity_item['related_users'] = general_task_related_users_cache.get(detail.get('connection_id')) or []
+                activity_item['related_users'] = general_task_related_users.get(detail.get('connection_id')) or []
             activities_list.append(activity_item)
 
         return Response({
