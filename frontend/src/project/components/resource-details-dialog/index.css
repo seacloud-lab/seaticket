@@ -74,12 +74,16 @@
 .seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-body {
   display: flex;
   height: 100%;
+  overflow-y: auto;
+}
+
+.seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-body .seaqa-connection-resource-details {
+  overflow: unset;
 }
 
 .seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-main {
   min-width: 0;
   flex: 1;
-  overflow: auto;
 }
 
 .seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-others {
@@ -87,7 +91,6 @@
   min-width: 260px;
   padding: 16px 16px 16px 0px;
   margin-left: 8px;
-  overflow: auto;
 }
 
 .seaqa-resource-details-dialog .seaqa-resource-type-avatar {
