@@ -125,10 +125,10 @@ class TagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             row = {
-                SchemaTables.TAG.name.name: name,
-                SchemaTables.TAG.color.name: color,
-                SchemaTables.TAG.text_color.name: text_color,
-                SchemaTables.TAG.description.name: description,
+                SchemaTables.TAG.column.name.name: name,
+                SchemaTables.TAG.column.color.name: color,
+                SchemaTables.TAG.column.text_color.name: text_color,
+                SchemaTables.TAG.column.description.name: description,
             }
             res = seadb_api.insert_rows(project_uuid, table_name, [row])
         except Exception as e:

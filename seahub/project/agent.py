@@ -639,8 +639,8 @@ class AgentActionConfirmView(APIView):
             update_row = {
                 'pk': ctx['record_id'],
                 'row': {
-                    SchemaTables.GITHUB_ISSUES.comment_count.name: new_comment_count,
-                    SchemaTables.GITHUB_ISSUES.record_modified_time.name: now_datetime,
+                    SchemaTables.GITHUB_ISSUES.column.comment_count.name: new_comment_count,
+                    SchemaTables.GITHUB_ISSUES.column.record_modified_time.name: now_datetime,
                 }
             }
             seadb_api.update_rows(project_uuid, issues_table, [update_row])
@@ -650,12 +650,12 @@ class AgentActionConfirmView(APIView):
         try:
             comments_table = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(ctx['connection_id'])
             comment_row = {
-                SchemaTables.GITHUB_ISSUE_COMMENTS.comment_id.name: comment_id,
-                SchemaTables.GITHUB_ISSUE_COMMENTS.issue_id.name: ctx['issue_id'],
-                SchemaTables.GITHUB_ISSUE_COMMENTS.author.name: comment_author,
-                SchemaTables.GITHUB_ISSUE_COMMENTS.content.name: reply_content,
-                SchemaTables.GITHUB_ISSUE_COMMENTS.created_time.name: comment_created_at,
-                SchemaTables.GITHUB_ISSUE_COMMENTS.modified_time.name: comment_created_at,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.comment_id.name: comment_id,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.issue_id.name: ctx['issue_id'],
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.author.name: comment_author,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.content.name: reply_content,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.created_time.name: comment_created_at,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.column.modified_time.name: comment_created_at,
             }
             seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
         except Exception as e:
@@ -933,16 +933,16 @@ class AgentActionConfirmView(APIView):
 
         now = timezone.now().isoformat()
         ticket_row = {
-            SchemaTables.TICKETS.title.name: ticket_title,
-            SchemaTables.TICKETS.content.name: ticket_content,
-            SchemaTables.TICKETS.state.name: 'open',
-            SchemaTables.TICKETS.substate.name: 'New',
-            SchemaTables.TICKETS.priority.name: 0,
-            SchemaTables.TICKETS.creator.name: username,
-            SchemaTables.TICKETS.created_time.name: now,
-            SchemaTables.TICKETS.modified_time.name: now,
-            SchemaTables.TICKETS.deleted.name: False,
-            SchemaTables.TICKETS.linked_connection_records.name: [source_id],
+            SchemaTables.TICKETS.column.title.name: ticket_title,
+            SchemaTables.TICKETS.column.content.name: ticket_content,
+            SchemaTables.TICKETS.column.state.name: 'open',
+            SchemaTables.TICKETS.column.substate.name: 'New',
+            SchemaTables.TICKETS.column.priority.name: 0,
+            SchemaTables.TICKETS.column.creator.name: username,
+            SchemaTables.TICKETS.column.created_time.name: now,
+            SchemaTables.TICKETS.column.modified_time.name: now,
+            SchemaTables.TICKETS.column.deleted.name: False,
+            SchemaTables.TICKETS.column.linked_connection_records.name: [source_id],
         }
         try:
             insert_result = seadb_api.insert_rows(project_uuid, SchemaTables.TICKETS.table_name(), [ticket_row])
@@ -1352,7 +1352,7 @@ class AgentActionConfirmView(APIView):
             msg_type=MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
             from_user_id=operator,
             ticket_id=ticket_id,
-            ticket_title=ticket.get(SchemaTables.TICKETS.title.name),
+            ticket_title=ticket.get(SchemaTables.TICKETS.column.title.name),
             message=message,
             workspace_id=project.workspace_id,
             project_name=project.project_name,

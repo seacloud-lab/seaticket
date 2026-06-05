@@ -77,9 +77,9 @@ def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, t
     columns = table_info.get('columns') or []
     column_name_to_meta = {column.get('name'): column for column in columns}
     target_columns = [
-        SchemaTables.GENERAL_TASK.status.name,
-        SchemaTables.GENERAL_TASK.size.name,
-        SchemaTables.GENERAL_TASK.priority.name,
+        SchemaTables.GENERAL_TASK.column.status.name,
+        SchemaTables.GENERAL_TASK.column.size.name,
+        SchemaTables.GENERAL_TASK.column.priority.name,
     ]
 
     desired_values = {column_name: set() for column_name in target_columns}
@@ -128,23 +128,23 @@ def build_general_task_row_data(task, sync_time=None):
     if not isinstance(participants, list):
         participants = []
     return {
-        SchemaTables.GENERAL_TASK.source_task_id.name: str(task.get('task_id')).strip(),
-        SchemaTables.GENERAL_TASK.url.name: str(task.get('url') or '').strip(),
-        SchemaTables.GENERAL_TASK.title.name: task.get('title', ''),
-        SchemaTables.GENERAL_TASK.status.name: task.get('status'),
-        SchemaTables.GENERAL_TASK.size.name: task.get('size'),
-        SchemaTables.GENERAL_TASK.priority.name: task.get('priority'),
-        SchemaTables.GENERAL_TASK.assignees.name: assignees,
-        SchemaTables.GENERAL_TASK.participants.name: participants,
-        SchemaTables.GENERAL_TASK.version.name: task.get('version', ''),
-        SchemaTables.GENERAL_TASK.others.name: others,
-        SchemaTables.GENERAL_TASK.content.name: task.get('description') or task.get('content') or '',
-        SchemaTables.GENERAL_TASK.due_date.name: task.get('due_date'),
-        SchemaTables.GENERAL_TASK.modified_time.name: task.get('modified_time') or now,
-        SchemaTables.GENERAL_TASK.created_time.name: task.get('created_time') or now,
-        SchemaTables.GENERAL_TASK.sync_time.name: now,
-        SchemaTables.GENERAL_TASK.record_modified_time.name: now,
-        SchemaTables.GENERAL_TASK.deleted.name: bool(task.get('deleted', False)),
+        SchemaTables.GENERAL_TASK.column.source_task_id.name: str(task.get('task_id')).strip(),
+        SchemaTables.GENERAL_TASK.column.url.name: str(task.get('url') or '').strip(),
+        SchemaTables.GENERAL_TASK.column.title.name: task.get('title', ''),
+        SchemaTables.GENERAL_TASK.column.status.name: task.get('status'),
+        SchemaTables.GENERAL_TASK.column.size.name: task.get('size'),
+        SchemaTables.GENERAL_TASK.column.priority.name: task.get('priority'),
+        SchemaTables.GENERAL_TASK.column.assignees.name: assignees,
+        SchemaTables.GENERAL_TASK.column.participants.name: participants,
+        SchemaTables.GENERAL_TASK.column.version.name: task.get('version', ''),
+        SchemaTables.GENERAL_TASK.column.others.name: others,
+        SchemaTables.GENERAL_TASK.column.content.name: task.get('description') or task.get('content') or '',
+        SchemaTables.GENERAL_TASK.column.due_date.name: task.get('due_date'),
+        SchemaTables.GENERAL_TASK.column.modified_time.name: task.get('modified_time') or now,
+        SchemaTables.GENERAL_TASK.column.created_time.name: task.get('created_time') or now,
+        SchemaTables.GENERAL_TASK.column.sync_time.name: now,
+        SchemaTables.GENERAL_TASK.column.record_modified_time.name: now,
+        SchemaTables.GENERAL_TASK.column.deleted.name: bool(task.get('deleted', False)),
     }
 
 
@@ -164,7 +164,7 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
     portal_issues_table = get_current_table_metadata(tables_metadata, portal_issues_table_name)
 
     if not portal_issues_table:
-        init_seadb_tables_from_schema([SchemaTables.PORTAL_ISSUES.name, SchemaTables.PORTAL_ISSUE_COMMENTS.name], seadb_api, project_uuid)
+        init_seadb_tables_from_schema([SchemaTables.PORTAL_ISSUES, SchemaTables.PORTAL_ISSUE_COMMENTS], seadb_api, project_uuid)
 
         seadb_api.create_column_index(project_uuid, table_id, index_item)
 
@@ -778,7 +778,7 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
     results = {}
     for result in seadb_api.query_rows(project_uuid, sql).get('results', []):
         results[result['_pk']] = {
-            SchemaTables.GENERAL_TASK.title.name: result['title'],
+            SchemaTables.GENERAL_TASK.column.title.name: result['title'],
             'ai_summary': result['ai_summary']
         }
     return results

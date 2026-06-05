@@ -152,20 +152,20 @@ class EmailSeaDBAPI:
         sender_email = email_data['sender_email']
 
         email_row = {
-            SchemaTables.EMAIL.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
-            SchemaTables.EMAIL.email_to.name: email_data.get('email_to', ''),
-            SchemaTables.EMAIL.title.name: email_data.get('subject', ''),
-            SchemaTables.EMAIL.cc.name: email_data.get('cc') or '',
-            SchemaTables.EMAIL.content.name: email_data.get('content', ''),
-            SchemaTables.EMAIL.text_content.name: email_data.get('content', ''),
-            SchemaTables.EMAIL.html_content.name: email_data.get('html_content') or '',
-            SchemaTables.EMAIL.reply_to_message_id.name: email_data.get('reply_to_message_id') or '',
-            SchemaTables.EMAIL.is_sender.name: True,
-            SchemaTables.EMAIL.deleted.name: False,
-            SchemaTables.EMAIL.thread_id.name: thread_id,
-            SchemaTables.EMAIL.message_id.name: email_data.get('message_id') or '',
-            SchemaTables.EMAIL.origin_thread_id.name: email_data.get('origin_thread_id') or '',
-            SchemaTables.EMAIL.email_id.name: email_data.get('email_id') or '',
+            SchemaTables.EMAIL.column.email_from.name: formataddr((sender_name, sender_email)) if sender_name else sender_email,
+            SchemaTables.EMAIL.column.email_to.name: email_data.get('email_to', ''),
+            SchemaTables.EMAIL.column.title.name: email_data.get('subject', ''),
+            SchemaTables.EMAIL.column.cc.name: email_data.get('cc') or '',
+            SchemaTables.EMAIL.column.content.name: email_data.get('content', ''),
+            SchemaTables.EMAIL.column.text_content.name: email_data.get('content', ''),
+            SchemaTables.EMAIL.column.html_content.name: email_data.get('html_content') or '',
+            SchemaTables.EMAIL.column.reply_to_message_id.name: email_data.get('reply_to_message_id') or '',
+            SchemaTables.EMAIL.column.is_sender.name: True,
+            SchemaTables.EMAIL.column.deleted.name: False,
+            SchemaTables.EMAIL.column.thread_id.name: thread_id,
+            SchemaTables.EMAIL.column.message_id.name: email_data.get('message_id') or '',
+            SchemaTables.EMAIL.column.origin_thread_id.name: email_data.get('origin_thread_id') or '',
+            SchemaTables.EMAIL.column.email_id.name: email_data.get('email_id') or '',
         }
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
@@ -173,9 +173,9 @@ class EmailSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(thread_id),
             'row': {
-                SchemaTables.THREAD.modified_time.name: now,
-                SchemaTables.THREAD.record_modified_time.name: now,
-                SchemaTables.THREAD.unread.name: False,
+                SchemaTables.THREAD.column.modified_time.name: now,
+                SchemaTables.THREAD.column.record_modified_time.name: now,
+                SchemaTables.THREAD.column.unread.name: False,
             }
         }])
         return pks[0] if pks else None

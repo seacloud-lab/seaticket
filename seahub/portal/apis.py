@@ -315,18 +315,18 @@ class PortalIssuesView(APIView):
                     logger.error(e)
 
             row = {
-                SchemaTables.PORTAL_ISSUES.title.name: title,
-                SchemaTables.PORTAL_ISSUES.content.name: content,
-                SchemaTables.PORTAL_ISSUES.state.name: portal_issue_state,
-                SchemaTables.PORTAL_ISSUES.type.name: type_name if type_name else None,
-                SchemaTables.PORTAL_ISSUES.substat.name: default_substate,
-                SchemaTables.PORTAL_ISSUES.priority.name: priority,
-                SchemaTables.PORTAL_ISSUES.tags.name: tag_ids,
-                SchemaTables.PORTAL_ISSUES.creator.name: username,
-                SchemaTables.PORTAL_ISSUES.comment_count.name: 0,
-                SchemaTables.PORTAL_ISSUES.created_time.name: now_datetime,
-                SchemaTables.PORTAL_ISSUES.modified_time.name: now_datetime,
-                SchemaTables.PORTAL_ISSUES.deleted.name: False,
+                SchemaTables.PORTAL_ISSUES.column.title.name: title,
+                SchemaTables.PORTAL_ISSUES.column.content.name: content,
+                SchemaTables.PORTAL_ISSUES.column.state.name: portal_issue_state,
+                SchemaTables.PORTAL_ISSUES.column.type.name: type_name if type_name else None,
+                SchemaTables.PORTAL_ISSUES.column.substat.name: default_substate,
+                SchemaTables.PORTAL_ISSUES.column.priority.name: priority,
+                SchemaTables.PORTAL_ISSUES.column.tags.name: tag_ids,
+                SchemaTables.PORTAL_ISSUES.column.creator.name: username,
+                SchemaTables.PORTAL_ISSUES.column.comment_count.name: 0,
+                SchemaTables.PORTAL_ISSUES.column.created_time.name: now_datetime,
+                SchemaTables.PORTAL_ISSUES.column.modified_time.name: now_datetime,
+                SchemaTables.PORTAL_ISSUES.column.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, portal_issues_table_name, [row])
             pks = res.get('pks', [])
@@ -344,10 +344,10 @@ class PortalIssuesView(APIView):
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
                             'pk': int(portal_issue_pk),
                             'row': {
-                                SchemaTables.PORTAL_ISSUES.content.name: updated_content,
+                                SchemaTables.PORTAL_ISSUES.column.content.name: updated_content,
                             }
                         }])
-                        row[SchemaTables.PORTAL_ISSUES.content.name] = updated_content
+                        row[SchemaTables.PORTAL_ISSUES.column.content.name] = updated_content
                 except Exception as e:
                     logger.error(e)
                     try:
@@ -432,24 +432,24 @@ class PortalIssuesView(APIView):
             if 'state' in row_data:
                 issue_state_name = row_data.get('state')
                 issue_state_name = issue_state_name.lower() if issue_state_name else ''
-                updated_row[SchemaTables.PORTAL_ISSUES.state.name] = issue_state_name
+                updated_row[SchemaTables.PORTAL_ISSUES.column.state.name] = issue_state_name
                 if issue_state_name == 'closed':
-                    updated_row[SchemaTables.PORTAL_ISSUES.closed_time.name] = now_datetime
+                    updated_row[SchemaTables.PORTAL_ISSUES.column.closed_time.name] = now_datetime
                 elif issue_state_name == 'open':
-                    updated_row[SchemaTables.PORTAL_ISSUES.closed_time.name] = ''
+                    updated_row[SchemaTables.PORTAL_ISSUES.column.closed_time.name] = ''
 
             if 'substate' in row_data:
-                updated_row[SchemaTables.PORTAL_ISSUES.substate.name] = row_data.get('substate') or None
+                updated_row[SchemaTables.PORTAL_ISSUES.column.substate.name] = row_data.get('substate') or None
 
             if 'tags' in row_data:
                 tags_value = row_data.get('tags')
                 if tags_value is None:
-                    updated_row[SchemaTables.PORTAL_ISSUES.tags.name] = []
+                    updated_row[SchemaTables.PORTAL_ISSUES.column.tags.name] = []
                 else:
-                    updated_row[SchemaTables.PORTAL_ISSUES.tags.name] = [int(tag_id) for tag_id in tags_value]
+                    updated_row[SchemaTables.PORTAL_ISSUES.column.tags.name] = [int(tag_id) for tag_id in tags_value]
 
             if 'type' in row_data:
-                updated_row[SchemaTables.PORTAL_ISSUES.type.name] = row_data.get('type') or None
+                updated_row[SchemaTables.PORTAL_ISSUES.column.type.name] = row_data.get('type') or None
 
             for key, value in row_data.items():
                 if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
@@ -459,7 +459,7 @@ class PortalIssuesView(APIView):
             if not updated_row:
                 continue
 
-            updated_row[SchemaTables.PORTAL_ISSUES.modified_time.name] = now_datetime
+            updated_row[SchemaTables.PORTAL_ISSUES.column.modified_time.name] = now_datetime
             update_rows.append({
                 'pk': issue.get('_pk'),
                 'row': updated_row,
@@ -747,25 +747,25 @@ class PortalIssueView(APIView):
         try:
             update_row = {}
             if title:
-                update_row[SchemaTables.PORTAL_ISSUES.title.name] = title
+                update_row[SchemaTables.PORTAL_ISSUES.column.title.name] = title
             if content:
-                update_row[SchemaTables.PORTAL_ISSUES.content.name] = content
+                update_row[SchemaTables.PORTAL_ISSUES.column.content.name] = content
             if is_update_type:
-                update_row[SchemaTables.PORTAL_ISSUES.type.name] = type_name
+                update_row[SchemaTables.PORTAL_ISSUES.column.type.name] = type_name
             if is_update_substate:
-                update_row[SchemaTables.PORTAL_ISSUES.substate.name] = substate_option_name
+                update_row[SchemaTables.PORTAL_ISSUES.column.substate.name] = substate_option_name
             if is_update_tags:
-                update_row[SchemaTables.PORTAL_ISSUES.tags.name] = tags
+                update_row[SchemaTables.PORTAL_ISSUES.column.tags.name] = tags
             if is_update_priority:
-                update_row[SchemaTables.PORTAL_ISSUES.priority.name] = priority
+                update_row[SchemaTables.PORTAL_ISSUES.column.priority.name] = priority
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if issue_state_name or issue_state_name == '':
                 issue_state_name = issue_state_name.lower()
-                update_row[SchemaTables.PORTAL_ISSUES.state.name] = issue_state_name
+                update_row[SchemaTables.PORTAL_ISSUES.column.state.name] = issue_state_name
                 if issue_state_name == 'closed':
-                    update_row[SchemaTables.PORTAL_ISSUES.closed_time.name] = now_datetime
+                    update_row[SchemaTables.PORTAL_ISSUES.column.closed_time.name] = now_datetime
                 elif issue_state_name == 'open':
-                    update_row[SchemaTables.PORTAL_ISSUES.closed_time.name] = ''
+                    update_row[SchemaTables.PORTAL_ISSUES.column.closed_time.name] = ''
 
             # Handle linked_ticket (link/unlink portal issue to/from a ticket)
             if is_update_linked_ticket:
@@ -806,7 +806,7 @@ class PortalIssueView(APIView):
                     else:
                         update_row['linked_ticket'] = None
 
-            update_row[SchemaTables.PORTAL_ISSUES.modified_time.name] = now_datetime
+            update_row[SchemaTables.PORTAL_ISSUES.column.modified_time.name] = now_datetime
             update_rows = [
                 {
                     'pk': issue.get('_pk'),
@@ -959,12 +959,12 @@ class PortalIssueCommentsView(APIView):
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
-                SchemaTables.PORTAL_ISSUE_COMMENTS.issue_id.name: issue.get('_pk'),
-                SchemaTables.PORTAL_ISSUE_COMMENTS.creator.name: username,
-                SchemaTables.PORTAL_ISSUE_COMMENTS.content.name: content,
-                SchemaTables.PORTAL_ISSUE_COMMENTS.created_time.name: now_datetime,
-                SchemaTables.PORTAL_ISSUE_COMMENTS.modified_time.name: now_datetime,
-                SchemaTables.PORTAL_ISSUE_COMMENTS.deleted.name: False,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.issue_id.name: issue.get('_pk'),
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.creator.name: username,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.content.name: content,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.created_time.name: now_datetime,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.modified_time.name: now_datetime,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.deleted.name: False,
             }
             portal_issue_comment_table_name = SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()
             res = seadb_api.insert_rows(project_uuid, portal_issue_comment_table_name, [row])
@@ -1342,9 +1342,9 @@ class PortalIssueMetadataView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             portal_issue_meta = get_current_table_metadata(base_metadata.get('tables'), portal_issues_table_name)
             portal_issue_column_name_to_return_name = {
-                SchemaTables.PORTAL_ISSUES.substate.name: 'substates',
-                SchemaTables.PORTAL_ISSUES.type.name: 'types',
-                SchemaTables.PORTAL_ISSUES.state.name: 'states'
+                SchemaTables.PORTAL_ISSUES.column.substate.name: 'substates',
+                SchemaTables.PORTAL_ISSUES.column.type.name: 'types',
+                SchemaTables.PORTAL_ISSUES.column.state.name: 'states'
             }
             select_option_metadata = {}
             for column in portal_issue_meta.get('columns'):
@@ -2073,8 +2073,8 @@ class PortalIssueTrashAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for issue_id in issue_ids:
             updated_row = {
-                SchemaTables.PORTAL_ISSUES.modified_time.name: now_datetime,
-                SchemaTables.PORTAL_ISSUES.deleted.name: False,
+                SchemaTables.PORTAL_ISSUES.column.modified_time.name: now_datetime,
+                SchemaTables.PORTAL_ISSUES.column.deleted.name: False,
             }
             update_rows.append({
                 'pk': int(issue_id),

@@ -89,14 +89,14 @@ class KnowledgeBasesAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
-                SchemaTables.KNOWLEDGE_BASE.title.name: title,
-                SchemaTables.KNOWLEDGE_BASE.content.name: content_text,
-                SchemaTables.KNOWLEDGE_BASE.tags.name: tag_ids,
-                SchemaTables.KNOWLEDGE_BASE.creator.name: username,
-                SchemaTables.KNOWLEDGE_BASE.created_time.name: now_datetime,
-                SchemaTables.KNOWLEDGE_BASE.last_modifier.name: username,
-                SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
-                SchemaTables.KNOWLEDGE_BASE.deleted.name: False,
+                SchemaTables.KNOWLEDGE_BASE.column.title.name: title,
+                SchemaTables.KNOWLEDGE_BASE.column.content.name: content_text,
+                SchemaTables.KNOWLEDGE_BASE.column.tags.name: tag_ids,
+                SchemaTables.KNOWLEDGE_BASE.column.creator.name: username,
+                SchemaTables.KNOWLEDGE_BASE.column.created_time.name: now_datetime,
+                SchemaTables.KNOWLEDGE_BASE.column.last_modifier.name: username,
+                SchemaTables.KNOWLEDGE_BASE.column.modified_time.name: now_datetime,
+                SchemaTables.KNOWLEDGE_BASE.column.deleted.name: False,
              }
             res = seadb_api.insert_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [row])
             pks = res.get('pks', [])
@@ -117,10 +117,10 @@ class KnowledgeBasesAPIView(APIView):
                 seadb_api.update_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [{
                     'pk': int(insert_row_pk),
                     'row': {
-                        SchemaTables.KNOWLEDGE_BASE.content.name: updated_content,
+                        SchemaTables.KNOWLEDGE_BASE.column.content.name: updated_content,
                     }
                 }])
-                row[SchemaTables.KNOWLEDGE_BASE.content.name] = updated_content
+                row[SchemaTables.KNOWLEDGE_BASE.column.content.name] = updated_content
             except Exception as e:
                 logger.error(e)
                 seadb_api.delete_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [int(insert_row_pk)])
@@ -217,9 +217,9 @@ class KnowledgeBasesAPIView(APIView):
             update_rows.append({
                 'pk': r_id,
                 'row': {
-                    SchemaTables.KNOWLEDGE_BASE.deleted.name: True,
-                    SchemaTables.KNOWLEDGE_BASE.last_modifier.name: username,
-                    SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
+                    SchemaTables.KNOWLEDGE_BASE.column.deleted.name: True,
+                    SchemaTables.KNOWLEDGE_BASE.column.last_modifier.name: username,
+                    SchemaTables.KNOWLEDGE_BASE.column.modified_time.name: now_datetime,
                 }
             })
         try:
@@ -277,14 +277,14 @@ class KnowledgeBaseAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         if is_update_tags:
-            row[SchemaTables.KNOWLEDGE_BASE.tags.name] = tags
+            row[SchemaTables.KNOWLEDGE_BASE.column.tags.name] = tags
 
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
                 error_msg = 'title invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[SchemaTables.KNOWLEDGE_BASE.title.name] = title
+            row[SchemaTables.KNOWLEDGE_BASE.column.title.name] = title
 
         if 'content' in request.data:
             raw_content = request.data.get('content')
@@ -306,7 +306,7 @@ class KnowledgeBaseAPIView(APIView):
                     logger.error(e)
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            row[SchemaTables.KNOWLEDGE_BASE.content.name] = content_text
+            row[SchemaTables.KNOWLEDGE_BASE.column.content.name] = content_text
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -329,8 +329,8 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        row[SchemaTables.KNOWLEDGE_BASE.last_modifier.name] = username
-        row[SchemaTables.KNOWLEDGE_BASE.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+        row[SchemaTables.KNOWLEDGE_BASE.column.last_modifier.name] = username
+        row[SchemaTables.KNOWLEDGE_BASE.column.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
 
         update_rows = [
             {
@@ -435,8 +435,8 @@ class KnowledgeBasesTrashAPIView(APIView):
                 update_rows.append({
                     'pk': int(r_id),
                     'row': {
-                        SchemaTables.KNOWLEDGE_BASE.deleted.name: False,
-                        SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
+                        SchemaTables.KNOWLEDGE_BASE.column.deleted.name: False,
+                        SchemaTables.KNOWLEDGE_BASE.column.modified_time.name: now_datetime,
                     }
                 })
             if update_rows:

@@ -621,7 +621,7 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != SchemaTables.GITHUB_ISSUES.issue_type.name:
+            if column.get('name') != SchemaTables.GITHUB_ISSUES.column.issue_type.name:
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -648,7 +648,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        SchemaTables.GITHUB_ISSUES.issue_type.name,
+        SchemaTables.GITHUB_ISSUES.column.issue_type.name,
         'type_id',
     )
 
@@ -658,7 +658,7 @@ def collect_github_issue_label_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        SchemaTables.GITHUB_ISSUES.issue_type.name,
+        SchemaTables.GITHUB_ISSUES.column.issue_type.name,
         'label_id',
     )
 

@@ -51,12 +51,12 @@ class GitHubSeaDBAPI:
         update_row = {
             'pk': int(record_pk),
             'row': {
-                SchemaTables.GITHUB_ISSUES.title.name: issue_data.get('title', ''),
-                SchemaTables.GITHUB_ISSUES.labels.name: issue_data.get('labels', []),
-                SchemaTables.GITHUB_ISSUES.issue_type.name: issue_data.get('issue_type', ''),
-                SchemaTables.GITHUB_ISSUES.state.name: issue_data.get('state', ''),
-                SchemaTables.GITHUB_ISSUES.state_reason.name: issue_data.get('state_reason', ''),
-                SchemaTables.GITHUB_ISSUES.record_modified_time.name: now_datetime,
+                SchemaTables.GITHUB_ISSUES.column.title.name: issue_data.get('title', ''),
+                SchemaTables.GITHUB_ISSUES.column.labels.name: issue_data.get('labels', []),
+                SchemaTables.GITHUB_ISSUES.column.issue_type.name: issue_data.get('issue_type', ''),
+                SchemaTables.GITHUB_ISSUES.column.state.name: issue_data.get('state', ''),
+                SchemaTables.GITHUB_ISSUES.column.state_reason.name: issue_data.get('state_reason', ''),
+                SchemaTables.GITHUB_ISSUES.column.record_modified_time.name: now_datetime,
             }
         }
 

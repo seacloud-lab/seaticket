@@ -146,12 +146,12 @@ class DiscourseSeaDBAPI:
         topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
 
         reply_row = {
-            SchemaTables.DISCOURSE_REPLIES.topic_id.name: topic_id,
-            SchemaTables.DISCOURSE_REPLIES.post_number.name: reply_data.get('post_number', 0),
-            SchemaTables.DISCOURSE_REPLIES.content.name: reply_data.get('content', ''),
-            SchemaTables.DISCOURSE_REPLIES.author.name: reply_data.get('author', ''),
-            SchemaTables.DISCOURSE_REPLIES.modified_time.name: now,
-            SchemaTables.DISCOURSE_REPLIES.accepted_answer.name: False,
+            SchemaTables.DISCOURSE_REPLIES.column.topic_id.name: topic_id,
+            SchemaTables.DISCOURSE_REPLIES.column.post_number.name: reply_data.get('post_number', 0),
+            SchemaTables.DISCOURSE_REPLIES.column.content.name: reply_data.get('content', ''),
+            SchemaTables.DISCOURSE_REPLIES.column.author.name: reply_data.get('author', ''),
+            SchemaTables.DISCOURSE_REPLIES.column.modified_time.name: now,
+            SchemaTables.DISCOURSE_REPLIES.column.accepted_answer.name: False,
         }
 
         result = self.seadb_api.insert_rows(project_uuid, replies_table_name, [reply_row])
@@ -160,7 +160,7 @@ class DiscourseSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, topics_table_name, [{
             'pk': int(reply_data.get('topic_pk', 0)),
             'row': {
-                SchemaTables.DISCOURSE_TOPICS.record_modified_time.name: now,
+                SchemaTables.DISCOURSE_TOPICS.column.record_modified_time.name: now,
             }
         }])
 
