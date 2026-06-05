@@ -1,7 +1,7 @@
 .seaqa-ai-chat-attachments-container {
   width: 100%;
   overflow-x: auto !important;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   scrollbar-width: none;
 }
 
@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  top: 0;
+  top: 14px;
   position: absolute;
 }
 

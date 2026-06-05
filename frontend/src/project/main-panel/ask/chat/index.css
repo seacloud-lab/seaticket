@@ -85,7 +85,7 @@
 
 .user-input-chat .seaqa-ai-ask-message-content {
   background-color: #FFF7F0;
-  border-radius: 0 8px 8px 8px;
+  border-radius: 8px 0 8px 8px;
   border: unset;
   padding: 12px 16px;
 }

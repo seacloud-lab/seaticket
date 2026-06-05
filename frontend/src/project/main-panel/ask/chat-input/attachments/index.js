@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IconButton } from '@/components';
 import { Attachments } from '../../components';
 
@@ -43,6 +43,21 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove, onReupload })
       targetScrollLeft = Math.min(scrollLeft + 50, scrollLeft + offsetWidth);
     }
     ref.current.scrollLeft = targetScrollLeft;
+  }, []);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const dom = ref.current;
+    const handleResize = () => {
+      if (!dom) return;
+      const { scrollLeft } = ref.current;
+      setScrollLeft(scrollLeft);
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    dom && resizeObserver.observe(dom);
+    return () => {
+      dom && resizeObserver.unobserve(dom);
+    };
   }, []);
 
   if (validValue.length === 0) return null;
