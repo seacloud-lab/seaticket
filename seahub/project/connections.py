@@ -39,7 +39,7 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
-    get_table_name_from_schema,  list_general_task_record_details, build_general_task_row_data, get_connection_columns
+    list_general_task_record_details, build_general_task_row_data, get_connection_columns
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -60,7 +60,7 @@ from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIExc
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, prepare_image_data_for_adapter
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 
@@ -523,7 +523,7 @@ class ProjectGithubConnectionsView(APIView):
             connection_id = record.id
             seadb_api = SeaDBAPI()
             try:
-                init_seadb_tables_from_schema([SchemaTableNames.GITHUB_ISSUES, SchemaTableNames.GITHUB_ISSUE_COMMENTS], seadb_api, project.uuid, connection_id)
+                init_seadb_tables_from_schema([SchemaTables.GITHUB_ISSUES, SchemaTables.GITHUB_ISSUE_COMMENTS], seadb_api, project.uuid, connection_id)
             except Exception as e:
                 logger.error(e)
                 record.delete()
@@ -1216,21 +1216,21 @@ class ProjectConnectionRecordView(APIView):
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        schema_table_name = None
+        table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            schema_table_name = SchemaTableNames.DISCOURSE_TOPICS
+            table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            schema_table_name = SchemaTableNames.GITHUB_ISSUES
+            table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         elif project_connection.type == ConnectionType.SITE.value:
-            schema_table_name = SchemaTableNames.WEB_CRAWL
+            table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            schema_table_name = SchemaTableNames.SEAFILE
+            table_name = SchemaTables.SEAFILE.table_name(connection_id)
         elif project_connection.type == ConnectionType.EMAIL.value:
-            schema_table_name = SchemaTableNames.THREAD
+            table_name = SchemaTables.THREAD.table_name(connection_id)
         elif project_connection.type == ConnectionType.NOTION.value:
-            schema_table_name = SchemaTableNames.NOTION
+            table_name = SchemaTables.NOTION.table_name(connection_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            schema_table_name = SchemaTableNames.GENERAL_TASK
+            table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1317,8 +1317,6 @@ class ProjectConnectionRecordView(APIView):
         if not update_row['row']:
             return Response({'success': True})
 
-        table_name = get_table_name_from_schema(schema_table_name, connection_id)
-
         try:
             seadb_api.update_rows(project_uuid, table_name, [update_row])
         except Exception as e:
@@ -1401,7 +1399,7 @@ class ProjectConnectionRecordsView(APIView):
         row_data = build_general_task_row_data(created_task)
         try:
             ensure_general_task_column_options(seadb_api, project_uuid, connection_id, [created_task])
-            res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id), [row_data])
+            res = seadb_api.insert_rows(project_uuid, SchemaTables.GENERAL_TASK.table_name(connection_id), [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 raise RuntimeError('insert_rows returned invalid pks')
@@ -1483,21 +1481,21 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        schema_table_name = None
+        table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            schema_table_name = SchemaTableNames.DISCOURSE_TOPICS
+            table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            schema_table_name = SchemaTableNames.GITHUB_ISSUES
+            table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         elif project_connection.type == ConnectionType.SITE.value:
-            schema_table_name = SchemaTableNames.WEB_CRAWL
+            table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            schema_table_name = SchemaTableNames.SEAFILE
+            table_name = SchemaTables.SEAFILE.table_name(connection_id)
         elif project_connection.type == ConnectionType.EMAIL.value:
-            schema_table_name = SchemaTableNames.THREAD
+            table_name = SchemaTables.THREAD.table_name(connection_id)
         elif project_connection.type == ConnectionType.NOTION.value:
-            schema_table_name = SchemaTableNames.NOTION
+            table_name = SchemaTables.NOTION.table_name(connection_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
-            schema_table_name = SchemaTableNames.GENERAL_TASK
+            table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
 
         update_rows = []
         seadb_api = SeaDBAPI()
@@ -1573,7 +1571,6 @@ class ProjectConnectionRecordsView(APIView):
         if not update_rows:
             return Response({'success': True})
 
-        table_name = get_table_name_from_schema(schema_table_name, connection_id)
         seadb_api = SeaDBAPI()
 
         try:

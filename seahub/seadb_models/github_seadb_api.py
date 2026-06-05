@@ -4,10 +4,7 @@ import datetime
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
-
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
-
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +16,7 @@ class GitHubSeaDBAPI:
 
     def get_issues_by_connection_id(self, connection_id, start, limit):
         """Retrieve all issue for the specified connection_id."""
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = "SELECT `_pk`, `issue_id`, `issue_number`, `title`, `content`, `state`, `state_reason`, " \
             f"`labels`, `issue_type`, `author`, `url`, `created_time`, `modified_time`, `comment_count` FROM `{table_name}` LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -29,7 +26,7 @@ class GitHubSeaDBAPI:
 
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = "SELECT `_pk`, `issue_id`, `issue_number`, `title`, `content` " \
             f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -38,7 +35,7 @@ class GitHubSeaDBAPI:
         return []
 
     def get_comments_by_issue_id(self, connection_id, issue_id, limit=None):
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(connection_id)
         sql = "SELECT `issue_id`, `content` " \
             f"FROM `{table_name}` WHERE `issue_id` = {issue_id}"
         if limit is not None:
@@ -50,16 +47,16 @@ class GitHubSeaDBAPI:
 
     def update_issue_record(self, project_uuid, connection_id, record_pk, issue_data):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         update_row = {
             'pk': int(record_pk),
             'row': {
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'title'): issue_data.get('title', ''),
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'labels'): issue_data.get('labels', []),
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'): issue_data.get('issue_type', ''),
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'state'): issue_data.get('state', ''),
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'state_reason'): issue_data.get('state_reason', ''),
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'record_modified_time'): now_datetime,
+                SchemaTables.GITHUB_ISSUES.title.name: issue_data.get('title', ''),
+                SchemaTables.GITHUB_ISSUES.labels.name: issue_data.get('labels', []),
+                SchemaTables.GITHUB_ISSUES.issue_type.name: issue_data.get('issue_type', ''),
+                SchemaTables.GITHUB_ISSUES.state.name: issue_data.get('state', ''),
+                SchemaTables.GITHUB_ISSUES.state_reason.name: issue_data.get('state_reason', ''),
+                SchemaTables.GITHUB_ISSUES.record_modified_time.name: now_datetime,
             }
         }
 
@@ -71,14 +68,14 @@ class GitHubSeaDBAPI:
             str(_pk)
             for _pk in _pks
         ])
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = "SELECT `_pk`, `issue_id`, `title`, `content`, `state`, `url`, `created_time` " \
             f"FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
     
     def get_comments_by_issue_ids(self, connection_id, issue_ids, limit_for_each_id):
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(connection_id)
         sql = "SELECT `issue_id`, `author`, `content`, `created_time` " \
             f"FROM `{table_name}` WHERE `issue_id` in ({', '.join(issue_ids)}) LIMIT 0, {len(issue_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)

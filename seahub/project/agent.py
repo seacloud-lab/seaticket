@@ -17,7 +17,6 @@ from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.utils.ai_client import (
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
@@ -45,7 +44,7 @@ from seahub.tickets.signals import agent_notify_assignees
 from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
@@ -121,7 +120,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
     
     try:
         runs_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
-            f"`error_message`, `events` FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_RUNS, )}` " \
+            f"`error_message`, `events` FROM `{SchemaTables.AGENT_RUNS.table_name()}` " \
             f"ORDER BY `started_at` DESC LIMIT {offset}, {per_page + 1}"
         runs_result = seadb_api.query_rows(project_uuid, runs_sql)
         runs = runs_result.get('results', [])
@@ -141,7 +140,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
                 details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
-                f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, )}` " \
+                f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
             actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -181,7 +180,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
 def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False):
     try:
         run_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
-            f"`error_message`, `events` FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_RUNS, )}` WHERE `_pk` = {run_id}"
+            f"`error_message`, `events` FROM `{SchemaTables.AGENT_RUNS.table_name()}` WHERE `_pk` = {run_id}"
         run_result = seadb_api.query_rows(project_uuid, run_sql)
         runs = run_result.get('results', [])
         if not runs:
@@ -193,7 +192,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
             details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
-            f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, )}` " \
+            f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
@@ -327,7 +326,7 @@ class AgentActionConfirmView(APIView):
 
             # 1. Get action details from SeaDB
             sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `result`, `suggestion_content` " \
-                f"FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, )}` WHERE `_pk` = {action_id}"
+                f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
 
@@ -394,7 +393,7 @@ class AgentActionConfirmView(APIView):
                     'executed_at': now,
                 }
             }]
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, ), update_data)
+            seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
 
             return Response({
                 'success': execution['success'],
@@ -578,7 +577,7 @@ class AgentActionConfirmView(APIView):
             logger.error(f'Invalid GitHub repository URL in connection {connection_id}: {e}')
             return None
 
-        issues_table = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        issues_table = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = (
             f"SELECT issue_number, author, issue_id, comment_count, labels "
             f"FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
@@ -635,13 +634,13 @@ class AgentActionConfirmView(APIView):
         now_datetime = timezone.now().isoformat()
 
         try:
-            issues_table = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, ctx['connection_id'])
+            issues_table = SchemaTables.GITHUB_ISSUES.table_name(ctx['connection_id'])
             new_comment_count = ctx['comment_count'] + 1
             update_row = {
                 'pk': ctx['record_id'],
                 'row': {
-                    get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'comment_count'): new_comment_count,
-                    get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'record_modified_time'): now_datetime,
+                    SchemaTables.GITHUB_ISSUES.comment_count.name: new_comment_count,
+                    SchemaTables.GITHUB_ISSUES.record_modified_time.name: now_datetime,
                 }
             }
             seadb_api.update_rows(project_uuid, issues_table, [update_row])
@@ -649,14 +648,14 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Failed to update SeaDB GithubIssuesTable for issue {ctx["record_id"]}: {e}')
 
         try:
-            comments_table = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, ctx['connection_id'])
+            comments_table = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(ctx['connection_id'])
             comment_row = {
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'comment_id'): comment_id,
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'issue_id'): ctx['issue_id'],
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'author'): comment_author,
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'content'): reply_content,
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'created_time'): comment_created_at,
-                get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUE_COMMENTS, 'modified_time'): comment_created_at,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.comment_id.name: comment_id,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.issue_id.name: ctx['issue_id'],
+                SchemaTables.GITHUB_ISSUE_COMMENTS.author.name: comment_author,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.content.name: reply_content,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.created_time.name: comment_created_at,
+                SchemaTables.GITHUB_ISSUE_COMMENTS.modified_time.name: comment_created_at,
             }
             seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
         except Exception as e:
@@ -934,19 +933,19 @@ class AgentActionConfirmView(APIView):
 
         now = timezone.now().isoformat()
         ticket_row = {
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'title'): ticket_title,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'content'): ticket_content,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'state'): 'open',
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'substate'): 'New',
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'priority'): 0,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'creator'): username,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'created_time'): now,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'modified_time'): now,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'deleted'): False,
-            get_column_name_from_schema(SchemaTableNames.TICKETS, 'linked_connection_records'): [source_id],
+            SchemaTables.TICKETS.title.name: ticket_title,
+            SchemaTables.TICKETS.content.name: ticket_content,
+            SchemaTables.TICKETS.state.name: 'open',
+            SchemaTables.TICKETS.substate.name: 'New',
+            SchemaTables.TICKETS.priority.name: 0,
+            SchemaTables.TICKETS.creator.name: username,
+            SchemaTables.TICKETS.created_time.name: now,
+            SchemaTables.TICKETS.modified_time.name: now,
+            SchemaTables.TICKETS.deleted.name: False,
+            SchemaTables.TICKETS.linked_connection_records.name: [source_id],
         }
         try:
-            insert_result = seadb_api.insert_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.TICKETS, ), [ticket_row])
+            insert_result = seadb_api.insert_rows(project_uuid, SchemaTables.TICKETS.table_name(), [ticket_row])
             pks = insert_result.get('pks', [])
             if not pks:
                 raise RuntimeError('insert_rows returned no PKs')
@@ -972,7 +971,7 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'Invalid source_id format: {source_id}')
 
         # Fetch issue from SeaDB
-        issues_table = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        issues_table = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = "SELECT `_pk`, `title`, `content`, `linked_ticket` " \
             f"FROM `{issues_table}` WHERE `_pk` = {record_id} LIMIT 1"
         result = seadb_api.query_rows(project_uuid, sql)
@@ -1256,7 +1255,7 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.')
 
         record_detail = self._build_email_thread_record_detail(thread, emails)
-        thread_table = get_table_name_from_schema(SchemaTableNames.THREAD, project_connection.id)
+        thread_table = SchemaTables.THREAD.table_name(project_connection.id)
         thread_id = thread.get('_pk')
 
         ticket_pk, error = self._create_ticket_from_record_detail(
@@ -1302,7 +1301,7 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'Discourse topic #{topic_pk} is already linked to ticket #{linked_ticket}.')
 
         record_detail = self._build_discourse_topic_record_detail(project_connection, topic, replies)
-        topic_table = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, project_connection.id)
+        topic_table = SchemaTables.DISCOURSE_TOPICS.table_name(project_connection.id)
         topic_pk = topic.get('_pk')
 
         ticket_pk, error = self._create_ticket_from_record_detail(
@@ -1341,7 +1340,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
             return self._failed_execution(f'Ticket #{ticket_id} not found')
 
-        assignees = ticket.get(get_column_name_from_schema(SchemaTableNames.TICKETS, 'assignees')) or []
+        assignees = ticket.get(SchemaTables.TICKETS.assignees.name) or []
         if not assignees:
             logger.info(f'Ticket #{ticket_id} has no assignees, skip notify.')
             return self._failed_execution(f'Ticket #{ticket_id} has no assignees')
@@ -1353,7 +1352,7 @@ class AgentActionConfirmView(APIView):
             msg_type=MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
             from_user_id=operator,
             ticket_id=ticket_id,
-            ticket_title=ticket.get(get_column_name_from_schema(SchemaTableNames.TICKETS, 'title')),
+            ticket_title=ticket.get(SchemaTables.TICKETS.title.name),
             message=message,
             workspace_id=project.workspace_id,
             project_name=project.project_name,
@@ -1389,7 +1388,7 @@ class AgentActionUpdateView(APIView):
         try:
             seadb_api = SeaDBAPI()
             sql = "SELECT `run_id`, `status` " \
-                f"FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, )}` WHERE `_pk` = {action_id}"
+                f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
 
@@ -1407,7 +1406,7 @@ class AgentActionUpdateView(APIView):
                 'pk': int(action_id),
                 'row': {'suggestion_content': str(suggestion_content)}
             }]
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, ), update_data)
+            seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
 
             return Response({
                 'success': True,
@@ -1444,7 +1443,7 @@ class AgentActionCancelView(APIView):
 
             # Get action details
             action_sql = "SELECT `run_id`, `status` " \
-                f"FROM `{get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, )}` WHERE `_pk` = {action_id}"
+                f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, action_sql)
             actions = result.get('results', [])
 
@@ -1470,7 +1469,7 @@ class AgentActionCancelView(APIView):
                     'executed_at': now,
                 }
             }]
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.AGENT_ACTIONS, ), update_data)
+            seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
             return Response({
                 'success': True,
                 'action_id': action_id,
@@ -1628,14 +1627,14 @@ def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, gith
 
     base_metadata = seadb_api.get_base_metadata(project_uuid)
     tables = (base_metadata or {}).get('tables') or []
-    table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+    table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
     table_meta = get_current_table_metadata(tables, table_name)
     if not table_meta:
         return 0, [], 0, 0
 
     issue_type_column = None
     for column in table_meta.get('columns') or []:
-        if column.get('name') == get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'):
+        if column.get('name') == SchemaTables.GITHUB_ISSUES.issue_type.name:
             issue_type_column = column
             break
     if not issue_type_column:

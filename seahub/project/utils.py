@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema, get_current_table_metadata
+from seahub.seadb_models.utils import get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
@@ -36,7 +36,7 @@ from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CAC
     ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
 from seahub.avatar.util import get_default_avatar_url
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ def fetch_oauth_email_sender_info(config, access_token):
 def create_connection(project, username, connection_type, name, config):
     from seahub.project.models import ProjectConnections
     from seahub.project.seadb_api import SeaDBAPI
-    from seahub.seadb_models.utils import init_seadb_tables_from_schema, init_general_task_seadb_table
+    from seahub.seadb_models.utils import init_seadb_tables_from_schema
     from seahub.project.connections import add_connection_sync_task
 
     project_uuid = project.uuid
@@ -143,24 +143,26 @@ def create_connection(project, username, connection_type, name, config):
     seadb_api = SeaDBAPI()
     init_table_funcs = {
         ConnectionType.SITE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.WEB_CRAWL], api, project_uuid, connection_id
+            [SchemaTables.WEB_CRAWL], api, project_uuid, connection_id
         ),
         ConnectionType.DISCOURSE_FORUM.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.DISCOURSE_TOPICS, SchemaTableNames.DISCOURSE_REPLIES], api, project_uuid, connection_id
+            [SchemaTables.DISCOURSE_TOPICS, SchemaTables.DISCOURSE_REPLIES], api, project_uuid, connection_id
         ),
         ConnectionType.GITHUB_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.GITHUB_ISSUES, SchemaTableNames.GITHUB_ISSUE_COMMENTS], api, project_uuid, connection_id
+            [SchemaTables.GITHUB_ISSUES, SchemaTables.GITHUB_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
         ConnectionType.SEAFILE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.SEAFILE], api, project_uuid, connection_id
+            [SchemaTables.SEAFILE], api, project_uuid, connection_id
         ),
         ConnectionType.EMAIL.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.EMAIL, SchemaTableNames.THREAD], api, project_uuid, connection_id
+            [SchemaTables.EMAIL, SchemaTables.THREAD], api, project_uuid, connection_id
         ),
         ConnectionType.NOTION.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTableNames.NOTION], api, project_uuid, connection_id
+            [SchemaTables.NOTION], api, project_uuid, connection_id
         ),
-        ConnectionType.GENERAL_TASK.value: init_general_task_seadb_table
+        ConnectionType.GENERAL_TASK.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.GENERAL_TASK, SchemaTables.GENERAL_TASK_USER], api, project_uuid, connection_id
+        ),
     }
 
     if connection_type == ConnectionType.GENERAL_TASK.value and not ENABLE_GENERAL_TASK:
@@ -303,7 +305,7 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK_USER, connection_id)
+    table_name = SchemaTables.GENERAL_TASK_USER.table_name(connection_id)
     try:
         sql = f"SELECT `email`, `name` FROM `{table_name}`"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
@@ -614,12 +616,12 @@ def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids
     merged = []
     seen_names = set()
     for connection_id in connection_ids:
-        table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         table_meta = get_current_table_metadata(tables, table_name)
         if not table_meta:
             continue
         for column in table_meta.get('columns') or []:
-            if column.get('name') != get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'):
+            if column.get('name') != SchemaTables.GITHUB_ISSUES.issue_type.name:
                 continue
             options = ((column.get('data') or {}).get('options')) or []
             for option in options:
@@ -646,7 +648,7 @@ def collect_github_issue_type_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'),
+        SchemaTables.GITHUB_ISSUES.issue_type.name,
         'type_id',
     )
 
@@ -656,7 +658,7 @@ def collect_github_issue_label_options(seadb_api, project_uuid, connection_ids):
         seadb_api,
         project_uuid,
         connection_ids,
-        get_column_name_from_schema(SchemaTableNames.GITHUB_ISSUES, 'issue_type'),
+        SchemaTables.GITHUB_ISSUES.issue_type.name,
         'label_id',
     )
 

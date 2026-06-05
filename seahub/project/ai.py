@@ -524,13 +524,13 @@ class RelatedRecordsView(APIView):
             current_category = ConnectionCategory.from_type(connection.type)
             if current_category == ConnectionCategory.ISSUE:
                 if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                    table_name = get_table_name_from_schema(SchemaTableNames.GITHUB_ISSUES, connection_id)
+                    table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
                 elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
-                    table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
+                    table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
                 elif connection.type == ConnectionType.EMAIL.value:
-                    table_name = get_table_name_from_schema(SchemaTableNames.THREAD, connection_id)
+                    table_name = SchemaTables.THREAD.table_name(connection_id)
                 elif connection.type == ConnectionType.GENERAL_TASK.value:
-                    table_name = get_table_name_from_schema(SchemaTableNames.GENERAL_TASK, connection_id)
+                    table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'

@@ -20,12 +20,11 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.utils.storage import upload_files_to_s3
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg
 from seahub.utils.decorators import require_org_context
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
@@ -90,16 +89,16 @@ class KnowledgeBasesAPIView(APIView):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'title'): title,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'content'): content_text,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'tags'): tag_ids,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'creator'): username,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'created_time'): now_datetime,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'last_modifier'): username,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'modified_time'): now_datetime,
-                get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'deleted'): False,
+                SchemaTables.KNOWLEDGE_BASE.title.name: title,
+                SchemaTables.KNOWLEDGE_BASE.content.name: content_text,
+                SchemaTables.KNOWLEDGE_BASE.tags.name: tag_ids,
+                SchemaTables.KNOWLEDGE_BASE.creator.name: username,
+                SchemaTables.KNOWLEDGE_BASE.created_time.name: now_datetime,
+                SchemaTables.KNOWLEDGE_BASE.last_modifier.name: username,
+                SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
+                SchemaTables.KNOWLEDGE_BASE.deleted.name: False,
              }
-            res = seadb_api.insert_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, ), [row])
+            res = seadb_api.insert_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
@@ -115,16 +114,16 @@ class KnowledgeBasesAPIView(APIView):
             new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'knowledgebase', int(insert_row_pk))
             updated_content = replace_file_url_in_content(content_text, new_file_urls_dict)
             try:
-                seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, ), [{
+                seadb_api.update_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [{
                     'pk': int(insert_row_pk),
                     'row': {
-                        get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'content'): updated_content,
+                        SchemaTables.KNOWLEDGE_BASE.content.name: updated_content,
                     }
                 }])
-                row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'content')] = updated_content
+                row[SchemaTables.KNOWLEDGE_BASE.content.name] = updated_content
             except Exception as e:
                 logger.error(e)
-                seadb_api.delete_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, ), [int(insert_row_pk)])
+                seadb_api.delete_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [int(insert_row_pk)])
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
@@ -218,13 +217,13 @@ class KnowledgeBasesAPIView(APIView):
             update_rows.append({
                 'pk': r_id,
                 'row': {
-                    get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'deleted'): True,
-                    get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'last_modifier'): username,
-                    get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'modified_time'): now_datetime,
+                    SchemaTables.KNOWLEDGE_BASE.deleted.name: True,
+                    SchemaTables.KNOWLEDGE_BASE.last_modifier.name: username,
+                    SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
                 }
             })
         try:
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, ), update_rows)
+            seadb_api.update_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -278,14 +277,14 @@ class KnowledgeBaseAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         if is_update_tags:
-            row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'tags')] = tags
+            row[SchemaTables.KNOWLEDGE_BASE.tags.name] = tags
 
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
                 error_msg = 'title invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'title')] = title
+            row[SchemaTables.KNOWLEDGE_BASE.title.name] = title
 
         if 'content' in request.data:
             raw_content = request.data.get('content')
@@ -307,7 +306,7 @@ class KnowledgeBaseAPIView(APIView):
                     logger.error(e)
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'content')] = content_text
+            row[SchemaTables.KNOWLEDGE_BASE.content.name] = content_text
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -330,8 +329,8 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'last_modifier')] = username
-        row[get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'modified_time')] = datetime.datetime.now(datetime.UTC).isoformat()
+        row[SchemaTables.KNOWLEDGE_BASE.last_modifier.name] = username
+        row[SchemaTables.KNOWLEDGE_BASE.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
 
         update_rows = [
             {
@@ -340,7 +339,7 @@ class KnowledgeBaseAPIView(APIView):
             }
         ]
         try:
-            seadb_api.update_rows(project_uuid, get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, ), update_rows)
+            seadb_api.update_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), update_rows)
             row.update({'_pk': record.get('_pk')})
         except Exception as e:
             logger.error(e)
@@ -436,8 +435,8 @@ class KnowledgeBasesTrashAPIView(APIView):
                 update_rows.append({
                     'pk': int(r_id),
                     'row': {
-                        get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'deleted'): False,
-                        get_column_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, 'modified_time'): now_datetime,
+                        SchemaTables.KNOWLEDGE_BASE.deleted.name: False,
+                        SchemaTables.KNOWLEDGE_BASE.modified_time.name: now_datetime,
                     }
                 })
             if update_rows:

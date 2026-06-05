@@ -13,14 +13,13 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, batch_delete_select_option, \
     get_column_from_columns_by_name
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.portal.portal_utils import get_portal_issue_counts_group_by_column_name, filter_portal_issues_by_select
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
@@ -97,7 +96,7 @@ class PortalIssueTypesAPIView(APIView):
         # main
         seadb_api = SeaDBAPI()
         base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ))
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
         table_id = table_meta.get('id')
         type_column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
         column_data = type_column.get('data') or {}
@@ -148,7 +147,7 @@ class PortalIssueTypesAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ))
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), type_ids)
         except Exception as e:
@@ -189,7 +188,7 @@ class PortalIssueTypeAPIView(APIView):
             type_option = None
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ))
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             table_columns = table_meta.get('columns')
             column = get_column_from_columns_by_name(table_columns, 'type')
             column_data = column.get('data') or {}
@@ -250,7 +249,7 @@ class PortalIssueTypeAPIView(APIView):
             type_option = None
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ))
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
             column_data = column.get('data') or {}
             options = column_data.get('options', []) or []
@@ -308,7 +307,7 @@ class PortalIssueTypeAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), get_table_name_from_schema(SchemaTableNames.PORTAL_ISSUES, ))
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
             table_id = table_meta.get('id')
             column_key = column.get('key')

@@ -8,13 +8,11 @@ from seahub.utils import mq
 from seahub.utils import uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
 
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
-
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
-TABLE_KNOWLEDGE_BASE = get_table_name_from_schema(SchemaTableNames.KNOWLEDGE_BASE, )
+TABLE_KNOWLEDGE_BASE = SchemaTables.KNOWLEDGE_BASE.table_name()
 
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):

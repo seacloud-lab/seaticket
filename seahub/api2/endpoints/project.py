@@ -28,7 +28,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import keyword_search, vector_search_with_text
 
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
@@ -209,10 +209,10 @@ class ProjectsView(APIView):
         try:
             seadb_api = SeaDBAPI()
             seadb_api.create_base(project.uuid)
-            init_seadb_tables_from_schema([SchemaTableNames.TICKETS, SchemaTableNames.TICKET_COMMENTS, SchemaTableNames.TICKET_ACTIVITIES], seadb_api, project.uuid)
-            init_seadb_tables_from_schema([SchemaTableNames.KNOWLEDGE_BASE], seadb_api, project.uuid)
-            init_seadb_tables_from_schema([SchemaTableNames.TAG], seadb_api, project.uuid)
-            init_seadb_tables_from_schema([SchemaTableNames.AGENT_RUNS, SchemaTableNames.AGENT_ACTIONS], seadb_api, project.uuid)
+            init_seadb_tables_from_schema([SchemaTables.TICKETS, SchemaTables.TICKET_COMMENTS, SchemaTables.TICKET_ACTIVITIES], seadb_api, project.uuid)
+            init_seadb_tables_from_schema([SchemaTables.KNOWLEDGE_BASE], seadb_api, project.uuid)
+            init_seadb_tables_from_schema([SchemaTables.TAG], seadb_api, project.uuid)
+            init_seadb_tables_from_schema([SchemaTables.AGENT_RUNS, SchemaTables.AGENT_ACTIONS], seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

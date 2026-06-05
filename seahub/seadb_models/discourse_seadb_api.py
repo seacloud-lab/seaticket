@@ -4,11 +4,7 @@ import datetime
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
-
-
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
-
-from seahub.seadb_models.models import SchemaTableNames
+from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +15,7 @@ class DiscourseSeaDBAPI:
 
     def get_topics_by_connection_id(self, connection_id, start, limit):
         """Retrieve all topics for the specified connection_id."""
-        table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
         sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `modified_time`, `created_time`, `resolved`, `linked_ticket` FROM `{table_name}` WHERE (`deleted` = False OR `deleted` IS NULL) LIMIT {limit} OFFSET {start}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -27,7 +23,7 @@ class DiscourseSeaDBAPI:
         return []
 
     def get_topic_by_pk(self, connection_id, _pk):
-        table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
         sql = f"SELECT `_pk`, `title`, `topic_id`, `slug`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response and response['results']:
@@ -36,7 +32,7 @@ class DiscourseSeaDBAPI:
 
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""
-        table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, connection_id)
+        table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
         sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -48,13 +44,13 @@ class DiscourseSeaDBAPI:
             str(_pk)
             for _pk in _pks
         ])
-        table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
         sql = f"SELECT `_pk`, `topic_id`, `title`, `slug`, `created_time` FROM `{table_name}` WHERE `_pk` in ({_pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
     def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
-        table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, connection_id)
+        table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
         sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         replies = response.get('results', [])
@@ -146,16 +142,16 @@ class DiscourseSeaDBAPI:
 
     def add_reply(self, project_uuid, connection_id, topic_id, reply_data):
         now = datetime.datetime.now(datetime.UTC).isoformat()
-        replies_table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, connection_id)
-        topics_table_name = get_table_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, connection_id)
+        replies_table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
+        topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
 
         reply_row = {
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'topic_id'): topic_id,
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'post_number'): reply_data.get('post_number', 0),
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'content'): reply_data.get('content', ''),
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'author'): reply_data.get('author', ''),
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'modified_time'): now,
-            get_column_name_from_schema(SchemaTableNames.DISCOURSE_REPLIES, 'accepted_answer'): False,
+            SchemaTables.DISCOURSE_REPLIES.topic_id.name: topic_id,
+            SchemaTables.DISCOURSE_REPLIES.post_number.name: reply_data.get('post_number', 0),
+            SchemaTables.DISCOURSE_REPLIES.content.name: reply_data.get('content', ''),
+            SchemaTables.DISCOURSE_REPLIES.author.name: reply_data.get('author', ''),
+            SchemaTables.DISCOURSE_REPLIES.modified_time.name: now,
+            SchemaTables.DISCOURSE_REPLIES.accepted_answer.name: False,
         }
 
         result = self.seadb_api.insert_rows(project_uuid, replies_table_name, [reply_row])
@@ -164,7 +160,7 @@ class DiscourseSeaDBAPI:
         self.seadb_api.update_rows(project_uuid, topics_table_name, [{
             'pk': int(reply_data.get('topic_pk', 0)),
             'row': {
-                get_column_name_from_schema(SchemaTableNames.DISCOURSE_TOPICS, 'record_modified_time'): now,
+                SchemaTables.DISCOURSE_TOPICS.record_modified_time.name: now,
             }
         }])
 
