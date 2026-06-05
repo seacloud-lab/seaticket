@@ -51,7 +51,7 @@ from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
-    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
+    check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, record_ticket_activities
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI
@@ -1411,6 +1411,7 @@ class ProjectConnectionRecordsView(APIView):
                 pass
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created remotely but local sync failed.')
 
+        activities = []
         if linked_ticket is not None:
             try:
                 ticket, _ = get_ticket(seadb_api, project_uuid, linked_ticket)
@@ -1431,13 +1432,25 @@ class ProjectConnectionRecordsView(APIView):
                 }])
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
                 row_data['linked_ticket'] = linked_ticket
+                activity_log = (
+                    'task_created',
+                    'linked_connection_records',
+                    None,
+                    {
+                        'task_id': row_data.get('_pk'),
+                        'task_title': row_data.get('title'),
+                        'connection_id': int(connection_id),
+                        'connection_name': project_connection.name,
+                    }
+                )
+                activities = record_ticket_activities(seadb_api, project_uuid, ticket.get('_pk'), username, [activity_log])
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             except Exception as e:
                 logger.error(f'link created general task to ticket error: {e}')
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created but link sync failed.')
 
-        return Response({'row': row_data}, status=status.HTTP_201_CREATED)
+        return Response({'row': row_data, 'activities': activities}, status=status.HTTP_201_CREATED)
 
     @require_org_context
     def put(self, request, project_uuid, connection_id):

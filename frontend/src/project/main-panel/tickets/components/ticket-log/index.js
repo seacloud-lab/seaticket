@@ -14,8 +14,11 @@ import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '
 import { getRowById } from '@/sea-metadata/utils/row';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { getInternalNetworkAddress } from '@/project/utils';
 
 import './index.css';
+
+const { workspaceID, projectName } = window.app.pageOptions;
 
 const LOG_TYPE = {
   PRIORITY_CHANGED: 'priority_changed',
@@ -32,6 +35,8 @@ const LOG_TYPE = {
   ASSIGNEES_ADDED: 'assignees_added',
   ASSIGNEES_REMOVED: 'assignees_removed',
   ASSIGNEES_CHANGED: 'assignees_changed',
+
+  TASK_CREATED: 'task_created',
 
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
@@ -59,6 +64,8 @@ const LOG_ICONS = {
   [LOG_TYPE.ASSIGNEES_ADDED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
+
+  [LOG_TYPE.TASK_CREATED]: 'dot-circle-stroked',
 
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
@@ -436,6 +443,27 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
               />
             )}
           </>
+        );
+      }
+      case LOG_TYPE.TASK_CREATED: {
+        const taskTitle = new_value?.task_title;
+        const connectionName = new_value?.connection_name;
+        const taskId = new_value?.task_id;
+        const taskUrl = taskId && new_value?.connection_id ? getInternalNetworkAddress(
+          CONNECTION_TYPE.GENERAL_TASK,
+          taskId,
+          { workspaceID, projectName, connectionID: new_value.connection_id }
+        ) : '';
+        return (
+          <span>
+            {gettext('created task')}{' '}
+            {taskUrl ? (
+              <a href={taskUrl} target="_blank" rel="noreferrer" className="seaqa-log-inline-link">{taskTitle}</a>
+            ) : (
+              <span>{taskTitle}</span>
+            )}
+            {connectionName ? <>{' '}{gettext('in')}{' '}<span>{connectionName}</span></> : null}
+          </span>
         );
       }
       case LOG_TYPE.GITHUB_ISSUE_CLOSED: {

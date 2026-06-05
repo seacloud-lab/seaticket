@@ -219,15 +219,14 @@ const Ticket = ({
     setIsShowCreateTaskDialog(true);
   }, []);
 
-  const handleTaskCreated = useCallback(({ task, connection }) => {
-    if (!ticket) return;
+  const handleTaskCreated = useCallback(({ task, connection, activities = [] }) => {
+    if (!ticket) return Promise.resolve();
 
     const newValueKey = `${connection.id}_${task._pk}`;
     const oldValue = ticket.linked_connection_records || [];
     const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
-
     // update cache
-    const table = getTableByName(TICKET_TABLE_NAME);
+    const table = getTableByName(TICKET_TABLE_NAME) || { key_column_map: {} };
     const columns = Object.values(table.key_column_map);
     if (columns.length > 0) {
       const linkedConnectionRecordsColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
@@ -244,6 +243,11 @@ const Ticket = ({
 
     setTicket(deepCopy(newTicket));
     setLinkedRecords((prev) => ({ ...prev, [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }));
+
+    if (activities.length > 0) {
+      setActivities(prevActivities => [...prevActivities, ...activities]);
+    }
+    return Promise.resolve();
   }, [ticket, ticketID, getTableByName, insertRowByLink]);
 
   const createMoreOptions = useCallback(() => {
