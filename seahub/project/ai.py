@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from urllib.parse import quote
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -25,34 +24,12 @@ from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
-from seahub.settings import SITE_ROOT
+from seahub.project.utils import build_connection_record_related_url, build_portal_issue_related_url
 from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
-
-
-def build_project_page_related_url(request, project, page_path) -> str:
-    site_root = SITE_ROOT.rstrip('/')
-    project_name = quote(project.project_name, safe='')
-    path = (
-        f'{site_root}/workspace/{project.workspace_id}/project/{project_name}/'
-        f'{page_path.lstrip("/")}'
-    )
-    return request.build_absolute_uri(path)
-
-
-def build_connection_record_related_url(request, project, connection_id, record_id):
-    return build_project_page_related_url(
-        request, project, f'connections/{connection_id}/records/{record_id}/'
-    )
-
-
-def build_portal_issue_related_url(request, project, issue_id):
-    return build_project_page_related_url(
-        request, project, f'portal-issues/{issue_id}/'
-    )
 
 
 class ConvertRecordToTicket(APIView):

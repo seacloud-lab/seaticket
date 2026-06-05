@@ -422,6 +422,10 @@
   color: #212529;
 }
 
+.suggestion-tool-result .agent-ticket-result-link {
+  color: #ff8000;
+}
+
 .status-completed svg {
   color: #5EBA00;
   width: 12px;
