@@ -67,6 +67,7 @@
 .seaqa-ai-chat-attachment.image img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 /* image loading */
@@ -96,9 +97,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 4px;
   color: #fff;
+  padding-bottom: 8px;
 }
 
 .seaqa-ai-chat-attachment.image .seaqa-ai-chat-attachment-upload-failed .seaqa-icon-svg-refresh {
