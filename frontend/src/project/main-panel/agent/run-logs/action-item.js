@@ -8,6 +8,41 @@ import AIReply from '@/project/components/ai-reply';
 
 const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
+const formatResultText = (result) => {
+  if (!result) return '';
+  if (typeof result === 'string') return result;
+  return JSON.stringify(result);
+};
+
+const parseActionResult = (result) => {
+  if (!result) return { message: '' };
+
+  if (typeof result === 'object') {
+    return {
+      message: result.message || result.result || JSON.stringify(result),
+      ticket: result.ticket,
+    };
+  }
+
+  if (typeof result !== 'string') {
+    return { message: String(result) };
+  }
+
+  try {
+    const parsed = JSON.parse(result);
+    if (parsed && typeof parsed === 'object') {
+      return {
+        message: parsed.message || result,
+        ticket: parsed.ticket,
+      };
+    }
+  } catch {
+    return { message: result };
+  }
+
+  return { message: result };
+};
+
 const ActionItem = React.memo(({
   action,
   runId,
@@ -76,6 +111,7 @@ const ActionItem = React.memo(({
   }, [suggestion_content, status, updatePreviewMask]);
 
   const formatErrorMessage = (errorContent) => {
+    errorContent = formatResultText(errorContent);
     if (!errorContent || !errorContent.includes('geminiException') || !errorContent.includes('Quota exceeded')) {
       return <div>{errorContent}</div>;
     }
@@ -111,6 +147,24 @@ const ActionItem = React.memo(({
       console.warn('Failed to parse error JSON:', e);
     }
     return <div>{errorContent}</div>;
+  };
+
+  const renderTicketLink = (ticket) => {
+    if (!ticket?.ticket_url) return null;
+    const linkText = ticket.ticket_title || `${gettext('Ticket')} #${ticket.ticket_pk}`;
+    return (
+      <>
+        <a
+          className="agent-ticket-result-link"
+          href={ticket.ticket_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {linkText}
+        </a>
+      </>
+    );
   };
 
   // Don't render SUMMARY and TOOL_CALL type actions
@@ -197,6 +251,7 @@ const ActionItem = React.memo(({
         const isCancelled = status === ACTION_STATUS.CANCELLED;
         const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
         const showHeaderActions = !isCancelled && (canEdit || hasContent);
+        const parsedResult = parseActionResult(result);
         return (
           <div className="action-content action-content-suggestion">
             <div className="action-label">{gettext('Suggestion')}</div>
@@ -207,7 +262,7 @@ const ActionItem = React.memo(({
                   {suggestion_text && (
                     <span className="suggestion-cancelled-text">{suggestion_text}</span>
                   )}
-                  <span className="suggestion-cancelled-by">{result}</span>
+                  <span className="suggestion-cancelled-by">{parsedResult.message}</span>
                 </div>
               )}
               {!isCancelled && (
@@ -273,7 +328,11 @@ const ActionItem = React.memo(({
                   <span className="status-completed">
                     <Icon symbol="check-circle-filled" />
                   </span>
-                  <span className="result-text">{result}</span>
+                  <span className="result-text">
+                    {renderTicketLink(parsedResult.ticket)}
+                    <span>. </span>
+                    {parsedResult.message}
+                  </span>
                 </div>
               )}
               {isFailedStatus && (
@@ -284,7 +343,9 @@ const ActionItem = React.memo(({
                   <span className="status-failed">
                     <Icon symbol="close" />
                   </span>
-                  <span className="result-text">{result}</span>
+                  <span className="result-text">
+                    {parsedResult.message}
+                  </span>
                 </div>
               )}
             </div>

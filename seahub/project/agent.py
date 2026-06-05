@@ -36,6 +36,7 @@ from seahub.project.utils import (
     collect_github_issue_label_options,
     get_current_table_metadata,
     persist_project_connection_config,
+    build_ticket_related_url,
 )
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
@@ -358,15 +359,15 @@ class AgentActionConfirmView(APIView):
                     )
                 elif source_type == ConnectionType.GITHUB_ISSUE.value:
                     execution = self._execute_github_issue_action(
-                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_text, suggestion_content, username
+                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_text, suggestion_content, username, request
                     )
                 elif source_type == ConnectionType.DISCOURSE_FORUM.value:
                     execution = self._execute_discourse_topic_action(
-                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
+                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username, request
                     )
                 elif source_type == ConnectionType.EMAIL.value:
                     execution = self._execute_email_action(
-                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
+                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username, request
                     )
                 else:
                     logger.warning(f'Unknown source_type {source_type!r} for action {action_id}')
@@ -463,7 +464,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
-    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_text, suggestion_content, username):
+    def _execute_github_issue_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_text, suggestion_content, username, request):
         """Dispatch GitHub issue actions to the appropriate handler."""
         if tool_name == 'suggest_reply':
             return self._execute_github_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
@@ -472,26 +473,26 @@ class AgentActionConfirmView(APIView):
         elif tool_name == 'suggest_assign_labels':
             return self._execute_github_suggest_assign_labels(seadb_api, project_uuid, source_id, suggestion_text)
         elif tool_name == 'suggest_create_ticket':
-            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username)
+            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, username, request)
         else:
             logger.warning(f'Unknown github_issue tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
-    def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
+    def _execute_discourse_topic_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username, request):
         if tool_name == 'suggest_reply':
             return self._execute_discourse_suggest_reply(seadb_api, project, project_uuid, source_id, suggestion_content, username)
         elif tool_name == 'suggest_create_ticket':
-            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username)
+            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, username, request)
         else:
             logger.warning(f'Unknown discourse_topic tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
-    def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
+    def _execute_email_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username, request):
         """Dispatch email-thread actions to the appropriate handler."""
         if tool_name == 'suggest_reply':
             return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         elif tool_name == 'suggest_create_ticket':
-            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username)
+            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username, request)
         else:
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
@@ -915,6 +916,7 @@ class AgentActionConfirmView(APIView):
         record_detail,
         title,
         source_label,
+        request,
     ):
         org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
         params = {
@@ -956,9 +958,20 @@ class AgentActionConfirmView(APIView):
             logger.error(f'Failed to insert ticket for {source_label} {source_id}: {e}')
             return None, f'Failed to create ticket: {e}'
 
-        return ticket_pk, None
+        ticket = {
+            'ticket_pk': ticket_pk,
+            'ticket_title': ticket_title,
+            'ticket_url': build_ticket_related_url(request, project, ticket_pk),
+        }
+        return ticket, None
 
-    def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+    def _ticket_created_execution(self, message, ticket):
+        return self._successful_execution(json.dumps({
+            'message': message,
+            'ticket': ticket,
+        }, ensure_ascii=False))
+
+    def _execute_github_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request):
         """Create an internal ticket from a GitHub issue.
 
         Steps:
@@ -995,7 +1008,7 @@ class AgentActionConfirmView(APIView):
             f"Body: {body_content[:3000]}..."
         )
 
-        ticket_pk, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket_from_record_detail(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
@@ -1004,9 +1017,11 @@ class AgentActionConfirmView(APIView):
             record_detail=record_detail,
             title=title,
             source_label=ConnectionType.GITHUB_ISSUE.value,
+            request=request,
         )
         if error:
             return self._failed_execution(error)
+        ticket_pk = ticket['ticket_pk']
 
         try:
             seadb_api.update_rows(
@@ -1020,7 +1035,10 @@ class AgentActionConfirmView(APIView):
             )
 
         logger.info(f'Created ticket #{ticket_pk} from GitHub issue {source_id}')
-        return self._successful_execution(f'Ticket #{ticket_pk} created from GitHub issue #{record_id}.')
+        return self._ticket_created_execution(
+            f'Ticket #{ticket_pk} created from GitHub issue #{record_id}.',
+            ticket,
+        )
 
     def _parse_connection_source_id(self, source_id, source_type):
         try:
@@ -1241,7 +1259,7 @@ class AgentActionConfirmView(APIView):
 
         return '\n'.join(lines).strip()
 
-    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1260,7 +1278,7 @@ class AgentActionConfirmView(APIView):
         thread_table = SchemaTables.THREAD.table_name(project_connection.id)
         thread_id = thread.get('_pk')
 
-        ticket_pk, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket_from_record_detail(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
@@ -1269,9 +1287,11 @@ class AgentActionConfirmView(APIView):
             record_detail=record_detail,
             title=thread.get('title', ''),
             source_label=ConnectionType.EMAIL.value,
+            request=request,
         )
         if error:
             return self._failed_execution(error)
+        ticket_pk = ticket['ticket_pk']
 
         try:
             seadb_api.update_rows(
@@ -1285,9 +1305,12 @@ class AgentActionConfirmView(APIView):
             )
 
         logger.info(f'Created ticket #{ticket_pk} from email thread {source_id}')
-        return self._successful_execution(f'Ticket #{ticket_pk} created from email thread #{thread_id}.')
+        return self._ticket_created_execution(
+            f'Ticket #{ticket_pk} created from email thread #{thread_id}.',
+            ticket,
+        )
 
-    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, username):
+    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request):
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
         if connection_id is None or topic_pk is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1306,7 +1329,7 @@ class AgentActionConfirmView(APIView):
         topic_table = SchemaTables.DISCOURSE_TOPICS.table_name(project_connection.id)
         topic_pk = topic.get('_pk')
 
-        ticket_pk, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket_from_record_detail(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
@@ -1315,9 +1338,11 @@ class AgentActionConfirmView(APIView):
             record_detail=record_detail,
             title=topic.get('title', ''),
             source_label=ConnectionType.DISCOURSE_FORUM.value,
+            request=request,
         )
         if error:
             return self._failed_execution(error)
+        ticket_pk = ticket['ticket_pk']
 
         try:
             seadb_api.update_rows(
@@ -1331,7 +1356,10 @@ class AgentActionConfirmView(APIView):
             )
 
         logger.info(f'Created ticket #{ticket_pk} from discourse topic {source_id}')
-        return self._successful_execution(f'Ticket #{ticket_pk} created from discourse topic #{topic_pk}.')
+        return self._ticket_created_execution(
+            f'Ticket #{ticket_pk} created from discourse topic #{topic_pk}.',
+            ticket,
+        )
 
     def _execute_notify_assignee(self, seadb_api, project, project_uuid, ticket_id, message, operator):
         """

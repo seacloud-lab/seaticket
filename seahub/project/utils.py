@@ -4,7 +4,7 @@ import logging
 import hashlib
 import requests
 import json
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, quote
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
@@ -37,7 +37,7 @@ from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CAC
     ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
 from seahub.avatar.util import get_default_avatar_url
 from seahub.utils import mq
-
+from seahub.settings import SITE_ROOT
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -686,7 +686,6 @@ def send_connection_data_event(project_uuid, connection_id, record_id, source_ty
     except Exception as e:
         logger.error('send connection data event failed, error: %s', e)
 
-
 def update_github_connection_installation_id(project_uuid, installation_id):
     sql = """
     UPDATE project_connection 
@@ -695,3 +694,28 @@ def update_github_connection_installation_id(project_uuid, installation_id):
     """
     with connection.cursor() as cur:
         cur.execute(sql, [installation_id, uuid_str_to_32_chars(project_uuid)])
+
+
+def build_project_page_related_url(request, project, page_path) -> str:
+    site_root = SITE_ROOT.rstrip('/')
+    project_name = quote(project.project_name, safe='')
+    path = (
+        f'{site_root}/workspace/{project.workspace_id}/project/{project_name}/'
+        f'{page_path.lstrip("/")}'
+    )
+    return request.build_absolute_uri(path)
+
+def build_connection_record_related_url(request, project, connection_id, record_id):
+    return build_project_page_related_url(
+        request, project, f'connections/{connection_id}/records/{record_id}/'
+    )
+
+def build_portal_issue_related_url(request, project, issue_id):
+    return build_project_page_related_url(
+        request, project, f'portal-issues/{issue_id}/'
+    )
+
+def build_ticket_related_url(request, project, ticket_id):
+    return build_project_page_related_url(
+        request, project, f'tickets/{ticket_id}/'
+    )
