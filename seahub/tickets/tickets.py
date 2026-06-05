@@ -24,11 +24,13 @@ from seahub.project.models import ProjectConnections
 from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, check_ticket_permission, \
-    check_comment_permission, get_current_table_metadata
+    check_comment_permission, get_current_table_metadata, \
+    get_connection_general_task_related_users
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
-    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, ConnectionType
+    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
+    GENERAL_TASK_ACTIVITY_TYPES, ConnectionType
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.project.seadb_api import SeaDBAPI
@@ -1725,6 +1727,7 @@ class TicketActivitiesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         activities_list = []
+        general_task_related_users = {}
         for a in activities:
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             field_name = detail.get('field_name', '')
@@ -1739,6 +1742,9 @@ class TicketActivitiesAPIView(APIView):
             topic_url = None
             thread_id = None
             thread_title = None
+            task_id = None
+            task_title = None
+            connection_name = None
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
                 field_key = activity_type
                 issue_number = detail.get('issue_number')
@@ -1749,9 +1755,18 @@ class TicketActivitiesAPIView(APIView):
                 topic_url = detail.get('topic_url', '')
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 field_key = activity_type
-                connection_id = detail.get('connection_id')
                 thread_id = detail.get('thread_id')
                 thread_title = detail.get('thread_title', '')
+            elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
+                field_key = activity_type
+                task_id = detail.get('task_id')
+                task_title = detail.get('task_title', '')
+                connection_name = detail.get('connection_name', '')
+                connection_id = detail.get('connection_id')
+                if connection_id and connection_id not in general_task_related_users_cache:
+                    general_task_related_users_cache[connection_id] = get_connection_general_task_related_users(
+                        project_uuid, connection_id
+                    )
             elif field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
                 substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
@@ -1794,7 +1809,8 @@ class TicketActivitiesAPIView(APIView):
                     ]
             if activity_type not in GITHUB_ISSUE_ACTIVITY_TYPES and \
                     activity_type not in DISCOURSE_TOPIC_ACTIVITY_TYPES and \
-                    activity_type not in EMAIL_ACTIVITY_TYPES:
+                    activity_type not in EMAIL_ACTIVITY_TYPES and \
+                    activity_type not in GENERAL_TASK_ACTIVITY_TYPES:
                 if field_name == 'state_substate':
                     state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
                     substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
@@ -1809,6 +1825,7 @@ class TicketActivitiesAPIView(APIView):
             activity_item = {
                 'id': a.get('_pk'),
                 'ticket_id': a.get('ticket_id'),
+                'connection_id': detail.get('connection_id'),
                 'activity_type': a.get('activity_type'),
                 'field_key': field_key,
                 'old_value': old_value,
@@ -1823,9 +1840,13 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
             elif activity_type in EMAIL_ACTIVITY_TYPES:
-                activity_item['connection_id'] = connection_id
                 activity_item['thread_id'] = thread_id
                 activity_item['thread_title'] = thread_title
+            elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
+                activity_item['task_id'] = task_id
+                activity_item['task_title'] = task_title
+                activity_item['connection_name'] = connection_name
+                activity_item['related_users'] = general_task_related_users_cache.get(detail.get('connection_id')) or []
             activities_list.append(activity_item)
 
         return Response({

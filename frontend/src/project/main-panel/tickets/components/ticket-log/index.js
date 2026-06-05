@@ -33,7 +33,8 @@ const LOG_TYPE = {
   ASSIGNEES_REMOVED: 'assignees_removed',
   ASSIGNEES_CHANGED: 'assignees_changed',
 
-  TASK_CREATED: 'task_created',
+  GENERAL_TASK_CREATED: 'general_task_created',
+  GENERAL_TASK_UPDATED: 'general_task_updated',
 
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
@@ -62,7 +63,8 @@ const LOG_ICONS = {
   [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
 
-  [LOG_TYPE.TASK_CREATED]: 'dot-circle-stroked',
+  [LOG_TYPE.GENERAL_TASK_CREATED]: 'dot-circle-stroked',
+  [LOG_TYPE.GENERAL_TASK_UPDATED]: 'dot-circle-stroked',
 
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
@@ -143,6 +145,25 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return null;
   };
 
+  const renderGeneralTaskRef = ({ connection_id, task_id, task_title, new_value } = {}) => {
+    const taskId = task_id || new_value?.task_id;
+    const taskTitle = task_title || new_value?.task_title || new_value?.title || '';
+    if (!taskId) return taskTitle ? <span>{taskTitle}</span> : null;
+    const label = taskTitle || `#${taskId}`;
+    if (projectUuid && connection_id) {
+      return (
+        <LinkedRecord
+          record={{ type: CONNECTION_TYPE.GENERAL_TASK, title: taskTitle, _id: taskId, connection_id }}
+          projectUuid={projectUuid}
+          permission={permission}
+        >
+          {label}
+        </LinkedRecord>
+      );
+    }
+    return <span>{label}</span>;
+  };
+
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value, thread_id, thread_title } = activity;
     const asyncCollaboratorProps = {
@@ -166,23 +187,62 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       category_id: gettext('category'),
       resolved: gettext('resolved'),
     };
-    const fmtVal = (val) => {
-      if (val === null || val === undefined) return null;
-      if (Array.isArray(val)) return val.join(', ') || null;
+    const generalTaskLabelMap = {
+      title: gettext('title'),
+      status: gettext('status'),
+      size: gettext('size'),
+      priority: gettext('priority'),
+      assignees: gettext('assignees'),
+      participants: gettext('participants'),
+      version: gettext('version'),
+      others: gettext('others'),
+      content: gettext('content'),
+      description: gettext('description'),
+      due_date: gettext('due date'),
+    };
+    const isEmptyValue = (val) => {
+      if (val === null || val === undefined) return true;
+      if (Array.isArray(val)) return val.length === 0;
+      return String(val) === '';
+    };
+    const renderTaskUserList = (emails, userMap, removed = false) => {
+      if (!Array.isArray(emails) || emails.length === 0) return null;
+      return (
+        <>
+          {emails.map((email, index) => (
+            <React.Fragment key={email}>
+              {index > 0 ? ', ' : ''}
+              <span className={removed ? 'seaqa-log-removed' : ''} title={email}>
+                {userMap[email] || email}
+              </span>
+            </React.Fragment>
+          ))}
+        </>
+      );
+    };
+    const renderValueNode = (field, val, removed = false, taskUserMap = null) => {
+      if (isEmptyValue(val)) return null;
+      if (taskUserMap && (field === 'assignees' || field === 'participants')) {
+        return renderTaskUserList(val, taskUserMap, removed);
+      }
+      if (Array.isArray(val)) return val.join(', ');
       if (typeof val === 'boolean') return val ? gettext('yes') : gettext('no');
+      if (typeof val === 'object') return JSON.stringify(val);
       return String(val) || null;
     };
-    const renderChangeNodes = (oldVal, newVal, labelMap) => {
+    const renderChangeNodes = (oldVal, newVal, labelMap, taskUserMap = null) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
       const newObj = (newVal && typeof newVal === 'object') ? newVal : {};
       const allFields = [...new Set([...Object.keys(newObj), ...Object.keys(oldObj)])];
       return allFields.map(field => {
         const label = labelMap[field] || field;
-        const o = fmtVal(oldObj[field]);
-        const n = fmtVal(newObj[field]);
-        if (!o && n) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
-        if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
-        if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
+        const hasOld = !isEmptyValue(oldObj[field]);
+        const hasNew = !isEmptyValue(newObj[field]);
+        const o = renderValueNode(field, oldObj[field], true, taskUserMap);
+        const n = renderValueNode(field, newObj[field], false, taskUserMap);
+        if (!hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
+        if (hasOld && !hasNew) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
+        if (hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
         return null;
       }).filter(Boolean);
     };
@@ -449,28 +509,29 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
 
       // linked info
-      case LOG_TYPE.TASK_CREATED: {
-        const {
-          task_title: taskTitle,
-          task_id: taskId,
-          connection_name: connectionName,
-          connection_id: connectionId
-        } = new_value || {};
-        const isValid = taskId && connectionId;
+      case LOG_TYPE.GENERAL_TASK_CREATED: {
+        const ref = renderGeneralTaskRef(activity);
         return (
-          <span>
-            {gettext('created task')}{' '}
-            {isValid ? (
-              <LinkedRecord
-                record={{ type: CONNECTION_TYPE.GENERAL_TASK, title: taskTitle, _id: taskId, connection_id: connectionId }}
-                projectUuid={projectUuid}
-                permission={permission}
-              />
-            ) : (
-              <span>{taskTitle}</span>
-            )}
-            {connectionName ? <>{' '}{gettext('in')}{' '}<span>{connectionName}</span></> : null}
-          </span>
+          <span>{gettext('General task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
+        );
+      }
+      case LOG_TYPE.GENERAL_TASK_UPDATED: {
+        const ref = renderGeneralTaskRef(activity);
+        const taskUserMap = (activity.related_users || []).reduce((map, user) => {
+          if (user?.email && user?.name) {
+            map[user.email] = user.name;
+          }
+          return map;
+        }, {});
+        const changeNodes = renderChangeNodes(old_value, new_value, generalTaskLabelMap, taskUserMap);
+        if (changeNodes.length === 0) {
+          return <span>{gettext('updated general task')}{ref ? <>{' '}{ref}</> : null}</span>;
+        }
+        return (
+          <>
+            {gettext('General task')}{ref ? <>{' '}{ref}</> : null}
+            {changeNodes}
+          </>
         );
       }
 
@@ -568,7 +629,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <IconButton size={{ btn: 24, icon: 14 }} className="seaqa-log-btn no-hover-bg" icon={iconSymbol} />
         </div>
         <div className="seaqa-log-content">
-          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && (
+          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && !activity.activity_type.startsWith('general_task_') && (
             <AsyncCollaborator
               value={activity.creator}
               className="seaqa-log-creator"
