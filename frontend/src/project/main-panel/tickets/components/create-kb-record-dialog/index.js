@@ -54,8 +54,8 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
     setSubmitting(true);
 
     knowledgeBaseAPI.createRecord(projectUuid, {
-      title: kbTitle,
-      content: kbContent,
+      title: kbTitle.trim(),
+      content: kbContent.trim(),
     }).then((res) => {
       markTablesViewExpired([KB_TABLE_NAME]);
       toaster.success(gettext('Record created'));
@@ -88,7 +88,10 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
               />
             </FormGroup>
             <FormGroup>
-              <Label for="kbContent">{gettext('Content')}</Label>
+              <Label for="kbContent">
+                {gettext('Content')}
+                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+              </Label>
               <Input
                 type="textarea"
                 id="kbContent"
@@ -105,7 +108,7 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
         <Button
           color="primary"
           onClick={handleSubmit}
-          disabled={isLoading || !!errorMessage || !kbTitle.trim() || isSubmitting}
+          disabled={isLoading || !!errorMessage || !kbTitle.trim() || !kbContent.trim() || isSubmitting}
         >
           {isSubmitting ? (<CenteredLoading />) : gettext('Submit')}
         </Button>
