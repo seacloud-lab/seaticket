@@ -145,9 +145,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return null;
   };
 
-  const renderGeneralTaskRef = ({ connection_id, task_id, task_title, new_value } = {}) => {
-    const taskId = task_id || new_value?.task_id;
-    const taskTitle = task_title || new_value?.task_title || new_value?.title || '';
+  const renderGeneralTaskRef = ({ connection_id, record_id, task_title } = {}) => {
+    const taskId = record_id;
+    const taskTitle = task_title || '';
     if (!taskId) return taskTitle ? <span>{taskTitle}</span> : null;
     const label = taskTitle || `#${taskId}`;
     if (projectUuid && connection_id) {

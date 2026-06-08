@@ -1742,7 +1742,7 @@ class TicketActivitiesAPIView(APIView):
             topic_url = None
             thread_id = None
             thread_title = None
-            task_id = None
+            task_record_id = None
             task_title = None
             connection_name = None
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
@@ -1759,7 +1759,7 @@ class TicketActivitiesAPIView(APIView):
                 thread_title = detail.get('thread_title', '')
             elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
                 field_key = activity_type
-                task_id = detail.get('task_id')
+                task_record_id = detail.get('record_id')
                 task_title = detail.get('task_title', '')
                 connection_id = detail.get('connection_id')
                 if connection_id and connection_id not in general_task_related_users:
@@ -1842,7 +1842,7 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['thread_id'] = thread_id
                 activity_item['thread_title'] = thread_title
             elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
-                activity_item['task_id'] = task_id
+                activity_item['record_id'] = task_record_id
                 activity_item['task_title'] = task_title
                 activity_item['related_users'] = general_task_related_users.get(detail.get('connection_id')) or []
             activities_list.append(activity_item)
