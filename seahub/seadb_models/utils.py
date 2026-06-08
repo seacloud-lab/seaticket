@@ -19,6 +19,7 @@ ONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.SEAFILE.value: SchemaTables.SEAFILE,
     ConnectionType.EMAIL.value: SchemaTables.THREAD,
     ConnectionType.NOTION.value: SchemaTables.NOTION,
+    ConnectionType.GENERAL_TASK.value: SchemaTables.GENERAL_TASK,
 }
 
 
