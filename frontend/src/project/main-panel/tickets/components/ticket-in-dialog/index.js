@@ -23,6 +23,11 @@ import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/
 import { useCollaborators } from '@/sea-metadata';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import {
+  isOpenLinkedGithubIssuesWarning, convertSubstateToGitHubStateReason,
+  generatorLinkedRecordsForClosedGitHubIssues,
+} from '../../utils';
+import { useCloseLinkedIssues } from '../../hooks';
 
 import './index.css';
 
@@ -41,9 +46,9 @@ const TicketInDialog = ({
   const [ticket, setTicket] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [linkedRecords, setLinkedRecords] = useState({});
-
   const { getTableByName, modifyLocalRow } = useData();
   const { tagsData, createTag } = useTags();
+  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const ticketRef = useRef(null);
 
@@ -65,19 +70,25 @@ const TicketInDialog = ({
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
     const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
     const table = getTableByName(tableName, null);
+    if (!table) return;
     const cacheColumns = Object.values(table?.key_column_map || {});
     const validColumns = propsColumns.length > 0 ? propsColumns : cacheColumns;
-    if (!table || validColumns.length === 0) return;
+    if (validColumns.length === 0) return;
 
     const localRowUpdate = convertRowToKeyValue(update, { data: { columns: validColumns }, typesData, tagsData });
     if (Object.keys(localRowUpdate).length === 0) return;
 
     modifyLocalRow(tableName, currentTicketID, localRowUpdate);
-    const eventBus = context.eventBus;
-    eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
+
+    // current is not table, not need to update
+    const pathname = window.location.pathname;
+    if (pathname.endsWith('/tickets/') || pathname.endsWith('/portal-issues/')) {
+      const eventBus = context.eventBus;
+      eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
+    }
   }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData]);
 
-  const modifyTicket = useCallback((currentTicketID, data) => {
+  const modifyTicket = useCallback((currentTicketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const typeColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.TYPE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE;
     const stateColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.STATE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE;
@@ -95,6 +106,9 @@ const TicketInDialog = ({
       }
       serverData[columnName] = value;
     });
+    if (confirmCloseLinkedGithubIssues) {
+      serverData.confirm_close_linked_github_issues = true;
+    }
 
     const modifyPromise = ticketType === TICKET_TYPE ? ticketsAPI.modifyProjectTicket(projectUuid, currentTicketID, serverData) : portalAPI.modifyPortalIssue(projectUuid, currentTicketID, serverData);
     return modifyPromise.then(() => {
@@ -111,13 +125,11 @@ const TicketInDialog = ({
       setTicket(prev => {
         if (!prev) return prev;
         const nextTicket = prev._update(update);
-        const copiedTicket = deepCopy(nextTicket);
-        updateTicket(copiedTicket);
-        return copiedTicket;
+        return deepCopy(nextTicket);
       });
       return update;
     });
-  }, [ticketType, projectUuid, typesData, statesData, substatesData, updateTicket, handleUpdateRowsCacheData, ticket]);
+  }, [ticketType, projectUuid, typesData, statesData, substatesData, handleUpdateRowsCacheData, ticket]);
 
   const handleModifyError = useCallback((error) => {
     toaster.danger(Utils.getErrorMsg(error));
@@ -137,9 +149,26 @@ const TicketInDialog = ({
 
   const onStateChange = useCallback((state = '', substate = '') => {
     modifyTicket(ticket.id, { state, substate }).catch(error => {
+      if (isOpenLinkedGithubIssuesWarning(error) && ticketType === TICKET_TYPE) {
+        const data = error?.response?.data || {};
+        const tickets = data.tickets || [];
+        openCloseLinkedGitHubIssuesWarningDialog({
+          tickets,
+          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+          callback: () => {
+            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(res => {
+
+              // update linkedRecords
+              const issues = tickets.map(ticket => ticket.open_github_issues).flat();
+              setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, issues));
+            });
+          },
+        });
+        return;
+      }
       handleModifyError(error);
     });
-  }, [ticket, modifyTicket, handleModifyError]);
+  }, [ticket, ticketType, substatesData, modifyTicket, handleModifyError, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).catch(error => {
@@ -299,7 +328,6 @@ const TicketInDialog = ({
       </div>
     </div>
   );
-
 };
 
 export default TicketInDialog;

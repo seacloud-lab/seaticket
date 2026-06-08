@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ticketsAPI } from '../../../api';
 import SeaMetadata from '@/sea-metadata';
-import { useMetadata } from '../hooks';
+import { useCloseLinkedIssues, useMetadata } from '../hooks';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
@@ -14,7 +14,7 @@ import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import toaster from '@/components/toaster';
 import {
-  generatorTicketsRowsTools,
+  generatorTicketsRowsTools, isOpenLinkedGithubIssuesWarning,
   cascadeUpdate, generatorTicketsContextMenuOptions,
   convertTicketToTask, convertTicketToKb,
 } from '../utils';
@@ -60,6 +60,7 @@ const Tickets = ({
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
   } = useData();
+  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
@@ -162,13 +163,50 @@ const Tickets = ({
         if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
           delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
         }
-        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData });
+        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData }).catch(error => {
+          if (isOpenLinkedGithubIssuesWarning(error)) {
+            const data = error?.response?.data || {};
+            const tickets = data.tickets || [];
+            openCloseLinkedGitHubIssuesWarningDialog({
+              tickets,
+              stateReason: '',
+              callback: () => {
+                return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste), { typesData }).then(res => {
+                  const eventBus = context.eventBus;
+                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
+                });
+              },
+            });
+          }
+          throw error;
+        });
       };
     }
     if (isFunction(api.modifyRows)) {
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
+        return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste)).catch(error => {
+          if (isOpenLinkedGithubIssuesWarning(error)) {
+            const data = error?.response?.data || {};
+            const tickets = data.tickets || [];
+            openCloseLinkedGitHubIssuesWarningDialog({
+              tickets,
+              stateReason: '',
+              callback: () => {
+                return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste, { confirm_close_linked_github_issues: true })).then(res => {
+                  const eventBus = context.eventBus;
+                  let idRowsUpdate = {};
+                  rowsUpdate.forEach(rowUpdate => {
+                    const { row_id, row } = rowUpdate;
+                    idRowsUpdate[row_id] = row;
+                  });
+                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
+                });
+              },
+            });
+          }
+          throw error;
+        });
       };
     }
     if (isFunction(api.deleteRow)) {
@@ -183,7 +221,7 @@ const Tickets = ({
 
     return _api;
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 

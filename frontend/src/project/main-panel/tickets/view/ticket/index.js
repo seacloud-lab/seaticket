@@ -10,7 +10,10 @@ import {
   AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
-import { convertTicketToKb, generatorTicketsContextMenuOptions } from '../../utils';
+import {
+  convertTicketToKb, generatorTicketsContextMenuOptions, isOpenLinkedGithubIssuesWarning,
+  convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
+} from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -38,6 +41,7 @@ import { hasOwnProperty } from '@/utils/object-utils';
 import { useCollaborators } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getTableName } from '@/project/main-panel/connections/utils';
+import { useCloseLinkedIssues } from '../../hooks';
 
 import './index.css';
 
@@ -65,6 +69,7 @@ const Ticket = ({
   const { tagsData, createTag } = useTags();
   const { updateAttachments } = useAIChatTools();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
+  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const lastTicketID = useRef('');
 
@@ -112,7 +117,7 @@ const Ticket = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const modifyTicket = useCallback((ticketID, data) => {
+  const modifyTicket = useCallback((ticketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
     let serverData = {};
     const dataKeys = Object.keys(data);
     const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
@@ -129,6 +134,9 @@ const Ticket = ({
       }
       serverData[columnName] = value;
     });
+    if (confirmCloseLinkedGithubIssues) {
+      serverData.confirm_close_linked_github_issues = true;
+    }
 
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
       let update = { ...data };
@@ -142,6 +150,10 @@ const Ticket = ({
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));
+      const linkedRecordsInfo = res.data.linked_records_info || {};
+      if (Object.keys(linkedRecordsInfo).length > 0) {
+        setLinkedRecords(prevLinkedRecords => ({ ...prevLinkedRecords, ...linkedRecordsInfo }));
+      }
 
       // update activities to immediately display new changes
       const newActivities = res.data.activities || [];
@@ -309,10 +321,26 @@ const Ticket = ({
     modifyTicket(ticket.id, { state, substate }).then(res => {
       // todo
     }).catch(error => {
+      if (isOpenLinkedGithubIssuesWarning(error)) {
+        const data = error?.response?.data || {};
+        const tickets = data.tickets || [];
+        openCloseLinkedGitHubIssuesWarningDialog({
+          tickets,
+          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+          callback: () => {
+            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(res => {
+              // update linkedRecords
+              const issues = tickets.map(ticket => ticket.open_github_issues).flat();
+              setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, issues));
+            });
+          },
+        });
+        return;
+      }
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket, modifyTicket]);
+  }, [ticket, substatesData, modifyTicket, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).then(res => {
@@ -413,21 +441,13 @@ const Ticket = ({
   }, [comment, ticket, commentEditorRef, createComment]);
 
   const toggleState = useCallback((state = '', substate = '') => {
-    const modifyState = () => {
-      modifyTicket(ticket.id, { state, substate }).then(res => {
-        // todo
-      }).catch(error => {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-      });
-    };
     if (comment && comment?.text) {
-      onSubmitComment(modifyState);
+      onSubmitComment(() => onStateChange(state, substate));
       return;
     }
 
-    modifyState();
-  }, [ticket, comment, modifyTicket, onSubmitComment]);
+    onStateChange(state, substate);
+  }, [comment, onSubmitComment, onStateChange]);
 
   const handleModifyComment = useCallback((commentID, content, callback) => {
     modifyComment(ticket.id, commentID, content).then(newComment => {

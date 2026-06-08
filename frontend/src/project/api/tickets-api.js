@@ -106,9 +106,13 @@ class TicketsAPI {
     return this.req.put(url, form);
   }
 
-  modifyProjectTickets(projectUuid, tickets, isCopyPaste) {
+  modifyProjectTickets(projectUuid, tickets, isCopyPaste, options = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/';
-    return this.req.put(url, { 'tickets_data': tickets, 'is_copy_paste': isCopyPaste });
+    const data = { 'tickets_data': tickets, 'is_copy_paste': isCopyPaste };
+    if (options.confirm_close_linked_github_issues) {
+      data.confirm_close_linked_github_issues = true;
+    }
+    return this.req.put(url, data);
   }
 
   getProjectTicket(projectUuid, ticketNumber) {

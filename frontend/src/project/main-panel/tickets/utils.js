@@ -483,3 +483,33 @@ export const convertTicketToTask = (ticket, columns) => {
     status: statusOption?.name || null,
   };
 };
+
+export const isOpenLinkedGithubIssuesWarning = (error) => {
+  const response = error?.response || {};
+  const warning = response?.data || {};
+  return response.status === 409 && warning.warning_type === 'open_linked_github_issues';
+};
+
+export const convertSubstateToGitHubStateReason = (substate = '') => {
+  if (!substate) return 'completed';
+  const validSubstate = substate.toLowerCase();
+  if (validSubstate.includes('duplicate')) return 'duplicate';
+  if (validSubstate.includes('not planned')) return 'not_planned';
+  return 'completed';
+};
+
+export const generatorLinkedRecordsForClosedGitHubIssues = (linkedRecords, issues) => {
+  if (!linkedRecords || !Array.isArray(issues) || issues.length === 0) return linkedRecords || {};
+  const newLinkedRecords = { ...linkedRecords };
+  issues.forEach(issue => {
+    const { connection_id, record_pk } = issue;
+    const key = `${connection_id}_${record_pk}`;
+    if (!newLinkedRecords[key]) return;
+    const closedIssueUpdate = { state: 'closed' };
+    newLinkedRecords[key] = {
+      ...newLinkedRecords[key],
+      ...closedIssueUpdate,
+    };
+  });
+  return newLinkedRecords;
+};

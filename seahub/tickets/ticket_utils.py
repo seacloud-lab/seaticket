@@ -14,6 +14,8 @@ from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
+from seahub.project.utils import get_current_table_metadata
+from seahub.project.constants import ConnectionType
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.portal.portal_utils import get_portal_issue
 from seahub.seadb_models.models import PortalIssuesTable
@@ -22,6 +24,10 @@ from seahub.seadb_models.models import PortalIssuesTable
 
 class TicketLinkValidationError(Exception):
     """Ticket link validation error"""
+    pass
+
+
+class TicketCloseValidationError(Exception):
     pass
 
 
@@ -38,6 +44,14 @@ class TicketLinkSyncPlan:
 TABLE_TICKETS = TicketsTable.gen_table_name()
 TABLE_TICKET_COMMENTS = TicketCommentsTable.gen_table_name()
 logger = logging.getLogger(__name__)
+TICKET_CLOSE_CONFIRM_FIELD = 'confirm_close_linked_github_issues'
+TICKET_CLOSE_WARNING_TYPE = 'open_linked_github_issues'
+
+TICKET_SUBSTATE_TO_GITHUB_STATE_REASON = {
+    'completed': 'completed',
+    'not planned': 'not_planned',
+    'duplicate': 'duplicate',
+}
 
 
 def validate_linked_connection_records(linked_connection_records):
@@ -177,6 +191,185 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
             linked_records_info[f'{connection_id}_{record_pk}'] = record
 
     return linked_records_info
+
+
+def _parse_linked_connection_record_keys(linked_connection_records):
+    """Parse ``linked_connection_records`` keys into connection/record id groups.
+
+    Each key has the form ``{connection_id}_{record_id}`` (e.g. ``12_345``).
+    Portal links (``portal_{issue_id}``) are skipped.
+
+    Returns:
+        dict[int, set[int]]: ``connection_id`` -> set of ``record_id``.
+    """
+    conn_id_to_record_ids = {}
+    for linked_key in (linked_connection_records or []):
+        if not isinstance(linked_key, str):
+            continue
+        try:
+            connection_id_str, record_id_str = linked_key.split('_', 1)
+        except ValueError:
+            continue
+        if connection_id_str == 'portal':
+            continue
+        try:
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except (TypeError, ValueError):
+            continue
+        conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+    return conn_id_to_record_ids
+
+
+def _is_github_issue_closed(issue_state):
+    if issue_state in (None, ''):
+        return False
+    issue_state = str(issue_state).strip().lower()
+    return issue_state in ('closed', '0002')
+
+
+def collect_open_linked_github_issues(seadb_api, project_uuid, ticket_id, linked_connection_records):
+    """Collect still-open GitHub issues linked to a single ticket. 
+    Only connections of type github_issue are considered; closed issues are omitted.
+    """
+    open_issues = []
+    conn_id_to_record_ids = _parse_linked_connection_record_keys(linked_connection_records)
+    for connection_id, record_ids in conn_id_to_record_ids.items():
+        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not connection or connection.type != ConnectionType.GITHUB_ISSUE.value:
+            continue
+        records = get_connection_records_by_pks(
+            seadb_api, project_uuid, connection_id, connection.type, list(record_ids)
+        )
+        for record in (records or []):
+            issue_state = record.get('state')
+            if _is_github_issue_closed(issue_state):
+                continue
+            record_pk = record.get('_pk')
+            if record_pk is None:
+                continue
+            open_issues.append({
+                'connection_id': int(connection_id),
+                'record_pk': int(record_pk),
+                'title': record.get('title') or '',
+                'state': issue_state,
+            })
+    return open_issues
+
+
+def collect_open_linked_github_issues_for_tickets(seadb_api, project_uuid, ticket_payloads):
+    """Batch variant of func: collect_open_linked_github_issues.
+    ticket_payloads: List of dicts with ticket_id, optional ticket_title, and linked_connection_records.
+    Returns:
+        list[dict]: Tickets that still have open linked issues, each with ticket_id, ticket_title, and open_github_issues.
+    """
+    grouped_open_issues = []
+    for payload in (ticket_payloads or []):
+        ticket_id = payload.get('ticket_id')
+        if ticket_id is None:
+            continue
+        linked_connection_records = payload.get('linked_connection_records') or []
+        open_issues = collect_open_linked_github_issues(
+            seadb_api,
+            project_uuid,
+            ticket_id,
+            linked_connection_records,
+        )
+        if not open_issues:
+            continue
+        grouped_open_issues.append({
+            'ticket_id': int(ticket_id),
+            'ticket_title': payload.get('ticket_title') or '',
+            'open_github_issues': open_issues,
+        })
+    return grouped_open_issues
+
+
+def build_ticket_close_warning_response(grouped_open_issues):
+    """Build the 409 response body when closing tickets with open linked GitHub issues.
+
+    The client should show a confirmation dialog and retry with
+    ``confirm_close_linked_github_issues`` set to true.
+    """
+    response = {
+        'error_msg': 'Some linked GitHub issues are still open.',
+        'warning_type': TICKET_CLOSE_WARNING_TYPE,
+        'confirm_field': TICKET_CLOSE_CONFIRM_FIELD,
+        'tickets': grouped_open_issues or [],
+    }
+    return response
+
+
+def get_ticket_table_columns(seadb_api, project_uuid):
+    """Return column definitions for the project tickets table."""
+    base_metadata = seadb_api.get_base_metadata(project_uuid)
+    tables = (base_metadata or {}).get('tables') or []
+    ticket_meta = get_current_table_metadata(tables, TABLE_TICKETS)
+    return (ticket_meta or {}).get('columns') or []
+
+
+def normalize_substate_name(substate, ticket_columns):
+    """Resolve a ticket substate value to its display name.
+
+    If ``substate`` is a select option id, look up the matching option name;
+    otherwise return the trimmed string as-is.
+    """
+    if not substate:
+        return ''
+    target = str(substate).strip()
+    if not target:
+        return ''
+    substate_column = get_column_from_columns_by_name(ticket_columns, TicketsTable.substate.name) or {}
+    options = ((substate_column.get('data') or {}).get('options') or [])
+    for option in options:
+        option_id = str(option.get('id') or '').strip()
+        option_name = str(option.get('name') or '').strip()
+        if target == option_id:
+            return option_name
+    return target
+
+
+def map_ticket_substate_to_github_state_reason(substate, ticket_columns):
+    """Map ticket substate to GitHub ``state_reason`` when closing an issue.
+
+    Raises:
+        TicketCloseValidationError: If the substate cannot be mapped.
+    """
+    substate_name = normalize_substate_name(substate, ticket_columns)
+    normalized_substate_name = substate_name.strip().lower()
+    if normalized_substate_name in ('completed', 'not_planned', 'duplicate', 'reopened'):
+        return normalized_substate_name
+    state_reason = TICKET_SUBSTATE_TO_GITHUB_STATE_REASON.get(normalized_substate_name)
+    if state_reason:
+        return state_reason
+    raise TicketCloseValidationError('substate cannot map to github state_reason.')
+
+
+def close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads):
+    """Close all open linked GitHub issues for the given ticket close payloads.
+
+    Args:
+        ticket_close_payloads: List of dicts with ``state_reason`` and
+            ``open_github_issues`` (from the warning/confirmation flow).
+            Any failure from :func:`update_github_issue_record` propagates.
+    """
+    from seahub.project.connections import update_github_issue_record
+
+    for payload in (ticket_close_payloads or []):
+        state_reason = payload.get('state_reason')
+        open_github_issues = payload.get('open_github_issues') or []
+        # The GitHub REST API does not natively support a single batch 
+        # or bulk PATCH endpoint for updating multiple issues at once.
+        for issue in open_github_issues:
+            update_github_issue_record(
+                project_uuid,
+                issue.get('connection_id'),
+                issue.get('record_pk'),
+                state='closed',
+                state_reason=state_reason,
+                seadb_api=seadb_api,
+            )
+
 
 def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, column_name='linked_ticket'):
     """

@@ -15,7 +15,7 @@ import { getResourceOriginalURL } from '@/project/utils';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { BAR_TYPE } from '@/project/constants';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
@@ -29,6 +29,7 @@ import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import User from '@/models/user';
+import eventBus from '@/utils/event-bus';
 
 import './index.css';
 
@@ -276,6 +277,18 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       recordDom && resizeObserver.unobserve(recordDom);
     };
   }, [isConnectionsPageLoading, record]);
+
+  useEffect(() => {
+    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, (recordId, update) => {
+      setRecord(record => {
+        if (record._pk !== recordId) return record;
+        return { ...record, ...update };
+      });
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   if (isConnectionsPageLoading) return (<CenteredLoading />);
 
