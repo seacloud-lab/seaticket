@@ -18,6 +18,7 @@ import RowMetrics from '../../utils/row-metrics';
 import { isWindowsBrowser, isWebkitBrowser } from '../../../../utils';
 import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, GROUP_ROW_TYPE, EVENT_BUS_TYPE } from '../../../../constants';
 import context from '@/sea-metadata/context';
+import { gettext } from '@/constants';
 
 class Rows extends Component {
 
@@ -728,8 +729,7 @@ class Rows extends Component {
     const isSelectedAll = RowMetrics.isSelectedAll(rowIds, rowMetrics);
 
     if (rowsCount === 0 && !this.props.hasMore) {
-      const emptyText = table?.error_msg || context.translate('No {rows}');
-      return (<EmptyTip text={emptyText} />);
+      return (<EmptyTip text={table?.error_msg || gettext('No records')} />);
     }
 
     return (
