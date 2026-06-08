@@ -12,7 +12,7 @@ from seahub.seadb_models.models import SchemaTables
 logger = logging.getLogger(__name__)
 
 
-ONNECTION_TYPE_TO_SCHEMA_TABLE = {
+CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
     ConnectionType.DISCOURSE_FORUM.value: SchemaTables.DISCOURSE_TOPICS,
     ConnectionType.SITE.value: SchemaTables.WEB_CRAWL,
@@ -171,7 +171,7 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
         seadb_api.create_column_index(project_uuid, table_id, index_item)
 
 def get_connection_table_name(connection_type, connection_id):
-    schema_table = ONNECTION_TYPE_TO_SCHEMA_TABLE.get(connection_type)
+    schema_table = CONNECTION_TYPE_TO_SCHEMA_TABLE.get(connection_type)
     
     return schema_table.table_name(connection_id)
 
