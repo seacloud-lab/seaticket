@@ -50,6 +50,7 @@ class DateAndTimePicker extends React.Component {
       <DatePicker
         disabled={this.props.disabled}
         getCalendarContainer={this.getCalendarContainer}
+        isRemainOpen={true}
         calendar={
           <Calendar
             defaultValue={this.defaultCalendarValue}
