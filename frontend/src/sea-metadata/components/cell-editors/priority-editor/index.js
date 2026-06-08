@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { PriorityEditor, IconButton } from '@/components';
 import { PRIORITIES, PRIORITY_MAP } from '../../../constants/column';
 
-import './index.css';
-
 const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
   const [value, setValue] = useState(oldValue || 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +49,7 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
 
   return (
     <>
-      <div className="sea-metadata-priority-editor d-flex w-100 h-100" onClick={() => setIsOpen(!isOpen)} ref={ref}>
+      <div className="sea-metadata-priority-editor d-flex w-100 h-100 cursor-pointer" onClick={() => setIsOpen(!isOpen)} ref={ref}>
         <IconButton
           size={16}
           className="no-hover-bg"

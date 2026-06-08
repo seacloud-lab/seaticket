@@ -1,8 +1,19 @@
 @import url('../view-item/index.css');
 
+.sea-metadata-all-views-btn-wrapper {
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--bs-border-color);
+  border-left: 1px solid var(--bs-border-color);
+  padding: 0 8px;
+}
+
+.sea-metadata-all-views-btn {
+  width: 90px;
+}
+
 .sea-metadata-all-views-btn .seaqa-icon-svg-arrow-down {
-  height: 16px !important;
-  width: 16px !important;
+  margin-left: 4px;
 }
 
 .sea-metadata-all-views-popover .popover {
