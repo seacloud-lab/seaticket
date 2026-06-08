@@ -4,9 +4,9 @@ import json
 from seahub.project.utils import url_to_filename
 from seahub.utils.storage import get_connection_file_from_s3
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
+from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class SiteSeaDBAPI:
 
     def get_sites_by_pks(self, connection_id, pks):
         """Retrieve issue for the specified _pk."""
-        table_name = WebCrawlTable.gen_table_name(connection_id)
+        table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
         pks_str = ', '.join([
             str(pk)
             for pk in pks

@@ -1,25 +1,73 @@
 import datetime
 import json
 import logging
+from copy import deepcopy
 
 from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, \
     PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
-from seahub.project.utils import get_current_table_metadata
-from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, TicketActivitiesTable, EmailTable, ThreadTable, \
-    KnowledgeBaseTable, TagTable, AgentRunsTable, AgentActionsTable, NotionTable, PortalIssuesTable, PortalIssueCommentsTable, \
-    GeneralTaskTable, GeneralTaskUserTable
+from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
+
+
+ONNECTION_TYPE_TO_SCHEMA_TABLE = {
+    ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
+    ConnectionType.DISCOURSE_FORUM.value: SchemaTables.DISCOURSE_TOPICS,
+    ConnectionType.SITE.value: SchemaTables.WEB_CRAWL,
+    ConnectionType.SEAFILE.value: SchemaTables.SEAFILE,
+    ConnectionType.EMAIL.value: SchemaTables.THREAD,
+    ConnectionType.NOTION.value: SchemaTables.NOTION,
+}
+
+
+def init_seadb_tables_from_schema(schema_tables, seadb_api, project_uuid, connection_id=None):
+    for schema_table in schema_tables:
+        table_name = schema_table.table_name(connection_id)
+        res = seadb_api.create_table(project_uuid, table_name)
+        table_id = res['table_id']
+
+        # Build cascade mapping from column-level cascade_column declarations
+        cascade_map = {}  # target_column_name -> source_column_name
+        for column in schema_table.get_fields():
+            column_name = column.name
+            cascade_column_name = column.data.get('cascade_column')
+
+            if cascade_column_name:
+                cascade_map[column_name] = cascade_column_name
+        cascade_source_columns = set(cascade_map.values())
+        source_column_keys = {}  # source_column_name -> seadb_key
+
+        for column in schema_table.get_fields():
+            column_name = column.name
+            mapped_column = deepcopy(column.to_dict())
+
+            # If this column is a cascade target and we have the source's SeaDB key, inject it
+            if column_name in cascade_map:
+                source_col_name = cascade_map[column_name]
+                source_key = source_column_keys.get(source_col_name)
+                if source_key:
+                    mapped_column.setdefault('column_data', {})
+                    mapped_column['column_data']['cascade_column_key'] = source_key
+                # Remove the YAML-only hint from data sent to SeaDB
+                mapped_column.get('column_data', {}).pop('cascade_column', None)
+
+            added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+            # Record the SeaDB key if this column acts as a cascade source
+            if column_name in cascade_source_columns:
+                source_column_keys[column_name] = added_column['column_key']
+
+        for index_item in schema_table.indexes:
+            seadb_api.create_column_index(project_uuid, table_id, index_item)
 
 
 def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, tasks):
     if not tasks:
         return
 
-    table_name = GeneralTaskTable.gen_table_name(connection_id)
+    table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     metadata = seadb_api.get_base_metadata(project_uuid)
     table_info = get_current_table_metadata(metadata.get('tables') or [], table_name)
     if not table_info:
@@ -29,9 +77,9 @@ def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, t
     columns = table_info.get('columns') or []
     column_name_to_meta = {column.get('name'): column for column in columns}
     target_columns = [
-        GeneralTaskTable.status.name,
-        GeneralTaskTable.size.name,
-        GeneralTaskTable.priority.name,
+        SchemaTables.GENERAL_TASK.column.status.name,
+        SchemaTables.GENERAL_TASK.column.size.name,
+        SchemaTables.GENERAL_TASK.column.priority.name,
     ]
 
     desired_values = {column_name: set() for column_name in target_columns}
@@ -80,608 +128,51 @@ def build_general_task_row_data(task, sync_time=None):
     if not isinstance(participants, list):
         participants = []
     return {
-        GeneralTaskTable.source_task_id.name: task.get('task_id') or task.get('id'),
-        GeneralTaskTable.url.name: task.get('url'),
-        GeneralTaskTable.title.name: task.get('title', ''),
-        GeneralTaskTable.status.name: task.get('status'),
-        GeneralTaskTable.size.name: task.get('size'),
-        GeneralTaskTable.priority.name: task.get('priority'),
-        GeneralTaskTable.assignees.name: assignees,
-        GeneralTaskTable.participants.name: participants,
-        GeneralTaskTable.version.name: task.get('version', ''),
-        GeneralTaskTable.others.name: others,
-        GeneralTaskTable.content.name: task.get('description') or task.get('content') or '',
-        GeneralTaskTable.due_date.name: task.get('due_date'),
-        GeneralTaskTable.modified_time.name: task.get('modified_time') or task.get('_mtime'),
-        GeneralTaskTable.created_time.name: task.get('created_time') or task.get('_ctime'),
-        GeneralTaskTable.sync_time.name: now,
-        GeneralTaskTable.record_modified_time.name: now,
-        GeneralTaskTable.deleted.name: bool(task.get('deleted', False)),
-        GeneralTaskTable.linked_ticket.name: int(task.get('linked_ticket')) if task.get('linked_ticket') else None,
+        SchemaTables.GENERAL_TASK.column.source_task_id.name: str(task.get('task_id')).strip(),
+        SchemaTables.GENERAL_TASK.column.url.name: str(task.get('url') or '').strip(),
+        SchemaTables.GENERAL_TASK.column.title.name: task.get('title', ''),
+        SchemaTables.GENERAL_TASK.column.status.name: task.get('status'),
+        SchemaTables.GENERAL_TASK.column.size.name: task.get('size'),
+        SchemaTables.GENERAL_TASK.column.priority.name: task.get('priority'),
+        SchemaTables.GENERAL_TASK.column.assignees.name: assignees,
+        SchemaTables.GENERAL_TASK.column.participants.name: participants,
+        SchemaTables.GENERAL_TASK.column.version.name: task.get('version', ''),
+        SchemaTables.GENERAL_TASK.column.others.name: others,
+        SchemaTables.GENERAL_TASK.column.content.name: task.get('description') or task.get('content') or '',
+        SchemaTables.GENERAL_TASK.column.due_date.name: task.get('due_date'),
+        SchemaTables.GENERAL_TASK.column.modified_time.name: task.get('modified_time') or now,
+        SchemaTables.GENERAL_TASK.column.created_time.name: task.get('created_time') or now,
+        SchemaTables.GENERAL_TASK.column.sync_time.name: now,
+        SchemaTables.GENERAL_TASK.column.record_modified_time.name: now,
+        SchemaTables.GENERAL_TASK.column.deleted.name: bool(task.get('deleted', False)),
+        SchemaTables.GENERAL_TASK.column.linked_ticket.name: int(task.get('linked_ticket')) if task.get('linked_ticket') else None,
     }
 
 
-def init_site_seadb_table(seadb_api, project_uuid, connection_id):
-    site_table_name = WebCrawlTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, site_table_name)
-    table_id = res['table_id']
-    web_crawl_table = WebCrawlTable
-    for column in web_crawl_table.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
+def get_current_table_metadata(tables, table_name):
+    for table in tables:
+        if table['name'] == table_name:
+            return table
+    return None
 
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    site_index_columns = [
-        web_crawl_table.url.name,
-        web_crawl_table.modified_time.name,
-        web_crawl_table.deleted.name,
-        web_crawl_table.ai_processed_time.name,
-        web_crawl_table.record_modified_time.name,
-    ]
-    for column in site_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column,
-            ]
-        )
-
-def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
-    github_issues_table = GithubIssuesTable
-    issues_table_name = github_issues_table.gen_table_name(connection_id)
-    github_issue_comments_table = GithubIssueCommentsTable
-    res = seadb_api.create_table(project_uuid, issues_table_name)
-    table_id = res['table_id']
-    for column in github_issues_table.get_fields():
-
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-
-        if column.data:
-            mapped_column['column_data'] = column.data
-
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    # add columns index
-    issue_index_columns = [
-        github_issues_table.issue_id.name,
-        github_issues_table.state.name,
-        github_issues_table.state_reason.name,
-        github_issues_table.labels.name,
-        github_issues_table.title.name,
-        github_issues_table.author.name,
-        github_issues_table.created_time.name,
-        github_issues_table.closed_time.name,
-        github_issues_table.deleted.name,
-        github_issues_table.linked_ticket.name,
-        github_issues_table.ai_processed_time.name,
-        github_issues_table.record_modified_time.name,
-    ]
-    for column_name in issue_index_columns:
-        seadb_api.create_column_index(project_uuid, table_id, [column_name])
-
-    comments_table_name = github_issue_comments_table.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, comments_table_name)
-    table_id = res['table_id']
-    for column in github_issue_comments_table.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    issue_comment_index_columns = [
-        github_issue_comments_table.issue_id.name,
-        github_issue_comments_table.comment_id.name
-    ]
-    for column_name in issue_comment_index_columns:
-        seadb_api.create_column_index(project_uuid, table_id, [column_name])
-
-
-def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
-    """Initialize SeaDB tables for Discourse Forum connection"""
-    # Create topics table
-    discourse_topics_table = DiscourseTopicsTable
-    topics_table_name = discourse_topics_table.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, topics_table_name)
-    topics_table_id = res['table_id']
-    for column in discourse_topics_table.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, topics_table_id, mapped_column)
-    # Create topic columns index for seadb
-    topic_index_columns = [
-        discourse_topics_table.topic_id.name,
-        discourse_topics_table.sync_time.name,
-        discourse_topics_table.deleted.name,
-        discourse_topics_table.linked_ticket.name,
-        discourse_topics_table.ai_processed_time.name,
-        discourse_topics_table.record_modified_time.name,
-    ]
-    for column_name in topic_index_columns:
-        seadb_api.create_column_index(project_uuid, topics_table_id, [column_name])
-
-    # Create replies table
-    discourse_replies_table = DiscourseRepliesTable
-    replies_table_name = discourse_replies_table.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, replies_table_name)
-    replies_table_id = res['table_id']
-    for column in discourse_replies_table.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
-
-    # Create replies table index for seadb
-    discourse_replies_index_columns = [
-        discourse_replies_table.topic_id.name,
-        discourse_replies_table.post_number.name,
-        discourse_replies_table.modified_time.name,
-    ]
-    for column_name in discourse_replies_index_columns:
-        seadb_api.create_column_index(project_uuid, replies_table_id, [column_name])
-
-
-def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
-    seafile_table_name = SeafileTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, seafile_table_name)
-    table_id = res['table_id']
-    for column in SeafileTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    seafile_index_columns = [
-        SeafileTable.path.name,
-        SeafileTable.title.name,
-        SeafileTable.deleted.name,
-        SeafileTable.ai_processed_time.name,
-        SeafileTable.record_modified_time.name,
-    ]
-    for column_name in seafile_index_columns:
-        seadb_api.create_column_index(project_uuid, table_id, [column_name])
-
-
-def init_ticket_seadb_table(seadb_api, project_uuid):
-    """Initialize SeaDB tables for Ticket"""
-    # Create tickets table
-    res = seadb_api.create_table(project_uuid, 'tickets')
-    tickets_table_id = res['table_id']
-    status_column_key = None
-    for column in TicketsTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column["column_data"] = column.data
-        if column.name == 'substate' and status_column_key:
-            mapped_column['column_data']['cascade_column_key'] = status_column_key
-        added_column = seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
-        if column.name == TicketsTable.state.name:
-            status_column_key = added_column['column_key']
-    # Create tickets table index for seadb
-    ticket_index_columns = [
-        TicketsTable.priority.name,
-        TicketsTable.state.name,
-        TicketsTable.substate.name,
-        TicketsTable.type.name,
-        TicketsTable.assignees.name,
-        TicketsTable.participants.name,
-        TicketsTable.creator.name,
-        TicketsTable.deleted.name,
-        TicketsTable.due_date.name,
-        TicketsTable.ai_processed_time.name,
-        TicketsTable.modified_time.name,
-    ]
-    for column_name in ticket_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            tickets_table_id,
-            [column_name],
-        )
-
-    # Create comments table
-    res = seadb_api.create_table(project_uuid, 'ticket_comments')
-    comments_table_id = res['table_id']
-    for column in TicketCommentsTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column["column_data"] = column.data
-        seadb_api.add_column(project_uuid, comments_table_id, mapped_column)
-
-    # Create comments table index for seadb
-    ticket_comments_index_columns = [
-        TicketCommentsTable.ticket_id.name,
-        TicketCommentsTable.creator.name,
-        TicketCommentsTable.deleted.name,
-    ]
-    for column_name in ticket_comments_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            comments_table_id,
-            [column_name],
-        )
-
-    # Create ticket_activities table
-    res = seadb_api.create_table(project_uuid, TicketActivitiesTable.gen_table_name())
-    activities_table_id = res['table_id']
-    for column in TicketActivitiesTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, activities_table_id, mapped_column)
-
-    # Create ticket_activities table index for seadb
-    ticket_activities_index_columns = [
-        TicketActivitiesTable.ticket_id.name,
-        TicketActivitiesTable.created_time.name,
-    ]
-    for column in ticket_activities_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            activities_table_id,
-            [column],
-        )
-
-
-def init_email_seadb_table(seadb_api, project_uuid, connection_id):
-    table_name = EmailTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in EmailTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [
-        EmailTable.title.name,
-        EmailTable.email_from.name, 
-        EmailTable.sync_time.name, 
-        EmailTable.is_sender.name
-    ]
-
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-    # thread table
-    table_name = ThreadTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in ThreadTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [
-        ThreadTable.title.name,
-        ThreadTable.modified_time.name,
-        ThreadTable.deleted.name,
-        ThreadTable.sync_time.name,
-        ThreadTable.linked_ticket.name,
-        ThreadTable.ai_processed_time.name,
-        ThreadTable.record_modified_time.name,
-    ]
-
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-
-def init_knowledge_base_seadb_table(seadb_api, project_uuid):
-    table_name = KnowledgeBaseTable.gen_table_name()
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in KnowledgeBaseTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [KnowledgeBaseTable.creator.name, KnowledgeBaseTable.created_time.name,
-                          KnowledgeBaseTable.last_modifier.name, KnowledgeBaseTable.modified_time.name,
-                          KnowledgeBaseTable.deleted.name, KnowledgeBaseTable.ai_processed_time.name
-                          ]
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-
-def init_tag_seadb_table(seadb_api, project_uuid):
-    table_name = TagTable.gen_table_name()
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in TagTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [TagTable.name.name]
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-def init_portal_issues_seadb_table(seadb_api, project_uuid):
-    """Initialize SeaDB table for portal issues (issues submitted via support portal)"""
-    # Create portal_issues table
-    table_name = PortalIssuesTable.gen_table_name()
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    status_column_key = None
-    for column in PortalIssuesTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        if column.name == 'substate' and status_column_key:
-            mapped_column['column_data']['cascade_column_key'] = status_column_key
-        added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
-        if column.name == PortalIssuesTable.state.name:
-            status_column_key = added_column['column_key']
-
-    # Create portal_issues table indexes (matching tickets pattern)
-    portal_issues_index_columns = [
-        PortalIssuesTable.priority.name,
-        PortalIssuesTable.state.name,
-        PortalIssuesTable.substate.name,
-        PortalIssuesTable.type.name,
-        PortalIssuesTable.creator.name,
-        PortalIssuesTable.deleted.name,
-        PortalIssuesTable.ai_processed_time.name,
-        PortalIssuesTable.modified_time.name
-    ]
-    for column in portal_issues_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [column],
-        )
-
-    # Create portal_issue_comments table
-    res = seadb_api.create_table(project_uuid, PortalIssueCommentsTable.gen_table_name())
-    comments_table_id = res['table_id']
-    for column in PortalIssueCommentsTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, comments_table_id, mapped_column)
-
-    # Create portal_issue_comments table indexes
-    portal_issue_comments_index_columns = [
-        PortalIssueCommentsTable.issue_id.name,
-        PortalIssueCommentsTable.creator.name,
-        PortalIssueCommentsTable.deleted.name,
-    ]
-    for column in portal_issue_comments_index_columns:
-        seadb_api.create_column_index(
-            project_uuid,
-            comments_table_id,
-            [column],
-        )
 
 def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
 
-    portal_issues_table_name = PortalIssuesTable.gen_table_name()
+    portal_issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
 
     portal_issues_table = get_current_table_metadata(tables_metadata, portal_issues_table_name)
 
     if not portal_issues_table:
-        init_portal_issues_seadb_table(seadb_api, project_uuid)
+        init_seadb_tables_from_schema([SchemaTables.PORTAL_ISSUES, SchemaTables.PORTAL_ISSUE_COMMENTS], seadb_api, project_uuid)
 
-def init_agent_seadb_table(seadb_api, project_uuid):
-    """Initialize SeaDB tables for Agent runs and actions"""
-    # Create agent_runs table
-    res = seadb_api.create_table(project_uuid, AgentRunsTable.gen_table_name())
-    runs_table_id = res['table_id']
-    for column in AgentRunsTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, runs_table_id, mapped_column)
-
-    # Create agent_runs index
-    seadb_api.create_column_index(
-        project_uuid,
-        runs_table_id,
-        [AgentRunsTable.started_at.name],
-    )
-
-    # Create agent_actions table
-    res = seadb_api.create_table(project_uuid, AgentActionsTable.gen_table_name())
-    actions_table_id = res['table_id']
-    for column in AgentActionsTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, actions_table_id, mapped_column)
-
-    # Create agent_actions index
-    seadb_api.create_column_index(
-        project_uuid,
-        actions_table_id,
-        [AgentActionsTable.run_id.name, AgentActionsTable.created_at.name],
-    )
-
-
-def init_notion_seadb_table(seadb_api, project_uuid, connection_id):
-    table_name = NotionTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in NotionTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [
-        NotionTable.title.name,
-        NotionTable.modified_time.name,
-        NotionTable.deleted.name,
-        NotionTable.sync_time.name,
-        NotionTable.page_id.name,
-        NotionTable.ai_processed_time.name,
-        NotionTable.record_modified_time.name,
-    ]
-
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-
-def init_general_task_seadb_table(seadb_api, project_uuid, connection_id):
-    table_name = GeneralTaskTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, table_name)
-    table_id = res['table_id']
-    for column in GeneralTaskTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    index_column_names = [
-        GeneralTaskTable.source_task_id.name,
-        GeneralTaskTable.title.name,
-        GeneralTaskTable.status.name,
-        GeneralTaskTable.priority.name,
-        GeneralTaskTable.modified_time.name,
-        GeneralTaskTable.created_time.name,
-        GeneralTaskTable.record_modified_time.name,
-        GeneralTaskTable.deleted.name,
-        GeneralTaskTable.linked_ticket.name,
-    ]
-
-    for column_name in index_column_names:
-        seadb_api.create_column_index(
-            project_uuid,
-            table_id,
-            [
-                column_name,
-            ]
-        )
-
-    task_user_table_name = GeneralTaskUserTable.gen_table_name(connection_id)
-    res = seadb_api.create_table(project_uuid, task_user_table_name)
-    table_id = res['table_id']
-    for column in GeneralTaskUserTable.get_fields():
-        mapped_column = {
-            'column_name': column.name,
-            'column_type': column.type,
-        }
-        if column.data:
-            mapped_column['column_data'] = column.data
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-    for column_name in (
-        GeneralTaskUserTable.email.name,
-        GeneralTaskUserTable.record_modified_time.name,
-    ):
-        seadb_api.create_column_index(project_uuid, table_id, [column_name])
+        seadb_api.create_column_index(project_uuid, table_id, index_item)
 
 def get_connection_table_name(connection_type, connection_id):
-    table_name = ''
-    if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.SITE.value:
-        table_name = WebCrawlTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.SEAFILE.value:
-        table_name = SeafileTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.EMAIL.value:
-        table_name = ThreadTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.NOTION.value:
-        table_name = NotionTable.gen_table_name(connection_id)
-    elif connection_type == ConnectionType.GENERAL_TASK.value:
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
-
-    return table_name
+    schema_table = ONNECTION_TYPE_TO_SCHEMA_TABLE.get(connection_type)
+    
+    return schema_table.table_name(connection_id)
 
 def get_connection_columns(seadb_api, project_uuid, connection):
     metadata = seadb_api.get_base_metadata(project_uuid)
@@ -773,7 +264,7 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
     columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
-        all_columns_names = [column_name for column_name in all_columns_names if column_name != TicketsTable.closed_time.name]
+        all_columns_names = [column_name for column_name in all_columns_names if column_name != 'closed_time']
 
     display_columns = []
     for column in columns:
@@ -784,18 +275,18 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
     view_copy = view_config.copy()
     sorts = view_copy.get('sorts', [])
     if not sorts:
-        sorts = [{ 'column_name': TicketsTable.modified_time.name, 'sort_type': 'down' }]
+        sorts = [{ 'column_name': 'modified_time', 'sort_type': 'down' }]
     view_copy['sorts'] = sorts
     basic_filters = view_copy.get('basic_filters', [])
     if not basic_filters:
         basic_filters = []
     basic_filters.append({
-        'column_name': TicketsTable.state.name,
+        'column_name': 'state',
         'filter_predicate': 'is',
         'filter_term': '0001' if ticket_state == 'open' else '0002',
     })
     basic_filters.append({
-        'column_name': TicketsTable.participants.name,
+        'column_name': 'participants',
         'filter_predicate': 'include_me',
     })
 
@@ -834,7 +325,7 @@ def list_trash_portal_issues(seadb_api, project_uuid, start, limit):
     sql = f"SELECT {query_fields} FROM `portal_issues` WHERE deleted = True LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results', [])
-    columns = get_seadb_table_columns(seadb_api, project_uuid, PortalIssuesTable.gen_table_name())
+    columns = get_seadb_table_columns(seadb_api, project_uuid, SchemaTables.PORTAL_ISSUES.table_name())
     display_columns = []
     for column in columns:
         name = column['name']
@@ -844,7 +335,7 @@ def list_trash_portal_issues(seadb_api, project_uuid, start, limit):
 
 
 def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start, limit, view_config={}):
-    columns = get_seadb_table_columns(seadb_api, project_uuid, PortalIssuesTable.gen_table_name())
+    columns = get_seadb_table_columns(seadb_api, project_uuid, SchemaTables.PORTAL_ISSUES.table_name())
 
     display_columns = []
     for column in columns:
@@ -855,13 +346,13 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
     view_copy = view_config.copy()
     sorts = view_copy.get('sorts', [])
     if not sorts:
-        sorts = [{ 'column_name': PortalIssuesTable.created_time.name, 'sort_type': 'down' }]
+        sorts = [{ 'column_name': 'created_time', 'sort_type': 'down' }]
     view_copy['sorts'] = sorts
     basic_filters = view_copy.get('basic_filters', [])
     if not basic_filters:
         basic_filters = []
     basic_filters.append({
-        'column_name': PortalIssuesTable.state.name,
+        'column_name': 'state',
         'filter_predicate': 'is',
         'filter_term': '0001' if issue_state == 'open' else '0002',
     })
@@ -967,8 +458,8 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
     return records
 
 def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
-    issues_table_name = PortalIssuesTable.gen_table_name()
-    comments_table_name = PortalIssueCommentsTable.gen_table_name()
+    issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
+    comments_table_name = SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()
     issue_query_fields = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
     issues_sql = f"SELECT {issue_query_fields} FROM `{issues_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
@@ -991,8 +482,8 @@ def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
 
 
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
-    topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-    replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+    topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
+    replies_table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
     topics_sql = f"SELECT `title`, `topic_id`, `created_time`, `slug`, `linked_ticket`, `outdated`, `resolved` FROM `{topics_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         from seahub.tickets.ticket_utils import get_ticket_title
@@ -1015,7 +506,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
 
 
 def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
-    topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     pks_str = ','.join([str(pk) for pk in pks])
     topics_sql = f"SELECT _pk, title, topic_id, created_time FROM `{topics_table_name}` WHERE _pk IN ({pks_str})"
     try:
@@ -1035,18 +526,18 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
 
     sql = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
-        table_name = WebCrawlTable.gen_table_name(connection_id)
+        table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
     elif connection_type == ConnectionType.SEAFILE.value:
-        table_name = SeafileTable.gen_table_name(connection_id)
+        table_name = SchemaTables.SEAFILE.table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = SchemaTables.THREAD.table_name(connection_id)
     elif connection_type == ConnectionType.GENERAL_TASK.value:
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     else:
         return []
 
@@ -1062,7 +553,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
 
 
 def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
-    issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
+    issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
     issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, issue_number, state, state_reason, labels, issue_type, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
@@ -1077,7 +568,7 @@ def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
 
 def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""
-    comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
+    comments_table_name = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(connection_id)
     from seahub.tickets.ticket_utils import get_ticket_title
     try:
         issue_record, column_metadata = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
@@ -1099,7 +590,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
 
 
 def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
-    seafile_table_name = SeafileTable.gen_table_name(connection_id)
+    seafile_table_name = SchemaTables.SEAFILE.table_name(connection_id)
     sql = f"SELECT `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
@@ -1113,7 +604,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
-    general_task_table_name = GeneralTaskTable.gen_table_name(connection_id)
+    general_task_table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     from seahub.tickets.ticket_utils import get_ticket_title
     sql = (
         f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
@@ -1135,8 +626,8 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
 
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
-    site_table_name = WebCrawlTable.gen_table_name(connection_id)
-    sql = f"SELECT `{WebCrawlTable.title.name}`, `{WebCrawlTable.url.name}`, `{WebCrawlTable.modified_time.name}` FROM `{site_table_name}` WHERE _pk = {_pk}"
+    site_table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
+    sql = f"SELECT `title`, `url`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]
@@ -1149,8 +640,8 @@ def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
-    email_table_name = EmailTable.gen_table_name(connection_id)
-    thread_table_name = ThreadTable.gen_table_name(connection_id)
+    email_table_name = SchemaTables.EMAIL.table_name(connection_id)
+    thread_table_name = SchemaTables.THREAD.table_name(connection_id)
     from seahub.tickets.ticket_utils import get_ticket_title
     try:
         thread_sql = f"SELECT `title`, `modified_time`, `linked_ticket`, `outdated`, `tags`, `unread` FROM `{thread_table_name}` WHERE _pk = {_pk}"
@@ -1160,7 +651,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         email_sql = f"""
         SELECT 
         email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk
-        FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC
+        FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY modified_time ASC
         """
         email_res = seadb_api.query_rows(project_uuid, email_sql)
         email_record = email_res.get('results', [])
@@ -1176,14 +667,15 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
+    knowledge_base_table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
+    table_metadata = get_current_table_metadata(tables_metadata, knowledge_base_table_name)
     if not table_metadata:
-        init_knowledge_base_seadb_table(seadb_api, project_uuid)
+        init_seadb_tables_from_schema([SchemaTables.KNOWLEDGE_BASE], seadb_api, project_uuid)
         metadata = seadb_api.get_base_metadata(project_uuid)
         tables_metadata = metadata.get('tables') or []
-        table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
+        table_metadata = get_current_table_metadata(tables_metadata, knowledge_base_table_name)
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     display_columns = []
@@ -1193,7 +685,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
             display_columns.append(column)
 
     try:
-        sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
+        sql = view_data_2_sql(knowledge_base_table_name, display_columns, view_copy, username, start, limit)
     except SQLGeneratorOptionInvalidError as e:
         e.columns = display_columns
         raise
@@ -1207,9 +699,10 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
 
 
 def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_type_map, search_text, limit):
+    knowledge_base_table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     search_tables = [
         {
-            'name': KnowledgeBaseTable.gen_table_name(),
+            'name': knowledge_base_table_name,
             'type': 'knowledge_base',
             'fields': ['_pk', 'title']
         }
@@ -1218,14 +711,14 @@ def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_ty
     for connection_id, connection_type in documents_connection_id_type_map.items():
         if connection_type == ConnectionType.SITE.value:
             search_tables.append({
-                'name': WebCrawlTable.gen_table_name(connection_id),
+                'name': SchemaTables.WEB_CRAWL.table_name(connection_id),
                 'type': ConnectionType.SITE.value,
                 'connection_id': connection_id,
                 'fields': ['_pk', 'title', 'url']
             })
         elif connection_type == ConnectionType.SEAFILE.value:
             search_tables.append({
-                'name': SeafileTable.gen_table_name(connection_id),
+                'name': SchemaTables.SEAFILE.table_name(connection_id),
                 'type': ConnectionType.SEAFILE.value,
                 'connection_id': connection_id,
                 'fields': ['_pk', 'title', 'path']
@@ -1262,30 +755,31 @@ def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_ty
 
 
 def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, connection_id=None):
+    table_name = ''
     if source_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = GithubIssuesTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
     elif source_type == ConnectionType.DISCOURSE_FORUM.value:
-        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     elif source_type == ConnectionType.SITE.value:
-        table_name = WebCrawlTable.gen_table_name(connection_id)
+        table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
     elif source_type == ConnectionType.SEAFILE.value:
-        table_name = SeafileTable.gen_table_name(connection_id)
+        table_name = SchemaTables.SEAFILE.table_name(connection_id)
     elif source_type == ConnectionType.EMAIL.value:
-        table_name = ThreadTable.gen_table_name(connection_id)
+        table_name = SchemaTables.THREAD.table_name(connection_id)
     elif source_type == ConnectionType.GENERAL_TASK.value:
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
-        table_name = KnowledgeBaseTable.gen_table_name()
+        table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     elif source_type == ExtraSourceType.TICKET.value:
-        table_name = TicketsTable.gen_table_name()
+        table_name = SchemaTables.TICKETS.table_name()
     elif source_type == ExtraSourceType.PORTAL_ISSUE.value:
-        table_name = PortalIssuesTable.gen_table_name()
+        table_name = SchemaTables.PORTAL_ISSUES.table_name()
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}
     for result in seadb_api.query_rows(project_uuid, sql).get('results', []):
         results[result['_pk']] = {
-            'title': result['title'],
+            SchemaTables.GENERAL_TASK.column.title.name: result['title'],
             'ai_summary': result['ai_summary']
         }
     return results
@@ -1373,7 +867,7 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
 
 
 def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
-    notion_table_name = NotionTable.gen_table_name(connection_id)
+    notion_table_name = SchemaTables.NOTION.table_name(connection_id)
     sql = f"SELECT title, content, created_time, modified_time, creator, page_id  FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)

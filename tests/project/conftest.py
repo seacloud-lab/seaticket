@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from uuid import uuid4
+import re
 
 import pytest
 from rest_framework.test import APIRequestFactory

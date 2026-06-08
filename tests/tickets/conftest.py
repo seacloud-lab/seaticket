@@ -2,6 +2,7 @@ import json
 from types import SimpleNamespace
 from uuid import uuid4
 from unittest.mock import Mock, patch
+import re
 
 import pytest
 from rest_framework.test import APIRequestFactory

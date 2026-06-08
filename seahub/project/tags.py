@@ -17,7 +17,9 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import TABLE_TICKETS, get_column_from_columns_by_name, filter_tickets_by_select, \
     build_linked_record_titles_map
 from seahub.utils.decorators import require_org_context
-from seahub.seadb_models.models import TagTable
+
+from seahub.seadb_models.models import SchemaTables
+
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +69,7 @@ class TagsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            table_name = TagTable.gen_table_name()
+            table_name = SchemaTables.TAG.table_name()
             sql = "SELECT `_pk`, `name`, `color`, `text_color`, `description` " \
                 f"FROM `{table_name}` LIMIT {start}, {limit}"
             res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
@@ -118,15 +120,15 @@ class TagsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        table_name = TagTable.gen_table_name()
+        table_name = SchemaTables.TAG.table_name()
         # main
         try:
             seadb_api = SeaDBAPI()
             row = {
-                TagTable.name.name: name,
-                TagTable.color.name: color,
-                TagTable.text_color.name: text_color,
-                TagTable.description.name: description,
+                SchemaTables.TAG.column.name.name: name,
+                SchemaTables.TAG.column.color.name: color,
+                SchemaTables.TAG.column.text_color.name: text_color,
+                SchemaTables.TAG.column.description.name: description,
             }
             res = seadb_api.insert_rows(project_uuid, table_name, [row])
         except Exception as e:
@@ -173,7 +175,7 @@ class TagsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), tag_ids)
+            seadb_api.delete_rows(project_uuid, SchemaTables.TAG.table_name(), tag_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -288,7 +290,7 @@ class TagAPIView(APIView):
                 update_data['text_color'] = text_color
 
             if update_data:
-                table_name = TagTable.gen_table_name()
+                table_name = SchemaTables.TAG.table_name()
                 update_row = {
                     'pk': int(tag_id),
                     'row': update_data
@@ -323,7 +325,7 @@ class TagAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            seadb_api.delete_rows(project_uuid, TagTable.gen_table_name(), [int(tag_id)])
+            seadb_api.delete_rows(project_uuid, SchemaTables.TAG.table_name(), [int(tag_id)])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

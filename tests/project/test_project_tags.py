@@ -287,7 +287,8 @@ class TestTagAPIView:
             ]
         }
 
-        with patch('seahub.project.tags.SeaDBAPI', return_value=seadb):
+        with patch('seahub.project.tags.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.tags.get_current_table_metadata', return_value=seadb.get_base_metadata.return_value['tables'][0]):
             resp = TagAPIView.as_view()(request, project_uuid=project.uuid, tag_id='1')
 
         assert resp.status_code == 404
@@ -325,6 +326,7 @@ class TestTagAPIView:
         }
 
         with patch('seahub.project.tags.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.tags.get_current_table_metadata', return_value=seadb.get_base_metadata.return_value['tables'][0]), \
                 patch('seahub.project.tags.filter_tickets_by_select', return_value=([{'_pk': 1}], [{'name': 'x'}])):
             resp = TagAPIView.as_view()(request, project_uuid=project.uuid, tag_id='1')
 

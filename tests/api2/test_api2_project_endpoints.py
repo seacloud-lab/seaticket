@@ -85,9 +85,7 @@ class TestProjectsView:
         seadb = MagicMock()
 
         with patch('seahub.api2.endpoints.project.SeaDBAPI', return_value=seadb), \
-                patch('seahub.api2.endpoints.project.init_ticket_seadb_table'), \
-                patch('seahub.api2.endpoints.project.init_knowledge_base_seadb_table'), \
-                patch('seahub.api2.endpoints.project.init_tag_seadb_table'):
+                patch('seahub.api2.endpoints.project.init_seadb_tables_from_schema'):
             resp = ProjectsView.as_view()(request)
 
         assert resp.status_code == 201

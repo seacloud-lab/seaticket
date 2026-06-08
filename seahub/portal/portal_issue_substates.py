@@ -21,7 +21,9 @@ from seahub.tickets.ticket_utils import update_select_option, get_column_from_co
     add_select_option, batch_delete_select_option
 from seahub.utils.decorators import require_org_context
 from seahub.portal.portal_utils import get_portal_issue_counts_group_by_column_name, filter_portal_issues_by_select
-from seahub.seadb_models.models import PortalIssuesTable
+
+from seahub.seadb_models.models import SchemaTables
+
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +66,6 @@ class PortalIssueSubstatesAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # substate_column = PortalIssuesTable.substate.data
         column_data = substate_column.get('data') or {}
         cascade_settings = column_data.get('cascade_settings') or {}
         cascade_column_key = column_data.get('cascade_column_key')
@@ -124,7 +125,7 @@ class PortalIssueSubstatesAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             table_id = table_meta.get('id')
             substate_column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             substate_column_key = substate_column.get('key')
@@ -197,7 +198,7 @@ class PortalIssueSubstatesAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
             cache_key = normalize_cache_key(str(project_uuid), prefix=PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX)
@@ -240,7 +241,7 @@ class PortalIssueSubstateAPIView(APIView):
             substate_option = None
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             table_columns = table_meta.get('columns')
             column = get_column_from_columns_by_name(table_columns, 'substate')
             column_data = column.get('data') or {}
@@ -304,7 +305,7 @@ class PortalIssueSubstateAPIView(APIView):
         substate_option = None
         seadb_api = SeaDBAPI()
         base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
         column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
@@ -384,7 +385,7 @@ class PortalIssueSubstateAPIView(APIView):
         try:
             seadb_api = SeaDBAPI()
             base_metadata = seadb_api.get_base_metadata(project_uuid)
-            table_meta = get_current_table_metadata(base_metadata.get('tables'), PortalIssuesTable.gen_table_name())
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), SchemaTables.PORTAL_ISSUES.table_name())
             column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             column_key = column.get('key')
             column_data = column.get('data') or {}

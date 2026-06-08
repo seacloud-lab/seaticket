@@ -4,9 +4,11 @@ import datetime
 from email.utils import formataddr
 
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GeneralTaskTable, GeneralTaskUserTable
 from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
+
+from seahub.seadb_models.models import SchemaTables
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,7 @@ class GeneralTaskSeaDBAPI:
         self.seadb_api = seadb_api or SeaDBAPI(timeout=timeout)
 
     def get_general_task_record(self, project_uuid, connection_id, record_id):
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
         sql = (
             f"SELECT `_pk`, `source_task_id`, `url`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, "
             f"`others`, `version`, `content`, `due_date`, `modified_time`, `created_time`, `linked_ticket`, `outdated` "
@@ -28,7 +30,7 @@ class GeneralTaskSeaDBAPI:
     
     def get_tasks_by_pks(self, connection_id, pks):
         """Retrieve task for the specified _pk."""
-        table_name = GeneralTaskTable.gen_table_name(connection_id)
+        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
         pks_str = ', '.join([
             str(pk)
             for pk in pks
