@@ -51,6 +51,7 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.GITHUB_ISSUE.value,
     ConnectionType.EMAIL.value,
     ConnectionType.GENERAL_TASK.value,
+    ConnectionType.LINEAR.value,
 ]
 
 
@@ -162,6 +163,9 @@ def create_connection(project, username, connection_type, name, config):
         ),
         ConnectionType.GENERAL_TASK.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.GENERAL_TASK, SchemaTables.GENERAL_TASK_USER], api, project_uuid, connection_id
+        ),
+        ConnectionType.LINEAR.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.LINEAR_ISSUES, SchemaTables.LINEAR_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
     }
 

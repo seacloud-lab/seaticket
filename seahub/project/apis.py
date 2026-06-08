@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.utils.translation import gettext as _
-
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -12,10 +10,11 @@ from rest_framework.response import Response
 from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.utils import api_error, to_python_boolean
+from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
-from seahub.project.models import Projects, ProjectGithubAppInstallation
-from seahub.project.utils import check_project_permission, get_project_related_users, \
+from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth
+from seahub.project.linear_api import LinearAPI
+from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
@@ -129,3 +128,42 @@ class ProjectGithubRepositories(APIView):
         return Response({
             'repositories': all_repositories,
         })
+
+
+class ProjectLinearTeams(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
+        if not linear_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
+
+        linear_api = LinearAPI(
+            access_token=linear_oauth.access_token,
+            refresh_token=linear_oauth.refresh_token
+        )
+
+        try:
+            teams, workspace_name = linear_api.list_teams()
+        except Exception as e:
+            logger.error('Linear API error fetching teams for project %s: %s', project_uuid, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Linear teams.')
+
+        if workspace_name:
+            for team in teams:
+                team['workspace_name'] = workspace_name
+        return Response({'teams': teams})

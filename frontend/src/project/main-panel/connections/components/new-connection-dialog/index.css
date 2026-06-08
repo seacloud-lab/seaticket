@@ -139,3 +139,24 @@
   color: #666;
   font-size: 14px;
 }
+
+.seaqa-project-linear-oauth {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid #bdbdbd;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status.connected {
+  border-color: #1eae5a;
+  color: #1eae5a;
+}

@@ -53,4 +53,6 @@ def get_connection_table_name(connection_type, connection_id):
         table_name = ConnectionType.EMAIL.value + '_' + 'thread_' + str(connection_id)
     elif connection_type == ConnectionType.GENERAL_TASK.value:
         table_name = ConnectionType.GENERAL_TASK.value + '_' + str(connection_id)
+    elif connection_type == ConnectionType.LINEAR.value:
+        table_name = ConnectionType.LINEAR.value + '_' + str(connection_id)
     return table_name

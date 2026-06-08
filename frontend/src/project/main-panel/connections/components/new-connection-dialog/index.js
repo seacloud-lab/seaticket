@@ -52,6 +52,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
+  const oauthWindowRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const [linearTeamsVersion, setLinearTeamsVersion] = useState(0);
+  const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
+  const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
+  const [linearOauthError, setLinearOauthError] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -89,6 +95,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
 
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
+  const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
@@ -112,6 +119,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
+    if (isLinear && !isLinearOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -122,7 +130,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected]);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -229,6 +237,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       });
       return;
     }
+    if (isLinear) {
+      const team = _config.team_id;
+      if (team && team.team) {
+        _config['team_id'] = team.team.id;
+        _config['team_name'] = team.team.name;
+        _config['team_key'] = team.team.key;
+        _config['workspace_name'] = team.team.workspace_name;
+      }
+    }
 
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
@@ -253,6 +270,74 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
+  const listLinearTeams = useCallback(() => {
+    return connectionsAPI.listLinearTeams(projectUuid).then(res => {
+      const teams = res?.data?.teams || [];
+      return {
+        data: {
+          options: teams.map(t => ({
+            value: t.id,
+            team: t,
+            label: t.name,
+            name: t.name
+          })),
+        }
+      };
+    });
+  }, [projectUuid, linearTeamsVersion]);
+
+  const fetchLinearOauthStatus = useCallback(() => {
+    setCheckingLinearOauth(true);
+    return connectionsAPI.getLinearOauthStatus(projectUuid).then(res => {
+      setLinearOauthConnected(Boolean(res?.data?.connected));
+      setLinearOauthError('');
+    }).catch(() => {
+      setLinearOauthConnected(false);
+      setLinearOauthError(gettext('Failed to check Linear authorization status.'));
+    }).finally(() => {
+      setCheckingLinearOauth(false);
+    });
+  }, []);
+
+  const handleConnectLinear = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/linear/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    oauthWindowRef.current = window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
+
+    // Start polling for OAuth status
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getLinearOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          setLinearOauthConnected(true);
+          setLinearOauthError('');
+          setLinearTeamsVersion(v => v + 1);
+          clearInterval(pollingIntervalRef.current);
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [projectUuid]);
+
+  useEffect(() => {
+    if (!isLinear) return;
+    fetchLinearOauthStatus();
+  }, [isLinear, fetchLinearOauthStatus]);
+
+  // Cleanup polling and popup on unmount or when Linear type changes
+  useEffect(() => {
+    return () => {
+      clearInterval(pollingIntervalRef.current);
+      if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+        oauthWindowRef.current.close();
+      }
+    };
+  }, []);
+
 
   const renderConnectionField = useCallback((column) => {
     const { type, key, children, is_advanced_option } = column;
@@ -354,6 +439,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
+            {/* TODO */}
             {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>
@@ -385,6 +471,61 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 <div className="mt-3">{gettext('Waiting for OAuth authorization to complete...')}</div>
               </div>
             )}
+            {customColumns.map(c => {
+              const { type, key, children } = c;
+              if (type === CONNECTION_FIELD_TYPE.GROUP) {
+                return (
+                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
+                    {children.map((child, index) => (
+                      <ConnectionConfigEditor
+                        className="mx-0 px-0 width-half"
+                        column={child}
+                        key={`${key}-${index}`}
+                        row={config}
+                        readonly={isSubmitting}
+                        onChange={onConfigChange}
+                      />
+                    ))}
+                  </Row>
+                );
+              }
+              let api = null;
+              let row = { ...config };
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
+                api = listGitHubRepositories;
+                if (row[key]) {
+                  row[key] = row[key].value;
+                }
+              }
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
+                api = listLinearTeams;
+                if (row[key]) {
+                  row[key] = row[key].value || row[key];
+                }
+              }
+              return ((
+                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
+              ));
+            })}
+            {isLinear && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-linear-oauth">
+                  <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
+                    {isLinearOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  </span>
+                  <Button
+                    color="primary"
+                    className="ml-2"
+                    disabled={isSubmitting || isCheckingLinearOauth}
+                    onClick={handleConnectLinear}
+                  >
+                    {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
+                  </Button>
+                  {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
+                </div>
+              </FormGroup>
+            )}
           </div>
         )}
 
@@ -413,7 +554,44 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
+            {/* TODO */}
             {customColumns.map(renderConnectionField)}
+            {customColumns.map(c => {
+              const { type, key, children } = c;
+              if (type === CONNECTION_FIELD_TYPE.GROUP) {
+                return (
+                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
+                    {children.map((child, index) => (
+                      <ConnectionConfigEditor
+                        className="mx-0 px-0 width-half"
+                        column={child}
+                        key={`${key}-${index}`}
+                        row={config}
+                        readonly={isSubmitting}
+                        onChange={onConfigChange}
+                      />
+                    ))}
+                  </Row>
+                );
+              }
+              let api = null;
+              let row = { ...config };
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
+                api = listGitHubRepositories;
+                if (row[key]) {
+                  row[key] = row[key].value;
+                }
+              }
+              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
+                api = listLinearTeams;
+                if (row[key]) {
+                  row[key] = row[key].value || row[key];
+                }
+              }
+              return ((
+                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
+              ));
+            })}
           </div>
         )}
       </ModalBody>
