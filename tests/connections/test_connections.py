@@ -874,8 +874,7 @@ class TestProjectConnectionRecordUpdate:
 
         seadb = Mock()
 
-        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
-            patch('seahub.project.connections.get_table_name_from_schema', return_value=f"site_{site_connection.id}"):
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
             resp = ProjectConnectionRecordsView.as_view()(request, project_uuid=project.uuid, connection_id=str(site_connection.id))
 
         assert resp.status_code == 200

@@ -84,17 +84,6 @@ def api_client_no_org(no_org_user):
     return client
 
 
-@pytest.fixture(autouse=True)
-def knowledge_base_schema_helpers():
-    """Keep KB tests independent from the runtime SeaDB schema cache."""
-    def _table_name(name, connection_id=None):
-        return name[:-5].lower() if name.endswith('Table') else name.lower()
-
-    with patch('seahub.knowledge_base.knowledge_base.get_table_name_from_schema', side_effect=_table_name), \
-            patch('seahub.knowledge_base.knowledge_base.get_column_name_from_schema', side_effect=lambda _table, column_name: column_name):
-        yield
-
-
 @pytest.fixture
 def project_uuid(real_project):
     """Return a valid project UUID for testing."""

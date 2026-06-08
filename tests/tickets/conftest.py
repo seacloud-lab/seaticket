@@ -109,19 +109,3 @@ def no_org_user():
         is_active=True,
         org=None
     )
-
-
-def _snake_table_name(name, connection_id=None):
-    base = name[:-5] if name.endswith('Table') else name
-    base = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', base)
-    base = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', base)
-    return base.lower()
-
-
-@pytest.fixture(autouse=True)
-def ticket_schema_helpers():
-    with patch('seahub.tickets.tickets.get_table_name_from_schema', side_effect=_snake_table_name), \
-            patch('seahub.tickets.tickets.get_column_name_from_schema', side_effect=lambda _table, column_name: column_name), \
-            patch('seahub.tickets.ticket_utils.get_table_name_from_schema', side_effect=_snake_table_name), \
-            patch('seahub.tickets.ticket_utils.get_column_name_from_schema', side_effect=lambda _table, column_name: column_name):
-        yield

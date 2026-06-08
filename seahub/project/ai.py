@@ -26,12 +26,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 from seahub.settings import SITE_ROOT
-from django.http import HttpRequest
 
-
-from seahub.seadb_models.utils import get_table_name_from_schema, get_column_name_from_schema, get_column_data_from_schema
-
-from seahub.seadb_models.models import SchemaTableNames
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000

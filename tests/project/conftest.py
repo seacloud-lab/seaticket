@@ -62,18 +62,3 @@ def no_org_user():
         is_active=True,
         org=None
     )
-
-
-def _snake_table_name(name, connection_id=None):
-    base = name[:-5] if name.endswith('Table') else name
-    base = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', base)
-    base = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', base)
-    return base.lower()
-
-
-@pytest.fixture(autouse=True)
-def project_schema_helpers():
-    with pytest.MonkeyPatch.context() as mp:
-        mp.setattr('seahub.project.tags.get_table_name_from_schema', _snake_table_name)
-        mp.setattr('seahub.project.tags.get_column_name_from_schema', lambda _table, column_name: column_name)
-        yield

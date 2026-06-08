@@ -145,6 +145,7 @@ def build_general_task_row_data(task, sync_time=None):
         SchemaTables.GENERAL_TASK.column.sync_time.name: now,
         SchemaTables.GENERAL_TASK.column.record_modified_time.name: now,
         SchemaTables.GENERAL_TASK.column.deleted.name: bool(task.get('deleted', False)),
+        SchemaTables.GENERAL_TASK.column.linked_ticket.name: int(task.get('linked_ticket')) if task.get('linked_ticket') else None,
     }
 
 

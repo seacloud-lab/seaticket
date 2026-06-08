@@ -317,7 +317,7 @@ def normalize_substate_name(substate, ticket_columns):
     target = str(substate).strip()
     if not target:
         return ''
-    substate_column = get_column_from_columns_by_name(ticket_columns, TicketsTable.substate.name) or {}
+    substate_column = get_column_from_columns_by_name(ticket_columns, SchemaTables.TICKETS.column.substate.name) or {}
     options = ((substate_column.get('data') or {}).get('options') or [])
     for option in options:
         option_id = str(option.get('id') or '').strip()

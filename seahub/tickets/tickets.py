@@ -570,18 +570,18 @@ class TicketsAPIView(APIView):
                     'row': updated_row,
                 }
             )
-            old_state = (row.get(TicketsTable.state.name) or '').lower()
-            new_state = updated_row.get(TicketsTable.state.name) or old_state
+            old_state = (row.get(SchemaTables.TICKETS.column.state.name) or '').lower()
+            new_state = updated_row.get(SchemaTables.TICKETS.column.state.name) or old_state
             if new_state == 'closed' and old_state != 'closed':
-                linked_connection_records = updated_row.get(TicketsTable.linked_connection_records.name)
+                linked_connection_records = updated_row.get(SchemaTables.TICKETS.column.linked_connection_records.name)
                 if linked_connection_records is None:
                     linked_connection_records = old_lcr_by_ticket_id.get(int(row.get('_pk'))) or []
-                substate = updated_row.get(TicketsTable.substate.name)
+                substate = updated_row.get(SchemaTables.TICKETS.column.substate.name)
                 if substate is None:
-                    substate = row.get(TicketsTable.substate.name)
+                    substate = row.get(SchemaTables.TICKETS.column.substate.name)
                 ticket_close_candidates.append({
                     'ticket_id': int(row.get('_pk')),
-                    'ticket_title': updated_row.get(TicketsTable.title.name) or row.get(TicketsTable.title.name) or '',
+                    'ticket_title': updated_row.get(SchemaTables.TICKETS.column.title.name) or row.get(SchemaTables.TICKETS.column.title.name) or '',
                     'linked_connection_records': linked_connection_records,
                     'substate': substate,
                 })
@@ -1027,17 +1027,17 @@ class TicketAPIView(APIView):
                     event_type = DataEventType.TICKET_REOPENED.value
                     update_row[SchemaTables.TICKETS.column.closed_time.name] = ''
 
-            old_state = (ticket.get(TicketsTable.state.name) or '').lower()
-            new_state = update_row.get(TicketsTable.state.name) or old_state
+            old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').lower()
+            new_state = update_row.get(SchemaTables.TICKETS.column.state.name) or old_state
             if new_state == 'closed' and old_state != 'closed':
-                linked_connection_records = update_row.get(TicketsTable.linked_connection_records.name)
+                linked_connection_records = update_row.get(SchemaTables.TICKETS.column.linked_connection_records.name)
                 if linked_connection_records is None:
-                    linked_connection_records = ticket.get(TicketsTable.linked_connection_records.name) or []
+                    linked_connection_records = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
                 close_candidates = [{
                     'ticket_id': int(ticket.get('_pk')),
-                    'ticket_title': update_row.get(TicketsTable.title.name) or ticket.get(TicketsTable.title.name) or '',
+                    'ticket_title': update_row.get(SchemaTables.TICKETS.column.title.name) or ticket.get(SchemaTables.TICKETS.column.title.name) or '',
                     'linked_connection_records': linked_connection_records,
-                    'substate': update_row.get(TicketsTable.substate.name) or ticket.get(TicketsTable.substate.name),
+                    'substate': update_row.get(SchemaTables.TICKETS.column.substate.name) or ticket.get(SchemaTables.TICKETS.column.substate.name),
                 }]
                 grouped_open_issues = collect_open_linked_github_issues_for_tickets(
                     seadb_api, project_uuid, close_candidates
@@ -1070,8 +1070,8 @@ class TicketAPIView(APIView):
                         logger.exception(e)
                         return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-            update_row[get_column_name('TicketsTable', 'participants')] = participants
-            update_row[get_column_name('TicketsTable', 'modified_time')] = now_datetime
+            update_row[SchemaTables.TICKETS.column.participants.name] = participants
+            update_row[SchemaTables.TICKETS.column.modified_time.name] = now_datetime
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),

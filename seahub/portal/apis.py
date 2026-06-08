@@ -319,7 +319,7 @@ class PortalIssuesView(APIView):
                 SchemaTables.PORTAL_ISSUES.column.content.name: content,
                 SchemaTables.PORTAL_ISSUES.column.state.name: portal_issue_state,
                 SchemaTables.PORTAL_ISSUES.column.type.name: type_name if type_name else None,
-                SchemaTables.PORTAL_ISSUES.column.substat.name: default_substate,
+                SchemaTables.PORTAL_ISSUES.column.substate.name: default_substate,
                 SchemaTables.PORTAL_ISSUES.column.priority.name: priority,
                 SchemaTables.PORTAL_ISSUES.column.tags.name: tag_ids,
                 SchemaTables.PORTAL_ISSUES.column.creator.name: username,
