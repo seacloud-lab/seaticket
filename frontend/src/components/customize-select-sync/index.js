@@ -30,6 +30,10 @@ const CustomizeSelectSync = ({
     }
     setIsLoading(true);
     setErrorMessage('');
+    if (!api) {
+      setIsLoading(false);
+      return;
+    }
     api().then(res => {
       const { options } = res.data || {};
       setAllOptions(Array.isArray(options) ? options : []);

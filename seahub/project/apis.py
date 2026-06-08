@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
+from urllib.parse import parse_qs, urlparse
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -266,3 +267,97 @@ class ProjectConfluenceWorkspaces(APIView):
 
         workspaces.sort(key=lambda item: item['name'].lower())
         return Response({'workspaces': workspaces})
+
+
+class ProjectConfluenceSpaces(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace_id = request.GET.get('workspace_id', '')
+        workspace_url = request.GET.get('workspace_url', '')
+        if not workspace_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'workspace_id is required.')
+        if not workspace_url:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'workspace_url is required.')
+
+        confluence_oauth = ProjectConfluenceOauth.objects.get_by_project_uuid(project_uuid)
+        if not confluence_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Confluence OAuth authorization is required.')
+
+        if not confluence_oauth.expires_at or confluence_oauth.expires_at <= datetime.datetime.now(datetime.timezone.utc):
+            try:
+                confluence_oauth = _refresh_confluence_access_token(confluence_oauth)
+            except Exception as e:
+                logger.error('Failed to refresh Confluence OAuth token for project %s: %s', project_uuid, e)
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to refresh Confluence authorization.')
+
+        all_spaces = []
+        cursor = None
+        limit = 100
+        try:
+            while True:
+                url = f'https://api.atlassian.com/ex/confluence/{workspace_id}/wiki/api/v2/spaces'
+                params = {'limit': limit}
+                if cursor:
+                    params['cursor'] = cursor
+
+                headers = {
+                    'Authorization': f'Bearer {confluence_oauth.access_token}',
+                    'Accept': 'application/json',
+                }
+                try:
+                    response = requests.get(url, headers=headers, params=params, timeout=30)
+                    if response.status_code == 401:
+                        logger.info('Refreshing Confluence OAuth token for spaces API, project %s', project_uuid)
+                        confluence_oauth = _refresh_confluence_access_token(confluence_oauth)
+                        headers['Authorization'] = f'Bearer {confluence_oauth.access_token}'
+                        response = requests.get(url, headers=headers, params=params, timeout=30)
+                    response.raise_for_status()
+                except requests.HTTPError:
+                    logger.error(
+                        'Confluence Spaces API HTTP %s for project %s workspace %s: %s',
+                        response.status_code, project_uuid, workspace_id, response.text[:500]
+                    )
+                    raise
+                data = response.json()
+                results = data.get('results') or []
+                for space in results:
+                    space_id = space.get('id')
+                    if space_id is None:
+                        continue
+                    all_spaces.append({
+                        'id': str(space_id),
+                        'key': space.get('key') or '',
+                        'name': space.get('name') or '',
+                        'type': space.get('type') or '',
+                        'status': space.get('status') or '',
+                    })
+
+                next_link = (data.get('_links') or {}).get('next')
+                if not next_link:
+                    break
+                query = parse_qs(urlparse(next_link).query)
+                cursor_list = query.get('cursor')
+                if not cursor_list:
+                    break
+                cursor = cursor_list[0]
+        except Exception as e:
+            logger.error('Confluence API error fetching spaces for project %s workspace %s: %s', project_uuid, workspace_id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Confluence spaces.')
+
+        all_spaces.sort(key=lambda item: item['name'].lower())
+        return Response({'spaces': all_spaces})

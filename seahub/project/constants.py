@@ -139,6 +139,7 @@ CONNECTION_FIELDS = {
         ConnectionField('workspace_id', True, False).to_dict(),
         ConnectionField('workspace_name', False, False).to_dict(),
         ConnectionField('workspace_url', False, False).to_dict(),
+        ConnectionField('space_ids', False, False).to_dict(),
     ]
 }
 

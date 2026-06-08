@@ -4,7 +4,11 @@ from django.urls import re_path
 from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
     confluence_oauth, confluence_oauth_callback
 
+<<<<<<< HEAD
 from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces
+=======
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectConfluenceWorkspaces, ProjectConfluenceSpaces
+>>>>>>> 85b0d014 (support 'select space')
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, ProjectConnectionMetaView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
@@ -81,6 +85,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear/teams/$', ProjectLinearTeams.as_view(), name='api-v1-project-linear-teams'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear-oauth/$', ProjectLinearOauthStatusView.as_view(), name='api-v1-linear-oauth-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence/workspaces/$', ProjectConfluenceWorkspaces.as_view(), name='api-v1-project-confluence-workspaces'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence/spaces/$', ProjectConfluenceSpaces.as_view(), name='api-v1-project-confluence-spaces'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence-oauth/$', ProjectConfluenceOauthStatusView.as_view(), name='api-v1-project-confluence-oauth-status'),
 
     # connections

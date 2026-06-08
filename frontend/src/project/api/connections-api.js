@@ -98,6 +98,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  listConfluenceSpaces(projectUuid, workspaceId, workspaceUrl) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/confluence/spaces/';
+    return this.req.get(url, { params: { workspace_id: workspaceId, workspace_url: workspaceUrl } });
+  }
+
   modifyConnection(projectUuid, connectionID, { name, config }) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();

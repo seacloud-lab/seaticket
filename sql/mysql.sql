@@ -790,8 +790,8 @@ CREATE TABLE `project_linear_oauth` (
 CREATE TABLE `project_confluence_oauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(32) NOT NULL,
-  `access_token` varchar(255) NOT NULL,
-  `refresh_token` varchar(255) NOT NULL,
+  `access_token` TEXT NOT NULL,
+  `refresh_token` TEXT NOT NULL,
   `expires_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_confluence_oauth_project_uuid_uniq` (`project_uuid`),

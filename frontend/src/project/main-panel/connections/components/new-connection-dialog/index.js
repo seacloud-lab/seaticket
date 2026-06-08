@@ -54,6 +54,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isConfluenceOauthConnected, setConfluenceOauthConnected] = useState(false);
   const [isCheckingConfluenceOauth, setCheckingConfluenceOauth] = useState(false);
   const [confluenceOauthError, setConfluenceOauthError] = useState('');
+  const [confluenceSpaces, setConfluenceSpaces] = useState([]);
+  const [isLoadingConfluenceSpaces, setLoadingConfluenceSpaces] = useState(false);
+  const [selectedSpaceIds, setSelectedSpaceIds] = useState([]);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
@@ -251,6 +254,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['workspace_name'] = workspace.workspace.name;
         _config['workspace_url'] = workspace.workspace.url;
       }
+      _config['space_ids'] = selectedSpaceIds;
     }
     if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
       connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
@@ -299,7 +303,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub]);
+  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceIds]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -335,6 +339,40 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       };
     });
   }, [projectUuid, confluenceWorkspacesVersion, isConfluenceOauthConnected]);
+
+  const fetchConfluenceSpaces = useCallback(() => {
+    const workspaceId = config.workspace_id;
+    const actualWorkspaceId = workspaceId?.workspace?.id || workspaceId?.id || workspaceId;
+    const actualWorkspaceUrl = workspaceId?.workspace?.url || workspaceId?.url || '';
+    if (!isConfluenceOauthConnected || !actualWorkspaceId || !actualWorkspaceUrl) {
+      setConfluenceSpaces([]);
+      return;
+    }
+    setLoadingConfluenceSpaces(true);
+    connectionsAPI.listConfluenceSpaces(projectUuid, actualWorkspaceId, actualWorkspaceUrl).then((res) => {
+      setConfluenceSpaces(res?.data?.spaces || []);
+    }).catch(() => {
+      setConfluenceSpaces([]);
+    }).finally(() => {
+      setLoadingConfluenceSpaces(false);
+    });
+  }, [projectUuid, config.workspace_id, isConfluenceOauthConnected]);
+
+  // Reload spaces when workspace changes
+  useEffect(() => {
+    if (!isConfluence) return;
+    setSelectedSpaceIds([]);
+    fetchConfluenceSpaces();
+  }, [config.workspace_id, isConfluence, fetchConfluenceSpaces]);
+
+  const toggleSpaceSelection = useCallback((spaceId) => {
+    setSelectedSpaceIds(prev => {
+      if (prev.includes(spaceId)) {
+        return prev.filter(id => id !== spaceId);
+      }
+      return [...prev, spaceId];
+    });
+  }, []);
 
   const handleConnectConfluence = useCallback(() => {
     const next = window.location.href;
@@ -676,6 +714,43 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 <Loading />
                 <div className="mt-3">{gettext('Waiting for Confluence authorization to complete...')}</div>
               </div>
+            )}
+            {isConfluence && isConfluenceOauthConnected && config.workspace_id && (
+              <FormGroup>
+                <Label>{gettext('Spaces (optional)')}</Label>
+                <div className="text-muted mb-2" style={{ fontSize: '0.85em' }}>
+                  {gettext('Select specific spaces to sync. Leave empty to sync all spaces in the workspace.')}
+                </div>
+                {isLoadingConfluenceSpaces ? (
+                  <div className="d-flex align-items-center" style={{ gap: 8 }}>
+                    <Loading /><span>{gettext('Loading spaces...')}</span>
+                  </div>
+                ) : confluenceSpaces.length === 0 ? (
+                  <div className="text-muted">{gettext('No spaces found in this workspace.')}</div>
+                ) : (
+                  <div className="seaqa-confluence-spaces-list" style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: 4, padding: '4px 0' }}>
+                    {confluenceSpaces.map(space => (
+                      <div
+                        key={space.id}
+                        className="seaqa-confluence-space-item d-flex align-items-center"
+                        style={{ padding: '6px 12px', cursor: 'pointer' }}
+                        onClick={() => toggleSpaceSelection(space.id)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedSpaceIds.includes(space.id)}
+                          onChange={() => toggleSpaceSelection(space.id)}
+                          style={{ marginRight: 8 }}
+                        />
+                        <div className="d-flex flex-column">
+                          <span>{space.name}</span>
+                          <span className="text-muted" style={{ fontSize: '0.8em' }}>{space.key} · {space.type}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </FormGroup>
             )}
           </div>
         )}
