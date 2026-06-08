@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@gatsbyjs/reach-router": "2.0.1",
-    "@seafile/seafile-calendar": "1.0.11",
+    "@seafile/seafile-calendar": "1.0.12",
     "@seafile/seafile-editor": "3.0.27",
     "@seafile/sea-email-editor": "^0.0.13",
     "@seafile/react-image-lightbox": "^5.0.4",

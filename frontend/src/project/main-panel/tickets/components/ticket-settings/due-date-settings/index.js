@@ -55,7 +55,6 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
           value={formatValue}
           onChange={onDueDateChange}
           onOpenChange={onOpenChange}
-          // open={open}
           isRemainOpen={true}
         >
           {
