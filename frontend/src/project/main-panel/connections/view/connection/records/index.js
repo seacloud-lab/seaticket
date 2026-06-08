@@ -120,6 +120,32 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
           allColumns.current = columns;
+          // TODO
+          let notDisplayColumnNames = [
+            CONNECTION_PREDEFINED_COLUMN_NAME._PK,
+            CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
+            CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
+            CONNECTION_PREDEFINED_COLUMN_NAME.URL,
+            CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
+            CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_ID,
+            CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
+          ];
+          let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
+          if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+            const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
+            if (typeColum) {
+              const options = typeColum.data?.options || [];
+              const _typesData = options.map(o => ({ ...o, _id: o.id }));
+              setTypesData({
+                rows: _typesData,
+                id_row_map: _typesData.reduce((pre, cur) => {
+                  pre[cur._id] = cur;
+                  return pre;
+                }, {})
+              });
+              context.setSetting('typeColumnKey', typeColum.key);
+            }
+          }
 
           const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
           const collaborators = relatedUsers.map(user => new User(user));

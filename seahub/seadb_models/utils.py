@@ -171,7 +171,7 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
 
 def get_connection_table_name(connection_type, connection_id):
     schema_table = ONNECTION_TYPE_TO_SCHEMA_TABLE.get(connection_type)
-    
+
     return schema_table.table_name(connection_id)
 
 def get_connection_columns(seadb_api, project_uuid, connection):
@@ -538,6 +538,8 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
         table_name = SchemaTables.THREAD.table_name(connection_id)
     elif connection_type == ConnectionType.GENERAL_TASK.value:
         table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+    elif connection_type == ConnectionType.LINEAR.value:
+        SchemaTables.Linear_ISSUES.table_name(connection_id)
     else:
         return []
 
@@ -583,6 +585,31 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
         logger.error(f'SeaDB query error for issue details {comments_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return issue_record, column_metadata, linked_ticket_title
+
+
+def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    issue_table_name = LinearIssueTable.gen_table_name(connection_id)
+    comments_table_name = LinearIssueCommentsTable.gen_table_name(connection_id)
+    issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, identifier, state, labels FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    try:
+        issue_res = seadb_api.query_rows(project_uuid, issue_sql)
+        column_metadata = issue_res.get('metadata')
+        issue_record = issue_res.get('results')[0]
+        issue_id = issue_res.get('results')[0].get('issue_id')
+        issue_record.pop('issue_id')
+        comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = '{issue_id}' ORDER BY comment_id ASC"
+        comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+        comments_record = comments_res.get('results', [])
+        issue_record['comments'] = comments_record
+        linked_ticket = issue_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        logger.error(f'SeaDB query error for Linear issue details {issue_table_name} or {comments_table_name}: {e}')
         issue_record = {}
         column_metadata = []
         linked_ticket_title = ''
@@ -768,6 +795,8 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = SchemaTables.THREAD.table_name(connection_id)
     elif source_type == ConnectionType.GENERAL_TASK.value:
         table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+    elif source_type == ConnectionType.LINEAR.value:
+        table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
         table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     elif source_type == ExtraSourceType.TICKET.value:
