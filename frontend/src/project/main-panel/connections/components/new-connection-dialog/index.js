@@ -6,7 +6,7 @@ import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } f
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
-import { ModalHeader, Loading, SecondaryBtn, toaster } from '@/components';
+import { ModalHeader, Loading, SecondaryBtn, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
@@ -366,6 +366,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value;
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'team_id' && isLinear) {
+      api = listLinearTeams;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
 
     return (
       <ConnectionConfigEditor
@@ -439,7 +445,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {/* TODO */}
             {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>
@@ -471,52 +476,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 <div className="mt-3">{gettext('Waiting for OAuth authorization to complete...')}</div>
               </div>
             )}
-            {customColumns.map(c => {
-              const { type, key, children } = c;
-              if (type === CONNECTION_FIELD_TYPE.GROUP) {
-                return (
-                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
-                    {children.map((child, index) => (
-                      <ConnectionConfigEditor
-                        className="mx-0 px-0 width-half"
-                        column={child}
-                        key={`${key}-${index}`}
-                        row={config}
-                        readonly={isSubmitting}
-                        onChange={onConfigChange}
-                      />
-                    ))}
-                  </Row>
-                );
-              }
-              let api = null;
-              let row = { ...config };
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
-                api = listGitHubRepositories;
-                if (row[key]) {
-                  row[key] = row[key].value;
-                }
-              }
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
-                api = listLinearTeams;
-                if (row[key]) {
-                  row[key] = row[key].value || row[key];
-                }
-              }
-              return ((
-                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
-              ));
-            })}
             {isLinear && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
                 <div className="seaqa-project-linear-oauth">
                   <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
+                    <span className="linear-status-icon d-flex">
+                      <Icon symbol={isLinearOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    </span>
                     {isLinearOauthConnected ? gettext('Connected') : gettext('Not connected')}
                   </span>
                   <Button
-                    color="primary"
-                    className="ml-2"
+                    color={isLinearOauthConnected ? 'secondary' : 'primary'}
                     disabled={isSubmitting || isCheckingLinearOauth}
                     onClick={handleConnectLinear}
                   >
@@ -554,44 +525,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {/* TODO */}
             {customColumns.map(renderConnectionField)}
-            {customColumns.map(c => {
-              const { type, key, children } = c;
-              if (type === CONNECTION_FIELD_TYPE.GROUP) {
-                return (
-                  <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
-                    {children.map((child, index) => (
-                      <ConnectionConfigEditor
-                        className="mx-0 px-0 width-half"
-                        column={child}
-                        key={`${key}-${index}`}
-                        row={config}
-                        readonly={isSubmitting}
-                        onChange={onConfigChange}
-                      />
-                    ))}
-                  </Row>
-                );
-              }
-              let api = null;
-              let row = { ...config };
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'repository' && isGithub) {
-                api = listGitHubRepositories;
-                if (row[key]) {
-                  row[key] = row[key].value;
-                }
-              }
-              if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && c.key === 'team_id' && isLinear) {
-                api = listLinearTeams;
-                if (row[key]) {
-                  row[key] = row[key].value || row[key];
-                }
-              }
-              return ((
-                <ConnectionConfigEditor column={c} api={api} key={key} row={row} readonly={isSubmitting} onChange={onConfigChange} />
-              ));
-            })}
           </div>
         )}
       </ModalBody>

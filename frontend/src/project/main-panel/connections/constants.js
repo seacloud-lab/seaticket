@@ -488,6 +488,9 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.LINEAR,
     icon: 'linear',
     name: gettext('Linear'),
+    help_text: gettext('Make sure to prepare connection name and complete Linear OAuth authorization. If any problem occurs, check the'),
+    // TODO: add Linear help document
+    help_link: 'https://user-docs.seaticket.ai/',
   }
 ];
 
