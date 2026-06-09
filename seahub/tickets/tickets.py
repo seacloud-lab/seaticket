@@ -1760,11 +1760,11 @@ class TicketActivitiesAPIView(APIView):
                 if isinstance(old_value, dict):
                     old_value = {
                         state_key: get_option_id_by_name(
-                            metadata, SchemaTables.TICKETS.column.stat.name, old_value.get('state'),
+                            metadata, SchemaTables.TICKETS.column.state.name, old_value.get('state'),
                             case_insensitive=True
                         ),
                         substate_key: get_option_id_by_name(
-                            metadata, SchemaTables.TICKET.column.substate.name, old_value.get('substate')
+                            metadata, SchemaTables.TICKETS.column.substate.name, old_value.get('substate')
                         )
                     }
                 if isinstance(new_value, dict):
