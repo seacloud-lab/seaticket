@@ -1340,7 +1340,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
             return self._failed_execution(f'Ticket #{ticket_id} not found')
 
-        assignees = ticket.get(SchemaTables.TICKETS.assignees.name) or []
+        assignees = ticket.get(SchemaTables.TICKETS.column.assignees.name) or []
         if not assignees:
             logger.info(f'Ticket #{ticket_id} has no assignees, skip notify.')
             return self._failed_execution(f'Ticket #{ticket_id} has no assignees')
