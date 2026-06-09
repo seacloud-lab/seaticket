@@ -17,7 +17,7 @@ const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
       onClick={enableClick ? () => expandRow(row) : () => {}}
       title={value}
     >
-      <img src={getConnectionIcon(connectionType)} alt={connectionOption.name} className="connection-icon" />
+      <img src={getConnectionIcon(connectionType)} alt={connectionOption?.name} className="connection-icon" />
       <div className="connection-name-wrapper">
         <span className="connection-name">{value}</span>
         {!row.is_active && <Icon symbol="inactive" className="inactive-icon"/>}

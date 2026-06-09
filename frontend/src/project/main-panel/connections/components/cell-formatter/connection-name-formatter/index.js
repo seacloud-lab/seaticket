@@ -1,8 +1,6 @@
 import { CONNECTION_TYPES } from '../../../constants';
 import { getConnectionIcon } from '../../../utils';
 
-// import './index.css';
-
 const ConnectionNameFormatter = ({ value, row = {} }) => {
   const connectionType = row['type'];
   const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
@@ -16,4 +14,3 @@ const ConnectionNameFormatter = ({ value, row = {} }) => {
 };
 
 export default ConnectionNameFormatter;
-
