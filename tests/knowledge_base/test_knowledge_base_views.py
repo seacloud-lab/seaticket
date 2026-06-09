@@ -46,7 +46,7 @@ class TestKnowledgeBaseViewsGet:
         assert 'Permission denied' in resp.data['error_msg']
 
     def test_get_success_returns_views(
-        self, api_client, project_uuid
+        self, api_client, project_uuid, mock_seadb_metadata
     ):
         url = get_kb_views_url(project_uuid)
 

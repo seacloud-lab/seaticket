@@ -57,24 +57,10 @@ class KnowledgeBaseViewsManager(models.Manager):
 
     def update_init_view_details(self, project_uuid, details):
         from seahub.project.seadb_api import SeaDBAPI
-        from seahub.seadb_models.utils import get_current_table_metadata, init_seadb_tables_from_schema
+        from seahub.seadb_models.utils import get_seadb_table_columns
         from seahub.seadb_models.models import SchemaTables
-
         seadb_api = SeaDBAPI()
-        table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
-        metadata = seadb_api.get_base_metadata(project_uuid)
-        tables_metadata = metadata.get('tables') or []
-        table_metadata = get_current_table_metadata(tables_metadata, table_name)
-        if not table_metadata:
-            try:
-                init_seadb_tables_from_schema([SchemaTables.KNOWLEDGE_BASE], seadb_api, project_uuid)
-                metadata = seadb_api.get_base_metadata(project_uuid)
-                tables_metadata = metadata.get('tables') or []
-                table_metadata = get_current_table_metadata(tables_metadata, table_name)
-            except:
-                pass
-        columns = table_metadata.get('columns') or [] if table_metadata else []
-
+        columns = get_seadb_table_columns(seadb_api, project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name())
         views = details.get('views', [])
         for v in views:
             sorts = v.get('sorts', [])
