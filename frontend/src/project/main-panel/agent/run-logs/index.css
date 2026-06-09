@@ -255,18 +255,18 @@
   position: relative;
 }
 
-.action-content.action-content-events .action-label,
+.action-content.action-content-event .action-label,
 .action-content.action-content-analysis .action-label,
 .action-content.action-content-suggestion .action-label {
   font-size: 16px;
 }
 
-.action-content.action-content-events .longtext-preview-container .sf-slate-viewer-article-container .article {
+.action-content.action-content-event .longtext-preview-container .sf-slate-viewer-article-container .article {
   margin: 0;
   padding: 0 !important;
 }
 
-.action-content.action-content-events .sf-slate-viewer-scroll-container .article {
+.action-content.action-content-event .sf-slate-viewer-scroll-container .article {
   max-width: 100%;
 }
 
