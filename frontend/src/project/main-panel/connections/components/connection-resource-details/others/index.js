@@ -9,7 +9,7 @@ const ConnectionResourceOtherDetails = ({
   connection,
   ...props
 }) => {
-  const connectionType = useMemo(() => connection.type, [connection]);
+  const connectionType = useMemo(() => connection?.type, [connection]);
   if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
     return (<GitHubIssuesDetails { ...props }/>);
   }

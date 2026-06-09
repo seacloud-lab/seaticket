@@ -32,7 +32,7 @@ const RunCardHeader = ({ item }) => {
       type: source_type,
       _id: recordId || source_id,
       title: source_title,
-      connection_id: connectionId,
+      connection_id: connectionId ? Number(connectionId) : null,
       icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
     };
   }, [item]);
