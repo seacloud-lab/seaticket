@@ -41,14 +41,18 @@
 }
 
 .sea-metadata-groupbys-popover .groupby-item .delete-groupby {
-  height: 20px;
-  margin-right: 14px;
-  text-align: center;
-  width: 14px;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .sea-metadata-groupbys-popover .groupby-item .delete-groupby:hover {
-  cursor: pointer;
+  background-color: #f5f5f5;
 }
 
 .sea-metadata-groupbys-popover .delete-groupby .seaqa-icon-svg-close {
@@ -107,7 +111,6 @@
 }
 
 .sea-metadata-groupbys-popover .popover-add-tool {
-  color: #666666;
   border-top: 1px solid #eeeeee;
   padding: 8px;
   display: flex;
@@ -130,7 +133,6 @@
   display: inline-flex;
   justify-content: flex-end;
   font-size: 14px;
-  color: #666666;
 }
 
 .sea-metadata-groupbys-popover .popover-add-tool .groupbys-tools .groupbys-tool-item {

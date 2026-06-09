@@ -21,7 +21,7 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
       onClick={handleClick}
       title={name}
     >
-      <img src={getConnectionIcon(type)} alt={connectionOption.name} className="connection-icon seaqa-project-navigation-item-icon"/>
+      <img src={getConnectionIcon(type)} alt={connectionOption?.name} className="connection-icon seaqa-project-navigation-item-icon"/>
       <span className="seaqa-project-navigation-item-name">{name}</span>
     </div>
   );
