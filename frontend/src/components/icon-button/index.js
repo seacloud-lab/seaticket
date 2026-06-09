@@ -43,8 +43,12 @@ const IconButton = React.forwardRef(({
 
 IconButton.propTypes = {
   disabled: PropTypes.bool,
-  classnames: PropTypes.string,
-  symbol: PropTypes.string,
+  className: PropTypes.string,
+  size: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
+  style: PropTypes.object,
+  icon: PropTypes.string,
+  iconStyle: PropTypes.object,
+  iconClassName: PropTypes.string,
 };
 
 export default IconButton;

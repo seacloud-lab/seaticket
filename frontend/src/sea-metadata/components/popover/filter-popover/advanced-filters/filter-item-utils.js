@@ -52,7 +52,7 @@ class FilterItemUtils {
       label: (
         <div className="select-option-name single-option-name">
           <SelectOption option={option} className="single-select-option ml-0" />
-          <IconButton className="single-check-icon no-hover-bg" icon={selectedOption?.id === option.id ? 'check-mark' : ''} />
+          {selectedOption?.id === option.id && <IconButton className="single-check-icon no-hover-bg" icon='check-mark' />}
         </div>
       )
     };

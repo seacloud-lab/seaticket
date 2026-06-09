@@ -35,6 +35,7 @@ const OptionDialog = ({
   const colorInputRef = useRef(null);
 
   const canModifyParentOption = useMemo(() => parentOptions && Array.isArray(parentOptions) && parentOptions.length > 0, [parentOptions]);
+
   const formattedParentOptions = useMemo(() => {
     if (!Array.isArray(parentOptions) || parentOptions.length === 0) return [];
     return parentOptions.map(option => {
@@ -44,12 +45,13 @@ const OptionDialog = ({
         label: (
           <div className="select-option-name single-option-name">
             <SelectOption option={option} className="single-select-option ml-0" />
-            <IconButton className="single-check-icon no-hover-bg" icon={parentId === option.id ? 'check-mark' : ''} />
+            {parentId === option.id && <IconButton className="single-check-icon no-hover-bg" icon='check-mark' />}
           </div>
         ),
       };
     });
   }, [parentOptions, parentId]);
+
   const selectedParentOption = useMemo(() => {
     if (!Array.isArray(parentOptions) || parentOptions.length === 0) return null;
     const option = parentOptions.find(o => o._id === parentId);
@@ -58,13 +60,16 @@ const OptionDialog = ({
       label: (<SelectOption option={option} className="single-select-option ml-0" />)
     };
   }, [parentOptions, parentId]);
+
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     if (!color) return false;
     if (canModifyParentOption && !parentId) return false;
     return true;
   }, [name, color, canModifyParentOption, parentId]);
+
   const isValidColor = useMemo(() => isHexColor(color), [color]);
+
   const isChanged = useMemo(() => {
     if (!oldOption) return isValid;
     const oldValue = {
