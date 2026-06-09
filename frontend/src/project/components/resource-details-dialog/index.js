@@ -7,7 +7,7 @@ import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../mai
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { useConnections } from '../../main-panel/connections/hooks';
-import ConnectionResourceDetails from '../../main-panel/connections/components/connection-resource-details';
+import ConnectionDetails from './connection-details';
 import { getInternalNetworkAddress, getResourceIconURL, getResourceOriginalURL } from '@/project/utils';
 import { KBInDialog } from '../../main-panel/knowledge-base/components';
 import TicketInDialog from '../../main-panel/tickets/components/ticket-in-dialog';
@@ -70,7 +70,7 @@ const ResourceDetailsDialog = ({
     switchResource(step);
   }, [switchResource]), 300);
 
-  const updateResourceDetails = useCallback(({ record, columns }) => {
+  const updateResourceDetails = useCallback((record) => {
     setResourceDetails(record);
   }, []);
 
@@ -149,7 +149,13 @@ const ResourceDetailsDialog = ({
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (
-          <ConnectionResourceDetails resource={resource} columns={columns} projectUuid={projectUuid} permission={permission} updateResource={updateResourceDetails} />
+          <ConnectionDetails
+            projectUuid={projectUuid}
+            resource={resource}
+            columns={columns}
+            permission={permission}
+            onUpdateResourceDetails={updateResourceDetails}
+          />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
           <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} />
