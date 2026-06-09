@@ -55,6 +55,39 @@ class KnowledgeBaseView(object):
 
 class KnowledgeBaseViewsManager(models.Manager):
 
+    def update_init_view_details(self, project_uuid, details):
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_current_table_metadata, init_seadb_tables_from_schema
+        from seahub.seadb_models.models import SchemaTables
+
+        seadb_api = SeaDBAPI()
+        table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
+        metadata = seadb_api.get_base_metadata(project_uuid)
+        tables_metadata = metadata.get('tables') or []
+        table_metadata = get_current_table_metadata(tables_metadata, table_name)
+        if not table_metadata:
+            try:
+                init_seadb_tables_from_schema([SchemaTables.KNOWLEDGE_BASE], seadb_api, project_uuid)
+                metadata = seadb_api.get_base_metadata(project_uuid)
+                tables_metadata = metadata.get('tables') or []
+                table_metadata = get_current_table_metadata(tables_metadata, table_name)
+            except:
+                pass
+        columns = table_metadata.get('columns') or [] if table_metadata else []
+
+        views = details.get('views', [])
+        for v in views:
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item.get('column_key', '')
+                if column_key:
+                    column = next((col for col in columns if col['name'] == column_key), None)
+                    if column:
+                        item['column_key'] = column['key']
+            v['sorts'] = sorts
+        details['views'] = views
+        return details
+
     def get_record(self, project_uuid):
         """
             get record from database, if not record, create it
@@ -73,7 +106,7 @@ class KnowledgeBaseViewsManager(models.Manager):
                         'columns_keys': [],
                         'filter_conjunction': 'Or',
                         'filters': [],
-                        'sorts': [],
+                        'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                         'groupbys': [],
                         'hidden_columns': [],
                     }
@@ -82,6 +115,7 @@ class KnowledgeBaseViewsManager(models.Manager):
                     {'_id': '0000', 'type': 'view'},
                 ]
             }
+            details = self.update_init_view_details(project_uuid, details)
             record = self.create(
                 project_uuid=project_uuid,
                 details=json.dumps(details)
