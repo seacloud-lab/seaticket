@@ -281,7 +281,7 @@ def confluence_oauth(request):
     params = {
         'audience': 'api.atlassian.com',
         'client_id': client_id,
-        'scope': 'offline_access read:page:confluence read:space:confluence read:user:confluence',
+        'scope': 'offline_access read:page:confluence read:space:confluence read:confluence-user',
         'redirect_uri': redirect_url,
         'state': state,
         'response_type': 'code',
