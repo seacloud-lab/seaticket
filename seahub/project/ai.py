@@ -26,6 +26,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.utils import retrieve_vector_search_rerank_data
 from seahub.utils.decorators import require_org_context
 from seahub.settings import SITE_ROOT
+from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
