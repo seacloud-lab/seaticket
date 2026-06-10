@@ -3,7 +3,7 @@ import requests
 
 from seahub.utils.storage import get_project_file_from_s3
 
-GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version')
+GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
 
 
 # general task utils
