@@ -129,7 +129,7 @@ def build_general_task_row_data(task, sync_time=None):
     if not isinstance(participants, list):
         participants = []
     return {
-        SchemaTables.GENERAL_TASK.column.source_task_id.name: str(task.get('task_id')).strip(),
+        SchemaTables.GENERAL_TASK.column.source_task_id.name: task.get('task_id') or task.get('id'),
         SchemaTables.GENERAL_TASK.column.url.name: str(task.get('url') or '').strip(),
         SchemaTables.GENERAL_TASK.column.title.name: task.get('title', ''),
         SchemaTables.GENERAL_TASK.column.status.name: task.get('status'),
@@ -141,8 +141,8 @@ def build_general_task_row_data(task, sync_time=None):
         SchemaTables.GENERAL_TASK.column.others.name: others,
         SchemaTables.GENERAL_TASK.column.content.name: task.get('description') or task.get('content') or '',
         SchemaTables.GENERAL_TASK.column.due_date.name: task.get('due_date'),
-        SchemaTables.GENERAL_TASK.column.modified_time.name: task.get('modified_time') or now,
-        SchemaTables.GENERAL_TASK.column.created_time.name: task.get('created_time') or now,
+        SchemaTables.GENERAL_TASK.column.modified_time.name: task.get('modified_time') or task.get('_mtime'),
+        SchemaTables.GENERAL_TASK.column.created_time.name: task.get('created_time') or task.get('_ctime'),
         SchemaTables.GENERAL_TASK.column.sync_time.name: now,
         SchemaTables.GENERAL_TASK.column.record_modified_time.name: now,
         SchemaTables.GENERAL_TASK.column.deleted.name: bool(task.get('deleted', False)),
