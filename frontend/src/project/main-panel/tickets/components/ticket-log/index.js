@@ -205,6 +205,16 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       if (Array.isArray(val)) return val.length === 0;
       return String(val) === '';
     };
+    const formatDateValue = (val) => {
+      const dateValue = String(val || '').trim();
+      if (!dateValue) return null;
+      if (dateValue.includes('T')) return dateValue.split('T')[0];
+      const date = dayjs(dateValue);
+      if (date.isValid()) {
+        return date.format('YYYY-MM-DD');
+      }
+      return dateValue;
+    };
     const renderTaskUserList = (emails, userMap, removed = false) => {
       if (!Array.isArray(emails) || emails.length === 0) return null;
       return (
@@ -222,6 +232,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     };
     const renderValueNode = (field, val, removed = false, taskUserMap = null) => {
       if (isEmptyValue(val)) return null;
+      if (field === 'due_date') return formatDateValue(val);
       if (taskUserMap && (field === 'assignees' || field === 'participants')) {
         return renderTaskUserList(val, taskUserMap, removed);
       }
