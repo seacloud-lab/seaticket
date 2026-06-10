@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
@@ -17,9 +17,9 @@ dayjs.extend(utc);
 dayjs.extend(localeData);
 dayjs.extend(weekOfYear);
 
-const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', onChange }) => {
+const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
   const calendarContainerRef = useRef(null);
-  const [value, setValue] = useState(propsValue || null);
+  const [value, setValue] = useState(propsValue || '');
   const formatValue = useMemo(() => value ? dayjs(value) : null, [value]);
 
   const getCalendarContainer = useCallback(() => {
@@ -43,7 +43,7 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
   }, [translateCalendar]);
 
   return (
-    <div className={classnames('seaqa-settings-item', className)}>
+    <div className='seaqa-settings-item mb-4'>
       <CustomizeLabel icon="date">
         {gettext('Due date')}
       </CustomizeLabel>
@@ -78,6 +78,12 @@ const DueDateSettings = ({ isReadonly, value: propsValue, className = 'mb-4', on
       </div>
     </div>
   );
+};
+
+DueDateSettings.propTypes = {
+  isReadonly: PropTypes.bool.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default DueDateSettings;
