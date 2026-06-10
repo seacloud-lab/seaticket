@@ -1,37 +1,42 @@
 import React, { useCallback, useState, useImperativeHandle, forwardRef, useMemo, useRef } from 'react';
 import classnames from 'classnames';
+import { connectionsAPI } from '@/project/api';
+import context from '@/sea-metadata/context';
+import { AttachmentObject } from '@/project/main-panel/ask/models';
+
+// components
 import { ELementTypes } from '@seafile/seafile-editor';
 import { CustomizeMarkdownViewer as CustomizeMarkdownViewerComponent, LinkVerifiedDialog, toaster } from '@/components';
 import CustomizeDefinition from './customize-definition';
 import CustomizeLinkReference from './customize-link-reference';
 import CustomizeLink from './customize-link';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import context from '@/sea-metadata/context';
-import {
-  formatSources, transformMDFileToLink, transformKBToLink, transformReferencesToMarkdown,
-  transformContentForCopy,
-} from './utils';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+
+// hooks
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import { useData, useMetadata } from '@/project/hooks';
+
+// utils
+import { formatSources, transformMDFileToLink, transformKBToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
   generateCopyOriginalLinkOption, generateMarkAsOutdatedOptions, getTableName,
 } from '@/project/main-panel/connections/utils';
 import { normalizeContextMenuOptions } from '@/project/utils';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { AttachmentObject } from '@/project/main-panel/ask/models';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { connectionsAPI } from '@/project/api';
-import { useData, useMetadata } from '@/project/hooks';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { Utils } from '@/utils/utils';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { hasOwnProperty } from '@/utils/object-utils';
+
+// constants
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
 
