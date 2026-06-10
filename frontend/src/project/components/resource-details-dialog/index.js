@@ -1,7 +1,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../main-panel/connections/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
@@ -31,7 +31,7 @@ const initColumns = [
 ];
 
 const ResourceDetailsDialog = ({
-  projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
+  projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
   createMoreOptions,
   getTicket,
@@ -45,22 +45,42 @@ const ResourceDetailsDialog = ({
 
   const { connections } = useConnections();
 
+  const currentResourceDetails = useMemo(() => {
+    return resourceDetails?.record || resourceDetails || null;
+  }, [resourceDetails]);
+
+  const currentResource = useMemo(() => {
+    return currentResourceDetails ? { ...resource, ...currentResourceDetails } : resource;
+  }, [resource, currentResourceDetails]);
+
+  const currentColumns = useMemo(() => {
+    return resourceDetails?.columns || columns;
+  }, [resourceDetails, columns]);
+
+  const moreOptions = useMemo(() => {
+    if (!createMoreOptions) return [];
+    return createMoreOptions(currentResource, resourceDetails, {
+      columns: currentColumns,
+      updateResourceDetails: setResourceDetails,
+    }) || [];
+  }, [createMoreOptions, currentResource, resourceDetails, currentColumns]);
+
   const title = useMemo(() => {
 
     // connection
-    if (resourceDetails && resourceDetails.title) return resourceDetails.title;
-    const titleColumn = getColumnByName(columns, 'title');
-    let title = getCellValueByColumn(resource, titleColumn);
+    if (currentResourceDetails && currentResourceDetails.title) return currentResourceDetails.title;
+    const titleColumn = getColumnByName(currentColumns, 'title');
+    let title = getCellValueByColumn(currentResource, titleColumn);
     if (!title && type === CONNECTION_TYPE.SEAFILE) {
-      const filenameColumn = getColumnByName(columns, 'filename');
-      title = getCellValueByColumn(resource, filenameColumn);
+      const filenameColumn = getColumnByName(currentColumns, 'filename');
+      title = getCellValueByColumn(currentResource, filenameColumn);
     }
     return title;
   }, [resource, type, resourceDetails, columns]);
 
   const url = useMemo(() => {
-    return getResourceOriginalURL(type, { ...resource, ...resourceDetails, url: resourceDetails?.url }, connections, columns);
-  }, [type, connections, resource, resourceDetails, columns]);
+    return getResourceOriginalURL(type, { ...currentResource, url: currentResourceDetails?.url || currentResource?.url }, connections, currentColumns);
+  }, [type, connections, currentResource, currentResourceDetails, currentColumns]);
 
   const internalNetworkAddress = useMemo(() => {
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
@@ -133,13 +153,13 @@ const ResourceDetailsDialog = ({
             />
           )}
         </div>
-        {createMoreOptions && (
+        {moreOptions.length > 0 && (
           <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
             <DropdownToggle tag="span">
               <IconButton className="more-btn" icon="more" title={gettext('More')}/>
             </DropdownToggle>
             <CustomizeDropdownMenu>
-              {createMoreOptions(resource).map((option, index) => {
+              {moreOptions.map((option, index) => {
                 if (option === 'Divider') {
                   return <DropdownItem key={index} divider />;
                 }
@@ -159,7 +179,7 @@ const ResourceDetailsDialog = ({
             projectUuid={projectUuid}
             resource={resource}
             columns={columns}
-            permission={permission}
+            permission={PERMISSION_TYPES.READ_WRITE}
             onUpdateResourceDetails={updateResourceDetails}
           />
         )}
