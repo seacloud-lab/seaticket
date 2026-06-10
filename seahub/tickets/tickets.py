@@ -247,7 +247,11 @@ class TicketsAPIView(APIView):
         assignees = list(set(assignees))
 
         due_date = request.POST.get('due_date', '')
-
+        if due_date:
+            try:
+                datetime.datetime.strptime(due_date, '%Y-%m-%d')
+            except ValueError:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
         username = request.user.username
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
