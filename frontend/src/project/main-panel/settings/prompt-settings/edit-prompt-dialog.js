@@ -2,8 +2,11 @@ import React, { useState, useCallback } from 'react';
 import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
+import toaster from '@/components/toaster';
 
 import './edit-prompt-dialog.css';
+
+const TAG_LIKE_PATTERN = /<[^>]+>/;
 
 const EditPromptDialog = ({
   value: initialValue = '',
@@ -17,6 +20,10 @@ const EditPromptDialog = ({
   }, []);
 
   const handleSubmit = useCallback(() => {
+    if (TAG_LIKE_PATTERN.test(value || '')) {
+      toaster.danger(gettext('Project prompt cannot contain tag-like content such as <system-reminder>.'));
+      return;
+    }
     onConfirm && onConfirm(value);
   }, [value, onConfirm]);
 

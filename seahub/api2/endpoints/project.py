@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
+import re
 from datetime import datetime, UTC
 
 from django.utils.translation import gettext as _
@@ -32,6 +33,16 @@ from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
+
+PROJECT_PROMPT_TAG_LIKE_RE = re.compile(r'<[^>]+>')
+
+
+def is_safe_project_prompt(value):
+    if value is None:
+        return True
+    if not isinstance(value, str):
+        return False
+    return PROJECT_PROMPT_TAG_LIKE_RE.search(value) is None
 
 
 class WorkspacesView(APIView):
@@ -321,6 +332,10 @@ class ProjectView(APIView):
                 else:
                     project_settings = {}
                 update_settings = json.loads(settings)
+                project_prompt = update_settings.get('prompt')
+                if not is_safe_project_prompt(project_prompt):
+                    error_msg = _('Project prompt contains disallowed tag-like content.')
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 for k,v in update_settings.items():
                     project_settings[k] = v

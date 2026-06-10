@@ -134,9 +134,9 @@ const ActionItem = React.memo(({
     const isFailedStatus = status === ACTION_STATUS.FAILED;
 
     switch (type) {
-      case ACTION_TYPE.EVENTS:
+      case ACTION_TYPE.EVENT:
         return (
-          <div className="action-content action-content-events">
+          <div className="action-content action-content-event">
             <div className="action-label">{gettext('Event')}</div>
             {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
           </div>
