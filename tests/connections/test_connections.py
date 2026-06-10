@@ -525,7 +525,7 @@ class TestProjectConnectionDetailsView:
 
         assert resp.status_code == 400
 
-    def test_get_view_not_found(self, factory, project_creator, real_project, site_connection):
+    def test_get_view_not_found(self, factory, project_creator, real_project, site_connection, mock_seadb_metadata):
         project = real_project
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/details/", {'view_id': 'v1'})
         request.user = project_creator
@@ -534,7 +534,7 @@ class TestProjectConnectionDetailsView:
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, project_creator, real_project, site_connection):
+    def test_get_success(self, factory, project_creator, real_project, site_connection, mock_seadb_metadata):
         project = real_project
         request = factory.get(
             f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/details/",

@@ -648,11 +648,13 @@ class ConnectionsViewsManager(models.Manager):
 
     def update_init_view_details(self, project_uuid, connection, details):
         connection_type = connection.type
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_connection_columns
+        seadb_api = SeaDBAPI()
+        columns = get_connection_columns(seadb_api, project_uuid, connection)
+
+        # GitHub: convert basic_filters column_keys (name -> actual key) and filter_term option names -> ids
         if connection_type == ConnectionType.GITHUB_ISSUE.value:
-            from seahub.project.seadb_api import SeaDBAPI
-            from seahub.seadb_models.utils import get_connection_columns
-            seadb_api = SeaDBAPI()
-            columns = get_connection_columns(seadb_api, project_uuid, connection)
             views = details.get('views', [])
             for v in views:
                 basic_filters = v.get('basic_filters', [])
@@ -679,16 +681,20 @@ class ConnectionsViewsManager(models.Manager):
                                     new_filter_term.append(option['id'])
                             basic_filter['filter_term'] = new_filter_term
                 v['basic_filters'] = basic_filters
-
-                sorts = v.get('sorts', [])
-                for item in sorts:
-                    column_key = item['column_key']
-                    column = next((column for column in columns if column['name'] == column_key), None)
-                    if column:
-                        item['column_key'] = column['key']
-                v['sorts'] = sorts
-
             details['views'] = views
+
+        # All connection types: convert sorts column_keys from column name to actual column key
+        views = details.get('views', [])
+        for v in views:
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item['column_key']
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    item['column_key'] = column['key']
+            v['sorts'] = sorts
+        details['views'] = views
+
         return details
 
 

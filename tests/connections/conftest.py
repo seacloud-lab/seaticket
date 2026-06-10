@@ -1,10 +1,20 @@
 from types import SimpleNamespace
+from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
 import pytest
 from rest_framework.test import APIRequestFactory
 
 from seahub.project.models import Projects, Workspaces, ProjectConnections
+
+
+@pytest.fixture
+def mock_seadb_metadata():
+    with patch('seahub.project.seadb_api.SeaDBAPI') as mock_seadb:
+        mock_instance = MagicMock()
+        mock_instance.get_base_metadata.return_value = {'tables': []}
+        mock_seadb.return_value = mock_instance
+        yield
 
 
 @pytest.fixture

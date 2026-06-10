@@ -38,7 +38,7 @@ class TestConnectionViewsAPI:
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, project_creator, real_project, connection_factory):
+    def test_get_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{connection.id}/views/")
@@ -88,7 +88,7 @@ class TestConnectionViewsAPI:
 
         assert resp.status_code == 403
 
-    def test_post_success(self, factory, project_creator, real_project, connection_factory):
+    def test_post_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.post(f"/api/v1/project/{project.uuid}/connections/{connection.id}/views/", data={'name': 'v1'}, format='json')
@@ -129,7 +129,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 404
 
-    def test_get_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_get_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{connection.id}/views/missing/")
@@ -139,7 +139,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, project_creator, real_project, connection_factory):
+    def test_get_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{connection.id}/views/0000/")
@@ -160,7 +160,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 400
 
-    def test_put_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_put_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.put(
@@ -174,7 +174,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 400
 
-    def test_put_success(self, factory, project_creator, real_project, connection_factory):
+    def test_put_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.put(
@@ -201,7 +201,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 400
 
-    def test_delete_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_delete_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.delete(f"/api/v1/project/{project.uuid}/connections/{connection.id}/views/missing/")
@@ -211,7 +211,7 @@ class TestConnectionViewAPI:
 
         assert resp.status_code == 400
 
-    def test_delete_success(self, factory, project_creator, real_project, connection_factory):
+    def test_delete_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         new_view = ConnectionsViews.objects.add_view(str(project.uuid), connection, 'ToDelete', 'table', {})
@@ -238,7 +238,7 @@ class TestConnectionViewsDuplicateView:
 
         assert resp.status_code == 400
 
-    def test_post_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_post_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.post(
@@ -252,7 +252,7 @@ class TestConnectionViewsDuplicateView:
 
         assert resp.status_code == 404
 
-    def test_post_success(self, factory, project_creator, real_project, connection_factory):
+    def test_post_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.post(
@@ -298,7 +298,7 @@ class TestConnectionViewsMoveView:
 
         assert resp.status_code == 400
 
-    def test_post_source_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_post_source_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.post(
@@ -312,7 +312,7 @@ class TestConnectionViewsMoveView:
 
         assert resp.status_code == 400
 
-    def test_post_target_view_not_found(self, factory, project_creator, real_project, connection_factory):
+    def test_post_target_view_not_found(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         request = factory.post(
@@ -326,7 +326,7 @@ class TestConnectionViewsMoveView:
 
         assert resp.status_code == 400
 
-    def test_post_success(self, factory, project_creator, real_project, connection_factory):
+    def test_post_success(self, factory, project_creator, real_project, connection_factory, mock_seadb_metadata):
         project = real_project
         connection = connection_factory()
         source_view = ConnectionsViews.objects.add_view(str(project.uuid), connection, 'Source', 'table', {})

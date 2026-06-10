@@ -110,6 +110,15 @@ def mock_project(real_project):
     return project
 
 
+@pytest.fixture(autouse=True)
+def mock_seadb_metadata():
+    """Mock SeaDBAPI for update_init_view_details in models."""
+    with patch('seahub.project.seadb_api.SeaDBAPI') as mock_seadb:
+        mock_instance = MagicMock()
+        mock_instance.get_base_metadata.return_value = {'tables': []}
+        mock_seadb.return_value = mock_instance
+        yield
+
 @pytest.fixture
 def mock_seadb_api():
     """Mock SeaDBAPI class."""

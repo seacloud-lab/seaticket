@@ -167,7 +167,7 @@ TICKET_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }, {
@@ -182,7 +182,7 @@ TICKET_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }
@@ -207,7 +207,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }, {
@@ -221,7 +221,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -241,7 +241,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -260,7 +260,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -279,7 +279,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -298,7 +298,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -317,7 +317,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -336,7 +336,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -489,7 +489,7 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }, {
@@ -504,7 +504,7 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }
