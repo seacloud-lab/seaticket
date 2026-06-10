@@ -33,6 +33,7 @@ const CustomizeSelectSync = ({
     api().then(res => {
       const { options } = res.data || {};
       setAllOptions(Array.isArray(options) ? options : []);
+      setErrorMessage('');
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       setErrorMessage(errorMessage);

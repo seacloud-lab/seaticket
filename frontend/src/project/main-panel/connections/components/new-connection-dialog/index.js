@@ -338,7 +338,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     };
   }, []);
 
-
   const renderConnectionField = useCallback((column) => {
     const { type, key, children, is_advanced_option } = column;
     if (type === CONNECTION_FIELD_TYPE.GROUP) {
@@ -384,7 +383,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
-  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories]);
+  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected]);
 
   return (
     <Modal
