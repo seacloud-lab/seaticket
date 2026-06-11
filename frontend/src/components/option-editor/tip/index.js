@@ -13,7 +13,7 @@ const Tip = ({ isSearchEnabled, hasAvailableOptions, searchValue, tip }) => {
 
   if (searchValue) {
     return (
-      <EmptyTip src={`${mediaUrl}img/no-results.png`} text={gettext('No results')} className="option-editor-no-results-tip" />
+      <div className="option-editor-search-no-results-tip my-6">{tip}</div>
     );
   }
 

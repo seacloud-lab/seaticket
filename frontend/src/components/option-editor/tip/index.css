@@ -15,3 +15,9 @@
 .option-editor-no-results-tip img {
   margin-bottom: 0;
 }
+
+.option-editor-search-no-results-tip {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}

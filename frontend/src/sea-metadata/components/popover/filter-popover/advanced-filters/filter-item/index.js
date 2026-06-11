@@ -390,7 +390,7 @@ class FilterItem extends React.Component {
         placeholder={gettext('Select tag(s)')}
         searchable={true}
         searchPlaceholder={gettext('Search tag')}
-        noOptionsPlaceholder={gettext('No available tags')}
+        noOptionsPlaceholder={gettext('No tags available')}
         supportMultipleSelect={isSupportMultipleSelect}
       />
     );

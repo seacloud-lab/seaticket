@@ -1,5 +1,6 @@
 .collaborator-editor-popover .collaborator-editor-selected-container {
-  background-color: #f6f6f6;
+  background-color: #FAFAFA;
+  border-bottom: 1px solid #EAEAEA;
   border-radius: 4px 4px 0 0;
   min-height: 32px;
   padding: 8px 12px;
@@ -13,30 +14,21 @@
 }
 
 .collaborator-editor-popover .collaborator-editor-search-wrapper {
-  padding: 8px 12px;
+  padding: 8px;
 }
 
 .collaborator-editor-popover .collaborator-editor-content {
   max-height: 200px;
   overflow: auto;
-  padding: 0 12px 12px;
+  padding: 0 8px 8px;
 }
-
-.collaborator-editor-popover .collaborator-editor-content.search-enabled {
-  padding-bottom: 12px;
-}
-
 
 .collaborator-editor-popover .collaborator-editor-content .collaborator-editor-no-results-tip {
-  min-height: 140px;
-  justify-content: flex-start;
-}
-
-.collaborator-editor-popover .collaborator-editor-content .collaborator-editor-no-results-tip .no-items-img-tip {
-  height: 48px !important;
-  width: 48px !important;
-  margin-top: 24px;
-  margin-bottom: 0;
+  margin: 40px auto;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 .collaborator-editor-popover .collaborator-editor-content .collaborator-editor-option {

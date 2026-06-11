@@ -1,9 +1,11 @@
 .sea-metadata-collaborator-editor {
   width: 300px;
+  min-width: 300px;
   padding: 0;
   min-height: 100px;
   overflow: hidden;
   opacity: 1;
   position: absolute;
   left: 0;
+  border: 1px solid #EAEAEA;
 }

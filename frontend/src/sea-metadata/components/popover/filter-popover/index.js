@@ -4,7 +4,7 @@ import isHotkey from 'is-hotkey';
 import deepcopy from 'deep-copy';
 import { FormGroup, Label, UncontrolledPopover } from 'reactstrap';
 import classnames from 'classnames';
-import CommonAddTool from '@/components/customize-add-tool';
+import CustomizeAddTool from '@/components/customize-add-tool';
 import AdvancedFilters from './advanced-filters';
 import BasicFilters from './basic-filters';
 import { gettext } from '@/constants';
@@ -183,7 +183,7 @@ class FilterPopover extends Component {
             </FormGroup>
             {!readOnly && (
               <div className="sea-metadata-filter-popover-add-btns">
-                <CommonAddTool
+                <CustomizeAddTool
                   className={`popover-add-tool ${canAddFilter ? '' : 'disabled'}`}
                   callBack={canAddFilter ? () => this.addFilter(scheduleUpdate) : () => {}}
                   name={gettext('Add filter')}

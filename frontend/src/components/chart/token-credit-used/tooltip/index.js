@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-import './index.css';
 import { gettext } from '@/constants';
+import './index.css';
 
 const Tooltip = ({
   data,

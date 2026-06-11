@@ -7,10 +7,9 @@ import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
 import { isFunction } from '@utils/type-detection';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext } from '@/constants';
 
 import './index.css';
-import { EmptyTip } from '@/components';
 
 const Main = forwardRef(({
   id,
@@ -18,7 +17,7 @@ const Main = forwardRef(({
   isSearchEnabled = true,
   isMultiple = true,
   placeholder,
-  emptyTip = gettext('No results'),
+  emptyTip = gettext('No users available'),
   value: propsValue = [],
   collaborators = [],
   maxHeight = 200,
@@ -193,10 +192,12 @@ const Main = forwardRef(({
         <div className="collaborator-editor-search-wrapper">
           <SearchInput
             isShowSearchIcon={false}
+            isShowClearIcon={true}
             autoFocus={true}
             value={searchValue}
             size={30}
             placeholder={placeholder}
+            onClear={() => setSearchValue('')}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
           />
@@ -208,7 +209,7 @@ const Main = forwardRef(({
         ref={displayCollaboratorsRef}
       >
         {displayCollaborators.length === 0 ? (
-          <EmptyTip text={emptyTip} src={`${mediaUrl}img/no-results.png`} className="collaborator-editor-no-results-tip" />
+          <div className="collaborator-editor-no-results-tip">{emptyTip}</div>
         ) : (
           <>
             {displayCollaborators.map((c, i) => {

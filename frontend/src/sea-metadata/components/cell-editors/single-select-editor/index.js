@@ -5,6 +5,7 @@ import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../ut
 import context from '@/sea-metadata/context';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { gettext } from '@/constants';
+import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
 
@@ -100,6 +101,7 @@ const SingleSelectEditor = forwardRef(({
         onChange={onSubmit}
         onCreate={canEditData ? createOption : null}
         onPressTab={onPressTab}
+        isSearchEnabled={column.name !== PREDEFINED_TICKET_COLUMN_NAME.STATE}
       />
     </div>
   );

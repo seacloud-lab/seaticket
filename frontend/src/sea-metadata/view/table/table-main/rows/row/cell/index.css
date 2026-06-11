@@ -312,10 +312,14 @@
   cursor: pointer;
 }
 
-.sea-metadata-table-cell.cell-selected .hover-decoration:hover {
+.sea-metadata-table-cell .hover-decoration:hover {
   text-decoration: underline;
 }
 
 .sea-metadata-table-cell.table-cell-clickable:hover {
   cursor: pointer;
+}
+
+.sea-metadata-table-cell.sea-metadata-table-tags-cell {
+  padding: 5px 8px;
 }

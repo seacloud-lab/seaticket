@@ -5,9 +5,8 @@ import CustomDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
 import classnames from 'classnames';
 import Icon from '../icon';
-
-import './index.css';
 import IconButton from '../icon-button';
+import './index.css';
 
 const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onChangeOption, closeShowDropdownIcon }) => {
   const [isOpen, setIsOpen] = useState(false);
