@@ -31,7 +31,7 @@ const initColumns = [
 ];
 
 const ResourceDetailsDialog = ({
-  projectUuid, resource, columns = initColumns, isShowIcon,
+  projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
   switchResource, onToggle,
   createMoreOptions,
   getTicket,
