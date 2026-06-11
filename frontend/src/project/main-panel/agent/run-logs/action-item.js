@@ -129,6 +129,14 @@ const ActionItem = React.memo(({
     }
   };
 
+  const getSuggestionResultText = () => {
+    if (status === ACTION_STATUS.FAILED) return result;
+    if ([ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status)) {
+      return gettext('Approved');
+    }
+    return result;
+  };
+
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
     const isFailedStatus = status === ACTION_STATUS.FAILED;
@@ -220,7 +228,7 @@ const ActionItem = React.memo(({
                   >
                     <Icon symbol={isFailedStatus ? 'close' : 'check-circle-filled'} />
                   </span>
-                  <span className="result-text">{result}</span>
+                  <span className="result-text">{getSuggestionResultText()}</span>
                 </div>
               )}
             </div>
