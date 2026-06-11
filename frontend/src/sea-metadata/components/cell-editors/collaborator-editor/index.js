@@ -8,7 +8,7 @@ import { hasOwnProperty } from '@/utils/object-utils';
 import './index.css';
 
 const CollaboratorEditor = forwardRef(({
-  height,
+  height: rowHeight,
   column,
   value,
   editorPosition = { left: 0, top: 0 },
@@ -35,7 +35,7 @@ const CollaboratorEditor = forwardRef(({
       const { bottom } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
-        editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
+        editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,7 +56,7 @@ const CollaboratorEditor = forwardRef(({
   return (
     <div
       className="sea-metadata-collaborator-editor popover collaborator-editor-popover"
-      style={{ top: -38, left: isBeyondScreen ? 'unset' : 0, right: isBeyondScreen ? -column.width : 'unset' }}
+      style={{ top: rowHeight, left: isBeyondScreen ? 'unset' : 0, right: isBeyondScreen ? -column.width : 'unset' }}
       ref={editorRef}
     >
       <Main
