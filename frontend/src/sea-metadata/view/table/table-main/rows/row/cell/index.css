@@ -312,7 +312,7 @@
   cursor: pointer;
 }
 
-.sea-metadata-table-cell.cell-selected .hover-decoration:hover {
+.sea-metadata-table-cell .hover-decoration:hover {
   text-decoration: underline;
 }
 
