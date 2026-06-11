@@ -87,7 +87,8 @@ class SearchInput extends Component {
     return (
       <ClearIconButton
         onClick={this.onClear}
-        style={{ top: (size - CLEAR_ICON_HEIGHT) / 2, right: 6 }}
+        // Icon should set right to 4px, but here we set it to 5px, to avoid overlapping with the 1px border
+        style={{ top: (size - CLEAR_ICON_HEIGHT) / 2, right: 5 }}
       />
     );
   };

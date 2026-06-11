@@ -14,6 +14,7 @@
 
 .seaqa-search-input-wrapper .seaqa-search-input.small-size {
   border-radius: 4px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input:focus {
@@ -31,8 +32,8 @@
   left: 0;
   top: 0;
   pointer-events: none;
-  padding-left: 12px;
-  padding-right: 8px;
+  padding-left: 8px;
+  padding-right: 6px;
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input-search:hover {
@@ -41,9 +42,9 @@
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
-  height: 14px;
-  width: 14px;
+  color: #868E96;
+  height: 12px;
+  width: 12px;
 }
 
 .seaqa-project-search-in-popover.seaqa-search-input-wrapper {

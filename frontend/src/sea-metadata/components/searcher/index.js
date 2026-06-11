@@ -68,7 +68,7 @@ const Searcher = ({ viewId, onChange }) => {
           className="sea-metadata-search-input-wrapper"
           autoFocus={true}
           isShowClearIcon={true}
-          size={30}
+          size={28}
           placeholder={gettext('Search')}
           onKeyDown={onKeyDown}
           onClear={onClear}
