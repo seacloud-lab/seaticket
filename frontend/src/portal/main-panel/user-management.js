@@ -89,8 +89,8 @@ const UserManagement = ({ projectUuid }) => {
             <table className="table table-sm">
               <thead>
                 <tr>
-                  <th style={{ width: 160 }}>{gettext('User')}</th>
-                  <th style={{ width: 320 }}>{gettext('Status')}</th>
+                  <th style={{ width: 240 }}>{gettext('User')}</th>
+                  <th style={{ width: 240 }}>{gettext('Status')}</th>
                   <th style={{ width: 80 }}>{/* More operations */}</th>
                 </tr>
               </thead>
@@ -153,7 +153,7 @@ const UserManagement = ({ projectUuid }) => {
                   {list.map(item => (
                     <tr key={item.token}>
                       <td className="align-middle">
-                        <span className="text-truncate d-inline-block" title={item.email} style={{ maxWidth: 200 }}>
+                        <span className="text-truncate d-block w-100" title={item.email}>
                           {item.email}
                         </span>
                       </td>
