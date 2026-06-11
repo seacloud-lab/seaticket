@@ -523,7 +523,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       case LOG_TYPE.GENERAL_TASK_ADDED: {
         const ref = renderGeneralTaskRef(activity);
         return (
-          <span>{gettext('General task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
+          <span>{gettext('Task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
         );
       }
       case LOG_TYPE.GENERAL_TASK_UPDATED: {
@@ -540,7 +540,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         }
         return (
           <>
-            {gettext('General task')}{ref ? <>{' '}{ref}</> : null}
+            {gettext('Task')}{ref ? <>{' '}{ref}</> : null}
             {changeNodes}
           </>
         );
