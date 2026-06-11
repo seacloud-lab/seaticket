@@ -89,9 +89,9 @@ const UserManagement = ({ projectUuid }) => {
             <table className="table table-sm">
               <thead>
                 <tr>
-                  <th>{gettext('User')}</th>
-                  <th className="text-center" style={{ width: 160 }}>{gettext('Status')}</th>
-                  <th style={{ width: 80 }}></th>
+                  <th style={{ width: 160 }}>{gettext('User')}</th>
+                  <th style={{ width: 320 }}>{gettext('Status')}</th>
+                  <th style={{ width: 80 }}>{/* More operations */}</th>
                 </tr>
               </thead>
               <tbody>
@@ -104,7 +104,7 @@ const UserManagement = ({ projectUuid }) => {
                           <span className="text-truncate" title={u.name || u.email}>{u.name || u.email}</span>
                         </div>
                       </td>
-                      <td className="text-center align-middle">{u.activated ? gettext('Activated') : gettext('Inactive')}</td>
+                      <td className="align-middle">{u.activated ? gettext('Activated') : gettext('Inactive')}</td>
                       <td className="text-right operation-btns align-middle">
                         <IconButton icon="close" onClick={() => portalAPI.deleteExternalUser(projectUuid, u.email).then(() => loadUsers()).catch(() => toaster.danger(gettext('Delete failed')))} title={gettext('Delete')} />
                       </td>
@@ -143,10 +143,10 @@ const UserManagement = ({ projectUuid }) => {
               <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th style={{ width: 200 }}>{gettext('Email')}</th>
-                    <th>{gettext('Invitation link')}</th>
-                    <th style={{ width: 220 }}>{gettext('Expiration time')}</th>
-                    <th style={{ width: 80 }}></th>
+                    <th style={{ width: 160 }}>{gettext('Email')}</th>
+                    <th style={{ width: 180 }}>{gettext('Invitation link')}</th>
+                    <th style={{ width: 140 }}>{gettext('Expiration time')}</th>
+                    <th style={{ width: 80 }}>{/* More operations */}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,7 +158,9 @@ const UserManagement = ({ projectUuid }) => {
                         </span>
                       </td>
                       <td className="text-truncate align-middle" title={item.link}>{shorten(item.link)}</td>
-                      <td className="align-middle" style={{ whiteSpace: 'nowrap' }}>{item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}</td>
+                      <td className="align-middle" style={{ whiteSpace: 'nowrap' }}>
+                        {item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}
+                      </td>
                       <td className="text-right operation-btns align-middle">
                         <div className="d-inline-flex align-items-center" style={{ gap: 8 }}>
                           <IconButton icon="copy" onClick={() => onCopy(item.link)} title={gettext('Copy')} />
