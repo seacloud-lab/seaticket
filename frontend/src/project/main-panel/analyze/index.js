@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import dayjs from '@/sea-metadata/utils/dayjs';
 import { gettext, mediaUrl } from '@/constants';
 import { IconButton, CenteredLoading, CenteredError, EmptyTip } from '@/components';
 import TopBar from '../top-bar';
@@ -81,6 +80,22 @@ const Analyze = ({ title }) => {
     { field: 'state', label: gettext('State') }
   ], []);
 
+  const filterableFieldOptions = useMemo(() => {
+    if (!records || records.length === 0) {
+      return {};
+    }
+    const options = {};
+    FILTERABLE_FIELDS.forEach(({ field }) => {
+      const values = records.map(r => r[field]);
+      const uniqueValues = [...new Set(values.filter(v => v != null))].sort().reverse();
+      if (uniqueValues.length > 0) {
+        options[field] = uniqueValues;
+        options[field].unshift('--');
+      }
+    });
+    return options;
+  }, [records, FILTERABLE_FIELDS]);
+
   const handleToggleSettings = useCallback(() => {
     setIsSettingsOpen(prev => !prev);
   }, []);
@@ -117,43 +132,6 @@ const Analyze = ({ title }) => {
     }
     return { startDate: startDate, endDate: endDate };
   }, [filters, startDate, endDate]);
-
-  const filteredRecords = useMemo(() => {
-    if (!records) return [];
-    if (!activeDateFilter) return records;
-
-    const activeStart = activeDateFilter.startDate;
-    const activeEnd = activeDateFilter.endDate;
-    return records.filter((record) => {
-      const modifiedDate = dayjs(record.modified_time);
-      if (!modifiedDate) {
-        return false;
-      }
-      if (activeStart && modifiedDate.isBefore(dayjs(activeStart))) {
-        return false;
-      }
-      if (activeEnd && modifiedDate.isAfter(dayjs(activeEnd))) {
-        return false;
-      }
-      return true;
-    });
-  }, [records, activeDateFilter]);
-
-  const filterableFieldOptions = useMemo(() => {
-    if (!filteredRecords || filteredRecords.length === 0) {
-      return {};
-    }
-    const options = {};
-    FILTERABLE_FIELDS.forEach(({ field }) => {
-      const values = filteredRecords.map(r => r[field]);
-      const uniqueValues = [...new Set(values.filter(v => v != null))].sort().reverse();
-      if (uniqueValues.length > 0) {
-        options[field] = uniqueValues;
-        options[field].unshift('--');
-      }
-    });
-    return options;
-  }, [filteredRecords, FILTERABLE_FIELDS]);
 
   const handleFilterChange = useCallback((field, value) => {
     setFilters(prev => {
@@ -193,9 +171,9 @@ const Analyze = ({ title }) => {
     return (
       <EmbeddingView
         colorBy={colorBy}
-        filters={filters.filter(filter => filter.field !== 'modified_time')}
+        filters={filters}
         displayMode={displayMode}
-        records={filteredRecords}
+        records={records}
         connections={selectedConnections}
         lastLoadRecordsTime={lastLoadRecordsTime}
       />

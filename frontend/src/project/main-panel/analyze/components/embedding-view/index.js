@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import dayjs from '@/sea-metadata/utils/dayjs';
 import { EmbeddingViewMosaic, defaultCategoryColors } from 'embedding-atlas/react';
 import { Coordinator, wasmConnector, Selection } from '@uwdata/mosaic-core';
 import * as SQL from '@uwdata/mosaic-sql';
@@ -313,6 +314,15 @@ const EmbeddingView = ({
       const filterPredicates = [];
       for (const filter of filters) {
         if (filter.field === 'state' && filter.value === '--') {
+          continue;
+        }
+        if (filter.field === 'modified_time') {
+          const startDate = dayjs(filter.value.startDate).format('YYYY-MM-DD');
+          const endDate = dayjs(filter.value.endDate).format('YYYY-MM-DD');
+          filterPredicates.push(SQL.and(
+            SQL.gte(SQL.column(filter.field), SQL.literal(startDate)),
+            SQL.lte(SQL.column(filter.field), SQL.literal(endDate))
+          ));
           continue;
         }
         filterPredicates.push(SQL.eq(SQL.column(filter.field), SQL.literal(filter.value)));
