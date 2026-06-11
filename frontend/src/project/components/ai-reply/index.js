@@ -10,9 +10,8 @@ import {
   formatSources, transformMDFileToLink, transformKBToLink, transformReferencesToMarkdown,
   transformContentForCopy,
 } from './utils';
-
-import './index.css';
 import { hasOwnProperty } from '@/utils/object-utils';
+import './index.css';
 
 const AIReply = forwardRef(({
   messageId,
