@@ -19,12 +19,13 @@ const Option = ({
   onMouseLeave,
 }) => {
   const validCheckPlacement = useMemo(() => checkPlacement === 'left' ? 'left' : 'right', [checkPlacement]);
-  const { icon, img, label, value } = option;
+  const { icon, img, label, value, disabled } = option;
 
   return (
     <div
       className={classnames('option-editor-option', className, {
         'active': highlight,
+        'disabled': disabled,
         [`check-placement-${validCheckPlacement}`]: validCheckPlacement
       })}
       key={value}

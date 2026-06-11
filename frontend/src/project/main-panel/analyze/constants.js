@@ -17,6 +17,7 @@ export const TABLE_SCHEMA = {
   slug: 'VARCHAR',
   topic_id: 'VARCHAR',
   state: 'VARCHAR',
+  modified_time: 'VARCHAR',
   year: 'INTEGER',
   category_connection_id: 'INTEGER',
   category_state: 'INTEGER',
