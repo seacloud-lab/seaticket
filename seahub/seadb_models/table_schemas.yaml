@@ -718,6 +718,8 @@ tables:
         column_type: text
       prompt:
         column_type: text
+      input:
+        column_type: text
       result:
         column_type: text
       action_type:

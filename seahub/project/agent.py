@@ -107,6 +107,7 @@ def _build_items_map_from_actions(actions, include_details=False):
             action_data.update({
                 'phase': action.get('phase', ''),
                 'prompt': action.get('prompt', ''),
+                'input': action.get('input', ''),
                 'step': action.get('step'),
                 'tool_arguments': action.get('tool_arguments', ''),
                 'observation': action.get('observation', ''),
@@ -137,7 +138,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
             actions_limit = per_page * 30
             details_field = ''
             if include_details:
-                details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
+                details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
                 f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
                 f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
@@ -189,7 +190,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
         
         details_field = ''
         if include_details:
-            details_field = ', `phase`, `prompt`, `step`, `tool_arguments`, `observation`'
+            details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_content`, " \
             f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
