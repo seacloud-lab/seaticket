@@ -82,6 +82,12 @@ const ResourceDetailsDialog = ({
     setResourceDetails(issue);
   }, []);
 
+  const props = {
+    columns,
+    projectUuid,
+    permission,
+  };
+
   return (
     <Modal className="seaqa-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onToggle}>
@@ -158,13 +164,13 @@ const ResourceDetailsDialog = ({
           />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
-          <KBInDialog projectUuid={projectUuid} knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} />
+          <KBInDialog knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} { ...props } />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketID={resource._id} updateTicket={handleUpdateTicket} getTicket={getTicket} />
+          <TicketInDialog ticketID={resource._id} updateTicket={handleUpdateTicket} getTicket={getTicket} { ...props } />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog projectUuid={projectUuid} columns={columns} ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} />
+          <TicketInDialog ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} { ...props } />
         )}
       </ModalBody>
     </Modal>

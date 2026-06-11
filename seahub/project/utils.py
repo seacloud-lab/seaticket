@@ -35,6 +35,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, \
     ConnectionType, AIScenario, OAUTH_EMAIL_PROVIDERS, GMAIL_EMAIL_PROVIDER, MICROSOFT_EMAIL_PROVIDER
 from seahub.avatar.util import get_default_avatar_url
+from seahub.utils import mq
+
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -663,109 +665,18 @@ def collect_github_issue_label_options(seadb_api, project_uuid, connection_ids):
     )
 
 
-# general task utils
-def build_general_task_endpoint(base_url, task_id=None):
-    base_url = (base_url or '').strip()
-    if not base_url:
-        raise ValueError('General task base_url is required.')
-    tasks_url = base_url.rstrip('/')
-    if not tasks_url.endswith('/tasks'):
-        tasks_url = f'{tasks_url}/tasks'
-    if task_id is not None:
-        return f'{tasks_url}/{task_id}'
-    return f'{tasks_url}/'
-
-def get_general_task_headers(connection_config):
-    headers = {}
-    api_token = (connection_config.get('api_token') or '').strip()
-    if api_token:
-        headers['Authorization'] = f'Bearer {api_token}'
-    return headers
-
-def normalize_general_task_payload(task_data, *, partial=False):
-    payload = {}
-    if not isinstance(task_data, dict):
-        return payload
-
-    string_fields = ['title', 'status', 'size', 'priority', 'due_date', 'version']
-    list_fields = ['assignees', 'participants']
-
-    for field in string_fields:
-        if field not in task_data:
-            if not partial:
-                payload[field] = ''
-            continue
-        value = task_data.get(field)
-        payload[field] = '' if value in (None, '') else str(value)
-
-    for field in list_fields:
-        if field not in task_data:
-            if not partial:
-                payload[field] = []
-            continue
-        value = task_data.get(field)
-        if value is None:
-            payload[field] = []
-        elif isinstance(value, list):
-            payload[field] = [str(item) for item in value if item not in (None, '')]
+def send_connection_data_event(project_uuid, connection_id, record_id, source_type, event):
+    try:
+        msg_content = json.dumps({
+            'event': event,
+            'project_uuid': project_uuid,
+            'source_type': source_type,
+            'connection_id': int(connection_id),
+            'record_id': int(record_id),
+        })
+        if mq.publish('data_events', msg_content) > 0:
+            logger.debug('Publish connection data event: %s', msg_content)
         else:
-            payload[field] = [str(value)] if value != '' else []
-
-    content_value = task_data.get('description')
-    if content_value is None and 'content' in task_data:
-        content_value = task_data.get('content')
-    if content_value is not None or not partial:
-        payload['description'] = '' if content_value in (None, '') else str(content_value)
-
-    if 'others' in task_data:
-        others = task_data.get('others')
-        if isinstance(others, str):
-            stripped = others.strip()
-            if not stripped:
-                payload['others'] = {}
-            else:
-                try:
-                    payload['others'] = json.loads(stripped)
-                except Exception:
-                    payload['others'] = {'value': others}
-        elif isinstance(others, dict):
-            payload['others'] = others
-        else:
-            payload['others'] = {}
-    elif not partial:
-        payload['others'] = {}
-
-    return payload
-
-
-def create_general_task_via_adapter(connection_config, task_payload):
-    endpoint = build_general_task_endpoint(connection_config.get('base_url'))
-    headers = get_general_task_headers(connection_config)
-    response = requests.post(endpoint, json=task_payload, headers=headers, timeout=60)
-    if response.status_code >= 400:
-        raise ValueError(response.text or 'Create general task failed.')
-    response_json = response.json() if response.content else {}
-    created_task = {}
-    if isinstance(response_json, dict) and isinstance(response_json.get('task'), dict):
-        created_task.update(response_json['task'])
-    created_task = {**task_payload, **created_task}
-    task_id = response_json.get('id')
-    if task_id:
-        created_task['id'] = task_id
-    return created_task
-
-def update_general_task_via_adapter(connection_config, source_task_id, task_payload):
-    endpoint = build_general_task_endpoint(connection_config.get('base_url'), source_task_id)
-    headers = get_general_task_headers(connection_config)
-    response = requests.post(endpoint, json=task_payload, headers=headers, timeout=60)
-    if response.status_code >= 400:
-        raise ValueError(response.text or 'Update general task failed.')
-    response_json = response.json() if response.content else {}
-    updated_task = {}
-    if isinstance(response_json, dict) and isinstance(response_json.get('task'), dict):
-        updated_task.update(response_json['task'])
-    return {
-        **task_payload,
-        **updated_task,
-        'id': str(source_task_id),
-    }
+            logger.info('No one subscribed to data_events, event (%s) has not been sent', msg_content)
+    except Exception as e:
+        logger.error('send connection data event failed, error: %s', e)

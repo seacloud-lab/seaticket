@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
 import { IconButton, Option, AsyncCollaborator } from '@/components';
@@ -12,8 +12,8 @@ import RemoveLog from './remove-log';
 import Tag from '@/sea-metadata/components/tag';
 import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import { getRowById } from '@/sea-metadata/utils/row';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import LinkedRecord from './linked-record';
 
 import './index.css';
 
@@ -32,6 +32,9 @@ const LOG_TYPE = {
   ASSIGNEES_ADDED: 'assignees_added',
   ASSIGNEES_REMOVED: 'assignees_removed',
   ASSIGNEES_CHANGED: 'assignees_changed',
+
+  GENERAL_TASK_ADDED: 'general_task_added',
+  GENERAL_TASK_UPDATED: 'general_task_updated',
 
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
@@ -60,6 +63,9 @@ const LOG_ICONS = {
   [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
   [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
 
+  [LOG_TYPE.GENERAL_TASK_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.GENERAL_TASK_UPDATED]: 'dot-circle-stroked',
+
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
   [LOG_TYPE.GITHUB_ISSUE_REOPENED]: 'dot-circle-stroked',
@@ -79,50 +85,55 @@ const diff = (newValue, oldValue) => {
 
 export const getTicketLogAnchorId = (activityId) => `ticket-log-${activityId}`;
 
-const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, className }) => {
+const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, className, permission }) => {
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
-  const [selectedEmailThread, setSelectedEmailThread] = useState(null);
 
-  const openEmailThread = useCallback((connectionId, threadId, threadTitle) => {
-    if (!projectUuid || !connectionId || !threadId) return;
-    setSelectedEmailThread({
-      _id: threadId,
-      connection_id: connectionId,
-      type: CONNECTION_TYPE.EMAIL,
-      title: threadTitle,
-    });
-  }, [projectUuid]);
-
-  const renderGithubIssueRef = (issue_number, issue_url) => {
+  const renderGithubIssueRef = ({ connection_id, issue_number, issue_url } = {}) => {
     if (!issue_number) return null;
     if (issue_url) {
-      return <a href={issue_url} target="_blank" rel="noreferrer">#{issue_number}</a>;
+      return (
+        <LinkedRecord
+          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title: '', _id: issue_number, connection_id }}
+          projectUuid={projectUuid}
+          permission={permission}
+        >
+          <>#{issue_number}</>
+        </LinkedRecord>
+      );
     }
     return <span>#{issue_number}</span>;
   };
 
-  const renderDiscourseTopicRef = (topic_id, topic_url) => {
+  const renderDiscourseTopicRef = ({ connection_id, topic_id, topic_url }) => {
     if (!topic_id) return null;
     if (topic_url) {
-      return <a href={topic_url} target="_blank" rel="noreferrer">#{topic_id}</a>;
+      return (
+        <LinkedRecord
+          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title: '', _id: topic_id, connection_id }}
+          projectUuid={projectUuid}
+          permission={permission}
+        >
+          <>#{topic_id}</>
+        </LinkedRecord>
+      );
     }
     return <span>#{topic_id}</span>;
   };
 
-  const renderEmailThreadRef = (connection_id, thread_id, thread_title) => {
+  const renderEmailThreadRef = ({ connection_id, thread_id, thread_title } = {}) => {
     if (!thread_id) return thread_title ? <span>{thread_title}</span> : null;
     const label = thread_title || `#${thread_id}`;
     if (projectUuid && connection_id) {
       return (
-        <button
-          type="button"
-          className="seaqa-log-inline-link"
-          onClick={() => openEmailThread(connection_id, thread_id, thread_title)}
+        <LinkedRecord
+          permission={permission}
+          record={{ type: CONNECTION_TYPE.EMAIL, title: thread_title, _id: thread_id, connection_id }}
+          projectUuid={projectUuid}
         >
           {label}
-        </button>
+        </LinkedRecord>
       );
     }
     if (thread_title) {
@@ -134,8 +145,27 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return null;
   };
 
+  const renderGeneralTaskRef = ({ connection_id, record_id, task_title } = {}) => {
+    const taskId = record_id;
+    const taskTitle = task_title || '';
+    if (!taskId) return taskTitle ? <span>{taskTitle}</span> : null;
+    const label = taskTitle || `#${taskId}`;
+    if (projectUuid && connection_id) {
+      return (
+        <LinkedRecord
+          record={{ type: CONNECTION_TYPE.GENERAL_TASK, title: taskTitle, _id: taskId, connection_id }}
+          projectUuid={projectUuid}
+          permission={permission}
+        >
+          {label}
+        </LinkedRecord>
+      );
+    }
+    return <span>{label}</span>;
+  };
+
   const renderActivityMessage = useCallback(() => {
-    const { activity_type, old_value, new_value, issue_number, issue_url, topic_id, topic_url, thread_id, thread_title, connection_id } = activity;
+    const { activity_type, old_value, new_value, thread_id, thread_title } = activity;
     const asyncCollaboratorProps = {
       className: 'mr-0',
       collaborators,
@@ -157,23 +187,73 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       category_id: gettext('category'),
       resolved: gettext('resolved'),
     };
-    const fmtVal = (val) => {
-      if (val === null || val === undefined) return null;
-      if (Array.isArray(val)) return val.join(', ') || null;
+    const generalTaskLabelMap = {
+      title: gettext('title'),
+      status: gettext('status'),
+      size: gettext('size'),
+      priority: gettext('priority'),
+      assignees: gettext('assignees'),
+      participants: gettext('participants'),
+      version: gettext('version'),
+      others: gettext('others'),
+      content: gettext('content'),
+      description: gettext('description'),
+      due_date: gettext('due date'),
+    };
+    const isEmptyValue = (val) => {
+      if (val === null || val === undefined) return true;
+      if (Array.isArray(val)) return val.length === 0;
+      return String(val) === '';
+    };
+    const formatDateValue = (val) => {
+      const dateValue = String(val || '').trim();
+      if (!dateValue) return null;
+      if (dateValue.includes('T')) return dateValue.split('T')[0];
+      const date = dayjs(dateValue);
+      if (date.isValid()) {
+        return date.format('YYYY-MM-DD');
+      }
+      return dateValue;
+    };
+    const renderTaskUserList = (emails, userMap, removed = false) => {
+      if (!Array.isArray(emails) || emails.length === 0) return null;
+      return (
+        <>
+          {emails.map((email, index) => (
+            <React.Fragment key={email}>
+              {index > 0 ? ', ' : ''}
+              <span className={removed ? 'seaqa-log-removed' : ''} title={email}>
+                {userMap[email] || email}
+              </span>
+            </React.Fragment>
+          ))}
+        </>
+      );
+    };
+    const renderValueNode = (field, val, removed = false, taskUserMap = null) => {
+      if (isEmptyValue(val)) return null;
+      if (field === 'due_date') return formatDateValue(val);
+      if (taskUserMap && (field === 'assignees' || field === 'participants')) {
+        return renderTaskUserList(val, taskUserMap, removed);
+      }
+      if (Array.isArray(val)) return val.join(', ');
       if (typeof val === 'boolean') return val ? gettext('yes') : gettext('no');
+      if (typeof val === 'object') return JSON.stringify(val);
       return String(val) || null;
     };
-    const renderChangeNodes = (oldVal, newVal, labelMap) => {
+    const renderChangeNodes = (oldVal, newVal, labelMap, taskUserMap = null) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
       const newObj = (newVal && typeof newVal === 'object') ? newVal : {};
       const allFields = [...new Set([...Object.keys(newObj), ...Object.keys(oldObj)])];
       return allFields.map(field => {
         const label = labelMap[field] || field;
-        const o = fmtVal(oldObj[field]);
-        const n = fmtVal(newObj[field]);
-        if (!o && n) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
-        if (o && !n) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
-        if (o && n) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
+        const hasOld = !isEmptyValue(oldObj[field]);
+        const hasNew = !isEmptyValue(newObj[field]);
+        const o = renderValueNode(field, oldObj[field], true, taskUserMap);
+        const n = renderValueNode(field, newObj[field], false, taskUserMap);
+        if (!hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
+        if (hasOld && !hasNew) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
+        if (hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
         return null;
       }).filter(Boolean);
     };
@@ -438,16 +518,45 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           </>
         );
       }
+
+      // linked info
+      case LOG_TYPE.GENERAL_TASK_ADDED: {
+        const ref = renderGeneralTaskRef(activity);
+        return (
+          <span>{gettext('Task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
+        );
+      }
+      case LOG_TYPE.GENERAL_TASK_UPDATED: {
+        const ref = renderGeneralTaskRef(activity);
+        const taskUserMap = (activity.related_users || []).reduce((map, user) => {
+          if (user?.email && user?.name) {
+            map[user.email] = user.name;
+          }
+          return map;
+        }, {});
+        const changeNodes = renderChangeNodes(old_value, new_value, generalTaskLabelMap, taskUserMap);
+        if (changeNodes.length === 0) {
+          return <span>{gettext('updated general task')}{ref ? <>{' '}{ref}</> : null}</span>;
+        }
+        return (
+          <>
+            {gettext('Task')}{ref ? <>{' '}{ref}</> : null}
+            {changeNodes}
+          </>
+        );
+      }
+
+      // GitHub issue
       case LOG_TYPE.GITHUB_ISSUE_CLOSED: {
-        const ref = renderGithubIssueRef(issue_number, issue_url);
+        const ref = renderGithubIssueRef(activity);
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('closed')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_REOPENED: {
-        const ref = renderGithubIssueRef(issue_number, issue_url);
+        const ref = renderGithubIssueRef(activity);
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('reopened')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_UPDATED: {
-        const ref = renderGithubIssueRef(issue_number, issue_url);
+        const ref = renderGithubIssueRef(activity);
         const changeNodes = renderChangeNodes(old_value, new_value, githubLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated GitHub issue')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -460,7 +569,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED: {
-        const ref = renderGithubIssueRef(issue_number, issue_url);
+        const ref = renderGithubIssueRef(activity);
         const isLegacyNumber = typeof new_value === 'number';
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
@@ -474,8 +583,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           </span>
         );
       }
+
       case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
-        const ref = renderDiscourseTopicRef(topic_id, topic_url);
+        const ref = renderDiscourseTopicRef(activity);
         const changeNodes = renderChangeNodes(old_value, new_value, discourseLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated Discourse topic')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -488,7 +598,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED: {
-        const ref = renderDiscourseTopicRef(topic_id, topic_url);
+        const ref = renderDiscourseTopicRef(activity);
         const isLegacyNumber = typeof new_value === 'number';
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
@@ -507,7 +617,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         return (
           <span>
             {gettext('Email thread')}
-            {thread_id && <>{' '}{renderEmailThreadRef(connection_id, thread_id)}</>}
+            {thread_id && <>{' '}{renderEmailThreadRef(activity)}</>}
             {thread_title && <span> {thread_title}</span>}
             {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
           </span>
@@ -530,7 +640,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <IconButton size={{ btn: 24, icon: 14 }} className="seaqa-log-btn no-hover-bg" icon={iconSymbol} />
         </div>
         <div className="seaqa-log-content">
-          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && (
+          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && !activity.activity_type.startsWith('general_task_') && (
             <AsyncCollaborator
               value={activity.creator}
               className="seaqa-log-creator"
@@ -544,14 +654,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <span className="seaqa-log-time">{dayjs(activity.created_time).fromNow()}</span>
         </div>
       </div>
-      {selectedEmailThread && (
-        <ResourceDetailsDialog
-          projectUuid={projectUuid}
-          resource={selectedEmailThread}
-          isShowIcon={true}
-          onToggle={() => setSelectedEmailThread(null)}
-        />
-      )}
     </>
   );
 };

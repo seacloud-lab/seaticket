@@ -52,13 +52,14 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
-from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
+from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
-from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, prepare_image_data_for_adapter
+from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
+    prepare_image_data_for_adapter, build_general_task_change_values
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -1234,6 +1235,7 @@ class ProjectConnectionRecordView(APIView):
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
+        general_task_event = None
 
         if project_connection.type == ConnectionType.GENERAL_TASK.value:
 
@@ -1279,6 +1281,14 @@ class ProjectConnectionRecordView(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to update general task.')
                 update_row['row'].update(build_general_task_row_data(merged_task))
                 update_row['row']['source_task_id'] = source_task_id
+                old_value, new_value = build_general_task_change_values(current_record, row_data, changed_task_fields)
+                linked_ticket = merged_task.get('linked_ticket')
+                if linked_ticket and old_value and new_value:
+                    general_task_event = {
+                        'record_id': record_id,
+                        'old_value': old_value,
+                        'new_value': new_value,
+                    }
 
         # Support outdated field for all connection types
         if 'outdated' in row_data:
@@ -1323,6 +1333,17 @@ class ProjectConnectionRecordView(APIView):
             logger.error(f'update connection record error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if general_task_event:
+            send_connection_data_event(
+                project_uuid, connection_id, general_task_event['record_id'],
+                ConnectionType.GENERAL_TASK.value,
+                {
+                    'type': 'general_task_updated',
+                    'old_value': general_task_event['old_value'],
+                    'new_value': general_task_event['new_value'],
+                }
+            )
 
         return Response({'success': True})
 
@@ -1431,6 +1452,15 @@ class ProjectConnectionRecordsView(APIView):
                 }])
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
                 row_data['linked_ticket'] = linked_ticket
+                send_connection_data_event(
+                    project_uuid, connection_id, row_data.get('_pk'),
+                    ConnectionType.GENERAL_TASK.value,
+                    {
+                        'type': 'general_task_added',
+                        'old_value': None,
+                        'new_value': {'title': row_data.get('title')},
+                    }
+                )
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             except Exception as e:
@@ -1497,6 +1527,7 @@ class ProjectConnectionRecordsView(APIView):
             table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
 
         update_rows = []
+        general_task_events = []
         seadb_api = SeaDBAPI()
         for record in records_data:
             row_id = record.get('row_id')
@@ -1548,6 +1579,14 @@ class ProjectConnectionRecordsView(APIView):
                         return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     update_row['row'].update(build_general_task_row_data(merged_task))
                     update_row['row']['source_task_id'] = source_task_id
+                    old_value, new_value = build_general_task_change_values(current_record, row_data, changed_task_fields)
+                    linked_ticket = merged_task.get('linked_ticket')
+                    if linked_ticket and old_value and new_value:
+                        general_task_events.append({
+                            'record_id': row_id,
+                            'old_value': old_value,
+                            'new_value': new_value,
+                        })
 
             # Support outdated field for all connection types
             if 'outdated' in row_data:
@@ -1576,6 +1615,17 @@ class ProjectConnectionRecordsView(APIView):
             logger.error(f'batch update connection records error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        for event in general_task_events:
+            send_connection_data_event(
+                project_uuid, connection_id, event['record_id'],
+                ConnectionType.GENERAL_TASK.value,
+                {
+                    'type': 'general_task_updated',
+                    'old_value': event['old_value'],
+                    'new_value': event['new_value'],
+                }
+            )
 
         return Response({'success': True})
 

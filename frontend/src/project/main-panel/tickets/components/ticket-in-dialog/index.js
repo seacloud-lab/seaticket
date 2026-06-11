@@ -31,12 +31,11 @@ import { useCloseLinkedIssues } from '../../hooks';
 
 import './index.css';
 
-const { permission } = window.app.pageOptions;
-
 const TicketInDialog = ({
   ticketID,
   projectUuid,
   columns: propsColumns = [],
+  permission,
   updateTicket,
   ticketType = TICKET_TYPE,
   getTicket = (projectUuid, ticketID) => ticketsAPI.getProjectTicket(projectUuid, ticketID),

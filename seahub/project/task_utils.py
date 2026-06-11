@@ -3,6 +3,8 @@ import requests
 
 from seahub.utils.storage import get_project_file_from_s3
 
+GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
+
 
 # general task utils
 def build_general_task_endpoint(base_url, task_id=None):
@@ -68,3 +70,16 @@ def update_general_task_via_adapter(connection_config, source_task_id, task_payl
         raise ValueError(response.text or 'Update general task failed.')
     updated_task = response.json() if response.content else {}
     return updated_task
+
+def build_general_task_change_values(current_record, row_data, changed_fields):
+    old_value = {}
+    new_value = {}
+    for field in GENERAL_TASK_ACTIVITY_FIELDS:
+        if field not in changed_fields:
+            continue
+        old_field_value = current_record.get(field)
+        new_field_value = row_data.get(field)
+        if old_field_value != new_field_value:
+            old_value[field] = old_field_value
+            new_value[field] = new_field_value
+    return old_value, new_value

@@ -24,6 +24,8 @@ DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_upda
 
 EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
 
+GENERAL_TASK_ACTIVITY_TYPES = {'general_task_added', 'general_task_updated'}
+
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 

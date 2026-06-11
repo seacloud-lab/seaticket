@@ -86,10 +86,10 @@
   border: 0;
   background: transparent;
   color: var(--bs-link-color);
-  text-decoration: underline;
-  cursor: pointer;
 }
 
 .seaqa-log-inline-link:hover {
   color: var(--bs-link-hover-color);
+  text-decoration: underline;
+  cursor: pointer;
 }

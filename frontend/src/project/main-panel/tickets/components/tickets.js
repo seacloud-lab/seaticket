@@ -280,6 +280,7 @@ const Tickets = ({
       metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, update);
       metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
     });
+    return;
   }, [currentTicket, insertRowByLink]);
 
   const createRowsTools = useCallback((props) => {
