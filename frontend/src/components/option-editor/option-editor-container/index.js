@@ -128,6 +128,8 @@ const OptionEditorContainer = forwardRef(({
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
+            isShowClearIcon={true}
+            onClear={() => setSearchValue('')}
           />
         </div>
       )}

@@ -102,7 +102,7 @@ const TagsEditor = forwardRef(({
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search tags')}
-        emptyTip={gettext('No available tags')}
+        emptyTip={gettext('No tags available')}
         value={Array.isArray(value) ? value.map(v => String(v)) : []}
         options={options}
         onChange={handleChange}

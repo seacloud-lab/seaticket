@@ -4,7 +4,7 @@
 }
 
 .option-editor-search-wrapper {
-  padding: 0 12px 12px 12px;
+  padding: 0 8px 8px 8px;
 }
 
 .option-editor-popover .option-editor-selected-value-wrapper {
@@ -14,7 +14,7 @@
   max-height: 150px;
   min-height: 28px;
   overflow-y: auto;
-  padding: 8px 12px;
+  padding: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -33,12 +33,12 @@
 }
 
 .option-editor-container.selected-value-display.search-enabled .option-editor-search-wrapper {
-  padding-top: 12px;
+  padding-top: 8px;
 }
 
 .option-editor-container.option-editor-container-multiple .option-editor-search-wrapper {
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .option-editor-container.selected-value-display.search-enabled.small-size-option .option-editor-search-wrapper {

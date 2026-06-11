@@ -1,7 +1,6 @@
 .sea-metadata-single-select-editor {
   min-width: 200px;
   padding: 0;
-  min-height: 92px;
   overflow: hidden;
   opacity: 1;
   background: var(--bs-body-bg);
