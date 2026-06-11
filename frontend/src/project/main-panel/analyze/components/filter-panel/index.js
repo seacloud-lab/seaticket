@@ -3,7 +3,7 @@ import dayjs from '@/sea-metadata/utils/dayjs';
 import { gettext } from '@/constants';
 import { Icon, OptionEditor } from '@/components';
 import classnames from 'classnames';
-import { getClosestIndex, getDurationLabel, buildPresetRange, isDisabledPreset } from './utils';
+import { getDurationLabel, buildPresetRange, isDisabledPreset } from './utils';
 import { presetLabelMapping, DATE_FORMAT } from './constants';
 
 import './index.css';
@@ -138,22 +138,19 @@ const FilterPanel = ({
     setIsShowPopover(false);
   }, [handleFilterChange]);
 
-  const emitDateRangeChange = useCallback((nextStartIndex, nextEndIndex) => {
-    if (dateMarks.length === 0) return;
-    const startIndex = Math.min(nextStartIndex, nextEndIndex);
-    const endIndex = Math.max(nextStartIndex, nextEndIndex);
-    onDateFilterChange(dateMarks[startIndex], dateMarks[endIndex]);
-  }, [dateMarks, onDateFilterChange]);
-
   const handleStartChange = useCallback((event) => {
-    const nextIndex = getClosestIndex(event.target.value, maxIndex);
-    emitDateRangeChange(nextIndex, selectedRange.endIndex);
-  }, [emitDateRangeChange, maxIndex, selectedRange.endIndex]);
+    const curIndex = event.target.value;
+    const startIndex = Math.min(curIndex, selectedRange.endIndex);
+    const endIndex = Math.max(curIndex, selectedRange.endIndex);
+    onDateFilterChange(dateMarks[startIndex], dateMarks[endIndex]);
+  }, [maxIndex, selectedRange.endIndex]);
 
   const handleEndChange = useCallback((event) => {
-    const nextIndex = getClosestIndex(event.target.value, maxIndex);
-    emitDateRangeChange(selectedRange.startIndex, nextIndex);
-  }, [emitDateRangeChange, maxIndex, selectedRange.startIndex]);
+    const curIndex = event.target.value;
+    const startIndex = Math.min(selectedRange.startIndex, curIndex);
+    const endIndex = Math.max(selectedRange.startIndex, curIndex);
+    onDateFilterChange(dateMarks[startIndex], dateMarks[endIndex]);
+  }, [maxIndex, selectedRange.startIndex]);
 
   const handlePresetChange = useCallback((preset) => {
     if (!preset) return;
@@ -162,7 +159,7 @@ const FilterPanel = ({
     setIsShowPresetPopover(false);
   }, [onDateFilterChange, baseStartDate, baseEndDate]);
 
-  const isShowDateRange = baseStartDate && baseStartDate;
+  const isShowDateRange = !!baseStartDate && !!baseEndDate;
 
   return (
     <div className="analyze-filter-panel d-flex align-items-end">

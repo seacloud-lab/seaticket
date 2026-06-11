@@ -2,12 +2,6 @@ import dayjs from '@/sea-metadata/utils/dayjs';
 import { gettext } from '@/constants';
 import { DATE_FORMAT } from './constants';
 
-export const getClosestIndex = (value, maxIndex) => {
-  const nextValue = Number.parseInt(value, 10);
-  if (Number.isNaN(nextValue)) return 0;
-  return Math.max(0, Math.min(nextValue, maxIndex));
-};
-
 export const getDurationLabel = (startDate, endDate) => {
   const parsedStart = dayjs(startDate);
   const parsedEnd = dayjs(endDate);

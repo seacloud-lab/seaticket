@@ -130,7 +130,7 @@ const Analyze = ({ title }) => {
     if (rangeFilter) {
       return { startDate: rangeFilter.startDate, endDate: rangeFilter.endDate };
     }
-    return { startDate: startDate, endDate: endDate };
+    return { startDate, endDate };
   }, [filters, startDate, endDate]);
 
   const handleFilterChange = useCallback((field, value) => {
