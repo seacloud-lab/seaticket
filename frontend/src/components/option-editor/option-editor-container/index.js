@@ -149,11 +149,13 @@ const OptionEditorContainer = forwardRef(({
         onToggle={onToggle}
       />
       {showCreateBtn && (
-        <CustomizeAddTool
-          className={classnames('option-editor-add-search-result', { 'mt-2': displayOptions.length === 0 })}
-          name={`${addToolText} ${searchValue.trim()}`}
-          callBack={handleCreate}
-        />
+        <div className="option-editor-add-tool">
+          <CustomizeAddTool
+            className={classnames('option-editor-add-search-result')}
+            name={`${addToolText} ${searchValue.trim()}`}
+            callBack={handleCreate}
+          />
+        </div>
       )}
     </div>
   );

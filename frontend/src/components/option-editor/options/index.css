@@ -3,18 +3,3 @@
   overflow: auto;
   padding: 0 8px;
 }
-
-.option-editor-add-search-result {
-  height: 38px;
-  overflow: hidden;
-  padding: 0 10px;
-  border-top: 1px solid var(--bs-border-secondary-color);
-  color: var(--bs-body-color);
-}
-
-.option-editor-add-search-result .seaqa-icon-svg {
-  height: 12px;
-  width: 12px;
-  margin-right: 10px;
-  flex-shrink: 0;
-}

@@ -36,6 +36,7 @@
   border-bottom-right-radius: 3px;
   height: 40px;
   padding: 0 1rem;
+  border-top: 1px solid var(--bs-border-secondary-color);
 }
 
 .sea-metadata-filter-popover .customize-add-tool.popover-add-tool {

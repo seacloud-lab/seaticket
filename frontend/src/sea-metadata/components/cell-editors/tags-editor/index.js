@@ -15,7 +15,7 @@ import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 import './index.css';
 
 const TagsEditor = forwardRef(({
-  height,
+  height: rowHeight,
   column,
   value: propsValue,
   editorPosition = { left: 0, top: 0 },
@@ -41,8 +41,8 @@ const TagsEditor = forwardRef(({
   }, [tagsData]);
 
   const style = useMemo(() => {
-    return { width: 400, top: -1, left: 0 };
-  }, [column, height]);
+    return { width: 400, top: rowHeight, left: 0 };
+  }, [column, rowHeight]);
 
   const handleCreateTag = useCallback((name) => {
     const random = Math.floor(Math.random() * (SELECT_OPTION_COLORS.length - 1));
@@ -73,7 +73,7 @@ const TagsEditor = forwardRef(({
       const { bottom, right } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
-        editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
+        editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
       if (right > window.innerWidth) {
         editorRef.current.style.right = right - window.innerWidth - 10 + 'px';

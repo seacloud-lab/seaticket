@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
 import { ColorSelectorPopover, IconButton } from '@/components';
-import CommonAddTool from '@/components/customize-add-tool';
+import CustomizeAddTool from '@/components/customize-add-tool';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import context from '@/sea-metadata/context';
 import { CellType } from '@/sea-metadata/constants';
@@ -223,7 +223,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   />
                   {!readOnly && (
                     <div className="sea-metadata-row-color-rule-filters-footer">
-                      <CommonAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add condition')} />
+                      <CustomizeAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add condition')} />
                     </div>
                   )}
                 </div>
@@ -234,7 +234,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       </div>
       {!readOnly && (
         <div className="sea-metadata-row-color-add-btns">
-          <CommonAddTool
+          <CustomizeAddTool
             className={`popover-add-tool ${canAddRule ? '' : 'disabled'}`}
             callBack={canAddRule ? handleAddRule : () => {}}
             name={gettext('Add rule')}
