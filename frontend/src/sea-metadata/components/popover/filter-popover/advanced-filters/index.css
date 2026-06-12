@@ -273,6 +273,7 @@
 .sea-metadata-filters-list .option-group {
   max-height: 360px;
   overflow: auto;
+  padding-bottom: 0px;
 }
 
 .sea-metadata-filters-list .filter-container-readonly .seaqa-customize-select .selected-option-show,
