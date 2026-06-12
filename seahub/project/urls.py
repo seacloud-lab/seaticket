@@ -16,7 +16,7 @@ from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
 from .ai import ConvertRecordToTicket, ConvertTicketToKnowledgeBaseRecord, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, \
     RelatedRecordsView, ConvertPortalIssueToTicket
-from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
+from .api_tokens import ProjectAPITokensView, ProjectAPITokenView, ProjectNotificationJwtTokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
 from .search import SearchTicketsView, SearchTicketsAndDocumentsView
@@ -63,6 +63,7 @@ urlpatterns = [
     # API tokens
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/api-tokens/$', ProjectAPITokensView.as_view(), name='api-v1-project-api-tokens'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/api-tokens/(?P<token_id>\d+)/$', ProjectAPITokenView.as_view(), name='api-v1-project-api-token'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/project-notification-jwt-token/$', ProjectNotificationJwtTokenView.as_view(), name='api-v1-project-notification-jwt-token'),
     re_path(r'^api/v1/project/connection-list/$', ProjectConnectionListByTokenView.as_view(), name='api-v1-connection-list-by-token'),
     re_path(r'^api/v1/project/connection-details/$', ProjectConnectionDetailByTokenView.as_view(), name='api-v1-connection-details-by-token'),
     re_path(r'^api/v1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v1-connection-row-details-by-token'),

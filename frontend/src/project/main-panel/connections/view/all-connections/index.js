@@ -11,10 +11,7 @@ import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
 import createFormatter from '../../components/cell-formatter';
 import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
-import SelfQuery from '@/utils/self-query';
 import { BAR_TYPE } from '@/project/constants';
-import { isConnectionSyncCompleted } from '../../utils';
-import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
 
@@ -31,14 +28,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const { togglePageSlugId } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
-  const lastQueryRecordIds = useRef([]);
-
-  const selfQuery = useMemo(() => new SelfQuery({
-    api: (ids) => connectionsAPI.queryConnectionsStatus(projectUuid, ids).then(res => res.data || {}),
-    callback: modifyLocalConnectionsSyncStatus,
-    endCondition: isConnectionSyncCompleted,
-    maxRetries: 50,
-  }), [projectUuid, modifyLocalConnectionsSyncStatus]);
 
   const columns = useMemo(() => {
     return [
@@ -135,22 +124,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     modifyConnectionIsActiveStatus(id, activeStatus);
   };
 
-  const rowsDidMount = useCallback((rows) => {
-    const synchronizingRows = rows.filter(r => !isConnectionSyncCompleted(r)).map(r => r.id);
-    if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
-    lastQueryRecordIds.current = synchronizingRows;
-    selfQuery.start(synchronizingRows);
-  }, [selfQuery]);
-
-  const rowsWillUnmount = useCallback(() => {
-    selfQuery.clear();
-  }, []);
-
   useEffect(() => {
     reloadConnections();
-    return () => {
-      selfQuery.clear();
-    };
   }, []);
 
   if (isLoading) return (<CenteredLoading />);
@@ -183,8 +158,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         onConfigureWebhook={onConfigureWebhook}
         onUpdate={modifyConnectionIsActiveStatus}
         handleStatusActive={isProjectAdmin ? handleStatusActive : null}
-        rowsDidMount={rowsDidMount}
-        rowsWillUnmount={rowsWillUnmount}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
       {isShowStatusDialog && (

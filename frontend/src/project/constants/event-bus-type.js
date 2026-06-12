@@ -18,4 +18,5 @@ export const EVENT_BUS_TYPE = {
   MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify_local_record_in_dialog',
   MODIFY_LOCAL_RECORD: 'modify_local_record',
   MODIFY_LOCAL_RECORDS: 'modify_local_records',
+  CONNECTION_SYNC: 'connection_sync',
 };

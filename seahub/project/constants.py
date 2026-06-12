@@ -541,3 +541,6 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
         {'_id': 'closed', 'type': 'view'}
     ]
 }
+
+
+NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME = 3 * 3600 * 24

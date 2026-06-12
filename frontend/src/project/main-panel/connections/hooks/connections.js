@@ -62,6 +62,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     }
   }, [getUrlParams]);
 
+  const connectionsRef = useRef([]);
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
   const hasMoreRef = useRef(true);
@@ -249,6 +250,10 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   }, [isLoading, loadMore]);
 
   useEffect(() => {
+    connectionsRef.current = connections;
+  }, [connections]);
+
+  useEffect(() => {
     const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.NEW_CONNECTION, () => {
       activeConnectionRef.current = null;
       toggleConnectionDialog(true);
@@ -257,6 +262,23 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       unsubscribeNewConnection();
     };
   }, [toggleConnectionDialog]);
+
+  useEffect(() => {
+    const unsubscribeSync = eventBus.subscribe(EVENT_BUS_TYPE.CONNECTION_SYNC, ({ connection_id, is_success }) => {
+      const conn = connectionsRef.current.find(c => c.id === Number(connection_id));
+      const connection_name = conn?.name || connection_id;
+      connectionsAPI.queryConnectionsStatus(projectUuid, [connection_id]).then(res => {
+        modifyLocalConnectionsSyncStatus(res.data);
+      });
+      const msg = is_success
+        ? `Connection ${connection_name} synced`
+        : `Connection ${connection_name} sync failed`;
+      toaster.success(gettext(msg));
+    });
+    return () => {
+      unsubscribeSync();
+    };
+  }, [projectUuid, modifyLocalConnectionsSyncStatus]);
 
   useEffect(() => {
     if (!isLoading) return;

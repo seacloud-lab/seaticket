@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import _ from 'lodash';
@@ -15,7 +15,9 @@ import eventBus from '../utils/event-bus';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 import { DataProvider } from './hooks';
-import { siteRoot } from '@/constants';
+import { siteRoot, gettext } from '@/constants';
+import WebSocketClient from '../utils/websocket-service';
+
 
 import './index.css';
 
@@ -25,6 +27,25 @@ const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
   const [settings, setSettings] = useState({});
+  const socketRef = useRef(null);
+
+  const onMessageCallback = useCallback((noticeData) => {
+    if (noticeData.type === 'connection-sync') {
+      eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_SYNC, {
+        connection_id: noticeData.content.connection_id,
+        is_success: noticeData.content.is_success,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    socketRef.current = new WebSocketClient(onMessageCallback, projectUuid);
+
+    return () => {
+      socketRef.current?.close?.();
+      socketRef.current = null;
+    };
+  }, [projectUuid]);
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
