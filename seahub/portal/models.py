@@ -2,15 +2,22 @@ import json
 import string
 import random
 import copy
+from secrets import token_hex
 from django.db import models
 from django.utils import timezone
 from uuid import uuid4
-from django.urls import reverse
 from django.conf import settings
 from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
+from seahub.portal.custom_domain import (
+    CUSTOM_DOMAIN_TXT_RECORD_PREFIX,
+    CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX,
+    build_portal_external_accept_path,
+    get_custom_domain_origin,
+    normalize_portal_custom_domain,
+)
 import logging
 
 from seahub.seadb_models.models import SchemaTables
@@ -70,9 +77,14 @@ class PortalExternalInvitation(models.Model):
 
     @property
     def link(self):
+        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(self.project_uuid)
+        if custom_domain and custom_domain.verified:
+            base = get_custom_domain_origin(custom_domain.domain).rstrip('/')
+            return f'{base}/external/accept/{self.token}/'
+
         base = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '').rstrip('/')
-        path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
-        return f"{base}{path}" if base else path
+        path = build_portal_external_accept_path(self.token, self.project_uuid)
+        return f'{base}{path}' if base else path
 
 
 class ProjectExternalUserManager(models.Manager):
@@ -95,6 +107,59 @@ class ProjectExternalUser(models.Model):
     class Meta:
         unique_together = (('email', 'project_uuid'),)
         db_table = 'project_external_users'
+
+
+class PortalCustomDomainManager(models.Manager):
+
+    def get_by_domain(self, domain):
+        try:
+            normalized_domain = normalize_portal_custom_domain(domain)
+        except ValueError:
+            return None
+
+        return super().filter(domain=normalized_domain).first()
+
+    def get_by_project_uuid(self, project_uuid):
+        return super().filter(project_uuid=str(project_uuid)).first()
+
+
+class PortalCustomDomain(models.Model):
+    domain = models.CharField(max_length=255, unique=True)
+    project_uuid = models.CharField(max_length=36, unique=True, db_index=True)
+    verification_token = models.CharField(max_length=64)
+    verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = PortalCustomDomainManager()
+
+    class Meta:
+        db_table = 'portal_custom_domains'
+
+    def save(self, *args, **kwargs):
+        self.domain = normalize_portal_custom_domain(self.domain)
+        self.project_uuid = str(self.project_uuid)
+        if not self.verification_token:
+            self.verification_token = token_hex(16)
+        return super().save(*args, **kwargs)
+
+    @property
+    def txt_record_name(self):
+        return '%s.%s' % (CUSTOM_DOMAIN_TXT_RECORD_PREFIX, self.domain)
+
+    @property
+    def txt_record_value(self):
+        return '%s%s' % (CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, self.verification_token)
+
+    def reset_verification(self):
+        self.verification_token = token_hex(16)
+        self.verified = False
+        self.verified_at = None
+
+    def mark_verified(self):
+        self.verified = True
+        self.verified_at = timezone.now()
 
 
 class PortalChatSessionsManager(models.Manager):

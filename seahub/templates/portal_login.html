@@ -38,6 +38,16 @@
 
   const csrftoken = getCookie('{{ CSRF_COOKIE_NAME|default:"seaqa_csrftoken" }}');
   const projectUuid = "{{ project_uuid }}";
+  const siteRoot = "{{ SITE_ROOT|escapejs }}";
+  function buildSiteRootPath(path) {
+    const root = siteRoot || '/';
+    const prefix = root.endsWith('/') ? root : `${root}/`;
+    return `${prefix}${String(path || '').replace(/^\/+/, '')}`;
+  }
+  const standardPortalBasePath = buildSiteRootPath(`portal/${projectUuid}/`);
+  const portalHomeUrl = window.location.pathname.startsWith(standardPortalBasePath) ? standardPortalBasePath : '/';
+  const sendCodeUrl = buildSiteRootPath(`api/v1/portal/${projectUuid}/external-login/send-code/`);
+  const verifyCodeUrl = buildSiteRootPath(`api/v1/portal/${projectUuid}/external-login/verify/`);
   let countdownTimer = null;
   const resendInTemplate = '{% blocktrans with sec="__SEC__" %}Resend in {{ sec }}s{% endblocktrans %}';
   const sendCodeSuccessMsg = '{% trans "If the email is eligible, a login code has been sent." %}';
@@ -61,7 +71,7 @@
   }
 
   function sendCode(email) {
-    return fetch(`/api/v1/portal/${projectUuid}/external-login/send-code/`, {
+    return fetch(sendCodeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email })
@@ -157,12 +167,12 @@
       return;
     }
 
-    fetch(`/api/v1/portal/${projectUuid}/external-login/verify/`, {
+    fetch(verifyCodeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
       body: JSON.stringify({ email, code })
     }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
-      .then(() => { window.location.href = `/portal/${projectUuid}/`; })
+      .then(() => { window.location.href = portalHomeUrl; })
       .catch(e => showMsg(promptCode, getErrorMessage(e, '{% trans "Verify failed" %}'), true));
   };
 </script>

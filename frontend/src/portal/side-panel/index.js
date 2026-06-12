@@ -8,6 +8,7 @@ import Account from '@/components/account';
 import ExternalUserAccount from '@/components/account/external-user-account';
 import { usePortalSettings } from '../hooks';
 import { isMobile } from '@/utils/utils';
+import { getPortalLoginPath } from '../path-utils';
 
 const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {
   const { logo, name } = usePortalSettings();

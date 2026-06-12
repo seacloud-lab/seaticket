@@ -17,8 +17,11 @@ from seahub.portal.apis import (
     PortalIssueMetadataView,
     PortalMyIssuesView,
     PortalIssueTrashAPIView,
+    PortalExternalInvitationsView,
+    PortalCustomDomainView,
     SQLGeneratorOptionInvalidError,
 )
+from seahub.portal.models import PortalCustomDomain
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
 
@@ -424,7 +427,7 @@ class TestPortalSettingsView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
-            data={'allow_anonymous': 1, 'enable_password_protection': 0, 'show_knowledge_base': 1},
+            data={'allow_anonymous': 1, 'enable_password_protection': 0, 'show_knowledge_base': 1, 'custom_domain': 'support.local.test'},
             format='json'
         )
         request.user = project_creator
@@ -440,6 +443,7 @@ class TestPortalSettingsView:
         assert portal_settings.get('enable_password_protection') is False
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
+        assert PortalCustomDomain.objects.get_by_project_uuid(project.uuid) is None
 
     def test_post_partial_update_portal_branding_preserves_other_settings(self, factory, project_creator, real_project):
         project = real_project
@@ -533,6 +537,138 @@ class TestPortalSettingsView:
                 PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         delete_mock.assert_not_called()
+
+
+@pytest.mark.django_db
+class TestPortalCustomDomainView:
+
+    def test_get_success(self, factory, project_creator, real_project):
+        project = real_project
+        custom_domain = PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/custom-domain/")
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['custom_domain'] == 'support.local.test'
+        assert resp.data['custom_domain_verified'] is True
+        assert resp.data['custom_domain_txt_record_name'] == custom_domain.txt_record_name
+        assert resp.data['custom_domain_txt_record_value'] == custom_domain.txt_record_value
+        assert resp.data['custom_public_url'] == 'http://support.local.test/'
+
+    def test_post_create_custom_domain(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/custom-domain/",
+            data={'custom_domain': 'Support.Local.Test'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project.uuid)
+        assert custom_domain.domain == 'support.local.test'
+        assert custom_domain.verified is False
+
+    def test_post_replace_custom_domain_resets_verification(self, factory, project_creator, real_project):
+        project = real_project
+        custom_domain = PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        old_token = custom_domain.verification_token
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/custom-domain/",
+            data={'custom_domain': 'help.local.test'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        custom_domain.refresh_from_db()
+        assert custom_domain.domain == 'help.local.test'
+        assert custom_domain.verified is False
+        assert custom_domain.verified_at is None
+        assert custom_domain.verification_token != old_token
+
+    def test_post_delete_custom_domain(self, factory, project_creator, real_project):
+        project = real_project
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/custom-domain/",
+            data={'custom_domain': ''},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert PortalCustomDomain.objects.get_by_project_uuid(project.uuid) is None
+
+    def test_post_rejects_domain_used_by_other_project(self, factory, project_creator, real_project):
+        project = real_project
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid='11111111-1111-1111-1111-111111111111',
+        )
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/custom-domain/",
+            data={'custom_domain': 'support.local.test'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+class TestPortalExternalInvitationsView:
+
+    def test_post_uses_verified_custom_domain_link_in_email(self, factory, project_creator, real_project):
+        project = real_project
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/external-invitations/",
+            data={'email': 'external@example.com'},
+            format='json'
+        )
+        request.user = project_creator
+        captured_context = {}
+
+        def send_mail(_email, _subject, _template, context):
+            captured_context.update(context)
+            return True
+
+        with patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True), \
+                patch('seahub.portal.apis.send_html_email_with_dj_template', side_effect=send_mail):
+            resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        invitation_link = captured_context['invitation_link']
+        assert invitation_link.startswith('https://support.local.test/external/accept/')
+        assert invitation_link.endswith('/')
+        assert '/portal-external/accept/' not in invitation_link
 
 
 @pytest.mark.django_db

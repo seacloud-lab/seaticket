@@ -5,6 +5,7 @@ import { IconTooltip } from '../../components';
 import { gettext } from '@/constants';
 import Settings from '../main-panel/settings';
 import UserManagement from '../main-panel/user-management';
+import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
 
@@ -22,8 +23,7 @@ const LeftBar = () => {
         icon: 'eye',
         tip: gettext('Go to app'),
         callback: () => {
-          const { projectUuid } = window.app.pageOptions;
-          window.open(`/portal/${projectUuid}/`, '_blank');
+          window.open(getPortalPublicUrl(), '_blank');
         },
       }, {
         icon: 'manage-members',

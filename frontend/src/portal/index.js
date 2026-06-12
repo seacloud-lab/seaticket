@@ -12,6 +12,12 @@ import { portalAPI } from './api';
 import { gettext, name, username, avatarURL, mediaUrl } from '@/constants';
 import User from '@/models/user';
 import { PortalSettingsProvider } from './hooks';
+import {
+  buildPortalPath,
+  getPortalAnonymousValidatePath,
+  getPortalLoginPath,
+  getPortalPathSegments,
+} from './path-utils';
 
 import './index.css';
 
@@ -45,25 +51,18 @@ const Portal = () => {
 
   const onPageChange = useCallback((page) => {
     if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_ISSUE || page === PORTAL_PAGE.MY_ISSUES)) {
-      const { origin } = location;
-      location.href = `${origin}/portal/${projectUuid}/login/`;
+      location.href = getPortalLoginPath();
       return;
     }
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(page);
-    const { origin } = location;
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}/${basePath}/${projectUuid}/${page}/`;
-    history.replaceState(null, null, url);
+    history.replaceState(null, null, buildPortalPath(page));
   }, [enableKB]);
 
   useEffect(() => {
-    const { pathname } = location;
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const regex = new RegExp(`/${basePath}/${projectUuid}/([^/]*)`);
-    const match = pathname.match(regex);
-    if (match && match[1]) {
-      const pageKey = match[1];
+    const pathSegments = getPortalPathSegments();
+    if (pathSegments.length > 0) {
+      const [pageKey] = pathSegments;
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
         const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_ISSUE || pageKey === PORTAL_PAGE.MY_ISSUES;
         if (isAnonymous && isRestrictedPage) {
@@ -121,7 +120,7 @@ const Portal = () => {
       formData.append('csrfmiddlewaretoken', csrfToken);
       formData.append('password', passwordInput);
 
-      const response = await fetch(`/portal/${projectUuid}/anonymous-validate/`, {
+      const response = await fetch(getPortalAnonymousValidatePath(), {
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
@@ -166,7 +165,7 @@ const Portal = () => {
             <div className="portal-password-header">
               <div className="portal-password-title">{displayName}</div>
             </div>
-            <form method="post" action={`/portal/${projectUuid}/anonymous-validate/`} onSubmit={onPasswordSubmit}>
+            <form method="post" action={getPortalAnonymousValidatePath()} onSubmit={onPasswordSubmit}>
               <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
               <div className="form-group">
                 <label className="portal-password-label">{gettext('Access password')}</label>

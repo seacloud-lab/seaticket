@@ -175,6 +175,21 @@ class PortalAPI {
     return this.req.post(url, settings);
   }
 
+  getCustomDomain(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/custom-domain/';
+    return this.req.get(url);
+  }
+
+  updateCustomDomain(projectUuid, data) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/custom-domain/';
+    return this.req.post(url, data);
+  }
+
+  verifyCustomDomain(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/custom-domain/verify/';
+    return this.req.post(url);
+  }
+
   // Portal Issues API
   getPortalIssue(projectUuid, issueId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/issues/' + issueId + '/';

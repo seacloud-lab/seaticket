@@ -6,7 +6,8 @@ from .views import portal_view, portal_edit_view, portal_anonymous_validate, por
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, \
     PortalIssueViewView, PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
-    PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView, PortalLogoView
+    PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView, PortalLogoView, \
+    PortalCustomDomainView, PortalCustomDomainVerificationView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -63,6 +64,8 @@ urlpatterns = [
     re_path(r'^portal-external/accept/(?P<token>[a-f0-9]{32})/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_invitation_accept_view, name='portal_external_invitation_accept_view'),
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/$', PortalCustomDomainView.as_view(), name='api-v1-portal-custom-domain'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/verify/$', PortalCustomDomainVerificationView.as_view(), name='api-v1-portal-custom-domain-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
 
     # portal upload file

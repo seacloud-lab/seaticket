@@ -57,6 +57,13 @@ const UserManagement = ({ projectUuid }) => {
     return `${text.slice(0, 8)}...${text.slice(-14)}`;
   }, []);
 
+  const getInvitationLinkText = useCallback((link) => {
+    if (!link) return '';
+    const url = new URL(link, window.location.origin);
+    if (url.pathname.startsWith('/external/accept/')) return url.origin;
+    return shorten(link);
+  }, [shorten]);
+
   const onCopy = useCallback((text) => {
     navigator.clipboard.writeText(text).then(() => {
       toaster.success(gettext('Copied'), { duration: 2, hasCloseButton: false });
@@ -89,8 +96,8 @@ const UserManagement = ({ projectUuid }) => {
             <table className="table table-sm">
               <thead>
                 <tr>
-                  <th style={{ width: 240 }}>{gettext('User')}</th>
-                  <th style={{ width: 240 }}>{gettext('Status')}</th>
+                  <th style={{ width: 160 }}>{gettext('User')}</th>
+                  <th style={{ width: 320 }}>{gettext('Status')}</th>
                   <th style={{ width: 80 }}>{/* More operations */}</th>
                 </tr>
               </thead>
@@ -153,11 +160,11 @@ const UserManagement = ({ projectUuid }) => {
                   {list.map(item => (
                     <tr key={item.token}>
                       <td className="align-middle">
-                        <span className="text-truncate d-block w-100" title={item.email}>
+                        <span className="text-truncate d-inline-block" title={item.email} style={{ maxWidth: 200 }}>
                           {item.email}
                         </span>
                       </td>
-                      <td className="text-truncate align-middle" title={item.link}>{shorten(item.link)}</td>
+                      <td className="text-truncate align-middle" title={item.link}>{getInvitationLinkText(item.link)}</td>
                       <td className="align-middle" style={{ whiteSpace: 'nowrap' }}>
                         {item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}
                       </td>
