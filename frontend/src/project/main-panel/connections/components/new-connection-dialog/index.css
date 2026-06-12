@@ -139,3 +139,41 @@
   color: #666;
   font-size: 14px;
 }
+
+.seaqa-project-linear-oauth {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: #F7F7F5;
+  border-radius: 4px;
+  padding-left: 16px;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status .linear-status-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status .linear-status-icon svg path {
+  fill: #666;
+}
+
+.seaqa-project-linear-oauth .linear-oauth-status.connected .linear-status-icon svg path {
+  fill: #47B881;
+}
+
+.seaqa-project-linear-oauth .btn {
+  font-weight: 400;
+  height: 26px;
+  padding: 0 8px;
+}

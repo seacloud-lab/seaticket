@@ -27,7 +27,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
-    ConnectionsViews, ProjectGithubAppInstallation
+    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
     extract_email_addresses, get_email_oauth_callback_url, is_oauth_email_provider, create_connection, \
     fetch_oauth_email_sender_info, EmailOAuthProfileError, persist_project_connection_config, \
@@ -39,7 +39,7 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
-    list_general_task_record_details, build_general_task_row_data, get_connection_columns
+    list_general_task_record_details, build_general_task_row_data, get_connection_columns, list_linear_issue_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -64,6 +64,7 @@ from seahub.project.task_utils import create_general_task_via_adapter, update_ge
 from seahub.seadb_models.models import SchemaTables
 
 
+from django.utils import timezone
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -1115,6 +1116,31 @@ class ProjectConnectionsStatusView(APIView):
         return Response(connections_status)
 
 
+class ProjectLinearOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
+        if not linear_oauth:
+            return Response({'connected': False, 'expires_at': None}, status=status.HTTP_200_OK)
+
+        return Response({'connected': True, 'expires_at': linear_oauth.expires_at}, status=status.HTTP_200_OK)
+
+
 class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1160,6 +1186,8 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1212,6 +1240,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
             ConnectionType.GENERAL_TASK.value,
+            ConnectionType.LINEAR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1232,6 +1261,8 @@ class ProjectConnectionRecordView(APIView):
             table_name = SchemaTables.NOTION.table_name(connection_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1390,7 +1421,7 @@ class ProjectConnectionRecordsView(APIView):
                 linked_ticket = int(linked_ticket)
             except Exception:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'linked_ticket invalid.')
-        
+
         description_dict = task_payload.get('description')
         if not description_dict:
             error_msg = 'description invalid.'
@@ -1505,6 +1536,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.EMAIL.value,
             ConnectionType.NOTION.value,
             ConnectionType.GENERAL_TASK.value,
+            ConnectionType.LINEAR.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1525,6 +1557,8 @@ class ProjectConnectionRecordsView(APIView):
             table_name = SchemaTables.NOTION.table_name(connection_id)
         elif project_connection.type == ConnectionType.GENERAL_TASK.value:
             table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+        elif project_connection.type == ConnectionType.LINEAR.value:
+            table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
 
         update_rows = []
         general_task_events = []

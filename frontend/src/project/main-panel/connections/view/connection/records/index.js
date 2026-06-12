@@ -120,7 +120,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           let rows = Array.isArray(records) ? records : [];
           let columns = res?.data?.columns || [];
           allColumns.current = columns;
-
           const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
           const collaborators = relatedUsers.map(user => new User(user));
           const targetColumns = formatColumns(connection, columns, { collaborators });
