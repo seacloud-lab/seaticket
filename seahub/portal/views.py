@@ -12,12 +12,7 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.custom_domain import (
-    build_portal_anonymous_validate_path,
-    build_portal_home_path,
-    build_portal_login_path,
-    get_portal_url_context,
-)
+from seahub.portal.utils import is_portal_custom_domain_request, portal_path
 from seahub import settings
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -135,8 +130,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
+        'is_portal_custom_domain': is_portal_custom_domain_request(request, project_uuid),
+        'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
-    return_dict.update({'portal_urls': get_portal_url_context(project_uuid, request=request)})
     if not is_logged_in or (not same_org and not ext_is_valid):
         need_password = False
         if enable_password_protection and allow_anonymous:
@@ -145,7 +141,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             need_password = not (verified_token and encoded_password and verified_token == encoded_password)
 
         if need_password:
-            return redirect(build_portal_anonymous_validate_path(project_uuid, request=request))
+            return redirect(portal_path(request, project_uuid, 'anonymous-validate'))
 
         return_dict['need_password'] = need_password
 
@@ -169,7 +165,7 @@ def portal_external_logout_view(request, project_uuid):
         request.session.pop('portal_external_username', None)
         request.session.pop('portal_external_project_uuid', None)
 
-    return redirect(build_portal_home_path(project_uuid, request=request))
+    return redirect(portal_path(request, project_uuid))
 
 def portal_anonymous_validate(request, project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -191,7 +187,7 @@ def portal_anonymous_validate(request, project_uuid):
 
     # Only meaningful when anonymous and password protection is on
     if not (allow_anonymous and enable_password_protection):
-        return redirect(build_portal_home_path(project_uuid, request=request))
+        return redirect(portal_path(request, project_uuid))
 
     # Determine if password is still needed based on session token
     encoded_password = portal_settings.get('password')
@@ -200,7 +196,7 @@ def portal_anonymous_validate(request, project_uuid):
 
     if request.method == 'GET':
         if not need_password:
-            return redirect(build_portal_home_path(project_uuid, request=request))
+            return redirect(portal_path(request, project_uuid))
         return_dict = {
             'version': SEAQA_VERSION,
             'project_name': project.name,
@@ -215,8 +211,9 @@ def portal_anonymous_validate(request, project_uuid):
                 'portal_logo': portal_settings.get('portal_logo', ''),
             },
             'need_password': True,
+            'is_portal_custom_domain': is_portal_custom_domain_request(request, project_uuid),
+            'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
         }
-        return_dict.update({'portal_urls': get_portal_url_context(project_uuid, request=request)})
         return render(request, 'portal_view_react.html', return_dict)
 
     password = request.POST.get('password', '')
@@ -229,7 +226,7 @@ def portal_anonymous_validate(request, project_uuid):
         return HttpResponse(_('Password invalid'), status=400)
 
     request.session[f'portal_verified_token_{project_uuid}'] = encoded_password
-    return redirect(build_portal_home_path(project_uuid, request=request))
+    return redirect(portal_path(request, project_uuid))
 
 
 def portal_external_invitation_accept_view(request, token, project_uuid):
@@ -238,7 +235,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
     if not invitation or invitation.project_uuid != project_uuid:
         return render_error(request, _('Invitation link is invalid or expired.'))
     if invitation.accepted_at:
-        redirect_url = build_portal_login_path(project_uuid, request=request)
+        redirect_url = portal_path(request, project_uuid, 'login')
         return HttpResponseRedirect(redirect_url)
     if invitation.is_expired():
         return render_error(request, _('Invitation link is invalid or expired.'))
@@ -261,9 +258,9 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
     if ext_user and getattr(ext_user, 'username', None):
         request.session['portal_external_username'] = ext_user.username
         request.session['portal_external_project_uuid'] = project_uuid
-        redirect_url = build_portal_home_path(project_uuid, request=request)
+        redirect_url = portal_path(request, project_uuid)
     else:
-        redirect_url = build_portal_login_path(project_uuid, request=request)
+        redirect_url = portal_path(request, project_uuid, 'login')
 
     return HttpResponseRedirect(redirect_url)
 
@@ -317,6 +314,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
+        'is_portal_custom_domain': False,
+        'portal_base_url': portal_path(request, project_uuid, is_edit_mode=True).rstrip('/') or '/',
     }
-    return_dict.update({'portal_urls': get_portal_url_context(project_uuid, request=request, is_edit_mode=True)})
     return render(request, 'portal_view_react.html', return_dict)

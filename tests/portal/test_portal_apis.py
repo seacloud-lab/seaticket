@@ -559,7 +559,9 @@ class TestPortalCustomDomainView:
         assert resp.data['custom_domain_verified'] is True
         assert resp.data['custom_domain_txt_record_name'] == custom_domain.txt_record_name
         assert resp.data['custom_domain_txt_record_value'] == custom_domain.txt_record_value
-        assert resp.data['custom_public_url'] == 'http://support.local.test/'
+        assert 'custom_public_url' not in resp.data
+        assert 'default_public_url' not in resp.data
+        assert 'public_url' not in resp.data
 
     def test_post_create_custom_domain(self, factory, project_creator, real_project):
         project = real_project

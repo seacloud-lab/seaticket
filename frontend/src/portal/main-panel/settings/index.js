@@ -42,8 +42,6 @@ const Settings = () => {
   // kb
   const [showKB, setShowKB] = useState(showKBInPortal === true);
   const [isSavingKB, setIsSavingKB] = useState(false);
-  const [defaultPortalUrl, setDefaultPortalUrl] = useState('');
-  const [customPublicUrl, setCustomPublicUrl] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [savedCustomDomain, setSavedCustomDomain] = useState('');
   const [customDomainVerified, setCustomDomainVerified] = useState(false);
@@ -53,16 +51,14 @@ const Settings = () => {
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
   const [isSavingCustomDomain, setIsSavingCustomDomain] = useState(false);
 
-  const portalUrl = useMemo(() => {
-    return defaultPortalUrl || getDefaultPortalPublicUrl();
-  }, [defaultPortalUrl]);
+  const portalUrl = getDefaultPortalPublicUrl();
 
   const customDomainUrl = useMemo(() => {
     if (!savedCustomDomain || !customDomainVerified || customDomain !== savedCustomDomain) {
       return '';
     }
-    return customPublicUrl || `${window.location.protocol}//${savedCustomDomain}/`;
-  }, [customDomain, customDomainVerified, customPublicUrl, savedCustomDomain]);
+    return `${window.location.protocol}//${savedCustomDomain}/`;
+  }, [customDomain, customDomainVerified, savedCustomDomain]);
 
   const applyLoadedSettings = useCallback((data = {}) => {
     setAllowAnonymous(!!data.allow_anonymous);
@@ -85,8 +81,6 @@ const Settings = () => {
     setCustomDomainTxtRecordName(data.custom_domain_txt_record_name || '');
     setCustomDomainTxtRecordValue(data.custom_domain_txt_record_value || '');
     setCustomDomainDnsTarget(data.custom_domain_dns_target || '');
-    setDefaultPortalUrl(data.default_public_url || '');
-    setCustomPublicUrl(data.custom_public_url || '');
   }, []);
 
   useEffect(() => {
@@ -103,8 +97,7 @@ const Settings = () => {
     portalAPI.getCustomDomain(projectUuid).then(res => {
       applyLoadedCustomDomain(res.data || {});
     }).catch(() => {
-      setDefaultPortalUrl('');
-      setCustomPublicUrl('');
+      applyLoadedCustomDomain({});
     });
   }, [applyLoadedCustomDomain]);
 
@@ -331,7 +324,82 @@ const Settings = () => {
                 <Icon symbol="copy" />
               </Button>
             </div>
-            <label className="portal-settings-label mt-4">{gettext('Custom domain')}</label>
+            <div className="mt-4">
+              <Switch
+                checked={allowAnonymous}
+                onChange={onToggleAnonymous}
+                placeholder={gettext('Allow anonymous access')}
+                textPosition="right"
+                size="large"
+              />
+            </div>
+            {allowAnonymous && (
+              <div className="mt-2">
+                <Switch
+                  checked={enablePassword}
+                  onChange={onTogglePassword}
+                  placeholder={gettext('Enable password protection')}
+                  textPosition="right"
+                  size="large"
+                />
+              </div>
+            )}
+            {allowAnonymous && enablePassword && (
+              <>
+                {!isEditingPassword && hasSavedPassword && (
+                  <>
+                    <label className="portal-settings-label mt-2">
+                      {gettext('Password (at least 8 characters)')}
+                    </label>
+                    <div className="d-flex gap-2 align-items-center">
+                      <PasswordInput
+                        value={'********'}
+                        onChange={() => { }}
+                        disabled={true}
+                        enableRandomGeneration={false}
+                        enableCheckStrength={false}
+                        placeholder={gettext('Enter password')}
+                      />
+                      <Button color="outline-primary" onClick={onEditPassword} title={gettext('Replace password')}>
+                        <Icon symbol="rename" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {(isEditingPassword || !hasSavedPassword) && (
+                  <>
+                    <label className="portal-settings-label mt-2">
+                      {gettext('Password (at least 8 characters)')}
+                    </label>
+                    <PasswordInput
+                      value={password}
+                      onChange={onPasswordChange}
+                      enableRandomGeneration={false}
+                      enableCheckStrength={false}
+                      placeholder={gettext('Enter password')}
+                    />
+                    <label className="portal-settings-label mt-2">
+                      {gettext('Confirm password')}
+                    </label>
+                    <PasswordInput
+                      value={confirmPassword}
+                      onChange={onConfirmPasswordChange}
+                      enableRandomGeneration={false}
+                      enableCheckStrength={false}
+                      placeholder={gettext('Re-enter password')}
+                    />
+                  </>
+                )}
+              </>
+            )}
+            <div className="mt-4">
+              <Button color="primary" onClick={onSaveSettings}>{gettext('Save')}</Button>
+            </div>
+          </div>
+        </TabPane>
+        <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
+          <div className="portal-settings-content">
+            <label className="portal-settings-label">{gettext('Custom domain')}</label>
             <input
               type="text"
               className="form-control"
@@ -348,7 +416,7 @@ const Settings = () => {
             </p>
             <div className="mt-3">
               <Button color="primary" size="sm" onClick={onSaveCustomDomain} disabled={!canSaveCustomDomain}>
-                {isSavingCustomDomain ? gettext('Saving...') : gettext('Save domain')}
+                {isSavingCustomDomain ? gettext('Saving...') : gettext('Save')}
               </Button>
             </div>
             {customDomainDnsTarget && (
@@ -436,77 +504,6 @@ const Settings = () => {
                 </div>
               </>
             )}
-            <div className="mt-4">
-              <Switch
-                checked={allowAnonymous}
-                onChange={onToggleAnonymous}
-                placeholder={gettext('Allow anonymous access')}
-                textPosition="right"
-                size="large"
-              />
-            </div>
-            {allowAnonymous && (
-              <div className="mt-2">
-                <Switch
-                  checked={enablePassword}
-                  onChange={onTogglePassword}
-                  placeholder={gettext('Enable password protection')}
-                  textPosition="right"
-                  size="large"
-                />
-              </div>
-            )}
-            {allowAnonymous && enablePassword && (
-              <>
-                {!isEditingPassword && hasSavedPassword && (
-                  <>
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Password (at least 8 characters)')}
-                    </label>
-                    <div className="d-flex gap-2 align-items-center">
-                      <PasswordInput
-                        value={'********'}
-                        onChange={() => { }}
-                        disabled={true}
-                        enableRandomGeneration={false}
-                        enableCheckStrength={false}
-                        placeholder={gettext('Enter password')}
-                      />
-                      <Button color="outline-primary" onClick={onEditPassword} title={gettext('Replace password')}>
-                        <Icon symbol="rename" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-                {(isEditingPassword || !hasSavedPassword) && (
-                  <>
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Password (at least 8 characters)')}
-                    </label>
-                    <PasswordInput
-                      value={password}
-                      onChange={onPasswordChange}
-                      enableRandomGeneration={false}
-                      enableCheckStrength={false}
-                      placeholder={gettext('Enter password')}
-                    />
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Confirm password')}
-                    </label>
-                    <PasswordInput
-                      value={confirmPassword}
-                      onChange={onConfirmPasswordChange}
-                      enableRandomGeneration={false}
-                      enableCheckStrength={false}
-                      placeholder={gettext('Re-enter password')}
-                    />
-                  </>
-                )}
-              </>
-            )}
-            <div className="mt-4">
-              <Button color="primary" onClick={onSaveSettings}>{gettext('Save')}</Button>
-            </div>
           </div>
         </TabPane>
         <TabPane tabId={SETTING_TAB.KNOWLEDGE_BASE}>

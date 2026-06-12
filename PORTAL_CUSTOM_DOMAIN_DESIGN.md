@@ -206,10 +206,7 @@ GET /api/v1/portal/<project_uuid>/custom-domain/
   "custom_domain_verified_at": null,
   "custom_domain_txt_record_name": "_seaqa-portal-challenge.support.example.com",
   "custom_domain_txt_record_value": "seaqa-portal-verification=<token>",
-  "custom_domain_dns_target": "portal.seaqa.example.com",
-  "custom_public_url": "",
-  "default_public_url": "https://service.example.com/portal/<project_uuid>/",
-  "public_url": "https://service.example.com/portal/<project_uuid>/"
+  "custom_domain_dns_target": "portal.seaqa.example.com"
 }
 ```
 
@@ -344,8 +341,9 @@ https://support.example.com/
 
 规则：
 
-- `public_url` 优先使用已验证自定义域名。
-- 未验证时回退到标准 Portal URL。
+- 默认 Portal URL 不属于域名配置，由普通 Portal 页面路径或前端页面上下文生成。
+- `custom-domain/` 接口只返回自定义域名绑定、验证状态、DNS target 和 TXT 验证信息。
+- 已验证自定义域名的展示 URL 由前端根据已保存域名拼出，例如 `https://support.example.com/`。
 - 邀请链接只有在自定义域名已验证后才使用自定义域名。
 - 标准域名邀请链接使用 `/portal-external/accept/<token>/<project_uuid>/`。
 - 自定义域名邀请链接使用 `/external/accept/<token>/`，项目归属由 Host 绑定关系决定。

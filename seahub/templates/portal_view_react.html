@@ -59,8 +59,8 @@
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
             portalName: '{{ portal.portal_name|escapejs }}',
             portalLogo: '{{ portal.portal_logo|escapejs }}',
-            isPortalCustomDomain: {% if portal_urls.is_custom_domain %}true{% else %}false{% endif %},
-            portalBaseUrl: '{{ portal_urls.base_path|escapejs }}',
+            isPortalCustomDomain: {% if is_portal_custom_domain %}true{% else %}false{% endif %},
+            portalBaseUrl: '{{ portal_base_url|escapejs }}',
         }
      };
 </script>

@@ -15,6 +15,7 @@ from seahub.portal.visitor_session import (
     set_visitor_cookie,
     touch_visitor_session,
 )
+from seahub.portal.custom_domain import build_site_root_path, is_request_using_portal_custom_domain
 
 
 
@@ -153,6 +154,20 @@ def finalize_visitor_session_response(response, identity):
     if identity.get('should_refresh_cookie'):
         set_visitor_cookie(response, identity['visitor_uuid'])
     return response
+
+
+def is_portal_custom_domain_request(request, project_uuid=None):
+    return bool(request and is_request_using_portal_custom_domain(request, project_uuid))
+
+
+def portal_path(request, project_uuid, *segments, is_edit_mode=False):
+    suffix = '/'.join([str(segment).strip('/') for segment in segments if segment not in (None, '', False)])
+    if not is_edit_mode and is_portal_custom_domain_request(request, project_uuid):
+        return '/%s/' % suffix if suffix else '/'
+
+    prefix = 'portal-edit' if is_edit_mode else 'portal'
+    path = '/'.join([prefix, str(project_uuid)] + ([suffix] if suffix else [])) + '/'
+    return build_site_root_path(path)
 
 
 def portal_endpoint(func):

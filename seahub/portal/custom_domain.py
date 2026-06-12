@@ -55,22 +55,17 @@ def normalize_portal_custom_domain(domain):
     for label in labels:
         if not HOST_LABEL_RE.match(label):
             raise ValueError('Custom domain is invalid.')
-
-    if domain in get_reserved_custom_domains():
-        raise ValueError('This domain is reserved.')
-
-    return domain
-
-
-def get_reserved_custom_domains():
-    reserved_domains = {'localhost', '127.0.0.1', 'testserver'}
-
+    reserved_domains = set()
     service_url = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '')
     service_host = urlsplit(service_url).hostname
     if service_host:
         reserved_domains.add(service_host.lower())
 
-    return reserved_domains
+    if domain in reserved_domains:
+        raise ValueError('This domain is reserved.')
+
+    return domain
+
 
 
 def get_request_host_without_port(request):
@@ -89,7 +84,8 @@ def query_dns_txt_values(record_name):
 
     try:
         answers = dns.resolver.resolve(record_name, 'TXT', lifetime=5)
-    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
+    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) as e:
+        logger.error(e)
         return []
     except Exception as e:
         logger.exception(e)
@@ -140,31 +136,6 @@ def build_standard_portal_path(project_uuid, *segments, is_edit_mode=False):
     return build_site_root_path('/'.join([prefix, str(project_uuid)] + [str(segment).strip('/') for segment in segments if segment not in (None, '', False)]) + '/')
 
 
-def build_custom_portal_path(*segments):
-    cleaned_segments = [str(segment).strip('/') for segment in segments if segment not in (None, '', False)]
-    if not cleaned_segments:
-        return '/'
-    return '/%s/' % '/'.join(cleaned_segments)
-
-
-def build_portal_home_path(project_uuid, request=None, is_edit_mode=False):
-    if request and not is_edit_mode and is_request_using_portal_custom_domain(request, project_uuid):
-        return build_custom_portal_path()
-    return build_standard_portal_path(project_uuid, is_edit_mode=is_edit_mode)
-
-
-def build_portal_login_path(project_uuid, request=None):
-    if request and is_request_using_portal_custom_domain(request, project_uuid):
-        return build_custom_portal_path('login')
-    return build_standard_portal_path(project_uuid, 'login')
-
-
-def build_portal_anonymous_validate_path(project_uuid, request=None):
-    if request and is_request_using_portal_custom_domain(request, project_uuid):
-        return build_custom_portal_path('anonymous-validate')
-    return build_standard_portal_path(project_uuid, 'anonymous-validate')
-
-
 def build_portal_external_accept_path(token, project_uuid):
     return build_site_root_path('portal-external/accept/%s/%s/' % (token, project_uuid))
 
@@ -175,11 +146,3 @@ def get_custom_domain_origin(domain, request=None):
     service_scheme = urlsplit(getattr(settings, 'SEAQA_WEB_SERVICE_URL', '') or '').scheme or 'https'
     scheme = request.scheme if request is not None else service_scheme
     return '%s://%s' % (scheme, domain)
-
-
-def get_portal_url_context(project_uuid, request=None, is_edit_mode=False):
-    return {
-        'base_path': build_portal_home_path(project_uuid, request=request, is_edit_mode=is_edit_mode),
-        'home_path': build_portal_home_path(project_uuid, request=request),
-        'is_custom_domain': bool(request and is_request_using_portal_custom_domain(request, project_uuid)),
-    }

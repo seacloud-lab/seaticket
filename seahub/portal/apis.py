@@ -18,7 +18,6 @@ from django.core.cache import cache
 from django.http import FileResponse
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
-from django.db import transaction
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -45,14 +44,8 @@ from seahub.portal.models import PortalCustomDomain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
-    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email
-from seahub.portal.custom_domain import (
-    build_portal_home_path,
-    build_standard_portal_path,
-    get_custom_domain_origin,
-    normalize_portal_custom_domain,
-    verify_portal_custom_domain_dns,
-)
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path
+from seahub.portal.custom_domain import normalize_portal_custom_domain, verify_portal_custom_domain_dns
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -1486,10 +1479,9 @@ class PortalSettingsView(APIView):
         elif enable_password_protection is False:
             portal_settings.pop('password', None)
 
-        with transaction.atomic():
-            project_settings['portal'] = portal_settings
-            project.settings = json.dumps(project_settings)
-            project.save(update_fields=['settings'])
+        project_settings['portal'] = portal_settings
+        project.settings = json.dumps(project_settings)
+        project.save(update_fields=['settings'])
 
         if portal_logo == '':
             try:
@@ -1513,14 +1505,6 @@ class PortalCustomDomainView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
-        default_public_base = (getattr(settings, 'SEAQA_WEB_SERVICE_URL', '') or '').rstrip('/')
-        if not default_public_base:
-            default_public_base = '%s://%s' % (request.scheme, request.get_host())
-        default_public_url = '%s%s' % (default_public_base, build_standard_portal_path(project_uuid))
-
-        custom_public_url = ''
-        if custom_domain and custom_domain.verified:
-            custom_public_url = '%s/' % get_custom_domain_origin(custom_domain.domain, request=request).rstrip('/')
 
         return Response({
             'custom_domain': custom_domain.domain if custom_domain else '',
@@ -1529,9 +1513,6 @@ class PortalCustomDomainView(APIView):
             'custom_domain_txt_record_name': custom_domain.txt_record_name if custom_domain else '',
             'custom_domain_txt_record_value': custom_domain.txt_record_value if custom_domain else '',
             'custom_domain_dns_target': getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '') or '',
-            'custom_public_url': custom_public_url,
-            'default_public_url': default_public_url,
-            'public_url': custom_public_url or default_public_url,
         })
 
     @require_org_context
@@ -1545,7 +1526,7 @@ class PortalCustomDomainView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        custom_domain = (request.data.get('custom_domain') or '').strip()
+        custom_domain = request.data.get('custom_domain')
         if not custom_domain:
             PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).delete()
             return Response({'success': True})
@@ -1557,7 +1538,7 @@ class PortalCustomDomainView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         existed_binding = PortalCustomDomain.objects.get_by_domain(normalized_custom_domain)
-        if existed_binding and str(existed_binding.project_uuid) != str(project_uuid):
+        if existed_binding and existed_binding.project_uuid != project_uuid:
             error_msg = 'custom_domain already in use.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1569,7 +1550,7 @@ class PortalCustomDomainView(APIView):
             custom_domain_binding.save()
         else:
             PortalCustomDomain.objects.create(
-                project_uuid=str(project_uuid),
+                project_uuid=project_uuid,
                 domain=normalized_custom_domain,
             )
 
@@ -1801,7 +1782,7 @@ class PortalExternalLoginSendCodeView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if is_user_in_the_same_team(project, email):
-            next_url = build_portal_home_path(project_uuid, request=request)
+            next_url = portal_path(request, project_uuid)
             login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
             return Response({
                 'success': True,
