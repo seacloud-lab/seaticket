@@ -1,50 +1,47 @@
-.sea-metadata-row-color-popover .popover {
+.seaqa-row-color-popover .popover {
   max-width: none;
   min-width: 450px;
 }
 
-.sea-metadata-row-color-body {
+.seaqa-row-color-body {
   display: flex;
   flex-direction: column;
-  padding-top: 16px;
+  padding: 16px 8px 0px 8px;
   min-width: 450px;
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-empty {
+.seaqa-row-color-body .seaqa-row-color-empty {
   color: var(--bs-icon-color);
   font-size: 14px;
-  padding: .25rem;
-  margin-left: 16px;
+  height: 100px;
 }
 
 /* add rule */
-.sea-metadata-row-color-add-btns {
+.seaqa-row-color-add-btns {
   display: flex;
   align-items: center;
   background: inherit;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
-  height: 40px;
-  padding: 0px 16px;
+  height: 48px;
+  padding: 0px 8px;
   border-top: 1px solid var(--bs-border-secondary-color);
   margin-top: 8px;
 }
 
-.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool {
-  height: 28px;
-  padding: 0 6px;
+.seaqa-row-color-add-btns .customize-add-tool.popover-add-tool {
+  height: 32px;
+  padding: 0px 12px;
   width: fit-content;
   max-width: 100%;
   border-radius: 3px;
-  font-weight: 400;
-  margin-left: -6px;
 }
 
-.sea-metadata-row-color-add-btns .customize-add-tool.popover-add-tool.disabled .seaqa-icon-svg {
+.seaqa-row-color-add-btns .customize-add-tool.popover-add-tool.disabled .seaqa-icon-svg {
   color: #c2c2c2;
 }
 
-.sea-metadata-row-color-add-btns .customize-add-tool .seaqa-icon-svg {
+.seaqa-row-color-add-btns .customize-add-tool .seaqa-icon-svg {
   color: #666;
   height: 14px;
   width: 14px;
@@ -53,34 +50,35 @@
 }
 
 /* rule item */
-.sea-metadata-row-color-body .sea-metadata-row-color-rule {
+.seaqa-row-color-body .seaqa-row-color-rule {
   padding: 8px 16px;
   cursor: pointer;
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-rule.row-color-rule-editing {
-  padding-bottom: 2px;
+.seaqa-row-color-body .seaqa-row-color-rule:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-rule.row-color-rule-editing .sea-metadata-row-color-rule-filters {
-  background-color: var(--bs-nav-active-bg);
+.seaqa-row-color-body .seaqa-row-color-rule.row-color-rule-editing .seaqa-row-color-rule-filters {
+  background-color: #F9f9f9;
   margin-top: 8px;
   border-radius: 4px;
 }
 
 /* rule header */
-.sea-metadata-row-color-rule-header {
+.seaqa-row-color-rule-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-color-wrap {
   display: flex;
   align-items: center;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-color-wrap .seaqa-row-color-rule-color {
   border-radius: 3px;
   cursor: pointer;
   height: 20px;
@@ -91,54 +89,58 @@
   width: 20px;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-color .seaqa-icon-svg {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-color-wrap .seaqa-row-color-rule-color .seaqa-icon-svg {
   color: inherit;
   width: 12px;
   height: 12px;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-color-wrap .sea-metadata-row-color-rule-name {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-color-wrap .seaqa-row-color-rule-name {
   font-size: 14px;
   user-select: none;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-remove {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s ease;
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
-.sea-metadata-row-color-rule-header .sea-metadata-row-color-rule-remove .seaqa-icon-svg {
+.seaqa-row-color-rule-header .seaqa-row-color-rule-remove .seaqa-icon-svg {
   color: var(--bs-icon-secondary-color);
 }
 
-.sea-metadata-row-color-body .sea-metadata-row-color-rule:hover .sea-metadata-row-color-rule-remove,
-.sea-metadata-row-color-body .sea-metadata-row-color-rule.row-color-rule-editing .sea-metadata-row-color-rule-remove {
+.seaqa-row-color-body .seaqa-row-color-rule:hover .seaqa-row-color-rule-remove,
+.seaqa-row-color-body .seaqa-row-color-rule.row-color-rule-editing .seaqa-row-color-rule-remove {
   opacity: 1;
   pointer-events: auto;
 }
 
+.seaqa-row-color-body .seaqa-row-color-rule .seaqa-row-color-rule-remove:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
 /* rule filters */
-.sea-metadata-row-color-rule-filters .sea-metadata-filters-list {
+.seaqa-row-color-rule-filters .sea-metadata-filters-list {
   min-height: 30px;
   padding: 8px 15px;
 }
 
-.sea-metadata-row-color-rule-filters .sea-metadata-filters-list .filter-item .seaqa-select.custom-select:hover {
+.seaqa-row-color-rule-filters .sea-metadata-filters-list .filter-item .seaqa-select.custom-select:hover {
   border-color: rgba(0, 40, 100, 0.12);
 }
 
-.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool {
+.seaqa-row-color-rule-filters .seaqa-row-color-rule-filters-footer .customize-add-tool {
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
 }
 
-.sea-metadata-row-color-rule-filters .sea-metadata-row-color-rule-filters-footer .customize-add-tool .customize-add-tool-icon {
+.seaqa-row-color-rule-filters .seaqa-row-color-rule-filters-footer .customize-add-tool .customize-add-tool-icon {
   width: 14px;
   height: 14px;
   margin-right: 10px;

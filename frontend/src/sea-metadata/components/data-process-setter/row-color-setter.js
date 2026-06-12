@@ -7,7 +7,7 @@ import { gettext } from '@/constants';
 import { hasRowColor } from '../../utils/view';
 import { isEnter, isSpace } from '@/utils/hotkey';
 
-const RowColorSetter = ({ target = 'sea-metadata-row-color-popover', readOnly, columns, colorbys, collaborators, modifyRowColor, wrapperClass }) => {
+const RowColorSetter = ({ target = 'seaqa-row-color-popover', readOnly, columns, colorbys, collaborators, modifyRowColor, wrapperClass }) => {
   const [isShowSetter, setShowSetter] = useState(false);
 
   const isActive = useMemo(() => hasRowColor(colorbys, columns), [colorbys, columns]);

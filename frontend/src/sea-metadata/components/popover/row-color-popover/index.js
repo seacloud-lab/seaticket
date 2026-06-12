@@ -78,7 +78,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     });
   }, [modifyRowColor]);
 
-  const handleAddRule = useCallback(() => {
+  const addRule = useCallback(() => {
     if (!canAddRule) return;
     const defaultColumn = validColumns[0];
     if (!defaultColumn) return;
@@ -86,9 +86,10 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
     updateRules(prevRules => [...prevRules, defaultRule]);
+    setEditingRuleIndex(rules.length);
   }, [canAddRule, validColumns, rules, updateRules]);
 
-  const handleChangeRuleColor = useCallback((ruleIndex, colorOption) => {
+  const changeRuleColor = useCallback((ruleIndex, colorOption) => {
     updateRules((prevRules) => {
       const newRules = prevRules.slice();
       newRules[ruleIndex] = { ...newRules[ruleIndex], color: colorOption.COLOR };
@@ -96,7 +97,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     });
   }, [updateRules]);
 
-  const handleDeleteRule = useCallback((ruleIndex) => {
+  const deleteRule = useCallback((ruleIndex) => {
     updateRules((prevRules) => {
       const newRules = prevRules.slice();
       newRules.splice(ruleIndex, 1);
@@ -105,7 +106,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   }, [updateRules]);
 
   // filter - update rule
-  const handleUpdateRule = useCallback((ruleIndex, update) => {
+  const updateRule = useCallback((ruleIndex, update) => {
     updateRules((prevRules) => {
       const currentRule = prevRules[ruleIndex];
       if (!currentRule) return prevRules;
@@ -116,7 +117,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   }, [updateRules]);
 
   // filter - delete rule
-  const handleDeleteRuleFilter = useCallback((ruleIndex, filterIndex) => {
+  const deleteRuleFilter = useCallback((ruleIndex, filterIndex) => {
     updateRules((prevRules) => {
       const rule = prevRules[ruleIndex];
       if (!rule) return prevRules;
@@ -129,7 +130,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   }, [updateRules]);
 
   // filter - update rule filter
-  const handleUpdateRuleFilter = useCallback((ruleIndex, filterIndex, updatedFilter) => {
+  const updateRuleFilter = useCallback((ruleIndex, filterIndex, updatedFilter) => {
     if (!updatedFilter) return;
     updateRules((prevRules) => {
       const rule = prevRules[ruleIndex];
@@ -142,7 +143,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     });
   }, [updateRules]);
 
-  const handleAddRuleFilter = useCallback((ruleIndex) => {
+  const addRuleFilter = useCallback((ruleIndex) => {
     const defaultColumn = validColumns[0];
     if (!defaultColumn) return;
     updateRules((prevRules) => {
@@ -160,7 +161,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   return (
     <CustomizePopover
       target={target}
-      className="sea-metadata-row-color-popover"
+      className="seaqa-row-color-popover"
       hidePopover={hidePopover}
       hidePopoverWithEsc={hidePopover}
       placement="bottom-end"
@@ -169,22 +170,24 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         { name: 'offset', options: { offset: [-6, 8] } }
       ]}
     >
-      <div className="sea-metadata-row-color-body">
-        {rules.length === 0 && <div className="sea-metadata-row-color-empty">{gettext('No rules')}</div>}
+      <div className="seaqa-row-color-body" style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}>
+        {rules.length === 0 &&
+          <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
+        }
         {rules.map((rule, ruleIndex) => {
-          const colorTarget = `sea-metadata-row-color-selector-${ruleIndex}`;
+          const colorTarget = `seaqa-row-color-selector-${ruleIndex}`;
           const currentColorOption = SELECT_OPTION_COLORS.find(option => option.COLOR === rule.color);
           return (
             <div
-              className={classnames('sea-metadata-row-color-rule', { 'row-color-rule-editing': editingRuleIndex === ruleIndex })}
+              className={classnames('seaqa-row-color-rule', { 'row-color-rule-editing pb-2': editingRuleIndex === ruleIndex })}
               key={`row-color-rule-${ruleIndex}`}
               onClick={() => setEditingRuleIndex((prevIndex) => prevIndex === ruleIndex ? null : ruleIndex)}
             >
-              <div className="sea-metadata-row-color-rule-header">
-                <div className="sea-metadata-row-color-rule-color-wrap">
+              <div className="seaqa-row-color-rule-header">
+                <div className="seaqa-row-color-rule-color-wrap">
                   <IconButton
                     id={colorTarget}
-                    className="sea-metadata-row-color-rule-color"
+                    className="seaqa-row-color-rule-color"
                     style={{
                       backgroundColor: rule.color,
                       borderColor: currentColorOption?.BORDER_COLOR,
@@ -199,17 +202,21 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                       target={colorTarget}
                       color={rule.color}
                       onToggle={() => setColorSelectorIndex(null)}
-                      onChange={(option) => handleChangeRuleColor(ruleIndex, option)}
+                      onChange={(option) => changeRuleColor(ruleIndex, option)}
                     />
                   )}
-                  <div className="sea-metadata-row-color-rule-name text-truncate">{`${gettext('Rule')} ${ruleIndex + 1}`}</div>
+                  <div className="seaqa-row-color-rule-name text-truncate">{`${gettext('Rule')} ${ruleIndex + 1}`}</div>
                 </div>
                 {!readOnly && (
-                  <IconButton className="sea-metadata-row-color-rule-remove" icon="delete" onClick={(e) => {e.stopPropagation(); handleDeleteRule(ruleIndex);}} />
+                  <IconButton
+                    className="seaqa-row-color-rule-remove"
+                    icon="delete"
+                    onClick={(e) => {e.stopPropagation(); deleteRule(ruleIndex);}}
+                  />
                 )}
               </div>
               {editingRuleIndex === ruleIndex && (
-                <div className="sea-metadata-row-color-rule-filters" onClick={(e) => e.stopPropagation()}>
+                <div className="seaqa-row-color-rule-filters" onClick={(e) => e.stopPropagation()}>
                   <AdvancedFilters
                     readOnly={readOnly}
                     columns={validColumns}
@@ -217,13 +224,17 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                     filterConjunction={rule.filter_conjunction || 'And'}
                     filters={Array.isArray(rule.filters) ? rule.filters : []}
                     emptyPlaceholder={gettext('No filters')}
-                    updateFilter={(filterIndex, updatedFilter) => handleUpdateRuleFilter(ruleIndex, filterIndex, updatedFilter)}
-                    deleteFilter={(filterIndex) => handleDeleteRuleFilter(ruleIndex, filterIndex)}
-                    modifyFilterConjunction={(filterConjunction) => handleUpdateRule(ruleIndex, { filter_conjunction: filterConjunction })}
+                    updateFilter={(filterIndex, updatedFilter) => updateRuleFilter(ruleIndex, filterIndex, updatedFilter)}
+                    deleteFilter={(filterIndex) => deleteRuleFilter(ruleIndex, filterIndex)}
+                    modifyFilterConjunction={(filterConjunction) => updateRule(ruleIndex, { filter_conjunction: filterConjunction })}
                   />
                   {!readOnly && (
-                    <div className="sea-metadata-row-color-rule-filters-footer">
-                      <CustomizeAddTool className="popover-add-tool" callBack={() => handleAddRuleFilter(ruleIndex)} name={gettext('Add condition')} />
+                    <div className="seaqa-row-color-rule-filters-footer">
+                      <CustomizeAddTool
+                        className="popover-add-tool"
+                        callBack={() => addRuleFilter(ruleIndex)}
+                        name={gettext('Add condition')}
+                      />
                     </div>
                   )}
                 </div>
@@ -233,10 +244,10 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         })}
       </div>
       {!readOnly && (
-        <div className="sea-metadata-row-color-add-btns">
+        <div className="seaqa-row-color-add-btns">
           <CustomizeAddTool
             className={`popover-add-tool ${canAddRule ? '' : 'disabled'}`}
-            callBack={canAddRule ? handleAddRule : () => {}}
+            callBack={canAddRule ? addRule : () => {}}
             name={gettext('Add rule')}
           />
         </div>

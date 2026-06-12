@@ -88,7 +88,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.ROW_COLOR) && (
         <RowColorSetter
           wrapperClass="sea-metadata-view-tool-row-color"
-          target="sea-metadata-row-color-popover"
+          target="seaqa-row-color-popover"
           readOnly={isReadOnly}
           columns={viewColumns}
           colorbys={view.colorbys}
