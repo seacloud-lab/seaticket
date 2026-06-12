@@ -1873,7 +1873,10 @@ class PortalExternalLoginVerifyCodeView(APIView):
         clear_portal_external_login_state(project_uuid, email)
         request.session['portal_external_username'] = ext_user.username
         request.session['portal_external_project_uuid'] = project_uuid
-        return Response({'success': True})
+        return Response({
+            'success': True,
+            'redirect_url': portal_path(request, project_uuid),
+        })
 
 
 class PortalIssueViewsView(APIView):
