@@ -504,6 +504,20 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
         logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
     return topic_record, column_metadata, linked_ticket_title
 
+def get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, topic_id):
+    topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
+    topics_sql = f"SELECT _pk, title, topic_id, linked_ticket FROM `{topics_table_name}` WHERE topic_id = {topic_id}"
+    try:
+        topic_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topics_record = topic_res.get('results', [])
+        topics_record = topics_record[0] if topics_record else {}
+        column_metadata = topic_res.get('metadata')
+    except Exception as e:
+        topics_record = {}
+        column_metadata = []
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
+    return topics_record, column_metadata
+
 
 def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
     topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
@@ -557,6 +571,19 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
 def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
     issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, issue_number, state, state_reason, labels, issue_type, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    try:
+        issue_res = seadb_api.query_rows(project_uuid, issue_sql)
+        issue_record = issue_res.get('results')[0]
+        column_metadata = issue_res.get('metadata')
+    except Exception as e:
+        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+    return issue_record, column_metadata
+
+def get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, issue_number):
+    issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+    issue_sql = f"SELECT _pk, title, state, linked_ticket  FROM `{issue_table_name}` WHERE issue_number = {issue_number}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
