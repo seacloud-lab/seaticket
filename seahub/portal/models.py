@@ -6,18 +6,14 @@ from secrets import token_hex
 from django.db import models
 from django.utils import timezone
 from uuid import uuid4
+from django.urls import reverse
 from django.conf import settings
 from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
-from seahub.portal.custom_domain import (
-    CUSTOM_DOMAIN_TXT_RECORD_PREFIX,
-    CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX,
-    build_portal_external_accept_path,
-    get_custom_domain_origin,
-    normalize_portal_custom_domain,
-)
+from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
+    get_custom_domain_origin, normalize_portal_custom_domain
 import logging
 
 from seahub.seadb_models.models import SchemaTables
@@ -83,8 +79,8 @@ class PortalExternalInvitation(models.Model):
             return f'{base}/external/accept/{self.token}/'
 
         base = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '').rstrip('/')
-        path = build_portal_external_accept_path(self.token, self.project_uuid)
-        return f'{base}{path}' if base else path
+        path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
+        return f"{base}{path}" if base else path
 
 
 class ProjectExternalUserManager(models.Manager):

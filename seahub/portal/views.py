@@ -12,7 +12,7 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import is_portal_custom_domain_request, portal_path
+from seahub.portal.utils import is_request_using_portal_custom_domain, portal_path
 from seahub import settings
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -130,7 +130,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
-        'is_portal_custom_domain': is_portal_custom_domain_request(request, project_uuid),
+        'is_portal_custom_domain': is_request_using_portal_custom_domain(request, project_uuid),
         'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
     if not is_logged_in or (not same_org and not ext_is_valid):
@@ -211,7 +211,7 @@ def portal_anonymous_validate(request, project_uuid):
                 'portal_logo': portal_settings.get('portal_logo', ''),
             },
             'need_password': True,
-            'is_portal_custom_domain': is_portal_custom_domain_request(request, project_uuid),
+            'is_portal_custom_domain': is_request_using_portal_custom_domain(request, project_uuid),
             'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
         }
         return render(request, 'portal_view_react.html', return_dict)

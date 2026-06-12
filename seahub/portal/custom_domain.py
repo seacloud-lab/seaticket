@@ -12,14 +12,6 @@ CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
 CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
 
 
-def build_site_root_path(path=''):
-    site_root = getattr(settings, 'SITE_ROOT', '/') or '/'
-    prefix = site_root if site_root.endswith('/') else f'{site_root}/'
-    if path:
-        return f'{prefix}{str(path).lstrip("/")}'
-    return prefix
-
-
 def normalize_portal_custom_domain(domain):
     domain = (domain or '').strip().lower()
     if not domain:
@@ -129,15 +121,6 @@ def is_request_using_portal_custom_domain(request, project_uuid=None):
 
     binding = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
     return bool(binding and binding.verified and binding.domain == request_host)
-
-
-def build_standard_portal_path(project_uuid, *segments, is_edit_mode=False):
-    prefix = 'portal-edit' if is_edit_mode else 'portal'
-    return build_site_root_path('/'.join([prefix, str(project_uuid)] + [str(segment).strip('/') for segment in segments if segment not in (None, '', False)]) + '/')
-
-
-def build_portal_external_accept_path(token, project_uuid):
-    return build_site_root_path('portal-external/accept/%s/%s/' % (token, project_uuid))
 
 
 def get_custom_domain_origin(domain, request=None):
