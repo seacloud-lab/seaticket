@@ -28,6 +28,11 @@ class EmailSendError(Exception):
     pass
 
 
+class EmailDeleteError(Exception):
+    """Email delete error"""
+    pass
+
+
 class EmailAuthProviderError(Exception):
     """Email auth provider error (OAuth token fetch failure)"""
     pass
@@ -203,6 +208,124 @@ class SMTPEmailSender(_EmailSenderBase):
             res.update(imap_res)
         return res
 
+    def delete_emails(self, email_identifiers):
+        """Move emails to Trash on the IMAP server using stored UID only."""
+        if not email_identifiers:
+            return {'deleted_count': 0, 'failed_count': 0}
+
+        try:
+            imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
+            imap.login(self.imap_user or self.smtp_user, self.imap_password or self.smtp_password)
+        except Exception as e:
+            logger.exception('IMAP delete connection failed: %s', e)
+            raise EmailDeleteError('Failed to connect to email server for deletion')
+
+        deleted_count = 0
+        failed_count = 0
+        try:
+            trash = self._find_trash_folder(imap)
+            sent = self._find_sent_folder(imap)
+            folders = ['INBOX', sent] if sent else ['INBOX']
+            for ident in email_identifiers:
+                try:
+                    uid, folder = self._locate_email(imap, folders, ident)
+                    if not uid:
+                        failed_count += 1
+                        continue
+                    self._move_to_trash(imap, uid, folder, trash)
+                    deleted_count += 1
+                except Exception as e:
+                    logger.exception('Failed to delete email: %s', e)
+                    failed_count += 1
+        finally:
+            try:
+                imap.logout()
+            except Exception:
+                pass
+
+        return {'deleted_count': deleted_count, 'failed_count': failed_count}
+
+    @staticmethod
+    def _locate_email(imap, folders, ident):
+        """Find email by message_id. Returns (uid, folder) or (None, None)."""
+        msg_id = ident.get('message_id')
+        if msg_id:
+            return SMTPEmailSender._find_by_msgid(imap, folders, msg_id)
+        return None, None
+
+    @staticmethod
+    def _find_by_msgid(imap, folders, msg_id):
+        """Locate an email by Message-ID header (HEADER then TEXT fallback)."""
+        clean = msg_id.strip()
+        text_id = clean[1:-1] if clean.startswith('<') and clean.endswith('>') else clean
+        for folder in folders:
+            try:
+                imap.select(folder, readonly=True)
+                for term in (f'HEADER Message-ID "{clean}"', f'TEXT "{text_id}"'):
+                    try:
+                        status, data = imap.uid('SEARCH', None, term)
+                        if status == 'OK' and data and data[0]:
+                            uids = data[0].split()
+                            if uids:
+                                logger.info('Found email by %s uid=%s in %s', term.split(' ')[0], uids[0], folder)
+                                return int(uids[0]), folder
+                    except Exception:
+                        continue
+            except Exception:
+                continue
+            finally:
+                try: imap.close()
+                except Exception: pass
+        logger.warning('Email not found by Message-ID: %s', clean)
+        return None, None
+
+    @staticmethod
+    def _move_to_trash(imap, uid, source_folder, trash_folder):
+        """Copy email to trash folder, then try to delete original."""
+        if not source_folder:
+            raise EmailDeleteError(f'Cannot delete uid={uid}: source folder is missing')
+
+        if trash_folder:
+            status, _ = imap.select(source_folder, readonly=True)
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to select folder {source_folder} for uid={uid}')
+            dest = f'"{trash_folder}"' if ' ' in trash_folder else trash_folder
+            status, _ = imap.uid('COPY', str(uid), dest)
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to copy uid={uid} from {source_folder} to {trash_folder}')
+            logger.info('Copied uid=%s from %s to %s', uid, source_folder, trash_folder)
+            imap.close()
+            status, _ = imap.select(source_folder, readonly=False)
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to reselect folder {source_folder} for uid={uid}')
+            status, _ = imap.uid('STORE', str(uid), '+FLAGS', '\\Deleted')
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to flag uid={uid} as deleted in {source_folder}')
+            status, _ = imap.expunge()
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to expunge uid={uid} from {source_folder}')
+        else:
+            raise EmailDeleteError(f'Trash folder not found, refusing to permanently delete uid={uid}')
+
+    @staticmethod
+    def _find_trash_folder(imap):
+        """Find the Trash/Deleted Items folder from the server's folder list."""
+        TRASH_NAMES = ('Deleted Messages', 'Trash', 'Deleted Items', '已删除', '刪除的郵件', 'INBOX.Trash', 'Deleted', 'Bin')
+        status, folder_list = imap.list()
+        if status != 'OK':
+            return None
+        for f in folder_list:
+            s = f.decode('utf-8') if isinstance(f, bytes) else f
+            if '\\Trash' in s:
+                m = re.search(r'\s+"?([^"]+)"?\s*$', s)
+                if m: return m.group(1).strip('"')
+            m = re.search(r'\s+"?([^"]+)"?\s*$', s)
+            if m:
+                name = m.group(1).strip('"')
+                if name in TRASH_NAMES:
+                    return name
+        return None
+
     def _save_to_imap_sent(self, msg_obj):
         """Save sent email to IMAP Sent folder"""
         if 'fastmail' not in self.smtp_host:
@@ -270,32 +393,26 @@ class SMTPEmailSender(_EmailSenderBase):
                         except:
                             pass
 
-            # For Fastmail, fetch EMAILID extension using the UID
-            email_id = None
+            # Fetch THREADID using the UID if the server supports it
             thread_id = None
             if uid:
                 try:
                     for folder in [sent_folder, "INBOX"]:
                         imap.select(folder, readonly=True)
-                        status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
+                        status, fetch_data = imap.uid('FETCH', str(uid), '(THREADID)')
                         if status == 'OK' and fetch_data:
-                            # Parse EMAILID from response like: b'123 (EMAILID "abc123" THREADID "xyz789")'
                             for item in fetch_data:
                                 if item:
                                     item_str = item.decode('utf-8') if isinstance(item, bytes) else str(item)
-                                    # Extract EMAILID - handle formats: EMAILID "value", EMAILID (value), EMAILID value
-                                    email_match = re.search(r'EMAILID\s+["(]?([^\s")]+)[")?]?', item_str)
-                                    if email_match:
-                                        email_id = email_match.group(1)
                                     # Extract THREADID
                                     thread_match = re.search(r'THREADID\s+["(]?([^\s")]+)[")?]?', item_str)
                                     if thread_match:
                                         thread_id = thread_match.group(1)
-                        if email_id and thread_id:
+                        if thread_id:
                             break
 
                 except Exception as e:
-                    logger.warning('Failed to fetch EMAILID from Fastmail: %s', e)
+                    logger.warning('Failed to fetch THREADID from IMAP: %s', e)
                 finally:
                     try:
                         imap.close()
@@ -303,9 +420,7 @@ class SMTPEmailSender(_EmailSenderBase):
                         pass
             result = {'imap_folder': sent_folder}
             if uid:
-                result['imap_uid'] = uid
-            if email_id:
-                result['email_id'] = email_id
+                result['email_id'] = str(uid)
             if thread_id:
                 result['origin_thread_id'] = thread_id
             return result
@@ -435,9 +550,18 @@ class _OAuthEmailSender(_EmailSenderBase):
         else:
             logger.info('Email sending success!')
 
+        email_id = None
+        try:
+            response_data = response.json()
+        except Exception:
+            response_data = {}
+        if isinstance(response_data, dict):
+            email_id = response_data.get('id')
+
         return {
             'success': success,
             'message_id': message_id,
+            'email_id': email_id,
             'config_updated': self.config_updated,
         }
 
@@ -446,6 +570,7 @@ class GmailSender(_OAuthEmailSender):
     """Gmail API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=multipart'
+    GMAIL_TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{message_id}/trash'
 
     def _do_send_email(self, msg_obj):
         msg_string = msg_obj.as_string()
@@ -473,16 +598,53 @@ class GmailSender(_OAuthEmailSender):
         }
 
         return requests.post(
-            self.EMAIL_SENDING_ENDPOINT, 
-            data=request_body, 
+            self.EMAIL_SENDING_ENDPOINT,
+            data=request_body,
             headers=headers
         )
+
+    def delete_emails(self, email_identifiers):
+        """
+        Move emails to Trash via Gmail API.
+
+        email_identifiers: list of dicts with keys:
+            - email_id: Gmail message ID (required)
+        Returns: dict with 'deleted_count' and 'failed_count'
+        """
+        if not email_identifiers:
+            return {'deleted_count': 0, 'failed_count': 0}
+
+        self._request_access_token()
+
+        deleted_count = 0
+        failed_count = 0
+
+        for identifier in email_identifiers:
+            remote_message_id = identifier.get('email_id')
+            if not remote_message_id:
+                failed_count += 1
+                continue
+
+            try:
+                trash_url = self.GMAIL_TRASH_ENDPOINT.format(message_id=remote_message_id)
+                response = requests.post(trash_url, headers={
+                    'Authorization': f'Bearer {self.access_token}',
+                })
+                _check_and_raise_error(response)
+                deleted_count += 1
+            except Exception as e:
+                logger.exception('Failed to trash Gmail message %s: %s', remote_message_id, e)
+                failed_count += 1
+
+        return {'deleted_count': deleted_count, 'failed_count': failed_count}
 
 
 class MicrosoftSender(_OAuthEmailSender):
     """Microsoft API email sender"""
 
-    EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
+    MS_GRAPH_CREATE_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages'
+    MS_GRAPH_SEND_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{message_id}/send'
+    MS_GRAPH_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{message_id}/move'
 
     def _do_send_email(self, msg_obj):
         msg_bytes = msg_obj.as_bytes()
@@ -493,7 +655,62 @@ class MicrosoftSender(_OAuthEmailSender):
             'Content-Type': 'text/plain'
         }
 
-        return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_base64, headers=headers)
+        create_response = requests.post(self.MS_GRAPH_CREATE_MESSAGE_ENDPOINT, data=msg_base64, headers=headers)
+        _check_and_raise_error(create_response)
+
+        try:
+            response_data = create_response.json()
+        except Exception:
+            response_data = {}
+
+        message_id = response_data.get('id') if isinstance(response_data, dict) else None
+        if not message_id:
+            raise EmailSendError('Failed to create Microsoft draft message')
+
+        send_response = requests.post(
+            self.MS_GRAPH_SEND_MESSAGE_ENDPOINT.format(message_id=message_id),
+            headers={'Authorization': f'Bearer {self.access_token}'},
+        )
+        _check_and_raise_error(send_response)
+        return create_response
+
+    def delete_emails(self, email_identifiers):
+        """
+        Move emails to Deleted Items via Microsoft Graph API.
+
+        email_identifiers: list of dicts with keys:
+            - message_id: Microsoft message ID (required)
+        Returns: dict with 'deleted_count' and 'failed_count'
+        """
+        if not email_identifiers:
+            return {'deleted_count': 0, 'failed_count': 0}
+
+        self._request_access_token()
+
+        deleted_count = 0
+        failed_count = 0
+
+        for identifier in email_identifiers:
+            remote_message_id = identifier.get('message_id')
+            if not remote_message_id:
+                failed_count += 1
+                continue
+
+            try:
+                move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(message_id=remote_message_id)
+                response = requests.post(move_url, json={
+                    'destinationId': 'deleteditems'
+                }, headers={
+                    'Authorization': f'Bearer {self.access_token}',
+                    'Content-Type': 'application/json',
+                })
+                _check_and_raise_error(response)
+                deleted_count += 1
+            except Exception as e:
+                logger.exception('Failed to delete Microsoft message %s: %s', remote_message_id, e)
+                failed_count += 1
+
+        return {'deleted_count': deleted_count, 'failed_count': failed_count}
 
 
 def get_email_sender_from_config(config):
@@ -539,3 +756,8 @@ def get_email_sender_from_config(config):
 def toggle_send_email(config, send_info):
     sender = get_email_sender_from_config(config)
     return sender.send(send_info)
+
+
+def toggle_delete_emails(config, email_identifiers):
+    sender = get_email_sender_from_config(config)
+    return sender.delete_emails(email_identifiers)

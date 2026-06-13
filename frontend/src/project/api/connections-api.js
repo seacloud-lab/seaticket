@@ -302,6 +302,11 @@ class ConnectionsAPI {
     return this.req.post(url, payload);
   }
 
+  deleteConnectionEmail(projectUuid, connectionID, payload) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/delete-email/';
+    return this.req.post(url, payload);
+  }
+
   replyDiscourseTopic(projectUuid, connectionID, payload) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/reply-discourse/';
     return this.req.post(url, payload);

@@ -55,7 +55,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
-from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+from seahub.utils.email_sender import toggle_send_email, toggle_delete_emails, EmailSendError, EmailDeleteError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
@@ -1860,6 +1860,130 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response(email_data, status=status.HTTP_200_OK)
+
+
+class ProjectConnectionDeleteEmailView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def _delete_one_thread(self, project_uuid, connection_id, config, thread_id, seadb_api, email_seadb_api):
+        emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
+        if not emails:
+            return False, 'No emails found in this thread.'
+
+        server_provider = config.get('server_provider', 'general_email_provider')
+        email_identifiers = []
+        for email in emails:
+            message_id = email.get('message_id')
+            if message_id:
+                email_identifiers.append({'message_id': message_id})
+
+        if not email_identifiers:
+            logger.error('delete email failed: no identifiers, connection_id: %s, thread_id: %s',
+                         connection_id, thread_id)
+            return False, 'No email identifiers found for remote deletion.'
+
+        try:
+            result = toggle_delete_emails(config, email_identifiers)
+        except EmailConfigError as e:
+            logger.error('email config error for delete, connection_id: %s, error: %s', connection_id, e)
+            return False, 'Email connection config is invalid.'
+        except EmailDeleteError as e:
+            logger.error('delete email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)
+            return False, 'Failed to delete emails from remote server.'
+
+        deleted_count = result.get('deleted_count', 0)
+        failed_count = result.get('failed_count', 0)
+        expected_count = len(email_identifiers)
+        if deleted_count != expected_count or failed_count != 0:
+            return False, (
+                f'Remote delete incomplete: deleted {deleted_count} of {expected_count} emails, '
+                f'failed {failed_count}.'
+            )
+
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        thread_table_name = SchemaTables.THREAD.table_name(connection_id)
+        try:
+            seadb_api.update_rows(project_uuid, thread_table_name, [{
+                'pk': thread_id,
+                'row': {
+                    SchemaTables.THREAD.column.deleted.name: True,
+                    SchemaTables.THREAD.column.record_modified_time.name: now_datetime,
+                }
+            }])
+        except Exception as e:
+            logger.error('mark thread as deleted failed, connection_id: %s, thread_id: %s, error: %s',
+                         connection_id, thread_id, e)
+            return False, 'Failed to update local records.'
+
+        return True, None
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support deleting email.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        config = decrypt_config(json.loads(project_connection.config))
+
+        seadb_api = SeaDBAPI()
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        thread_ids = request.data.get('thread_ids')
+        if thread_ids is None:
+            thread_id = request.data.get('thread_id')
+            if not thread_id:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'thread_id is required.')
+            thread_ids = [thread_id]
+        elif not isinstance(thread_ids, list):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'thread_ids invalid.')
+
+        normalized_thread_ids = []
+        for thread_id in thread_ids:
+            try:
+                normalized_thread_ids.append(int(thread_id))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'thread_id invalid.')
+
+        deleted_thread_ids = []
+        failed_threads = []
+        for thread_id in dict.fromkeys(normalized_thread_ids):
+            ok, error_msg = self._delete_one_thread(
+                project_uuid,
+                connection_id,
+                config,
+                thread_id,
+                seadb_api,
+                email_seadb_api,
+            )
+            if ok:
+                deleted_thread_ids.append(thread_id)
+            else:
+                failed_threads.append({'thread_id': thread_id, 'error': error_msg})
+
+        status_code = status.HTTP_200_OK if deleted_thread_ids else status.HTTP_500_INTERNAL_SERVER_ERROR
+        return Response({
+            'success': bool(deleted_thread_ids),
+            'deleted_thread_ids': deleted_thread_ids,
+            'failed_threads': failed_threads,
+        }, status=status_code)
 
 
 class ProjectConnectionReplyDiscourseView(APIView):
