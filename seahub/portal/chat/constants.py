@@ -8,3 +8,12 @@ PORTAL_ANON_CHAT_IP_DAILY_LIMIT = 50
 PORTAL_ANON_CHAT_DAILY_TTL = 24 * 60 * 60
 
 PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT = 50
+
+PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE = 'portal-chat-image'
+PORTAL_CHAT_IMAGE_TOKEN_TTL = 30 * 60
+PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES = (
+    'attachments/knowledgebase/',
+    'attachments/ticket/',
+    'attachments/portal-issue/',
+    'attachments/portal-chat/',
+)

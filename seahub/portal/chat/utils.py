@@ -1,6 +1,13 @@
 import uuid
 import json
 import logging
+import os
+import re
+import time
+from urllib.parse import quote, unquote
+
+import jwt
+from django.conf import settings
 
 from django.core.cache import cache
 from django.db.models import Sum, Value
@@ -10,6 +17,7 @@ from rest_framework import status
 
 from seahub.api2.utils import api_error
 from seahub.project.constants import AIScenario
+from seahub.project.constants import IMAGE_EXTS
 from seahub.project.models import AIUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
 from seahub.portal.models import PortalChatMessages, ProjectExternalUser
@@ -28,6 +36,9 @@ from .constants import (
     PORTAL_ANON_CHAT_IP_DAILY_LIMIT,
     PORTAL_ANON_CHAT_DAILY_TTL,
     PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT,
+    PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
+    PORTAL_CHAT_IMAGE_TOKEN_TTL,
+    PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES,
 )
 
 
@@ -189,7 +200,89 @@ def gen_portal_chat_task_id(session_uuid):
     return f"portal_chat_{session_uuid.replace('-', '')}"
 
 
-def build_portal_message_result(ai_result, session_uuid, message_id, query, attachments=None):
+def _get_portal_chat_image_jwt_secret():
+    return getattr(settings, 'JWT_PRIVATE_KEY', '')
+
+
+def _split_url_suffix(file_path):
+    suffix_index = len(file_path)
+    for sep in ('?', '#'):
+        index = file_path.find(sep)
+        if index != -1:
+            suffix_index = min(suffix_index, index)
+    return file_path[:suffix_index], file_path[suffix_index:]
+
+
+def normalize_portal_chat_image_file_path(file_path):
+    if not isinstance(file_path, str) or not file_path:
+        return ''
+    file_path, _ = _split_url_suffix(file_path)
+    file_path = unquote(file_path).lstrip('/')
+    if not file_path.startswith(PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES):
+        return ''
+    if any(part == '..' for part in file_path.split('/')):
+        return ''
+    return file_path
+
+
+def is_portal_chat_proxy_image_file_path(file_path):
+    if not isinstance(file_path, str) or not file_path:
+        return False
+    ext = os.path.splitext(file_path)[1].lstrip('.').lower()
+    return ext in IMAGE_EXTS
+
+
+def encode_portal_chat_image_token(project_uuid, file_path, session_uuid, message_id, username):
+    now = int(time.time())
+    payload = {
+        'aud': PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
+        'project_uuid': str(project_uuid),
+        'file_path': file_path,
+        'session_uuid': session_uuid,
+        'message_id': message_id,
+        'username': username,
+        'iat': now,
+        'exp': now + PORTAL_CHAT_IMAGE_TOKEN_TTL,
+    }
+    return jwt.encode(payload, _get_portal_chat_image_jwt_secret(), algorithm='HS256')
+
+
+def decode_portal_chat_image_token(token):
+    return jwt.decode(
+        token,
+        _get_portal_chat_image_jwt_secret(),
+        algorithms=['HS256'],
+        audience=PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
+    )
+
+
+def build_portal_chat_image_url(project_uuid, file_path, session_uuid, message_id, username):
+    token = encode_portal_chat_image_token(project_uuid, file_path, session_uuid, message_id, username)
+    return f'/file/portal-chat-image/{project_uuid}/?token={quote(token, safe="")}'
+
+
+def rewrite_portal_chat_image_urls(project_uuid, value, session_uuid, message_id, username):
+    if not isinstance(value, str) or not value:
+        return value
+    if not session_uuid or not message_id or not username:
+        return value
+
+    project_uuid = str(project_uuid)
+    pattern = re.compile(
+        r'/file/project/%s/'
+        r'(?P<file_path>attachments/[^\s\)\\\]"\']+)' % re.escape(project_uuid)
+    )
+
+    def replace(match):
+        file_path = normalize_portal_chat_image_file_path(match.group('file_path'))
+        if not file_path or not is_portal_chat_proxy_image_file_path(file_path):
+            return match.group(0)
+        return build_portal_chat_image_url(project_uuid, file_path, session_uuid, message_id, username)
+
+    return pattern.sub(replace, value)
+
+
+def build_portal_message_result(ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
 
@@ -214,10 +307,13 @@ def build_portal_message_result(ai_result, session_uuid, message_id, query, atta
     except Exception as e:
         logger.warning(f'Failure to record portal messages to db: {e}')
 
+    ai_result['ai_reply'] = rewrite_portal_chat_image_urls(
+        project_uuid, ai_result['ai_reply'], session_uuid, message_id, username
+    )
     return ai_result
 
 
-def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments=None):
+def process_portal_stream_ai_reply(chat_task_id_info, ai_response, project_uuid, session_uuid, message_id, query, username, attachments=None):
     has_recorded_result = False
     error_msg = None
     try:
@@ -230,13 +326,16 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
                 # use if - else instead of json.loads() to avoid performance issues
                 if content.startswith('{"results": ') and content.endswith('}'):
                     results = json.loads(content)['results']
-                    item = f'data: {json.dumps({"results": build_portal_message_result(results, session_uuid, message_id, query, attachments)})}\n\n'
+                    item = f'data: {json.dumps({"results": build_portal_message_result(results, project_uuid, session_uuid, message_id, query, username, attachments)})}\n\n'
                     has_recorded_result = True
                 elif content.startswith('[ERROR: ') and content.endswith(']'):
                     error_msg = content[1:-1]
-                    item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": error_msg, "sources": []}, session_uuid, message_id, query, attachments)})}\n\n'
+                    item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": error_msg, "sources": []}, project_uuid, session_uuid, message_id, query, username, attachments)})}\n\n'
                     has_recorded_result = True
                 else:
+                    line_str = rewrite_portal_chat_image_urls(
+                        project_uuid, line_str, session_uuid, message_id, username
+                    )
                     if not line_str.endswith('\n\n'):
                         line_str += '\n\n'
                     item = line_str
@@ -249,7 +348,7 @@ def process_portal_stream_ai_reply(chat_task_id_info, ai_response, session_uuid,
     except Exception as e:
         logger.exception(f'Portal streaming response is interrupted: {e}')
         if not has_recorded_result:
-            item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, session_uuid, message_id, query, attachments)})}\n\n'
+            item = f'data: {json.dumps({"results": build_portal_message_result({"ai_reply": "There is an issue with the AI server or web server (LLM or internal server error), please try again later", "sources": []}, project_uuid, session_uuid, message_id, query, username, attachments)})}\n\n'
             try:
                 yield item
             except:
