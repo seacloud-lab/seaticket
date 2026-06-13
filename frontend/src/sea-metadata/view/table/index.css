@@ -111,7 +111,7 @@
 
 .static-sea-metadata-table-content.grid-header .sea-metadata-table-row {
   border-bottom: none;
-  background-color: var(--bs-th-bg);
+  background-color: #fafafa;
 }
 
 .sea-metadata-table-canvas .sea-metadata-table-row {
@@ -213,7 +213,7 @@
 }
 
 .table-last--frozen {
-  border-right: 1px solid #cacaca !important;
+  border-right: 1px solid #cccccc !important;
 }
 
 .row-locked .actions-cell::after {
@@ -247,7 +247,6 @@
   border: 2px solid #66afe9;
   border-right: none;
   border-bottom: none;
-  /* background: var(--bs-body-bg); */
   box-sizing: border-box;
   padding: 0 8px 2px 6px;
   align-items: center;
