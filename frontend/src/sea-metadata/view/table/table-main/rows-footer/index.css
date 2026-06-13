@@ -3,6 +3,7 @@
   height: 33px;
   width: 100%;
   overflow: hidden;
+  font-size: 13px;
   line-height: 33px;
   background: var(--bs-body-bg);
   border-top: 1px solid var(--bs-border-secondary-color);
