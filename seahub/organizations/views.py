@@ -258,7 +258,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                         logger.exception('Failed to send organization registration activation email: %s', e)
                         registration_profile.delete()
                         new_user.delete()
-                        form.add_error(None, _("Failed to send activation email: %(error)s") % {'error': str(e)})
+                        form.add_error(None, _("Failed to send email"))
                         return render(request, 'organizations/org_register.html', {
                             'form': form,
                             'login_bg_image_path': login_bg_image_path,
