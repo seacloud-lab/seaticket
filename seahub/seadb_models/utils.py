@@ -677,11 +677,13 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
-    issue_table_name = JiraIssuesTable.gen_table_name(connection_id)
-    comments_table_name = JiraIssueCommentsTable.gen_table_name(connection_id)
+    from seahub.tickets.ticket_utils import get_ticket_title
+    issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
+    comments_table_name = SchemaTables.JIRA_ISSUE_COMMENTS.table_name(connection_id)
     issue_sql = f"SELECT title, assignees, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
+        column_metadata = issue_res.get('metadata')
         issue_record = issue_res.get('results')[0]
         issue_id = issue_record.get('issue_id')
         issue_record.pop('issue_id', None)
@@ -692,11 +694,13 @@ def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
             comments_res = seadb_api.query_rows(project_uuid, comments_sql)
             comments_record = comments_res.get('results', [])
         issue_record['comments'] = comments_record
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
         logger.error(f'SeaDB query error for Jira issue details {issue_table_name} or {comments_table_name}: {e}')
         issue_record = {}
-    return issue_record
-
+        column_metadata = []
+        linked_ticket_title = ''
+    return issue_record, column_metadata, linked_ticket_title
 
 # task
 def get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
@@ -912,7 +916,7 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
     elif source_type == ExtraSourceType.PORTAL_ISSUE.value:
         table_name = SchemaTables.PORTAL_ISSUES.table_name()
     elif source_type == ConnectionType.JIRA_ISSUE.value:
-        table_name = SchemaTables.JIRA_ISSUES.table_name()
+        table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}

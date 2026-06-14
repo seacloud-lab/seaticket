@@ -1,7 +1,7 @@
 import logging
 
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import JiraIssuesTable, JiraIssueCommentsTable
+from seahub.seadb_models.models import SchemaTables
 from seahub.settings import ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 
@@ -15,14 +15,14 @@ class JiraSeaDBAPI:
 
     def get_issues_by_pks(self, connection_id, _pks):
         _pks_str = ', '.join([str(_pk) for _pk in _pks])
-        table_name = JiraIssuesTable.gen_table_name(connection_id)
+        table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
     def get_comments_by_issue_ids(self, connection_id, issue_ids, limit_for_each_id):
         issue_ids_str = ', '.join([str(issue_id) for issue_id in issue_ids])
-        table_name = JiraIssueCommentsTable.gen_table_name(connection_id)
+        table_name = SchemaTables.JIRA_ISSUE_COMMENTS.table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `issue_id` in ({issue_ids_str}) LIMIT 0, {len(issue_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         comments = response.get('results', [])

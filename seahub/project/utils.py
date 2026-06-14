@@ -179,6 +179,9 @@ def create_connection(project, username, connection_type, name, config):
         ConnectionType.DISCORD.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.DISCORD_THREADS, SchemaTables.DISCORD_THREAD_MESSAGES], api, project_uuid, connection_id
         ),
+        ConnectionType.JIRA_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.JIRA_ISSUES, SchemaTables.JIRA_ISSUE_COMMENTS], api, project_uuid, connection_id
+        ),
     }
 
     if connection_type == ConnectionType.GENERAL_TASK.value and not ENABLE_GENERAL_TASK:

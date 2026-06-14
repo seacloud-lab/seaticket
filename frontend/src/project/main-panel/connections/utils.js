@@ -266,22 +266,21 @@ export const initConnectionResourceDetails = (type, record) => {
   }
 };
   if (type === CONNECTION_TYPE.JIRA_ISSUE) {
+    const { author, created_time, comments } = record;
     const mainPost = {
       author: author || gettext('Unassigned'),
-      time: created_time,
-      body: content || '',
+      created_time,
+      content: content || '',
     };
     const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
       ...detail,
       time: detail.created_time,
       body: detail.content || '',
     })) : [];
-    return {
-      title,
-      details: [mainPost, ...initComments],
-      ...prams
-    };
-  };
+    return [mainPost, ...initComments];
+  }
+
+};
 
 export const getInfoByEmailFrom = (emailFrom) => {
   if (!emailFrom) return { sender: '', email: '' };
