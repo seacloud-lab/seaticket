@@ -247,9 +247,23 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             else:
                 new_user = RegistrationProfile.objects.create_inactive_user(
                     email, email, name, password, site,
-                    send_email=REGISTRATION_SEND_MAIL
+                    send_email=False
                 )
 
+                if REGISTRATION_SEND_MAIL:
+                    registration_profile = RegistrationProfile.objects.get(emailuser_id=new_user.id)
+                    try:
+                        registration_profile.send_activation_email(site)
+                    except Exception as e:
+                        logger.exception('Failed to send organization registration activation email: %s', e)
+                        registration_profile.delete()
+                        new_user.delete()
+                        form.add_error(None, _("Failed to send activation email: %(error)s") % {'error': str(e)})
+                        return render(request, 'organizations/org_register.html', {
+                            'form': form,
+                            'login_bg_image_path': login_bg_image_path,
+                            'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
+                        })
             create_org(org_name, url_prefix, new_user.username)
             new_org = get_org_by_url_prefix(url_prefix)
             org_created.send(sender=None, org=new_org)
