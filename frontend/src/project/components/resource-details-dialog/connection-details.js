@@ -44,7 +44,7 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   const updateResourceDetails = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     const details = { record, columns, linked_ticket_title, related_users };
     setConnectionDetails(details);
-    onUpdateResourceDetails && onUpdateResourceDetails(record);
+    onUpdateResourceDetails && onUpdateResourceDetails(details);
   }, [onUpdateResourceDetails]);
 
   const targetColumns = useMemo(() => {
@@ -55,13 +55,17 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   }, [connection, connectionDetails]);
 
   const syncRecordDetails = useCallback((recordUpdate = {}, linkedTicketTitle) => {
-    setConnectionDetails((current) => current ? {
-      ...current,
-      linked_ticket_title: linkedTicketTitle !== undefined ? linkedTicketTitle : current.linked_ticket_title,
-      record: { ...current.record, ...recordUpdate },
-    } : current);
-    onUpdateResourceDetails && onUpdateResourceDetails({ ...(connectionDetails?.record || {}), ...recordUpdate });
-  }, [connectionDetails, onUpdateResourceDetails]);
+    setConnectionDetails((current) => {
+      if (!current) return current;
+      const nextDetails = {
+        ...current,
+        linked_ticket_title: linkedTicketTitle !== undefined ? linkedTicketTitle : current.linked_ticket_title,
+        record: { ...current.record, ...recordUpdate },
+      };
+      onUpdateResourceDetails && onUpdateResourceDetails(nextDetails);
+      return nextDetails;
+    });
+  }, [onUpdateResourceDetails]);
 
   const handleOthersChange = useCallback((update, callback) => {
     if (!connection || !connectionDetails?.record || targetColumns.length === 0) return;

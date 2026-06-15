@@ -581,7 +581,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           projectUuid={projectUuid}
           resource={currentRow}
           columns={allColumns.current}
-          permission={permission}
           switchResource={switchResource}
           onToggle={closeAll}
           createMoreOptions={createMoreOptions}
