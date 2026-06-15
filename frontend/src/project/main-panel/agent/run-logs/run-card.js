@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import dayjs from 'dayjs';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import ActionItem from './action-item';
 import RunStatisticsDialog from './run-statistics-dialog';
@@ -13,6 +12,8 @@ import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { ResourceDetailsDialog } from '@/project/components';
 import { getResourceIconURL } from '@/project/utils';
+import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
+import { FROM_NOW } from '@/sea-metadata/constants';
 
 const { projectUuid } = window.app.pageOptions;
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
@@ -184,7 +185,7 @@ const RunCard = ({
     <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
       <div className="run-card-header" >
         <div className="run-card-header-left">
-          <span className="run-time">{dayjs(started_at).format('YYYY-MM-DD HH:mm')}</span>
+          <DateFormatter className="run-time" value={started_at} column={{ data: { format: FROM_NOW } }} />
           <span className="run-id">{gettext('Run')} #{id}</span>
           {eventTypes.map(type => (
             <span key={type} className="run-event-type-badge">{type}</span>

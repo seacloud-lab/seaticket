@@ -98,6 +98,7 @@
 .run-time {
   font-size: 14px;
   color: #212529;
+  cursor: default;
 }
 
 .run-id {
