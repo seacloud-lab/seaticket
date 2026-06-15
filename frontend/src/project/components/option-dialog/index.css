@@ -34,3 +34,30 @@
   border-color: red;
   box-shadow: 0 0 0 2px rgba(255, 0, 0, .25);
 }
+
+.option-group-sea-metadata-selector-single-select .seaqa-select-option {
+  height: 30px;
+  padding: 0 10px;
+}
+
+.option-group-sea-metadata-selector-single-select .seaqa-select-option:hover,
+.option-group-sea-metadata-selector-single-select .seaqa-select-option.active {
+  background-color: #f7f7f7;
+  color: var(--bs-body-color);
+}
+
+.option-group-sea-metadata-selector-single-select .select-option-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.option-group-sea-metadata-selector-single-select .select-option-name .single-check-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.option-group-sea-metadata-selector-single-select .select-option-name .single-check-icon .seaqa-icon-svg {
+  height: 12px;
+  width: 12px;
+}
