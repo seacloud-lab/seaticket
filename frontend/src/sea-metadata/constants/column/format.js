@@ -24,6 +24,8 @@ const COLLABORATOR_COLUMN_TYPES = [
 const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
 const UTC_FORMAT_DEFAULT = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
 const DEFAULT_TIMEZONE_FORMAT = 'MMMM D, YYYY, h:mm:ss A';
+const FROM_NOW = 'from_now';
+const ISO = 'iso';
 
 const DATE_UNIT = {
   YEAR: 'year',
@@ -116,4 +118,6 @@ export {
   SINGLE_CELL_VALUE_COLUMN_TYPE_MAP,
   DEFAULT_RATE_DATA,
   DEFAULT_TIMEZONE_FORMAT,
+  FROM_NOW,
+  ISO,
 };
