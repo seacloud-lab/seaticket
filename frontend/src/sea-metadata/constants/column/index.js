@@ -22,7 +22,6 @@ export {
   DEFAULT_RATE_DATA,
   DEFAULT_TIMEZONE_FORMAT,
   FROM_NOW,
-  ISO,
 } from './format';
 
 export {

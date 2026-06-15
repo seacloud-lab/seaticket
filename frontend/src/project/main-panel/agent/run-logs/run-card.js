@@ -13,7 +13,7 @@ import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { ResourceDetailsDialog } from '@/project/components';
 import { getResourceIconURL } from '@/project/utils';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
-import { FROM_NOW, ISO } from '@/sea-metadata/constants';
+import { FROM_NOW } from '@/sea-metadata/constants';
 
 const { projectUuid } = window.app.pageOptions;
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
@@ -185,7 +185,7 @@ const RunCard = ({
     <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
       <div className="run-card-header" >
         <div className="run-card-header-left">
-          <DateFormatter className="run-time" value={started_at} titleFormat={ISO} column={{ data: { format: FROM_NOW } }} />
+          <DateFormatter className="run-time" value={started_at} column={{ data: { format: FROM_NOW } }} />
           <span className="run-id">{gettext('Run')} #{id}</span>
           {eventTypes.map(type => (
             <span key={type} className="run-event-type-badge">{type}</span>

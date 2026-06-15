@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { getColumnType } from './core';
-import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT, DEFAULT_TIMEZONE_FORMAT, FROM_NOW, ISO } from '../../constants';
+import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT, DEFAULT_TIMEZONE_FORMAT, FROM_NOW } from '../../constants';
 
 dayjs.extend(relativeTime);
 
@@ -78,9 +78,6 @@ const getDateDisplayString = (date, format) => {
     }
     case FROM_NOW: {
       return dateObj.fromNow();
-    }
-    case ISO: {
-      return dateObj.toISOString();
     }
     default:
       // Compatible with older versions: if format is null, use defaultFormat
