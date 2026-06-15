@@ -136,7 +136,7 @@ const AIReply = forwardRef(({
     const actionContext = actionContextRef.current;
     if (!actionContext?.connection || !actionContext?.columns || !Array.isArray(rowIds) || rowIds.length === 0) return Promise.resolve();
 
-    const { row, details, updateResourceDetails, columns, connection } = actionContext;
+    const { details, updateResourceDetails, columns, connection } = actionContext;
     const rowId = rowIds[0];
     const rowUpdate = idRowUpdates?.[rowId] || {};
     const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
