@@ -26,10 +26,13 @@
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-views {
   padding-left: 0;
+  position: relative;
 }
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-view-tools {
   padding-right: 0;
+  padding-left: 0;
+  margin-left: 40px;
 }
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-table-footer {

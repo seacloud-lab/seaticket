@@ -45,6 +45,7 @@
 .sea-metadata-views .sea-metadata-view-item.active { 
   color: #ED7109;
   position: relative;
+  font-weight: 500;
 }
 
 .sea-metadata-views .sea-metadata-view-item-operation-down {
@@ -67,4 +68,5 @@
 
 .sea-metadata-views .sea-metadata-view-item.active .sea-metadata-view-lock-icon {
   color: #ED7109;
+  font-weight: 500;
 }

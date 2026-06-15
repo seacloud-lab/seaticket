@@ -1,8 +1,32 @@
 .sea-metadata-views .sea-metadata-views-nav-scroll-btns {
-  gap: 8px;
+  position: absolute;
+  width: 64px;
+  z-index: 1;
+}
+
+.sea-metadata-views .sea-metadata-views-nav-scroll-btns-left {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  left: 0;
+  background: linear-gradient(90deg, #FFF 45%, rgba(255, 255, 255, 0.00) 100%);
+}
+
+.sea-metadata-views .sea-metadata-views-nav-scroll-btns-right {
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  right: 155px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.00) 0%, #FFF 45%);
 }
 
 .sea-metadata-views .sea-metadata-views-nav-scroll-btns .scroll-control-btn {
   border: 1px solid var(--bs-border-color);
-  border-radius: 4px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.sea-metadata-views .sea-metadata-views-nav-scroll-btns .scroll-control-btn .seaqa-icon-svg {
+  height: 14px;
+  width: 14px;
 }
