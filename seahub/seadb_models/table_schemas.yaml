@@ -855,6 +855,8 @@ tables:
     - - record_modified_time
     - - deleted
     - - linked_ticket
+    - - sync_time
+    - - ai_processed_time
     table_name: general_task_{connection_id}
   GeneralTaskUserTable:
     columns:
