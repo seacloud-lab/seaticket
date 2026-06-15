@@ -248,3 +248,58 @@ body {
 .seaqa-portal-content .sea-metadata .sea-metadata-view-tools {
   padding-right: 0;
 }
+
+/* Portal-mobile */
+@media (min-width: 768px) {
+  .seaqa-portal-mobile-side-panel-more-btn {
+    display: none !important;
+  }
+  .seaqa-portal-side-panel-mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* mask */
+  .modal-backdrop.edit-mode {
+    width: calc(100vw - 50px);
+    left: 50px;
+  }
+
+  .seaqa-portal-side-panel {
+    position: relative;
+    z-index: 1041;
+  }
+
+  .seaqa-portal-side-panel-tabs {
+    display: none !important;
+  }
+
+  .seaqa-portal-mobile-side-panel-more-btn {
+    display: flex !important;
+    border: 1px solid rgba(0, 40, 100, 0.12);
+    margin-right: 12px;
+  }
+
+  .seaqa-portal-side-panel-mobile-menu {
+    position: absolute;
+    display: flex !important;
+    flex-direction: column;
+    background-color: #fff;
+    top: 57px;
+    padding: 16px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 100%;
+  }
+
+  .seaqa-portal-side-panel-mobile-menu .seaqa-portal-side-panel-mobile-menu-item {
+    height: 44px;
+    line-height: 44px;
+    font-size: 16px;
+  }
+
+  .seaqa-portal-side-panel-mobile-menu .seaqa-portal-side-panel-mobile-menu-item.active {
+    color: var(--bs-orange);
+  }
+}
