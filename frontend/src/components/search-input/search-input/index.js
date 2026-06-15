@@ -81,8 +81,7 @@ class SearchInput extends Component {
 
   renderClear = () => {
     const { onClear, size = 38, isShowClearIcon = false } = this.props;
-    const { searchValue } = this.state;
-    if (!isShowClearIcon || !isFunction(onClear) || !searchValue) return null;
+    if (!isShowClearIcon || !isFunction(onClear)) return null;
     const CLEAR_ICON_HEIGHT = 20;
     return (
       <ClearIconButton
