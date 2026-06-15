@@ -52,7 +52,7 @@
             projectUuid: '{{ project_uuid }}',
             workspaceID: '{{ workspace_id }}',
             isEditMode: {% if is_edit_mode %}true{% else %}false{% endif %},
-            showKBInPortal: {% if portal.show_kb_in_portal %}true{% else %}false{% endif %},
+            showKBInPortal: false,
             streamingResponse: {% if portal.streaming_response %}true{% else %}false{% endif %},
             needPassword: {% if need_password %}true{% else %}false{% endif %},
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
