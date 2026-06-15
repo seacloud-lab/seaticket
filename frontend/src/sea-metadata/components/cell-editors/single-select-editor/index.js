@@ -10,7 +10,7 @@ import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/cons
 import './index.css';
 
 const SingleSelectEditor = forwardRef(({
-  height,
+  height: rowHeight,
   column,
   columns,
   row,
@@ -48,8 +48,8 @@ const SingleSelectEditor = forwardRef(({
   }, [row, column, columns]);
 
   const style = useMemo(() => {
-    return { width: column.width, top: height - 2 };
-  }, [column, height]);
+    return { width: column.width, top: rowHeight - 1 };
+  }, [column, rowHeight]);
 
   const createOption = useCallback((name) => {
     const newOption = generateNewOption(options, name || '');
@@ -70,7 +70,7 @@ const SingleSelectEditor = forwardRef(({
       const { bottom } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
-        editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
+        editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

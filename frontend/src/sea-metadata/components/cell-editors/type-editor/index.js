@@ -8,7 +8,7 @@ import { gettext } from '@/constants';
 import './index.css';
 
 const TypeEditor = forwardRef(({
-  height,
+  height: rowHeight,
   column,
   value,
   editorPosition = { left: 0, top: 0 },
@@ -23,8 +23,8 @@ const TypeEditor = forwardRef(({
   const options = useMemo(() => getTypesOptions(typesData), [typesData]);
 
   const style = useMemo(() => {
-    return { width: column.width, top: height - 2 };
-  }, [column, height]);
+    return { width: column.width, top: rowHeight - 1 };
+  }, [column, rowHeight]);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);
@@ -35,7 +35,7 @@ const TypeEditor = forwardRef(({
       const { bottom } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
-        editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
+        editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
