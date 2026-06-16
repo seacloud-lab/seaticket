@@ -68,9 +68,12 @@ class AgentAPI {
   }
 
   // Agent action operations
-  confirmAgentAction(projectUuid, runId, actionId) {
+  confirmAgentAction(projectUuid, runId, actionId, options = {}) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/actions/${actionId}/confirm/`;
     const data = { project_uuid: projectUuid };
+    if (options.confirm_close_linked_github_issues) {
+      data.confirm_close_linked_github_issues = true;
+    }
     return this.req.post(url, data);
   }
 

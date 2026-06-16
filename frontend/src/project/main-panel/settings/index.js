@@ -5,6 +5,7 @@ import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
 import PromptSettings from './prompt-settings';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
+import TicketAgentRulesSettings from './ticket-agent-rules-settings';
 
 const Settings = ({
   title,
@@ -31,13 +32,23 @@ const Settings = ({
         onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
       />
       {settings.agent?.enabled && (
-        <GitHubIssueTypeMappingSettings
-          className="mb-4"
-          value={settings?.agent?.github_issue_type_mapping || {}}
-          onChange={(value, callback) => modifySettings({
-            agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
-          }, callback)}
-        />
+        <>
+          <GitHubIssueTypeMappingSettings
+            className="mb-4"
+            value={settings?.agent?.github_issue_type_mapping || {}}
+            onChange={(value, callback) => modifySettings({
+              agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
+            }, callback)}
+          />
+          <TicketAgentRulesSettings
+            className="mb-4"
+            value={settings?.agent?.ticket_rules || ''}
+            onChange={(value, callback) => modifySettings({
+              agent: Object.assign({}, settings.agent, { ticket_rules: value }),
+            }, callback)}
+          />
+
+        </>
       )}
       <SwitchSettingsItem
         title={gettext('Support portal')}

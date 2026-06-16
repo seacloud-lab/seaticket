@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 PROJECT_PROMPT_TAG_LIKE_RE = re.compile(r'<[^>]+>')
 
 
-def is_safe_project_prompt(value):
+def is_safe_prompt(value):
     if value is None:
         return True
     if not isinstance(value, str):
@@ -482,9 +482,15 @@ class ProjectView(APIView):
                     project_settings = {}
                 update_settings = json.loads(settings)
                 project_prompt = update_settings.get('prompt')
-                if not is_safe_project_prompt(project_prompt):
+                if not is_safe_prompt(project_prompt):
                     error_msg = _('Project prompt contains disallowed tag-like content.')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                agent_settings = update_settings.get('agent')
+                if isinstance(agent_settings, dict):
+                    ticket_rules = agent_settings.get('ticket_rules')
+                    if not is_safe_prompt(ticket_rules):
+                        error_msg = _('Ticket Agent rules must be text, and cannot contain tag-like content.')
+                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 for k,v in update_settings.items():
                     project_settings[k] = v

@@ -24,7 +24,16 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
-from seahub.tickets.ticket_utils import get_ticket
+from seahub.tickets.ticket_utils import (
+    get_ticket,
+    collect_open_linked_github_issues_for_tickets,
+    close_linked_github_issues,
+    get_ticket_table_columns,
+    map_ticket_substate_to_github_state_reason,
+    TicketCloseValidationError,
+    build_ticket_close_warning_response,
+    TICKET_CLOSE_CONFIRM_FIELD,
+)
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
@@ -72,6 +81,12 @@ class MappingRequiredError(Exception):
         self.agent_type = agent_type
         self.connection_id = connection_id
         super().__init__(f'Mapping required for agent type: {agent_type}')
+
+
+class TicketCloseConfirmationRequired(Exception):
+    def __init__(self, warning_payload):
+        self.warning_payload = warning_payload
+        super().__init__('Ticket close confirmation required.')
 
 
 def _parse_action_sources(raw_sources):
@@ -333,6 +348,7 @@ class AgentActionConfirmView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
+        confirm_close_linked_github_issues = bool(request.data.get(TICKET_CLOSE_CONFIRM_FIELD))
         try:
             seadb_api = SeaDBAPI()
 
@@ -364,7 +380,8 @@ class AgentActionConfirmView(APIView):
             try:
                 if source_type == 'ticket':
                     execution = self._execute_ticket_action(
-                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
+                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username,
+                        confirm_close_linked_github_issues=confirm_close_linked_github_issues,
                     )
                 elif source_type == ConnectionType.GITHUB_ISSUE.value:
                     execution = self._execute_github_issue_action(
@@ -414,6 +431,8 @@ class AgentActionConfirmView(APIView):
                 'result': execution['result'],
             }, status=status.HTTP_200_OK)
 
+        except TicketCloseConfirmationRequired as e:
+            return Response(e.warning_payload, status=status.HTTP_409_CONFLICT)
         except MappingRequiredError as e:
             return self._mapping_required_response(seadb_api, project_uuid, e)
         except Exception as e:
@@ -459,7 +478,18 @@ class AgentActionConfirmView(APIView):
             return self._successful_execution(execution)
         return self._successful_execution('Success')
 
-    def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
+    def _execute_ticket_action(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        tool_name,
+        suggestion_content,
+        username,
+        *,
+        confirm_close_linked_github_issues=False,
+    ):
         """Dispatch ticket-source actions to the appropriate handler."""
         try:
             ticket_id = int(source_id)
@@ -469,6 +499,14 @@ class AgentActionConfirmView(APIView):
 
         if tool_name == 'suggest_notify_assignee':
             return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, suggestion_content, username)
+        elif tool_name == 'suggest_close_ticket':
+            return self._execute_close_ticket(
+                seadb_api,
+                project_uuid,
+                ticket_id,
+                username,
+                confirm_close_linked_github_issues=confirm_close_linked_github_issues,
+            )
         else:
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
@@ -1478,6 +1516,73 @@ class AgentActionConfirmView(APIView):
 
         logger.info(f'Agent notified assignees for ticket #{ticket_id}')
         return self._successful_execution(f'Notification sent to {len(assignees)} assignee(s).')
+
+    def _execute_close_ticket(
+        self,
+        seadb_api,
+        project_uuid,
+        ticket_id,
+        operator,
+        *,
+        confirm_close_linked_github_issues=False,
+    ):
+        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        if not ticket:
+            return self._failed_execution(f'Ticket #{ticket_id} not found')
+
+        state_name = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').lower()
+        if state_name == 'closed':
+            return self._failed_execution(f'Ticket #{ticket_id} is already closed')
+
+        linked_connection_records = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
+        substate = ticket.get(SchemaTables.TICKETS.column.substate.name)
+        close_candidates = [{
+            'ticket_id': int(ticket_id),
+            'ticket_title': ticket.get(SchemaTables.TICKETS.column.title.name) or '',
+            'linked_connection_records': linked_connection_records,
+        }]
+        grouped_open_issues = collect_open_linked_github_issues_for_tickets(seadb_api, project_uuid, close_candidates)
+        if grouped_open_issues:
+            if not confirm_close_linked_github_issues:
+                warning_payload = build_ticket_close_warning_response(grouped_open_issues)
+                raise TicketCloseConfirmationRequired(warning_payload)
+            try:
+                ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
+                state_reason = map_ticket_substate_to_github_state_reason(substate, ticket_columns)
+                close_linked_github_issues(
+                    seadb_api,
+                    project_uuid,
+                    [{
+                        'ticket_id': int(ticket_id),
+                        'state_reason': state_reason,
+                        'open_github_issues': grouped_open_issues[0].get('open_github_issues') or [],
+                    }],
+                )
+            except TicketCloseValidationError as e:
+                return self._failed_execution(str(e))
+            except Exception as e:
+                logger.exception('Failed to close linked GitHub issues for ticket #%s: %s', ticket_id, e)
+                return self._failed_execution(f'Failed to close linked GitHub issues: {e}')
+
+        now = timezone.now().isoformat()
+        participants = ticket.get(SchemaTables.TICKETS.column.participants.name) or []
+        if operator not in participants:
+            participants.append(operator)
+        update_row = {
+            SchemaTables.TICKETS.column.state.name: 'closed',
+            SchemaTables.TICKETS.column.closed_time.name: now,
+            SchemaTables.TICKETS.column.modified_time.name: now,
+            SchemaTables.TICKETS.column.participants.name: participants,
+        }
+        seadb_api.update_rows(
+            project_uuid,
+            SchemaTables.TICKETS.table_name(),
+            [{
+                'pk': ticket_id,
+                'row': update_row,
+            }],
+        )
+        return self._successful_execution(f'Ticket #{ticket_id} closed.')
 
 
 class AgentActionUpdateView(APIView):

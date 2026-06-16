@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import EditPromptDialog from './edit-prompt-dialog';
@@ -9,9 +9,19 @@ const PromptSettings = ({
   value: oldValue = '',
   onChange,
   className,
+  title = gettext('Project prompt'),
+  tip = gettext('Set the AI system prompt for this project. This prompt will be applied to all AI conversations within this project.'),
+  dialogTitle = gettext('Edit Prompt'),
+  placeholder = gettext('Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here...'),
+  maxLength = 4000,
+  validationMessage = gettext('Project prompt cannot contain tag-like content such as <system-reminder>.'),
 }) => {
   const [value, setValue] = useState(oldValue);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setValue(oldValue || '');
+  }, [oldValue]);
 
   const openDialog = useCallback(() => {
     setIsDialogOpen(true);
@@ -39,10 +49,10 @@ const PromptSettings = ({
   return (
     <>
       <div className={classnames('prompt-settings-option w-100 pl-4 pr-4', className)}>
-        <div className="prompt-settings-option-header text-truncate">{gettext('Project prompt')}</div>
+        <div className="prompt-settings-option-header text-truncate">{title}</div>
         <div className="prompt-settings-option-body">
           <p className="seaqa-tip-default tip m-0 mb-2">
-            {gettext('Set the AI system prompt for this project. This prompt will be applied to all AI conversations within this project.')}
+            {tip}
           </p>
           <div className="prompt-preview-container">
             <div className="prompt-preview">
@@ -62,6 +72,10 @@ const PromptSettings = ({
           value={value}
           onConfirm={onConfirm}
           onToggle={closeDialog}
+          title={dialogTitle}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          validationMessage={validationMessage}
         />
       )}
     </>

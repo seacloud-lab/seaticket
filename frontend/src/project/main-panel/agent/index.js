@@ -8,6 +8,8 @@ import { agentAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
 import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
+import { isOpenLinkedGithubIssuesWarning } from '@/project/main-panel/tickets/utils';
+import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
 
 import './index.css';
 
@@ -18,6 +20,7 @@ const Agent = ({ title, settings, modifySettings }) => {
   const [suggestionDetailPanel, setSuggestionDetailPanel] = useState(null);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
+  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -61,13 +64,32 @@ const Agent = ({ title, settings, modifySettings }) => {
         });
         return;
       }
+      if (isOpenLinkedGithubIssuesWarning(err)) {
+        const tickets = payload?.tickets || [];
+        openCloseLinkedGitHubIssuesWarningDialog({
+          tickets,
+          stateReason: '',
+          callback: () => {
+            return agentAPI.confirmAgentAction(
+              projectUuid,
+              runId,
+              actionId,
+              { confirm_close_linked_github_issues: true }
+            ).then(() => {
+              updateRunLog(runId);
+              toaster.success(gettext('Action confirmed'));
+            });
+          },
+        });
+        return;
+      }
       if (payload?.detail) {
         toaster.danger(payload.detail);
         return;
       }
       toaster.danger(gettext('Failed to confirm action'));
     });
-  }, [getRunIdByActionId, updateRunLog]);
+  }, [getRunIdByActionId, openCloseLinkedGitHubIssuesWarningDialog, updateRunLog]);
 
   const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
     return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then(() => {
