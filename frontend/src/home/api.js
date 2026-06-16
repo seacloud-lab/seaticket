@@ -322,7 +322,6 @@ class HomeAPI {
     let url = this.server + '/api/v1/trash-projects/' + projectUuid + '/';
     return this.req.put(url);
   }
-
 }
 
 const homeAPI = new HomeAPI();

@@ -135,10 +135,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     modifyConnectionIsActiveStatus(id, activeStatus);
   };
 
-  useEffect(() => {
-    reloadConnections();
-  }, []);
-
   const rowsDidMount = useCallback((rows) => {
     const synchronizingRows = rows.filter(r => isConnectionFirstSync(r) && !isConnectionSyncCompleted(r)).map(r => r.id);
     if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
