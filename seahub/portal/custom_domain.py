@@ -1,5 +1,6 @@
 import re
 import logging
+import ipaddress
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
 CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
 CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
+DEFAULT_TLS_ASK_ALLOWED_IPS = ('127.0.0.1', '::1')
 
 
 def normalize_portal_custom_domain(domain):
@@ -102,6 +104,31 @@ def verify_portal_custom_domain_dns(domain, verification_token):
     return expected_value in query_dns_txt_values(record_name)
 
 
+def is_portal_custom_domain_tls_ask_allowed_source(request):
+    remote_addr = (request.META.get('REMOTE_ADDR') or '').strip()
+    if not remote_addr:
+        return False
+
+    try:
+        remote_ip = ipaddress.ip_address(remote_addr)
+    except ValueError:
+        return False
+
+    allowed_entries = list(DEFAULT_TLS_ASK_ALLOWED_IPS)
+
+    for entry in allowed_entries:
+        entry = (entry or '').strip()
+        if not entry:
+            continue
+        try:
+            if remote_ip in ipaddress.ip_network(entry, strict=False):
+                return True
+        except ValueError:
+            logger.warning('Invalid portal custom-domain TLS ask allowed IP entry: %s', entry)
+
+    return False
+
+
 def is_request_using_portal_custom_domain(request, project_uuid=None):
     binding = getattr(request, 'portal_custom_domain', None)
     if binding:
@@ -126,6 +153,5 @@ def is_request_using_portal_custom_domain(request, project_uuid=None):
 def get_custom_domain_origin(domain, request=None):
     if not domain:
         return ''
-    service_scheme = urlsplit(getattr(settings, 'SEAQA_WEB_SERVICE_URL', '') or '').scheme or 'https'
-    scheme = request.scheme if request is not None else service_scheme
+    scheme = request.scheme if request is not None else 'https'
     return '%s://%s' % (scheme, domain)

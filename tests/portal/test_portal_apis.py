@@ -17,6 +17,7 @@ from seahub.portal.apis import (
     PortalIssueMetadataView,
     PortalMyIssuesView,
     PortalIssueTrashAPIView,
+    PortalCustomDomainTLSAskView,
     PortalExternalInvitationsView,
     PortalCustomDomainView,
     SQLGeneratorOptionInvalidError,
@@ -639,6 +640,79 @@ class TestPortalCustomDomainView:
 
         assert resp.status_code == 400
 
+
+@pytest.mark.django_db
+class TestPortalCustomDomainTLSAskView:
+
+    def test_get_allows_verified_custom_domain_from_localhost(self, factory, real_project):
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(real_project.uuid),
+            verified=True,
+        )
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': 'Support.Local.Test.'},
+            REMOTE_ADDR='127.0.0.1',
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 200
+
+    def test_get_rejects_unverified_custom_domain(self, factory, real_project):
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(real_project.uuid),
+            verified=False,
+        )
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': 'support.local.test'},
+            REMOTE_ADDR='127.0.0.1',
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+
+    def test_get_rejects_missing_custom_domain(self, factory):
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': 'missing.local.test'},
+            REMOTE_ADDR='127.0.0.1',
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+
+    def test_get_rejects_invalid_custom_domain(self, factory):
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': 'https://support.local.test/path'},
+            REMOTE_ADDR='127.0.0.1',
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+
+    def test_get_rejects_untrusted_source_ip(self, factory, real_project):
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(real_project.uuid),
+            verified=True,
+        )
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': 'support.local.test'},
+            REMOTE_ADDR='203.0.113.10',
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
 
 @pytest.mark.django_db
 class TestPortalExternalInvitationsView:

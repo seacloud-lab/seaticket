@@ -9,6 +9,10 @@ from seahub.portal.models import PortalCustomDomain, ProjectExternalUser
 from seahub.portal.views import portal_external_logout_view, portal_view
 
 
+def process_custom_domain_request(request):
+    return PortalCustomDomainMiddleware(lambda _request: None).process_request(request)
+
+
 @pytest.mark.django_db
 def test_portal_view_treats_cross_org_authenticated_external_user_as_external(factory, real_project):
     ext_username = 'virtual-ext-user'
@@ -92,7 +96,7 @@ def test_custom_domain_mismatched_portal_api_returns_404(factory, real_project):
     )
 
     with pytest.raises(Http404):
-        PortalCustomDomainMiddleware().process_request(request)
+        process_custom_domain_request(request)
 
 
 @pytest.mark.django_db
@@ -105,7 +109,7 @@ def test_custom_domain_matched_portal_api_is_not_rewritten(factory, real_project
     path = f'/api/v1/portal/{real_project.uuid}/settings/'
     request = factory.get(path, HTTP_HOST='support.local.test')
 
-    response = PortalCustomDomainMiddleware().process_request(request)
+    response = process_custom_domain_request(request)
 
     assert response is None
     assert request.path_info == path
@@ -121,11 +125,28 @@ def test_custom_domain_root_path_rewrites_to_bound_portal(factory, real_project)
     )
     request = factory.get('/', HTTP_HOST='support.local.test')
 
-    response = PortalCustomDomainMiddleware().process_request(request)
+    response = process_custom_domain_request(request)
 
     assert response is None
     assert request.path_info == f'/portal/{real_project.uuid}/'
     assert request.portal_custom_domain.project_uuid == str(real_project.uuid)
+
+
+@pytest.mark.django_db
+def test_main_site_host_skips_custom_domain_rewrite(factory, real_project, settings):
+    settings.SEATICKET_SERVER_HOSTNAME = 'app.local.test'
+    PortalCustomDomain.objects.create(
+        domain='app.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    request = factory.get('/', HTTP_HOST='app.local.test')
+
+    response = process_custom_domain_request(request)
+
+    assert response is None
+    assert request.path_info == '/'
+    assert not hasattr(request, 'portal_custom_domain')
 
 
 @pytest.mark.django_db
@@ -138,7 +159,7 @@ def test_custom_domain_external_accept_path_rewrites_to_bound_invitation(factory
     token = 'a' * 32
     request = factory.get(f'/external/accept/{token}/', HTTP_HOST='support.local.test')
 
-    response = PortalCustomDomainMiddleware().process_request(request)
+    response = process_custom_domain_request(request)
 
     assert response is None
     assert request.path_info == f'/portal-external/accept/{token}/{real_project.uuid}/'

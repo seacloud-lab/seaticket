@@ -7,7 +7,7 @@ from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeB
     PortalSettingsView, PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, \
     PortalIssueViewView, PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
     PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView, PortalLogoView, \
-    PortalCustomDomainView, PortalCustomDomainVerificationView
+    PortalCustomDomainTLSAskView, PortalCustomDomainView, PortalCustomDomainVerificationView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -66,6 +66,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/$', PortalCustomDomainView.as_view(), name='api-v1-portal-custom-domain'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/verify/$', PortalCustomDomainVerificationView.as_view(), name='api-v1-portal-custom-domain-verify'),
+    re_path(r'^internal/portal/custom-domain/allow-tls$', PortalCustomDomainTLSAskView.as_view(), name='internal-portal-custom-domain-allow-tls'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
 
     # portal upload file
