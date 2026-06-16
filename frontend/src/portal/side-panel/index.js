@@ -33,6 +33,10 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
     }
 
     onPageChange(value);
+
+    if (isShowMobileMenu) {
+      setIsShowMobileMenu(false);
+    }
   };
 
   useEffect(() => {

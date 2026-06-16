@@ -266,6 +266,34 @@ body {
     left: 50px;
   }
 
+  /* main panel */
+  .seaqa-portal-main-panel .seaqa-ai-ask-chats {
+    width: calc(100% - 32px) !important;
+  }
+
+  .seaqa-portal-main-panel .seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip-description {
+    display: none;
+  }
+
+  .seaqa-portal-main-panel .seaqa-ai-ask-chats-footer {
+    padding: 8px 16px 16px !important;
+    margin-top: 24px;
+  }
+
+  .seaqa-portal-main-panel .sf-slate-viewer-container.mobile .sf-slate-viewer-article-container .article {
+    padding: 0 !important;
+  }
+
+  .seaqa-portal-main-panel .ask-main-container {
+    position: relative;
+  }
+
+  .seaqa-portal-main-panel .seaqa-ai-ask-sessions-wrapper {
+    position: absolute;
+    right: 0px;
+  }
+
+  /* side panel */
   .seaqa-portal-side-panel {
     position: relative;
     z-index: 1041;
