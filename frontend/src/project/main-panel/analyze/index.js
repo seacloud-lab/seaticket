@@ -115,6 +115,24 @@ const Analyze = ({ title }) => {
     setEndDate(newEnd);
   }, []);
 
+  const handleDateFilterChange = useCallback((nextStartDate, nextEndDate) => {
+    setFilters(prev => {
+      const nextFilters = prev.filter(filter => filter.field !== 'modified_time');
+      return [...nextFilters, {
+        field: 'modified_time',
+        value: { startDate: nextStartDate, endDate: nextEndDate },
+      }];
+    });
+  }, []);
+
+  const activeDateFilter = useMemo(() => {
+    const rangeFilter = filters.find(item => item.field === 'modified_time')?.value;
+    if (rangeFilter) {
+      return { startDate: rangeFilter.startDate, endDate: rangeFilter.endDate };
+    }
+    return { startDate, endDate };
+  }, [filters, startDate, endDate]);
+
   const handleFilterChange = useCallback((field, value) => {
     setFilters(prev => {
       if (value) {
@@ -178,6 +196,11 @@ const Analyze = ({ title }) => {
               filters={filters}
               filterableFieldOptions={filterableFieldOptions}
               handleFilterChange={handleFilterChange}
+              baseStartDate={startDate}
+              baseEndDate={endDate}
+              startDate={activeDateFilter.startDate}
+              endDate={activeDateFilter.endDate}
+              onDateFilterChange={handleDateFilterChange}
             />
           )}
           {renderContent()}

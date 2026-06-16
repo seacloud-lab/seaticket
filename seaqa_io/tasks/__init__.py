@@ -261,7 +261,7 @@ def perform_embedding_analysis(project_uuid, connection_ids, username, start_dat
             connection_id = conn.id
             connection_type = conn.type
 
-            column_names = ['_pk', 'title', 'ai_summary', 'ai_summary_vector']
+            column_names = ['_pk', 'title', 'ai_summary', 'ai_summary_vector', 'modified_time']
             if connection_type == ConnectionType.GITHUB_ISSUE.value:
                 column_names.extend(['url', 'state'])
             elif connection_type == ConnectionType.DISCOURSE_FORUM.value:

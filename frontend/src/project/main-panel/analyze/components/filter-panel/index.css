@@ -2,31 +2,36 @@
   height: 40px;
 }
 
+.analyze-filter-panel .analyze-filter-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--bs-border-tertiary-color);
+  margin: 0px 12px 6px 12px;
+}
+
+/* analyze-add-filter */
 .analyze-add-filter {
   position: relative;
 }
 
-.analyze-add-filter-btn {
+.analyze-add-filter .analyze-add-filter-btn {
   display: flex;
   align-items: center;
   cursor: pointer;
   gap: 4px;
-  line-height: 24px;
-  height: 24px;
+  line-height: 32px;
+  height: 32px;
   width: fit-content;
-  border-radius: 3px;
-  padding: 0px 4px;
+  border-radius: 4px;
+  padding: 0px 8px 0px 12px;
+  border: 1px solid var(--bs-border-tertiary-color);
 }
 
-.analyze-add-filter-btn:hover {
+.analyze-add-filter .analyze-add-filter-btn:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.analyze-add-filter-btn.active {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.analyze-add-filter-btn .seaqa-icon-svg {
+.analyze-add-filter .analyze-add-filter-btn .seaqa-icon-svg {
   color: var(--bs-body-secondary-color);
 }
 
@@ -46,4 +51,137 @@
 
 .analyze-filter-option-editor .option-editor-option {
   padding: 0 8px;
+}
+
+/* analyze-date-filter */
+.analyze-date-filter {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 4px;
+  height: 32px;
+  padding: 0px 12px;
+  gap: 12px;
+}
+
+.analyze-date-filter .analyze-date-filter-start-label,
+.analyze-date-filter .analyze-date-filter-end-label {
+  line-height: 20px;
+  width: 82px;
+}
+
+.analyze-date-filter .analyze-date-filter-start-label {
+  text-align: start;
+}
+
+.analyze-date-filter .analyze-date-filter-end-label {
+  text-align: end;
+}
+
+.analyze-date-filter .analyze-date-filter-slider {
+  position: relative;
+  min-width: 200px;
+}
+
+.analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-track {
+  position: absolute;
+  top: -1.5px;
+  height: 3px;
+  border-radius: 1.5px;
+  left: 0;
+  right: 0;
+  background: var(--bs-border-tertiary-color)
+}
+
+.analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-track-active {
+  position: absolute;
+  top: -1.5px;
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--bs-primary);
+}
+
+.analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-range {
+  position: absolute;
+  left: 0;
+  top: -6px;
+  width: 100%;
+  margin: 0;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.analyze-date-filter-range::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bs-primary);
+  background: #fff;
+  cursor: ew-resize;
+}
+
+.analyze-date-filter-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bs-primary);
+  background: #fff;
+  cursor: ew-resize;
+}
+
+.analyze-date-filter-range::-webkit-slider-runnable-track {
+  height: 20px;
+  background: transparent;
+}
+
+.analyze-date-filter-range::-moz-range-track {
+  height: 20px;
+  background: transparent;
+}
+
+.analyze-date-filter-range:disabled::-webkit-slider-thumb {
+  background: #c4c4c4;
+  cursor: not-allowed;
+}
+
+.analyze-date-filter-range:disabled::-moz-range-thumb {
+  background: #c4c4c4;
+  cursor: not-allowed;
+}
+
+/* analyze-date-filter-dropdown */
+.analyze-date-filter-dropdown {
+  position: relative;
+}
+
+.analyze-date-filter-dropdown .analyze-date-filter-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0px 8px 0px 12px;
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 8px;
+  color: var(--bs-orange);
+}
+
+.analyze-date-filter-dropdown .analyze-date-filter-dropdown-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.analyze-date-filter-presets .option-editor-option.disabled {
+  color: #BBB;
+  pointer-events: none;
+}
+
+.analyze-date-filter-presets .option-editor-option.disabled:hover {
+  background-color: transparent;
+  cursor: default;
 }
