@@ -24,10 +24,6 @@ class TicketLinkValidationError(Exception):
     pass
 
 
-class TicketCloseValidationError(Exception):
-    pass
-
-
 @dataclass
 class TicketLinkSyncPlan:
     """Ticket link sync plan"""
@@ -330,8 +326,7 @@ def normalize_substate_name(substate, ticket_columns):
 def map_ticket_substate_to_github_state_reason(substate, ticket_columns):
     """Map ticket substate to GitHub ``state_reason`` when closing an issue.
 
-    Raises:
-        TicketCloseValidationError: If the substate cannot be mapped.
+    Falls back to ``completed`` when substate cannot be mapped.
     """
     substate_name = normalize_substate_name(substate, ticket_columns)
     normalized_substate_name = substate_name.strip().lower()
@@ -340,7 +335,7 @@ def map_ticket_substate_to_github_state_reason(substate, ticket_columns):
     state_reason = TICKET_SUBSTATE_TO_GITHUB_STATE_REASON.get(normalized_substate_name)
     if state_reason:
         return state_reason
-    raise TicketCloseValidationError('substate cannot map to github state_reason.')
+    return 'completed'
 
 
 def close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads):

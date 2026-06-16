@@ -30,7 +30,7 @@ from seahub.tickets.ticket_utils import (
     close_linked_github_issues,
     get_ticket_table_columns,
     map_ticket_substate_to_github_state_reason,
-    TicketCloseValidationError,
+    record_ticket_activities,
     build_ticket_close_warning_response,
     TICKET_CLOSE_CONFIRM_FIELD,
 )
@@ -399,6 +399,8 @@ class AgentActionConfirmView(APIView):
                     logger.warning(f'Unknown source_type {source_type!r} for action {action_id}')
                     execution = self._failed_execution(f'Unsupported source_type: {source_type}')
             except MappingRequiredError:
+                raise
+            except TicketCloseConfirmationRequired:
                 raise
             except Exception as e:
                 logger.exception(
@@ -1558,8 +1560,6 @@ class AgentActionConfirmView(APIView):
                         'open_github_issues': grouped_open_issues[0].get('open_github_issues') or [],
                     }],
                 )
-            except TicketCloseValidationError as e:
-                return self._failed_execution(str(e))
             except Exception as e:
                 logger.exception('Failed to close linked GitHub issues for ticket #%s: %s', ticket_id, e)
                 return self._failed_execution(f'Failed to close linked GitHub issues: {e}')
@@ -1581,6 +1581,14 @@ class AgentActionConfirmView(APIView):
                 'pk': ticket_id,
                 'row': update_row,
             }],
+        )
+        changes = [('state_changed', 'state', ticket.get(SchemaTables.TICKETS.column.state.name), 'closed')]
+        record_ticket_activities(
+            seadb_api,
+            project_uuid,
+            ticket_id,
+            operator,
+            changes,
         )
         return self._successful_execution(f'Ticket #{ticket_id} closed.')
 

@@ -45,7 +45,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     collect_open_linked_github_issues_for_tickets, build_ticket_close_warning_response, \
     TICKET_CLOSE_CONFIRM_FIELD, close_linked_github_issues, get_ticket_table_columns, \
-    map_ticket_substate_to_github_state_reason, TicketCloseValidationError
+    map_ticket_substate_to_github_state_reason
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -632,8 +632,6 @@ class TicketsAPIView(APIView):
                             'open_github_issues': open_github_issues,
                         })
                     close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads)
-                except TicketCloseValidationError as e:
-                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                 except Exception as e:
                     github_error_response = get_github_issue_update_error_response(e)
                     if github_error_response:
@@ -1067,8 +1065,6 @@ class TicketAPIView(APIView):
                                 'open_github_issues': grouped_open_issues[0].get('open_github_issues') or [],
                             }],
                         )
-                    except TicketCloseValidationError as e:
-                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     except Exception as e:
                         github_error_response = get_github_issue_update_error_response(e)
                         if github_error_response:
