@@ -73,7 +73,7 @@ export const getGroupsRows = (
       });
       groupContainer.first_row_id = first_row_id;
       groupContainer.count = groupCount;
-      groupContainer.height = (isExpanded ? subgroupsHeight : 0) + GROUP_HEADER_HEIGHT;
+      groupContainer.height = (isExpanded ? subgroupsHeight : 0) + GROUP_HEADER_HEIGHT + ((currentLevel > 1 && isExpanded) ?  GROUP_VIEW_OFFSET : 0);
       groupRows.push(groupContainer);
       groupRows.push(...flattenSubgroups);
     } else if (Array.isArray(row_ids) && row_ids.length > 0) {
@@ -101,7 +101,7 @@ export const getGroupsRows = (
       });
       groupContainer.first_row_id = rows[0].rowId;
       groupContainer.count = rowsLength;
-      groupContainer.height = rowsHeight + btnInsertRowHeight + GROUP_HEADER_HEIGHT;
+      groupContainer.height = rowsHeight + btnInsertRowHeight + GROUP_HEADER_HEIGHT + ((currentLevel > 1 && isExpanded) ?  GROUP_VIEW_OFFSET : 0);
       groupRows.push(groupContainer);
       groupRows.push(...rows);
     }
@@ -126,7 +126,7 @@ export const setupGroupsRows = (groupRows, maxLevel) => {
         if (level === maxLevel) {
           groupRowsHeight += height + GROUP_VIEW_OFFSET;
         }
-        top += GROUP_HEADER_HEIGHT;
+        top += GROUP_HEADER_HEIGHT + (level === 1 ? 0 : GROUP_VIEW_OFFSET);
         pervVisibleGroupLevel = level;
       }
     } else if (type === GROUP_ROW_TYPE.ROW) {
