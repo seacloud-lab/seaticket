@@ -158,14 +158,18 @@ def finalize_visitor_session_response(response, identity):
 
 
 def portal_path(request, project_uuid, *segments, is_edit_mode=False):
-    suffix = '/'.join([str(segment).strip('/') for segment in segments if segment not in (None, '', False)])
+    suffix = '/'.join(str(segment).strip('/') for segment in segments)
     if not is_edit_mode and is_request_using_portal_custom_domain(request, project_uuid):
         return '/%s/' % suffix if suffix else '/'
 
     prefix = 'portal-edit' if is_edit_mode else 'portal'
-    path = '/'.join([prefix, str(project_uuid)] + ([suffix] if suffix else [])) + '/'
-    site_root = getattr(settings, 'SITE_ROOT', '/') or '/'
-    site_root = site_root if site_root.endswith('/') else '%s/' % site_root
+    path = '%s/%s/' % (prefix, project_uuid)
+    if suffix:
+        path = '%s%s/' % (path, suffix)
+
+    site_root = getattr(settings, 'SITE_ROOT', '/')
+    if not site_root.endswith('/'):
+        site_root = '%s/' % site_root
     return '%s%s' % (site_root, path)
 
 

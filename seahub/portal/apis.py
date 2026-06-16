@@ -1505,7 +1505,7 @@ class PortalCustomDomainView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
         dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
         if not custom_domain:
             return Response({
@@ -1553,7 +1553,7 @@ class PortalCustomDomainView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            custom_domain_binding = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
+            custom_domain_binding = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
             if custom_domain_binding:
                 if custom_domain_binding.domain != normalized_custom_domain:
                     custom_domain_binding.domain = normalized_custom_domain
@@ -1587,7 +1587,7 @@ class PortalCustomDomainVerificationView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
         if not custom_domain:
             error_msg = 'custom_domain not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)

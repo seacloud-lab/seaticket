@@ -1,12 +1,10 @@
-import re
-
 from django.conf import settings
 from django.http import Http404
+from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.custom_domain import get_request_host_without_port
 from seahub.portal.models import PortalCustomDomain
-
 
 
 # Static and auth resources needed by Portal custom-domain pages.
@@ -14,53 +12,53 @@ PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/
 
 # Existing Portal APIs and file routes handled by normal URLConf.
 PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/upload-file/portal/', '/portal/', '/portal-external/')
+PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate')
+PORTAL_DETAIL_PAGES = ('my-issues', 'knowledge-base')
 
 
-def _get_project_uuid_from_standard_path(normalized_path):
-    parts = normalized_path.strip('/').split('/')
-    if len(parts) >= 2 and parts[0] in ('portal', 'portal-edit'):
-        return parts[1]
-    if len(parts) >= 4 and parts[:3] == ['api', 'v1', 'portal']:
-        return parts[3]
-    if len(parts) >= 3 and parts[:2] == ['portal-external', 'logout']:
-        return parts[2]
-    if len(parts) >= 4 and parts[:2] == ['portal-external', 'accept']:
-        return parts[3]
-    if len(parts) >= 3 and parts[0] in ('upload-file', 'file') and parts[1] == 'portal':
-        return parts[2]
+def _get_project_uuid_from_origin_path(normalized_path):
+    paths = [normalized_path]
+    if normalized_path != '/' and not normalized_path.endswith('/'):
+        paths.append('%s/' % normalized_path)
+
+    for path in paths:
+        try:
+            match = resolve(path)
+        except Resolver404:
+            continue
+        project_uuid = match.kwargs.get('project_uuid')
+        if project_uuid:
+            return project_uuid
     return ''
 
 
-def _build_internal_path(project_uuid, normalized_path):
+def _get_internal_path_for_custom_domain(project_uuid, normalized_path):
     site_root = getattr(settings, 'SITE_ROOT', '/') or '/'
     site_root = site_root if site_root.endswith('/') else '%s/' % site_root
-    page_path_map = {
-        '/': (),
-        '/submit-issue': ('submit-issue',),
-        '/my-issues': ('my-issues',),
-        '/knowledge-base': ('knowledge-base',),
-        '/chat': ('chat',),
-        '/login': ('login',),
-        '/anonymous-validate': ('anonymous-validate',),
-    }
-    if normalized_path in page_path_map:
-        suffix = '/'.join(page_path_map[normalized_path])
-        suffix = '%s/' % suffix if suffix else ''
-        return '%sportal/%s/%s' % (site_root, project_uuid, suffix)
-    if normalized_path == '/logout':
-        return '%sportal-external/logout/%s/' % (site_root, project_uuid)
+    segments = normalized_path.strip('/').split('/') if normalized_path != '/' else []
+    if not segments:
+        return '%sportal/%s/' % (site_root, project_uuid)
 
-    match = re.match(r'^/(my-issues|knowledge-base)/(\d+)$', normalized_path)
-    if match:
-        return '%sportal/%s/%s/%s/' % (site_root, project_uuid, match.group(1), match.group(2))
+    if len(segments) == 1:
+        page = segments[0]
+        if page in PORTAL_ROOT_PAGES:
+            return '%sportal/%s/%s/' % (site_root, project_uuid, page)
+        if page == 'logout':
+            return '%sportal-external/logout/%s/' % (site_root, project_uuid)
+        return ''
 
-    match = re.match(r'^/chat/[-0-9a-f]{36}$', normalized_path)
-    if match:
-        return '%sportal/%s%s/' % (site_root, project_uuid, normalized_path)
+    if len(segments) == 2:
+        page, item_id = segments
+        if page in PORTAL_DETAIL_PAGES and item_id.isdigit():
+            return '%sportal/%s/%s/%s/' % (site_root, project_uuid, page, item_id)
+        if page == 'chat' and item_id:
+            return '%sportal/%s/%s/%s/' % (site_root, project_uuid, page, item_id)
+        return ''
 
-    match = re.match(r'^/external/accept/(?P<token>[a-f0-9]{32})$', normalized_path)
-    if match:
-        return '%sportal-external/accept/%s/%s/' % (site_root, match.group('token'), project_uuid)
+    if len(segments) == 3:
+        token = segments[2]
+        if segments[:2] == ['external', 'accept'] and token:
+            return '%sportal-external/accept/%s/%s/' % (site_root, token, project_uuid)
 
     return ''
 
@@ -86,7 +84,7 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
         if any(normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix) for prefix in PASS_THROUGH_PREFIXES):
             return None
 
-        requested_project_uuid = _get_project_uuid_from_standard_path(normalized_path)
+        requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
         if requested_project_uuid and str(requested_project_uuid) != str(binding.project_uuid):
             raise Http404
         if requested_project_uuid and any(
@@ -95,7 +93,7 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
         ):
             return None
 
-        internal_path = _build_internal_path(binding.project_uuid, normalized_path)
+        internal_path = _get_internal_path_for_custom_domain(binding.project_uuid, normalized_path)
         if not internal_path:
             raise Http404
 

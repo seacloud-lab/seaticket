@@ -315,6 +315,6 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
         'is_portal_custom_domain': False,
-        'portal_base_url': portal_path(request, project_uuid, is_edit_mode=True).rstrip('/') or '/',
+        'portal_base_url': portal_path(request, project_uuid, is_edit_mode=True).rstrip('/'),
     }
     return render(request, 'portal_view_react.html', return_dict)

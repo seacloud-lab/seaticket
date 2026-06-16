@@ -5,18 +5,16 @@ import copy
 from types import SimpleNamespace
 from secrets import token_hex
 from django.db import models
-from django.db.utils import OperationalError, ProgrammingError
 from django.core.cache import cache
 from django.utils import timezone
 from uuid import uuid4
 from django.urls import reverse
-from django.conf import settings
 from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
-from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
+from seahub.utils import get_no_duplicate_obj_name, get_service_url, uuid_str_to_32_chars
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
-    get_custom_domain_origin, normalize_portal_custom_domain
+    normalize_portal_custom_domain
 import logging
 
 from seahub.seadb_models.models import SchemaTables
@@ -24,11 +22,7 @@ from seahub.seadb_models.models import SchemaTables
 logger = logging.getLogger(__name__)
 
 PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT = 300
-PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = (
-    'domain',
-    'project_uuid',
-    'verified',
-)
+PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = ('domain', 'project_uuid', 'verified')
 
 
 def generate_random_string_lower_digits(length):
@@ -83,12 +77,11 @@ class PortalExternalInvitation(models.Model):
 
     @property
     def link(self):
-        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(self.project_uuid)
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(self.project_uuid)).first()
         if custom_domain and custom_domain.verified:
-            base = get_custom_domain_origin(custom_domain.domain).rstrip('/')
-            return f'{base}/external/accept/{self.token}/'
+            return 'https://%s/external/accept/%s/' % (custom_domain.domain, self.token)
 
-        base = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '').rstrip('/')
+        base = get_service_url().rstrip('/')
         path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
         return f"{base}{path}" if base else path
 
@@ -121,50 +114,28 @@ class PortalCustomDomainManager(models.Manager):
         normalized_domain = normalize_portal_custom_domain(domain)
         return 'portal_custom_domain:domain:%s' % normalized_domain
 
-    def invalidate_cache(self, domain):
-        try:
-            cache.delete(self._domain_cache_key(domain))
-        except ValueError:
-            pass
-
     def get_by_domain(self, domain):
         try:
             normalized_domain = normalize_portal_custom_domain(domain)
         except ValueError:
             return None
         domain_cache_key = self._domain_cache_key(normalized_domain)
-        cache_marker = object()
-        cached_value = cache.get(domain_cache_key, cache_marker)
-        if cached_value is not cache_marker:
-            if isinstance(cached_value, dict):
-                return SimpleNamespace(**cached_value)
-            cache.delete(domain_cache_key)
+        cached_value = cache.get(domain_cache_key)
+        if isinstance(cached_value, dict):
+            return SimpleNamespace(**cached_value)
 
-        try:
-            custom_domain = super().filter(domain=normalized_domain).values(*PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS).first()
-        except (OperationalError, ProgrammingError):
-            logger.exception('Failed to query portal custom domain binding.')
-            return None
-
+        custom_domain = super().filter(domain=normalized_domain).values(*PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS).first()
         if not custom_domain:
             return None
         cache.set(domain_cache_key, custom_domain, PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT)
         return SimpleNamespace(**custom_domain)
-
-    def get_by_project_uuid(self, project_uuid):
-        project_uuid = str(project_uuid)
-        try:
-            return super().filter(project_uuid=project_uuid).first()
-        except (OperationalError, ProgrammingError):
-            logger.exception('Failed to query portal custom domain binding.')
-            return None
 
     def delete_by_project_uuid(self, project_uuid):
         binding = super().filter(project_uuid=str(project_uuid)).first()
         if not binding:
             return
 
-        self.invalidate_cache(domain=binding.domain)
+        cache.delete(self._domain_cache_key(binding.domain))
         super().filter(project_uuid=str(project_uuid)).delete()
 
 
@@ -194,15 +165,15 @@ class PortalCustomDomain(models.Model):
         if not self.verification_token:
             self.verification_token = token_hex(16)
         result = super().save(*args, **kwargs)
-        PortalCustomDomain.objects.invalidate_cache(domain=self.domain)
+        cache.delete(PortalCustomDomain.objects._domain_cache_key(self.domain))
         if old_domain and old_domain != self.domain:
-            PortalCustomDomain.objects.invalidate_cache(domain=old_domain)
+            cache.delete(PortalCustomDomain.objects._domain_cache_key(old_domain))
         return result
 
     def delete(self, *args, **kwargs):
         domain = self.domain
         result = super().delete(*args, **kwargs)
-        PortalCustomDomain.objects.invalidate_cache(domain=domain)
+        cache.delete(PortalCustomDomain.objects._domain_cache_key(domain))
         return result
 
     @property

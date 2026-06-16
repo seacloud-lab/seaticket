@@ -444,7 +444,7 @@ class TestPortalSettingsView:
         assert portal_settings.get('enable_password_protection') is False
         assert portal_settings.get('show_knowledge_base') is True
         assert 'password' not in portal_settings
-        assert PortalCustomDomain.objects.get_by_project_uuid(project.uuid) is None
+        assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
 
     def test_post_partial_update_portal_branding_preserves_other_settings(self, factory, project_creator, real_project):
         project = real_project
@@ -576,7 +576,7 @@ class TestPortalCustomDomainView:
         resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project.uuid)
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first()
         assert custom_domain.domain == 'support.local.test'
         assert custom_domain.verified is False
 
@@ -621,7 +621,7 @@ class TestPortalCustomDomainView:
         resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert PortalCustomDomain.objects.get_by_project_uuid(project.uuid) is None
+        assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
 
     def test_post_rejects_domain_used_by_other_project(self, factory, project_creator, real_project):
         project = real_project

@@ -62,9 +62,7 @@ def normalize_portal_custom_domain(domain):
     return domain
 
 
-
 def get_request_host_without_port(request):
-    host = ''
     try:
         host = request.get_host()
     except Exception:
@@ -134,10 +132,3 @@ def is_request_using_portal_custom_domain(request, project_uuid=None):
     if project_uuid is None:
         return bool(binding)
     return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))
-
-
-def get_custom_domain_origin(domain, request=None):
-    if not domain:
-        return ''
-    scheme = request.scheme if request is not None else 'https'
-    return '%s://%s' % (scheme, domain)
