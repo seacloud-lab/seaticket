@@ -87,7 +87,7 @@
   position: absolute;
   top: -1.5px;
   height: 3px;
-  border-radius: 37px;
+  border-radius: 1.5px;
   left: 0;
   right: 0;
   background: var(--bs-border-tertiary-color)
@@ -97,7 +97,7 @@
   position: absolute;
   top: -1.5px;
   height: 3px;
-  border-radius: 37px;
+  border-radius: 1.5px;
   background: var(--bs-primary);
 }
 

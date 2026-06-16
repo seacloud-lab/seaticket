@@ -237,7 +237,7 @@ const FilterPanel = ({
                   {
                     name: 'offset',
                     options: {
-                      offset: [0, 4],
+                      offset: [8, 4],
                     }
                   }
                 ]}
