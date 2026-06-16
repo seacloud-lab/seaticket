@@ -6,9 +6,9 @@
   background: var(--bs-body-bg);
   font-size: 13px;
   border: 1px solid #dbdbdb;
-  border-radius: 10px;
+  border-radius: 11px;
   margin-right: 4px;
-  padding: 0 6px 0 2px;
+  padding: 0 8px 0 4px;
   max-width: 100%;
   overflow: hidden;
 }

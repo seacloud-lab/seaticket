@@ -51,6 +51,21 @@
   width: 80px;
 }
 
+.sea-metadata-filters-list .filter-predicate .option-group,
+.sea-metadata-filters-list .filter-conjunction .option-group {
+  padding: 0px;
+}
+
+.sea-metadata-filters-list .filter-predicate .option-group .option-group-content,
+.sea-metadata-filters-list .filter-conjunction .option-group .option-group-content {
+  margin-bottom: 8px;
+}
+
+.sea-metadata-filters-list .filter-term .sea-metadata-selector-collaborator .option-group-content {
+  padding-top: 0px;
+  margin-bottom: 8px;
+}
+
 .sea-metadata-filters-list .filter-conjunction-readonly {
   width: 52px;
 }
@@ -138,16 +153,11 @@
   display: flex;
   width: 100%;
   height: 38px;
-  background: column;
   padding-left: 8px;
   padding-right: 8px;
   outline: none;
   border-radius: 3px;
   font-size: 0.875rem;
-}
-
-.sea-metadata-filters-list .filter-term input:hover {
-  border-color: rgb(179, 179, 179);
 }
 
 .sea-metadata-filters-list .filter-term input:disabled:hover {
@@ -192,20 +202,22 @@
 }
 
 .sea-metadata-filters-list .delete-filter {
-  width: 12px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
   margin-right: 14px;
   text-align: center;
-}
-
-.sea-metadata-filters-list .delete-filter:hover {
   cursor: pointer;
 }
 
+.sea-metadata-filters-list .delete-filter:hover {
+  background-color: #f5f5f5;
+}
+
 .delete-filter .seaqa-icon-svg-close {
-  height: 12px;
-  width: 12px;
-  color: var(--bs-icon-secondary-color);
+  height: 14px;
+  width: 14px;
+  color: var(--bs-icon-color);
 }
 
 .delete-filter .seaqa-icon-svg-close:hover {

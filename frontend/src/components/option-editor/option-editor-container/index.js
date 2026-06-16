@@ -152,9 +152,11 @@ const OptionEditorContainer = forwardRef(({
         <div className="option-editor-add-tool">
           <CustomizeAddTool
             className={classnames('option-editor-add-search-result')}
-            name={`${addToolText} ${searchValue.trim()}`}
             callBack={handleCreate}
-          />
+          >
+            <span>{addToolText}</span>
+            <span className="ml-1 font-weight-bold">{searchValue.trim()}</span>
+          </CustomizeAddTool>
         </div>
       )}
     </div>

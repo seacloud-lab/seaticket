@@ -189,7 +189,7 @@ const Views = ({ view, toggleView }) => {
     <>
       <div className="sea-metadata-views">
         {canViewsScroll && canScrollPrev && (
-          <div className="sea-metadata-views-nav-scroll-btns d-flex align-items-center mr-2">
+          <div className="sea-metadata-views-nav-scroll-btns sea-metadata-views-nav-scroll-btns-left">
             <IconButton
               icon="arrow-left"
               className='scroll-control-btn'
@@ -221,15 +221,18 @@ const Views = ({ view, toggleView }) => {
           })}
         </div>
         {canViewsScroll && (
-          <div className="sea-metadata-views-nav-scroll-btns d-flex align-items-center mr-2">
+          <>
             {canScrollNext &&
-            <IconButton
-              icon="arrow-right"
-              className='scroll-control-btn'
-              onClick={() => onScrollControlClick('right')}
-              title={gettext('Scroll to the right')}
-              aria-label={gettext('Scroll to the right')}
-            />}
+              <div className="sea-metadata-views-nav-scroll-btns sea-metadata-views-nav-scroll-btns-right">
+                <IconButton
+                  icon="arrow-right"
+                  className='scroll-control-btn'
+                  onClick={() => onScrollControlClick('right')}
+                  title={gettext('Scroll to the right')}
+                  aria-label={gettext('Scroll to the right')}
+                />
+              </div>
+            }
             <AllViews
               viewID={viewID}
               allViews={allViews}
@@ -239,11 +242,12 @@ const Views = ({ view, toggleView }) => {
                 updateScrollBySelectView(viewID, viewIndex);
               }}
             />
-          </div>
+          </>
         )}
         {context.canInsertView() &&
           <IconButton
             icon="plus"
+            className='ml-2'
             onClick={() => openViewNameDialog()}
             title={gettext('Add view')}
             aria-label={gettext('Add view')}

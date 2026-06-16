@@ -34,6 +34,7 @@
 .collaborator-editor-popover .collaborator-editor-content .collaborator-editor-option {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   font-size: 14px;
   height: 32px;
   width: 100%;
@@ -49,9 +50,9 @@
 
 .collaborator-editor-popover .collaborator-editor-option .collaborator {
   background-color: unset;
-  flex: 1;
-  padding: 0;
+  padding: 0 6px 0 2px;
   margin-right: 0;
+  background: #eaeaea;
 }
 
 .collaborator-editor-popover .collaborator-editor-option .option-editor-option-check-btn,

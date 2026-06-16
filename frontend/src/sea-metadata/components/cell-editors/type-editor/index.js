@@ -4,11 +4,13 @@ import { getTypesOptions } from '../../../utils/column';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { useTypesData } from '../../../hooks';
 import { gettext } from '@/constants';
+import Tag from '@/sea-metadata/components/tag';
+import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
 import './index.css';
 
 const TypeEditor = forwardRef(({
-  height,
+  height: rowHeight,
   column,
   value,
   editorPosition = { left: 0, top: 0 },
@@ -22,9 +24,16 @@ const TypeEditor = forwardRef(({
 
   const options = useMemo(() => getTypesOptions(typesData), [typesData]);
 
+  const selectedType = useMemo(() => {
+    if (!value) return null;
+    const type = options.find(option => option.value === value);
+    if (!type) return null;
+    return type;
+  }, [options, value]);
+
   const style = useMemo(() => {
-    return { width: column.width, top: height - 2 };
-  }, [column, height]);
+    return { width: column.width, top: rowHeight - 1 };
+  }, [column, rowHeight]);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);
@@ -35,7 +44,7 @@ const TypeEditor = forwardRef(({
       const { bottom } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
-        editorRef.current.style.bottom = editorPosition.top + height - window.innerHeight + 'px';
+        editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,7 +75,17 @@ const TypeEditor = forwardRef(({
         options={options}
         onChange={onSubmit}
         onPressTab={onPressTab}
-      />
+      >
+        {({ value: selectedTypeId, onChange }) => {
+          if (!selectedTypeId) return null;
+          if (!selectedType || selectedType.value !== selectedTypeId) return null;
+          return (
+            <Tag tag={selectedType} className="m-0">
+              <RemoveBtn callback={() => onChange(selectedTypeId)} />
+            </Tag>
+          );
+        }}
+      </OptionEditorContainer>
     </div>
   );
 });
