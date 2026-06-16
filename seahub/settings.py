@@ -628,6 +628,8 @@ GITHUB_PRIVATE_KEY_PATH = ''
 # Enable general task feature
 ENABLE_GENERAL_TASK = False
 
+PORTAL_CUSTOM_DOMAIN_DNS_TARGET = ''
+
 
 def validate_llm_models(models):
     if not models or not isinstance(models, list):

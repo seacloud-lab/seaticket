@@ -1,6 +1,7 @@
 import re
 import logging
 import ipaddress
+import dns.resolver
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -74,8 +75,6 @@ def get_request_host_without_port(request):
 
 
 def query_dns_txt_values(record_name):
-    import dns.resolver
-
     try:
         answers = dns.resolver.resolve(record_name, 'TXT', lifetime=5)
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) as e:
@@ -115,6 +114,7 @@ def is_portal_custom_domain_tls_ask_allowed_source(request):
         return False
 
     allowed_entries = list(DEFAULT_TLS_ASK_ALLOWED_IPS)
+    allowed_entries.extend(getattr(settings, 'PORTAL_CUSTOM_DOMAIN_TLS_ASK_ALLOWED_IPS', []))
 
     for entry in allowed_entries:
         entry = (entry or '').strip()
@@ -131,23 +131,9 @@ def is_portal_custom_domain_tls_ask_allowed_source(request):
 
 def is_request_using_portal_custom_domain(request, project_uuid=None):
     binding = getattr(request, 'portal_custom_domain', None)
-    if binding:
-        if project_uuid is None:
-            return True
-        if str(getattr(binding, 'project_uuid', '')) == str(project_uuid):
-            return True
-
     if project_uuid is None:
-        return False
-
-    request_host = get_request_host_without_port(request)
-    if not request_host:
-        return False
-
-    from seahub.portal.models import PortalCustomDomain
-
-    binding = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
-    return bool(binding and binding.verified and binding.domain == request_host)
+        return bool(binding)
+    return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))
 
 
 def get_custom_domain_origin(domain, request=None):

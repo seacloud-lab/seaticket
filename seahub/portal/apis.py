@@ -21,7 +21,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import AnonRateThrottle, UserRateThrottle
+from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
@@ -40,8 +40,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser
-from seahub.portal.models import PortalCustomDomain
+from seahub.portal.models import ProjectExternalUser, PortalCustomDomain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
@@ -1507,14 +1506,23 @@ class PortalCustomDomainView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         custom_domain = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
-
+        dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
+        if not custom_domain:
+            return Response({
+            'custom_domain': '',
+            'custom_domain_verified': False,
+            'custom_domain_verified_at': None,
+            'custom_domain_txt_record_name': '',
+            'custom_domain_txt_record_value': '',
+            'custom_domain_dns_target': dns_target,
+        })
         return Response({
-            'custom_domain': custom_domain.domain if custom_domain else '',
-            'custom_domain_verified': bool(custom_domain and custom_domain.verified),
-            'custom_domain_verified_at': custom_domain.verified_at if custom_domain else None,
-            'custom_domain_txt_record_name': custom_domain.txt_record_name if custom_domain else '',
-            'custom_domain_txt_record_value': custom_domain.txt_record_value if custom_domain else '',
-            'custom_domain_dns_target': getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '') or '',
+            'custom_domain': custom_domain.domain,
+            'custom_domain_verified': bool(custom_domain.verified),
+            'custom_domain_verified_at': custom_domain.verified_at,
+            'custom_domain_txt_record_name': custom_domain.txt_record_name,
+            'custom_domain_txt_record_value': custom_domain.txt_record_value,
+            'custom_domain_dns_target': dns_target,
         })
 
     @require_org_context
@@ -1596,18 +1604,13 @@ class PortalCustomDomainVerificationView(APIView):
 
         custom_domain.mark_verified()
         custom_domain.save(update_fields=['verified', 'verified_at', 'updated_at'])
-        return Response({
-            'success': True,
-            'custom_domain': custom_domain.domain,
-            'custom_domain_verified': True,
-            'custom_domain_verified_at': custom_domain.verified_at,
-        })
+        return Response({'success': True})
 
 
 class PortalCustomDomainTLSAskView(APIView):
     authentication_classes = ()
     permission_classes = ()
-    throttle_classes = (AnonRateThrottle,)
+    throttle_classes = ()
 
     def get(self, request):
         if not is_portal_custom_domain_tls_ask_allowed_source(request):

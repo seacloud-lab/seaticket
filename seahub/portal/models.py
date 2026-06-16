@@ -2,6 +2,7 @@ import json
 import string
 import random
 import copy
+from types import SimpleNamespace
 from secrets import token_hex
 from django.db import models
 from django.db.utils import OperationalError, ProgrammingError
@@ -22,9 +23,12 @@ from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
-PORTAL_CUSTOM_DOMAIN_CACHE_EMPTY = '__portal_custom_domain_empty__'
 PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT = 300
-PORTAL_CUSTOM_DOMAIN_EMPTY_CACHE_TIMEOUT = 60
+PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = (
+    'domain',
+    'project_uuid',
+    'verified',
+)
 
 
 def generate_random_string_lower_digits(length):
@@ -117,17 +121,11 @@ class PortalCustomDomainManager(models.Manager):
         normalized_domain = normalize_portal_custom_domain(domain)
         return 'portal_custom_domain:domain:%s' % normalized_domain
 
-    def _project_cache_key(self, project_uuid):
-        return 'portal_custom_domain:project:%s' % project_uuid
-
-    def invalidate_cache(self, domain=None, project_uuid=None):
-        if domain:
-            try:
-                cache.delete(self._domain_cache_key(domain))
-            except ValueError:
-                pass
-        if project_uuid:
-            cache.delete(self._project_cache_key(project_uuid))
+    def invalidate_cache(self, domain):
+        try:
+            cache.delete(self._domain_cache_key(domain))
+        except ValueError:
+            pass
 
     def get_by_domain(self, domain):
         try:
@@ -138,48 +136,36 @@ class PortalCustomDomainManager(models.Manager):
         cache_marker = object()
         cached_value = cache.get(domain_cache_key, cache_marker)
         if cached_value is not cache_marker:
-            return None if cached_value == PORTAL_CUSTOM_DOMAIN_CACHE_EMPTY else cached_value
+            if isinstance(cached_value, dict):
+                return SimpleNamespace(**cached_value)
+            cache.delete(domain_cache_key)
 
         try:
-            custom_domain = super().filter(domain=normalized_domain).first()
+            custom_domain = super().filter(domain=normalized_domain).values(*PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS).first()
         except (OperationalError, ProgrammingError):
             logger.exception('Failed to query portal custom domain binding.')
             return None
 
-        cache_value = custom_domain if custom_domain else PORTAL_CUSTOM_DOMAIN_CACHE_EMPTY
-        cache_timeout = PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT if custom_domain else PORTAL_CUSTOM_DOMAIN_EMPTY_CACHE_TIMEOUT
-        cache.set(domain_cache_key, cache_value, cache_timeout)
-        return custom_domain
+        if not custom_domain:
+            return None
+        cache.set(domain_cache_key, custom_domain, PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT)
+        return SimpleNamespace(**custom_domain)
 
     def get_by_project_uuid(self, project_uuid):
         project_uuid = str(project_uuid)
-        project_cache_key = self._project_cache_key(project_uuid)
-        cache_marker = object()
-        cached_value = cache.get(project_cache_key, cache_marker)
-        if cached_value is not cache_marker:
-            return None if cached_value == PORTAL_CUSTOM_DOMAIN_CACHE_EMPTY else cached_value
-
         try:
-            custom_domain = super().filter(project_uuid=project_uuid).first()
+            return super().filter(project_uuid=project_uuid).first()
         except (OperationalError, ProgrammingError):
             logger.exception('Failed to query portal custom domain binding.')
             return None
-
-        cache_value = custom_domain if custom_domain else PORTAL_CUSTOM_DOMAIN_CACHE_EMPTY
-        cache_timeout = PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT if custom_domain else PORTAL_CUSTOM_DOMAIN_EMPTY_CACHE_TIMEOUT
-        cache.set(project_cache_key, cache_value, cache_timeout)
-        return custom_domain
 
     def delete_by_project_uuid(self, project_uuid):
         binding = super().filter(project_uuid=str(project_uuid)).first()
         if not binding:
-            self.invalidate_cache(project_uuid=project_uuid)
-            return (0, {})
+            return
 
-        domain = binding.domain
-        result = super().filter(project_uuid=str(project_uuid)).delete()
-        self.invalidate_cache(domain=domain, project_uuid=project_uuid)
-        return result
+        self.invalidate_cache(domain=binding.domain)
+        super().filter(project_uuid=str(project_uuid)).delete()
 
 
 class PortalCustomDomain(models.Model):
@@ -198,30 +184,25 @@ class PortalCustomDomain(models.Model):
 
     def save(self, *args, **kwargs):
         old_domain = None
-        old_project_uuid = None
         if self.pk:
-            old_config = PortalCustomDomain.objects.filter(pk=self.pk).values('domain', 'project_uuid').first()
+            old_config = PortalCustomDomain.objects.filter(pk=self.pk).values('domain').first()
             if old_config:
                 old_domain = old_config.get('domain')
-                old_project_uuid = old_config.get('project_uuid')
 
         self.domain = normalize_portal_custom_domain(self.domain)
         self.project_uuid = str(self.project_uuid)
         if not self.verification_token:
             self.verification_token = token_hex(16)
         result = super().save(*args, **kwargs)
-        PortalCustomDomain.objects.invalidate_cache(domain=self.domain, project_uuid=self.project_uuid)
+        PortalCustomDomain.objects.invalidate_cache(domain=self.domain)
         if old_domain and old_domain != self.domain:
             PortalCustomDomain.objects.invalidate_cache(domain=old_domain)
-        if old_project_uuid and str(old_project_uuid) != self.project_uuid:
-            PortalCustomDomain.objects.invalidate_cache(project_uuid=old_project_uuid)
         return result
 
     def delete(self, *args, **kwargs):
         domain = self.domain
-        project_uuid = self.project_uuid
         result = super().delete(*args, **kwargs)
-        PortalCustomDomain.objects.invalidate_cache(domain=domain, project_uuid=project_uuid)
+        PortalCustomDomain.objects.invalidate_cache(domain=domain)
         return result
 
     @property
