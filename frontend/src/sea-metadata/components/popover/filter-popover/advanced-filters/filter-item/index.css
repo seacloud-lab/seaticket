@@ -88,9 +88,39 @@
   border-radius: 4px;
 }
 
-.sea-metadata-selector-priority .seaqa-select-option .option-editor-option-content {
+.sea-metadata-selector-priority .seaqa-select-option .option-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+}
+
+.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-check .seaqa-icon-svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-content {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   flex: 1;
+  min-width: 0;
+}
+
+.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
 }
