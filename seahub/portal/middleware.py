@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.http import Http404
@@ -15,6 +16,20 @@ PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/
 # Existing Portal APIs and file routes handled by normal URLConf.
 PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/upload-file/portal/', '/portal/', '/portal-external/')
 
+
+
+def _get_system_hosts():
+    hosts = set()
+    for value in (
+        getattr(settings, 'SEAQA_WEB_SERVICE_URL', ''),
+        getattr(settings, 'SERVICE_URL', ''),
+        getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', ''),
+    ):
+        parsed = urlsplit(value if '://' in value else '//%s' % value)
+        host = (parsed.hostname or '').lower()
+        if host:
+            hosts.add(host)
+    return hosts
 
 def _get_project_uuid_from_standard_path(normalized_path):
     parts = normalized_path.strip('/').split('/')
@@ -72,6 +87,8 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
         normalized_path = ('/%s' % path.lstrip('/')).rstrip('/') or '/'
         request_host = get_request_host_without_port(request)
         if not request_host:
+            return None
+        if not bool(request_host and request_host not in _get_system_hosts()):
             return None
 
         binding = PortalCustomDomain.objects.get_by_domain(request_host)

@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import FileResponse
+from django.db import IntegrityError
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 
@@ -1528,7 +1529,7 @@ class PortalCustomDomainView(APIView):
 
         custom_domain = request.data.get('custom_domain')
         if not custom_domain:
-            PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).delete()
+            PortalCustomDomain.objects.delete_by_project_uuid(project_uuid)
             return Response({'success': True})
 
         try:
@@ -1542,17 +1543,21 @@ class PortalCustomDomainView(APIView):
             error_msg = 'custom_domain already in use.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        custom_domain_binding = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
-        if custom_domain_binding:
-            if custom_domain_binding.domain != normalized_custom_domain:
-                custom_domain_binding.domain = normalized_custom_domain
-                custom_domain_binding.reset_verification()
-            custom_domain_binding.save()
-        else:
-            PortalCustomDomain.objects.create(
-                project_uuid=project_uuid,
-                domain=normalized_custom_domain,
-            )
+        try:
+            custom_domain_binding = PortalCustomDomain.objects.get_by_project_uuid(project_uuid)
+            if custom_domain_binding:
+                if custom_domain_binding.domain != normalized_custom_domain:
+                    custom_domain_binding.domain = normalized_custom_domain
+                    custom_domain_binding.reset_verification()
+                custom_domain_binding.save()
+            else:
+                PortalCustomDomain.objects.create(
+                    project_uuid=project_uuid,
+                    domain=normalized_custom_domain,
+                )
+        except IntegrityError:
+            error_msg = 'custom_domain already in use.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         return Response({'success': True})
 
