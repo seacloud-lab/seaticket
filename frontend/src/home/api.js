@@ -323,10 +323,6 @@ class HomeAPI {
     return this.req.put(url);
   }
 
-  getNotificationToken(projectUuid) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/project-notification-jwt-token/';
-    return this.req.get(url);
-  }
 }
 
 const homeAPI = new HomeAPI();

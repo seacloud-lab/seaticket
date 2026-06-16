@@ -1,9 +1,8 @@
-import homeAPI from './../home/api';
 import { enableNotificationServer, notificationServerUrl } from './../constants';
-
+import projectAPI from '@/project/api/project-api';
 
 class WebSocketClient {
-  constructor(onMessageCallback, projectUuid) {
+  constructor(projectUuid, onMessageCallback) {
     this.url = notificationServerUrl; // WebSocket address;
     this.projectUuid = projectUuid;
     this.socket = null;
@@ -95,7 +94,7 @@ class WebSocketClient {
 
   async getProjectNotificationJwtToken() {
     try {
-      const response = await homeAPI.getNotificationToken(this.projectUuid);
+      const response = await projectAPI.getNotificationToken(this.projectUuid);
       return response.data.token;
     } catch (error) {
       console.error('Failed to get websocket notification token', error);

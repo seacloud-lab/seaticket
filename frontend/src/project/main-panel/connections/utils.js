@@ -264,6 +264,10 @@ export const isConnectionSyncCompleted = ({ status } = {}) => {
   return CONNECTION_SYNC_COMPLETED_STATUS.includes(validStatus?.last_sync_status);
 };
 
+export const isConnectionFirstSync = (connection) => {
+  return !connection?.last_sync_time;
+};
+
 export const generatorRowClassName = (row, columns = []) => {
   if (!row || !Array.isArray(columns) || columns.length === 0) return '';
   const outdatedColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED);
