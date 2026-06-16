@@ -781,7 +781,7 @@ class GroupBody extends Component {
         type, level, key, left, top, isExpanded, height, groupPathString, groupRowIndex,
       } = groupRow;
       if (type === GROUP_ROW_TYPE.GROUP_CONTAINER) {
-        const groupWidth = totalColumnsWidth + (level - 1) * 2 * GROUP_VIEW_OFFSET; // columns + group offset
+        const groupWidth = totalColumnsWidth + (level - 1) * GROUP_VIEW_OFFSET; // columns + group offset
         const folding = this.expandingGroupPathString === groupPathString && !isExpanded;
         const backdropHeight = height + GROUP_VIEW_OFFSET;
         rendererGroups.push(
@@ -856,7 +856,7 @@ class GroupBody extends Component {
 
     const allColumnsFrozen = lastFrozenColumnKey === lastColumn.key;
     const groupRowsClassName = classnames(
-      'canvas-groups-rows', 'animation',
+      'canvas-groups-rows animation', `canvas-groups-rows-max-level-${maxLevel}`,
       {
         'single-column': checkIsNameColumn(lastColumn),
         'disabled-add-row': true,

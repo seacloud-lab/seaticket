@@ -38,10 +38,10 @@ class GroupHeaderLeft extends Component {
           originalCellValue={original_cell_value}
           cellValue={cell_value}
         />
-        <div className="group-rows-count">
-          <div className="group-rows-count-content">
-            {level === maxLevel && <span className="count-title">{gettext('Count')}</span>}
-            <span className="count-num">{count}</span>
+        <div className="group-rows-count position-absolute top-0 bottom-0">
+          <div className="mx-4 h-100 d-inline-flex align-items-center font-size-13 font-weight-400">
+            {level === maxLevel && <span className="color-gray mr-1">{gettext('Count')}</span>}
+            <span>{count}</span>
           </div>
         </div>
       </div>
