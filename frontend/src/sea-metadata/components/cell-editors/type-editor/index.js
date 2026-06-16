@@ -4,6 +4,8 @@ import { getTypesOptions } from '../../../utils/column';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { useTypesData } from '../../../hooks';
 import { gettext } from '@/constants';
+import Tag from '@/sea-metadata/components/tag';
+import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
 import './index.css';
 
@@ -21,6 +23,13 @@ const TypeEditor = forwardRef(({
   const { typesData } = useTypesData();
 
   const options = useMemo(() => getTypesOptions(typesData), [typesData]);
+
+  const selectedType = useMemo(() => {
+    if (!value) return null;
+    const type = options.find(option => option.value === value);
+    if (!type) return null;
+    return type;
+  }, [options, value]);
 
   const style = useMemo(() => {
     return { width: column.width, top: rowHeight - 1 };
@@ -66,7 +75,17 @@ const TypeEditor = forwardRef(({
         options={options}
         onChange={onSubmit}
         onPressTab={onPressTab}
-      />
+      >
+        {({ value: selectedTypeId, onChange }) => {
+          if (!selectedTypeId) return null;
+          if (!selectedType || selectedType.value !== selectedTypeId) return null;
+          return (
+            <Tag tag={selectedType} className="m-0">
+              <RemoveBtn callback={() => onChange(selectedTypeId)} />
+            </Tag>
+          );
+        }}
+      </OptionEditorContainer>
     </div>
   );
 });

@@ -6,8 +6,7 @@
   font-size: 14px;
   background: #fff;
   padding: 0 1rem;
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
+  border-radius: 4px;
   border-top: none;
 }
 
@@ -26,7 +25,7 @@
 }
 
 .customize-add-tool .customize-add-tool-icon {
-  margin-right: 14px;
+  margin-right: 8px;
   font-size: 12px;
   font-weight: 600;
   color: #666;

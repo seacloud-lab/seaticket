@@ -18,7 +18,7 @@ const Option = ({ option, className, children }) => {
   return (
     <div
       style={style}
-      className={classnames('seaqa-ui-option', className)}
+      className={classnames('seaqa-ui-option px-2', className)}
     >
       <span className="seaqa-ui-option-name">{display_name || name}</span>
       {children}

@@ -6,7 +6,6 @@
 .seaqa-row-color-body {
   display: flex;
   flex-direction: column;
-  padding: 16px 8px 0px 8px;
   min-width: 450px;
 }
 
@@ -45,16 +44,11 @@
   color: #666;
   height: 14px;
   width: 14px;
-  margin-right: 10px;
+  margin-right: 8px;
   transform: none;
 }
 
 /* rule item */
-.seaqa-row-color-body .seaqa-row-color-rule {
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
 .seaqa-row-color-body .seaqa-row-color-rule:hover {
   background-color: rgba(0, 0, 0, 0.04);
   border-radius: 4px;
@@ -111,7 +105,8 @@
 }
 
 .seaqa-row-color-rule-header .seaqa-row-color-rule-remove .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
+  width: 14px;
+  height: 14px;
 }
 
 .seaqa-row-color-body .seaqa-row-color-rule:hover .seaqa-row-color-rule-remove,
@@ -138,10 +133,18 @@
   background-color: transparent;
   font-weight: 400;
   width: fit-content;
+  margin-left: 8px;
+  border-radius: 4px;
+  height: 32px;
+  padding: 0px 6px;
+}
+
+.seaqa-row-color-rule-filters .seaqa-row-color-rule-filters-footer .customize-add-tool:hover {
+  background: #f1f1f1;
 }
 
 .seaqa-row-color-rule-filters .seaqa-row-color-rule-filters-footer .customize-add-tool .customize-add-tool-icon {
   width: 14px;
   height: 14px;
-  margin-right: 10px;
+  margin-right: 8px;
 }

@@ -170,7 +170,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         { name: 'offset', options: { offset: [-6, 8] } }
       ]}
     >
-      <div className="seaqa-row-color-body" style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}>
+      <div className="seaqa-row-color-body px-2 pt-2 pb-0" style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}>
         {rules.length === 0 &&
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
         }
@@ -179,7 +179,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
           const currentColorOption = SELECT_OPTION_COLORS.find(option => option.COLOR === rule.color);
           return (
             <div
-              className={classnames('seaqa-row-color-rule', { 'row-color-rule-editing pb-2': editingRuleIndex === ruleIndex })}
+              className={classnames('seaqa-row-color-rule p-2 cursor-pointer', { 'row-color-rule-editing pb-2': editingRuleIndex === ruleIndex })}
               key={`row-color-rule-${ruleIndex}`}
               onClick={() => setEditingRuleIndex((prevIndex) => prevIndex === ruleIndex ? null : ruleIndex)}
             >
@@ -229,7 +229,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                     modifyFilterConjunction={(filterConjunction) => updateRule(ruleIndex, { filter_conjunction: filterConjunction })}
                   />
                   {!readOnly && (
-                    <div className="seaqa-row-color-rule-filters-footer">
+                    <div className="seaqa-row-color-rule-filters-footer pb-2">
                       <CustomizeAddTool
                         className="popover-add-tool"
                         callBack={() => addRuleFilter(ruleIndex)}

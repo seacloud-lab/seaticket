@@ -28,7 +28,6 @@
 
 .collaborator .collaborator-name {
   margin-left: 4px;
-  flex: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
