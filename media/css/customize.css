@@ -178,3 +178,47 @@ body {
   --option-bg-color: rgba(0, 0, 0, 0.04);
   --btn-hover-bg-color: rgba(0, 0, 0, 0.04);
 }
+
+.font-size-12 {
+  font-size: 12px;
+}
+
+.font-size-13 {
+  font-size: 13px;
+}
+
+.font-size-14 {
+  font-size: 14px;
+}
+
+.font-size-15 {
+  font-size: 15px;
+}
+
+.font-size-16 {
+  font-size: 16px;
+}
+
+.color-black {
+  color: #212529;
+}
+
+.color-gray {
+  color: #666;
+}
+
+.font-weight-400 {
+  font-weight: 400;
+}
+
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.line-height-16 {
+  line-height: 16px;
+}
+
+.line-height-20 {
+  line-height: 20px;
+}
