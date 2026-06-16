@@ -585,8 +585,8 @@ class AgentActionConfirmView(APIView):
             result = discourse_api.create_post(topic_id, reply_content)
             post_number = result.get('post_number', 0)
         except DiscourseForumAPIException as e:
-            logger.error(f'Failed to create Discourse reply for topic #{topic_id}: {e}')
-            return self._failed_execution(f'Failed to post reply to Discourse: {e}')
+            logger.error(f'Failed to create Discourse reply for topic #{topic_pk}: {e}')
+            return self._failed_execution(f'Failed to post reply to Discourse #{topic_pk}: {e}')
 
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         reply_data = {
@@ -598,9 +598,9 @@ class AgentActionConfirmView(APIView):
         try:
             discourse_seadb_api.add_reply(project_uuid, connection_id, topic_id, reply_data)
         except Exception as e:
-            logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_id}: {e}')
+            logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_pk}: {e}')
 
-        return self._successful_execution(f'Reply #{post_number} posted to Discourse topic #{topic_id}.')
+        return self._successful_execution(f'Reply #{post_number} posted to Discourse topic #{topic_pk}.')
 
     def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
         try:
