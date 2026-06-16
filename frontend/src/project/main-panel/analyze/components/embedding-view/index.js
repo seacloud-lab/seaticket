@@ -46,6 +46,7 @@ const EmbeddingView = ({
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isProcessingData, setIsProcessingData] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [filteredLegendCounts, setFilteredLegendCounts] = useState(null);
 
   const config = useMemo(() => ({
     colorScheme: 'light',
@@ -94,6 +95,67 @@ const EmbeddingView = ({
       }
     });
   }, []);
+
+  const buildFilterSQL = useCallback(() => {
+    const clauses = [];
+    for (const filter of filters) {
+      if (filter.field === 'state' && filter.value === '--') continue;
+      if (filter.field === 'modified_time') {
+        const startDate = dayjs(filter.value.startDate).format('YYYY-MM-DD');
+        const endDate = dayjs(filter.value.endDate).format('YYYY-MM-DD');
+        const escapedStart = String(startDate).replace(/'/g, '\'\'');
+        const escapedEnd = String(endDate).replace(/'/g, '\'\'');
+        clauses.push(`"modified_time" >= '${escapedStart}' AND "modified_time" <= '${escapedEnd}'`);
+        continue;
+      }
+      const escapedValue = String(filter.value).replace(/'/g, '\'\'');
+      clauses.push(`"${filter.field}" = '${escapedValue}'`);
+    }
+    return clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
+  }, [filters]);
+
+  useEffect(() => {
+    const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
+    if (!currentMapping || !categoryMappings[colorBy]) {
+      setFilteredLegendCounts(null);
+      return;
+    }
+
+    const whereClause = buildFilterSQL();
+    if (!whereClause) {
+      setFilteredLegendCounts(null);
+      return;
+    }
+
+    let cancelled = false;
+    const categoryColumn = `category_${colorBy}`;
+    const sql = `SELECT "${categoryColumn}" AS category, COUNT(*) AS count FROM "${tableName}" ${whereClause} GROUP BY "${categoryColumn}"`;
+
+    coordinatorRef.current.query(sql).then(result => {
+      if (cancelled) return;
+      const counts = {};
+      const rows = result.toArray();
+      rows.forEach(row => {
+        counts[String(row.category)] = Number(row.count);
+      });
+      setFilteredLegendCounts(counts);
+    }).catch(() => {
+      if (!cancelled) setFilteredLegendCounts(null);
+    });
+
+    return () => { cancelled = true; };
+  }, [filters, colorBy, categoryMappings, buildFilterSQL]);
+
+  const filteredLegend = useMemo(() => {
+    const currentMapping = colorBy && colorBy !== '--' ? categoryMappings[colorBy] : null;
+    if (!currentMapping || !currentMapping.legend) return null;
+    if (!filteredLegendCounts) return currentMapping.legend;
+
+    return currentMapping.legend.map(item => ({
+      ...item,
+      count: filteredLegendCounts[String(item.categoryIndex)] ?? 0,
+    }));
+  }, [filteredLegendCounts, categoryMappings, colorBy]);
 
   const createCategoryMappingForField = useCallback((connections, records, colorByField) => {
     if (!records || records.length === 0 || !colorByField || colorByField === '--') return null;
@@ -389,9 +451,9 @@ const EmbeddingView = ({
           height={size.height}
           config={config}
         />
-        {useCategory && currentMapping?.legend && (
+        {useCategory && filteredLegend && (
           <Legend
-            items={currentMapping.legend}
+            items={filteredLegend}
             selectedCategories={selectedCategories}
             onItemClick={handleLegendItemClick}
           />
