@@ -489,7 +489,7 @@ class ProjectView(APIView):
                 if isinstance(agent_settings, dict):
                     ticket_rules = agent_settings.get('ticket_rules')
                     if not is_safe_prompt(ticket_rules):
-                        error_msg = _('Ticket Agent rules must be text, and cannot contain tag-like content.')
+                        error_msg = _('Ticket processing rules must be text, and cannot contain tag-like content.')
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 for k,v in update_settings.items():
