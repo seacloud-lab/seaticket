@@ -136,7 +136,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   };
 
   const rowsDidMount = useCallback((rows) => {
-    const synchronizingRows = rows.filter(r => isConnectionFirstSync(r) && !isConnectionSyncCompleted(r)).map(r => r.id);
+    const synchronizingRows = rows.filter(r => !isConnectionFirstSync(r) && !isConnectionSyncCompleted(r)).map(r => r.id);
     if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
     lastQueryRecordIds.current = synchronizingRows;
     selfQuery.start(synchronizingRows);
