@@ -15,7 +15,7 @@
 }
 
 .seaqa-hide-popover .seaqa-hide-container {
-  padding: .5rem 0;
+  padding: 1rem 0.5rem;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@
 .seaqa-hide-popover .seaqa-hide-search-container {
   width: 100%;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 0.5rem;
 }
 
 .seaqa-hide-popover .seaqa-hide-search-container .form-control {
@@ -37,13 +37,54 @@
 .seaqa-hide-popover .hide-list {
   width: 100%;
   overflow: auto;
-  padding: .5rem 0;
+  padding: 4px 0 8px 0;
   max-height: 320px;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-container .hide-list-container-divider {
+  border-bottom: 1px solid #eee;
 }
 
 .seaqa-hide-popover .hide-list .hide-list-title {
   color: #666666;
-  padding: 8px 20px 4px;
+  padding: 8px 8px 4px;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title.hide-list-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title .hide-list-title-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title .hide-list-title-toggle {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title .hide-list-title-toggle .seaqa-icon-svg {
+  margin-right: 0;
+  transition: transform .15s ease;
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title .hide-list-title-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.seaqa-hide-popover .hide-list .hide-list-title .hide-list-title-toggle.collapsed .seaqa-icon-svg {
+  transform: rotate(90deg);
 }
 
 .seaqa-hide-popover .hide-list .hide-column-item {
@@ -51,7 +92,7 @@
   align-items: center;
   position: relative;
   width: 100%;
-  padding: 4px 20px;
+  padding: 6px 8px;
   clear: both;
   font-weight: 400;
   color: var(--bs-body-color);
@@ -95,18 +136,18 @@
 }
 
 .seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-indicator {
-  border-radius: 6px;
-  height: 12px;
-  width: 22px;
+  border-radius: 8px;
+  height: 16px;
+  width: 28px;
 }
 
 .seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-indicator:before {
-  height: 8px;
-  width: 8px;
+  height: 12px;
+  width: 12px;
 }
 
 .seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-input:checked~.custom-switch-indicator:before {
-  left: 12px;
+  left: 14px;
 }
 
 .seaqa-hide-popover .hide-column-item .seaqa-icon-svg {
@@ -136,14 +177,16 @@
 .seaqa-hide-popover .seaqa-hide-connections-operations {
   display: flex;
   justify-content: space-between;
-  padding: 0 17px;
+  gap: 8px;
   width: 100%;
+  margin-top: 4px;
 }
 
 .seaqa-hide-popover .seaqa-hide-connections-operations .sea-metadata-hide-connections-operation {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 50%;
   background: var(--bs-tr-hover-bg);
   border-radius: 3px;
   color: var(--bs-body-color);
