@@ -257,7 +257,17 @@
 /* row cell ui */
 .sea-metadata-table-row:hover .sea-metadata-table-cell,
 .sea-metadata-table-row:hover .column {
-  background-color: var(--bs-tr-hover-bg);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.grid-header .sea-metadata-table-row:hover .sea-metadata-table-cell,
+.grid-header .sea-metadata-table-row:hover .column {
+  background-color: inherit;
+}
+
+.grid-header .sea-metadata-table-row .sea-metadata-table-cell:hover,
+.grid-header .sea-metadata-table-row .column:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-metadata-table-row:hover .cell-selected {
@@ -274,7 +284,7 @@
 
 .sea-metadata-table-row.row-selected .sea-metadata-table-cell,
 .sea-metadata-table-row.row-selected .column {
-  background-color: var(--bs-tr-active-secondary-bg) !important;
+  background-color: rgba(62, 132, 247, 0.10) !important;
 }
 
 /* checkbox editor */

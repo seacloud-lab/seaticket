@@ -282,6 +282,23 @@
 .sea-metadata-row-header-cell .sea-metadata-dropdown-menu {
   padding: 0 5px;
   width: 20px;
+  height: 20px;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu:hover {
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu>span {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .seaqa-icon-svg {
+  color: var(--bs-icon-color);
 }
 
 .sea-metadata-wrapper .sea-metadata-table-main-container {

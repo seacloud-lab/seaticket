@@ -29,7 +29,7 @@
 }
 
 .sea-metadata-long-text-preview .sea-metadata-longtext-container .article {
-  padding: 10px 16px;
+  padding: 24px !important;
   border: unset;
 }
 
