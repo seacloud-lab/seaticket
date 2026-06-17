@@ -268,6 +268,14 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     const socket = new WebSocketClient(projectUuid, (noticeData) => {
       if (noticeData.type === 'connection-sync') {
         const { connection_id, status } = noticeData.content;
+        if (status === CONNECTION_SYNC_STATUS.CRAWLING) {
+          modifyLocalConnectionsSyncStatus({
+            [connection_id]: {
+              status: { 'last_sync_status': status }
+            },
+          });
+          return;
+        }
         connectionsAPI.queryConnectionsStatus(projectUuid, [connection_id]).then(res => {
           modifyLocalConnectionsSyncStatus(res.data, (connection) => {
             if (status === CONNECTION_SYNC_STATUS.COMPLETED) {
