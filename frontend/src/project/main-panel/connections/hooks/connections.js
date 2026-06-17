@@ -267,14 +267,15 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   useEffect(() => {
     const socket = new WebSocketClient(projectUuid, (noticeData) => {
       if (noticeData.type === 'connection-sync') {
-        const { connection_id, is_success } = noticeData.content;
+        const { connection_id, status } = noticeData.content;
         connectionsAPI.queryConnectionsStatus(projectUuid, [connection_id]).then(res => {
           modifyLocalConnectionsSyncStatus(res.data, (connection) => {
-            if (is_success) {
+            if (status == CONNECTION_SYNC_STATUS.COMPLETED) {
               toaster.success(gettext('Connection {name} synced').replace('{name}', connection.name));
               return;
+            } else if (status == CONNECTION_SYNC_STATUS.FAILED) {
+              toaster.success(gettext('Connection {name} sync failed').replace('{name}', connection.name));
             }
-            toaster.success(gettext('Connection {name} sync failed').replace('{name}', connection.name));
           });
         });
       }
