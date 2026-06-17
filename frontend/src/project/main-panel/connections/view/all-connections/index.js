@@ -13,7 +13,7 @@ import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
 import SelfQuery from '@/utils/self-query';
 import { BAR_TYPE } from '@/project/constants';
-import { isConnectionSyncCompleted } from '../../utils';
+import { isConnectionSyncCompleted, isConnectionFirstSync } from '../../utils';
 import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
@@ -136,7 +136,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   };
 
   const rowsDidMount = useCallback((rows) => {
-    const synchronizingRows = rows.filter(r => !isConnectionSyncCompleted(r)).map(r => r.id);
+    const synchronizingRows = rows.filter(r => !isConnectionFirstSync(r) && !isConnectionSyncCompleted(r)).map(r => r.id);
     if (areArraysEqual(lastQueryRecordIds.current, synchronizingRows)) return;
     lastQueryRecordIds.current = synchronizingRows;
     selfQuery.start(synchronizingRows);

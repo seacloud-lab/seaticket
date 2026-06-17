@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+import time
+import jwt
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -10,11 +12,13 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
+from seahub.utils import uuid_str_to_36_chars
 from seahub.project.models import Projects, ProjectAPIToken
-from seahub.project.constants import API_TOKEN_PERMISSION_TUPLE
-from seahub.project.utils import check_project_admin_permission
+from seahub.project.constants import API_TOKEN_PERMISSION_TUPLE, NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME
+from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils.decorators import require_org_context
+from seahub.settings import JWT_PRIVATE_KEY
+
 
 logger = logging.getLogger(__name__)
 
@@ -187,3 +191,36 @@ class ProjectAPITokenView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response(data)
+
+
+class ProjectNotificationJwtTokenView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            payload = {
+                'username': username,
+                'project_uuid': uuid_str_to_36_chars(project_uuid),
+                'exp': int(time.time()) + NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME  # default by three days
+            }
+            jwt_token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response({'token': jwt_token})

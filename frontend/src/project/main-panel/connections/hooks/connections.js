@@ -14,6 +14,7 @@ import { getTableName, initConnectionStatus } from '../utils';
 import { CONNECTION_SYNC_STATUS } from '../constants';
 import ObjectUtils from '@/utils/object-utils';
 import { isFunction } from '@/utils/type-detection';
+import WebSocketClient from '@/utils/websocket-service';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -102,7 +103,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       if (ObjectUtils.isSameObject(newConnection, connection)) return connection;
       if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
         const tableName = getTableName(newConnection);
-        markTablesViewExpired([tableName], callback);
+        markTablesViewExpired([tableName], () => callback(newConnection));
       }
       return newConnection;
     }));
@@ -262,6 +263,36 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     if (!isLoading) return;
     loadMore();
   }, [isLoading, loadMore]);
+
+  useEffect(() => {
+    const socket = new WebSocketClient(projectUuid, (noticeData) => {
+      if (noticeData.type === 'connection-sync') {
+        const { connection_id, status } = noticeData.content;
+        if (status === CONNECTION_SYNC_STATUS.CRAWLING) {
+          modifyLocalConnectionsSyncStatus({
+            [connection_id]: {
+              status: { 'last_sync_status': status }
+            },
+          });
+          return;
+        }
+        connectionsAPI.queryConnectionsStatus(projectUuid, [connection_id]).then(res => {
+          modifyLocalConnectionsSyncStatus(res.data, (connection) => {
+            if (status === CONNECTION_SYNC_STATUS.COMPLETED) {
+              toaster.success(gettext('Connection {name} synced').replace('{name}', connection.name));
+            }
+            if (status === CONNECTION_SYNC_STATUS.FAILED) {
+              toaster.danger(gettext('Connection {name} sync failed').replace('{name}', connection.name));
+            }
+          });
+        });
+      }
+    });
+
+    return () => {
+      socket.close();
+    };
+  }, [projectUuid]);
 
   return (
     <ConnectionsContext.Provider value={{
