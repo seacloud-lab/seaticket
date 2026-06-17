@@ -6,7 +6,6 @@ import {
   SearchInput,
   Icon,
   IconButton as IconBtn,
-  IconButton,
 } from '@/components';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
@@ -523,14 +522,16 @@ class FilterItem extends React.Component {
             value: priority.value,
             label: (
               <>
-                <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="option-editor-option-check-btn no-hover-bg mr-2" />
-                <div className="option-editor-option-content w-100">
-                  {priority.icon && (<IconButton icon={priority.icon} size={16} className="no-hover-bg option-editor-option-icon mr-2 ml-0" />)}
-                  <div className="seaqa-priority-editor-option-name-hotkey d-flex justify-content-between w-100">
-                    <div className="seaqa-priority-editor-option-name">{priority.name}</div>
-                    <div className="seaqa-priority-editor-option-hotkey">{priority.hotKey}</div>
-                  </div>
-                </div>
+                <span className="priority-filter-option-check">
+                  {isSelected && <Icon symbol="check-mark-option" />}
+                </span>
+                <span className="priority-filter-option-content">
+                  {priority.icon && <Icon symbol={priority.icon} className="priority-filter-option-icon" />}
+                  <span className="seaqa-priority-editor-option-name-hotkey">
+                    <span className="seaqa-priority-editor-option-name">{priority.name}</span>
+                    <span className="seaqa-priority-editor-option-hotkey">{priority.hotKey}</span>
+                  </span>
+                </span>
               </>
             )
           };
