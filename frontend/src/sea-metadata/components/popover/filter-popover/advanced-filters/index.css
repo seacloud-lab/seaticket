@@ -274,6 +274,7 @@
   max-height: 360px;
   overflow: auto;
   padding-bottom: 0px;
+  margin-top: 4px;
 }
 
 .sea-metadata-filters-list .filter-container-readonly .seaqa-customize-select .selected-option-show,
