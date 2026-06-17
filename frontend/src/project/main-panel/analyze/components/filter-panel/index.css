@@ -35,6 +35,11 @@
   color: var(--bs-body-secondary-color);
 }
 
+.analyze-add-filter .analyze-add-filter-btn.active .seaqa-icon-svg,
+.analyze-add-filter .analyze-add-filter-btn.active {
+  color: var(--bs-orange);
+}
+
 /* Filter panel styles */
 .analyze-filter-option-editor .popover {
   width: 120px;
