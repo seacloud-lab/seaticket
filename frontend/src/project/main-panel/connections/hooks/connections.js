@@ -270,11 +270,11 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
         const { connection_id, status } = noticeData.content;
         connectionsAPI.queryConnectionsStatus(projectUuid, [connection_id]).then(res => {
           modifyLocalConnectionsSyncStatus(res.data, (connection) => {
-            if (status == CONNECTION_SYNC_STATUS.COMPLETED) {
+            if (status === CONNECTION_SYNC_STATUS.COMPLETED) {
               toaster.success(gettext('Connection {name} synced').replace('{name}', connection.name));
-              return;
-            } else if (status == CONNECTION_SYNC_STATUS.FAILED) {
-              toaster.success(gettext('Connection {name} sync failed').replace('{name}', connection.name));
+            }
+            if (status === CONNECTION_SYNC_STATUS.FAILED) {
+              toaster.danger(gettext('Connection {name} sync failed').replace('{name}', connection.name));
             }
           });
         });
