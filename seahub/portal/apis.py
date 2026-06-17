@@ -45,8 +45,7 @@ from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
     is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path
-from seahub.portal.custom_domain import is_portal_custom_domain_tls_ask_allowed_source, normalize_portal_custom_domain, \
-    verify_portal_custom_domain_dns
+from seahub.portal.custom_domain import normalize_portal_custom_domain, verify_portal_custom_domain_dns
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -1613,9 +1612,6 @@ class PortalCustomDomainTLSAskView(APIView):
     throttle_classes = ()
 
     def get(self, request):
-        if not is_portal_custom_domain_tls_ask_allowed_source(request):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
         domain = request.GET.get('domain', '')
         try:
             normalized_domain = normalize_portal_custom_domain(domain)

@@ -698,7 +698,7 @@ class TestPortalCustomDomainTLSAskView:
 
         assert resp.status_code == 403
 
-    def test_get_rejects_untrusted_source_ip(self, factory, real_project):
+    def test_get_allows_verified_custom_domain_from_non_local_source(self, factory, real_project):
         PortalCustomDomain.objects.create(
             domain='support.local.test',
             project_uuid=str(real_project.uuid),
@@ -712,7 +712,7 @@ class TestPortalCustomDomainTLSAskView:
 
         resp = PortalCustomDomainTLSAskView.as_view()(request)
 
-        assert resp.status_code == 403
+        assert resp.status_code == 200
 
 @pytest.mark.django_db
 class TestPortalExternalInvitationsView:
