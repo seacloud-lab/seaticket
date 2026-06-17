@@ -43,9 +43,12 @@
 }
 
 .search-filter-menu.filter-by-text-menu,
-.search-filter-menu.filter-by-date-menu,
 .search-filter-menu.filter-by-creator-menu {
   width: 280px;
+}
+
+.search-filter-menu.filter-by-date-menu {
+  width: 300px;
 }
 
 .search-filter-menu.filter-by-suffix-menu {
@@ -169,13 +172,14 @@
   color: #666;
 }
 
+.filter-by-date-menu .filter-by-date-custom-date-container-outer {
+  border-radius: 0 0 4px 4px;
+}
+
 .filter-by-date-menu .filter-by-date-custom-date-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 16px;
+  width: calc(100% - 16px);
   gap: 8px;
+  background-color: #f9f9f9;
 }
 
 .filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container {
@@ -184,10 +188,6 @@
   justify-content: flex-start;
   align-items: flex-start;
   font-size: 14px;
-}
-
-.filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container .custom-date-label {
-  margin-bottom: 6px;
 }
 
 .filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container .form-control {
