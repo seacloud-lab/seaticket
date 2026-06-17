@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { isMobile } from '@utils/utils';
 import { SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
-import IconBtn from '@components/icon-button';
+import IconTooltip from '@components/icon-tooltip';
 
 import './index.css';
 
@@ -80,7 +80,16 @@ class ActionsCell extends Component {
         </div>
         {rowColor && <div className="row-color-indicator" style={{ backgroundColor: rowColor }}></div>}
         {isShowRowExpandBtn && (
-          <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
+          <IconTooltip
+            icon="expand"
+            className="row-expand"
+            iconClassName="row-expand-icon"
+            onClick={this.handleShowExpandedProps}
+            tipIcon="row-expand-icon"
+            tip={gettext('Expand')}
+            hoverBackground={true}
+            placement="bottom"
+          />
         )}
       </div>
     );

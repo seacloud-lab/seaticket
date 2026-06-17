@@ -52,11 +52,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 50%;
+  border-radius: 4px;
   width: 20px;
   height: 20px;
   margin-top: 2px;
   margin-left: 21px;
+  background: #FFF;
 }
 
 .sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .row-expand .row-expand-icon {
@@ -68,11 +69,14 @@
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-expand-icon {
   display: none;
-  color: #467fcf;
+  color: #666;
+  width: 12px;
+  height: 12px;
 }
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-expand:hover {
-  background-color: #c2f5e9;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-color-indicator {
