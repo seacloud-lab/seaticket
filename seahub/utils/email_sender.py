@@ -217,7 +217,6 @@ class SMTPEmailSender(_EmailSenderBase):
             imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
             imap.login(self.imap_user or self.smtp_user, self.imap_password or self.smtp_password)
         except Exception as e:
-            logger.exception('IMAP delete connection failed: %s', e)
             raise EmailDeleteError('Failed to connect to email server for deletion')
 
         deleted_count = 0
@@ -230,7 +229,8 @@ class SMTPEmailSender(_EmailSenderBase):
                 try:
                     uid, folder = self._locate_email(imap, folders, ident)
                     if not uid:
-                        failed_count += 1
+                        # Email not found on server (already deleted) — skip
+                        deleted_count += 1
                         continue
                     self._move_to_trash(imap, uid, folder, trash)
                     deleted_count += 1
@@ -255,27 +255,18 @@ class SMTPEmailSender(_EmailSenderBase):
 
     @staticmethod
     def _find_by_msgid(imap, folders, msg_id):
-        """Locate an email by Message-ID header (HEADER then TEXT fallback)."""
+        """Locate an email by Message-ID header."""
         clean = msg_id.strip()
-        text_id = clean[1:-1] if clean.startswith('<') and clean.endswith('>') else clean
         for folder in folders:
-            try:
-                imap.select(folder, readonly=True)
-                for term in (f'HEADER Message-ID "{clean}"', f'TEXT "{text_id}"'):
-                    try:
-                        status, data = imap.uid('SEARCH', None, term)
-                        if status == 'OK' and data and data[0]:
-                            uids = data[0].split()
-                            if uids:
-                                logger.info('Found email by %s uid=%s in %s', term.split(' ')[0], uids[0], folder)
-                                return int(uids[0]), folder
-                    except Exception:
-                        continue
-            except Exception:
-                continue
-            finally:
-                try: imap.close()
-                except Exception: pass
+            imap.select(folder, readonly=True)
+            status, data = imap.uid('SEARCH', None, f'HEADER Message-ID "{clean}"')
+            if status == 'OK' and data and data[0]:
+                uids = data[0].split()
+                if uids:
+                    logger.info('Found email by Message-ID uid=%s in %s', uids[0], folder)
+                    imap.close()
+                    return int(uids[0]), folder
+            imap.close()
         logger.warning('Email not found by Message-ID: %s', clean)
         return None, None
 
@@ -305,7 +296,15 @@ class SMTPEmailSender(_EmailSenderBase):
             if status != 'OK':
                 raise EmailDeleteError(f'Failed to expunge uid={uid} from {source_folder}')
         else:
-            raise EmailDeleteError(f'Trash folder not found, refusing to permanently delete uid={uid}')
+            status, _ = imap.select(source_folder, readonly=False)
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to select folder {source_folder} for uid={uid}')
+            status, _ = imap.uid('STORE', str(uid), '+FLAGS', '\\Deleted')
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to flag uid={uid} as deleted in {source_folder}')
+            status, _ = imap.expunge()
+            if status != 'OK':
+                raise EmailDeleteError(f'Failed to expunge uid={uid} from {source_folder}')
 
     @staticmethod
     def _find_trash_folder(imap):
@@ -393,26 +392,31 @@ class SMTPEmailSender(_EmailSenderBase):
                         except:
                             pass
 
-            # Fetch THREADID using the UID if the server supports it
+            # For Fastmail, fetch EMAILID and THREADID
+            email_id = None
             thread_id = None
             if uid:
                 try:
                     for folder in [sent_folder, "INBOX"]:
                         imap.select(folder, readonly=True)
-                        status, fetch_data = imap.uid('FETCH', str(uid), '(THREADID)')
+                        status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
                         if status == 'OK' and fetch_data:
                             for item in fetch_data:
                                 if item:
                                     item_str = item.decode('utf-8') if isinstance(item, bytes) else str(item)
+                                    # Extract EMAILID
+                                    email_match = re.search(r'EMAILID\s+["(]?([^\s")]+)[")?]?', item_str)
+                                    if email_match:
+                                        email_id = email_match.group(1)
                                     # Extract THREADID
                                     thread_match = re.search(r'THREADID\s+["(]?([^\s")]+)[")?]?', item_str)
                                     if thread_match:
                                         thread_id = thread_match.group(1)
-                        if thread_id:
+                        if email_id and thread_id:
                             break
 
                 except Exception as e:
-                    logger.warning('Failed to fetch THREADID from IMAP: %s', e)
+                    logger.warning('Failed to fetch EMAILID/THREADID from IMAP: %s', e)
                 finally:
                     try:
                         imap.close()
@@ -420,7 +424,9 @@ class SMTPEmailSender(_EmailSenderBase):
                         pass
             result = {'imap_folder': sent_folder}
             if uid:
-                result['email_id'] = str(uid)
+                result['imap_uid'] = uid
+            if email_id:
+                result['email_id'] = email_id
             if thread_id:
                 result['origin_thread_id'] = thread_id
             return result
@@ -620,7 +626,7 @@ class GmailSender(_OAuthEmailSender):
         failed_count = 0
 
         for identifier in email_identifiers:
-            remote_message_id = identifier.get('email_id')
+            remote_message_id = identifier.get('message_id')
             if not remote_message_id:
                 failed_count += 1
                 continue
@@ -642,8 +648,7 @@ class GmailSender(_OAuthEmailSender):
 class MicrosoftSender(_OAuthEmailSender):
     """Microsoft API email sender"""
 
-    MS_GRAPH_CREATE_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages'
-    MS_GRAPH_SEND_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{message_id}/send'
+    EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
     MS_GRAPH_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{message_id}/move'
 
     def _do_send_email(self, msg_obj):
@@ -655,24 +660,7 @@ class MicrosoftSender(_OAuthEmailSender):
             'Content-Type': 'text/plain'
         }
 
-        create_response = requests.post(self.MS_GRAPH_CREATE_MESSAGE_ENDPOINT, data=msg_base64, headers=headers)
-        _check_and_raise_error(create_response)
-
-        try:
-            response_data = create_response.json()
-        except Exception:
-            response_data = {}
-
-        message_id = response_data.get('id') if isinstance(response_data, dict) else None
-        if not message_id:
-            raise EmailSendError('Failed to create Microsoft draft message')
-
-        send_response = requests.post(
-            self.MS_GRAPH_SEND_MESSAGE_ENDPOINT.format(message_id=message_id),
-            headers={'Authorization': f'Bearer {self.access_token}'},
-        )
-        _check_and_raise_error(send_response)
-        return create_response
+        return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_base64, headers=headers)
 
     def delete_emails(self, email_identifiers):
         """

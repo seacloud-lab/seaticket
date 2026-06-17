@@ -697,8 +697,8 @@ class ProjectConnectionSyncView(APIView):
 
         # check cooldown
         if project_connection.last_sync_time:
-            now = datetime.datetime.now(datetime.timezone.utc)
-            time_diff = now - project_connection.last_sync_time
+            now_datetime = datetime.datetime.now(datetime.timezone.utc)
+            time_diff = now_datetime - project_connection.last_sync_time
             cooldown_seconds = MANUAL_SYNC_INTERVAL
             if connection_type == ConnectionType.SITE:
                 cooldown_seconds = MANUAL_CRAWL_INTERVAL
@@ -1872,51 +1872,54 @@ class ProjectConnectionDeleteEmailView(APIView):
         if not emails:
             return False, 'No emails found in this thread.'
 
-        server_provider = config.get('server_provider', 'general_email_provider')
-        email_identifiers = []
-        for email in emails:
+        # Skip already-deleted emails (retry only processes remaining)
+        undeleted = [e for e in emails if not e.get('deleted')]
+        if not undeleted:
+            return self._mark_thread_deleted(project_uuid, connection_id, thread_id, seadb_api)
+
+        # Delete one email at a time, marking each as deleted locally
+        email_table_name = SchemaTables.EMAIL.table_name(connection_id)
+        deleted_any = False
+        last_error = None
+
+        for email in undeleted:
             message_id = email.get('message_id')
-            if message_id:
-                email_identifiers.append({'message_id': message_id})
+            if not message_id:
+                continue
 
-        if not email_identifiers:
-            logger.error('delete email failed: no identifiers, connection_id: %s, thread_id: %s',
-                         connection_id, thread_id)
-            return False, 'No email identifiers found for remote deletion.'
+            try:
+                result = toggle_delete_emails(config, [{'message_id': message_id}])
+            except (EmailConfigError, EmailDeleteError) as e:
+                logger.error('delete email failed, email_pk: %s, error: %s', email['_pk'], e)
+                last_error = str(e)
+                continue
 
-        try:
-            result = toggle_delete_emails(config, email_identifiers)
-        except EmailConfigError as e:
-            logger.error('email config error for delete, connection_id: %s, error: %s', connection_id, e)
-            return False, 'Email connection config is invalid.'
-        except EmailDeleteError as e:
-            logger.error('delete email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)
-            return False, 'Failed to delete emails from remote server.'
+            if result.get('deleted_count', 0) > 0:
+                seadb_api.update_rows(project_uuid, email_table_name, [{
+                    'pk': int(email['_pk']),
+                    'row': {'deleted': True}
+                }])
+                deleted_any = True
 
-        deleted_count = result.get('deleted_count', 0)
-        failed_count = result.get('failed_count', 0)
-        expected_count = len(email_identifiers)
-        if deleted_count != expected_count or failed_count != 0:
-            return False, (
-                f'Remote delete incomplete: deleted {deleted_count} of {expected_count} emails, '
-                f'failed {failed_count}.'
-            )
+        if not deleted_any:
+            return False, last_error or 'Failed to delete any emails from remote server.'
 
+        # Only mark thread deleted if all its emails are now deleted
+        if all(e.get('deleted') for e in emails):
+            return self._mark_thread_deleted(project_uuid, connection_id, thread_id, seadb_api)
+
+        return True, None  # partial success, will retry remaining
+
+    def _mark_thread_deleted(self, project_uuid, connection_id, thread_id, seadb_api):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         thread_table_name = SchemaTables.THREAD.table_name(connection_id)
-        try:
-            seadb_api.update_rows(project_uuid, thread_table_name, [{
-                'pk': thread_id,
-                'row': {
-                    SchemaTables.THREAD.column.deleted.name: True,
-                    SchemaTables.THREAD.column.record_modified_time.name: now_datetime,
-                }
-            }])
-        except Exception as e:
-            logger.error('mark thread as deleted failed, connection_id: %s, thread_id: %s, error: %s',
-                         connection_id, thread_id, e)
-            return False, 'Failed to update local records.'
-
+        seadb_api.update_rows(project_uuid, thread_table_name, [{
+            'pk': thread_id,
+            'row': {
+                SchemaTables.THREAD.column.deleted.name: True,
+                SchemaTables.THREAD.column.record_modified_time.name: now_datetime,
+            }
+        }])
         return True, None
 
     @require_org_context
