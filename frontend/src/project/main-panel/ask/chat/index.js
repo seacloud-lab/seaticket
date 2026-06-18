@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { CenteredLoading, Icon, toaster } from '@/components';
-import { gettext } from '@/constants';
-import { ChatMessage } from '../models';
+import { CenteredLoading, Icon, toaster, SecondaryBtn } from '@/components';
+import { gettext, username } from '@/constants';
+import { ChatMessage, ChatSession } from '../models';
 import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import ChatInput from '../chat-input';
 import ChatHistory from '../chat-history';
@@ -20,6 +20,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
   const [clearContext, setClearContext] = useState(false);
+  const [isStartingChatFromConversation, setIsStartingChatFromConversation] = useState(false);
+  const [fetchedSession, setFetchedSession] = useState(null);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -31,7 +33,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   const pendingTitleQueryBySession = useRef({});
   const requestedTitleSessionSet = useRef(new Set());
 
-  const { isShowSessions, sessions, teamSessions, createSession, modifyLocalSession, getChatMessage } = useSessions();
+  const { isShowSessions, sessions, teamSessions, createSession, startChatFromConversation, modifyLocalSession, getChatMessage } = useSessions();
   const { togglePageSlugId } = useAskPage();
   const { isShowDocuments, documents } = useDocuments();
 
@@ -43,12 +45,16 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
 
   const session = useMemo(() => {
     if (sessionId === ASK_PAGE_SLUG_ID.NEW) return null;
-    return sessions.find(s => s._id === sessionId) || teamSessions.find(s => s._id === sessionId);
-  }, [sessionId, sessions, teamSessions]);
+    return sessions.find(s => s._id === sessionId) || teamSessions.find(s => s._id === sessionId) || (fetchedSession?._id === sessionId ? fetchedSession : null);
+  }, [sessionId, sessions, teamSessions, fetchedSession]);
+
+  const isSharedByOther = useMemo(() => {
+    return Boolean(session?.is_shared && session.username && session.username !== username);
+  }, [session]);
 
   const readOnly = useMemo(() => {
-    return session?.running_task || false;
-  }, [session?.running_task]);
+    return Boolean(session?.running_task || isSharedByOther);
+  }, [session?.running_task, isSharedByOther]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -147,6 +153,14 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
     setClearContext(false);
   }, []);
 
+  const handleStartChatFromConversation = useCallback(() => {
+    if (!session?._id || !startChatFromConversation || isStartingChatFromConversation) return;
+    setIsStartingChatFromConversation(true);
+    startChatFromConversation(session._id).finally(() => {
+      setIsStartingChatFromConversation(false);
+    });
+  }, [session, startChatFromConversation, isStartingChatFromConversation]);
+
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
     setClearContext(false);
@@ -158,6 +172,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
     }
 
     currentSessionId.current = sessionId;
+    setFetchedSession(null);
     updateChatHistories([]);
     setLoading(true);
 
@@ -168,7 +183,11 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
     }
 
     api.getChatMessages(projectUuid, sessionId).then(res => {
-      const { messages: historyMessages, running_task, running_task_is_stream, user_input, streamed_data, streamed_length } = res.data;
+      const { session: sessionData, messages: historyMessages, running_task, running_task_is_stream, user_input, streamed_data, streamed_length } = res.data;
+      if (sessionData) {
+        setFetchedSession(new ChatSession({ ...sessionData, running_task: Boolean(running_task) }));
+        modifyLocalSession(sessionId, { running_task: Boolean(running_task) });
+      }
       let messages = Array.isArray(historyMessages) ? historyMessages.map(item => {
         if (item.role === 'user') {
           let attachments = item?.attachments || [];
@@ -578,19 +597,30 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
         </div>
       </div>
       <div className="seaqa-ai-ask-chats-footer">
-        <ChatInput
-          ref={messageInputRef}
-          isReply={_isReply}
-          readOnly={readOnly}
-          projectUuid={projectUuid}
-          placeholder={isEmpty ? undefined : ''}
-          allowedAttachmentSources={allowedAttachmentSources}
-          canSelectModel={canSelectModel}
-          sendMessage={sendMessage}
-          clearContext={clearContext}
-          resetClearContext={resetClearContext}
-          api={api}
-        />
+        {isSharedByOther && !session?.running_task && startChatFromConversation ? (
+          <div className="seaqa-ai-ask-shared-readonly-footer">
+            <SecondaryBtn
+              icon={isStartingChatFromConversation ? 'loading' : 'copy'}
+              text={gettext('Start a new chat from this conversation')}
+              doing={isStartingChatFromConversation}
+              onClick={handleStartChatFromConversation}
+            />
+          </div>
+        ) : (
+          <ChatInput
+            ref={messageInputRef}
+            isReply={_isReply}
+            readOnly={readOnly}
+            projectUuid={projectUuid}
+            placeholder={isEmpty ? undefined : ''}
+            allowedAttachmentSources={allowedAttachmentSources}
+            canSelectModel={canSelectModel}
+            sendMessage={sendMessage}
+            clearContext={clearContext}
+            resetClearContext={resetClearContext}
+            api={api}
+          />
+        )}
       </div>
     </div>
   );

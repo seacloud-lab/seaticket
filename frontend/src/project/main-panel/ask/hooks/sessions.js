@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
+import { gettext } from '@/constants';
 import { AttachmentObject, ChatSession } from '../models';
 import { useAskPage } from './page-type';
 import { ASK_PAGE_SLUG_ID, CHAT_ATTACHMENT_TYPE, SESSION_TAB_TYPE } from '../constants';
@@ -30,6 +31,23 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       return session;
     });
   }, [projectUuid, sessions, api]);
+
+  const startChatFromConversation = useCallback((sessionId) => {
+    return api.copyChatSession(projectUuid, sessionId).then(res => {
+      const session = new ChatSession(res.data.session);
+      setSessions(prevSessions => {
+        if (prevSessions.some(item => item._id === session._id)) return prevSessions;
+        return [session, ...prevSessions];
+      });
+      setActiveTab(SESSION_TAB_TYPE.MINE);
+      togglePageSlugId(session._id);
+      toaster.success(gettext('Started a new chat from this conversation'));
+      return session;
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [projectUuid, togglePageSlugId, api]);
 
   const modifySession = useCallback((sessionId, { name }) => {
     return api.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
@@ -310,6 +328,7 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       loadTeamSessions: api.listTeamSharedSessions ? loadTeamSessions : null,
       shareSession: api.shareChatSession ? shareSession : null,
       unshareSession: api.shareChatSession ? unshareSession : null,
+      startChatFromConversation: api.copyChatSession ? startChatFromConversation : null,
       getChatMessage,
       markSessionRunningTask,
     }}>
