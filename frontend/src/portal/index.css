@@ -291,6 +291,7 @@ body {
   .seaqa-portal-main-panel .seaqa-ai-ask-sessions-wrapper {
     position: absolute;
     right: 0px;
+    z-index: 1;
   }
 
   /* side panel */
