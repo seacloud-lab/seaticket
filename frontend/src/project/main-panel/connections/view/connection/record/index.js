@@ -194,7 +194,9 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       setRecord({ ...record, ...update });
       callback && callback(false);
     }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
+      const errorMessage = error?.response?.status === 404 && error?.response?.data?.error_msg === 'Installation_id is incorrect'
+        ? 'The GitHub app is missing or has been uninstalled. Please reinstall it.'
+        : Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(true);
     });

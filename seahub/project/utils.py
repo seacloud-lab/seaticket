@@ -17,6 +17,7 @@ from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.core.cache import cache
 from rest_framework import status
+from django.db import connection
 
 from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
@@ -26,7 +27,7 @@ from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
 from seahub.api2.utils import api_error, get_user_common_info
-from seahub.utils import normalize_cache_key
+from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_record_attachments_from_s3
@@ -684,3 +685,13 @@ def send_connection_data_event(project_uuid, connection_id, record_id, source_ty
             logger.info('No one subscribed to data_events, event (%s) has not been sent', msg_content)
     except Exception as e:
         logger.error('send connection data event failed, error: %s', e)
+
+
+def update_github_connection_installation_id(project_uuid, installation_id):
+    sql = """
+    UPDATE project_connection 
+    SET config = JSON_SET(config, '$.installation_id', %s) 
+    WHERE project_uuid = %s
+    """
+    with connection.cursor() as cur:
+        cur.execute(sql, [installation_id, uuid_str_to_32_chars(project_uuid)])

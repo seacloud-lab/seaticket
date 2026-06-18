@@ -54,7 +54,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI
+from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
@@ -154,6 +154,9 @@ def update_github_issue_record(
             state_reason=update_state_reason,
             issue_type=issue_type if issue_type is not None else None,
         )
+    except GitHubAppNotInstalled:
+        ProjectGithubAppInstallation.objects.filter(project_uuid=project_uuid, installation_id=installation_id).delete()
+        raise GitHubIssueUpdateError('Installation_id is incorrect', status.HTTP_404_NOT_FOUND)
     except Exception as e:
         logger.error(f'github issue update error: {e}')
         response = getattr(e, 'response', None)

@@ -218,7 +218,12 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
             _api = () => connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, otherRowData);
           }
           if (Object.keys(githubOwnerRowData).length > 0) {
-            _api = () => connectionsAPI.modifyGithubIssue(projectUuid, connectionID, row_id, githubOwnerRowData);
+            _api = () => connectionsAPI.modifyGithubIssue(projectUuid, connectionID, row_id, githubOwnerRowData).catch(error => {
+              if (error?.response?.status === 404 && error?.response?.data?.error_msg === 'Installation_id is incorrect') {
+                error.response.data.error_msg = 'The GitHub app is missing or has been uninstalled. Please reinstall it.';
+              }
+              throw error;
+            });
           }
           api = _api;
         }
