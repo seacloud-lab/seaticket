@@ -267,6 +267,12 @@ body {
   }
 
   /* main panel */
+  .seaqa-portal-main-panel {
+    margin: 0;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+  }
+
   .seaqa-portal-main-panel .seaqa-ai-ask-chats {
     width: calc(100% - 32px) !important;
   }
