@@ -45,9 +45,13 @@ from seahub.tickets.signals import agent_notify_assignees
 from seahub.project.constants import AIScenario, ConnectionType
 from seahub.utils.email_sender import (
     toggle_send_email,
-    move_emails_to_junk,
     EmailSendError,
     EmailConfigError,
+)
+from seahub.utils.mailbox_manager import (
+    move_emails_to_junk,
+    MailboxConfigError,
+    MailboxOperationError,
 )
 
 from seahub.seadb_models.models import SchemaTables
@@ -1224,11 +1228,11 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'No inbound message id found for thread {source_id}.')
 
         try:
-            move_result = move_emails_to_junk(config, inbound_message_ids)
-        except EmailConfigError as e:
-            logger.error('Email config error for connection %s: %s', project_connection.id, e)
+            move_emails_to_junk(config, inbound_message_ids)
+        except MailboxConfigError as e:
+            logger.error('Mailbox config error for connection %s: %s', project_connection.id, e)
             return self._failed_execution('Email connection config is invalid.')
-        except EmailSendError as e:
+        except MailboxOperationError as e:
             logger.error(
                 'Move to spam failed for connection %s thread %s: %s',
                 project_connection.id, source_id, e
