@@ -9,14 +9,13 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }) => {
+export const SessionsProvider = ({ projectUuid, api, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
   const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
-  const [isShowSessions, setIsShowSessions] = useState(true);
-  const localStorageKeyRef = useRef(localStorageKey || `seaqa-${projectUuid}-chat-sessions-display`);
+  const [isShowSessions, setIsShowSessions] = useState(false);
 
   const sendMessageRequestController = useRef({});
 
@@ -245,8 +244,6 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
 
   useEffect(() => {
     setLoading(true);
-    const isShowSessions = localStorage.getItem(localStorageKeyRef.current) || 'true';
-    setIsShowSessions(isShowSessions === 'true' ? true : false);
     api.listChatSessions(projectUuid).then(res => {
       let sessions = res.data.sessions;
       if (Array.isArray(sessions) && sessions.length > 0) {
@@ -263,10 +260,6 @@ export const SessionsProvider = ({ projectUuid, api, localStorageKey, children }
       setLoading(false);
     });
   }, [projectUuid, api]);
-
-  useEffect(() => {
-    localStorage.setItem(localStorageKeyRef.current, String(isShowSessions));
-  }, [isShowSessions]);
 
   useEffect(() => {
     const unsubscribeSendChatMessage = eventBus.subscribe(EVENT_BUS_TYPE.ASK_QUESTION, solveProblem);
