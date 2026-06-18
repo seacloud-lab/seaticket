@@ -133,7 +133,7 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, 
       </div>
       {isShowEditor && (
         <ClickOutside onClickOutside={closeEditor}>
-          <div className="sea-metadata-collaborator-selector-popover popover seaqa-collaborator-selector-popover option-editor-popover sea-metadata-basic-filter-collaborator-selector hide-description seaqa-collaborator-filter-popover p-2">
+          <div className="sea-metadata-collaborator-selector-popover popover option-editor-popover hide-description p-2">
             <OptionEditorContainer
               ref={optionEditorContainerRef}
               isMultiple={isSupportMultipleSelect}

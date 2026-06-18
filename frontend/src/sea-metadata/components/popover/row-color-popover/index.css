@@ -1,12 +1,12 @@
 .seaqa-row-color-popover .popover {
   max-width: none;
-  min-width: 450px;
+  min-width: 700px;
 }
 
 .seaqa-row-color-body {
   display: flex;
   flex-direction: column;
-  min-width: 450px;
+  min-width: 700px;
 }
 
 .seaqa-row-color-body .seaqa-row-color-empty {
@@ -147,4 +147,10 @@
   width: 14px;
   height: 14px;
   margin-right: 8px;
+}
+
+.seaqa-row-color-popover .popover.sea-metadata-collaborator-selector-popover {
+  min-width: 250px;
+  max-width: 250px;
+  padding: 0 !important;
 }
