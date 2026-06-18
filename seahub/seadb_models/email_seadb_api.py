@@ -179,3 +179,21 @@ class EmailSeaDBAPI:
             }
         }])
         return pks[0] if pks else None
+
+    def mark_email_deleted(self, connection_id, email_pk):
+        table_name = SchemaTables.EMAIL.table_name(connection_id)
+        self.seadb_api.update_rows(self.base_id, table_name, [{
+            'pk': int(email_pk),
+            'row': {'deleted': True}
+        }])
+
+    def mark_thread_deleted(self, connection_id, thread_id):
+        now = datetime.datetime.now(datetime.UTC).isoformat()
+        table_name = SchemaTables.THREAD.table_name(connection_id)
+        self.seadb_api.update_rows(self.base_id, table_name, [{
+            'pk': thread_id,
+            'row': {
+                SchemaTables.THREAD.column.deleted.name: True,
+                SchemaTables.THREAD.column.record_modified_time.name: now,
+            }
+        }])

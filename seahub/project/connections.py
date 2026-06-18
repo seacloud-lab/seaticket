@@ -1878,8 +1878,8 @@ class ProjectConnectionDeleteEmailView(APIView):
             return self._mark_thread_deleted(project_uuid, connection_id, thread_id, seadb_api)
 
         # Delete one email at a time, marking each as deleted locally
-        email_table_name = SchemaTables.EMAIL.table_name(connection_id)
-        deleted_any = False
+        already_deleted = len(emails) - len(undeleted)
+        newly_deleted = 0
         last_error = None
 
         for email in undeleted:
@@ -1895,31 +1895,15 @@ class ProjectConnectionDeleteEmailView(APIView):
                 continue
 
             if result.get('deleted_count', 0) > 0:
-                seadb_api.update_rows(project_uuid, email_table_name, [{
-                    'pk': int(email['_pk']),
-                    'row': {'deleted': True}
-                }])
-                deleted_any = True
+                email_seadb_api.mark_email_deleted(connection_id, email['_pk'])
+                newly_deleted += 1
 
-        if not deleted_any:
+        if newly_deleted == 0:
             return False, last_error or 'Failed to delete any emails from remote server.'
 
-        # Only mark thread deleted if all its emails are now deleted
-        if all(e.get('deleted') for e in emails):
-            return self._mark_thread_deleted(project_uuid, connection_id, thread_id, seadb_api)
+        if already_deleted + newly_deleted == len(emails):
+            email_seadb_api.mark_thread_deleted(connection_id, thread_id)
 
-        return True, None  # partial success, will retry remaining
-
-    def _mark_thread_deleted(self, project_uuid, connection_id, thread_id, seadb_api):
-        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
-        thread_table_name = SchemaTables.THREAD.table_name(connection_id)
-        seadb_api.update_rows(project_uuid, thread_table_name, [{
-            'pk': thread_id,
-            'row': {
-                SchemaTables.THREAD.column.deleted.name: True,
-                SchemaTables.THREAD.column.record_modified_time.name: now_datetime,
-            }
-        }])
         return True, None
 
     @require_org_context

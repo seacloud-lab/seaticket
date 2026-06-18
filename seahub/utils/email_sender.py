@@ -280,7 +280,7 @@ class SMTPEmailSender(_EmailSenderBase):
             status, _ = imap.select(source_folder, readonly=True)
             if status != 'OK':
                 raise EmailDeleteError(f'Failed to select folder {source_folder} for uid={uid}')
-            dest = f'"{trash_folder}"' if ' ' in trash_folder else trash_folder
+            dest = f'"{trash_folder}"'
             status, _ = imap.uid('COPY', str(uid), dest)
             if status != 'OK':
                 raise EmailDeleteError(f'Failed to copy uid={uid} from {source_folder} to {trash_folder}')
@@ -341,7 +341,7 @@ class SMTPEmailSender(_EmailSenderBase):
         try:
             sent_folder = self._find_sent_folder(imap)
             uid = None
-            folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
+            folder_to_append = f'"{sent_folder}"'
 
             # Check if email is sent only to self - skip IMAP append in that case
             sender_email = self.sender_email.lower()
@@ -614,7 +614,7 @@ class GmailSender(_OAuthEmailSender):
         Move emails to Trash via Gmail API.
 
         email_identifiers: list of dicts with keys:
-            - email_id: Gmail message ID (required)
+            - message_id: Gmail message ID (required)
         Returns: dict with 'deleted_count' and 'failed_count'
         """
         if not email_identifiers:
@@ -626,20 +626,32 @@ class GmailSender(_OAuthEmailSender):
         failed_count = 0
 
         for identifier in email_identifiers:
-            remote_message_id = identifier.get('message_id')
-            if not remote_message_id:
+            msg_id = identifier.get('message_id')
+            if not msg_id:
                 failed_count += 1
                 continue
 
             try:
-                trash_url = self.GMAIL_TRASH_ENDPOINT.format(message_id=remote_message_id)
-                response = requests.post(trash_url, headers={
+                # Search by RFC Message-ID to get Gmail message ID
+                search_url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
+                search_resp = requests.get(search_url, params={'q': f'rfc822msgid:{msg_id}'}, headers={
                     'Authorization': f'Bearer {self.access_token}',
                 })
-                _check_and_raise_error(response)
+                _check_and_raise_error(search_resp)
+                messages = search_resp.json().get('messages', [])
+                if not messages:
+                    deleted_count += 1  # already gone
+                    continue
+
+                gmail_id = messages[0]['id']
+                trash_url = self.GMAIL_TRASH_ENDPOINT.format(message_id=gmail_id)
+                trash_resp = requests.post(trash_url, headers={
+                    'Authorization': f'Bearer {self.access_token}',
+                })
+                _check_and_raise_error(trash_resp)
                 deleted_count += 1
             except Exception as e:
-                logger.exception('Failed to trash Gmail message %s: %s', remote_message_id, e)
+                logger.exception('Failed to trash Gmail message %s: %s', msg_id, e)
                 failed_count += 1
 
         return {'deleted_count': deleted_count, 'failed_count': failed_count}
@@ -679,13 +691,27 @@ class MicrosoftSender(_OAuthEmailSender):
         failed_count = 0
 
         for identifier in email_identifiers:
-            remote_message_id = identifier.get('message_id')
-            if not remote_message_id:
+            msg_id = identifier.get('message_id')
+            if not msg_id:
                 failed_count += 1
                 continue
 
             try:
-                move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(message_id=remote_message_id)
+                # Search by RFC Message-ID to get Microsoft internal ID
+                search_url = 'https://graph.microsoft.com/v1.0/me/messages'
+                search_resp = requests.get(search_url, params={
+                    '$filter': f"internetMessageId eq '{msg_id}'",
+                    '$select': 'id',
+                    '$top': 1,
+                }, headers={'Authorization': f'Bearer {self.access_token}'})
+                _check_and_raise_error(search_resp)
+                values = search_resp.json().get('value', [])
+                if not values:
+                    deleted_count += 1  # already gone
+                    continue
+
+                ms_id = values[0]['id']
+                move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(message_id=ms_id)
                 response = requests.post(move_url, json={
                     'destinationId': 'deleteditems'
                 }, headers={
@@ -695,7 +721,7 @@ class MicrosoftSender(_OAuthEmailSender):
                 _check_and_raise_error(response)
                 deleted_count += 1
             except Exception as e:
-                logger.exception('Failed to delete Microsoft message %s: %s', remote_message_id, e)
+                logger.exception('Failed to delete Microsoft message %s: %s', msg_id, e)
                 failed_count += 1
 
         return {'deleted_count': deleted_count, 'failed_count': failed_count}
