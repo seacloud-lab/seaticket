@@ -69,9 +69,8 @@ class Content extends Component {
         title={gettext('Edit')}
         aria-label={gettext('Edit')}
         icon="rename"
-        className="attr-action-icon"
+        className="attr-action-icon d-inline-flex"
         onClick={action}
-        style={{ display: 'inline-flex' }}
       />
     );
   };
