@@ -59,6 +59,11 @@
   width: 12px;
 }
 
+.sea-metadata-selector-single-select .select-option-name.conjunction-option-name,
+.sea-metadata-selector-multiple-select .select-option-name.conjunction-option-name {
+  justify-content: flex-start;
+}
+
 /* priority */
 .sea-metadata-selector-priority .selected-option-show {
   width: 100% !important;
@@ -123,4 +128,33 @@
   width: 16px;
   height: 16px;
   margin-right: 8px;
+}
+
+/* filter-column */
+.sea-metadata-filters-list .filter-column {
+  width: 160px;
+  max-width: 160px;
+}
+
+.sea-metadata-filters-list .filter-column .option-group {
+  min-width: 200px;
+  max-width: 400px;
+  margin: 0;
+  padding: 0;
+}
+
+.sea-metadata-filters-list .filter-column .option-group .option .seaqa-icon-svg {
+  color: var(--bs-icon-secondary-color);
+}
+
+.sea-metadata-filters-list .filter-column .option-group .option-group-search {
+  padding: 0;
+}
+
+.sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-search-input {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-radius: 0px;
+  border-color: var(--bs-border-color);
 }

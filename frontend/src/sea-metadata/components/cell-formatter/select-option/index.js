@@ -6,7 +6,7 @@ import { getOptionDisplayNameByOption } from '../../../utils/column';
 
 import './index.css';
 
-const SelectOption = ({ option, className, fontSize }) => {
+const SelectOption = ({ option, className, fontSize, children }) => {
   const style = useMemo(() => {
     let _style = {
       display: 'inline-block',
@@ -37,6 +37,7 @@ const SelectOption = ({ option, className, fontSize }) => {
       aria-label={optionName}
     >
       {optionName}
+      {children}
     </div>
   );
 };
@@ -48,6 +49,7 @@ SelectOption.propTypes = {
     color: PropTypes.string.isRequired,
   }),
   fontSize: PropTypes.number,
+  children: PropTypes.node,
 };
 
 export default SelectOption;

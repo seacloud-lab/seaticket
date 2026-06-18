@@ -109,7 +109,7 @@ class AdvancedFilters extends Component {
     let { filters, className, emptyPlaceholder, columns, tagsData } = this.props;
     const isEmpty = filters.length === 0;
     return (
-      <div className={classnames('sea-metadata-filters-list', { 'empty-filters-container': isEmpty }, { [className]: className })}>
+      <div className={classnames('sea-metadata-filters-list', { 'empty-filters-container p-0 d-flex align-items-center justify-content-center': isEmpty }, { [className]: className })}>
         {isEmpty && <div className="empty-filters-list">{emptyPlaceholder}</div>}
         {!isEmpty &&
           filters.map((filter, index) => {

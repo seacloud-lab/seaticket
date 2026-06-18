@@ -32,6 +32,7 @@ const OptionEditorContainer = forwardRef(({
   onToggle,
   onCreate,
   onPressTab,
+  isShowClearIcon = true,
   addToolText = gettext('Add tag'),
 }, ref) => {
   const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
@@ -128,7 +129,7 @@ const OptionEditorContainer = forwardRef(({
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
-            isShowClearIcon={true}
+            isShowClearIcon={isShowClearIcon}
             onClear={() => setSearchValue('')}
           />
         </div>

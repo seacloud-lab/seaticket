@@ -198,16 +198,16 @@ class FilterItem extends React.Component {
 
   onSelectCollaborator = (value) => {
     const { index, filter } = this.props;
-    const { columnOption: collaborator } = value;
-    let newFilter = getUpdatedFilterByCollaborator(filter, collaborator);
+    const { value: collaboratorValue } = value;
+    const newFilter = getUpdatedFilterByCollaborator(filter, collaboratorValue);
     this.resetState(newFilter);
     this.props.updateFilter(index, newFilter);
   };
 
   onSelectCreator = (value) => {
     const { index, filter } = this.props;
-    const { columnOption: collaborator } = value;
-    let newFilter = getUpdatedFilterByCreator(filter, collaborator);
+    const { value: collaboratorValue } = value;
+    let newFilter = getUpdatedFilterByCreator(filter, collaboratorValue);
     // the predicate is 'is' or 'is not'
     if (!newFilter) {
       return;
@@ -450,6 +450,7 @@ class FilterItem extends React.Component {
             readOnly={readOnly}
             filterIndex={index}
             filterTerm={filter_term || []}
+            filter_predicate={filter_predicate}
             collaborators={creators}
             onSelectCollaborator={this.onSelectCreator}
           />

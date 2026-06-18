@@ -1,13 +1,158 @@
-.sea-metadata-selector-collaborator.seaqa-customize-select .seaqa-select-option {
+.seaqa-collaborator-filter {
+  overflow: visible;
+}
+
+.seaqa-collaborator-filter.option-editor-popover .option-editor-selected-value-wrapper {
+  border-bottom: none;
+  border-radius: 4px;
+}
+
+.seaqa-collaborator-filter .sea-metadata-collaborator-selector-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 100%;
+}
+
+.seaqa-collaborator-filter .seaqa-search-input-wrapper .seaqa-search-input {
+  width: 100%;
+  padding-left: 2.5rem;
+  border-radius: 0px;
+  border-color: #EAEAEA;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.seaqa-collaborator-filter .seaqa-search-input-wrapper .seaqa-search-input:hover:focus,
+.seaqa-collaborator-filter .seaqa-search-input-wrapper .seaqa-search-input:focus {
+  border-color: #EAEAEA;
+  box-shadow: none;
+  outline: none;
+}
+
+.seaqa-collaborator-filter .seaqa-select-option {
   line-height: 20px;
   padding: 5px 10px 5px 10px !important;
 }
 
-.sea-metadata-selector-collaborator.seaqa-customize-select .seaqa-select-option:hover {
+.seaqa-collaborator-filter .seaqa-select-option:hover {
   background-color: #f7f7f7;
   color: var(--bs-body-color);
 }
 
-.sea-metadata-selector-collaborator.seaqa-customize-select .selected-option-show {
+.seaqa-collaborator-filter .select-option-name.option-collaborator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.seaqa-collaborator-filter .collaborator {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+  padding: 0 8px 0 2px;
+  height: 20px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #eaeaea;
+  max-width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.seaqa-collaborator-filter .collaborator-avatar,
+.seaqa-collaborator-filter .collaborator-name {
+  height: 20px;
+  line-height: 20px;
+}
+
+.seaqa-collaborator-filter .collaborator-avatar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0);
+  flex-shrink: 0;
+}
+
+.seaqa-collaborator-filter .collaborator-avatar-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.seaqa-collaborator-filter .collaborator-name {
+  margin-left: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.seaqa-collaborator-filter .collaborator-remove {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.seaqa-collaborator-filter .collaborator-remove .seaqa-icon-svg {
+  width: 12px;
+  height: 12px;
+}
+
+.seaqa-collaborator-filter .collaborator-check-icon {
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seaqa-collaborator-filter .collaborator-check-icon .seaqa-icon-svg {
+  width: 12px;
+  height: 12px;
+}
+
+.seaqa-collaborator-filter .selected-option-show {
   text-overflow: clip;
+}
+
+.seaqa-collaborator-filter .selected-option {
+  position: relative;
+}
+
+.seaqa-collaborator-filter .selected-option-collaborators {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.seaqa-collaborator-filter .seaqa-collaborator-filter-clear-all-wrapper {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.seaqa-collaborator-filter .seaqa-collaborator-filter-clear-all-wrapper:hover {
+  background-color: #f1f1f1;
+}
+
+.seaqa-collaborator-filter .seaqa-collaborator-filter-clear-all {
+  width: 12px;
+  height: 12px;
 }

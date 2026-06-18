@@ -1,0 +1,14 @@
+/* state filter */
+.seaqa-state-filter .option-group {
+  width: 200px;
+  padding: 0;
+  margin: 0;
+}
+
+.seaqa-state-filter .option-group .option-group-content {
+  margin-bottom: 8px;
+}
+
+.seaqa-state-filter .option-group .option-content {
+  width: 100%;
+}

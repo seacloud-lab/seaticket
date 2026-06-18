@@ -30,6 +30,7 @@
 .sea-metadata-basic-filters-select.highlighted .selected-option .selected-option-show,
 .sea-metadata-basic-filters-select.highlighted .selected-option .seaqa-icon-svg-arrow-down {
   color: #ed7109;
+  font-weight: 500;
 }
 
 .sea-metadata-basic-filters-select.seaqa-customize-select .selected-option .selected-option-show {
@@ -66,10 +67,6 @@
   text-align: center;
   flex-shrink: 0;
   margin-left: 10px;
-}
-
-.seaqa-select-option.active .seaqa-icon-svg-check-mark {
-  color: #fff;
 }
 
 .filter-group-basic .sea-metadata-filters-list {
