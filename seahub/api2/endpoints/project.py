@@ -3,6 +3,7 @@ import logging
 import json
 import re
 from datetime import datetime, UTC
+from urllib.parse import urlparse, unquote
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
@@ -30,9 +31,10 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import keyword_search, vector_search_with_text
 
 from seahub.seadb_models.models import SchemaTables
-from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number
+from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_record_by_pk
 from seahub.project.constants import ConnectionType
 from seahub.constants import PERMISSION_READ
+from seahub.settings import SERVICE_URL
 
 
 logger = logging.getLogger(__name__)
@@ -59,6 +61,12 @@ def is_url_ends_with_number(url=''):
     url = url.rstrip('/')
     pattern = r'/\d+$'
     return bool(re.search(pattern, url))
+
+
+def is_current_server(url=''):
+    parsed = urlparse(url)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    return origin.rstrip('/') == SERVICE_URL.rstrip('/')
 
 
 class WorkspacesView(APIView):
@@ -174,6 +182,61 @@ class RelatedProjectsView(APIView):
         if not is_url_ends_with_number(webpage):
             error_msg = 'Not support url'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        if is_current_server(webpage):
+            pattern = r'/workspace/(\d+)/project/([^/]+)/connections/(\d+)/records/(\d+)'
+            match = re.search(pattern, webpage.rstrip('/'))
+            if match:
+                workspace_id = int(match.group(1))
+                project_name = unquote(match.group(2))
+                connection_id = int(match.group(3))
+                record_id = int(match.group(4))
+                workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+                if not workspace:
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Workspace does not exist.')
+                
+                workspace_owner = workspace.owner
+                if '@seafile_group' in workspace_owner:
+                    group_id = int(workspace_owner.split('@')[0])
+                    workspace_type = 'group'
+                    workspace_name = group_id_to_name(group_id)
+                else:
+                    workspace_type = 'personal'
+                    workspace_name = 'personal'
+                    
+                project = Projects.objects.get_project(workspace, project_name)
+                if not project:
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, _('This project does not exist'))
+                
+                project_uuid = project.uuid
+                project_name = project.name
+                project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+                
+                if not project_connection:
+                    error_msg = f'project_connection {connection_id} not found.'
+                    return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                connection_type = project_connection.type
+
+                seadb_api = SeaDBAPI()
+                record, columns = get_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, record_id)
+                return Response({ 'projects': [
+                    {
+                        'uuid': project_uuid,
+                        'name': project_name,
+                        'icon': project.icon,
+                        'color': project.color,
+                        'workspace_id': workspace_id,
+                        'workspace_type': workspace_type,
+                        'workspace_name': workspace_name,
+                        'permission': 'r',
+                        'related_info': {
+                            'record': record,
+                            'columns': columns,
+                            'connection_type': connection_type,
+                            'connection_id': connection_id
+                        }
+                    }
+                ] }, status=status.HTTP_200_OK)
 
         groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
         group_id_list = []
