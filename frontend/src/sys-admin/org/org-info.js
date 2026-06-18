@@ -43,10 +43,9 @@ class Content extends Component {
       <IconButton
         title={gettext('Edit')}
         aria-label={gettext('Edit')}
-        className="attr-action-icon"
+        className="attr-action-icon d-inline-flex"
         icon="rename"
         onClick={action}
-        style={{ display: 'inline-flex' }}
       />
     );
   };

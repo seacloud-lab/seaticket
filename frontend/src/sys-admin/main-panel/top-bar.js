@@ -55,7 +55,7 @@ class TopBar extends Component {
             <IconButton icon="plus" className="mobile-toolbar-icon" onClick={this.onShowOperationToggle}/>
           )}
         </div>
-        <div className="common-toolbar" style={{ alignItems: 'center' }}>
+        <div className="common-toolbar align-items-center">
           {this.props.search && this.props.search}
           <Account isAdminPanel={true} />
         </div>
