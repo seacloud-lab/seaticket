@@ -1867,44 +1867,36 @@ class ProjectConnectionDeleteEmailView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def _delete_one_thread(self, project_uuid, connection_id, config, thread_id, seadb_api, email_seadb_api):
+    def _delete_one_thread(self, connection_id, config, thread_id, email_seadb_api):
         emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
         if not emails:
-            return False, 'No emails found in this thread.'
+            return
 
         # Skip already-deleted emails (retry only processes remaining)
         undeleted = [e for e in emails if not e.get('deleted')]
         if not undeleted:
-            return self._mark_thread_deleted(project_uuid, connection_id, thread_id, seadb_api)
+            email_seadb_api.mark_thread_deleted(connection_id, thread_id)
+            return 
 
-        # Delete one email at a time, marking each as deleted locally
-        already_deleted = len(emails) - len(undeleted)
-        newly_deleted = 0
-        last_error = None
-
+        need_deleted_emails_info = []
+        need_deleted_message_ids = []
+        email_pks = []
+        undeleted = [{'message_id': 'aaa', 'is_sender': False, '_pk': 10000}]
         for email in undeleted:
             message_id = email.get('message_id')
-            if not message_id:
-                continue
+            is_sender = email.get('is_sender')
+            _pk = email.get('_pk')
+            email_pks.append(_pk)
+            need_deleted_emails_info.append((message_id, is_sender))
+            need_deleted_message_ids.append(message_id)
 
-            try:
-                result = toggle_delete_emails(config, [{'message_id': message_id}])
-            except (EmailConfigError, EmailDeleteError) as e:
-                logger.error('delete email failed, email_pk: %s, error: %s', email['_pk'], e)
-                last_error = str(e)
-                continue
-
-            if result.get('deleted_count', 0) > 0:
-                email_seadb_api.mark_email_deleted(connection_id, email['_pk'])
-                newly_deleted += 1
-
-        if newly_deleted == 0:
-            return False, last_error or 'Failed to delete any emails from remote server.'
-
-        if already_deleted + newly_deleted == len(emails):
-            email_seadb_api.mark_thread_deleted(connection_id, thread_id)
-
-        return True, None
+        server_provider = config.get('server_provider', 'general_email_provider')
+        if server_provider == 'general_email_provider':
+            toggle_delete_emails(config, need_deleted_emails_info)
+        else:
+            toggle_delete_emails(config, need_deleted_message_ids)
+        email_seadb_api.mark_emails_deleted(connection_id, email_pks)
+        email_seadb_api.mark_thread_deleted(connection_id, thread_id)
 
     @require_org_context
     def post(self, request, project_uuid, connection_id):
@@ -1952,25 +1944,25 @@ class ProjectConnectionDeleteEmailView(APIView):
         deleted_thread_ids = []
         failed_threads = []
         for thread_id in dict.fromkeys(normalized_thread_ids):
-            ok, error_msg = self._delete_one_thread(
-                project_uuid,
-                connection_id,
-                config,
-                thread_id,
-                seadb_api,
-                email_seadb_api,
-            )
-            if ok:
-                deleted_thread_ids.append(thread_id)
-            else:
-                failed_threads.append({'thread_id': thread_id, 'error': error_msg})
+            try:
+                self._delete_one_thread(
+                    connection_id,
+                    config,
+                    thread_id,
+                    email_seadb_api,
+                )
+            except Exception as e:
+                logger.warning('fail to delete thread %s error: %s', thread_id, e)
+                failed_threads.append({'thread_id': thread_id})
+                continue
+            deleted_thread_ids.append(thread_id)
 
-        status_code = status.HTTP_200_OK if deleted_thread_ids else status.HTTP_500_INTERNAL_SERVER_ERROR
+        # status_code = status.HTTP_200_OK if deleted_thread_ids else status.HTTP_500_INTERNAL_SERVER_ERROR
         return Response({
             'success': bool(deleted_thread_ids),
             'deleted_thread_ids': deleted_thread_ids,
             'failed_threads': failed_threads,
-        }, status=status_code)
+        }, status=status.HTTP_200_OK)
 
 
 class ProjectConnectionReplyDiscourseView(APIView):

@@ -208,67 +208,48 @@ class SMTPEmailSender(_EmailSenderBase):
             res.update(imap_res)
         return res
 
-    def delete_emails(self, email_identifiers):
+    def delete_emails(self, emails_info):
         """Move emails to Trash on the IMAP server using stored UID only."""
-        if not email_identifiers:
-            return {'deleted_count': 0, 'failed_count': 0}
+        if not emails_info:
+            return
 
-        try:
-            imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
-            imap.login(self.imap_user or self.smtp_user, self.imap_password or self.smtp_password)
-        except Exception as e:
-            raise EmailDeleteError('Failed to connect to email server for deletion')
+        imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
+        imap.login(self.imap_user or self.smtp_user, 'self.imap_password' or self.smtp_password)
 
-        deleted_count = 0
-        failed_count = 0
         try:
             trash = self._find_trash_folder(imap)
             sent = self._find_sent_folder(imap)
-            folders = ['INBOX', sent] if sent else ['INBOX']
-            for ident in email_identifiers:
-                try:
-                    uid, folder = self._locate_email(imap, folders, ident)
-                    if not uid:
-                        # Email not found on server (already deleted) — skip
-                        deleted_count += 1
-                        continue
-                    self._move_to_trash(imap, uid, folder, trash)
-                    deleted_count += 1
-                except Exception as e:
-                    logger.exception('Failed to delete email: %s', e)
-                    failed_count += 1
+            inbox = 'INBOX'
+            for message_id, is_sender in emails_info:
+                folder = inbox
+                if is_sender:
+                    folder = sent
+                uid = self._find_uid_by_msgid(imap, folder, message_id)
+                if not uid:
+                    # Email not found on server (already deleted) — skip
+                    continue
+                self._move_to_trash(imap, uid, folder, trash)
         finally:
             try:
                 imap.logout()
             except Exception:
                 pass
 
-        return {'deleted_count': deleted_count, 'failed_count': failed_count}
-
     @staticmethod
-    def _locate_email(imap, folders, ident):
-        """Find email by message_id. Returns (uid, folder) or (None, None)."""
-        msg_id = ident.get('message_id')
-        if msg_id:
-            return SMTPEmailSender._find_by_msgid(imap, folders, msg_id)
-        return None, None
-
-    @staticmethod
-    def _find_by_msgid(imap, folders, msg_id):
+    def _find_uid_by_msgid(imap, folder, msg_id):
         """Locate an email by Message-ID header."""
         clean = msg_id.strip()
-        for folder in folders:
-            imap.select(folder, readonly=True)
-            status, data = imap.uid('SEARCH', None, f'HEADER Message-ID "{clean}"')
-            if status == 'OK' and data and data[0]:
-                uids = data[0].split()
-                if uids:
-                    logger.info('Found email by Message-ID uid=%s in %s', uids[0], folder)
-                    imap.close()
-                    return int(uids[0]), folder
-            imap.close()
+        imap.select(folder, readonly=True)
+        status, data = imap.uid('SEARCH', None, f'HEADER Message-ID "{clean}"')
+        if status == 'OK' and data and data[0]:
+            uids = data[0].split()
+            if uids:
+                logger.info('Found email by Message-ID uid=%s in %s', uids[0], folder)
+                imap.close()
+                return int(uids[0])
+        imap.close()
         logger.warning('Email not found by Message-ID: %s', clean)
-        return None, None
+        return None
 
     @staticmethod
     def _move_to_trash(imap, uid, source_folder, trash_folder):
@@ -576,7 +557,7 @@ class GmailSender(_OAuthEmailSender):
     """Gmail API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=multipart'
-    GMAIL_TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{message_id}/trash'
+    GMAIL_TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
 
     def _do_send_email(self, msg_obj):
         msg_string = msg_obj.as_string()
@@ -609,59 +590,41 @@ class GmailSender(_OAuthEmailSender):
             headers=headers
         )
 
-    def delete_emails(self, email_identifiers):
-        """
-        Move emails to Trash via Gmail API.
-
-        email_identifiers: list of dicts with keys:
-            - message_id: Gmail message ID (required)
-        Returns: dict with 'deleted_count' and 'failed_count'
-        """
-        if not email_identifiers:
-            return {'deleted_count': 0, 'failed_count': 0}
+    def delete_emails(self, message_ids):
+        if not message_ids:
+            return
 
         self._request_access_token()
 
-        deleted_count = 0
-        failed_count = 0
-
-        for identifier in email_identifiers:
-            msg_id = identifier.get('message_id')
+        for msg_id in message_ids:
             if not msg_id:
-                failed_count += 1
                 continue
 
-            try:
-                # Search by RFC Message-ID to get Gmail message ID
-                search_url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
-                search_resp = requests.get(search_url, params={'q': f'rfc822msgid:{msg_id}'}, headers={
-                    'Authorization': f'Bearer {self.access_token}',
-                })
-                _check_and_raise_error(search_resp)
-                messages = search_resp.json().get('messages', [])
-                if not messages:
-                    deleted_count += 1  # already gone
-                    continue
+            # Search by RFC Message-ID to get Gmail message ID
+            search_url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
+            # Escape quotes for Gmail search query syntax
+            safe_msg_id = msg_id.replace('"', '\\"')
+            search_resp = requests.get(search_url, params={'q': f'rfc822msgid:"{safe_msg_id}"'}, headers={
+                'Authorization': f'Bearer {self.access_token}',
+            })
+            _check_and_raise_error(search_resp)
+            messages = search_resp.json().get('messages', [])
+            if not messages:
+                continue
 
-                gmail_id = messages[0]['id']
-                trash_url = self.GMAIL_TRASH_ENDPOINT.format(message_id=gmail_id)
-                trash_resp = requests.post(trash_url, headers={
-                    'Authorization': f'Bearer {self.access_token}',
-                })
-                _check_and_raise_error(trash_resp)
-                deleted_count += 1
-            except Exception as e:
-                logger.exception('Failed to trash Gmail message %s: %s', msg_id, e)
-                failed_count += 1
-
-        return {'deleted_count': deleted_count, 'failed_count': failed_count}
+            gmail_id = messages[0]['id']
+            trash_url = self.GMAIL_TRASH_ENDPOINT.format(gmail_id=gmail_id)
+            trash_resp = requests.post(trash_url, headers={
+                'Authorization': f'Bearer {self.access_token}',
+            })
+            _check_and_raise_error(trash_resp)
 
 
 class MicrosoftSender(_OAuthEmailSender):
     """Microsoft API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
-    MS_GRAPH_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{message_id}/move'
+    MS_GRAPH_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{ms_id}/move'
 
     def _do_send_email(self, msg_obj):
         msg_bytes = msg_obj.as_bytes()
@@ -674,57 +637,39 @@ class MicrosoftSender(_OAuthEmailSender):
 
         return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_base64, headers=headers)
 
-    def delete_emails(self, email_identifiers):
-        """
-        Move emails to Deleted Items via Microsoft Graph API.
-
-        email_identifiers: list of dicts with keys:
-            - message_id: Microsoft message ID (required)
-        Returns: dict with 'deleted_count' and 'failed_count'
-        """
-        if not email_identifiers:
-            return {'deleted_count': 0, 'failed_count': 0}
+    def delete_emails(self, message_ids):
+        if not message_ids:
+            return
 
         self._request_access_token()
 
-        deleted_count = 0
-        failed_count = 0
-
-        for identifier in email_identifiers:
-            msg_id = identifier.get('message_id')
+        for msg_id in message_ids:
             if not msg_id:
-                failed_count += 1
                 continue
 
-            try:
-                # Search by RFC Message-ID to get Microsoft internal ID
-                search_url = 'https://graph.microsoft.com/v1.0/me/messages'
-                search_resp = requests.get(search_url, params={
-                    '$filter': f"internetMessageId eq '{msg_id}'",
-                    '$select': 'id',
-                    '$top': 1,
-                }, headers={'Authorization': f'Bearer {self.access_token}'})
-                _check_and_raise_error(search_resp)
-                values = search_resp.json().get('value', [])
-                if not values:
-                    deleted_count += 1  # already gone
-                    continue
+            # Search by RFC Message-ID to get Microsoft internal ID
+            search_url = 'https://graph.microsoft.com/v1.0/me/messages'
+            # OData filter strings escape single quotes by doubling them
+            safe_msg_id = msg_id.replace("'", "''")
+            search_resp = requests.get(search_url, params={
+                '$filter': f"internetMessageId eq '{safe_msg_id}'",
+                '$select': 'id',
+                '$top': 1,
+            }, headers={'Authorization': f'Bearer {self.access_token}'})
+            _check_and_raise_error(search_resp)
+            values = search_resp.json().get('value', [])
+            if not values:
+                continue
 
-                ms_id = values[0]['id']
-                move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(message_id=ms_id)
-                response = requests.post(move_url, json={
-                    'destinationId': 'deleteditems'
-                }, headers={
-                    'Authorization': f'Bearer {self.access_token}',
-                    'Content-Type': 'application/json',
-                })
-                _check_and_raise_error(response)
-                deleted_count += 1
-            except Exception as e:
-                logger.exception('Failed to delete Microsoft message %s: %s', msg_id, e)
-                failed_count += 1
-
-        return {'deleted_count': deleted_count, 'failed_count': failed_count}
+            ms_id = values[0]['id']
+            move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(ms_id=ms_id)
+            response = requests.post(move_url, json={
+                'destinationId': 'deleteditems'
+            }, headers={
+                'Authorization': f'Bearer {self.access_token}',
+                'Content-Type': 'application/json',
+            })
+            _check_and_raise_error(response)
 
 
 def get_email_sender_from_config(config):
@@ -772,6 +717,6 @@ def toggle_send_email(config, send_info):
     return sender.send(send_info)
 
 
-def toggle_delete_emails(config, email_identifiers):
+def toggle_delete_emails(config, emails_info):
     sender = get_email_sender_from_config(config)
-    return sender.delete_emails(email_identifiers)
+    return sender.delete_emails(emails_info)

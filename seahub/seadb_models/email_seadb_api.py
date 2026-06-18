@@ -27,7 +27,7 @@ class EmailSeaDBAPI:
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
-            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id` FROM `{table_name}` WHERE `thread_id` = {thread_id} ORDER BY `modified_time` ASC"
+            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted=False ORDER BY `modified_time` ASC"
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -180,12 +180,12 @@ class EmailSeaDBAPI:
         }])
         return pks[0] if pks else None
 
-    def mark_email_deleted(self, connection_id, email_pk):
+    def mark_emails_deleted(self, connection_id, email_pks):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         self.seadb_api.update_rows(self.base_id, table_name, [{
             'pk': int(email_pk),
             'row': {'deleted': True}
-        }])
+        } for email_pk in email_pks])
 
     def mark_thread_deleted(self, connection_id, thread_id):
         now = datetime.datetime.now(datetime.UTC).isoformat()
