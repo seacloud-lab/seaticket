@@ -68,6 +68,19 @@ export const isFilterTermArray = (column, filterPredicate) => {
 };
 
 export const getUpdatedFilterByCreator = (filter, collaborator) => {
+  if (!collaborator || !collaborator.email) {
+    if (Array.isArray(collaborator)) {
+      const emails = Array.from(new Set(collaborator.map(item => (typeof item === 'string' ? item : item && item.email)).filter(Boolean)));
+      if (!emails.length) {
+        return;
+      }
+      return Object.assign({}, filter, { filter_term: emails });
+    }
+    if (typeof collaborator === 'string' && collaborator) {
+      return Object.assign({}, filter, { filter_term: [collaborator] });
+    }
+    return;
+  }
   const multipleSelectType = [FILTER_PREDICATE_TYPE.CONTAINS, FILTER_PREDICATE_TYPE.NOT_CONTAIN];
   let { filter_predicate, filter_term: filterTerm } = filter;
   if (multipleSelectType.includes(filter_predicate)) {
@@ -129,14 +142,19 @@ export const getUpdatedFilterBySelectTag = (filter, tag) => {
 };
 
 export const getUpdatedFilterByCollaborator = (filter, collaborator) => {
-  let filterTerm = filter.filter_term ? filter.filter_term.slice(0) : [];
-  let selectedEmail = collaborator.email;
-  let collaborator_index = filterTerm.indexOf(selectedEmail);
-  if (collaborator_index > -1) {
-    filterTerm.splice(collaborator_index, 1);
-  } else {
-    filterTerm.push(selectedEmail);
-  }
+  const filterTerm = Array.isArray(collaborator)
+    ? Array.from(new Set(collaborator.map(email => `${email}`))).filter(Boolean)
+    : (() => {
+      let currentFilterTerm = filter.filter_term ? filter.filter_term.slice(0) : [];
+      let selectedEmail = collaborator.email;
+      let collaboratorIndex = currentFilterTerm.indexOf(selectedEmail);
+      if (collaboratorIndex > -1) {
+        currentFilterTerm.splice(collaboratorIndex, 1);
+      } else {
+        currentFilterTerm.push(selectedEmail);
+      }
+      return currentFilterTerm;
+    })();
   return Object.assign({}, filter, { filter_term: filterTerm });
 };
 

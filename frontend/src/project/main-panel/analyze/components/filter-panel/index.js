@@ -108,11 +108,6 @@ const FilterPanel = ({
     }));
   }, [presetLabelMapping, baseStartDate, baseEndDate]);
 
-  const stateLabel = useMemo(() => {
-    if (!activeState || activeState?.value === '--') return gettext('Status');
-    return `${gettext('Status')}:${STATE_LABELS[activeState.value]}`;
-  }, [activeState]);
-
   const rangeLabel = useMemo(() => {
     return getDurationLabel(selectedRange.startDate, selectedRange.endDate);
   }, [selectedRange]);
@@ -164,8 +159,11 @@ const FilterPanel = ({
   return (
     <div className="analyze-filter-panel d-flex align-items-end">
       <div className="analyze-add-filter" ref={popoverRef}>
-        <div className={classnames('analyze-add-filter-btn', { 'active': isShowPopover })} onClick={handleTogglePopover}>
-          <span>{stateLabel}</span>
+        <div
+          className={classnames('analyze-add-filter-btn', { 'active': activeState && (activeState.value !== '--') })}
+          onClick={handleTogglePopover}
+        >
+          <span>{gettext('Status')}</span>
           <Icon symbol="arrow-down" />
         </div>
         {isShowPopover && (

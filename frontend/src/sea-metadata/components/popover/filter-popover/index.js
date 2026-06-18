@@ -159,9 +159,9 @@ class FilterPopover extends Component {
             {isValidBasicFilters && (
               <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
             )}
-            <FormGroup className="filter-group-advanced filter-group mb-0">
+            <FormGroup className="filter-group-advanced filter-group px-4 mb-0">
               {isValidBasicFilters && (
-                <Label className="filter-group-name">{gettext('Advanced')}</Label>
+                <Label className="filter-group-name mb-3">{gettext('Advanced')}</Label>
               )}
               <div className={classnames('filter-group-container', { 'pt-4': !isValidBasicFilters })}>
                 <AdvancedFilters

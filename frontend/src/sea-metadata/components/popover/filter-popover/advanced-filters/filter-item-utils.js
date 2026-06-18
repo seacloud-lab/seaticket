@@ -88,11 +88,19 @@ class FilterItemUtils {
     return [
       {
         value: { filterConjunction: 'And' },
-        label: (<span className="select-option-name">{gettext('And')}</span>)
+        label: (
+          <div className="select-option-name conjunction-option-name">
+            <span>{gettext('And')}</span>
+          </div>
+        )
       },
       {
         value: { filterConjunction: 'Or' },
-        label: (<span className="select-option-name">{gettext('Or')}</span>)
+        label: (
+          <div className="select-option-name conjunction-option-name">
+            <span>{gettext('Or')}</span>
+          </div>
+        )
       }
     ];
   }
@@ -101,12 +109,20 @@ class FilterItemUtils {
     if (conjunction === 'And') {
       return {
         value: { filterConjunction: 'And' },
-        label: (<span className="select-option-name">{gettext('And')}</span>)
+        label: (
+          <div className="select-option-name conjunction-option-name">
+            <span>{gettext('And')}</span>
+          </div>
+        )
       };
     }
     return {
       value: { filterConjunction: 'Or' },
-      label: (<span className="select-option-name">{gettext('Or')}</span>)
+      label: (
+        <div className="select-option-name conjunction-option-name">
+          <span>{gettext('Or')}</span>
+        </div>
+      )
     };
   }
 }

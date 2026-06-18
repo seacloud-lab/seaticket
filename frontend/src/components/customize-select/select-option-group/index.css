@@ -70,7 +70,7 @@
 }
 
 .option-group .option .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
+  color: var(--bs-icon-color);
   height: 14px;
   width: 14px;
 }

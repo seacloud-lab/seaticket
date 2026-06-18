@@ -14,6 +14,7 @@ const DATE_INPUT_WIDTH = 118;
 const FilterByDate = ({ date, onChange }) => {
   const [value, setValue] = useState(date.value || '');
   const [isOpen, setIsOpen] = useState(false);
+  const [isCustomDateHover, setIsCustomDateHover] = useState(false);
   const [type] = useState(date.type || SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_UPDATED_TIME);
   const [isCustomDate, setIsCustomDate] = useState(date.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM);
   const [time, setTime] = useState({
@@ -37,6 +38,7 @@ const FilterByDate = ({ date, onChange }) => {
       {
         key: SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM,
         label: gettext('Custom time'),
+        id: 'custom-date',
       },
     ];
   }, []);
@@ -147,6 +149,17 @@ const FilterByDate = ({ date, onChange }) => {
         </DropdownToggle>
         <ModalPortal>
           <CustomizeDropdownMenu className="search-filter-menu filter-by-date-menu">
+            {value && (
+              <CustomizeDropdownItem
+                tag="div"
+                tabIndex="-1"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={onClearDate}
+                toggle={false}
+              >
+                {'--'}
+              </CustomizeDropdownItem>
+            )}
             {options.map((option, i) => {
               const isSelected = option.key === value;
               if (option === 'Divider') return <div key={i} className="dropdown-divider"></div>;
@@ -160,6 +173,9 @@ const FilterByDate = ({ date, onChange }) => {
                   onClick={onOptionClick}
                   toggle={false}
                   className="justify-content-between position-relative"
+                  onMouseEnter={option.id === 'custom-date' ? () => setIsCustomDateHover(true) : undefined }
+                  onMouseLeave={option.id === 'custom-date' ? () => setIsCustomDateHover(false) : undefined }
+                  style={(isCustomDate && option.id === 'custom-date') ? { borderRadius: '4px 4px 0px 0px' } : {}}
                 >
                   <CustomizeDropdownItemText>{option.label}</CustomizeDropdownItemText>
                   {isSelected && <CustomizeDropdownItemIcon symbol="check-mark" position="right" />}
@@ -167,26 +183,31 @@ const FilterByDate = ({ date, onChange }) => {
               );
             })}
             {isCustomDate && (
-              <div className="filter-by-date-custom-date-container">
-                <div className="custom-date-container">
-                  <div className="custom-date-label">{gettext('Start date')}</div>
-                  <DateAndTimePicker
-                    showHourAndMinute={false}
-                    disabledDate={disabledStartDate}
-                    value={time.from}
-                    onChange={(value) => setTime({ ...time, from: value?.startOf('day') })}
-                    inputWidth={DATE_INPUT_WIDTH}
-                  />
-                </div>
-                <div className="custom-date-container">
-                  <div className="custom-date-label">{gettext('End date')}</div>
-                  <DateAndTimePicker
-                    showHourAndMinute={false}
-                    disabledDate={disabledEndDate}
-                    value={time.to}
-                    onChange={(value) => setTime({ ...time, to: value?.endOf('day') })}
-                    inputWidth={DATE_INPUT_WIDTH}
-                  />
+              <div
+                className="filter-by-date-custom-date-container-outer pb-1"
+                style={{ backgroundColor: isCustomDateHover ? 'rgba(0, 0, 0, 0.04)' : '#fff' }}
+              >
+                <div className="filter-by-date-custom-date-container p-2 mx-2 d-flex align-items-center justify-content-between border-radius-4">
+                  <div className="custom-date-container">
+                    <div className="font-size-13 line-height-20 mb-1">{gettext('Start date')}</div>
+                    <DateAndTimePicker
+                      showHourAndMinute={false}
+                      disabledDate={disabledStartDate}
+                      value={time.from}
+                      onChange={(value) => setTime({ ...time, from: value?.startOf('day') })}
+                      inputWidth={DATE_INPUT_WIDTH}
+                    />
+                  </div>
+                  <div className="custom-date-container">
+                    <div className="font-size-13 line-height-20 mb-1">{gettext('End date')}</div>
+                    <DateAndTimePicker
+                      showHourAndMinute={false}
+                      disabledDate={disabledEndDate}
+                      value={time.to}
+                      onChange={(value) => setTime({ ...time, to: value?.endOf('day') })}
+                      inputWidth={DATE_INPUT_WIDTH}
+                    />
+                  </div>
                 </div>
               </div>
             )}

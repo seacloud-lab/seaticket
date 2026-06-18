@@ -17,6 +17,7 @@ const getComparableValue = (value) => {
   if (value.sortType !== undefined) return `sortType:${value.sortType}`;
   if (value.id !== undefined) return `id:${value.id}`;
   if (value.key !== undefined) return `key:${value.key}`;
+  if (value.filterConjunction !== undefined) return `filterConjunction:${value.filterConjunction}`;
   return value;
 };
 
