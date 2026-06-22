@@ -214,7 +214,7 @@ class SMTPEmailSender(_EmailSenderBase):
             return
 
         imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
-        imap.login(self.imap_user or self.smtp_user, 'self.imap_password' or self.smtp_password)
+        imap.login(self.imap_user or self.smtp_user, self.imap_password or self.smtp_password)
 
         try:
             trash = self._find_trash_folder(imap)

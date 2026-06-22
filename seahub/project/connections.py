@@ -1867,37 +1867,6 @@ class ProjectConnectionDeleteEmailView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def _delete_one_thread(self, connection_id, config, thread_id, email_seadb_api):
-        emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
-        if not emails:
-            return
-
-        # Skip already-deleted emails (retry only processes remaining)
-        undeleted = [e for e in emails if not e.get('deleted')]
-        if not undeleted:
-            email_seadb_api.mark_thread_deleted(connection_id, thread_id)
-            return 
-
-        need_deleted_emails_info = []
-        need_deleted_message_ids = []
-        email_pks = []
-        undeleted = [{'message_id': 'aaa', 'is_sender': False, '_pk': 10000}]
-        for email in undeleted:
-            message_id = email.get('message_id')
-            is_sender = email.get('is_sender')
-            _pk = email.get('_pk')
-            email_pks.append(_pk)
-            need_deleted_emails_info.append((message_id, is_sender))
-            need_deleted_message_ids.append(message_id)
-
-        server_provider = config.get('server_provider', 'general_email_provider')
-        if server_provider == 'general_email_provider':
-            toggle_delete_emails(config, need_deleted_emails_info)
-        else:
-            toggle_delete_emails(config, need_deleted_message_ids)
-        email_seadb_api.mark_emails_deleted(connection_id, email_pks)
-        email_seadb_api.mark_thread_deleted(connection_id, thread_id)
-
     @require_org_context
     def post(self, request, project_uuid, connection_id):
         # resource check
@@ -1941,27 +1910,41 @@ class ProjectConnectionDeleteEmailView(APIView):
             except (TypeError, ValueError):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'thread_id invalid.')
 
-        deleted_thread_ids = []
-        failed_threads = []
-        for thread_id in dict.fromkeys(normalized_thread_ids):
-            try:
-                self._delete_one_thread(
-                    connection_id,
-                    config,
-                    thread_id,
-                    email_seadb_api,
-                )
-            except Exception as e:
-                logger.warning('fail to delete thread %s error: %s', thread_id, e)
-                failed_threads.append({'thread_id': thread_id})
-                continue
-            deleted_thread_ids.append(thread_id)
+        try:
+            for thread_id in dict.fromkeys(normalized_thread_ids):
+                emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
+                if not emails:
+                    continue
 
-        # status_code = status.HTTP_200_OK if deleted_thread_ids else status.HTTP_500_INTERNAL_SERVER_ERROR
+                # Skip already-deleted emails (retry only processes remaining)
+                undeleted = [e for e in emails if not e.get('deleted')]
+                if not undeleted:
+                    email_seadb_api.mark_thread_deleted(connection_id, thread_id)
+                    continue
+                need_deleted_emails_info = []
+                need_deleted_message_ids = []
+                email_pks = []
+                for email in undeleted:
+                    message_id = email.get('message_id')
+                    is_sender = email.get('is_sender')
+                    _pk = email.get('_pk')
+                    email_pks.append(_pk)
+                    need_deleted_emails_info.append((message_id, is_sender))
+                    need_deleted_message_ids.append(message_id)
+                server_provider = config.get('server_provider', 'general_email_provider')
+                if server_provider == 'general_email_provider':
+                    toggle_delete_emails(config, need_deleted_emails_info)
+                else:
+                    toggle_delete_emails(config, need_deleted_message_ids)
+                email_seadb_api.mark_emails_deleted(connection_id, email_pks)
+                email_seadb_api.mark_thread_deleted(connection_id, thread_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         return Response({
-            'success': bool(deleted_thread_ids),
-            'deleted_thread_ids': deleted_thread_ids,
-            'failed_threads': failed_threads,
+            'success': True
         }, status=status.HTTP_200_OK)
 
 

@@ -283,21 +283,15 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const tableName = getTableName(connection);
     deleteRows(tableName, threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
-        .then(res => {
-          const failed = res?.data?.failed_threads || [];
-          if (failed.length > 0) {
-            throw new Error(failed[0]?.error || 'Failed to delete some email threads');
-          }
-          return res;
-        })
-    ).then(() => {
-      const successMessage = recordCount === 1
-        ? gettext('Email thread has been moved to Trash.')
-        : gettext('Email threads have been moved to Trash.');
-      toaster.success(successMessage);
-    }).catch(error => {
-      toaster.danger(Utils.getErrorMsg(error));
-    });
+        .then(() => {
+        const successMessage = recordCount === 1
+          ? gettext('Email thread has been moved to Trash.')
+          : gettext('Email threads have been moved to Trash.');
+        toaster.success(successMessage);
+      }).catch(error => {
+        toaster.danger(Utils.getErrorMsg(error));
+      })
+    );
   }, [projectUuid, connectionID, connection, deleteRows]);
 
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
