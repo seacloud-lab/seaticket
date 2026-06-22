@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { gettext, lang, server, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '@/utils/long-text';
+import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
 import { CenteredLoading, toaster, Option, OptionEditor } from '@/components';
 import { portalAPI } from '../api';
 import { PORTAL_PAGE } from '../constants';
@@ -80,6 +81,7 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)
   } }), [projectUuid]);
+  const canCheckEditorBrowser = useMemo(() => canCheckSeafileEditorBrowser(), []);
 
   useEffect(() => {
     setIsLoading(false);
@@ -193,7 +195,7 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
                   value={content || ''}
                   autoSave={true}
                   saveDelay={20 * 1000}
-                  isCheckBrowser={true}
+                  isCheckBrowser={canCheckEditorBrowser}
                   isImageUploadOnly={false}
                   isSupportMultipleFiles={true}
                   editorApi={longtextAPI}

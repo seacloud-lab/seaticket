@@ -8,7 +8,6 @@ import { isWorkWeChat } from '@/utils/wechat-utils';
 import userAPI from '@/api/user-api';
 import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 import { aiCreditExceededAmount } from '@/constants/config';
-import IconBtn from '../icon-button';
 import Icon from '../icon';
 
 import './account.css';
@@ -193,7 +192,7 @@ class Account extends Component {
         <span
           id="my-info"
           onClick={this.onClickAccount}
-          className="account-toggle no-deco d-none d-md-block"
+          className="account-toggle no-deco"
           aria-label={gettext('View profile and more')}
           title={gettext('View profile and more')}
           tabIndex={0}
@@ -202,13 +201,6 @@ class Account extends Component {
             <img src={avatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />
           </span>
         </span>
-        <IconBtn
-          icon="more-vertical"
-          className="account-toggle mobile-icon d-md-none"
-          aria-label={gettext('View profile and more')}
-          title={gettext('View profile and more')}
-          onClick={this.onClickAccount}
-        />
         <div id="user-info-popup" className={`account-popup sf-popover ${this.state.showInfo ? '' : 'hide'}`}>
           <div className="sf-popover-con">
             <div className="item o-hidden">

@@ -206,7 +206,14 @@ const Portal = () => {
           <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true}>
             {isEditMode && <LeftBar />}
             <div className="seaqa-portal-body">
-              <SidePanel activePage={activePage} onPageChange={onPageChange} enableKB={enableKB} isAnonymous={isAnonymous} isExternalUser={isExternalUser}/>
+              <SidePanel
+                isEditMode={isEditMode}
+                activePage={activePage}
+                onPageChange={onPageChange}
+                enableKB={enableKB}
+                isAnonymous={isAnonymous}
+                isExternalUser={isExternalUser}
+              />
               <MainPanel
                 isEditMode={isEditMode}
                 activePage={activePage}
