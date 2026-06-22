@@ -1,7 +1,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
-import { gettext, PERMISSION_TYPES } from '@/constants';
+import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../main-panel/connections/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
@@ -18,7 +18,7 @@ import { portalAPI } from '@/portal/api';
 
 import './index.css';
 
-const { projectName, workspaceID } = window.app.pageOptions;
+const { projectName, workspaceID, permission } = window.app.pageOptions;
 
 const initColumns = [
   { key: 'filename', name: 'filename' },
@@ -31,7 +31,7 @@ const initColumns = [
 ];
 
 const ResourceDetailsDialog = ({
-  projectUuid, resource, columns = initColumns, isShowIcon, permission = 'r',
+  projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
   createMoreOptions,
   getTicket,
@@ -179,7 +179,7 @@ const ResourceDetailsDialog = ({
             projectUuid={projectUuid}
             resource={resource}
             columns={columns}
-            permission={PERMISSION_TYPES.READ_WRITE}
+            permission={permission}
             onUpdateResourceDetails={updateResourceDetails}
           />
         )}
