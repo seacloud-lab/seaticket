@@ -17,3 +17,8 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.longtext-preview-container.seaqa-connection-general_task-resource-details {
+  height: fit-content;
+  overflow: hidden;
+}

@@ -128,9 +128,8 @@ const CreateTaskDialog = ({
 
     connectionsAPI.createConnectionRecord(projectUuid, connectionId, task).then((res) => {
       const row = res?.data?.row || {};
-      const activities = res?.data?.activities || [];
       toaster.success(gettext('Task created'));
-      onSubmitCallback && onSubmitCallback({ task: row, connection, activities });
+      onSubmitCallback && onSubmitCallback({ task: row, connection });
       onClose();
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
