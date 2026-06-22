@@ -37,7 +37,8 @@ class ServerOperator {
           if (error?.response?.status === 409) {
             callback({ operation, is_restore: true });
           } else {
-            callback({ operation, error: context.translate('Failed to modify {row}') });
+            const errorMsg = error?.response?.data?.error_msg || context.translate('Failed to modify {row}');
+            callback({ operation, error: errorMsg });
           }
         });
         break;

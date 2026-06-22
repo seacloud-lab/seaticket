@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth
-from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
@@ -140,6 +140,7 @@ def github_installation_setup(request):
     github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
     if not github_app_installation:
         ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
+        update_github_connection_installation_id(project_uuid, installation_id)
 
     return redirect(return_url)
 

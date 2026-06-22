@@ -104,7 +104,9 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
         callback && callback();
         return res;
       }).catch((error) => {
-        const errorMessage = Utils.getErrorMsg(error);
+        const errorMessage = error?.response?.status === 404 && error?.response?.data?.error_msg === 'Installation_id is incorrect'
+          ? 'The GitHub app is missing or has been uninstalled. Please reinstall it.'
+          : Utils.getErrorMsg(error);
         toaster.danger(errorMessage);
         callback && callback(true);
         throw error;
