@@ -1228,7 +1228,7 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'No inbound message id found for thread {source_id}.')
 
         try:
-            move_emails_to_junk(config, inbound_message_ids)
+            move_result = move_emails_to_junk(config, inbound_message_ids)
         except MailboxConfigError as e:
             logger.error('Mailbox config error for connection %s: %s', project_connection.id, e)
             return self._failed_execution('Email connection config is invalid.')
@@ -1238,6 +1238,16 @@ class AgentActionConfirmView(APIView):
                 project_connection.id, source_id, e
             )
             return self._failed_execution('Failed to move the email to the spam folder.')
+
+        moved_count = int((move_result or {}).get('moved_count') or 0)
+        if moved_count <= 0:
+            logger.warning(
+                'Move to spam matched no remote message for connection %s thread %s (message_ids=%s)',
+                project_connection.id, source_id, inbound_message_ids
+            )
+            return self._failed_execution(
+                'Failed to move the email to the spam folder: no matching remote message was moved.'
+            )
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         try:
