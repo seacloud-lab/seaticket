@@ -258,18 +258,16 @@ class SMTPEmailSender(_EmailSenderBase):
             raise EmailDeleteError(f'Cannot delete uid={uid}: source folder is missing')
 
         if trash_folder:
-            status, _ = imap.select(source_folder, readonly=True)
+            # Check if source is writable before doing anything
+            status, _ = imap.select(source_folder, readonly=False)
             if status != 'OK':
-                raise EmailDeleteError(f'Failed to select folder {source_folder} for uid={uid}')
+                raise EmailDeleteError(f'Folder {source_folder} is read-only, cannot delete uid={uid}')
+            # COPY to trash, then delete original
             dest = f'"{trash_folder}"'
             status, _ = imap.uid('COPY', str(uid), dest)
             if status != 'OK':
                 raise EmailDeleteError(f'Failed to copy uid={uid} from {source_folder} to {trash_folder}')
             logger.info('Copied uid=%s from %s to %s', uid, source_folder, trash_folder)
-            imap.close()
-            status, _ = imap.select(source_folder, readonly=False)
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to reselect folder {source_folder} for uid={uid}')
             status, _ = imap.uid('STORE', str(uid), '+FLAGS', '\\Deleted')
             if status != 'OK':
                 raise EmailDeleteError(f'Failed to flag uid={uid} as deleted in {source_folder}')
