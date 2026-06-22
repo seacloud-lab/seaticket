@@ -1,11 +1,15 @@
 import json
+from io import BytesIO
 from unittest.mock import Mock, patch
 
 from seahub.portal.chat.apis import (
+    PortalChatImageView,
+    PortalChatMessagesView,
     PortalChatSessionsView,
     PortalChatView,
     PortalChatSessionTitleView,
 )
+from seahub.portal.chat.utils import encode_portal_chat_image_token, rewrite_portal_chat_image_urls
 from seahub.portal.visitor_session import create_visitor_session
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 
@@ -180,6 +184,119 @@ class TestPortalChatViewAnonymous:
         assert 'ai_reply_message_id' in resp.data
         assert resp.data['user_message_id'] is not None
         assert resp.data['ai_reply_message_id'] is not None
+
+class TestPortalChatImageRewriteAnonymous:
+
+    def test_rewrite_skips_unsupported_attachment_prefix(self, real_project):
+        raw_image_url = f'/file/project/{real_project.uuid}/attachments/chat/12/a.png'
+
+        content = rewrite_portal_chat_image_urls(
+            real_project.uuid,
+            f'![a]({raw_image_url})',
+            'session-uuid',
+            'abcd',
+            'visitor-uuid',
+        )
+
+        assert raw_image_url in content
+        assert f'/file/portal-chat-image/{real_project.uuid}/?token=' not in content
+
+    def test_history_response_rewrites_internal_image_url(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='test',
+            username=visitor['visitor_uuid'],
+        )
+        raw_image_url = f'/file/project/{real_project.uuid}/attachments/ticket/12/a.png'
+        PortalChatMessages.objects.create_message(session.session_uuid, 'abcd', 'assistant', f'![a]({raw_image_url})')
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/{session.session_uuid}/messages/'
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        resp = PortalChatMessagesView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+            session_uuid=session.session_uuid,
+        )
+
+        assert resp.status_code == 200
+        assert raw_image_url not in resp.data['messages'][0]['content']
+        assert f'/file/portal-chat-image/{real_project.uuid}/?token=' in resp.data['messages'][0]['content']
+
+
+class TestPortalChatImageViewAnonymous:
+
+    def test_portal_chat_image_proxy_serves_valid_token(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='test',
+            username=visitor['visitor_uuid'],
+        )
+        file_path = 'attachments/ticket/12/a.png'
+        token = encode_portal_chat_image_token(str(real_project.uuid), file_path, session.session_uuid, 'abcd', visitor['visitor_uuid'])
+        request = factory.get(f'/file/portal-chat-image/{real_project.uuid}/?token={token}')
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.get_project_file_head_from_s3', return_value={'ContentType': 'image/png'}) as head_mock, \
+                patch('seahub.portal.chat.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+            resp = PortalChatImageView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'] == 'image/png'
+        head_mock.assert_called_once_with(str(real_project.uuid), file_path)
+        file_mock.assert_called_once_with(str(real_project.uuid), file_path)
+
+    def test_portal_chat_image_proxy_uses_extension_content_type(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='test',
+            username=visitor['visitor_uuid'],
+        )
+        file_path = 'attachments/ticket/12/a.png'
+        token = encode_portal_chat_image_token(str(real_project.uuid), file_path, session.session_uuid, 'abcd', visitor['visitor_uuid'])
+        request = factory.get(f'/file/portal-chat-image/{real_project.uuid}/?token={token}')
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.get_project_file_head_from_s3', return_value={'ContentType': 'text/plain'}), \
+                patch('seahub.portal.chat.apis.get_project_file_from_s3', return_value=BytesIO(b'png')):
+            resp = PortalChatImageView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'] == 'image/png'
+
+    def test_portal_chat_image_proxy_rejects_other_visitor(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor_a = create_visitor_session()
+        visitor_b = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='test',
+            username=visitor_a['visitor_uuid'],
+        )
+        token = encode_portal_chat_image_token(
+            str(real_project.uuid),
+            'attachments/ticket/12/a.png',
+            session.session_uuid,
+            'abcd',
+            visitor_a['visitor_uuid'],
+        )
+        request = factory.get(f'/file/portal-chat-image/{real_project.uuid}/?token={token}')
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor_b['visitor_uuid'])
+
+        resp = PortalChatImageView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 403
 
 
 class TestPortalChatSessionsAnonymous:

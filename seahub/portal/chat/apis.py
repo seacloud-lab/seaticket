@@ -1,8 +1,9 @@
 import logging
 import time
+import mimetypes
 
 from django.core.cache import cache
-from django.http import StreamingHttpResponse
+from django.http import FileResponse, StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
@@ -23,15 +24,19 @@ from seahub.portal.chat.utils import (
     build_portal_message_result,
     check_anonymous_chat_rate_limit,
     check_external_chat_rate_limit,
+    decode_portal_chat_image_token,
     extract_portal_chat_image_urls,
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
     get_portal_external_username,
     get_project_portal_chat_credit_used,
+    is_portal_chat_proxy_image_file_path,
     mark_anonymous_chat_rate_limit,
     mark_external_chat_rate_limit,
+    normalize_portal_chat_image_file_path,
     process_portal_stream_ai_reply,
+    rewrite_portal_chat_image_urls,
 )
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import (
@@ -42,8 +47,10 @@ from seahub.chats.utils import (
     generate_portal_session_title,
 )
 from seahub.chats.constants import AI_REPLY_TIMEOUT
+from seahub.utils.storage import FileNotFound, get_project_file_from_s3, get_project_file_head_from_s3
 
 logger = logging.getLogger(__name__)
+
 
 def _get_session_or_error(session_uuid, username):
     session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
@@ -175,7 +182,18 @@ class PortalChatMessagesView(APIView):
 
         try:
             messages = PortalChatMessages.objects.get_messages_by_session(session_uuid)
-            messages_data = [message.to_dict() for message in messages]
+            messages_data = []
+            for message in messages:
+                message_data = message.to_dict()
+                if message_data.get('role') == 'assistant':
+                    message_data['content'] = rewrite_portal_chat_image_urls(
+                        project_uuid,
+                        message_data.get('content'),
+                        session_uuid,
+                        message_data.get('message_id'),
+                        request.identity['username'],
+                    )
+                messages_data.append(message_data)
             chat_task_info = cache.get(gen_portal_chat_task_id(session_uuid))
             results = {
                 'messages': messages_data,
@@ -215,7 +233,13 @@ class PortalChatView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, 'No messages found.')
 
             result = {
-                'ai_reply': last_message.content,
+                'ai_reply': rewrite_portal_chat_image_urls(
+                    project_uuid,
+                    last_message.content,
+                    session_uuid,
+                    last_message.message_id,
+                    request.identity['username'],
+                ),
                 'ai_reply_message_id': last_message.id,
                 'session_uuid': session_uuid,
             }
@@ -375,9 +399,11 @@ class PortalChatView(APIView):
                     process_portal_stream_ai_reply(
                         chat_task_id_info,
                         get_ai_reply(params),
+                        project_uuid,
                         current_session_uuid,
                         message_id,
                         query,
+                        username,
                         attachments,
                     ),
                     content_type='text/event-stream',
@@ -401,4 +427,59 @@ class PortalChatView(APIView):
 
         cache.delete(chat_task_id_info)
 
-        return Response(build_portal_message_result(ai_response, current_session_uuid, message_id, query, attachments))
+        return Response(build_portal_message_result(ai_response, project_uuid, current_session_uuid, message_id, query, username, attachments))
+
+
+class PortalChatImageView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalChatPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def get(self, request, project_uuid):
+        token = request.GET.get('token')
+        if not token:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'token is required.')
+
+        try:
+            payload = decode_portal_chat_image_token(token)
+        except Exception as e:
+            logger.warning(f'Invalid portal chat image token: {e}')
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        if payload.get('project_uuid') != str(project_uuid):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        username = request.identity['username']
+        if payload.get('username') != username:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        session_uuid = payload.get('session_uuid')
+        session, error = _get_session_or_error(session_uuid, username)
+        if error:
+            return error
+        if str(session.project_uuid) != str(project_uuid):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        file_path = normalize_portal_chat_image_file_path(payload.get('file_path'))
+        if not file_path or not is_portal_chat_proxy_image_file_path(file_path):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            get_project_file_head_from_s3(project_uuid, file_path)
+        except FileNotFound:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        try:
+            file = get_project_file_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        content_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+        response = FileResponse(file, content_type=content_type)
+        response['Cache-Control'] = 'private, max-age=300'
+        return response
