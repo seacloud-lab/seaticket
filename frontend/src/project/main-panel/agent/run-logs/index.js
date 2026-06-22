@@ -1,7 +1,8 @@
-import React, { useCallback, useState, useRef } from 'react';
-import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import React, { useCallback, useState } from 'react';
+import { Button } from 'reactstrap';
 import RunCard from './run-card';
-import { CenteredLoading, EmptyTip, ModalHeader } from '@/components';
+import SuggestionDetailPanel from './suggestion-detail-panel';
+import { CenteredLoading, EmptyTip } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -16,35 +17,35 @@ const RunLogs = ({
   onUpdateContent,
   enabledAgent,
 }) => {
-  const [viewContentModal, setViewContentModal] = useState(null);
-  const [editContent, setEditContent] = useState('');
+  const [contentPanel, setContentPanel] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const initialContentRef = useRef('');
 
-  const handleViewContent = useCallback((action, runId) => {
-    setViewContentModal({ action, runId });
-    const initialContent = action.suggestion_content || '';
-    initialContentRef.current = initialContent;
-    setEditContent(initialContent);
+  const handleViewContent = useCallback((action, runId, mode = 'view') => {
+    setContentPanel({
+      action,
+      runId,
+      mode,
+      title: action.result || gettext('Suggestion'),
+      content: action.suggestion_content || '',
+    });
   }, []);
 
-  const closeViewContentModal = useCallback(() => {
-    setViewContentModal(null);
-    setEditContent('');
+  const closeContentPanel = useCallback(() => {
+    setContentPanel(null);
   }, []);
 
-  const handleSaveContent = useCallback(() => {
-    if (!viewContentModal || !onUpdateContent) return;
-    const { action, runId } = viewContentModal;
+  const handleSaveContent = useCallback((value) => {
+    if (!contentPanel || !onUpdateContent) return;
+    const { action, runId } = contentPanel;
     setIsSaving(true);
-    onUpdateContent(runId, action.id, editContent)
+    onUpdateContent(runId, action.id, value)
       .then(() => {
-        closeViewContentModal();
+        closeContentPanel();
       })
       .finally(() => {
         setIsSaving(false);
       });
-  }, [viewContentModal, editContent, onUpdateContent, closeViewContentModal]);
+  }, [contentPanel, onUpdateContent, closeContentPanel]);
 
   if (isLoading && runLogs.length === 0) {
     return (
@@ -101,24 +102,16 @@ const RunLogs = ({
         </div>
       )}
 
-      <Modal isOpen={!!viewContentModal} toggle={closeViewContentModal} className="view-content-modal" size="lg">
-        <ModalHeader toggle={closeViewContentModal}>{gettext('Edit content')}</ModalHeader>
-        <ModalBody>
-          <textarea
-            className="view-content-textarea"
-            value={editContent}
-            onChange={e => setEditContent(e.target.value)}
-            placeholder={gettext('Edit content...')}
-            spellCheck={false}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={closeViewContentModal}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={handleSaveContent} disabled={isSaving || editContent === initialContentRef.current}>
-            {isSaving ? gettext('Saving...') : gettext('Save')}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      {contentPanel && (
+        <SuggestionDetailPanel
+          title={contentPanel.title}
+          content={contentPanel.content}
+          mode={contentPanel.mode}
+          isSaving={isSaving}
+          onSave={handleSaveContent}
+          onClose={closeContentPanel}
+        />
+      )}
     </div>
   );
 };

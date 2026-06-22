@@ -616,7 +616,7 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
         if not reply_content:
-            return self._failed_execution(f'Resolution content is empty for GitHub issue {ctx["record_id"]}.')
+            return self._failed_execution(f'Reply content is empty for GitHub issue {ctx["record_id"]}.')
 
         try:
             result = ctx['github_api'].add_comment(
@@ -664,7 +664,7 @@ class AgentActionConfirmView(APIView):
             logger.warning(f'Failed to insert comment into SeaDB GithubIssueCommentsTable: {e}')
 
         return self._successful_execution(
-            f'Resolution comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
+            f'Comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
         )
 
     @staticmethod

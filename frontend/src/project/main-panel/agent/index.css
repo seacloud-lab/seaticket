@@ -16,6 +16,7 @@
   background-color: #fff;
   width: 100%;
   align-self: stretch;
+  position: relative;
 }
 
 /* Agent settings wrapper */
