@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
+import classnames from 'classnames';
 import { CenteredLoading, IconButton } from '@/components';
 import Sessions from '@/project/main-panel/ask/sessions';
 import Chat from '@/project/main-panel/ask/chat';
@@ -7,6 +8,7 @@ import { gettext, siteRoot } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from '@/project/main-panel/ask/constants';
 import Documents from '@/project/main-panel/ask/documents';
 import { chatAPI } from '@/portal/api/chat-api';
+import { isMobile } from '@/utils/utils';
 
 import '@/project/main-panel/ask/index.css';
 
@@ -16,7 +18,7 @@ const {
 
 const Main = ({ title, settings }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
-  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, sessions } = useSessions();
+  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, closeShowSessions, sessions } = useSessions();
 
   const permission = 'rw';
 
@@ -69,6 +71,12 @@ const Main = ({ title, settings }) => {
               />
               <Documents />
             </div>
+            {isMobile && isShowSessions && (
+              <div
+                className={classnames('modal-backdrop fade show seaqa-portal-chat-sessions-backdrop', { 'edit-mode': isEditMode })}
+                onClick={closeShowSessions}
+              />
+            )}
             {isShowSessions && (<Sessions sessionId={pageSlugId} permission={permission} />)}
           </>
         )}

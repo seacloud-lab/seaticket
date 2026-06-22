@@ -297,13 +297,17 @@ body {
   .seaqa-portal-main-panel .seaqa-ai-ask-sessions-wrapper {
     position: absolute;
     right: 0px;
-    z-index: 1;
+    z-index: 1041;
+  }
+
+  .seaqa-portal-chat-sessions-backdrop {
+    z-index: 1040;
   }
 
   /* side panel */
   .seaqa-portal-side-panel {
     position: relative;
-    z-index: 1041;
+    z-index: 1042;
   }
 
   .seaqa-portal-side-panel-tabs {
