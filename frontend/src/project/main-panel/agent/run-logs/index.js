@@ -25,7 +25,7 @@ const RunLogs = ({
       action,
       runId,
       mode,
-      title: action.result || gettext('Suggestion'),
+      title: action.suggestion_text || action.result || '',
       content: action.suggestion_content || '',
     });
   }, []);
