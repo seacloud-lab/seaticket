@@ -257,33 +257,18 @@ class SMTPEmailSender(_EmailSenderBase):
         if not source_folder:
             raise EmailDeleteError(f'Cannot delete uid={uid}: source folder is missing')
 
-        if trash_folder:
-            # Check if source is writable before doing anything
-            status, _ = imap.select(source_folder, readonly=False)
-            if status != 'OK':
-                raise EmailDeleteError(f'Folder {source_folder} is read-only, cannot delete uid={uid}')
-            # COPY to trash, then delete original
-            dest = f'"{trash_folder}"'
-            status, _ = imap.uid('COPY', str(uid), dest)
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to copy uid={uid} from {source_folder} to {trash_folder}')
-            logger.info('Copied uid=%s from %s to %s', uid, source_folder, trash_folder)
-            status, _ = imap.uid('STORE', str(uid), '+FLAGS', '\\Deleted')
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to flag uid={uid} as deleted in {source_folder}')
-            status, _ = imap.expunge()
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to expunge uid={uid} from {source_folder}')
-        else:
-            status, _ = imap.select(source_folder, readonly=False)
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to select folder {source_folder} for uid={uid}')
-            status, _ = imap.uid('STORE', str(uid), '+FLAGS', '\\Deleted')
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to flag uid={uid} as deleted in {source_folder}')
-            status, _ = imap.expunge()
-            if status != 'OK':
-                raise EmailDeleteError(f'Failed to expunge uid={uid} from {source_folder}')
+        if not trash_folder:
+            raise EmailDeleteError(f'Trash folder not found, refusing to delete uid={uid}')
+
+        status, _ = imap.select(source_folder, readonly=False)
+        if status != 'OK':
+            raise EmailDeleteError(f'Folder {source_folder} is read-only, cannot delete uid={uid}')
+
+        dest = f'"{trash_folder}"'
+        status, _ = imap.uid('MOVE', str(uid), dest)
+        if status != 'OK':
+            raise EmailDeleteError(f'Failed to move uid={uid} from {source_folder} to {trash_folder}')
+        logger.info('Moved uid=%s from %s to %s', uid, source_folder, trash_folder)
 
     @staticmethod
     def _find_trash_folder(imap):
