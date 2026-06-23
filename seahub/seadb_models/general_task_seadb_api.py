@@ -1,7 +1,4 @@
 import logging
-import datetime
-
-from email.utils import formataddr
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import ConnectionType

@@ -8,6 +8,28 @@ from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
+_MORE_REPLIES_OMITTED_NOTICE = '[more replies omitted due to content limit]'
+
+
+def _truncate_content_with_ellipsis(content, max_length):
+    content = content or ''
+    if max_length <= 0:
+        return ''
+    if len(content) <= max_length:
+        return content
+    if max_length <= 3:
+        return '.' * max_length
+    return content[:max_length - 3] + '...'
+
+
+def _build_reply_notice(content):
+    return {
+        'author': None,
+        'content': content,
+        'post_number': None,
+        'modified_time': None,
+    }
+
 class DiscourseSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
         self.base_id = base_id
@@ -49,19 +71,64 @@ class DiscourseSeaDBAPI:
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
-    def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
+    def _get_first_topic_reply_by_id(self, connection_id, topic_id):
         table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
-        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
-        response = self.seadb_api.query_rows(self.base_id, sql)
-        replies = response.get('results', [])
-        result = {}
+        first_reply_sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id} ORDER BY `post_number` ASC LIMIT 1"
+        first_replies = self.seadb_api.query_rows(self.base_id, first_reply_sql).get('results', [])
+        return first_replies[0] if first_replies else None
+
+    def _get_latest_topic_replies_by_id(self, connection_id, topic_id, limit_for_each_id):
+        table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
+        latest_replies_sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id} ORDER BY `post_number` DESC LIMIT {limit_for_each_id}"
+        return self.seadb_api.query_rows(self.base_id, latest_replies_sql).get('results', [])
+
+    def _get_selected_topic_replies_for_attachment(self, connection_id, topic_id, limit_for_each_id):
+        first_reply = self._get_first_topic_reply_by_id(connection_id, topic_id)
+        if not first_reply:
+            return []
+
+        first_content = first_reply.get('content', '') or ''
+        if len(first_content) > ATTACHMENT_CONTENT_MAX_SIZE:
+            selected_replies = []
+            truncated_content = _truncate_content_with_ellipsis(first_content, ATTACHMENT_CONTENT_MAX_SIZE)
+            if truncated_content:
+                selected_replies.append({
+                    **first_reply,
+                    'content': truncated_content,
+                })
+            selected_replies.append(_build_reply_notice(_MORE_REPLIES_OMITTED_NOTICE))
+            return selected_replies
+
+        latest_replies = self._get_latest_topic_replies_by_id(connection_id, topic_id, limit_for_each_id)
+        replies_by_post_number = {
+            reply['post_number']: reply
+            for reply in latest_replies
+        }
+        replies_by_post_number[first_reply['post_number']] = first_reply
+        replies = [replies_by_post_number[post_number] for post_number in sorted(replies_by_post_number)]
+
+        selected_replies = []
+        total_content_size = 0
         for reply in replies:
-            topic_id = reply['topic_id']
-            if topic_id not in result:
-                result[topic_id] = [reply]
-            elif len(result[topic_id]) < limit_for_each_id:
-                result[topic_id].append(reply)
-        return result
+            content = reply.get('content', '') or ''
+            remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - total_content_size
+            if remaining_size <= 0:
+                break
+
+            if len(content) > remaining_size:
+                truncated_content = _truncate_content_with_ellipsis(content, remaining_size)
+                if truncated_content:
+                    selected_replies.append({
+                        **reply,
+                        'content': truncated_content,
+                    })
+                selected_replies.append(_build_reply_notice(_MORE_REPLIES_OMITTED_NOTICE))
+                break
+
+            selected_replies.append(reply)
+            total_content_size += len(content)
+
+        return selected_replies
 
     def get_whole_discourse_data(self, connection_ids_pks):
         """
@@ -106,9 +173,6 @@ class DiscourseSeaDBAPI:
         for connection_id, _pks in connection_ids_pks_map.items():
             topics = self.get_topics_by_pks(connection_id, _pks)
 
-            topic_ids_str = [str(topic['topic_id']) for topic in topics]
-            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, ATTACHMENT_ISSUE_MAX_COMMENTS)
-
             for topic_data in topics:
                 whole_topic_data = {
                     'type': ConnectionType.DISCOURSE_FORUM.value,
@@ -121,18 +185,13 @@ class DiscourseSeaDBAPI:
                     'replies': []
                 }
 
-                total_content_size = 0
-                for reply in topics_replies_map.get(topic_data['topic_id'], []):
-                    content = reply.get('content', '')
-                    total_content_size += len(content)
-
-                    # break if exceed maximum content size
-                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
-                        break
-
+                replies = self._get_selected_topic_replies_for_attachment(
+                    connection_id, topic_data['topic_id'], ATTACHMENT_ISSUE_MAX_COMMENTS,
+                )
+                for reply in replies:
                     whole_topic_data['replies'].append({
                         'author': reply.get('author'),
-                        'content': content,
+                        'content': reply.get('content', ''),
                         'post_number': reply.get('post_number'),
                         'modified_time': reply.get('modified_time')
                     })
