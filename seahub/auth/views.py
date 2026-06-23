@@ -250,6 +250,7 @@ def logout(request, next_page=None,
                 else:
                     response = HttpResponseRedirect('/saml/logout/')
                 response.delete_cookie('seahub_auth')
+                response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
                 return response
         except Exception as e:
             logger.warning(e)
@@ -264,6 +265,7 @@ def logout(request, next_page=None,
         response = HttpResponseRedirect(oauth_logout_url)
         response.delete_cookie('via_oauth')
         response.delete_cookie('seahub_auth')
+        response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
         return response
 
     # Local logout for cas user.
@@ -289,6 +291,7 @@ def logout(request, next_page=None,
         response = HttpResponseRedirect(next_page or request.path)
 
     response.delete_cookie('seahub_auth')
+    response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
     return response
 
 def logout_then_login(request, login_url=None):

@@ -31,7 +31,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import keyword_search, vector_search_with_text
 
 from seahub.seadb_models.models import SchemaTables
-from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_record_by_pk
+from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_connection_record_by_pk
 from seahub.project.constants import ConnectionType
 from seahub.constants import PERMISSION_READ
 from seahub.settings import SERVICE_URL
@@ -218,7 +218,7 @@ class RelatedProjectsView(APIView):
                 connection_type = project_connection.type
 
                 seadb_api = SeaDBAPI()
-                record, columns = get_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, record_id)
+                record, columns, linked_ticket_title = get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, record_id)
                 return Response({ 'projects': [
                     {
                         'uuid': project_uuid,
@@ -233,7 +233,8 @@ class RelatedProjectsView(APIView):
                             'record': record,
                             'columns': columns,
                             'connection_type': connection_type,
-                            'connection_id': connection_id
+                            'connection_id': connection_id,
+                            'linked_ticket_title': linked_ticket_title
                         }
                     }
                 ] }, status=status.HTTP_200_OK)
@@ -330,6 +331,7 @@ class RelatedProjectsView(APIView):
                 related_connection_id = None
                 record = {}
                 columns = []
+                linked_ticket_title = ''
                 for connection in connections:
                     connection_info = connection.to_dict()
                     config = connection_info.get('config')
@@ -351,7 +353,7 @@ class RelatedProjectsView(APIView):
                                     topic_id = int(topic_id_part_1)
                                 if topic_id_part_1 and not topic_id_part_1.isdecimal() and topic_id_part_2 and topic_id_part_2.isdecimal():
                                     topic_id = int(topic_id_part_2)
-                                record, columns = get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, topic_id)
+                                record, columns, linked_ticket_title = get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, topic_id)
                             except Exception as e:
                                 pass
                             flag = True
@@ -362,7 +364,7 @@ class RelatedProjectsView(APIView):
                             try:
                                 issue_number = webpage.rstrip('/').split('/')[-1]
                                 issue_number = int(issue_number)
-                                record, columns = get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, issue_number)
+                                record, columns, linked_ticket_title = get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, issue_number)
                             except Exception as e:
                                 pass
                             flag = True
@@ -380,7 +382,8 @@ class RelatedProjectsView(APIView):
                         'record': record,
                         'columns': columns,
                         'connection_type': related_connection_type,
-                        'connection_id': related_connection_id
+                        'connection_id': related_connection_id,
+                        'linked_ticket_title': linked_ticket_title,
                     }
                     related_projects.append(project)
 
