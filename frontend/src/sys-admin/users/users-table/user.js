@@ -21,6 +21,7 @@ const User = ({
   columns,
   hasFreezed,
   user,
+  showOrganization = true,
   updateFreezed,
   onDelete,
   onResetPassword,
@@ -157,7 +158,7 @@ const User = ({
                     {user.contact_email}
                   </>
                 )}
-                {user.org_id &&
+                {showOrganization && user.org_id &&
                   <>
                     <br />
                     <Link to={`${siteRoot}sys/organizations/${user.org_id}/info/`}>({user.org_name})</Link>

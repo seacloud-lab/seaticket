@@ -25,8 +25,9 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
         <OrgNav currentItem="admin-users" orgID={orgID} />
         <UsersTable
           ref={usersTableRef}
+          showOrganization={false}
           columns={[
-            { key: 'name', width: 0.3, name: `${gettext('Name')} / ${gettext('Contact email')}` },
+            { key: 'name-', width: 0.3, name: `${gettext('Name')} / ${gettext('Contact email')}` },
             { key: 'active', width: 0.3, name: gettext('Status') },
             { key: 'placeholder', width: 0.1 },
             { key: 'create_login', width: 0.3, name: `${gettext('Created at')} / ${gettext('Last login')}`, isLinebreak: false },
@@ -45,4 +46,3 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
 };
 
 export default OrgUsers;
-
