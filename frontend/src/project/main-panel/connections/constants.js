@@ -590,6 +590,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   OTHERS: 'others',
   ISSUE_ID: 'issue_id',
   IDENTIFIER: 'identifier',
+  DUE_DATE: 'due_date',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {

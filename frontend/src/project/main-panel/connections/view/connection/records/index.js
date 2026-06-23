@@ -577,7 +577,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         expandRow={handleExpandRow}
         cascadeUpdateCells={connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? cascadeUpdate : () => {}}
         t={t}
-        notDisplayColumns={[CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED]}
+        notDisplayColumns={[
+          CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED,
+          CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE,
+          CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
+        ]}
         generatorRowClassName={(row) => generatorRowClassName(row, allColumns.current)}
         settings={{ canClearCells: false, canPasteCells: false, canDragFillCells: false }}
       />
