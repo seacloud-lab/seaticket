@@ -1,6 +1,5 @@
 import re
 import logging
-import ipaddress
 import dns.resolver
 from urllib.parse import urlsplit
 
@@ -12,10 +11,24 @@ logger = logging.getLogger(__name__)
 HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
 CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
 CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
-DEFAULT_TLS_ASK_ALLOWED_IPS = ('127.0.0.1', '::1')
+DEFAULT_PORTAL_RESERVED_SUBDOMAIN_PREFIXES = (
+    'admin',
+    'api',
+    'assets',
+    'auth',
+    'cdn',
+    'custom-domains',
+    'internal',
+    'mail',
+    'media',
+    'static',
+    'status',
+    'support',
+    'www',
+)
 
 
-def normalize_portal_custom_domain(domain):
+def normalize_portal_custom_domain(domain, check_reserved=True):
     domain = (domain or '').strip().lower()
     if not domain:
         return ''
@@ -56,10 +69,103 @@ def normalize_portal_custom_domain(domain):
     if service_host:
         reserved_domains.add(service_host.lower())
 
-    if domain in reserved_domains:
-        raise ValueError('This domain is reserved.')
+    portal_root_domain = (getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '') or '').strip().lower().rstrip('.')
+    if portal_root_domain:
+        try:
+            portal_root_domain = portal_root_domain.encode('idna').decode('ascii')
+        except Exception:
+            portal_root_domain = ''
+
+    if check_reserved:
+        if domain in reserved_domains:
+            raise ValueError('This domain is reserved.')
+        if portal_root_domain and (domain == portal_root_domain or domain.endswith('.%s' % portal_root_domain)):
+            raise ValueError('This domain is reserved.')
 
     return domain
+
+
+def normalize_portal_subdomain_prefix(prefix):
+    prefix = (prefix or '').strip().lower()
+    if not prefix:
+        return ''
+
+    try:
+        prefix = prefix.encode('idna').decode('ascii')
+    except Exception as error:
+        raise ValueError('Portal subdomain is invalid.') from error
+
+    if not HOST_LABEL_RE.match(prefix):
+        raise ValueError('Portal subdomain is invalid.')
+
+    return prefix
+
+
+def _get_setting_list(name, default=()):
+    value = getattr(settings, name, default)
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(',')]
+    return list(value or [])
+
+
+def get_portal_reserved_subdomain_prefixes():
+    reserved_prefixes = set()
+    for prefix in _get_setting_list('PORTAL_RESERVED_SUBDOMAIN_PREFIXES', DEFAULT_PORTAL_RESERVED_SUBDOMAIN_PREFIXES):
+        if not prefix:
+            continue
+        try:
+            reserved_prefixes.add(normalize_portal_subdomain_prefix(prefix))
+        except ValueError:
+            logger.warning('Invalid portal reserved subdomain prefix: %s', prefix)
+
+    dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
+    try:
+        target_prefix = get_portal_subdomain_prefix(dns_target)
+    except ValueError:
+        target_prefix = ''
+    if target_prefix:
+        reserved_prefixes.add(target_prefix)
+
+    return reserved_prefixes
+
+
+def is_portal_subdomain_prefix_reserved(prefix):
+    normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+    return normalized_prefix in get_portal_reserved_subdomain_prefixes()
+
+
+def validate_portal_subdomain_prefix_available(prefix):
+    normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+    if is_portal_subdomain_prefix_reserved(normalized_prefix):
+        raise ValueError('Portal subdomain is reserved.')
+    return normalized_prefix
+
+
+def get_portal_service_root_domain():
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+    return normalize_portal_custom_domain(root_domain, check_reserved=False) if root_domain else ''
+
+
+def build_portal_service_domain(prefix):
+    prefix = normalize_portal_subdomain_prefix(prefix)
+    root_domain = get_portal_service_root_domain()
+    if not root_domain:
+        return ''
+    return '%s.%s' % (prefix, root_domain)
+
+
+def get_portal_subdomain_prefix(host):
+    host = normalize_portal_custom_domain(host, check_reserved=False)
+    root_domain = get_portal_service_root_domain()
+    if not host or not root_domain:
+        return ''
+    suffix = '.%s' % root_domain
+    if not host.endswith(suffix):
+        return ''
+    prefix = host[:-len(suffix)]
+    if '.' in prefix:
+        return ''
+    return normalize_portal_subdomain_prefix(prefix)
 
 
 def get_request_host_without_port(request):
@@ -101,34 +207,15 @@ def verify_portal_custom_domain_dns(domain, verification_token):
     return expected_value in query_dns_txt_values(record_name)
 
 
-def is_portal_custom_domain_tls_ask_allowed_source(request):
-    remote_addr = (request.META.get('REMOTE_ADDR') or '').strip()
-    if not remote_addr:
-        return False
-
-    try:
-        remote_ip = ipaddress.ip_address(remote_addr)
-    except ValueError:
-        return False
-
-    allowed_entries = list(DEFAULT_TLS_ASK_ALLOWED_IPS)
-    allowed_entries.extend(getattr(settings, 'PORTAL_CUSTOM_DOMAIN_TLS_ASK_ALLOWED_IPS', []))
-
-    for entry in allowed_entries:
-        entry = (entry or '').strip()
-        if not entry:
-            continue
-        try:
-            if remote_ip in ipaddress.ip_network(entry, strict=False):
-                return True
-        except ValueError:
-            logger.warning('Invalid portal custom-domain TLS ask allowed IP entry: %s', entry)
-
-    return False
-
-
 def is_request_using_portal_custom_domain(request, project_uuid=None):
     binding = getattr(request, 'portal_custom_domain', None)
+    if project_uuid is None:
+        return bool(binding)
+    return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))
+
+
+def is_request_using_portal_domain(request, project_uuid=None):
+    binding = getattr(request, 'portal_domain', None)
     if project_uuid is None:
         return bool(binding)
     return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))

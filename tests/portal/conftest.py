@@ -23,6 +23,14 @@ class SessionAPIRequestFactory(APIRequestFactory):
         request = super().post(*args, **kwargs)
         return self._with_session(request)
 
+    def put(self, *args, **kwargs):
+        request = super().put(*args, **kwargs)
+        return self._with_session(request)
+
+    def delete(self, *args, **kwargs):
+        request = super().delete(*args, **kwargs)
+        return self._with_session(request)
+
 @pytest.fixture
 def factory():
     return SessionAPIRequestFactory()

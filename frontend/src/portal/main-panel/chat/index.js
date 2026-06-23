@@ -14,7 +14,7 @@ import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 import '@/project/main-panel/ask/index.css';
 
 const {
-  projectUuid, projectName, workspaceID, streamingResponse
+  projectUuid, projectName, workspaceID, streamingResponse, isEditMode
 } = window.app.pageOptions;
 
 const Main = ({ title, settings }) => {

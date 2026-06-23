@@ -722,6 +722,20 @@ CREATE TABLE `portal_custom_domains` (
   UNIQUE KEY `portal_custom_domains_project_uuid_uniq` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `portal_domain_aliases` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `prefix` varchar(63) NOT NULL,
+  `project_uuid` char(36) NOT NULL,
+  `alias_type` varchar(32) NOT NULL DEFAULT 'custom',
+  `enabled` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `portal_domain_aliases_prefix_uniq` (`prefix`),
+  UNIQUE KEY `portal_domain_aliases_project_type_uniq` (`project_uuid`, `alias_type`),
+  KEY `portal_domain_aliases_project_uuid_idx` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `portal_chat_sessions` (
   `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` VARCHAR(36) NOT NULL,

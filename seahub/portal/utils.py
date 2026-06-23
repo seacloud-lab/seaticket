@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.core.cache import cache
+from django.core import signing
+from django.core.signing import BadSignature, SignatureExpired
 
 from rest_framework import status
 
@@ -8,7 +10,7 @@ from seahub.organizations.models import OrgUser
 from seahub.profile.models import Profile
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
-from seahub.project.utils import check_same_org_permission
+from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.portal.chat.utils import get_portal_external_username
 from seahub.portal.visitor_session import (
     clear_visitor_cookie,
@@ -16,7 +18,7 @@ from seahub.portal.visitor_session import (
     set_visitor_cookie,
     touch_visitor_session,
 )
-from seahub.portal.custom_domain import is_request_using_portal_custom_domain
+from seahub.portal.custom_domain import is_request_using_portal_domain
 
 
 
@@ -24,6 +26,71 @@ PORTAL_EXTERNAL_LOGIN_CODE_TTL = 10 * 60
 PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN = 60
 PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT = 5
 PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL = 15 * 60
+PORTAL_PREVIEW_TOKEN_SALT = 'seahub.portal.preview'
+PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
+PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
+PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
+
+
+def make_portal_preview_token(project_uuid, username):
+    return signing.dumps({
+        'project_uuid': str(project_uuid),
+        'username': username,
+    }, salt=PORTAL_PREVIEW_TOKEN_SALT)
+
+
+def load_portal_preview_token(token):
+    try:
+        payload = signing.loads(
+            token,
+            salt=PORTAL_PREVIEW_TOKEN_SALT,
+            max_age=PORTAL_PREVIEW_TOKEN_TTL,
+        )
+    except (BadSignature, SignatureExpired, TypeError, ValueError):
+        return None
+
+    project_uuid = str(payload.get('project_uuid') or '')
+    username = payload.get('username') or ''
+    if not project_uuid or not username:
+        return None
+    return {
+        'project_uuid': project_uuid,
+        'username': username,
+    }
+
+
+def set_portal_preview_session(request, project_uuid, username):
+    request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] = str(project_uuid)
+    request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = username
+
+
+def get_request_session(request):
+    session = getattr(request, 'session', None)
+    if session is not None:
+        return session
+
+    django_request = getattr(request, '_request', None)
+    return getattr(django_request, 'session', None)
+
+
+def get_portal_preview_username(request, project_uuid):
+    session = get_request_session(request)
+    if session is None:
+        return ''
+
+    preview_project_uuid = session.get(PORTAL_PREVIEW_SESSION_PROJECT_KEY)
+    preview_username = session.get(PORTAL_PREVIEW_SESSION_USERNAME_KEY)
+    if not preview_project_uuid or not preview_username:
+        return ''
+    if str(preview_project_uuid) != str(project_uuid):
+        return ''
+
+    project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return ''
+    if not check_project_admin_permission(preview_username, project.workspace.owner):
+        return ''
+    return preview_username
 
 
 def normalize_external_login_email(email):
@@ -117,6 +184,14 @@ def _get_request_identity(request, project_uuid):
                 'is_anonymous': False,
             }, None
 
+    preview_username = get_portal_preview_username(request, project_uuid)
+    if preview_username:
+        return {
+            'username': preview_username,
+            'is_external_user': False,
+            'is_anonymous': False,
+        }, None
+
     external_username = get_portal_external_username(request, project_uuid)
     if external_username:
         return {
@@ -159,7 +234,7 @@ def finalize_visitor_session_response(response, identity):
 
 def portal_path(request, project_uuid, *segments, is_edit_mode=False):
     suffix = '/'.join(str(segment).strip('/') for segment in segments)
-    if not is_edit_mode and is_request_using_portal_custom_domain(request, project_uuid):
+    if not is_edit_mode and is_request_using_portal_domain(request, project_uuid):
         return '/%s/' % suffix if suffix else '/'
 
     prefix = 'portal-edit' if is_edit_mode else 'portal'

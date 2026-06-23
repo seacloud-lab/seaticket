@@ -50,8 +50,15 @@ const Settings = () => {
   const [customDomainDnsTarget, setCustomDomainDnsTarget] = useState('');
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
   const [isSavingCustomDomain, setIsSavingCustomDomain] = useState(false);
+  const [domainAliasRoot, setDomainAliasRoot] = useState('');
+  const [defaultDomainPublicUrl, setDefaultDomainPublicUrl] = useState('');
+  const [customSubdomainPrefix, setCustomSubdomainPrefix] = useState('');
+  const [savedCustomSubdomainPrefix, setSavedCustomSubdomainPrefix] = useState('');
+  const [customSubdomainPublicUrl, setCustomSubdomainPublicUrl] = useState('');
+  const [isSavingDomainAlias, setIsSavingDomainAlias] = useState(false);
+  const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
-  const portalUrl = getDefaultPortalPublicUrl();
+  const portalUrl = customSubdomainPublicUrl || defaultDomainPublicUrl || getDefaultPortalPublicUrl();
 
   const customDomainUrl = useMemo(() => {
     if (!savedCustomDomain || !customDomainVerified || customDomain !== savedCustomDomain) {
@@ -83,6 +90,14 @@ const Settings = () => {
     setCustomDomainDnsTarget(data.custom_domain_dns_target || '');
   }, []);
 
+  const applyLoadedDomainAlias = useCallback((data = {}) => {
+    setDomainAliasRoot(data.portal_service_root_domain || '');
+    setDefaultDomainPublicUrl(data.default_public_url || '');
+    setCustomSubdomainPrefix(data.custom_subdomain_prefix || '');
+    setSavedCustomSubdomainPrefix(data.custom_subdomain_prefix || '');
+    setCustomSubdomainPublicUrl(data.custom_public_url || '');
+  }, []);
+
   useEffect(() => {
     portalAPI.getSettings(projectUuid).then(res => {
       applyLoadedSettings(res.data || {});
@@ -100,6 +115,14 @@ const Settings = () => {
       applyLoadedCustomDomain({});
     });
   }, [applyLoadedCustomDomain]);
+
+  useEffect(() => {
+    portalAPI.getDomainAlias(projectUuid).then(res => {
+      applyLoadedDomainAlias(res.data || {});
+    }).catch(() => {
+      applyLoadedDomainAlias({});
+    });
+  }, [applyLoadedDomainAlias]);
 
   useEffect(() => {
     setIsConnectionsLoading(true);
@@ -150,6 +173,21 @@ const Settings = () => {
     toaster.success(gettext('Copied'), { duration: 2, hasCloseButton: false });
   }, []);
 
+  const onOpenPortalPreview = useCallback(() => {
+    if (isOpeningPortalPreview) return;
+    setIsOpeningPortalPreview(true);
+    portalAPI.createPreviewToken(projectUuid).then(res => {
+      const previewUrl = res.data && res.data.preview_url;
+      if (previewUrl) {
+        window.open(previewUrl, '_blank', 'noopener,noreferrer');
+      }
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsOpeningPortalPreview(false);
+    });
+  }, [isOpeningPortalPreview]);
+
   const toggle = useCallback((tab) => {
     if (activeTab !== tab) {
       setActiveTab(tab);
@@ -192,6 +230,10 @@ const Settings = () => {
     setCustomDomain(event.target.value.trim().toLowerCase());
   }, []);
 
+  const onCustomSubdomainPrefixChange = useCallback((event) => {
+    setCustomSubdomainPrefix(event.target.value.trim().toLowerCase());
+  }, []);
+
   const onVerifyCustomDomain = useCallback(() => {
     if (!savedCustomDomain || customDomain !== savedCustomDomain || isVerifyingCustomDomain) {
       return;
@@ -227,6 +269,24 @@ const Settings = () => {
       setIsSavingCustomDomain(false);
     });
   }, [customDomain, isSavingCustomDomain, applyLoadedCustomDomain]);
+
+  const onSaveDomainAlias = useCallback(() => {
+    if (isSavingDomainAlias) return;
+
+    setIsSavingDomainAlias(true);
+    portalAPI.updateDomainAlias(projectUuid, {
+      custom_subdomain_prefix: customSubdomainPrefix,
+    }).then(() => {
+      return portalAPI.getDomainAlias(projectUuid);
+    }).then(res => {
+      applyLoadedDomainAlias(res.data || {});
+      toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsSavingDomainAlias(false);
+    });
+  }, [customSubdomainPrefix, isSavingDomainAlias, applyLoadedDomainAlias]);
 
   const onSaveSettings = useCallback(() => {
     const needPwd = allowAnonymous && enablePassword;
@@ -289,6 +349,8 @@ const Settings = () => {
   const hasUnsavedCustomDomain = customDomain !== savedCustomDomain;
   const canVerifyCustomDomain = !!savedCustomDomain && !hasUnsavedCustomDomain && !customDomainVerified && !isVerifyingCustomDomain;
   const canSaveCustomDomain = hasUnsavedCustomDomain && !isSavingCustomDomain;
+  const hasUnsavedDomainAlias = customSubdomainPrefix !== savedCustomSubdomainPrefix;
+  const canSaveDomainAlias = !!domainAliasRoot && hasUnsavedDomainAlias && !isSavingDomainAlias;
 
   return (
     <>
@@ -322,6 +384,14 @@ const Settings = () => {
               />
               <Button color="outline-primary" onClick={() => onCopyUrl(portalUrl)} title={gettext('Copy URL')}>
                 <Icon symbol="copy" />
+              </Button>
+              <Button
+                color="outline-primary"
+                onClick={onOpenPortalPreview}
+                disabled={isOpeningPortalPreview}
+                title={gettext('Open preview')}
+              >
+                <Icon symbol="open-in-new-tab" />
               </Button>
             </div>
             <div className="mt-4">
@@ -399,6 +469,62 @@ const Settings = () => {
         </TabPane>
         <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
           <div className="portal-settings-content">
+            {(domainAliasRoot || defaultDomainPublicUrl) && (
+              <>
+                <label className="portal-settings-label">{gettext('Default portal domain')}</label>
+                <div className="portal-url-container">
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={defaultDomainPublicUrl}
+                    readOnly
+                  />
+                  <Button color="outline-primary" onClick={() => onCopyUrl(defaultDomainPublicUrl)} title={gettext('Copy URL')}>
+                    <Icon symbol="copy" />
+                  </Button>
+                </div>
+                <label className="portal-settings-label mt-3">{gettext('Custom subdomain')}</label>
+                <div className="portal-url-container">
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={customSubdomainPrefix}
+                    onChange={onCustomSubdomainPrefixChange}
+                    placeholder={gettext('my-brand')}
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={domainAliasRoot ? `.${domainAliasRoot}` : ''}
+                    readOnly
+                  />
+                </div>
+                <div className="mt-3">
+                  <Button color="primary" size="sm" onClick={onSaveDomainAlias} disabled={!canSaveDomainAlias}>
+                    {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
+                  </Button>
+                </div>
+                {customSubdomainPublicUrl && (
+                  <>
+                    <label className="portal-settings-label mt-3">{gettext('Custom subdomain URL')}</label>
+                    <div className="portal-url-container">
+                      <input
+                        type="text"
+                        className="form-control portal-url-input"
+                        value={customSubdomainPublicUrl}
+                        readOnly
+                      />
+                      <Button color="outline-primary" onClick={() => onCopyUrl(customSubdomainPublicUrl)} title={gettext('Copy URL')}>
+                        <Icon symbol="copy" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+                <hr />
+              </>
+            )}
             <label className="portal-settings-label">{gettext('Custom domain')}</label>
             <input
               type="text"

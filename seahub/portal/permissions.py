@@ -5,6 +5,7 @@ from rest_framework.permissions import BasePermission
 from seahub.project.models import Projects
 from seahub.project.utils import check_same_org_permission
 from seahub.portal.models import ProjectExternalUser
+from seahub.portal.utils import get_portal_preview_username, get_request_session
 
 
 
@@ -25,8 +26,12 @@ def _get_project_and_settings(request, view):
 
 
 def _is_external_member(request, project_uuid):
-    ext_username = request.session.get('portal_external_username')
-    ext_project_uuid = request.session.get('portal_external_project_uuid')
+    session = get_request_session(request)
+    if session is None:
+        return False
+
+    ext_username = session.get('portal_external_username')
+    ext_project_uuid = session.get('portal_external_project_uuid')
     if ext_username and ext_project_uuid and ext_project_uuid == project_uuid and \
             ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).exists():
         if getattr(request, 'user', None):
@@ -35,9 +40,22 @@ def _is_external_member(request, project_uuid):
     return False
 
 
+def _is_portal_preview_user(request, project_uuid):
+    preview_username = get_portal_preview_username(request, project_uuid)
+    if not preview_username:
+        return False
+    if getattr(request, 'user', None):
+        request.user.username = preview_username
+    return True
+
+
 def _is_portal_password_verified(request, project_uuid, portal_settings):
+    session = get_request_session(request)
+    if session is None:
+        return False
+
     encoded_password = portal_settings.get('password')
-    verified_token = request.session.get(f'portal_verified_token_{project_uuid}')
+    verified_token = session.get(f'portal_verified_token_{project_uuid}')
     return bool(verified_token and encoded_password and verified_token == encoded_password)
 
 
@@ -51,6 +69,9 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not enable_portal:
             return False
             
+        if _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_external_member(request, project_uuid):
             return True
 
@@ -107,6 +128,9 @@ class PortalIssuePermission(BasePermission):
         if not enable_portal:
             return False
 
+        if _is_portal_preview_user(request, project_uuid):
+            return True
+
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):
             if check_same_org_permission(user, project.workspace):
@@ -127,6 +151,9 @@ class PortalChatPermission(BasePermission):
         enable_portal = portal_settings.get('enable_portal', False)
         if not enable_portal:
             return False
+
+        if _is_portal_preview_user(request, project_uuid):
+            return True
 
         user = getattr(request, 'user', None)
         if user and getattr(user, 'is_authenticated', False):

@@ -12,7 +12,13 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import is_request_using_portal_custom_domain, portal_path
+from seahub.portal.utils import (
+    get_portal_preview_username,
+    load_portal_preview_token,
+    portal_path,
+    set_portal_preview_session,
+)
+from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -81,6 +87,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         return render_error(request, _('Portal is not enabled'))
 
     ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
+    preview_username = get_portal_preview_username(request, project_uuid)
     is_authenticated_user = bool(getattr(request, 'user', None) and request.user.is_authenticated)
 
     same_org = False
@@ -90,20 +97,21 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         except Exception:
             same_org = False
 
-    has_ticket_access = ext_is_valid or same_org
-    is_logged_in = is_authenticated_user or ext_is_valid
+    has_ticket_access = bool(preview_username) or ext_is_valid or same_org
+    is_logged_in = bool(preview_username) or is_authenticated_user or ext_is_valid
     # Treat invited users from other orgs as external portal users even when
     # they also have a normal site login in the current browser.
     is_external_user = bool(ext_is_valid and not same_org)
 
-    if not allow_anonymous:
-        if not is_logged_in or (not same_org and not ext_is_valid):
-            return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
+    if not allow_anonymous and not has_ticket_access:
+        return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
 
     is_anonymous = allow_anonymous and (not has_ticket_access)
 
     if has_ticket_access:
-        if is_external_user:
+        if preview_username:
+            username = preview_username
+        elif is_external_user:
             username = ext_username
         elif is_authenticated_user:
             username = request.user.username
@@ -130,10 +138,10 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
-        'is_portal_custom_domain': is_request_using_portal_custom_domain(request, project_uuid),
+        'is_portal_custom_domain': is_request_using_portal_domain(request, project_uuid),
         'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
-    if not is_logged_in or (not same_org and not ext_is_valid):
+    if not has_ticket_access:
         need_password = False
         if enable_password_protection and allow_anonymous:
             encoded_password = portal_settings.get('password')
@@ -157,6 +165,22 @@ def portal_login_view(request, project_uuid):
         return render_error(request, _('This project does not exist'))
     portal_settings = _get_portal_settings(project)
     return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
+
+
+def portal_preview_view(request, token):
+    payload = load_portal_preview_token(token)
+    if not payload:
+        return render_error(request, _('Preview link is invalid or expired.'))
+
+    project_uuid = payload['project_uuid']
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('This project does not exist'))
+    if not check_project_admin_permission(payload['username'], project.workspace.owner):
+        return render_error(request, _('Permission denied'))
+
+    set_portal_preview_session(request, project_uuid, payload['username'])
+    return redirect(portal_path(request, project_uuid))
 
 
 def portal_external_logout_view(request, project_uuid):
@@ -211,7 +235,7 @@ def portal_anonymous_validate(request, project_uuid):
                 'portal_logo': portal_settings.get('portal_logo', ''),
             },
             'need_password': True,
-            'is_portal_custom_domain': is_request_using_portal_custom_domain(request, project_uuid),
+            'is_portal_custom_domain': is_request_using_portal_domain(request, project_uuid),
             'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
         }
         return render(request, 'portal_view_react.html', return_dict)

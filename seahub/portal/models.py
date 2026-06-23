@@ -4,6 +4,7 @@ import random
 import copy
 from types import SimpleNamespace
 from secrets import token_hex
+from django.conf import settings
 from django.db import models
 from django.core.cache import cache
 from django.utils import timezone
@@ -14,7 +15,8 @@ from copy import deepcopy
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, get_service_url, uuid_str_to_32_chars
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
-    normalize_portal_custom_domain
+    build_portal_service_domain, get_portal_subdomain_prefix, normalize_portal_custom_domain, \
+    normalize_portal_subdomain_prefix, is_portal_subdomain_prefix_reserved
 import logging
 
 from seahub.seadb_models.models import SchemaTables
@@ -23,6 +25,11 @@ logger = logging.getLogger(__name__)
 
 PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT = 300
 PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = ('domain', 'project_uuid', 'verified')
+PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT = 300
+PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid', 'alias_type', 'enabled')
+PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT = 'default'
+PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM = 'custom'
+PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH = 6
 
 
 def generate_random_string_lower_digits(length):
@@ -106,6 +113,116 @@ class ProjectExternalUser(models.Model):
     class Meta:
         unique_together = (('email', 'project_uuid'),)
         db_table = 'project_external_users'
+
+
+class PortalDomainAliasManager(models.Manager):
+
+    def _prefix_cache_key(self, prefix):
+        normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+        return 'portal_domain_alias:prefix:%s' % normalized_prefix
+
+    def get_by_prefix(self, prefix):
+        try:
+            normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+        except ValueError:
+            return None
+        prefix_cache_key = self._prefix_cache_key(normalized_prefix)
+        cached_value = cache.get(prefix_cache_key)
+        if isinstance(cached_value, dict):
+            return SimpleNamespace(**cached_value)
+
+        alias = super().filter(prefix=normalized_prefix).values(*PORTAL_DOMAIN_ALIAS_CACHE_FIELDS).first()
+        if not alias:
+            return None
+        cache.set(prefix_cache_key, alias, PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT)
+        return SimpleNamespace(**alias)
+
+    def get_by_host(self, host):
+        try:
+            prefix = get_portal_subdomain_prefix(host)
+        except ValueError:
+            return None
+        if not prefix:
+            return None
+        return self.get_by_prefix(prefix)
+
+    def generate_unique_prefix(self, length=PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH):
+        while True:
+            prefix = generate_random_string_lower_digits(length)
+            if is_portal_subdomain_prefix_reserved(prefix):
+                continue
+            if not super().filter(prefix=prefix).exists():
+                return prefix
+
+    def ensure_default_alias(self, project_uuid):
+        alias = super().filter(
+            project_uuid=str(project_uuid),
+            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+        ).first()
+        if alias:
+            return alias
+
+        try:
+            prefix_length = int(getattr(settings, 'PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH', PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH))
+        except (TypeError, ValueError):
+            prefix_length = PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH
+        alias = self.model(
+            project_uuid=str(project_uuid),
+            prefix=self.generate_unique_prefix(prefix_length),
+            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+            enabled=True,
+        )
+        alias.save(using=self._db)
+        return alias
+
+    def delete_custom_alias(self, project_uuid):
+        alias = super().filter(
+            project_uuid=str(project_uuid),
+            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
+        ).first()
+        if not alias:
+            return
+        alias.delete()
+
+
+class PortalDomainAlias(models.Model):
+    prefix = models.CharField(max_length=63, unique=True)
+    project_uuid = models.CharField(max_length=36, db_index=True)
+    alias_type = models.CharField(max_length=32, default=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM)
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = PortalDomainAliasManager()
+
+    class Meta:
+        db_table = 'portal_domain_aliases'
+        unique_together = (('project_uuid', 'alias_type'),)
+
+    def save(self, *args, **kwargs):
+        old_prefix = None
+        if self.pk:
+            old_config = PortalDomainAlias.objects.filter(pk=self.pk).values('prefix').first()
+            if old_config:
+                old_prefix = old_config.get('prefix')
+
+        self.prefix = normalize_portal_subdomain_prefix(self.prefix)
+        self.project_uuid = str(self.project_uuid)
+        result = super().save(*args, **kwargs)
+        cache.delete(PortalDomainAlias.objects._prefix_cache_key(self.prefix))
+        if old_prefix and old_prefix != self.prefix:
+            cache.delete(PortalDomainAlias.objects._prefix_cache_key(old_prefix))
+        return result
+
+    def delete(self, *args, **kwargs):
+        prefix = self.prefix
+        result = super().delete(*args, **kwargs)
+        cache.delete(PortalDomainAlias.objects._prefix_cache_key(prefix))
+        return result
+
+    @property
+    def domain(self):
+        return build_portal_service_domain(self.prefix)
 
 
 class PortalCustomDomainManager(models.Manager):
