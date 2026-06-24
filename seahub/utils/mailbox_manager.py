@@ -317,19 +317,16 @@ class ImapMailboxManager(BaseMailboxManager):
 
 
 class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
-    """Base class for OAuth-based mailbox managers (Gmail, Microsoft).
+    """Base class for OAuth-based mailbox managers (Gmail, Microsoft)."""
 
-    Junk/spam moving is not implemented for OAuth providers yet; only
-    trash (delete) is supported.
-    """
+    # Human-readable target folder label, used only in the return payload.
+    _TRASH_LABEL = ''
+    _JUNK_LABEL = ''
 
     def __init__(self, config):
         super().__init__(config)
         if not self._has_complete_oauth_config():
             raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')
-
-    def move_to_junk(self, message_ids):
-        raise MailboxOperationError('Moving to junk is not supported for this provider yet.')
 
     def _auth_headers(self, extra=None):
         headers = {'Authorization': f'Bearer {self.access_token}'}
@@ -337,49 +334,90 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
             headers.update(extra)
         return headers
 
+    def _find_provider_message_id(self, message_id):
+        """Resolve an RFC Message-ID header to the provider's internal message
+        id, or ``None`` when no matching message is found."""
+        raise NotImplementedError
 
-class GmailMailboxManager(OAuthMailboxManager):
-    """Gmail API mailbox manager."""
+    def _do_move_to_trash(self, provider_message_id):
+        """Move the resolved provider message to the trash/deleted folder."""
+        raise NotImplementedError
 
-    SEARCH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
-    TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
+    def _do_move_to_junk(self, provider_message_id):
+        """Move the resolved provider message to the junk/spam folder."""
+        raise NotImplementedError
 
-    def move_to_trash(self, message_ids):
+    def _process_messages(self, message_ids, action, target_folder, op_name):
         normalized_message_ids = self._normalize_message_ids(message_ids)
         if not normalized_message_ids:
-            return {'moved_count': 0, 'target_folder': 'TRASH'}
+            return {'moved_count': 0, 'target_folder': target_folder, 'config_updated': self.config_updated}
 
         try:
             self._request_access_token()
 
             moved_count = 0
             for message_id in normalized_message_ids:
-                # Escape quotes for Gmail search query syntax.
-                safe_message_id = message_id.replace('"', '\\"')
-                search_resp = requests.get(
-                    self.SEARCH_ENDPOINT,
-                    params={'q': f'rfc822msgid:"{safe_message_id}"'},
-                    headers=self._auth_headers(),
-                )
-                _check_and_raise_error(search_resp)
-                messages = search_resp.json().get('messages', [])
-                if not messages:
+                provider_message_id = self._find_provider_message_id(message_id)
+                if not provider_message_id:
+                    # Already gone from the server — skip silently.
                     continue
-
-                gmail_id = messages[0]['id']
-                trash_resp = requests.post(
-                    self.TRASH_ENDPOINT.format(gmail_id=gmail_id),
-                    headers=self._auth_headers(),
-                )
-                _check_and_raise_error(trash_resp)
+                action(provider_message_id)
                 moved_count += 1
 
-            return {'moved_count': moved_count, 'target_folder': 'TRASH'}
+            return {'moved_count': moved_count, 'target_folder': target_folder, 'config_updated': self.config_updated}
         except (MailboxConfigError, MailboxOperationError, EmailAuthProviderError):
             raise
         except Exception as e:
-            logger.exception('Failed to move emails to trash via Gmail API: %s', e)
-            raise MailboxOperationError('Failed to move emails to trash.')
+            logger.exception('Failed to %s via %s: %s', op_name, type(self).__name__, e)
+            raise MailboxOperationError(f'Failed to {op_name}.')
+
+    def move_to_trash(self, message_ids):
+        return self._process_messages(
+            message_ids, self._do_move_to_trash, self._TRASH_LABEL, 'move emails to trash')
+
+    def move_to_junk(self, message_ids):
+        return self._process_messages(
+            message_ids, self._do_move_to_junk, self._JUNK_LABEL, 'move emails to junk')
+
+
+class GmailMailboxManager(OAuthMailboxManager):
+    """Gmail API mailbox manager."""
+
+    SEARCH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
+    TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
+    MODIFY_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/modify'
+
+    _TRASH_LABEL = 'TRASH'
+    _JUNK_LABEL = 'SPAM'
+
+    def _find_provider_message_id(self, message_id):
+        # Escape quotes for Gmail search query syntax.
+        safe_message_id = message_id.replace('"', '\\"')
+        search_resp = requests.get(
+            self.SEARCH_ENDPOINT,
+            params={'q': f'rfc822msgid:"{safe_message_id}"'},
+            headers=self._auth_headers(),
+        )
+        _check_and_raise_error(search_resp)
+        messages = search_resp.json().get('messages', [])
+        return messages[0]['id'] if messages else None
+
+    def _do_move_to_trash(self, provider_message_id):
+        trash_resp = requests.post(
+            self.TRASH_ENDPOINT.format(gmail_id=provider_message_id),
+            headers=self._auth_headers(),
+        )
+        _check_and_raise_error(trash_resp)
+
+    def _do_move_to_junk(self, provider_message_id):
+        # Gmail has no dedicated "move to spam" call; applying the SPAM label
+        # (and removing INBOX) is the documented equivalent.
+        modify_resp = requests.post(
+            self.MODIFY_ENDPOINT.format(gmail_id=provider_message_id),
+            json={'addLabelIds': ['SPAM'], 'removeLabelIds': ['INBOX']},
+            headers=self._auth_headers({'Content-Type': 'application/json'}),
+        )
+        _check_and_raise_error(modify_resp)
 
 
 class MicrosoftMailboxManager(OAuthMailboxManager):
@@ -388,47 +426,39 @@ class MicrosoftMailboxManager(OAuthMailboxManager):
     SEARCH_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages'
     MOVE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{ms_id}/move'
 
-    def move_to_trash(self, message_ids):
-        normalized_message_ids = self._normalize_message_ids(message_ids)
-        if not normalized_message_ids:
-            return {'moved_count': 0, 'target_folder': 'deleteditems'}
+    # Graph well-known folder names.
+    _TRASH_LABEL = 'deleteditems'
+    _JUNK_LABEL = 'junkemail'
 
-        try:
-            self._request_access_token()
+    def _find_provider_message_id(self, message_id):
+        # OData filter strings escape single quotes by doubling them.
+        safe_message_id = message_id.replace("'", "''")
+        search_resp = requests.get(
+            self.SEARCH_ENDPOINT,
+            params={
+                '$filter': f"internetMessageId eq '{safe_message_id}'",
+                '$select': 'id',
+                '$top': 1,
+            },
+            headers=self._auth_headers(),
+        )
+        _check_and_raise_error(search_resp)
+        values = search_resp.json().get('value', [])
+        return values[0]['id'] if values else None
 
-            moved_count = 0
-            for message_id in normalized_message_ids:
-                # OData filter strings escape single quotes by doubling them.
-                safe_message_id = message_id.replace("'", "''")
-                search_resp = requests.get(
-                    self.SEARCH_ENDPOINT,
-                    params={
-                        '$filter': f"internetMessageId eq '{safe_message_id}'",
-                        '$select': 'id',
-                        '$top': 1,
-                    },
-                    headers=self._auth_headers(),
-                )
-                _check_and_raise_error(search_resp)
-                values = search_resp.json().get('value', [])
-                if not values:
-                    continue
+    def _move_to_well_known_folder(self, provider_message_id, destination_id):
+        move_resp = requests.post(
+            self.MOVE_ENDPOINT.format(ms_id=provider_message_id),
+            json={'destinationId': destination_id},
+            headers=self._auth_headers({'Content-Type': 'application/json'}),
+        )
+        _check_and_raise_error(move_resp)
 
-                ms_id = values[0]['id']
-                move_resp = requests.post(
-                    self.MOVE_ENDPOINT.format(ms_id=ms_id),
-                    json={'destinationId': 'deleteditems'},
-                    headers=self._auth_headers({'Content-Type': 'application/json'}),
-                )
-                _check_and_raise_error(move_resp)
-                moved_count += 1
+    def _do_move_to_trash(self, provider_message_id):
+        self._move_to_well_known_folder(provider_message_id, self._TRASH_LABEL)
 
-            return {'moved_count': moved_count, 'target_folder': 'deleteditems'}
-        except (MailboxConfigError, MailboxOperationError, EmailAuthProviderError):
-            raise
-        except Exception as e:
-            logger.exception('Failed to move emails to trash via Microsoft Graph API: %s', e)
-            raise MailboxOperationError('Failed to move emails to trash.')
+    def _do_move_to_junk(self, provider_message_id):
+        self._move_to_well_known_folder(provider_message_id, self._JUNK_LABEL)
 
 
 def get_mailbox_manager_from_config(config):

@@ -1211,11 +1211,6 @@ class AgentActionConfirmView(APIView):
             logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
             return self._failed_execution('Email connection config is invalid.')
 
-        if config.get('server_provider') != 'general_email_provider':
-            return self._failed_execution(
-                'Moving to spam is not supported for OAuth email connections yet.'
-            )
-
         inbound_message_ids = []
         for email in emails:
             if email.get('is_sender'):
@@ -1248,6 +1243,10 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution(
                 'Failed to move the email to the spam folder: no matching remote message was moved.'
             )
+
+        # OAuth providers may have refreshed their access token during the move.
+        if (move_result or {}).get('config_updated'):
+            persist_project_connection_config(project_connection, config)
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         try:
