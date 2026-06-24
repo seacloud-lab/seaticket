@@ -579,7 +579,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         t={t}
         notDisplayColumns={[
           CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED,
-          CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE,
           CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
         ]}
         generatorRowClassName={(row) => generatorRowClassName(row, allColumns.current)}
