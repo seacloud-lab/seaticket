@@ -509,7 +509,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
 def get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
-    topics_sql = f"SELECT `_pk`, `title`, `topic_id`, `linked_ticket` FROM `{topics_table_name}` WHERE _pk = {_pk}"
+    topics_sql = f"SELECT `_pk`, `title`, `topic_id`, `linked_ticket`, `ai_summary` FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
         topic_res = seadb_api.query_rows(project_uuid, topics_sql)
         topics_record = topic_res.get('results', [])
@@ -561,7 +561,7 @@ def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
 def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
-    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `issue_number`, `state`, `state_reason`, `labels`, `issue_type`, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `issue_number`, `state`, `state_reason`, `labels`, `issue_type`, `url`, `linked_ticket`, `outdated`, `ai_summary`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
