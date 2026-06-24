@@ -1,9 +1,13 @@
-import { enableNotificationServer, notificationServerUrl } from './../constants';
+import { enableNotificationServer, server } from './../constants';
 import projectAPI from '@/project/api/project-api';
+
+const getNotificationServerUrl = () => {
+  return `${server.replace(/^http/, 'ws')}/ws`;
+};
 
 class WebSocketClient {
   constructor(projectUuid, onMessageCallback) {
-    this.url = notificationServerUrl; // WebSocket address;
+    this.url = getNotificationServerUrl();
     this.projectUuid = projectUuid;
     this.socket = null;
     this.shouldReconnect = true;
