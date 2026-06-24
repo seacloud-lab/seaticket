@@ -329,9 +329,15 @@ const ActionItem = React.memo(({
                     <Icon symbol="check-circle-filled" />
                   </span>
                   <span className="result-text">
-                    {renderTicketLink(parsedResult.ticket)}
-                    <span>. </span>
-                    {parsedResult.message}
+                    {parsedResult.ticket ? (
+                      <>
+                        {renderTicketLink(parsedResult.ticket)}
+                        <span>. </span>
+                        {parsedResult.message}
+                      </>
+                    ) : (
+                      parsedResult.message
+                    )}
                   </span>
                 </div>
               )}
