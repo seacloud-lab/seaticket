@@ -1,6 +1,7 @@
 /* Run logs container */
 .agent-run-logs {
   flex: 1;
+  min-width: 0;
   padding: 0 0 16px;
   overflow-y: auto;
 }
@@ -262,6 +263,10 @@
   font-size: 16px;
 }
 
+.action-content.action-content-suggestion .action-card {
+  background-color: #FBFBFA;
+}
+
 .action-content.action-content-event .longtext-preview-container .sf-slate-viewer-article-container .article {
   margin: 0;
   padding: 0 !important;
@@ -297,9 +302,54 @@
 
 .action-card {
   padding: 8px 16px;
-  background: #FBFBFA;
-  border: 1px solid #EAEAEA;
+  background: #FFFFFF;
+  border: 1px solid #EEEEEE;
   border-radius: 8px;
+}
+
+.action-card.action-card-cancelled {
+  background: #F7F8FA;
+  border-color: #EEEEEE;
+}
+
+.suggestion-cancelled-result svg {
+  width: 14px;
+  height: 14px;
+  fill: #999;
+  flex-shrink: 0;
+}
+
+.suggestion-cancelled-text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #999999;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
+
+.suggestion-cancelled-by {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #212529;
+}
+
+.suggestion-result-resolved .result-text {
+  font-size: 14px;
+  line-height: 22px;
+  color: #212529;
+}
+
+.suggestion-result-resolved .status-completed svg {
+  width: 16px;
+  height: 16px;
+}
+
+.suggestion-result-resolved {
+  gap: 8px;
+  padding-top: 8px;
+  height: 42px;
 }
 
 .action-card-header {
@@ -309,10 +359,72 @@
   color: #212529;
 }
 
-.action-card-header svg {
+.action-card-header > svg {
   width: 14px;
   height: 14px;
   fill: #999;
+}
+
+/* Suggestion header actions (edit / details) */
+.suggestion-header-actions {
+  gap: 8px;
+}
+
+.suggestion-header-action-btn.seaqa-tooltip-icon-btn {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestion-header-action-btn.seaqa-tooltip-icon-btn .seaqa-icon-svg {
+  width: 16px;
+  height: 16px;
+  fill: #666;
+  color: #666;
+}
+
+.suggestion-header-action-btn.seaqa-tooltip-icon-btn:hover {
+  background: #F2F2F2;
+}
+
+.suggestion-header-action-btn.seaqa-tooltip-icon-btn:hover .seaqa-icon-svg {
+  fill: #666;
+  color: #666;
+}
+
+/* Suggestion content inline preview */
+.suggestion-content-preview {
+  position: relative;
+  margin-top: 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px 0px 12px 24px;
+  background-color: #FFF;
+}
+
+.suggestion-content-preview-scroll {
+  max-height: 160px;
+  overflow-y: auto;
+  color: #444444;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.suggestion-content-preview-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 0%, #FFFFFF 100%);
+  pointer-events: none;
+  border-radius: 8px;
 }
 
 .action-text {
@@ -423,6 +535,10 @@
   color: #212529;
 }
 
+.suggestion-tool-result .agent-ticket-result-link {
+  color: #ff8000;
+}
+
 .status-completed svg {
   color: #5EBA00;
   width: 12px;
@@ -443,7 +559,7 @@
 .action-buttons {
   display: flex;
   gap: 8px;
-  margin: 12px 0px 4px 22px;
+  margin: 12px 0px 4px 0px;
 }
 
 .action-buttons button {
@@ -496,32 +612,4 @@
 
 .no-more-content::after {
   margin-left: 100px;
-}
-
-/* View content modal */
-.view-content-modal pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #212529;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.view-content-modal .view-content-textarea {
-  width: 100%;
-  min-height: 300px;
-  padding: 12px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #212529;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.view-content-modal .view-content-textarea:focus {
-  outline: none;
-  border-color: var(--bs-input-focus-border-color);
 }

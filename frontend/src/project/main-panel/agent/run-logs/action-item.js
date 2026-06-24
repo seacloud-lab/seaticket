@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
@@ -8,6 +8,41 @@ import AIReply from '@/project/components/ai-reply';
 
 const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
+const formatResultText = (result) => {
+  if (!result) return '';
+  if (typeof result === 'string') return result;
+  return JSON.stringify(result);
+};
+
+const parseActionResult = (result) => {
+  if (!result) return { message: '' };
+
+  if (typeof result === 'object') {
+    return {
+      message: result.message || result.result || JSON.stringify(result),
+      ticket: result.ticket,
+    };
+  }
+
+  if (typeof result !== 'string') {
+    return { message: String(result) };
+  }
+
+  try {
+    const parsed = JSON.parse(result);
+    if (parsed && typeof parsed === 'object') {
+      return {
+        message: parsed.message || result,
+        ticket: parsed.ticket,
+      };
+    }
+  } catch {
+    return { message: result };
+  }
+
+  return { message: result };
+};
+
 const ActionItem = React.memo(({
   action,
   runId,
@@ -15,10 +50,12 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, result, tool_name, sources } = action;
+  const { id, type, status, result, tool_name, sources, suggestion_text, suggestion_content } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [showPreviewMask, setShowPreviewMask] = useState(false);
+  const previewRef = useRef(null);
 
   useEffect(() => {
     if (status !== ACTION_STATUS.PENDING) {
@@ -51,12 +88,30 @@ const ActionItem = React.memo(({
     onCancel && onCancel(id);
   }, [id, onCancel]);
 
-  const handleViewContent = useCallback((e) => {
+  const handleEditContent = useCallback((e) => {
     e.stopPropagation();
-    onViewContent && onViewContent(action, runId);
+    onViewContent && onViewContent(action, runId, 'edit');
   }, [action, runId, onViewContent]);
 
+  const handleViewDetails = useCallback((e) => {
+    e.stopPropagation();
+    onViewContent && onViewContent(action, runId, 'view');
+  }, [action, runId, onViewContent]);
+
+  const updatePreviewMask = useCallback(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const isOverflow = el.scrollHeight > el.clientHeight;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 1;
+    setShowPreviewMask(isOverflow && !isAtBottom);
+  }, []);
+
+  useEffect(() => {
+    updatePreviewMask();
+  }, [suggestion_content, status, updatePreviewMask]);
+
   const formatErrorMessage = (errorContent) => {
+    errorContent = formatResultText(errorContent);
     if (!errorContent || !errorContent.includes('geminiException') || !errorContent.includes('Quota exceeded')) {
       return <div>{errorContent}</div>;
     }
@@ -94,6 +149,24 @@ const ActionItem = React.memo(({
     return <div>{errorContent}</div>;
   };
 
+  const renderTicketLink = (ticket) => {
+    if (!ticket?.ticket_url) return null;
+    const linkText = ticket.ticket_title || `${gettext('Ticket')} #${ticket.ticket_pk}`;
+    return (
+      <>
+        <a
+          className="agent-ticket-result-link"
+          href={ticket.ticket_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {linkText}
+        </a>
+      </>
+    );
+  };
+
   // Don't render SUMMARY and TOOL_CALL type actions
   if (type === ACTION_TYPE.SUMMARY || type === ACTION_TYPE.TOOL_CALL) return null;
 
@@ -116,10 +189,10 @@ const ActionItem = React.memo(({
         return 'ticket-filled';
       }
       case 'suggest_modify_type': {
-        return 'suitable-issue-type-or-lables';
+        return 'suitable-issue-type-or-labels';
       }
       case 'suggest_assign_labels': {
-        return 'suitable-issue-type-or-lables';
+        return 'suitable-issue-type-or-labels';
       }
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
@@ -174,25 +247,70 @@ const ActionItem = React.memo(({
         );
       case ACTION_TYPE.SUGGESTION: {
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
+        const hasContent = !!suggestion_content;
+        const isCancelled = status === ACTION_STATUS.CANCELLED;
+        const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
+        const showHeaderActions = !isCancelled && (canEdit || hasContent);
+        const parsedResult = parseActionResult(result);
         return (
           <div className="action-content action-content-suggestion">
             <div className="action-label">{gettext('Suggestion')}</div>
-            <div className="action-card">
-              <div className="action-card-header d-flex align-items-center">
-                <Icon symbol={renderSuggestionIcon() } className="mr-2" />
-                <span style={status === ACTION_STATUS.CANCELLED ? { textDecoration: 'line-through', opacity: 0.65 } : {}}>{result}</span>
-                {hasEditableContent && status !== ACTION_STATUS.CANCELLED && (
-                  <IconTooltip
-                    icon="edit"
-                    tip={gettext('Edit content')}
-                    tooltipClassName='action-item-edit-content-tooltip'
-                    className='seaqa-project-refresh-btn'
-                    placement="top"
-                    hoverBackground={true}
-                    onClick={handleViewContent}
-                  />
-                )}
-              </div>
+            <div className={classnames('action-card', { 'action-card-cancelled': isCancelled })}>
+              {isCancelled && (
+                <div className="suggestion-cancelled-result d-flex align-items-center">
+                  <Icon symbol={renderSuggestionIcon()} className="mr-2" />
+                  {suggestion_text && (
+                    <span className="suggestion-cancelled-text">{suggestion_text}</span>
+                  )}
+                  <span className="suggestion-cancelled-by">{parsedResult.message}</span>
+                </div>
+              )}
+              {!isCancelled && (
+                <div className="action-card-header d-flex align-items-center">
+                  <Icon symbol={renderSuggestionIcon() } className="mr-2" />
+                  <span>{suggestion_text}</span>
+                  {showHeaderActions && (
+                    <div className="suggestion-header-actions ml-auto d-flex align-items-center">
+                      {canEdit && (
+                        <IconTooltip
+                          icon="edit"
+                          tip={gettext('Edit')}
+                          tooltipClassName='action-item-edit-content-tooltip'
+                          className='suggestion-header-action-btn'
+                          placement="bottom"
+                          hoverBackground={true}
+                          size={{ btn: 24, icon: 16 }}
+                          onClick={handleEditContent}
+                        />
+                      )}
+                      {hasContent && (
+                        <IconTooltip
+                          icon="view-issue"
+                          tip={gettext('Details')}
+                          tooltipClassName='action-item-edit-content-tooltip'
+                          className='suggestion-header-action-btn'
+                          placement="bottom"
+                          hoverBackground={true}
+                          size={{ btn: 24, icon: 16 }}
+                          onClick={handleViewDetails}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              {hasContent && !isCancelled && (
+                <div className="suggestion-content-preview">
+                  <div
+                    className="suggestion-content-preview-scroll"
+                    ref={previewRef}
+                    onScroll={updatePreviewMask}
+                  >
+                    {suggestion_content}
+                  </div>
+                  {showPreviewMask && <div className="suggestion-content-preview-mask" />}
+                </div>
+              )}
               {status === ACTION_STATUS.PENDING && (
                 <div className="action-buttons">
                   <Button color="secondary" onClick={handleConfirm} size="sm" disabled={isConfirming}>
@@ -205,22 +323,35 @@ const ActionItem = React.memo(({
                   </Button>
                 </div>
               )}
-              {(isCompletedStatus || isFailedStatus) && (
+              {isCompletedStatus && (
+                <div className="suggestion-result-resolved d-flex align-items-center">
+                  <span className="status-completed">
+                    <Icon symbol="check-circle-filled" />
+                  </span>
+                  <span className="result-text">
+                    {parsedResult.ticket ? (
+                      <>
+                        {renderTicketLink(parsedResult.ticket)}
+                        <span>. </span>
+                        {parsedResult.message}
+                      </>
+                    ) : (
+                      parsedResult.message
+                    )}
+                  </span>
+                </div>
+              )}
+              {isFailedStatus && (
                 <div
-                  className={classnames('tool-result suggestion-tool-result', {
-                    'suggestion-tool-result-success': isCompletedStatus,
-                    'suggestion-tool-result-failed': isFailedStatus,
-                  })}
+                  className="tool-result suggestion-tool-result suggestion-tool-result-failed"
                   style={{ marginLeft: '22px' }}
                 >
-                  <span className={classnames({
-                    'status-completed': isCompletedStatus,
-                    'status-failed': isFailedStatus,
-                  })}
-                  >
-                    <Icon symbol={isFailedStatus ? 'close' : 'check-circle-filled'} />
+                  <span className="status-failed">
+                    <Icon symbol="close" />
                   </span>
-                  <span className="result-text">{result}</span>
+                  <span className="result-text">
+                    {parsedResult.message}
+                  </span>
                 </div>
               )}
             </div>

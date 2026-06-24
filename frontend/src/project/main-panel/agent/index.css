@@ -16,6 +16,7 @@
   background-color: #fff;
   width: 100%;
   align-self: stretch;
+  position: relative;
 }
 
 /* Agent settings wrapper */
@@ -58,7 +59,7 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0 16px;
-  width: 100%;
+  min-width: 0;
 }
 
 .agent-run-logs-header {
@@ -72,4 +73,21 @@
 
 .agent-run-logs-refresh {
   margin-left: 8px;
+}
+
+.agent-container {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.agent-container > .agent-run-logs-section {
+  flex: 1 1 calc(100% - 400px);
+  width: calc(100% - 400px);
+  min-width: 0;
+}
+
+.agent-container > .suggestion-detail-panel {
+  flex: 0 0 auto;
+  min-width: 0;
 }

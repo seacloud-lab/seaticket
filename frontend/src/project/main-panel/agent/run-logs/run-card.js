@@ -18,34 +18,38 @@ import { FROM_NOW } from '@/sea-metadata/constants';
 const { projectUuid } = window.app.pageOptions;
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
+const getResourceFromItem = (item) => {
+  const { source_type, source_id, source_title } = item;
+  const icon = getResourceIconURL(source_type);
+  if (source_type === TICKET_TYPE) return { type: TICKET_TYPE, title: source_title, _id: source_id, icon };
+
+  const separatorIndex = source_id.indexOf('_');
+  const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
+  const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
+  return {
+    type: source_type,
+    _id: recordId || source_id,
+    title: source_title,
+    connection_id: connectionId ? Number(connectionId) : null,
+    icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
+  };
+};
+
+const getResourceTitleTip = (resource) => {
+  const { type, _id } = resource;
+  if (type === TICKET_TYPE) return `${gettext('Ticket')} #${_id}`;
+  if (type === CONNECTION_TYPE.GITHUB_ISSUE) return `${gettext('Github issue')} #${_id}`;
+  if (type === CONNECTION_TYPE.DISCOURSE_FORUM) return `${gettext('Discourse Forum')} #${_id}`;
+  if (type === CONNECTION_TYPE.EMAIL) return `${gettext('Email')} #${_id}`;
+  return `${gettext(type)} #${_id}:`;
+};
+
 const RunCardHeader = ({ item }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
-  const resource = useMemo(() => {
-    const { source_type, source_id, source_title } = item;
-    const icon = getResourceIconURL(source_type);
-    if (source_type === TICKET_TYPE) return { type: TICKET_TYPE, title: source_title, _id: source_id, icon };
+  const resource = useMemo(() => getResourceFromItem(item), [item]);
 
-    const separatorIndex = source_id.indexOf('_');
-    const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
-    const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
-    return {
-      type: source_type,
-      _id: recordId || source_id,
-      title: source_title,
-      connection_id: connectionId ? Number(connectionId) : null,
-      icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
-    };
-  }, [item]);
-
-  const titleTip = useMemo(() => {
-    const { type, _id } = resource;
-    if (type === TICKET_TYPE) return `${gettext('Ticket')} #${_id}`;
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return `${gettext('Github issue')} #${_id}`;
-    if (type === CONNECTION_TYPE.DISCOURSE_FORUM) return `${gettext('Discourse Forum')} #${_id}`;
-    if (type === CONNECTION_TYPE.EMAIL) return `${gettext('Email')} #${_id}`;
-    return `${gettext(type)} #${_id}:`;
-  }, [resource]);
+  const titleTip = useMemo(() => getResourceTitleTip(resource), [resource]);
 
   const openDetails = useCallback(() => {
     setIsShowDetails(true);

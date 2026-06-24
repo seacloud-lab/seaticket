@@ -60,6 +60,7 @@ class TableManager:
             {'column_name': 'tool_name', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'tool_arguments', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'observation', 'column_type': PropertyTypes.TEXT},
+            {'column_name': 'suggestion_text', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'suggestion_content', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'sources', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'statistics', 'column_type': PropertyTypes.TEXT},
