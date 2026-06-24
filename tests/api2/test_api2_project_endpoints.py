@@ -1,15 +1,21 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+from urllib.parse import quote
 
 import pytest
 
 from seahub.api2.endpoints.project import (
+    RelatedProjectsView,
     ProjectsView,
     ProjectView,
     SearchView,
     TrashProjectView,
     TrashProjectsView,
     WorkspacesView,
+    extract_current_server_related_webpage_parts,
+    extract_discourse_topic_id,
+    is_github_issue_url,
+    is_url_under_base_url,
 )
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Projects, Workspaces
@@ -337,6 +343,59 @@ class TestSearchView:
 
         assert resp.status_code == 200
         assert resp.data == {'results': reranked_results}
+
+
+@pytest.mark.django_db
+class TestRelatedProjectsView:
+
+    def test_is_url_under_base_url_matches_same_site_path(self):
+        assert is_url_under_base_url(
+            'https://forum.example.com/t/topic-name/123/4',
+            'https://forum.example.com',
+        ) is True
+        assert is_url_under_base_url(
+            'https://forum.example.com/t/topic-name/123/4',
+            'https://forum.example.com/discourse',
+        ) is False
+
+    def test_extract_current_server_related_webpage_parts(self):
+        parts = extract_current_server_related_webpage_parts(
+            'https://example.com/workspace/10/project/my%20project/connections/11/records/12?foo=bar'
+        )
+        assert parts == (10, 'my project', 11, 12)
+
+    def test_github_issue_url_matches_literal_repository(self):
+        assert is_github_issue_url(
+            'https://github.com/seafile-ltd/seahub/issues/12',
+            'https://github.com/seafile-ltd/seahub',
+        ) is True
+        assert is_github_issue_url(
+            'https://github.com/seafile-ltd/seahub/issues/12',
+            'https://github.com/seafile-ltd/seahub+',
+        ) is False
+
+    def test_extract_discourse_topic_id(self):
+        assert extract_discourse_topic_id('https://forum.example.com/t/topic-name/123/4') == 123
+        assert extract_discourse_topic_id('https://forum.example.com/c/category/123') is None
+
+    def test_current_server_branch_checks_permission(self, factory, auth_user, real_project):
+        project = real_project
+        workspace = project.workspace
+        request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': f'https://example.com/workspace/{workspace.id}/project/{quote(project.name)}/connections/1/records/2?foo=bar'},
+        )
+        request.user = auth_user
+
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=True), \
+                patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
+                patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project) as get_project, \
+                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=SimpleNamespace(project_uuid=project.uuid)) as get_connection:
+            resp = RelatedProjectsView.as_view()(request)
+
+        assert resp.status_code == 403
+        get_project.assert_not_called()
+        get_connection.assert_not_called()
 
 
 @pytest.mark.django_db

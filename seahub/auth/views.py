@@ -239,6 +239,7 @@ def logout(request, next_page=None,
            redirect_field_name=REDIRECT_FIELD_NAME):
     "Logs out the user and displays 'You are logged out' message."
 
+    csrf_cookie_name = getattr(settings, 'CSRF_COOKIE_NAME', '')
     if getattr(settings, 'ENABLE_MULTI_SAML', False) or getattr(settings, 'ENABLE_SAML', False):
         try:
             saml_subject_id = decode(request.saml_session["_saml2_subject_id"])
@@ -250,7 +251,7 @@ def logout(request, next_page=None,
                 else:
                     response = HttpResponseRedirect('/saml/logout/')
                 response.delete_cookie('seahub_auth')
-                response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
+                response.delete_cookie(csrf_cookie_name)
                 return response
         except Exception as e:
             logger.warning(e)
@@ -265,7 +266,7 @@ def logout(request, next_page=None,
         response = HttpResponseRedirect(oauth_logout_url)
         response.delete_cookie('via_oauth')
         response.delete_cookie('seahub_auth')
-        response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
+        response.delete_cookie(csrf_cookie_name)
         return response
 
     # Local logout for cas user.
@@ -291,7 +292,7 @@ def logout(request, next_page=None,
         response = HttpResponseRedirect(next_page or request.path)
 
     response.delete_cookie('seahub_auth')
-    response.delete_cookie('seaqa_csrftoken', path='/', domain=None)
+    response.delete_cookie(csrf_cookie_name)
     return response
 
 def logout_then_login(request, login_url=None):

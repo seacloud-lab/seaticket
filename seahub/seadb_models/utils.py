@@ -985,11 +985,11 @@ def get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk):
         logger.error(f'SeaDB query error for notion details {notion_table_name}: {e}')
         record = {}
         column_metadata = []
-    return record, column_metadata
+    return record, column_metadata, ''
 
 
 def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
-    record, columns = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    record, columns, _ = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
     return record, columns, ''
 
 
@@ -1052,38 +1052,3 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
         columns = []
         linked_ticket_title = ''
     return record, columns, linked_ticket_title
-
-
-def get_connection_record_details_by_pk(seadb_api, project_uuid, connection_type, connection_id, _pk):
-    if connection_type == ConnectionType.DISCOURSE_FORUM.value:
-        record, columns, linked_ticket_title = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.SITE.value:
-        record, columns, linked_ticket_title = list_site_record_details(seadb_api, project_uuid, connection_id, _pk)
-        url = record.get('url', '')
-        if url:
-            from seahub.project.utils import url_to_filename
-            from seahub.utils.storage import get_connection_file_from_s3
-            filename = url_to_filename(url)
-            file = get_connection_file_from_s3(project_uuid, connection_id, filename)
-            if file:
-                record['content'] = json.loads(file.read()).get('content')
-    elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-        record, columns, linked_ticket_title = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.SEAFILE.value:
-        record, columns, linked_ticket_title = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.EMAIL.value:
-        record, columns, linked_ticket_title = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.NOTION.value:
-        record, columns, linked_ticket_title = list_notion_record_details(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.GENERAL_TASK.value:
-        record, columns, linked_ticket_title = list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk)
-    elif connection_type == ConnectionType.LINEAR.value:
-        record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
-    else:
-        record = {}
-        columns = []
-        linked_ticket_title = ''
-    return record, columns, linked_ticket_title
-
-
-
