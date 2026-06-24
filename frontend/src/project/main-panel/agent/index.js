@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import TopBar from '../top-bar';
 import RunLogs from './run-logs';
+import SuggestionDetailPanel from './run-logs/suggestion-detail-panel';
 import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI } from '@/project/api';
@@ -14,6 +15,9 @@ const { projectUuid } = window.app.pageOptions;
 
 const Agent = ({ title, settings, modifySettings }) => {
   const [pendingMapping, setPendingMapping] = useState(null);
+  const [suggestionDetailPanel, setSuggestionDetailPanel] = useState(null);
+  const [isSavingContent, setIsSavingContent] = useState(false);
+  const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -76,6 +80,33 @@ const Agent = ({ title, settings, modifySettings }) => {
     });
   }, [updateRunLog]);
 
+  const openSuggestionDetailPanel = useCallback((action, runId, mode = 'view') => {
+    setSuggestionDetailPanel({
+      action,
+      runId,
+      mode,
+      title: action.suggestion_text || action.result || '',
+      content: action.suggestion_content || '',
+    });
+  }, []);
+
+  const closeSuggestionDetailPanel = useCallback(() => {
+    setSuggestionDetailPanel(null);
+  }, []);
+
+  const handleSaveContent = useCallback((value) => {
+    if (!suggestionDetailPanel) return;
+    const { action, runId } = suggestionDetailPanel;
+    setIsSavingContent(true);
+    handleUpdateContent(runId, action.id, value)
+      .then(() => {
+        closeSuggestionDetailPanel();
+      })
+      .finally(() => {
+        setIsSavingContent(false);
+      });
+  }, [suggestionDetailPanel, handleUpdateContent, closeSuggestionDetailPanel]);
+
   const handleCancelAction = useCallback((actionId) => {
     for (const run of runLogs) {
       const items = run.items || [];
@@ -137,7 +168,13 @@ const Agent = ({ title, settings, modifySettings }) => {
         </div>
       </TopBar>
       <div className="agent-container">
-        <div className="agent-run-logs-section">
+        <div
+          className="agent-run-logs-section"
+          style={suggestionDetailPanel ? {
+            flex: `1 1 calc(100% - ${suggestionDetailPanelWidth}px)`,
+            width: `calc(100% - ${suggestionDetailPanelWidth}px)`,
+          } : undefined}
+        >
           <div className="agent-run-logs-header">
             <span>{gettext('Run Logs')}</span>
             <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
@@ -149,10 +186,22 @@ const Agent = ({ title, settings, modifySettings }) => {
             loadMore={loadMore}
             onConfirmAction={handleConfirmAction}
             onCancelAction={handleCancelAction}
-            onUpdateContent={handleUpdateContent}
+            onViewContent={openSuggestionDetailPanel}
             enabledAgent={enabledAgent}
           />
         </div>
+        {suggestionDetailPanel && (
+          <SuggestionDetailPanel
+            title={suggestionDetailPanel.title}
+            content={suggestionDetailPanel.content}
+            mode={suggestionDetailPanel.mode}
+            isSaving={isSavingContent}
+            onSave={handleSaveContent}
+            onClose={closeSuggestionDetailPanel}
+            width={suggestionDetailPanelWidth}
+            onWidthChange={setSuggestionDetailPanelWidth}
+          />
+        )}
       </div>
       {pendingMapping && (
         <AgentType2GithubTypeMappingDialog

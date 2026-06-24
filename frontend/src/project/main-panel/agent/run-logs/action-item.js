@@ -135,10 +135,10 @@ const ActionItem = React.memo(({
         return 'ticket-filled';
       }
       case 'suggest_modify_type': {
-        return 'suitable-issue-type-or-lables';
+        return 'suitable-issue-type-or-labels';
       }
       case 'suggest_assign_labels': {
-        return 'suitable-issue-type-or-lables';
+        return 'suitable-issue-type-or-labels';
       }
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
@@ -219,10 +219,10 @@ const ActionItem = React.memo(({
                       {canEdit && (
                         <IconTooltip
                           icon="edit"
-                          tip={gettext('Edit content')}
+                          tip={gettext('Edit')}
                           tooltipClassName='action-item-edit-content-tooltip'
                           className='suggestion-header-action-btn'
-                          placement="top"
+                          placement="bottom"
                           hoverBackground={true}
                           size={{ btn: 24, icon: 16 }}
                           onClick={handleEditContent}
@@ -230,11 +230,11 @@ const ActionItem = React.memo(({
                       )}
                       {hasContent && (
                         <IconTooltip
-                          icon="expand"
+                          icon="view-issue"
                           tip={gettext('Details')}
                           tooltipClassName='action-item-edit-content-tooltip'
                           className='suggestion-header-action-btn'
-                          placement="top"
+                          placement="bottom"
                           hoverBackground={true}
                           size={{ btn: 24, icon: 16 }}
                           onClick={handleViewDetails}

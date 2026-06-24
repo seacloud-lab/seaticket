@@ -1,16 +1,26 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { IconButton } from '@/components';
 
+import './suggestion-detail-panel.css';
+
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 400;
 
-const SuggestionDetailPanel = ({ title, content, mode, isSaving, onSave, onClose }) => {
+const SuggestionDetailPanel = ({
+  title,
+  content,
+  mode,
+  isSaving,
+  onSave,
+  onClose,
+  width = DEFAULT_WIDTH,
+  onWidthChange,
+}) => {
   const isEdit = mode === 'edit';
   const [editValue, setEditValue] = useState(content || '');
-  const [width, setWidth] = useState(MAX_WIDTH);
   const resizingRef = useRef(false);
 
   useEffect(() => {
@@ -24,7 +34,8 @@ const SuggestionDetailPanel = ({ title, content, mode, isSaving, onSave, onClose
     const handleMouseMove = (ev) => {
       if (!resizingRef.current) return;
       const nextWidth = window.innerWidth - ev.clientX;
-      setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, nextWidth)));
+      const nextPanelWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, nextWidth));
+      onWidthChange && onWidthChange(nextPanelWidth);
     };
     const handleMouseUp = () => {
       resizingRef.current = false;
@@ -36,18 +47,15 @@ const SuggestionDetailPanel = ({ title, content, mode, isSaving, onSave, onClose
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, []);
+  }, [onWidthChange]);
 
   const handleSave = useCallback(() => {
     onSave && onSave(editValue);
   }, [editValue, onSave]);
 
-  const container = document.querySelector('.agent-container');
-  if (!container) return null;
-
-  const panel = (
+  return (
     <div className="suggestion-detail-panel" style={{ width }}>
-      <div className="suggestion-detail-panel-resizer" onMouseDown={handleResizeStart} />
+      <div className="suggestion-detail-panel-resize" onMouseDown={handleResizeStart} />
       <div className="suggestion-detail-panel-header">
         <span className="suggestion-detail-panel-title text-truncate" title={title}>{title}</span>
         <IconButton
@@ -80,8 +88,6 @@ const SuggestionDetailPanel = ({ title, content, mode, isSaving, onSave, onClose
       )}
     </div>
   );
-
-  return createPortal(panel, container);
 };
 
 export default SuggestionDetailPanel;
