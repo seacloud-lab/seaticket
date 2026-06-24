@@ -694,6 +694,7 @@ def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
             comments_res = seadb_api.query_rows(project_uuid, comments_sql)
             comments_record = comments_res.get('results', [])
         issue_record['comments'] = comments_record
+        linked_ticket = issue_record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
         logger.error(f'SeaDB query error for Jira issue details {issue_table_name} or {comments_table_name}: {e}')
