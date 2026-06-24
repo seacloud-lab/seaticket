@@ -38,8 +38,7 @@
             lang: '{{ LANGUAGE_CODE }}',
             loginUrl: '{{ LOGIN_URL }}',
             faviconPath: '{{ favicon_path }}',
-            enableNotificationServer: {% if enable_notification_server %} true {% else %} false {% endif %},
-            notificationServerUrl: '{{ notification_server_url }}'
+            enableNotificationServer: {% if enable_notification_server %} true {% else %} false {% endif %}
         },
         pageOptions: {
             server: '{{ service_url }}',
