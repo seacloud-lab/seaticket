@@ -1,9 +1,8 @@
-import { enableNotificationServer } from './../constants';
+import { enableNotificationServer, server } from './../constants';
 import projectAPI from '@/project/api/project-api';
 
 const getNotificationServerUrl = () => {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${window.location.host}/ws`;
+  return `${server.replace(/^http/, 'ws')}/ws`;
 };
 
 class WebSocketClient {
