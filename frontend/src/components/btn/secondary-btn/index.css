@@ -15,6 +15,7 @@
 
 .seaqa-secondary-btn.disabled {
   opacity: .65;
+  cursor: default;
 }
 
 .seaqa-secondary-btn:not(.disabled):hover {

@@ -131,6 +131,7 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
               icon={syncInfo.icon}
               text={syncInfo.text}
               onClick={handleSync}
+              disabled={warningCode === 'no_github_connection'}
               doing={isSyncing}
               gap={4}
               isSmall
@@ -161,12 +162,12 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
             );
           })}
         </div>
-        {warningText && (
-          <p className="seaqa-tip-default tip m-0 mt-2">
-            {warningText}
-          </p>
-        )}
       </div>
+      {warningText && (
+        <p className="seaqa-tip-default tip m-0 mt-2">
+          {warningText}
+        </p>
+      )}
     </div>
   );
 };
