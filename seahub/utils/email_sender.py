@@ -28,6 +28,11 @@ class EmailSendError(Exception):
     pass
 
 
+class EmailDeleteError(Exception):
+    """Email delete error"""
+    pass
+
+
 class EmailAuthProviderError(Exception):
     """Email auth provider error (OAuth token fetch failure)"""
     pass
@@ -203,6 +208,87 @@ class SMTPEmailSender(_EmailSenderBase):
             res.update(imap_res)
         return res
 
+    def delete_emails(self, emails_info):
+        """Move emails to Trash on the IMAP server using stored UID only."""
+        if not emails_info:
+            return
+
+        imap = imaplib.IMAP4_SSL(self.imap_host, self.imap_port or 993, timeout=30)
+        imap.login(self.imap_user or self.smtp_user, self.imap_password or self.smtp_password)
+
+        try:
+            trash = self._find_trash_folder(imap)
+            sent = self._find_sent_folder(imap)
+            inbox = 'INBOX'
+            for message_id, is_sender in emails_info:
+                folder = inbox
+                if is_sender:
+                    folder = sent
+                uid = self._find_uid_by_msgid(imap, folder, message_id)
+                if not uid:
+                    # Email not found on server (already deleted) — skip
+                    continue
+                self._move_to_trash(imap, uid, folder, trash)
+        finally:
+            try:
+                imap.logout()
+            except Exception:
+                pass
+
+    @staticmethod
+    def _find_uid_by_msgid(imap, folder, msg_id):
+        """Locate an email by Message-ID header."""
+        clean = msg_id.strip()
+        imap.select(folder, readonly=True)
+        status, data = imap.uid('SEARCH', None, f'HEADER Message-ID "{clean}"')
+        if status == 'OK' and data and data[0]:
+            uids = data[0].split()
+            if uids:
+                logger.info('Found email by Message-ID uid=%s in %s', uids[0], folder)
+                imap.close()
+                return int(uids[0])
+        imap.close()
+        logger.warning('Email not found by Message-ID: %s', clean)
+        return None
+
+    @staticmethod
+    def _move_to_trash(imap, uid, source_folder, trash_folder):
+        """Copy email to trash folder, then try to delete original."""
+        if not source_folder:
+            raise EmailDeleteError(f'Cannot delete uid={uid}: source folder is missing')
+
+        if not trash_folder:
+            raise EmailDeleteError(f'Trash folder not found, refusing to delete uid={uid}')
+
+        status, _ = imap.select(source_folder, readonly=False)
+        if status != 'OK':
+            raise EmailDeleteError(f'Folder {source_folder} is read-only, cannot delete uid={uid}')
+
+        dest = f'"{trash_folder}"'
+        status, _ = imap.uid('MOVE', str(uid), dest)
+        if status != 'OK':
+            raise EmailDeleteError(f'Failed to move uid={uid} from {source_folder} to {trash_folder}')
+        logger.info('Moved uid=%s from %s to %s', uid, source_folder, trash_folder)
+
+    @staticmethod
+    def _find_trash_folder(imap):
+        """Find the Trash/Deleted Items folder from the server's folder list."""
+        TRASH_NAMES = ('Deleted Messages', 'Trash', 'Deleted Items', '已删除', '刪除的郵件', 'INBOX.Trash', 'Deleted', 'Bin')
+        status, folder_list = imap.list()
+        if status != 'OK':
+            return None
+        for f in folder_list:
+            s = f.decode('utf-8') if isinstance(f, bytes) else f
+            if '\\Trash' in s:
+                m = re.search(r'\s+"?([^"]+)"?\s*$', s)
+                if m: return m.group(1).strip('"')
+            m = re.search(r'\s+"?([^"]+)"?\s*$', s)
+            if m:
+                name = m.group(1).strip('"')
+                if name in TRASH_NAMES:
+                    return name
+        return None
+
     def _save_to_imap_sent(self, msg_obj):
         """Save sent email to IMAP Sent folder"""
         if 'fastmail' not in self.smtp_host:
@@ -219,7 +305,7 @@ class SMTPEmailSender(_EmailSenderBase):
         try:
             sent_folder = self._find_sent_folder(imap)
             uid = None
-            folder_to_append = f'"{sent_folder}"' if ' ' in sent_folder else sent_folder
+            folder_to_append = f'"{sent_folder}"'
 
             # Check if email is sent only to self - skip IMAP append in that case
             sender_email = self.sender_email.lower()
@@ -270,7 +356,7 @@ class SMTPEmailSender(_EmailSenderBase):
                         except:
                             pass
 
-            # For Fastmail, fetch EMAILID extension using the UID
+            # For Fastmail, fetch EMAILID and THREADID
             email_id = None
             thread_id = None
             if uid:
@@ -279,11 +365,10 @@ class SMTPEmailSender(_EmailSenderBase):
                         imap.select(folder, readonly=True)
                         status, fetch_data = imap.uid('FETCH', str(uid), '(EMAILID THREADID)')
                         if status == 'OK' and fetch_data:
-                            # Parse EMAILID from response like: b'123 (EMAILID "abc123" THREADID "xyz789")'
                             for item in fetch_data:
                                 if item:
                                     item_str = item.decode('utf-8') if isinstance(item, bytes) else str(item)
-                                    # Extract EMAILID - handle formats: EMAILID "value", EMAILID (value), EMAILID value
+                                    # Extract EMAILID
                                     email_match = re.search(r'EMAILID\s+["(]?([^\s")]+)[")?]?', item_str)
                                     if email_match:
                                         email_id = email_match.group(1)
@@ -295,7 +380,7 @@ class SMTPEmailSender(_EmailSenderBase):
                             break
 
                 except Exception as e:
-                    logger.warning('Failed to fetch EMAILID from Fastmail: %s', e)
+                    logger.warning('Failed to fetch EMAILID/THREADID from IMAP: %s', e)
                 finally:
                     try:
                         imap.close()
@@ -435,9 +520,18 @@ class _OAuthEmailSender(_EmailSenderBase):
         else:
             logger.info('Email sending success!')
 
+        email_id = None
+        try:
+            response_data = response.json()
+        except Exception:
+            response_data = {}
+        if isinstance(response_data, dict):
+            email_id = response_data.get('id')
+
         return {
             'success': success,
             'message_id': message_id,
+            'email_id': email_id,
             'config_updated': self.config_updated,
         }
 
@@ -446,6 +540,7 @@ class GmailSender(_OAuthEmailSender):
     """Gmail API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=multipart'
+    GMAIL_TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
 
     def _do_send_email(self, msg_obj):
         msg_string = msg_obj.as_string()
@@ -473,16 +568,46 @@ class GmailSender(_OAuthEmailSender):
         }
 
         return requests.post(
-            self.EMAIL_SENDING_ENDPOINT, 
-            data=request_body, 
+            self.EMAIL_SENDING_ENDPOINT,
+            data=request_body,
             headers=headers
         )
+
+    def delete_emails(self, message_ids):
+        if not message_ids:
+            return
+
+        self._request_access_token()
+
+        for msg_id in message_ids:
+            if not msg_id:
+                continue
+
+            # Search by RFC Message-ID to get Gmail message ID
+            search_url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
+            # Escape quotes for Gmail search query syntax
+            safe_msg_id = msg_id.replace('"', '\\"')
+            search_resp = requests.get(search_url, params={'q': f'rfc822msgid:"{safe_msg_id}"'}, headers={
+                'Authorization': f'Bearer {self.access_token}',
+            })
+            _check_and_raise_error(search_resp)
+            messages = search_resp.json().get('messages', [])
+            if not messages:
+                continue
+
+            gmail_id = messages[0]['id']
+            trash_url = self.GMAIL_TRASH_ENDPOINT.format(gmail_id=gmail_id)
+            trash_resp = requests.post(trash_url, headers={
+                'Authorization': f'Bearer {self.access_token}',
+            })
+            _check_and_raise_error(trash_resp)
 
 
 class MicrosoftSender(_OAuthEmailSender):
     """Microsoft API email sender"""
 
     EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
+    MS_GRAPH_MESSAGE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{ms_id}/move'
 
     def _do_send_email(self, msg_obj):
         msg_bytes = msg_obj.as_bytes()
@@ -494,6 +619,40 @@ class MicrosoftSender(_OAuthEmailSender):
         }
 
         return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_base64, headers=headers)
+
+    def delete_emails(self, message_ids):
+        if not message_ids:
+            return
+
+        self._request_access_token()
+
+        for msg_id in message_ids:
+            if not msg_id:
+                continue
+
+            # Search by RFC Message-ID to get Microsoft internal ID
+            search_url = 'https://graph.microsoft.com/v1.0/me/messages'
+            # OData filter strings escape single quotes by doubling them
+            safe_msg_id = msg_id.replace("'", "''")
+            search_resp = requests.get(search_url, params={
+                '$filter': f"internetMessageId eq '{safe_msg_id}'",
+                '$select': 'id',
+                '$top': 1,
+            }, headers={'Authorization': f'Bearer {self.access_token}'})
+            _check_and_raise_error(search_resp)
+            values = search_resp.json().get('value', [])
+            if not values:
+                continue
+
+            ms_id = values[0]['id']
+            move_url = self.MS_GRAPH_MESSAGE_ENDPOINT.format(ms_id=ms_id)
+            response = requests.post(move_url, json={
+                'destinationId': 'deleteditems'
+            }, headers={
+                'Authorization': f'Bearer {self.access_token}',
+                'Content-Type': 'application/json',
+            })
+            _check_and_raise_error(response)
 
 
 def get_email_sender_from_config(config):
@@ -539,3 +698,8 @@ def get_email_sender_from_config(config):
 def toggle_send_email(config, send_info):
     sender = get_email_sender_from_config(config)
     return sender.send(send_info)
+
+
+def toggle_delete_emails(config, emails_info):
+    sender = get_email_sender_from_config(config)
+    return sender.delete_emails(emails_info)

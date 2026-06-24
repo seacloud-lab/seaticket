@@ -45,7 +45,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
-  const [isDeletingRecords, setIsDeletingRecords] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
@@ -271,30 +270,28 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setIsShowRelatedIssuesDialog(true);
   }, [projectUuid, connectionID]);
 
-  const handleDeleteRecords = useCallback((rows, deleteLocalRows) => {
+  const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
 
     const recordCount = rows.length;
-    setIsDeletingRecords(true);
-    const recordIDs = rows.map(row => row._id);
+    const confirmMsg = recordCount === 1
+      ? gettext('Are you sure you want to delete this email thread? It will be moved to Trash on the remote server.')
+      : `${gettext('Are you sure you want to delete these')} ${recordCount} ${gettext('email threads? They will be moved to Trash on the remote server.')}`;
+    if (!window.confirm(confirmMsg)) return;
+
+    const threadIds = rows.map(row => row._id);
     const tableName = getTableName(connection);
-    deleteRows(tableName, recordIDs, () => connectionsAPI.deleteConnectionRecords(projectUuid, connectionID, recordIDs))
-      .then(() => {
-        const successMessage = recordCount === 1
-          ? gettext('Email deleted successfully')
-          : gettext('Emails deleted successfully');
-        toaster.success(successMessage);
-        deleteLocalRows && deleteLocalRows(recordIDs);
-      })
-      .catch(() => {
-        const dangerMessage = recordCount === 1
-          ? gettext('Failed to delete email')
-          : gettext('Failed to delete emails');
-        toaster.danger(dangerMessage);
-      })
-      .finally(() => {
-        setIsDeletingRecords(false);
-      });
+    deleteRows(tableName, threadIds, () =>
+      connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
+    ).then(() => {
+      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
+      const successMessage = recordCount === 1
+        ? gettext('Email thread has been moved to Trash.')
+        : gettext('Email threads have been moved to Trash.');
+      toaster.success(successMessage);
+    }).catch(error => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
   }, [projectUuid, connectionID, connection, deleteRows]);
 
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
@@ -342,15 +339,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     children = children.filter(Boolean);
     const tools = [];
 
-    // if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
-    //   tools.push({
-    //     key: 'delete',
-    //     icon: 'delete',
-    //     callback: () => handleDeleteRecords(rows, deleteLocalRows),
-    //     disabled: isDeletingRecords,
-    //   });
-    // }
-
     if (children.length > 0) {
       tools.push({
         key: 'more',
@@ -360,7 +348,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
     return tools;
   }, [
-    connection, handleCreateRelatedTicket, handleDeleteRecords, isDeletingRecords,
+    connection, handleCreateRelatedTicket,
     handleResolveIssueByAI, handleLinkAnExistingTicket,
   ]);
 
@@ -416,6 +404,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         if (markAsOutdatedOptions.length > 0) {
           list.push(...markAsOutdatedOptions);
         }
+        if (connection?.type === CONNECTION_TYPE.EMAIL) {
+          list.push('Divider');
+          list.push({
+            key: 'delete_emails',
+            label: gettext('Delete emails'),
+            callback: () => deleteEmailRows(rows),
+          });
+        }
       }
       return list.filter(Boolean);
     }
@@ -434,6 +430,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       generateOpenOriginalPageOption({ row, columns: allColumns.current, connection }),
       generateCopyOriginalLinkOption({ row, columns: allColumns.current, connection }),
     ];
+    if (connection?.type === CONNECTION_TYPE.EMAIL) {
+      list.push('Divider');
+      list.push({
+        key: 'delete_email',
+        label: gettext('Delete email'),
+        callback: () => deleteEmailRows([row]),
+      });
+    }
     const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], columns: allColumns.current, connection }, modifyRows);
     if (markAsOutdatedOptions.length > 0) {
       list.push('Divider');
@@ -441,7 +445,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
 
     return normalizeContextMenuOptions(list);
-  }, [connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket]);
+  }, [connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket, deleteEmailRows]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {
     if (!api?.modifyRow) return;
