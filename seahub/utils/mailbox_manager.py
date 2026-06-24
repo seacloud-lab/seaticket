@@ -15,6 +15,14 @@ import imaplib
 import logging
 import re
 
+import requests
+
+from seahub.utils.email_oauth import (
+    OAuthTokenClient,
+    EmailAuthProviderError,
+    _check_and_raise_error,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,9 +47,29 @@ class BaseMailboxManager:
         self.config = config or {}
         self.config_updated = False
 
+    @staticmethod
+    def _normalize_message_ids(message_ids):
+        normalized = []
+        for message_id in message_ids or []:
+            value = str(message_id or '').strip()
+            if value:
+                normalized.append(value)
+        return normalized
+
     def move_to_junk(self, message_ids):
         """Move messages (identified by their Message-ID headers) to the
         junk/spam folder.
+
+        Returns a dict: ``{'moved_count': int, 'target_folder': str}``.
+        """
+        raise NotImplementedError
+
+    def move_to_trash(self, emails_info):
+        """Move messages to the trash/deleted folder.
+
+        ``emails_info`` is a list of ``(message_id, is_sender)`` tuples for
+        IMAP (``is_sender`` decides whether to look in INBOX or Sent), or a
+        plain list of message-id strings for OAuth providers.
 
         Returns a dict: ``{'moved_count': int, 'target_folder': str}``.
         """
@@ -55,9 +83,15 @@ class ImapMailboxManager(BaseMailboxManager):
     # identifies itself via the IMAP ID extension (RFC 2971) after login.
     _IMAP_ID_REQUIRED_HOSTS = ('163.com', '126.com', 'yeah.net')
 
-    # Fallback junk folder names for servers without SPECIAL-USE support.
+    # Fallback folder names for servers without SPECIAL-USE support.
     _JUNK_FOLDER_FALLBACK_NAMES = [
         'Junk', 'Spam', 'Junk E-mail', 'Junk Mail', 'INBOX.Junk', 'INBOX.Spam',
+    ]
+    _TRASH_FOLDER_FALLBACK_NAMES = [
+        'Trash', 'Deleted Items', 'Deleted Messages', 'Deleted', 'Bin', 'INBOX.Trash', '已删除', '刪除的郵件',
+    ]
+    _SENT_FOLDER_FALLBACK_NAMES = [
+        'Sent', 'Sent Messages', 'Sent Items', 'INBOX.Sent', '已发送', '已发送的郵件',
     ]
 
     _CONNECT_TIMEOUT = 30
@@ -103,17 +137,19 @@ class ImapMailboxManager(BaseMailboxManager):
         except Exception as e:
             logger.warning('Failed to send IMAP ID command to %s: %s', self.imap_host, e)
 
-    def _find_junk_folder(self, imap_conn):
+    def _find_folder_by_attribute(self, imap_conn, attribute, fallback_names):
+        """Locate a special-use folder via its SPECIAL-USE attribute (e.g.
+        ``\\Junk``/``\\Trash``/``\\Sent``), falling back to common names."""
         status, folders = imap_conn.list()
         if status == 'OK':
             for folder in folders or []:
                 folder_str = self._decode_imap_line(folder)
-                if '\\Junk' in folder_str:
+                if attribute in folder_str:
                     folder_name = self._extract_imap_folder_name(folder_str)
                     if folder_name:
                         return folder_name
 
-        for name in self._JUNK_FOLDER_FALLBACK_NAMES:
+        for name in fallback_names:
             quoted = self._quote_imap_folder(name)
             try:
                 check_status, _ = imap_conn.select(quoted, readonly=True)
@@ -125,14 +161,17 @@ class ImapMailboxManager(BaseMailboxManager):
 
         return ''
 
-    @staticmethod
-    def _normalize_message_ids(message_ids):
-        normalized = []
-        for message_id in message_ids or []:
-            value = str(message_id or '').strip()
-            if value:
-                normalized.append(value)
-        return normalized
+    def _find_junk_folder(self, imap_conn):
+        return self._find_folder_by_attribute(
+            imap_conn, '\\Junk', self._JUNK_FOLDER_FALLBACK_NAMES)
+
+    def _find_trash_folder(self, imap_conn):
+        return self._find_folder_by_attribute(
+            imap_conn, '\\Trash', self._TRASH_FOLDER_FALLBACK_NAMES)
+
+    def _find_sent_folder(self, imap_conn):
+        return self._find_folder_by_attribute(
+            imap_conn, '\\Sent', self._SENT_FOLDER_FALLBACK_NAMES)
 
     def _connect(self):
         imap = imaplib.IMAP4_SSL(self.imap_host, int(self.imap_port), timeout=self._CONNECT_TIMEOUT)
@@ -171,26 +210,7 @@ class ImapMailboxManager(BaseMailboxManager):
                 return {'moved_count': 0, 'target_folder': junk_folder}
 
             uid_csv = ','.join(sorted(uid_set))
-            capability_status, capability_data = imap.capability()
-            supports_move = False
-            if capability_status == 'OK':
-                capability_text = ' '.join(self._decode_imap_line(item) for item in capability_data or [])
-                supports_move = 'MOVE' in capability_text.upper()
-
-            if supports_move:
-                move_status, _ = imap.uid('MOVE', uid_csv, quoted_junk_folder)
-                if move_status != 'OK':
-                    raise MailboxOperationError('IMAP MOVE command failed.')
-            else:
-                copy_status, _ = imap.uid('COPY', uid_csv, quoted_junk_folder)
-                if copy_status != 'OK':
-                    raise MailboxOperationError('IMAP COPY command failed.')
-                store_status, _ = imap.uid('STORE', uid_csv, '+FLAGS', '(\\Deleted)')
-                if store_status != 'OK':
-                    raise MailboxOperationError('IMAP STORE command failed.')
-                expunge_status, _ = imap.expunge()
-                if expunge_status != 'OK':
-                    raise MailboxOperationError('IMAP EXPUNGE command failed.')
+            self._move_uids(imap, uid_csv, quoted_junk_folder)
 
             return {'moved_count': len(uid_set), 'target_folder': junk_folder}
         except (MailboxConfigError, MailboxOperationError):
@@ -205,14 +225,222 @@ class ImapMailboxManager(BaseMailboxManager):
                 except Exception:
                     pass
 
+    def _find_uid_by_msgid(self, imap, folder, message_id):
+        """Return the UID of a message identified by its Message-ID header in
+        ``folder`` (selected read-only), or ``None`` if not found."""
+        quoted = self._quote_imap_folder(folder)
+        status, _ = imap.select(quoted, readonly=True)
+        if status != 'OK':
+            return None
+        try:
+            status, data = imap.uid('SEARCH', None, f'HEADER Message-ID "{message_id}"')
+            if status == 'OK' and data and data[0]:
+                uids = data[0].split()
+                if uids:
+                    return uids[0].decode() if isinstance(uids[0], bytes) else str(uids[0])
+            return None
+        finally:
+            try:
+                imap.close()
+            except Exception:
+                pass
+
+    def _move_uids(self, imap, uid_csv, quoted_dest_folder):
+        """Move the given UID(s) from the currently selected folder to
+        ``quoted_dest_folder``, preferring IMAP MOVE and falling back to
+        COPY + STORE \\Deleted + EXPUNGE."""
+        capability_status, capability_data = imap.capability()
+        supports_move = False
+        if capability_status == 'OK':
+            capability_text = ' '.join(self._decode_imap_line(item) for item in capability_data or [])
+            supports_move = 'MOVE' in capability_text.upper()
+
+        if supports_move:
+            move_status, _ = imap.uid('MOVE', uid_csv, quoted_dest_folder)
+            if move_status != 'OK':
+                raise MailboxOperationError('IMAP MOVE command failed.')
+        else:
+            copy_status, _ = imap.uid('COPY', uid_csv, quoted_dest_folder)
+            if copy_status != 'OK':
+                raise MailboxOperationError('IMAP COPY command failed.')
+            store_status, _ = imap.uid('STORE', uid_csv, '+FLAGS', '(\\Deleted)')
+            if store_status != 'OK':
+                raise MailboxOperationError('IMAP STORE command failed.')
+            expunge_status, _ = imap.expunge()
+            if expunge_status != 'OK':
+                raise MailboxOperationError('IMAP EXPUNGE command failed.')
+
+    def move_to_trash(self, emails_info):
+        if not emails_info:
+            return {'moved_count': 0, 'target_folder': ''}
+
+        imap = None
+        try:
+            imap = self._connect()
+
+            trash_folder = self._find_trash_folder(imap)
+            if not trash_folder:
+                raise MailboxOperationError('Unable to locate trash folder.')
+            quoted_trash_folder = self._quote_imap_folder(trash_folder)
+            sent_folder = self._find_sent_folder(imap)
+
+            moved_count = 0
+            for message_id, is_sender in emails_info:
+                clean_message_id = str(message_id or '').strip()
+                if not clean_message_id:
+                    continue
+                source_folder = sent_folder if is_sender else 'INBOX'
+                if not source_folder:
+                    continue
+                uid = self._find_uid_by_msgid(imap, source_folder, clean_message_id)
+                if not uid:
+                    # Already gone from the server — skip silently.
+                    continue
+                select_status, _ = imap.select(self._quote_imap_folder(source_folder))
+                if select_status != 'OK':
+                    raise MailboxOperationError(f'Failed to open folder {source_folder}.')
+                self._move_uids(imap, uid, quoted_trash_folder)
+                moved_count += 1
+
+            return {'moved_count': moved_count, 'target_folder': trash_folder}
+        except (MailboxConfigError, MailboxOperationError):
+            raise
+        except Exception as e:
+            logger.exception('Failed to move emails to trash via IMAP: %s', e)
+            raise MailboxOperationError('Failed to move emails to trash.')
+        finally:
+            if imap:
+                try:
+                    imap.logout()
+                except Exception:
+                    pass
+
+
+class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
+    """Base class for OAuth-based mailbox managers (Gmail, Microsoft).
+
+    Junk/spam moving is not implemented for OAuth providers yet; only
+    trash (delete) is supported.
+    """
+
+    def __init__(self, config):
+        super().__init__(config)
+        if not self._has_complete_oauth_config():
+            raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')
+
+    def move_to_junk(self, message_ids):
+        raise MailboxOperationError('Moving to junk is not supported for this provider yet.')
+
+    def _auth_headers(self, extra=None):
+        headers = {'Authorization': f'Bearer {self.access_token}'}
+        if extra:
+            headers.update(extra)
+        return headers
+
+
+class GmailMailboxManager(OAuthMailboxManager):
+    """Gmail API mailbox manager."""
+
+    SEARCH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
+    TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
+
+    def move_to_trash(self, message_ids):
+        normalized_message_ids = self._normalize_message_ids(message_ids)
+        if not normalized_message_ids:
+            return {'moved_count': 0, 'target_folder': 'TRASH'}
+
+        try:
+            self._request_access_token()
+
+            moved_count = 0
+            for message_id in normalized_message_ids:
+                # Escape quotes for Gmail search query syntax.
+                safe_message_id = message_id.replace('"', '\\"')
+                search_resp = requests.get(
+                    self.SEARCH_ENDPOINT,
+                    params={'q': f'rfc822msgid:"{safe_message_id}"'},
+                    headers=self._auth_headers(),
+                )
+                _check_and_raise_error(search_resp)
+                messages = search_resp.json().get('messages', [])
+                if not messages:
+                    continue
+
+                gmail_id = messages[0]['id']
+                trash_resp = requests.post(
+                    self.TRASH_ENDPOINT.format(gmail_id=gmail_id),
+                    headers=self._auth_headers(),
+                )
+                _check_and_raise_error(trash_resp)
+                moved_count += 1
+
+            return {'moved_count': moved_count, 'target_folder': 'TRASH'}
+        except (MailboxConfigError, MailboxOperationError, EmailAuthProviderError):
+            raise
+        except Exception as e:
+            logger.exception('Failed to move emails to trash via Gmail API: %s', e)
+            raise MailboxOperationError('Failed to move emails to trash.')
+
+
+class MicrosoftMailboxManager(OAuthMailboxManager):
+    """Microsoft Graph API mailbox manager."""
+
+    SEARCH_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages'
+    MOVE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{ms_id}/move'
+
+    def move_to_trash(self, message_ids):
+        normalized_message_ids = self._normalize_message_ids(message_ids)
+        if not normalized_message_ids:
+            return {'moved_count': 0, 'target_folder': 'deleteditems'}
+
+        try:
+            self._request_access_token()
+
+            moved_count = 0
+            for message_id in normalized_message_ids:
+                # OData filter strings escape single quotes by doubling them.
+                safe_message_id = message_id.replace("'", "''")
+                search_resp = requests.get(
+                    self.SEARCH_ENDPOINT,
+                    params={
+                        '$filter': f"internetMessageId eq '{safe_message_id}'",
+                        '$select': 'id',
+                        '$top': 1,
+                    },
+                    headers=self._auth_headers(),
+                )
+                _check_and_raise_error(search_resp)
+                values = search_resp.json().get('value', [])
+                if not values:
+                    continue
+
+                ms_id = values[0]['id']
+                move_resp = requests.post(
+                    self.MOVE_ENDPOINT.format(ms_id=ms_id),
+                    json={'destinationId': 'deleteditems'},
+                    headers=self._auth_headers({'Content-Type': 'application/json'}),
+                )
+                _check_and_raise_error(move_resp)
+                moved_count += 1
+
+            return {'moved_count': moved_count, 'target_folder': 'deleteditems'}
+        except (MailboxConfigError, MailboxOperationError, EmailAuthProviderError):
+            raise
+        except Exception as e:
+            logger.exception('Failed to move emails to trash via Microsoft Graph API: %s', e)
+            raise MailboxOperationError('Failed to move emails to trash.')
+
 
 def get_mailbox_manager_from_config(config):
     server_provider = config.get('server_provider', 'general_email_provider')
 
     if server_provider == 'general_email_provider':
         return ImapMailboxManager(config)
+    elif server_provider == 'Gmail':
+        return GmailMailboxManager(config)
+    elif server_provider == 'Microsoft':
+        return MicrosoftMailboxManager(config)
 
-    # OAuth providers (Gmail/Microsoft) are not supported yet.
     logger.error('Mailbox manager not supported for server_provider: %s', server_provider)
     raise MailboxConfigError(f'Mailbox operations are not supported for provider: {server_provider}')
 
@@ -222,11 +450,20 @@ def move_emails_to_junk(config, message_ids):
     return manager.move_to_junk(message_ids)
 
 
+def move_emails_to_trash(config, emails_info):
+    manager = get_mailbox_manager_from_config(config)
+    return manager.move_to_trash(emails_info)
+
+
 __all__ = [
     'MailboxConfigError',
     'MailboxOperationError',
     'BaseMailboxManager',
     'ImapMailboxManager',
+    'OAuthMailboxManager',
+    'GmailMailboxManager',
+    'MicrosoftMailboxManager',
     'get_mailbox_manager_from_config',
     'move_emails_to_junk',
+    'move_emails_to_trash',
 ]
