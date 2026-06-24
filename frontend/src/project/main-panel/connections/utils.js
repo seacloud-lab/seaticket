@@ -14,6 +14,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
+import { CellType } from '@/sea-metadata/constants';
 
 export const shouldDisplayEmailField = (field, provider, showAdvancedOptions) => {
   if (field.providers && !field.providers.includes(provider)) return false;
@@ -463,17 +464,25 @@ export const formatColumns = (connection, sourceColumns, { collaborators = [] } 
   if (!connection || !Array.isArray(sourceColumns) || sourceColumns.length === 0) return [];
   const type = connection.type;
   const columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
+  const defaultColumnConfig = {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.DUE_DATE]: {
+      display_name: gettext('Due date'),
+      type: CellType.DATE,
+    },
+    ...columnConfig,
+  };
   const notDisplayColumnNames = [
     CONNECTION_PREDEFINED_COLUMN_NAME._PK,
     CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
     CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
     CONNECTION_PREDEFINED_COLUMN_NAME.URL,
     CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
+    CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
   ];
   let targetColumns = sourceColumns.slice(0);
   targetColumns = targetColumns
     .filter(c => !notDisplayColumnNames.includes(c.name))
-    .map(c => ({ ...c, ...columnConfig[c.name] }));
+    .map(c => ({ ...c, ...defaultColumnConfig[c.name] }));
 
   if (type === CONNECTION_TYPE.GENERAL_TASK) {
     const optionColumnsConfig = {
