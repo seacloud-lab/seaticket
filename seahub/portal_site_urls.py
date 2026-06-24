@@ -4,43 +4,15 @@ from django.urls import include, re_path
 from django.views.generic import TemplateView
 
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.portal.views import (
-    portal_anonymous_validate,
-    portal_external_invitation_accept_view,
-    portal_external_logout_view,
-    portal_login_view,
-    portal_preview_view,
-    portal_view,
-)
-from seahub.portal.apis import (
-    PortalCustomDomainTLSAskView,
-    PortalExternalLoginSendCodeView,
-    PortalExternalLoginVerifyCodeView,
-    PortalIssueCommentView,
-    PortalIssueCommentsView,
-    PortalIssueMetadataView,
-    PortalIssueView,
-    PortalIssuesView,
-    PortalKnowledgeBaseRecordView,
-    PortalKnowledgeBaseRecordsView,
-    PortalKnowledgeBaseViewsView,
-    PortalLogoView,
-    PortalMyIssuesView,
-    PortalTagsView,
-    PortalUserListView,
-)
-from seahub.portal.chat.apis import (
-    PortalChatMessagesView,
-    PortalChatSessionTitleView,
-    PortalChatSessionsView,
-    PortalChatSessionView,
-    PortalChatView,
-)
-from seahub.portal.files import (
-    GetPortalUploadFileView,
-    PortalFileView,
-    PortalUploadFileView,
-)
+from seahub.portal.views import portal_anonymous_validate, portal_external_invitation_accept_view, portal_external_logout_view, \
+    portal_login_view, portal_preview_view, portal_view
+from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
+    PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
+    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalMyIssuesView, PortalTagsView, PortalUserListView
+
+from seahub.portal.chat.apis import PortalChatMessagesView, PortalChatSessionTitleView, PortalChatSessionsView, PortalChatSessionView, \
+    PortalChatView
+from seahub.portal.files import GetPortalUploadFileView, PortalFileView, PortalUploadFileView
 from seahub.views import custom_css_view, i18n
 
 

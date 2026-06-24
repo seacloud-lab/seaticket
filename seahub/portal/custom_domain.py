@@ -11,21 +11,10 @@ logger = logging.getLogger(__name__)
 HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
 CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
 CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
-DEFAULT_PORTAL_RESERVED_SUBDOMAIN_PREFIXES = (
-    'admin',
-    'api',
-    'assets',
-    'auth',
-    'cdn',
-    'custom-domains',
-    'internal',
-    'mail',
-    'media',
-    'static',
-    'status',
-    'support',
-    'www',
-)
+PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH = 3
+PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH = 63
+PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media',
+    'static', 'status', 'support', 'www')
 
 
 def normalize_portal_custom_domain(domain, check_reserved=True):
@@ -95,28 +84,22 @@ def normalize_portal_subdomain_prefix(prefix):
     except Exception as error:
         raise ValueError('Portal subdomain is invalid.') from error
 
+    if len(prefix) < PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH:
+        raise ValueError('Portal subdomain is too short.')
+
+    if len(prefix) > PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH:
+        raise ValueError('Portal subdomain is too long.')
+
     if not HOST_LABEL_RE.match(prefix):
         raise ValueError('Portal subdomain is invalid.')
 
     return prefix
 
 
-def _get_setting_list(name, default=()):
-    value = getattr(settings, name, default)
-    if isinstance(value, str):
-        return [item.strip() for item in value.split(',')]
-    return list(value or [])
-
-
 def get_portal_reserved_subdomain_prefixes():
     reserved_prefixes = set()
-    for prefix in _get_setting_list('PORTAL_RESERVED_SUBDOMAIN_PREFIXES', DEFAULT_PORTAL_RESERVED_SUBDOMAIN_PREFIXES):
-        if not prefix:
-            continue
-        try:
-            reserved_prefixes.add(normalize_portal_subdomain_prefix(prefix))
-        except ValueError:
-            logger.warning('Invalid portal reserved subdomain prefix: %s', prefix)
+    for prefix in PORTAL_RESERVED_SUBDOMAIN_PREFIXES:
+        reserved_prefixes.add(normalize_portal_subdomain_prefix(prefix))
 
     dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
     try:

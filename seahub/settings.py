@@ -117,10 +117,10 @@ ENABLE_REMOTE_USER_AUTHENTICATION = False
 
 # Runtime mode. Main mode serves the management application. Portal mode serves
 # only the customer-facing portal URL surface.
-SEAQA_APP_MODE = os.environ.get('SEAQA_APP_MODE', os.environ.get('SEATICKET_APP_MODE', 'main')).lower()
+SEAQA_APP_MODE = os.environ.get('SEAQA_APP_MODE', 'main')
 IS_PORTAL_MODE = SEAQA_APP_MODE == 'portal'
-CSRF_MIDDLEWARE = 'seahub.portal.csrf.PortalAwareCsrfViewMiddleware' if IS_PORTAL_MODE else 'django.middleware.csrf.CsrfViewMiddleware'
-PORTAL_DOMAIN_MIDDLEWARE = ['seahub.portal.middleware.PortalCustomDomainMiddleware'] if IS_PORTAL_MODE else []
+PORTAL_DOMAIN_MIDDLEWARE = ['seahub.portal.middleware.PortalCustomDomainMiddleware', 'seahub.portal.csrf.PortalAwareCsrfViewMiddleware'] \
+                            if IS_PORTAL_MODE else ['django.middleware.csrf.CsrfViewMiddleware']
 
 # Order is important
 MIDDLEWARE = [
@@ -128,7 +128,6 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
 ] + PORTAL_DOMAIN_MIDDLEWARE + [
-    CSRF_MIDDLEWARE,
     'django.contrib.messages.middleware.MessageMiddleware',
     'seahub.auth.middleware.AuthenticationMiddleware',
     'seahub.base.middleware.BaseMiddleware',
@@ -635,14 +634,6 @@ GITHUB_PRIVATE_KEY_PATH = ''
 # Enable general task feature
 ENABLE_GENERAL_TASK = False
 
-PORTAL_SERVICE_ROOT_DOMAIN = os.environ.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
-PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH = 6
-PORTAL_RESERVED_SUBDOMAIN_PREFIXES = os.environ.get(
-    'PORTAL_RESERVED_SUBDOMAIN_PREFIXES',
-    'admin,api,assets,auth,cdn,custom-domains,internal,mail,media,static,status,support,www'
-)
-PORTAL_CUSTOM_DOMAIN_DNS_TARGET = os.environ.get('PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
-
 
 def validate_llm_models(models):
     if not models or not isinstance(models, list):
@@ -889,3 +880,7 @@ LINEAR_CLIENT_SECRET = configs.get('LINEAR_CLIENT_SECRET', '')
 LINEAR_REDIRECT_URL = configs.get('LINEAR_REDIRECT_URL', '')
 
 ENABLE_NOTIFICATION_SERVER = configs.get('ENABLE_NOTIFICATION_SERVER', False)
+
+# Portal custom domain
+PORTAL_SERVICE_ROOT_DOMAIN = configs.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
+PORTAL_CUSTOM_DOMAIN_DNS_TARGET = configs.get('PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')

@@ -637,11 +637,24 @@ class TestPortalDomainAliasView:
 
     def test_post_rejects_reserved_alias_prefix(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-        settings.PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ['www']
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
             data={'custom_subdomain_prefix': 'www'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
+    def test_post_rejects_too_short_alias_prefix(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/domain-alias/",
+            data={'custom_subdomain_prefix': 'ab'},
             format='json'
         )
         request.user = project_creator

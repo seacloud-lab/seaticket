@@ -4,7 +4,6 @@ import random
 import copy
 from types import SimpleNamespace
 from secrets import token_hex
-from django.conf import settings
 from django.db import models
 from django.core.cache import cache
 from django.utils import timezone
@@ -162,13 +161,9 @@ class PortalDomainAliasManager(models.Manager):
         if alias:
             return alias
 
-        try:
-            prefix_length = int(getattr(settings, 'PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH', PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH))
-        except (TypeError, ValueError):
-            prefix_length = PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH
         alias = self.model(
             project_uuid=str(project_uuid),
-            prefix=self.generate_unique_prefix(prefix_length),
+            prefix=self.generate_unique_prefix(),
             alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
             enabled=True,
         )

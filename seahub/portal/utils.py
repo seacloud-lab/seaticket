@@ -31,14 +31,6 @@ PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
 PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
 
-
-def make_portal_preview_token(project_uuid, username):
-    return signing.dumps({
-        'project_uuid': str(project_uuid),
-        'username': username,
-    }, salt=PORTAL_PREVIEW_TOKEN_SALT)
-
-
 def load_portal_preview_token(token):
     try:
         payload = signing.loads(

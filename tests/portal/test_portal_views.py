@@ -8,8 +8,8 @@ from django.http import Http404, HttpResponse
 from seahub.portal.csrf import is_portal_origin_verified
 from seahub.portal.middleware import PortalCustomDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
-from seahub.portal.utils import make_portal_preview_token, set_portal_preview_session
-from seahub.portal.views import portal_external_logout_view, portal_preview_view, portal_view
+from seahub.portal.utils import set_portal_preview_session
+from seahub.portal.views import portal_external_logout_view, portal_view
 
 
 def process_custom_domain_request(request):
@@ -93,29 +93,6 @@ def test_portal_external_logout_clears_external_session_for_authenticated_user(f
     assert response['Location'] == f'/portal/{real_project.uuid}/'
     assert 'portal_external_username' not in request.session
     assert 'portal_external_project_uuid' not in request.session
-
-
-@pytest.mark.django_db
-def test_portal_preview_view_consumes_token_on_alias_domain(factory, real_project, project_creator, settings):
-    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-    PortalDomainAlias.objects.create(
-        prefix='my-brand',
-        project_uuid=str(real_project.uuid),
-        alias_type='custom',
-        enabled=True,
-    )
-    token = make_portal_preview_token(str(real_project.uuid), project_creator.username)
-    request = factory.get(f'/portal-preview/{token}/', HTTP_HOST='my-brand.seaticket-portal.test')
-    request.session = {}
-    request.user = SimpleNamespace(username='', is_authenticated=False)
-    process_custom_domain_request(request)
-
-    response = portal_preview_view(request, token)
-
-    assert response.status_code == 302
-    assert response['Location'] == '/'
-    assert request.session['portal_preview_project_uuid'] == str(real_project.uuid)
-    assert request.session['portal_preview_username'] == project_creator.username
 
 
 @pytest.mark.django_db

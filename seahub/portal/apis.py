@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
+from django.core import signing
 from django.http import FileResponse
 from django.db import IntegrityError
 from django.template.defaultfilters import filesizeformat
@@ -43,9 +44,9 @@ from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssue
 from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, \
     PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
-    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
+    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
-    is_user_in_the_same_team, is_portal_external_login_locked, make_portal_preview_token, normalize_external_login_email, portal_path
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key
 from seahub.portal.custom_domain import build_portal_service_domain, get_portal_service_root_domain, \
     normalize_portal_custom_domain, validate_portal_subdomain_prefix_available, \
     verify_portal_custom_domain_dns
@@ -1578,52 +1579,44 @@ class PortalPreviewTokenView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def _build_preview_url(self, request, project_uuid, token):
-        token_path = '/portal-preview/%s/' % quote(token, safe='')
-
-        custom_domain = PortalCustomDomain.objects.filter(
-            project_uuid=str(project_uuid),
-            verified=True,
-        ).first()
-        if custom_domain:
-            return 'https://%s%s' % (custom_domain.domain, token_path)
-
-        alias = PortalDomainAlias.objects.filter(
-            project_uuid=str(project_uuid),
-            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
-            enabled=True,
-        ).first()
-        if not alias and get_portal_service_root_domain():
-            alias = PortalDomainAlias.objects.filter(
-                project_uuid=str(project_uuid),
-                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
-                enabled=True,
-            ).first()
-            if not alias:
-                alias = PortalDomainAlias.objects.ensure_default_alias(project_uuid)
-
-        if alias:
-            return 'https://%s%s' % (build_portal_service_domain(alias.prefix), token_path)
-
-        return request.build_absolute_uri(token_path)
-
     @require_org_context
     def post(self, request, project_uuid):
         project = Projects.objects.get_project_by_uuid(project_uuid)
+        username = request.user.username
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+        if not check_project_admin_permission(username, project.workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        token = make_portal_preview_token(project_uuid, request.user.username)
-        return Response({
-            'token': token,
-            'preview_url': self._build_preview_url(request, project_uuid, token),
-        })
+        token = signing.dumps({'project_uuid': project_uuid,'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
+        token_path = '/portal-preview/%s/' % quote(token, safe='')
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=project_uuid, verified=True).first()
+        if custom_domain:
+            preview_url = 'https://%s%s' % (custom_domain.domain, token_path)
+            return Response({
+                'token': token,
+                'preview_url': preview_url,
+            })
+        alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, enabled=True).first()
+        if not alias and get_portal_service_root_domain():
+            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT, enabled=True).first()
+            if not alias:
+                alias = PortalDomainAlias.objects.ensure_default_alias(project_uuid)
 
+        if alias:
+            preview_url = 'https://%s%s' % (build_portal_service_domain(alias.prefix), token_path)
+            return Response({
+                'token': token,
+                'preview_url': preview_url,
+            })
+
+        return Response({
+                'token': token,
+                'preview_url': request.build_absolute_uri(token_path),
+            })
 
 class PortalDomainAliasView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

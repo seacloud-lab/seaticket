@@ -12,12 +12,7 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import (
-    get_portal_preview_username,
-    load_portal_preview_token,
-    portal_path,
-    set_portal_preview_session,
-)
+from seahub.portal.utils import get_portal_preview_username, load_portal_preview_token, portal_path, set_portal_preview_session
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.models import Projects
