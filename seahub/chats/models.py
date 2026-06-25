@@ -43,9 +43,9 @@ class ChatSessionsManager(models.Manager):
                 username=username
             )
 
-            source_messages = list(ChatMessages.objects.get_messages_by_session(source_session.session_uuid))
-            for message in source_messages:
-                ChatMessages.objects.create(
+            source_messages = ChatMessages.objects.get_messages_by_session(source_session.session_uuid)
+            ChatMessages.objects.bulk_create([
+                ChatMessages(
                     session_uuid=new_session.session_uuid,
                     message_id=message.message_id,
                     role=message.role,
@@ -54,6 +54,8 @@ class ChatSessionsManager(models.Manager):
                     sources=message.sources,
                     as_context=message.as_context,
                 )
+                for message in source_messages
+            ])
 
             source_thought_processes = ChatMessageThoughtProcess.objects.filter(
                 session_uuid=source_session.session_uuid

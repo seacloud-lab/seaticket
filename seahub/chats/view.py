@@ -29,19 +29,6 @@ from seahub.project.constants import AIScenario
 
 logger = logging.getLogger(__name__)
 
-
-def _session_belongs_to_project(session, project_uuid):
-    return str(session.project_uuid) == str(project_uuid)
-
-
-def _can_read_session(session, username):
-    return session.username == username or session.is_shared
-
-
-def _shared_read_only_error():
-    return 'Permission denied. Only the session owner can continue this chat. Start a new chat from this conversation to continue.'
-
-
 class ChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -165,7 +152,7 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _session_belongs_to_project(session, project_uuid):
+            if str(session.project_uuid) != str(project_uuid):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -215,7 +202,7 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _session_belongs_to_project(session, project_uuid):
+            if str(session.project_uuid) != str(project_uuid):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -270,7 +257,7 @@ class ChatSessionTitleView(APIView):
             error_msg = 'Session not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not _session_belongs_to_project(session, project_uuid):
+        if str(session.project_uuid) != str(project_uuid):
             error_msg = 'Session not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -322,11 +309,11 @@ class ChatSessionCopyView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _session_belongs_to_project(session, project_uuid):
+            if str(session.project_uuid) != str(project_uuid):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _can_read_session(session, username):
+            if session.username != username and not session.is_shared:
                 error_msg = 'Permission denied. You can only copy your own sessions or shared team sessions.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -375,11 +362,11 @@ class ChatMessagesView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _session_belongs_to_project(session, project_uuid):
+            if str(session.project_uuid) != str(project_uuid):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _can_read_session(session, username):
+            if session.username != username and not session.is_shared:
                 error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -442,7 +429,7 @@ class ChatView(APIView):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-            if not _can_read_session(session, username):
+            if session.username != username and not session.is_shared:
                 error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -536,13 +523,16 @@ class ChatView(APIView):
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            if not _session_belongs_to_project(session, project_uuid):
+            if str(session.project_uuid) != str(project_uuid):
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             
             # Only the session owner can continue or clear context in this session.
             if session.username != username:
-                error_msg = _shared_read_only_error() if session.is_shared else 'Permission denied. You can only access your own sessions or shared team sessions.'
+                if session.is_shared:
+                    error_msg = 'Permission denied. Only the session owner can continue this chat. Start a new chat from this conversation to continue.'
+                else:
+                    error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             elif clear_context:
                 ChatMessages.objects.clear_context(session_uuid)
