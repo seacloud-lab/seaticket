@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
+import requests
 from urllib.parse import parse_qs, urlparse
 
 from rest_framework.views import APIView

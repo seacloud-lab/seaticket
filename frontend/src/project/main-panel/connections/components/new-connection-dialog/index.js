@@ -546,7 +546,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
-  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected,  isConfluence, isConfluenceOauthConnected]);
+  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected]);
 
   return (
     <Modal

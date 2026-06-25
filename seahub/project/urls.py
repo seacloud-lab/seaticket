@@ -4,11 +4,7 @@ from django.urls import re_path
 from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
     confluence_oauth, confluence_oauth_callback
 
-<<<<<<< HEAD
-from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces
-=======
-from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectConfluenceWorkspaces, ProjectConfluenceSpaces
->>>>>>> 85b0d014 (support 'select space')
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces, ProjectConfluenceSpaces
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, ProjectConnectionMetaView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
