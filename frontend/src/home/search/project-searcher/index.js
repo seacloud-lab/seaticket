@@ -50,18 +50,14 @@ const ProjectSearcher = (props) => {
     sendRequest(queryData, queryType);
   };
 
-  const stopSearch = () => {
-    setIsLoading(false);
-    setSearchedRes({});
-  };
-
   const startSearch = (searchStr) => {
     if (getValueLength(searchStr) < 3) {
-      stopSearch();
-      return;
+      setIsLoading(false);
+      setSearchedRes({});
+    } else {
+      setSearchStr(searchStr);
+      searchWithQueryData(searchStr, currQueryType);
     }
-    setSearchStr(searchStr);
-    searchWithQueryData(searchStr, currQueryType);
   };
 
   const clearSearch = () => {
