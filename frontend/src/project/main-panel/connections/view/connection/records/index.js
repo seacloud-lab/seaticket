@@ -273,6 +273,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
     const threadIds = rows.map(row => row._id);
+    toaster.notify(gettext('It may take some time, please wait.'));
     deleteRows(getTableName(connection), threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
     ).then(() => {
@@ -280,6 +281,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       const successMessage = rows.length === 1
         ? gettext('Email thread has been moved to Trash.')
         : gettext('Email threads have been moved to Trash.');
+      toaster.closeAll();
       toaster.success(successMessage);
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
