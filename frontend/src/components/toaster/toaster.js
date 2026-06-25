@@ -4,20 +4,22 @@ import ToastManager from './toastManager';
 
 import './index.css';
 
-const isBrowser =
-    typeof window !== 'undefined' && typeof window.document !== 'undefined';
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 /**
- * The Toaster manages the interactionsb between
+ * The Toaster manages the interaction between
  * the ToasterManger and the toast API.
  */
 export default class Toaster {
   constructor() {
     if (!isBrowser) return;
 
-    const container = document.createElement('div');
-    container.setAttribute('data-evergreen-toaster-container', '');
-    document.body.appendChild(container);
+    let container = document.querySelector('[data-evergreen-toaster-container]');
+    if (!container) {
+      container = document.createElement('div');
+      container.setAttribute('data-evergreen-toaster-container', '');
+      document.body.appendChild(container);
+    }
 
     const root = createRoot(container);
     root.render(
