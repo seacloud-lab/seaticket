@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.cache import cache
 from django.core import signing
@@ -149,6 +151,23 @@ def is_user_in_the_same_team(project, email):
     
     return True
 
+def get_portal_settings(project):
+    try:
+        project_settings = json.loads(project.settings) if project.settings else {}
+    except Exception:
+        project_settings = {}
+    portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
+    return {
+        'enable_portal': bool(portal_settings.get('enable_portal', False)),
+        'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
+        'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
+        'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
+        'password': portal_settings.get('password'),
+        'streaming_response': streaming_response,
+        'portal_name': portal_settings.get('portal_name', ''),
+        'portal_logo': portal_settings.get('portal_logo', ''),
+    }
 
 def _build_visitor_session_error():
     response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')

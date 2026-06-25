@@ -356,6 +356,7 @@ REST_FRAMEWORK = {
         'ping': '3000/minute',
         'anon': '60/minute',
         'user': '3000/minute',
+        'portal_tls_ask': '300/minute',
         'sync_common_dataset': '60/minute',
         'org-admin': '1000/day',
         'org_register': '3/day',

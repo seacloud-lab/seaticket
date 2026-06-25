@@ -290,7 +290,6 @@ def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_p
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
         alias_type='custom',
-        enabled=True,
     )
     request = factory.get('/', HTTP_HOST='my-brand.seaticket-portal.test')
 
@@ -303,31 +302,12 @@ def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_p
 
 
 @pytest.mark.django_db
-def test_disabled_service_domain_alias_is_not_rewritten(factory, real_project, settings):
-    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-    PortalDomainAlias.objects.create(
-        prefix='disabled-brand',
-        project_uuid=str(real_project.uuid),
-        alias_type='custom',
-        enabled=False,
-    )
-    request = factory.get('/', HTTP_HOST='disabled-brand.seaticket-portal.test')
-
-    response = process_custom_domain_request(request)
-
-    assert response is None
-    assert request.path_info == '/'
-    assert not hasattr(request, 'portal_domain')
-
-
-@pytest.mark.django_db
 def test_portal_origin_verified_for_same_project_alias(factory, real_project, settings):
     settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
     PortalDomainAlias.objects.create(
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
         alias_type='custom',
-        enabled=True,
     )
     request = factory.post(
         '/',
@@ -346,13 +326,11 @@ def test_portal_origin_rejects_other_project_alias(factory, real_project, settin
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
         alias_type='custom',
-        enabled=True,
     )
     PortalDomainAlias.objects.create(
         prefix='other-brand',
         project_uuid=str(uuid4()),
         alias_type='custom',
-        enabled=True,
     )
     request = factory.post(
         '/',

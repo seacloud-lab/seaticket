@@ -4,6 +4,7 @@ from unittest.mock import Mock, MagicMock, patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 
 from seahub.project.models import Projects
 from seahub.portal.apis import (
@@ -24,7 +25,8 @@ from seahub.portal.apis import (
     PortalPreviewTokenView,
     SQLGeneratorOptionInvalidError,
 )
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, \
+    get_portal_tls_ask_cache_key
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
@@ -546,7 +548,26 @@ class TestPortalSettingsView:
 @pytest.mark.django_db
 class TestPortalDomainAliasView:
 
-    def test_get_ensures_default_alias(self, factory, project_creator, real_project, settings):
+    def test_get_returns_default_alias(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='x765cd',
+            alias_type='default',
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['portal_service_root_domain'] == 'seaticket-portal.test'
+        assert resp.data['default_subdomain_prefix'] == 'x765cd'
+        assert resp.data['default_public_url'] == 'http://x765cd.seaticket-portal.test/'
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
+
+    def test_get_returns_empty_default_alias_when_missing(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
         request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
@@ -555,10 +576,24 @@ class TestPortalDomainAliasView:
         resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['portal_service_root_domain'] == 'seaticket-portal.test'
-        assert len(resp.data['default_subdomain_prefix']) == 6
-        assert resp.data['default_public_url'].endswith('.seaticket-portal.test/')
-        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
+        assert resp.data['default_subdomain_prefix'] == ''
+        assert resp.data['default_public_url'] == ''
+        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
+
+    def test_get_does_not_create_default_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        project.settings = json.dumps({'portal': {'enable_portal': False}})
+        project.save(update_fields=['settings'])
+        request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['default_subdomain_prefix'] == ''
+        assert resp.data['default_public_url'] == ''
+        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
 
     def test_post_create_custom_alias(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
@@ -635,6 +670,23 @@ class TestPortalDomainAliasView:
 
         assert resp.status_code == 400
 
+    def test_get_keeps_custom_public_url_empty_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
+        project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='my-brand',
+            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['custom_subdomain_prefix'] == 'my-brand'
+        assert resp.data['custom_public_url'] == ''
+
     def test_post_rejects_reserved_alias_prefix(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
@@ -695,7 +747,7 @@ class TestPortalPreviewTokenView:
         resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['preview_url'].startswith('https://support.local.test/portal-preview/')
+        assert resp.data['preview_url'].startswith('http://support.local.test/portal-preview/')
         assert load_portal_preview_token(resp.data['token']) == {
             'project_uuid': str(project.uuid),
             'username': project_creator.username,
@@ -715,20 +767,54 @@ class TestPortalPreviewTokenView:
         resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['preview_url'].startswith('https://my-brand.seaticket-portal.test/portal-preview/')
+        assert resp.data['preview_url'].startswith('http://my-brand.seaticket-portal.test/portal-preview/')
 
-    def test_post_ensures_default_alias_when_no_custom_target(self, factory, project_creator, real_project, settings):
+    def test_post_uses_default_alias_when_no_custom_target(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='x765cd',
+            alias_type='default',
+        )
         request = factory.post(f"/api/v1/portal/{project.uuid}/preview-token/")
         request.user = project_creator
 
         resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['preview_url'].startswith('https://')
-        assert '.seaticket-portal.test/portal-preview/' in resp.data['preview_url']
+        assert resp.data['preview_url'].startswith('http://x765cd.seaticket-portal.test/portal-preview/')
         assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
+
+    def test_post_does_not_create_default_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        project.settings = json.dumps({'portal': {'enable_portal': False}})
+        project.save(update_fields=['settings'])
+        request = factory.post(f"/api/v1/portal/{project.uuid}/preview-token/")
+        request.user = project_creator
+
+        resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert '.seaticket-portal.test/portal-preview/' not in resp.data['preview_url']
+        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), alias_type='default').exists()
+
+    def test_post_does_not_use_alias_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
+        project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='my-brand',
+            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
+        )
+        request = factory.post(f"/api/v1/portal/{project.uuid}/preview-token/")
+        request.user = project_creator
+
+        resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert not resp.data['preview_url'].startswith('https:///')
 
 
 @pytest.mark.django_db
@@ -797,11 +883,13 @@ class TestPortalCustomDomainView:
 
     def test_post_delete_custom_domain(self, factory, project_creator, real_project):
         project = real_project
+        domain = 'support.local.test'
         PortalCustomDomain.objects.create(
-            domain='support.local.test',
+            domain=domain,
             project_uuid=str(project.uuid),
             verified=True,
         )
+        cache.set(get_portal_tls_ask_cache_key(domain), True)
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/custom-domain/",
             data={'custom_domain': ''},
@@ -813,6 +901,7 @@ class TestPortalCustomDomainView:
 
         assert resp.status_code == 200
         assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is None
 
     def test_post_rejects_domain_used_by_other_project(self, factory, project_creator, real_project):
         project = real_project
@@ -849,6 +938,10 @@ class TestPortalCustomDomainView:
 @pytest.mark.django_db
 class TestPortalCustomDomainTLSAskView:
 
+    def test_uses_tls_ask_rate_throttle(self):
+        assert PortalCustomDomainTLSAskView.throttle_classes
+        assert PortalCustomDomainTLSAskView.throttle_classes[0].scope == 'portal_tls_ask'
+
     def test_get_allows_verified_custom_domain(self, factory, real_project):
         PortalCustomDomain.objects.create(
             domain='support.local.test',
@@ -860,6 +953,31 @@ class TestPortalCustomDomainTLSAskView:
             data={'domain': 'Support.Local.Test.'},
             REMOTE_ADDR='127.0.0.1',
         )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 200
+
+    def test_get_negative_cache_is_invalidated_when_domain_is_created(self, factory, real_project):
+        domain = 'negative-cache.local.test'
+        cache.delete(get_portal_tls_ask_cache_key(domain))
+        request = factory.get(
+            '/internal/portal/custom-domain/allow-tls',
+            data={'domain': domain},
+        )
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is False
+
+        PortalCustomDomain.objects.create(
+            domain=domain,
+            project_uuid=str(real_project.uuid),
+            verified=True,
+        )
+
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is None
 
         resp = PortalCustomDomainTLSAskView.as_view()(request)
 

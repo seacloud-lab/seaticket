@@ -14,7 +14,8 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import get_portal_preview_username, load_portal_preview_token, portal_path, set_portal_preview_session
+from seahub.portal.utils import get_portal_preview_username, load_portal_preview_token, portal_path, set_portal_preview_session, \
+    get_portal_settings
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.models import Projects
@@ -26,25 +27,6 @@ from seahub.settings import MEDIA_URL
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
-
-
-def _get_portal_settings(project):
-    try:
-        project_settings = json.loads(project.settings) if project.settings else {}
-    except Exception:
-        project_settings = {}
-    portal_settings = project_settings.get('portal', {})
-    streaming_response = bool(project_settings.get('streaming_response', True))
-    return {
-        'enable_portal': bool(portal_settings.get('enable_portal', False)),
-        'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
-        'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
-        'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
-        'password': portal_settings.get('password'),
-        'streaming_response': streaming_response,
-        'portal_name': portal_settings.get('portal_name', ''),
-        'portal_logo': portal_settings.get('portal_logo', ''),
-    }
 
 
 def _get_external_session_user(request, project_uuid):
@@ -84,7 +66,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     if not project:
         return render_error(request, _('This project does not exist'))
 
-    portal_settings = _get_portal_settings(project)
+    portal_settings = get_portal_settings(project)
     allow_anonymous = portal_settings['allow_anonymous']
     enable_password_protection = portal_settings['enable_password_protection']
     show_kb_in_portal = portal_settings['show_kb_in_portal']
@@ -171,7 +153,7 @@ def portal_login_view(request, project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
-    portal_settings = _get_portal_settings(project)
+    portal_settings = get_portal_settings(project)
     return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
 
 

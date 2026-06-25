@@ -99,7 +99,7 @@ def normalize_portal_subdomain_prefix(prefix):
 def get_portal_reserved_subdomain_prefixes():
     reserved_prefixes = set()
     for prefix in PORTAL_RESERVED_SUBDOMAIN_PREFIXES:
-        reserved_prefixes.add(normalize_portal_subdomain_prefix(prefix))
+        reserved_prefixes.add(prefix)
 
     dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
     try:
@@ -119,19 +119,13 @@ def is_portal_subdomain_prefix_reserved(prefix):
 
 def validate_portal_subdomain_prefix_available(prefix):
     normalized_prefix = normalize_portal_subdomain_prefix(prefix)
-    if is_portal_subdomain_prefix_reserved(normalized_prefix):
+    if normalized_prefix in get_portal_reserved_subdomain_prefixes():
         raise ValueError('Portal subdomain is reserved.')
     return normalized_prefix
 
-
-def get_portal_service_root_domain():
-    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-    return normalize_portal_custom_domain(root_domain, check_reserved=False) if root_domain else ''
-
-
 def build_portal_service_domain(prefix):
     prefix = normalize_portal_subdomain_prefix(prefix)
-    root_domain = get_portal_service_root_domain()
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
     if not root_domain:
         return ''
     return '%s.%s' % (prefix, root_domain)
@@ -139,7 +133,7 @@ def build_portal_service_domain(prefix):
 
 def get_portal_subdomain_prefix(host):
     host = normalize_portal_custom_domain(host, check_reserved=False)
-    root_domain = get_portal_service_root_domain()
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
     if not host or not root_domain:
         return ''
     suffix = '.%s' % root_domain

@@ -5,6 +5,7 @@ import re
 from datetime import datetime, UTC
 from seahub.utils import normalize_cache_key
 
+from django.conf import settings as django_settings
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
 from django.core.cache import cache
@@ -31,6 +32,7 @@ from seahub.seadb_models.utils import init_seadb_tables_from_schema, ensure_port
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.utils.indexer import keyword_search, vector_search_with_text
+from seahub.portal.models import PortalDomainAlias
 
 from seahub.seadb_models.models import SchemaTables
 from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_connection_record_by_pk
@@ -509,6 +511,9 @@ class ProjectView(APIView):
             if should_init_portal_issues:
                 seadb_api = SeaDBAPI()
                 ensure_portal_issues_seadb_table(seadb_api, project.uuid)
+                root_domain = getattr(django_settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+                if root_domain:
+                    PortalDomainAlias.objects.ensure_default_alias(project.uuid)
         except OperationalError:
             error_msg = _('Project name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

@@ -9,7 +9,7 @@ PORTAL_DOMAIN_TYPE_CUSTOM = 'custom'
 
 def resolve_portal_domain(host):
     alias = PortalDomainAlias.objects.get_by_host(host)
-    if alias and alias.enabled:
+    if alias:
         return SimpleNamespace(
             domain_type=PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
             domain=getattr(alias, 'domain', host),

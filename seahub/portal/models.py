@@ -5,6 +5,7 @@ import copy
 from types import SimpleNamespace
 from secrets import token_hex
 from django.db import models
+from django.db import IntegrityError
 from django.core.cache import cache
 from django.utils import timezone
 from uuid import uuid4
@@ -24,11 +25,17 @@ logger = logging.getLogger(__name__)
 
 PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT = 300
 PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = ('domain', 'project_uuid', 'verified')
+PORTAL_TLS_ASK_CACHE_TIMEOUT = 60
+PORTAL_TLS_ASK_CACHE_PREFIX = 'portal_tls_ask_allowed:'
 PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT = 300
-PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid', 'alias_type', 'enabled')
+PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid', 'alias_type')
 PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT = 'default'
 PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM = 'custom'
 PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH = 6
+
+
+def get_portal_tls_ask_cache_key(domain):
+    return '%s%s' % (PORTAL_TLS_ASK_CACHE_PREFIX, domain)
 
 
 def generate_random_string_lower_digits(length):
@@ -154,21 +161,31 @@ class PortalDomainAliasManager(models.Manager):
                 return prefix
 
     def ensure_default_alias(self, project_uuid):
-        alias = super().filter(
-            project_uuid=str(project_uuid),
-            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
-        ).first()
-        if alias:
-            return alias
+        for _index in range(10):
+            alias = super().filter(
+                project_uuid=project_uuid,
+                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+            ).first()
+            if alias:
+                return alias
 
-        alias = self.model(
-            project_uuid=str(project_uuid),
-            prefix=self.generate_unique_prefix(),
-            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
-            enabled=True,
-        )
-        alias.save(using=self._db)
-        return alias
+            alias = self.model(
+                project_uuid=project_uuid,
+                prefix=self.generate_unique_prefix(),
+                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+            )
+            try:
+                alias.save()
+                return alias
+            except IntegrityError:
+                existing_alias = super().filter(
+                    project_uuid=project_uuid,
+                    alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+                ).first()
+                if existing_alias:
+                    return existing_alias
+
+        raise IntegrityError('Failed to create default portal domain alias.')
 
     def delete_custom_alias(self, project_uuid):
         alias = super().filter(
@@ -184,7 +201,6 @@ class PortalDomainAlias(models.Model):
     prefix = models.CharField(max_length=63, unique=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
     alias_type = models.CharField(max_length=32, default=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM)
-    enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -248,6 +264,7 @@ class PortalCustomDomainManager(models.Manager):
             return
 
         cache.delete(self._domain_cache_key(binding.domain))
+        cache.delete(get_portal_tls_ask_cache_key(binding.domain))
         super().filter(project_uuid=str(project_uuid)).delete()
 
 
@@ -278,14 +295,17 @@ class PortalCustomDomain(models.Model):
             self.verification_token = token_hex(16)
         result = super().save(*args, **kwargs)
         cache.delete(PortalCustomDomain.objects._domain_cache_key(self.domain))
+        cache.delete(get_portal_tls_ask_cache_key(self.domain))
         if old_domain and old_domain != self.domain:
             cache.delete(PortalCustomDomain.objects._domain_cache_key(old_domain))
+            cache.delete(get_portal_tls_ask_cache_key(old_domain))
         return result
 
     def delete(self, *args, **kwargs):
         domain = self.domain
         result = super().delete(*args, **kwargs)
         cache.delete(PortalCustomDomain.objects._domain_cache_key(domain))
+        cache.delete(get_portal_tls_ask_cache_key(domain))
         return result
 
     @property

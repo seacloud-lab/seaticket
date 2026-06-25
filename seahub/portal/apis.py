@@ -22,7 +22,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import UserRateThrottle
+from seahub.api2.throttling import UserRateThrottle, PortalTLSAskRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
@@ -41,15 +41,15 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, \
-    PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT
+from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
+    PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT, PORTAL_TLS_ASK_CACHE_TIMEOUT
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
-    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key
-from seahub.portal.custom_domain import build_portal_service_domain, get_portal_service_root_domain, \
-    normalize_portal_custom_domain, validate_portal_subdomain_prefix_available, \
-    verify_portal_custom_domain_dns
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
+    get_portal_settings
+from seahub.portal.custom_domain import build_portal_service_domain, verify_portal_custom_domain_dns, normalize_portal_subdomain_prefix,\
+    normalize_portal_custom_domain, get_portal_reserved_subdomain_prefixes
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -68,6 +68,13 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+
+
+def _build_absolute_portal_url(request, domain, path='/'):
+    if not domain:
+        return ''
+    normalized_path = path if path.startswith('/') else '/%s' % path
+    return '%s://%s%s' % (request.scheme, domain, normalized_path)
 
 
 def _replace_kb_file_urls_for_portal(project_uuid, value):
@@ -1595,19 +1602,21 @@ class PortalPreviewTokenView(APIView):
         token_path = '/portal-preview/%s/' % quote(token, safe='')
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=project_uuid, verified=True).first()
         if custom_domain:
-            preview_url = 'https://%s%s' % (custom_domain.domain, token_path)
+            preview_url = _build_absolute_portal_url(request, custom_domain.domain, token_path)
             return Response({
                 'token': token,
                 'preview_url': preview_url,
             })
-        alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM, enabled=True).first()
-        if not alias and get_portal_service_root_domain():
-            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT, enabled=True).first()
-            if not alias:
-                alias = PortalDomainAlias.objects.ensure_default_alias(project_uuid)
-
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        alias = None
+        if root_domain:
+            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM).first()
+        portal_settings = get_portal_settings(project)
+        enable_portal = portal_settings.get('enable_portal')
+        if not alias and enable_portal and root_domain:
+            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT).first()
         if alias:
-            preview_url = 'https://%s%s' % (build_portal_service_domain(alias.prefix), token_path)
+            preview_url = _build_absolute_portal_url(request, build_portal_service_domain(alias.prefix), token_path)
             return Response({
                 'token': token,
                 'preview_url': preview_url,
@@ -1623,25 +1632,6 @@ class PortalDomainAliasView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def _serialize_alias_config(self, project_uuid):
-        root_domain = get_portal_service_root_domain()
-        default_alias = None
-        if root_domain:
-            default_alias = PortalDomainAlias.objects.ensure_default_alias(project_uuid)
-        custom_alias = PortalDomainAlias.objects.filter(
-            project_uuid=str(project_uuid),
-            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
-        ).first()
-
-        default_prefix = default_alias.prefix if default_alias else ''
-        custom_prefix = custom_alias.prefix if custom_alias else ''
-        return {
-            'portal_service_root_domain': root_domain,
-            'default_subdomain_prefix': default_prefix,
-            'default_public_url': 'https://%s/' % build_portal_service_domain(default_prefix) if default_prefix else '',
-            'custom_subdomain_prefix': custom_prefix,
-            'custom_public_url': 'https://%s/' % build_portal_service_domain(custom_prefix) if custom_prefix else '',
-        }
 
     @require_org_context
     def get(self, request, project_uuid):
@@ -1650,7 +1640,27 @@ class PortalDomainAliasView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        return Response(self._serialize_alias_config(project_uuid))
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        default_alias = None
+        portal_settings = get_portal_settings(project)
+        enable_portal = portal_settings.get('enable_portal')
+        if root_domain and enable_portal:
+            default_alias = PortalDomainAlias.objects.filter(
+                project_uuid=project_uuid,
+                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
+            ).first()
+        custom_alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM).first()
+        default_prefix = default_alias.prefix if default_alias else ''
+        custom_prefix = custom_alias.prefix if custom_alias else ''
+        default_domain = build_portal_service_domain(default_prefix) if default_prefix else ''
+        custom_domain = build_portal_service_domain(custom_prefix) if root_domain and custom_prefix else ''
+        return Response({
+            'portal_service_root_domain': root_domain,
+            'default_subdomain_prefix': default_prefix,
+            'default_public_url': _build_absolute_portal_url(request, default_domain),
+            'custom_subdomain_prefix': custom_prefix,
+            'custom_public_url': _build_absolute_portal_url(request, custom_domain),
+        })
 
     @require_org_context
     def post(self, request, project_uuid):
@@ -1663,41 +1673,39 @@ class PortalDomainAliasView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not get_portal_service_root_domain():
-            error_msg = 'portal service root domain is not configured.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         prefix = request.data.get('custom_subdomain_prefix')
         if not prefix:
             PortalDomainAlias.objects.delete_custom_alias(project_uuid)
             return Response({'success': True})
 
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        if not root_domain:
+            error_msg = 'portal service root domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
-            normalized_prefix = validate_portal_subdomain_prefix_available(prefix)
+            normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+            if normalized_prefix in get_portal_reserved_subdomain_prefixes():
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Portal subdomain is reserved.')
         except ValueError as e:
             error_msg = str(e) or 'custom_subdomain_prefix invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         existed_alias = PortalDomainAlias.objects.get_by_prefix(normalized_prefix)
-        if existed_alias and str(existed_alias.project_uuid) != str(project_uuid):
+        if existed_alias and existed_alias.project_uuid != project_uuid:
             error_msg = 'custom_subdomain_prefix already in use.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            alias = PortalDomainAlias.objects.filter(
-                project_uuid=str(project_uuid),
-                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
-            ).first()
+            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid, alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM).first()
             if alias:
                 alias.prefix = normalized_prefix
-                alias.enabled = True
                 alias.save()
             else:
                 PortalDomainAlias.objects.create(
-                    project_uuid=str(project_uuid),
+                    project_uuid=project_uuid,
                     prefix=normalized_prefix,
                     alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
-                    enabled=True,
                 )
         except IntegrityError:
             error_msg = 'custom_subdomain_prefix already in use.'
@@ -1745,7 +1753,7 @@ class PortalCustomDomainVerificationView(APIView):
 class PortalCustomDomainTLSAskView(APIView):
     authentication_classes = ()
     permission_classes = ()
-    throttle_classes = ()
+    throttle_classes = (PortalTLSAskRateThrottle,)
 
     def get(self, request):
         domain = request.GET.get('domain', '')
@@ -1757,8 +1765,15 @@ class PortalCustomDomainTLSAskView(APIView):
         if not normalized_domain:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        tls_ask_cache_key = get_portal_tls_ask_cache_key(normalized_domain)
+        cached_allowed = cache.get(tls_ask_cache_key)
+        if cached_allowed is not None:
+            return Response(status=status.HTTP_200_OK if cached_allowed else status.HTTP_403_FORBIDDEN)
+
         custom_domain = PortalCustomDomain.objects.get_by_domain(normalized_domain)
-        if custom_domain and custom_domain.verified:
+        allowed = bool(custom_domain and custom_domain.verified)
+        cache.set(tls_ask_cache_key, allowed, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+        if allowed:
             return Response(status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_403_FORBIDDEN)

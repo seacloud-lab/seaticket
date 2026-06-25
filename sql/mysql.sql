@@ -727,7 +727,6 @@ CREATE TABLE `portal_domain_aliases` (
   `prefix` varchar(63) NOT NULL,
   `project_uuid` char(36) NOT NULL,
   `alias_type` varchar(32) NOT NULL DEFAULT 'custom',
-  `enabled` TINYINT(1) NOT NULL DEFAULT 1,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
