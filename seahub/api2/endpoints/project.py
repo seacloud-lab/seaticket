@@ -3,10 +3,11 @@ import logging
 import json
 import re
 from datetime import datetime, UTC
-from urllib.parse import urlparse, unquote
+from seahub.utils import normalize_cache_key
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
+from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -24,7 +25,8 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
-    rank_vector_search_results
+    rank_vector_search_results, is_url_ends_with_number, parse_webpage_url, is_current_server, extract_current_server_related_webpage_parts, \
+    get_related_connections_by_url, get_related_connections_by_connection_ids
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, ensure_portal_issues_seadb_table, retrieve_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
@@ -32,9 +34,7 @@ from seahub.utils.indexer import keyword_search, vector_search_with_text
 
 from seahub.seadb_models.models import SchemaTables
 from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_connection_record_by_pk
-from seahub.project.constants import ConnectionType
-from seahub.constants import PERMISSION_READ
-from seahub.settings import SERVICE_URL
+from seahub.project.constants import ConnectionType, REF_URL_CONNECTION_CACHE_PREFIX, REF_URL_CONNECTION_CACHE_TIMEOUT
 
 
 logger = logging.getLogger(__name__)
@@ -48,72 +48,6 @@ def is_safe_project_prompt(value):
     if not isinstance(value, str):
         return False
     return PROJECT_PROMPT_TAG_LIKE_RE.search(value) is None
-
-
-def is_github_issue_url(url='', github_host=''):
-    url = url.rstrip('/')
-    github_host = github_host.rstrip('/')
-    pattern = rf'^{re.escape(github_host)}/issues/\d+$'
-    return bool(re.fullmatch(pattern, url))
-
-
-def is_url_ends_with_number(url=''):
-    url = urlparse(url).path.rstrip('/')
-    pattern = r'/\d+$'
-    return bool(re.search(pattern, url))
-
-
-def extract_discourse_topic_id(url=''):
-    parsed = urlparse(url)
-    path = parsed.path.rstrip('/')
-    match = re.search(r'/t/(?:[^/]+/)?(?P<topic_id>\d+)(?:/\d+)?$', path)
-    if not match:
-        return None
-    return int(match.group('topic_id'))
-
-
-def is_current_server(url=''):
-    parsed = urlparse(url)
-    origin = f"{parsed.scheme}://{parsed.netloc}"
-    return origin.rstrip('/') == SERVICE_URL.rstrip('/')
-
-
-def is_url_under_base_url(url='', base_url=''):
-    if not url or not base_url:
-        return False
-
-    url_parsed = urlparse(url)
-    base_parsed = urlparse(base_url)
-
-    if url_parsed.scheme != base_parsed.scheme or url_parsed.netloc != base_parsed.netloc:
-        return False
-
-    url_path = url_parsed.path.rstrip('/')
-    base_path = base_parsed.path.rstrip('/')
-    if not base_path:
-        return True
-
-    return url_path == base_path or url_path.startswith(base_path + '/')
-
-
-def extract_current_server_related_webpage_parts(webpage=''):
-    parsed = urlparse(webpage)
-    segments = [unquote(segment) for segment in parsed.path.split('/') if segment]
-
-    try:
-        workspace_idx = segments.index('workspace')
-        project_idx = segments.index('project', workspace_idx + 1)
-        connections_idx = segments.index('connections', project_idx + 1)
-        records_idx = segments.index('records', connections_idx + 1)
-
-        workspace_id = int(segments[workspace_idx + 1])
-        project_name = segments[project_idx + 1]
-        connection_id = int(segments[connections_idx + 1])
-        record_id = int(segments[records_idx + 1])
-    except (ValueError, IndexError):
-        return None
-
-    return workspace_id, project_name, connection_id, record_id
 
 
 class WorkspacesView(APIView):
@@ -222,14 +156,10 @@ class RelatedProjectsView(APIView):
         org_id = request.user.org.org_id
         webpage = request.GET.get('webpage', '')
 
-        if not webpage:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
-        if not is_url_ends_with_number(webpage):
-            error_msg = 'Not support url'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+        if not webpage or not is_url_ends_with_number(webpage):
+            error_msg = 'webpage invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         if is_current_server(webpage):
             current_server_related_parts = extract_current_server_related_webpage_parts(webpage)
             if not current_server_related_parts:
@@ -250,7 +180,8 @@ class RelatedProjectsView(APIView):
                 workspace_type = 'personal'
                 workspace_name = 'personal'
 
-            if not check_project_permission(username, workspace.owner):
+            permission = check_project_permission(username, workspace.owner)
+            if not permission:
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
             project = Projects.objects.get_project(workspace, project_name)
@@ -278,7 +209,7 @@ class RelatedProjectsView(APIView):
                     'workspace_id': workspace_id,
                     'workspace_type': workspace_type,
                     'workspace_name': workspace_name,
-                    'permission': 'r',
+                    'permission': permission,
                     'related_info': {
                         'record': record,
                         'columns': columns,
@@ -289,129 +220,67 @@ class RelatedProjectsView(APIView):
                 }
             ] }, status=status.HTTP_200_OK)
 
-        groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
-        group_id_list = []
-        admin_group_ids = []
-        for group in groups:
-            group_id = group.group_id
-            group_id_list.append(group_id)
-            if group.is_staff:
-                admin_group_ids.append(group_id)
+        external_ref_url, external_ref_id, connection_type = parse_webpage_url(webpage)
+        if not external_ref_id or not external_ref_url:
+            error_msg = 'webpage invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        owner_list = [username] + ['%s@seafile_group' % group_id for group_id in group_id_list]
-
-        try:
-            workspaces = Workspaces.objects.filter(owner__in=owner_list)
-            if not workspaces.filter(owner=username).exists():
-                workspaces = list(workspaces)
-                workspace = Workspaces.objects.create_workspace(username, org_id)
-                workspaces.extend([workspace])
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        try:
-            projects = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-
-        # group and personal tables
-        workspace_id2project_list = {}
-        for project in projects:
-            project_info = project.to_dict()
-            if project.workspace.id in workspace_id2project_list:
-                workspace_id2project_list[project.workspace.id].append(project_info)
-            else:
-                workspace_id2project_list[project.workspace.id] = [project_info]
-            project_info['starred'] = False
-
-        workspace_list = list()
-        workspace_list_for_group =[]
-        for workspace in workspaces:
-            owner = workspace.owner
-            res = dict(id=workspace.id)
-            res['owner'] = owner
-            if '@seafile_group' in owner:
-                group_id = int(owner.split('@')[0])
-                res['type'] = 'group'
-                res['group_id'] = group_id
-                res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
-                res['is_admin'] = group_id in admin_group_ids
-                res['projects'] = workspace_id2project_list.get(workspace.id, [])
-                workspace_list_for_group.append(res)
-            else:
-                res['name'] = 'personal'
-                res['type'] = 'personal'
-                res['projects'] = workspace_id2project_list.get(workspace.id, [])
-                workspace_list.append(res)
-        workspace_list.extend(workspace_list_for_group)
+        related_projects = []
+        connection_cache_key = normalize_cache_key((str(org_id) + external_ref_url), REF_URL_CONNECTION_CACHE_PREFIX)
+        connection_ids = cache.get(connection_cache_key, None)
+        has_connection_cache = False
+        if connection_ids is not None:
+            has_connection_cache = True
+            if not connection_ids:
+                return Response({ 'projects': related_projects }, status=status.HTTP_200_OK)
+            workspace_project_connections = get_related_connections_by_connection_ids(org_id, connection_ids)
+        else:
+            workspace_project_connections = get_related_connections_by_url(org_id, external_ref_url, connection_type)
 
         seadb_api = SeaDBAPI()
-        related_projects = []
-        for workspace in workspace_list:
-            projects = workspace.get('projects', [])
-            
-            for project in projects:
-                project_uuid = project.get('uuid', '')
-                connections = ProjectConnections.objects.filter(project_uuid=project_uuid, deleted=False)
-                is_related_project = False
-                related_connection_type = None
-                related_connection_id = None
-                record = {}
-                columns = []
-                linked_ticket_title = ''
-                for connection in connections:
-                    connection_info = connection.to_dict()
-                    config = connection_info.get('config')
-                    connection_type = connection_info.get('type')
-                    connection_id = connection_info.get('id')
-                    related_connection_id = connection_id
-                    related_connection_type = connection_type
-                    if connection_type == ConnectionType.DISCOURSE_FORUM.value:
-                        config_url = config.get('url', '')
-                        if is_url_under_base_url(webpage, config_url):
-                            topic_id = extract_discourse_topic_id(webpage)
-                            if topic_id is None:
-                                continue
-                            record, columns, linked_ticket_title = get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, topic_id)
-                            if not record:
-                                continue
-                            is_related_project = True
-                            break
-                    if connection_type == ConnectionType.GITHUB_ISSUE.value:
-                        repository = config.get('repository', '')
-                        if is_github_issue_url(webpage, repository):
-                            issue_number = webpage.rstrip('/').split('/')[-1]
-                            issue_number = int(issue_number)
-                            record, columns, linked_ticket_title = get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, issue_number)
-                            if not record:
-                                continue
-                            is_related_project = True
-                            break
-                if is_related_project:
-                    del project['created_at']
-                    del project['settings']
-                    del project['starred']
-                    del project['updated_at']
-                    del project['is_encrypted']
-                    if workspace.get('type') == 'group':
-                        project['workspace_name'] = group_id_to_name(workspace.get('group_id'))
-                    project['workspace_type'] = workspace.get('type', '')
-                    
-                    permission = check_project_permission(request.user.username, workspace.get('owner'))
-                    project['permission'] = permission if permission else PERMISSION_READ
-                    project['related_info'] = {
-                        'record': record,
-                        'columns': columns,
-                        'connection_type': related_connection_type,
-                        'connection_id': related_connection_id,
-                        'linked_ticket_title': linked_ticket_title,
-                    }
-                    related_projects.append(project)
+        related_connections = []
+        for wpc in workspace_project_connections:
+            if wpc.get('workspace_deleted') or wpc.get('project_deleted') or wpc.get('connection_deleted'):
+                continue
+            owner = wpc.get('owner')
+            project_uuid = wpc.get('uuid')
+            connection_id = wpc.get('connection_id')
+            related_connections.append(connection_id)
+
+            permission = check_project_permission(request.user.username, owner)
+            if not permission:
+                continue
+
+            if connection_type == ConnectionType.DISCOURSE_FORUM.value:
+                record, columns, linked_ticket_title = get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, external_ref_id)
+            else:
+                record, columns, linked_ticket_title = get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, external_ref_id)
+            if not record:
+                continue
+            project_info = {}
+            project_info['related_info'] = {
+                'record': record,
+                'columns': columns,
+                'connection_type': connection_type,
+                'connection_id': connection_id,
+                'linked_ticket_title': linked_ticket_title,
+            }
+
+            if '@seafile_group' in owner:
+                group_id = int(owner.split('@')[0])
+                project_info['workspace_name'] = group_id_to_name(group_id)
+                project_info['workspace_type'] = 'group'
+            else:
+                project_info['workspace_name'] = 'personal'
+                project_info['workspace_type'] = 'personal'
+            project_info['name'] = wpc.get('name')
+            project_info['uuid'] = wpc.get('uuid')
+            project_info['workspace_id'] = wpc.get('workspace_id')
+            project_info['permission'] = permission
+            related_projects.append(project_info)
+        
+        if not has_connection_cache:
+            cache.set(connection_cache_key, related_connections, REF_URL_CONNECTION_CACHE_TIMEOUT)
 
         return Response({ 'projects': related_projects }, status=status.HTTP_200_OK)
 
