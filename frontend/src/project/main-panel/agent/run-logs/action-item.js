@@ -197,6 +197,9 @@ const ActionItem = React.memo(({
       case 'suggest_notify_assignee': {
         return 'notifications-filled';
       }
+      case 'suggest_move_to_spam': {
+        return 'trash';
+      }
       default:
         return 'reply-filled';
     }

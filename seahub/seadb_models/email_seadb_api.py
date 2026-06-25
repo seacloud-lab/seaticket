@@ -184,14 +184,14 @@ class EmailSeaDBAPI:
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         self.seadb_api.update_rows(self.base_id, table_name, [{
             'pk': int(email_pk),
-            'row': {'deleted': True}
+            'row': {SchemaTables.EMAIL.column.deleted.name: True}
         } for email_pk in email_pks])
 
     def mark_thread_deleted(self, connection_id, thread_id):
         now = datetime.datetime.now(datetime.UTC).isoformat()
         table_name = SchemaTables.THREAD.table_name(connection_id)
         self.seadb_api.update_rows(self.base_id, table_name, [{
-            'pk': thread_id,
+            'pk': int(thread_id),
             'row': {
                 SchemaTables.THREAD.column.deleted.name: True,
                 SchemaTables.THREAD.column.record_modified_time.name: now,

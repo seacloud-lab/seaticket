@@ -477,6 +477,119 @@ class TestAgentActionConfirmView:
         assert saved_config['access_token'] != 'old-access'
         assert saved_config['refresh_token'] != 'old-refresh'
 
+    def test_confirm_move_email_to_spam_success(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        config = {
+            'server_provider': 'general_email_provider',
+            'username': 'sender@example.com',
+            'password': 'secret',
+            'imap_host': 'imap.example.com',
+            'imap_port': 993,
+        }
+        connection = connection_factory(connection_type='email', config=config)
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={},
+            format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_move_to_spam',
+                'source_type': 'email',
+                'source_id': f'{connection.id}_10',
+                'result': '',
+                'suggestion_content': 'spam detection reason',
+            }]
+        }
+
+        email_thread = {'_pk': 10, 'title': 'Sale 90% off', 'linked_ticket': None}
+        emails = [{
+            '_pk': 1,
+            'thread_id': 10,
+            'email_from': 'promo@example.com',
+            'title': 'Sale 90% off',
+            'message_id': '<spam-1@example.com>',
+            'is_sender': False,
+        }]
+        email_seadb_api = Mock()
+        email_seadb_api.get_thread_by_pk.return_value = email_thread
+        email_seadb_api.get_emails_by_thread_id.return_value = emails
+
+        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch(
+                    'seahub.project.agent.move_emails_to_junk',
+                    return_value={'moved_count': 1, 'target_folder': 'Spam'},
+                ) as move_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        assert resp.data['status'] == 'executed'
+        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'])
+        email_seadb_api.mark_thread_deleted.assert_called_once_with(connection.id, 10)
+
+    def test_confirm_move_email_to_spam_fails_when_no_remote_message_matched(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        config = {
+            'server_provider': 'general_email_provider',
+            'username': 'sender@example.com',
+            'password': 'secret',
+            'imap_host': 'imap.example.com',
+            'imap_port': 993,
+        }
+        connection = connection_factory(connection_type='email', config=config)
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={},
+            format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_move_to_spam',
+                'source_type': 'email',
+                'source_id': f'{connection.id}_10',
+                'result': '',
+                'suggestion_content': 'spam detection reason',
+            }]
+        }
+
+        email_thread = {'_pk': 10, 'title': 'Sale 90% off', 'linked_ticket': None}
+        emails = [{
+            '_pk': 1,
+            'thread_id': 10,
+            'email_from': 'promo@example.com',
+            'title': 'Sale 90% off',
+            'message_id': '<spam-1@example.com>',
+            'is_sender': False,
+        }]
+        email_seadb_api = Mock()
+        email_seadb_api.get_thread_by_pk.return_value = email_thread
+        email_seadb_api.get_emails_by_thread_id.return_value = emails
+
+        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch(
+                    'seahub.project.agent.move_emails_to_junk',
+                    return_value={'moved_count': 0, 'target_folder': 'Spam'},
+                ) as move_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        assert resp.data['status'] == 'failed'
+        assert 'no matching remote message was moved' in resp.data['result']
+        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'])
+        email_seadb_api.mark_thread_deleted.assert_not_called()
+
 
 class TestProjectConnectionSyncView:
 

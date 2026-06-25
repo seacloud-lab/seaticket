@@ -43,7 +43,16 @@ from seahub.notifications.signal_handler import (
 )
 from seahub.tickets.signals import agent_notify_assignees
 from seahub.project.constants import AIScenario, ConnectionType
-from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+from seahub.utils.email_sender import (
+    toggle_send_email,
+    EmailSendError,
+    EmailConfigError,
+)
+from seahub.utils.mailbox_manager import (
+    move_emails_to_junk,
+    MailboxConfigError,
+    MailboxOperationError,
+)
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -493,6 +502,8 @@ class AgentActionConfirmView(APIView):
             return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         elif tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, username, request)
+        elif tool_name == 'suggest_move_to_spam':
+            return self._execute_email_move_to_spam(seadb_api, project_uuid, source_id)
         else:
             logger.warning(f'Unknown email tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
@@ -1176,6 +1187,83 @@ class AgentActionConfirmView(APIView):
             return self._failed_execution('Failed to save reply email.')
 
         return self._successful_execution(f'Reply email sent for thread #{thread_id} (email record ID: {reply_pk}).')
+
+    def _execute_email_move_to_spam(self, seadb_api, project_uuid, source_id):
+        connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
+        if connection_id is None or thread_id is None:
+            return self._failed_execution(f'Invalid source_id format: {source_id}')
+
+        project_connection, thread, emails, error = self._get_email_thread_context(
+            seadb_api, project_uuid, connection_id, thread_id
+        )
+        if error:
+            return self._failed_execution(error)
+
+        linked_ticket = thread.get('linked_ticket')
+        if linked_ticket:
+            return self._failed_execution(
+                f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.'
+            )
+
+        try:
+            config = decrypt_config(json.loads(project_connection.config))
+        except Exception as e:
+            logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
+            return self._failed_execution('Email connection config is invalid.')
+
+        inbound_message_ids = []
+        for email in emails:
+            if email.get('is_sender'):
+                continue
+            message_id = str(email.get('message_id') or '').strip()
+            if message_id:
+                inbound_message_ids.append(message_id)
+        inbound_message_ids = list(dict.fromkeys(inbound_message_ids))
+        if not inbound_message_ids:
+            return self._failed_execution(f'No inbound message id found for thread {source_id}.')
+
+        try:
+            move_result = move_emails_to_junk(config, inbound_message_ids)
+        except MailboxConfigError as e:
+            logger.error('Mailbox config error for connection %s: %s', project_connection.id, e)
+            return self._failed_execution('Email connection config is invalid.')
+        except MailboxOperationError as e:
+            logger.error(
+                'Move to spam failed for connection %s thread %s: %s',
+                project_connection.id, source_id, e
+            )
+            return self._failed_execution('Failed to move the email to the spam folder.')
+
+        moved_count = int((move_result or {}).get('moved_count') or 0)
+        if moved_count <= 0:
+            logger.warning(
+                'Move to spam matched no remote message for connection %s thread %s (message_ids=%s)',
+                project_connection.id, source_id, inbound_message_ids
+            )
+            return self._failed_execution(
+                'Failed to move the email to the spam folder: no matching remote message was moved.'
+            )
+
+        # OAuth providers may have refreshed their access token during the move.
+        if (move_result or {}).get('config_updated'):
+            persist_project_connection_config(project_connection, config)
+
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        try:
+            email_pks = [email.get('_pk') for email in emails if email.get('_pk') is not None]
+            if email_pks:
+                email_seadb_api.mark_emails_deleted(connection_id, email_pks)
+            email_seadb_api.mark_thread_deleted(connection_id, thread_id)
+        except Exception as e:
+            logger.error(
+                'Moved email to spam but failed to soft-delete thread %s for connection %s: %s',
+                source_id, project_connection.id, e
+            )
+            return self._failed_execution('Email moved to spam but failed to update local records.')
+
+        return self._successful_execution(
+            f'Email thread #{thread_id} moved to the spam folder.'
+        )
 
     def _build_email_thread_record_detail(self, thread, emails):
         lines = [

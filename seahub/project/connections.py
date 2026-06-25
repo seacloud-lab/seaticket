@@ -56,7 +56,8 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
-from seahub.utils.email_sender import toggle_send_email, toggle_delete_emails, EmailSendError, EmailDeleteError, EmailConfigError
+from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
+from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
@@ -1928,9 +1929,9 @@ class ProjectConnectionDeleteEmailView(APIView):
                     need_deleted_message_ids.append(message_id)
                 server_provider = config.get('server_provider', 'general_email_provider')
                 if server_provider == 'general_email_provider':
-                    toggle_delete_emails(config, need_deleted_emails_info)
+                    move_emails_to_trash(config, need_deleted_emails_info)
                 else:
-                    toggle_delete_emails(config, need_deleted_message_ids)
+                    move_emails_to_trash(config, need_deleted_message_ids)
                 email_seadb_api.mark_emails_deleted(connection_id, email_pks)
                 email_seadb_api.mark_thread_deleted(connection_id, thread_id)
         except Exception as e:
