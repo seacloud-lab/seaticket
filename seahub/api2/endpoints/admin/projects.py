@@ -83,7 +83,7 @@ class AdminProjects(APIView):
             return_results.append(get_project_info(
                 project, include_deleted=False, orgs_dict=orgs_dict))
 
-        return Response({"page_info": page_info, "projects": return_results})
+        return Response({"count": projects_count, "page_info": page_info, "projects": return_results})
 
 
 class AdminProject(APIView):
