@@ -15,13 +15,14 @@ const SearchProjects = ({ onCloseSidePanel }) => {
   const ref = useRef(null);
 
   const onSearch = useCallback((query, page, perPage) => {
-    if (lastSearchValue.current === query) return;
-    let url = new URL(location.href);
-    let searchParams = new URLSearchParams(url.search);
-    searchParams.set('query', query);
-    url.search = searchParams.toString();
-    navigate(url.toString());
-    lastSearchValue.current = query;
+    if (lastSearchValue.current !== query) {
+      let url = new URL(location.href);
+      let searchParams = new URLSearchParams(url.search);
+      searchParams.set('query', query);
+      url.search = searchParams.toString();
+      navigate(url.toString());
+      lastSearchValue.current = query;
+    }
     return sysAdminAPI.sysAdminSearchProjects(query, page, perPage);
   }, []);
 
