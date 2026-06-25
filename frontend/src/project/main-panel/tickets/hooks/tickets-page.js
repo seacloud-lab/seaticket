@@ -19,11 +19,11 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    const currentUrlParams = new URLSearchParams(window.location.search);
+    const queryString = currentUrlParams.toString();
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
       let myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
-      const currentUrlParams = new URLSearchParams(window.location.search);
-      const queryString = currentUrlParams.toString();
       myTicketsViewURL = myTicketsViewURL + (queryString ? '?' + queryString : '');
       history.replaceState(null, null, myTicketsViewURL);
       return;
@@ -42,8 +42,8 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     }
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
-      const currentUrlParams = new URLSearchParams(window.location.search);
-      const queryString = currentUrlParams.toString();
+      urlPart = urlPart + (queryString ? '?' + queryString : '');
+    } else if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW || isNumber(Number(pageSlugId))) {
       urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
@@ -53,7 +53,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       urlPart = urlPart + childrenPageSlugId + '/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, type]);
+  }, [workspaceID, projectName, type]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL) => {
     if (pageSlugId !== newPageSlugId) {
