@@ -6,6 +6,7 @@ import { KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
 import toaster from '../toaster';
 import Options from '../option-editor/options';
+import { getValueLength } from '../../home/search/search-utils';
 
 const OptionEditorContainer = forwardRef(({
   isMultiple = false,
@@ -75,7 +76,7 @@ const OptionEditorContainer = forwardRef(({
 
     timer.current && clearTimeout(timer.current);
 
-    if (!searchValue) {
+    if (!searchValue || getValueLength(searchValue) < 3) {
       setOptions([]);
       setIsLoading(false);
       return;
