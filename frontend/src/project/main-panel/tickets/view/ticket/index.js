@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
-import slugid from 'slugid';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
@@ -220,7 +219,7 @@ const Ticket = ({
     setIsShowCreateTaskDialog(true);
   }, []);
 
-  const handleTaskCreated = useCallback(({ task, connection }) => {
+  const handleTaskCreated = useCallback(({ task, connection, activities = [] }) => {
     if (!ticket) return;
 
     const newValueKey = `${connection.id}_${task._pk}`;
@@ -246,18 +245,9 @@ const Ticket = ({
     setTicket(deepCopy(newTicket));
     setLinkedRecords((prev) => ({ ...prev, [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }));
 
-    const activity = {
-      activity_type: 'general_task_added',
-      connection_id: connection.id,
-      created_time: Date.now(),
-      creator: 'system',
-      field_key: 'general_task_added',
-      id: slugid.nice(),
-      record_id: task._pk,
-      task_title: task.title || '',
-    };
-
-    setActivities(prevActivities => [...prevActivities, activity]);
+    if (Array.isArray(activities) && activities.length > 0) {
+      setActivities(prevActivities => [...prevActivities, ...activities]);
+    }
     return;
   }, [ticket, ticketID, getTableByName, insertRowByLink]);
 

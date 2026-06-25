@@ -875,6 +875,54 @@ def compare_ticket_changes(old_ticket, new_data):
 
     return changes
 
+def record_create_task_activities(seadb_api, project_uuid, connection_id, task, creator = 'system'):
+    if not task:
+        return []
+    now = datetime.now(timezone.utc).isoformat()
+    event_type = 'general_task_added'
+    
+    task_id = task.get('_pk', 0)
+    task_title = task.get('title', '')
+    linked_ticket = task.get('linked_ticket')
+    old_value = None
+    new_value = {'title': task_title}
+    
+    activity_rows = [{
+        'ticket_id': linked_ticket,
+        'activity_type': event_type,
+        'detail': json.dumps({
+            'connection_id': connection_id,
+            'record_id': task_id,
+            'task_title': task_title,
+            'old_value': old_value,
+            'new_value': new_value,
+        }),
+        'creator': creator,
+        'created_time': now,
+    }]
+
+    res = seadb_api.insert_rows(project_uuid, SchemaTables.TICKET_ACTIVITIES.table_name(), activity_rows)
+    pks = res.get('pks', [])
+
+    # Build activity list with the returned pks
+    activities = []
+    for i, activity_row in enumerate(activity_rows):
+        activity = {
+            'id': pks[i] if i < len(pks) else None,
+            'connection_id': connection_id,
+            'record_id': task_id,
+            'ticket_id': linked_ticket,
+            'activity_type': event_type,
+            'field_key': event_type,
+            'old_value': old_value,
+            'new_value': new_value,
+            'creator': creator,
+            'created_time': now,
+            'task_title': task_title,
+        }
+        activities.append(activity)
+    return activities
+
 
 def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, changes):
     if not changes:
