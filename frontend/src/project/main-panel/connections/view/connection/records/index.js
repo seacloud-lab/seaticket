@@ -272,20 +272,12 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
-
-    const recordCount = rows.length;
-    const confirmMsg = recordCount === 1
-      ? gettext('Are you sure you want to delete this email thread? It will be moved to Trash on the remote server.')
-      : `${gettext('Are you sure you want to delete these')} ${recordCount} ${gettext('email threads? They will be moved to Trash on the remote server.')}`;
-    if (!window.confirm(confirmMsg)) return;
-
     const threadIds = rows.map(row => row._id);
-    const tableName = getTableName(connection);
-    deleteRows(tableName, threadIds, () =>
+    deleteRows(getTableName(connection), threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
     ).then(() => {
       context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
-      const successMessage = recordCount === 1
+      const successMessage = rows.length === 1
         ? gettext('Email thread has been moved to Trash.')
         : gettext('Email threads have been moved to Trash.');
       toaster.success(successMessage);
