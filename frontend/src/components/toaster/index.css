@@ -37,9 +37,13 @@
   }
 }
 
-.seaqa-toast-container.entering,
-.seaqa-toast-container.entered {
+.seaqa-toast-container.entering {
   animation: openAnimation 240ms cubic-bezier(0.175, 0.885, 0.320, 1.175) both;
+}
+
+.seaqa-toast-container.entered {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .seaqa-toast-container.exiting {
