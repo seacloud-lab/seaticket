@@ -15,13 +15,14 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
     searchRows, deleteRow, deleteRows, modifyRows, updateLocalRow, deleteLocalRows, modifyViewLock,
   } = useMetadata();
-  const { selectedRowIds } = useSelectedRows();
+  const { selectedRowIds, updateSelectedRowIds } = useSelectedRows();
 
   const selectNone = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    updateSelectedRowIds([]);
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
-  }, []);
+  }, [updateSelectedRowIds]);
 
   const onHeaderClick = useCallback(() => {
     selectNone();

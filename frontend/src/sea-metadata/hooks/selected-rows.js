@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { EVENT_BUS_TYPE } from '../constants';
+import context from '../context';
 
 const SelectedRowsContext = React.createContext(null);
 
@@ -12,6 +14,16 @@ export const SelectedRowsProvider = ({
     const newSelectedRowIds = selectedRowIds.filter(id => !deletedRowIds.includes(id));
     setSelectedRowIds(newSelectedRowIds);
   }, [selectedRowIds]);
+
+  useEffect(() => {
+    const unsubscribeSelectNone = context.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_NONE, () => {
+      setSelectedRowIds([]);
+    });
+
+    return () => {
+      unsubscribeSelectNone();
+    };
+  }, []);
 
   return (
     <SelectedRowsContext.Provider
