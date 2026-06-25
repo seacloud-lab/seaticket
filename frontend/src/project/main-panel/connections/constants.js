@@ -317,32 +317,21 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true
     }, {
-      key: 'base_url',
-      name: gettext('Jira base URL'),
-      type: CONNECTION_FIELD_TYPE.URL,
+      key: 'site_id',
+      name: gettext('Jira Site'),
+      placeholder: gettext('Select a Jira site'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('The URL of your Jira site, like https://your-domain.atlassian.net')
     }, {
-      key: 'user_email',
-      name: gettext('User email'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
+      key: 'project_key',
+      name: gettext('Project'),
+      placeholder: gettext('Select a Jira project'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
       is_required: true,
-      is_custom: true
-    }, {
-      key: 'api_token',
-      name: gettext('API token'),
-      type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
-      is_custom: true
-    }, {
-      key: 'space_key',
-      name: gettext('Project key'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: true,
+      is_display: true,
       is_custom: true,
-      tip: gettext('The Jira project key, like SAM1')
     },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
@@ -859,7 +848,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       data: { format: 'YYYY-MM-DD' },
       is_predefined: true,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENTS_COUNT]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENT_COUNT]: {
       display_name: gettext('Total comments'),
       type: CellType.NUMBER,
       is_predefined: true,
@@ -1180,6 +1169,7 @@ export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.JIRA_ISSUE,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [

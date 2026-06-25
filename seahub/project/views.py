@@ -13,13 +13,15 @@ from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
+from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
+    ProjectJiraOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
-    LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URL
+    LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URL, \
+    JIRA_CLIENT_ID, JIRA_CLIENT_SECRET, JIRA_REDIRECT_URL
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
@@ -434,7 +436,7 @@ def discord_oauth_callback(request):
 
     if not code or not state or state != session_state:
         return render_error(request, _('Invalid Discord OAuth state.'))
-    
+
     if not guild_id:
         return render_error(request, _('Discord server information was not returned.'))
 
@@ -503,3 +505,113 @@ def discord_oauth_callback(request):
         }})();
         </script></body></html>'''
     return HttpResponse(response_html)
+
+def _calc_jira_expires_at(expires_in):
+    try:
+        expires_in = int(expires_in or 3600)
+    except (TypeError, ValueError):
+        expires_in = 3600
+    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - 60, 0))
+
+
+@login_required
+def jira_oauth(request):
+    return_to = request.GET.get('next') or '/'
+    project_uuid = request.GET.get('project_uuid', '')
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not JIRA_CLIENT_ID or not JIRA_CLIENT_SECRET or not JIRA_REDIRECT_URL:
+        return render_error(request, _('Jira OAuth settings are invalid.'))
+
+    state = secrets.token_urlsafe(24)
+    request.session['jira_oauth_state'] = state
+    request.session['jira_oauth_project_uuid'] = project_uuid
+    request.session['jira_oauth_return_to'] = return_to
+
+    params = {
+        'audience': 'api.atlassian.com',
+        'client_id': JIRA_CLIENT_ID,
+        'scope': 'offline_access read:jira-work read:jira-user',
+        'redirect_uri': JIRA_REDIRECT_URL,
+        'state': state,
+        'response_type': 'code',
+        'prompt': 'consent',
+    }
+    return redirect('https://auth.atlassian.com/authorize?' + urlencode(params))
+
+
+@login_required
+def jira_oauth_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    session_state = request.session.get('jira_oauth_state')
+    project_uuid = request.session.get('jira_oauth_project_uuid')
+    return_to = request.session.get('jira_oauth_return_to', '/')
+
+    if not code or not state or state != session_state:
+        return render_error(request, _('Invalid Jira OAuth state.'))
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not JIRA_CLIENT_ID or not JIRA_CLIENT_SECRET or not JIRA_REDIRECT_URL:
+        return render_error(request, _('Jira OAuth settings are invalid.'))
+
+    token_payload = {
+        'grant_type': 'authorization_code',
+        'client_id': JIRA_CLIENT_ID,
+        'client_secret': JIRA_CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': JIRA_REDIRECT_URL,
+    }
+
+    try:
+        resp = requests.post('https://auth.atlassian.com/oauth/token', json=token_payload, timeout=10)
+    except Exception as e:
+        logger.error('Jira OAuth token request error: %s', e)
+        return render_error(request, _('Failed to authorize Jira.'))
+
+    if resp.status_code != 200:
+        logger.error('Jira OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        return render_error(request, _('Failed to authorize Jira.'))
+
+    token_json = resp.json()
+    access_token = token_json.get('access_token')
+    refresh_token = token_json.get('refresh_token')
+    if not access_token or not refresh_token:
+        logger.error('Jira OAuth token missing access/refresh token: %s', token_json)
+        return render_error(request, _('Failed to authorize Jira.'))
+
+    ProjectJiraOauth.objects.upsert_token(
+        project_uuid,
+        access_token,
+        _calc_jira_expires_at(token_json.get('expires_in')),
+        refresh_token,
+    )
+
+    request.session.pop('jira_oauth_state', None)
+    request.session.pop('jira_oauth_project_uuid', None)
+    request.session.pop('jira_oauth_return_to', None)
+
+    return redirect(return_to)

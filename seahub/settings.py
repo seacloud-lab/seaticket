@@ -894,3 +894,7 @@ DISCORD_REDIRECT_URL = configs.get('DISCORD_REDIRECT_URL', '')
 
 # Portal custom domain
 PORTAL_SERVICE_ROOT_DOMAIN = configs.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
+
+JIRA_CLIENT_ID = configs.get('JIRA_CLIENT_ID', '')
+JIRA_CLIENT_SECRET = configs.get('JIRA_CLIENT_SECRET', '')
+JIRA_REDIRECT_URL = configs.get('JIRA_REDIRECT_URL', '')

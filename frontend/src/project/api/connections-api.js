@@ -126,6 +126,21 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  getJiraOauthStatus(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/jira-oauth/';
+    return this.req.get(url);
+  }
+
+  listJiraSites(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/jira/sites/';
+    return this.req.get(url);
+  }
+
+  listJiraProjects(projectUuid, siteId) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/jira/projects/';
+    return this.req.get(url, { params: { site_id: siteId } });
+  }
+
   getConnection(projectUuid, connectionID) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     return this.req.get(url);

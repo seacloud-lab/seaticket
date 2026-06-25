@@ -73,6 +73,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [linearOauthError, setLinearOauthError] = useState('');
   const confluenceOauthIntervalRef = useRef(null);
   const confluenceOauthWindowRef = useRef(null);
+  const [isWaitingJiraOAuth, setWaitingJiraOAuth] = useState(false);
+  const [jiraSitesVersion, setJiraSitesVersion] = useState(0);
+  const [jiraProjectsVersion, setJiraProjectsVersion] = useState(0);
+  const [isJiraOauthConnected, setJiraOauthConnected] = useState(false);
+  const [isCheckingJiraOauth, setCheckingJiraOauth] = useState(false);
+  const [jiraOauthError, setJiraOauthError] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -114,6 +120,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
+  const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
+
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
   }, [isEmail, config]);
@@ -139,6 +147,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isLinear && !isLinearOauthConnected) return false;
     if (isConfluence && !isConfluenceOauthConnected) return false;
     if (isDiscord && !config.guild_id) return false;
+    if (isJira && !isJiraOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -332,6 +341,20 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['channel_id'] = channel.value;
       }
     }
+    if (isJira) {
+      const site = _config.site_id;
+      if (site && site.site) {
+        _config['site_id'] = site.site.id;
+        _config['site_name'] = site.site.name;
+        _config['site_url'] = site.site.url;
+      }
+      const project = _config.project_key;
+      if (project && project.project) {
+        _config['project_key'] = project.project.key;
+        _config['project_name'] = project.project.name;
+      }
+    }
+
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
@@ -509,6 +532,101 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     fetchLinearOauthStatus();
   }, [isLinear, fetchLinearOauthStatus]);
 
+  const fetchJiraOauthStatus = useCallback(() => {
+    setCheckingJiraOauth(true);
+    return connectionsAPI.getJiraOauthStatus(projectUuid).then(res => {
+      setJiraOauthConnected(Boolean(res?.data?.connected));
+      setJiraOauthError('');
+    }).catch(() => {
+      setJiraOauthConnected(false);
+      setJiraOauthError(gettext('Failed to check Jira authorization status.'));
+    }).finally(() => {
+      setCheckingJiraOauth(false);
+    });
+  }, []);
+
+  const handleConnectJira = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/jira/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    oauthWindowRef.current = window.open(oauthUrl, 'jira-oauth', 'width=800,height=700');
+    setWaitingJiraOAuth(true);
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getJiraOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          clearInterval(pollingIntervalRef.current);
+          setWaitingJiraOAuth(false);
+          setJiraOauthConnected(true);
+          setJiraOauthError('');
+          setJiraSitesVersion(v => v + 1);
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [projectUuid]);
+
+  const listJiraSites = useCallback(() => {
+    if (!isJiraOauthConnected) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listJiraSites(projectUuid).then(res => {
+      const sites = res?.data?.sites || [];
+      return {
+        data: {
+          options: sites.map(site => ({
+            value: site.id,
+            site,
+            label: site.name,
+            name: site.name,
+          })),
+        }
+      };
+    });
+  }, [projectUuid, jiraSitesVersion, isJiraOauthConnected]);
+
+  const listJiraProjects = useCallback(() => {
+    const siteId = config.site_id;
+    const actualSiteId = siteId?.site?.id || siteId?.id || siteId;
+    if (!isJiraOauthConnected || !actualSiteId) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listJiraProjects(projectUuid, actualSiteId).then(res => {
+      const projects = res?.data?.projects || [];
+      return {
+        data: {
+          options: projects.map(p => ({
+            value: p.id,
+            project: p,
+            label: `${p.name} (${p.key})`,
+            name: p.name,
+          })),
+        }
+      };
+    });
+  }, [projectUuid, config.site_id, isJiraOauthConnected, jiraProjectsVersion]);
+
+  useEffect(() => {
+    if (!isJira) return;
+    fetchJiraOauthStatus();
+  }, [isJira, fetchJiraOauthStatus]);
+
+  // Reset project_key when site_id changes
+  useEffect(() => {
+    if (!isJira || !isJiraOauthConnected) return;
+    const siteId = config.site_id;
+    if (siteId && (siteId.site || siteId.id)) {
+      setJiraProjectsVersion(v => v + 1);
+      // Clear previous project selection when site changes
+      if (config.project_key) {
+        setConfig(prev => ({ ...prev, project_key: undefined }));
+      }
+    }
+  }, [isJira, isJiraOauthConnected, config.site_id?.id]);
+
   // Cleanup polling and popup on unmount or when Linear type changes
   useEffect(() => {
     return () => {
@@ -580,7 +698,20 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
-    const editor = (
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'site_id' && isJira) {
+      api = isJiraOauthConnected ? listJiraSites : null;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'project_key' && isJira) {
+      api = isJiraOauthConnected ? listJiraProjects : null;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
+
+    return (
       <ConnectionConfigEditor
         className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
         column={fieldColumn}
@@ -596,7 +727,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-    isDiscord, listDiscordChannels, isLinearOauthConnected,
+    isDiscord, listDiscordChannels, isLinearOauthConnected, listJiraProjects
   ]);
 
   return (
@@ -783,12 +914,37 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 )}
               </FormGroup>
             )}
+            {isJira && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-connection-oauth-status">
+                  <span className={classnames('oauth-status-badge', { connected: isJiraOauthConnected })}>
+                    {isJiraOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  </span>
+                  <Button
+                    color="primary"
+                    className="ml-2"
+                    disabled={isSubmitting || isCheckingJiraOauth || isWaitingJiraOAuth}
+                    onClick={handleConnectJira}
+                  >
+                    {isJiraOauthConnected ? gettext('Reconnect Jira') : gettext('Connect Jira')}
+                  </Button>
+                </div>
+                {jiraOauthError && <div className="text-danger mt-2">{jiraOauthError}</div>}
+              </FormGroup>
+            )}
+            {isWaitingJiraOAuth && (
+              <div className="seaqa-project-connection-oauth-pending">
+                <Loading />
+                <div className="mt-3">{gettext('Waiting for Jira authorization to complete...')}</div>
+              </div>
+            )}
           </div>
         )}
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}

@@ -137,12 +137,12 @@ const getEmailOriginalPageUrl = (connection, row) => {
 };
 
 const getJiraOriginalPageUrl = (connection, row, columns) => {
-  const baseUrl = connection.config?.base_url;
-  if (!baseUrl) return '';
+  const siteUrl = connection.config?.site_url;
+  if (!siteUrl) return '';
   const issueKeyColumn = getColumnByName(columns, 'issue_key');
   const issueKey = getCellValueByColumn(row, issueKeyColumn);
   if (!issueKey) return '';
-  return `${baseUrl.replace(/\/$/, '')}/browse/${issueKey}`;
+  return `${siteUrl.replace(/\/$/, '')}/browse/${issueKey}`;
 };
 
 const getNotionOriginalPageUrl = (row, columns) => {
