@@ -83,7 +83,7 @@ class MappingRequiredError(Exception):
         super().__init__(f'Mapping required for agent type: {agent_type}')
 
 
-class TicketCloseConfirmationRequired(Exception):
+class TicketCloseNotConfirmedYet(Exception):
     def __init__(self, warning_payload):
         self.warning_payload = warning_payload
         super().__init__('Ticket close confirmation required.')
@@ -400,7 +400,7 @@ class AgentActionConfirmView(APIView):
                     execution = self._failed_execution(f'Unsupported source_type: {source_type}')
             except MappingRequiredError:
                 raise
-            except TicketCloseConfirmationRequired:
+            except TicketCloseNotConfirmedYet:
                 raise
             except Exception as e:
                 logger.exception(
@@ -433,7 +433,7 @@ class AgentActionConfirmView(APIView):
                 'result': execution['result'],
             }, status=status.HTTP_200_OK)
 
-        except TicketCloseConfirmationRequired as e:
+        except TicketCloseNotConfirmedYet as e:
             return Response(e.warning_payload, status=status.HTTP_409_CONFLICT)
         except MappingRequiredError as e:
             return self._mapping_required_response(seadb_api, project_uuid, e)
@@ -1547,7 +1547,7 @@ class AgentActionConfirmView(APIView):
         if grouped_open_issues:
             if not confirm_close_linked_github_issues:
                 warning_payload = build_ticket_close_warning_response(grouped_open_issues)
-                raise TicketCloseConfirmationRequired(warning_payload)
+                raise TicketCloseNotConfirmedYet(warning_payload)
             try:
                 ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
                 state_reason = map_ticket_substate_to_github_state_reason(substate, ticket_columns)
