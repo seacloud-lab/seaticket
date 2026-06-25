@@ -3,17 +3,29 @@ from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import Http404, HttpResponse
+from django.test import RequestFactory, override_settings
 
 from seahub.portal.csrf import is_portal_origin_verified
 from seahub.portal.middleware import PortalCustomDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
 from seahub.portal.utils import set_portal_preview_session
-from seahub.portal.views import portal_external_logout_view, portal_view
+from seahub.portal.views import portal_accounts_login_view, portal_external_logout_view, portal_view
 
 
 def process_custom_domain_request(request):
     return PortalCustomDomainMiddleware(lambda _request: None).process_request(request)
+
+
+def build_session_request(path):
+    request = RequestFactory().get(path)
+    SessionMiddleware(lambda _request: None).process_request(request)
+    request.session.save()
+    request.is_mobile = False
+    request.is_tablet = False
+    return request
 
 
 def enable_portal(project, allow_anonymous=False):
@@ -24,6 +36,28 @@ def enable_portal(project, allow_anonymous=False):
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
+
+
+@pytest.mark.django_db
+@override_settings(
+    IS_PORTAL_MODE=True,
+    ENABLE_SIGNUP=True,
+    MULTI_TENANCY=True,
+    ENABLE_SAML=True,
+    ENABLE_MULTI_SAML=True,
+    ROOT_URLCONF='seahub.utils.rooturl',
+    SITE_ROOT_URLCONF='seahub.portal_site_urls',
+)
+def test_portal_accounts_login_hides_main_site_entry_points():
+    request = build_session_request('/accounts/login/')
+    request.user = AnonymousUser()
+
+    response = portal_accounts_login_view(request)
+
+    assert response.status_code == 200
+    assert b'id="sign-up"' not in response.content
+    assert b'id="sso"' not in response.content
+    assert b'id="multi_saml_sso"' not in response.content
 
 
 @pytest.mark.django_db

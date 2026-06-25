@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
 from seahub.portal.views import portal_anonymous_validate, portal_external_invitation_accept_view, portal_external_logout_view, \
-    portal_login_view, portal_preview_view, portal_view
+    portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
     PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalMyIssuesView, PortalTagsView, PortalUserListView
@@ -21,6 +21,7 @@ urlpatterns = [
     re_path(r'^custom-css/$', custom_css_view, name='custom_css'),
     re_path(r'^i18n/$', i18n, name='i18n'),
     re_path(r'^captcha/', include('captcha.urls')),
+    re_path(r'^accounts/login/$', portal_accounts_login_view, name='auth_login'),
     re_path(r'^accounts/', include('seahub.registration.urls')),
     re_path(r'^api/v1/slide-captcha/$', SlideCaptchaView.as_view(), name='api-v1-slide-captcha'),
 

@@ -8,6 +8,8 @@ from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect, Http404
 from django.utils import timezone
 
+from seahub.auth import REDIRECT_FIELD_NAME
+from seahub.auth import views as auth_views
 from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
@@ -64,6 +66,17 @@ def _get_portal_login_context(request, project, portal_settings):
         'portal_logo': portal_settings.get('portal_logo', ''),
         'media_url': MEDIA_URL,
     }
+
+
+def portal_accounts_login_view(request):
+    redirect_to = request.GET.get(REDIRECT_FIELD_NAME, '') or request.POST.get(REDIRECT_FIELD_NAME, '')
+    if getattr(request.user, 'is_authenticated', False):
+        return redirect(redirect_to or '/')
+
+    if getattr(settings, 'ENABLE_CUSTOM_AUTH', False):
+        return auth_views.custom_login(request, template_name='registration/login.html')
+
+    return auth_views.login(request, template_name='registration/login.html')
 
 
 def portal_view(request, project_uuid, children_id=None, session_uuid=None, issue_id=None):
