@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
@@ -13,20 +13,33 @@ const PortalKnowledgePageContext = React.createContext(null);
 export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children, isEditMode }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
+  const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId) => {
     const { origin } = location;
     const basePath = isEditMode ? 'portal-edit' : 'portal';
     const url = `${origin}${siteRoot}${basePath}/${projectUuid}/${BAR_TYPE.KNOWLEDGE}`;
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const currentQueryString = currentUrlParams.toString();
+      const queryString = currentQueryString || listQueryStringRef.current;
+      listQueryStringRef.current = queryString;
+      urlPart = urlPart + (queryString ? '?' + queryString : '');
+    }
     history.replaceState(null, null, url + urlPart);
-  }, [projectUuid, projectName]);
+  }, [projectUuid, projectName, isEditMode]);
 
   const togglePageSlugId = useCallback((newPageSlugId) => {
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      listQueryStringRef.current = currentUrlParams.toString();
+    }
+    resetURL(newPageSlugId);
     if (pageSlugId !== newPageSlugId) {
       setPageSlugId(newPageSlugId);
     }
-  }, [pageSlugId]);
+  }, [pageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
     const eventBus = context.eventBus;

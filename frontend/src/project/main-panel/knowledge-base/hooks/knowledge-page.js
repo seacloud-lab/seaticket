@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../constants';
@@ -15,6 +15,7 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
   const [isKBRecordPreview, toggleKBRecordPreview] = useState(true);
+  const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
@@ -22,23 +23,30 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       const currentUrlParams = new URLSearchParams(window.location.search);
-      const queryString = currentUrlParams.toString();
+      const currentQueryString = currentUrlParams.toString();
+      const queryString = currentQueryString || listQueryStringRef.current;
+      listQueryStringRef.current = queryString;
       urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       urlPart = '/trash/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID]);
+  }, [workspaceID, projectName]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) => {
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      listQueryStringRef.current = currentUrlParams.toString();
+    }
+    resetURL(newPageSlugId, newChildrenPageSlugId);
     if (pageSlugId !== newPageSlugId) {
       setPageSlugId(newPageSlugId);
     }
     if (childrenPageSlugId !== newChildrenPageSlugId) {
       setChildrenPageSlugId(newChildrenPageSlugId);
     }
-  }, [pageSlugId, childrenPageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
     const eventBus = context.eventBus;
