@@ -471,7 +471,7 @@ const Settings = () => {
           <div className="portal-settings-content">
             {(domainAliasRoot || defaultDomainPublicUrl) && (
               <>
-                <label className="portal-settings-label">{gettext('Default portal domain')}</label>
+                <label className="portal-settings-label">{gettext('Portal domain')}</label>
                 <div className="portal-url-container">
                   <input
                     type="text"
@@ -506,7 +506,7 @@ const Settings = () => {
                     {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
                   </Button>
                 </div>
-                {customSubdomainPublicUrl && (
+                {customSubdomainPublicUrl && customSubdomainPublicUrl !== defaultDomainPublicUrl && (
                   <>
                     <label className="portal-settings-label mt-3">{gettext('Custom subdomain URL')}</label>
                     <div className="portal-url-container">

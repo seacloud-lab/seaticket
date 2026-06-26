@@ -289,7 +289,6 @@ def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_p
     PortalDomainAlias.objects.create(
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
-        alias_type='custom',
     )
     request = factory.get('/', HTTP_HOST='my-brand.seaticket-portal.test')
 
@@ -302,12 +301,73 @@ def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_p
 
 
 @pytest.mark.django_db
+def test_service_domain_alias_redirects_to_verified_custom_domain(factory, real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=str(real_project.uuid),
+    )
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    request = factory.get('/my-issues/?page=1', HTTP_HOST='my-brand.seaticket-portal.test')
+
+    response = process_custom_domain_request(request)
+
+    assert response.status_code == 302
+    assert response['Location'] == 'http://support.local.test/my-issues/?page=1'
+
+
+@pytest.mark.django_db
+def test_service_domain_alias_mismatched_project_404s_before_custom_domain_redirect(factory, real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=str(real_project.uuid),
+    )
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    other_project_uuid = str(uuid4())
+    request = factory.get(
+        f'/api/v1/portal/{other_project_uuid}/settings/',
+        HTTP_HOST='my-brand.seaticket-portal.test',
+    )
+
+    with pytest.raises(Http404):
+        process_custom_domain_request(request)
+
+
+@pytest.mark.django_db
+def test_service_domain_alias_does_not_redirect_to_unverified_custom_domain(factory, real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=str(real_project.uuid),
+    )
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=False,
+    )
+    request = factory.get('/', HTTP_HOST='my-brand.seaticket-portal.test')
+
+    response = process_custom_domain_request(request)
+
+    assert response is None
+    assert request.path_info == f'/portal/{real_project.uuid}/'
+
+
+@pytest.mark.django_db
 def test_portal_origin_verified_for_same_project_alias(factory, real_project, settings):
     settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
     PortalDomainAlias.objects.create(
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
-        alias_type='custom',
     )
     request = factory.post(
         '/',
@@ -325,12 +385,10 @@ def test_portal_origin_rejects_other_project_alias(factory, real_project, settin
     PortalDomainAlias.objects.create(
         prefix='my-brand',
         project_uuid=str(real_project.uuid),
-        alias_type='custom',
     )
     PortalDomainAlias.objects.create(
         prefix='other-brand',
         project_uuid=str(uuid4()),
-        alias_type='custom',
     )
     request = factory.post(
         '/',

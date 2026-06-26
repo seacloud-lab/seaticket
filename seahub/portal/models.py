@@ -28,9 +28,7 @@ PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = ('domain', 'project_uuid', 'verified')
 PORTAL_TLS_ASK_CACHE_TIMEOUT = 60
 PORTAL_TLS_ASK_CACHE_PREFIX = 'portal_tls_ask_allowed:'
 PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT = 300
-PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid', 'alias_type')
-PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT = 'default'
-PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM = 'custom'
+PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid')
 PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH = 6
 
 
@@ -160,47 +158,36 @@ class PortalDomainAliasManager(models.Manager):
             if not super().filter(prefix=prefix).exists():
                 return prefix
 
-    def ensure_default_alias(self, project_uuid):
+    def ensure_alias(self, project_uuid):
         for _index in range(10):
-            alias = super().filter(
-                project_uuid=project_uuid,
-                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
-            ).first()
+            alias = super().filter(project_uuid=str(project_uuid)).first()
             if alias:
                 return alias
 
             alias = self.model(
                 project_uuid=project_uuid,
                 prefix=self.generate_unique_prefix(),
-                alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
             )
             try:
                 alias.save()
                 return alias
             except IntegrityError:
-                existing_alias = super().filter(
-                    project_uuid=project_uuid,
-                    alias_type=PORTAL_DOMAIN_ALIAS_TYPE_DEFAULT,
-                ).first()
+                existing_alias = super().filter(project_uuid=str(project_uuid)).first()
                 if existing_alias:
                     return existing_alias
 
-        raise IntegrityError('Failed to create default portal domain alias.')
+        raise IntegrityError('Failed to create portal domain alias.')
 
-    def delete_custom_alias(self, project_uuid):
-        alias = super().filter(
-            project_uuid=str(project_uuid),
-            alias_type=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM,
-        ).first()
-        if not alias:
-            return
-        alias.delete()
+    def reset_alias_prefix(self, project_uuid):
+        alias = self.ensure_alias(project_uuid)
+        alias.prefix = self.generate_unique_prefix()
+        alias.save()
+        return alias
 
 
 class PortalDomainAlias(models.Model):
     prefix = models.CharField(max_length=63, unique=True)
-    project_uuid = models.CharField(max_length=36, db_index=True)
-    alias_type = models.CharField(max_length=32, default=PORTAL_DOMAIN_ALIAS_TYPE_CUSTOM)
+    project_uuid = models.CharField(max_length=36, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -208,7 +195,6 @@ class PortalDomainAlias(models.Model):
 
     class Meta:
         db_table = 'portal_domain_aliases'
-        unique_together = (('project_uuid', 'alias_type'),)
 
     def save(self, *args, **kwargs):
         old_prefix = None

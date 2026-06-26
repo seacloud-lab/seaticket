@@ -1,10 +1,11 @@
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.custom_domain import get_request_host_without_port
-from seahub.portal.domain_resolver import PORTAL_DOMAIN_TYPE_CUSTOM, resolve_portal_domain
+from seahub.portal.domain_resolver import PORTAL_DOMAIN_TYPE_CUSTOM, PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
+from seahub.portal.models import PortalCustomDomain
 
 
 # Static and auth resources needed by Portal custom-domain pages.
@@ -82,6 +83,20 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
         request.portal_domain = portal_domain
         if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_CUSTOM:
             request.portal_custom_domain = portal_domain.binding
+        elif portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
+            requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
+            if requested_project_uuid and str(requested_project_uuid) != str(portal_domain.project_uuid):
+                raise Http404
+            custom_domain = PortalCustomDomain.objects.filter(
+                project_uuid=str(portal_domain.project_uuid),
+                verified=True,
+            ).first()
+            if custom_domain:
+                return HttpResponseRedirect('%s://%s%s' % (
+                    request.scheme,
+                    custom_domain.domain,
+                    request.get_full_path(),
+                ))
 
         if any(normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix) for prefix in PASS_THROUGH_PREFIXES):
             return None

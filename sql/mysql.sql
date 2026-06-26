@@ -726,13 +726,11 @@ CREATE TABLE `portal_domain_aliases` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `prefix` varchar(63) NOT NULL,
   `project_uuid` char(36) NOT NULL,
-  `alias_type` varchar(32) NOT NULL DEFAULT 'custom',
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portal_domain_aliases_prefix_uniq` (`prefix`),
-  UNIQUE KEY `portal_domain_aliases_project_type_uniq` (`project_uuid`, `alias_type`),
-  KEY `portal_domain_aliases_project_uuid_idx` (`project_uuid`)
+  UNIQUE KEY `portal_domain_aliases_project_uuid_uniq` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `portal_chat_sessions` (

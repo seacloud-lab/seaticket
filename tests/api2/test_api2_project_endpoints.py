@@ -187,10 +187,7 @@ class TestProjectView:
             resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 200
-        assert PortalDomainAlias.objects.filter(
-            project_uuid=str(project.uuid),
-            alias_type='default',
-        ).exists()
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
     def test_put_move_project_to_target_workspace_success(self, factory, project_creator, real_project):
         project = real_project
