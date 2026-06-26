@@ -10,8 +10,8 @@ You can use it directly as the basis for AI work instructions, or replace the pl
 
 ```text
 Please handle this task according to the seaqa-web project rules.
-Project root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-Frontend directory: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+Project root: /seaqa-web
+Frontend directory: /seaqa-web/frontend
 Task: [your task]
 Target file: [file path]
 Requirement: Prefer existing implementations, make minimal changes, and explain the impact scope and verification commands after the change.
@@ -23,122 +23,172 @@ Requirement: Prefer existing implementations, make minimal changes, and explain 
 
 | Directory | Path | Purpose |
 |------|------|------|
-| Repository root | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web` | Project root |
-| Frontend directory | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend` | Frontend code root |
-| Frontend scripts | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/scripts` | Build and startup scripts |
+| Repository root | `/seaqa-web` | Project root |
+| Frontend directory | `/seaqa-web/frontend` | Frontend code root |
+| Frontend scripts | `/seaqa-web/frontend/scripts` | Build and startup scripts |
 
 ### Core Source Tree
 
 ```text
 frontend/src/
-├── components/          # Shared components such as Icon, Button, Modal
-├── home/                # Home page or main business entry point
-├── project/             # Project-related pages and logic
-├── profile-settings/    # User settings
-├── org-admin/           # Team administration
-├── sys-admin/           # System administration
-├── api/                 # API wrappers
-├── utils/               # Utility functions
-├── models/              # Data models
-├── constants/           # Constant definitions
-├── css/                 # Global styles
-├── assets/              # Static assets
-└── _i18n/               # Internationalization resources
+├── _i18n/                       # Internationalization resources
+│   ├── en/                      # English translation resources
+│   ├── zh-cn/                   # Simplified Chinese translation resources
+│   └── *.js / *.json            # Translation resource definitions
+├── api/                         # API wrappers and request helpers
+│   ├── *.js                     # Domain-specific API modules
+│   └── common.js                # Shared request helpers and wrappers
+├── assets/                      # Static assets
+│   ├── images/                  # Image assets used by the frontend
+│   ├── icons/                   # Icon assets
+│   └── fonts/                   # Font assets
+├── components/                  # Shared components
+│   ├── common/                  # Generic reusable components such as Button, Modal, Icon
+│   ├── layout/                  # Layout-related components such as header, sidebar, and page shells
+│   └── feedback/                # Feedback components such as toast, loading, empty state
+├── constants/                   # Constant definitions
+│   ├── *.js                     # Global constants, enums, and fixed configuration
+│   └── index.js                 # Constant export entry
+├── css/                         # Global styles and theme files
+│   ├── index.css                # Global style entry
+│   ├── variables.css            # Shared CSS variables
+│   └── themes/                  # Theme-related style files
+├── home/                        # Home page or main business entry point
+│   ├── index.js                 # Home page entry file
+│   └── components/              # Home-page-specific components
+├── icon-page/                   # Icon preview and icon-related page entry
+│   ├── index.js                 # Icon page entry file
+│   └── components/              # Icon page components
+├── models/                      # Data models
+│   ├── *.js                     # Domain model definitions
+│   └── index.js                 # Model export entry
+├── org-admin/                   # Team administration
+│   ├── components/              # Organization admin components
+│   ├── index.js                 # Organization admin entry file
+│   └── pages/                   # Organization admin pages
+├── portal/                      # Portal entry and cross-module navigation
+│   ├── index.js                 # Portal entry file
+│   └── components/              # Portal-specific components
+├── profile-settings/            # User settings
+│   ├── components/              # Settings-related components
+│   ├── index.js                 # Settings module entry file
+│   └── utils/                   # Settings-related helpers
+├── project/                     # Project-related pages and logic
+│   ├── components/              # Project-specific components
+│   ├── index.js                 # Project module entry file
+│   ├── pages/                   # Project sub-pages
+│   └── utils/                   # Project-specific helper functions
+├── sea-metadata/                # Metadata display and parsing related logic
+│   ├── index.js                 # Metadata module entry file
+│   └── components/              # Metadata-related components
+├── sys-admin/                   # System administration
+│   ├── components/              # System admin components
+│   ├── index.js                 # System admin entry file
+│   └── pages/                   # System admin pages
+├── tests/                       # Frontend test files and test helpers
+│   ├── __mocks__/               # Mock data and mock modules
+│   └── utils/                   # Test utility helpers
+├── translation.js               # Shared translation helper and i18n bootstrap
+└── utils/                       # Utility functions
+    ├── date.js                  # Date-related helpers
+    ├── format.js                # Formatting helpers
+    ├── index.js                 # Utility export entry
+    └── validate.js              # Validation helpers
 ```
 
 ## 2. Tech Stack Summary
 
 ### Version Overview
 
-| Category | Dependency | Version |
-|------|------|------|
-| React | `react` | 18.3.1 |
-| React DOM | `react-dom` | 18.3.1 |
-| Type checking | `prop-types` | ^15.6.2 |
-| Styling helper | `classnames` | ^2.3.2 |
-| Routing | `@gatsbyjs/reach-router` | 2.0.1 |
-| HTTP requests | `axios` | ~1.16.1 |
-| Utility library | `lodash` | ^4.17.21 |
-| Date handling | `dayjs` | 1.10.7 |
-| Internationalization | `i18next` / `react-i18next` | ^25.2.1 |
-| Drag and drop | `react-dnd` | ^16.0.1 |
-| UI components | `reactstrap` | 9.2.3 |
-| Build tool | `webpack` | Custom configuration |
-| Test framework | `jest` | - |
+| Category | Dependency | Version | Functionality |
+|------|------|------|------|
+| React | `react` | 18.3.1 | Core UI library for building component-based pages |
+| React DOM | `react-dom` | 18.3.1 | Renders React components into the browser DOM |
+| Type checking | `prop-types` | ^15.6.2 | Runtime prop type validation for components |
+| Styling helper | `classnames` | ^2.3.2 | Conditionally composes CSS class names |
+| Routing | `reach-router` | 2.0.1 | Client-side routing and route matching |
+| HTTP requests | `axios` | ~1.16.1 | Sends API requests and handles responses/interceptors |
+| Utility library | `lodash` | ^4.17.21 | Common utility helpers for data manipulation and control flow |
+| Date handling | `dayjs` | 1.10.7 | Parses, formats, and calculates dates and times |
+| Internationalization | `i18next` / `react-i18next` | ^25.2.1 | Manages translation resources and React i18n integration |
+| Drag and drop | `react-dnd` | ^16.0.1 | Implements drag-and-drop interactions in React |
+| UI components | `reactstrap` | 9.2.3 | Bootstrap-based React UI component set |
+| Build tool | `webpack` | Custom configuration | Bundles frontend assets for development and production |
+| Test framework | `jest` | - | Runs unit and component tests |
 
 ### Core Framework
 
-- `react` 18.3.1
-- `react-dom` 18.3.1
-- `prop-types` ^15.6.2
-- `classnames` ^2.3.2
+- `react` 18.3.1 - Core UI library for component-driven development
+- `react-dom` 18.3.1 - Bridges React components to the browser DOM
+- `prop-types` ^15.6.2 - Runtime prop validation for React components
+- `classnames` ^2.3.2 - Conditional class name composition utility
 
 ### Routing
 
-- `@gatsbyjs/reach-router`
+- `reach-router` - Client-side routing and route matching library
 
 ### Requests and Utilities
 
-- `axios` ~1.16.1 - HTTP requests
-- `lodash` ^4.17.21 - utility functions
-- `deep-copy` ^1.4.2 - deep copy
-- `copy-to-clipboard` 3.3.1 - clipboard copy
-- `js-cookie` ^3.0.7 - cookie handling
-- `slugid` ^2.0.0 - UUID generation
-- `jszip` ^3.10.1 - ZIP file handling
+- `axios` ~1.16.1 - HTTP request library used for API calls, interceptors, and response handling
+- `lodash` ^4.17.21 - General-purpose utility functions for collection, object, and string operations
+- `deep-copy` ^1.4.2 - Deep clone utility for copying nested data structures
+- `copy-to-clipboard` 3.3.1 - Copies text to the system clipboard
+- `js-cookie` ^3.0.7 - Reads, writes, and removes browser cookies
+- `slugid` ^2.0.0 - Generates UUID-style identifiers for resources or temporary keys
+- `jszip` ^3.10.1 - Creates and reads ZIP archives in the browser
 
 ### Internationalization
 
-- `i18next`
-- `react-i18next`
-- `i18next-browser-languagedetector`
-- `i18next-http-backend`
+- `gettext` - Translation resource system used to manage localized strings, reference: https://docs.djangoproject.com/zh-hans/6.0/topics/i18n/translation/
 
 ### Dates and Visualization
 
-- `dayjs`
-- `d3`
-- `embedding-atlas`
+- `dayjs` - Lightweight date parsing, formatting, and manipulation library
+- `d3` - Data visualization library, mainly used for drawing statistical charts (such as line charts, bar charts, pie charts, etc.)
+- `embedding-atlas` - Embedding visualization library for machine learning-related exploration, including clustering, label generation, and nearest-neighbor search
 
 ### Drag and Drop / Interaction
 
-- `react-dnd`
-- `react-dnd-html5-backend`
-- `is-hotkey`
+- `react-dnd` - Drag and drop interaction library for React components
+- `react-dnd-html5-backend` - HTML5 drag-and-drop backend implementation for `react-dnd`
+
+### Keyboard Shortcuts
+
+- `is-hotkey` - Detects whether a keyboard event matches a hotkey definition
 
 ### UI and Forms
 
-- `reactstrap`
-- `react-select`
-- `react-responsive`
-- `rmc-dialog`
-- `rmc-feedback`
-- `rmc-tabs`
+- `reactstrap` - Bootstrap component library for React UI layout and controls
+- `react-select` - Feature-rich select/dropdown control for React
+- `react-responsive` - React media query and responsive rendering helpers
+- `rmc-dialog` - Dialog and modal interaction component
+- `rmc-feedback` - Feedback/status display component set
+- `rmc-tabs` - Tab navigation and panel switching component
 
 ### Rich Text and Content Handling
 
-- `@seafile/seafile-editor` 3.0.27 - rich text editor
-- `@seafile/sea-email-editor` ^0.0.13 - email editor
-- `@seafile/react-image-lightbox` ^5.0.4 - image preview
-- `@seafile/seafile-calendar` 1.0.12 - calendar component
-- `unified` 7.0.0 - Markdown processing
+- `@seafile/seafile-editor` 3.0.27 - Rich text editor for document editing and content authoring
+- `@seafile/sea-email-editor` ^0.0.13 - Email template editor for composing structured email content
+- `@seafile/react-image-lightbox` ^5.0.4 - Full-screen image preview and browsing component
+- `@seafile/seafile-calendar` 1.0.12 - Calendar component for date selection and scheduling UI
+- `unified` 7.0.0 - Markdown and text transformation pipeline for parsing and rendering content
 
 ### Build and Styling
 
-- `webpack`
-- `webpack-dev-server`
-- `webpack-manifest-plugin`
-- `webpack-bundle-tracker`
-- `babel-jest`
-- `babel-loader`
-- `css-loader`
-- `less-loader`
-- `sass-loader`
-- `postcss-loader`
-- `mini-css-extract-plugin`
-- `style-loader`
-- `autoprefixer`
-- `postcss-preset-env`
+- `webpack` - Bundles JavaScript, styles, and assets for development and production
+- `webpack-dev-server` - Provides a local development server with hot reload support
+- `webpack-manifest-plugin` - Generates asset manifest files for build outputs
+- `webpack-bundle-tracker` - Records bundle output information for integration and analysis
+- `babel-jest` - Transforms source code for Jest test execution
+- `babel-loader` - Trans piles JavaScript/JSX through Babel during bundling
+- `css-loader` - Resolves CSS imports and `url()` references
+- `less-loader` - Compiles Less files into CSS
+- `sass-loader` - Compiles Sass/SCSS files into CSS
+- `postcss-loader` - Processes CSS with PostCSS plugins during build
+- `mini-css-extract-plugin` - Extracts CSS into separate files for production builds
+- `style-loader` - Injects CSS into the DOM during development
+- `autoprefixer` - Adds vendor prefixes based on browser support rules
+- `postcss-preset-env` - Enables modern CSS features through PostCSS transforms
 
 ### Testing and Quality
 
@@ -207,19 +257,24 @@ import './index.css';
 
 | Directory | Responsibility | Description |
 |------|------|------|
-| `components/` | Shared components | Reusable components such as Icon, Button, and Modal |
-| `home/` | Home entry point | Dashboard home page and main business entry point |
-| `project/` | Project business | Project-related pages and core business logic |
-| `profile-settings/` | User settings | User profile settings |
-| `org-admin/` | Organization management | Organization-level administration features |
-| `sys-admin/` | System management | System-level administration features |
-| `api/` | API wrappers | Encapsulated API requests |
-| `utils/` | Utility functions | General utility functions |
-| `models/` | Data models | Data entity models |
-| `constants/` | Constant definitions | Global constants and enums |
-| `css/` | Global styles | Global CSS and theme styles |
-| `assets/` | Static assets | Static files such as icons and images |
-| `_i18n/` | Internationalization | Multi-language resource files |
+| `_i18n/` | Internationalization | Multi-language resource files and translation bootstrap. Common subdirectories: `en/`, `zh-cn/` |
+| `api/` | API wrappers | Encapsulated API requests and request helpers. Common files: `common.js`, domain API modules |
+| `assets/` | Static assets | Static files such as icons, images, and fonts. Common subdirectories: `images/`, `icons/`, `fonts/` |
+| `components/` | Shared components | Reusable UI building blocks. Common subdirectories: `common/`, `layout/`, `feedback/` |
+| `constants/` | Constant definitions | Global constants, enums, and fixed configuration. Common files: `index.js`, domain constant modules |
+| `css/` | Global styles | Global CSS and theme styles. Common subdirectories: `themes/`, shared variable files |
+| `home/` | Home entry point | Dashboard home page and main business entry point. Common subdirectories: `components/` |
+| `icon-page/` | Icon page | Icon preview and icon-related pages. Common files: `index.js`, feature components |
+| `models/` | Data models | Data entity models and schema definitions. Common files: `index.js`, domain model modules |
+| `org-admin/` | Organization management | Organization-level administration features. Common subdirectories: `components/`, `pages/` |
+| `portal/` | Portal entry | Shared portal entry and cross-module navigation. Common subdirectories: `components/` |
+| `profile-settings/` | User settings | User profile and preference settings. Common subdirectories: `components/`, `utils/` |
+| `project/` | Project business | Project-related pages and core business logic. Common subdirectories: `components/`, `pages/`, `utils/` |
+| `sea-metadata/` | Metadata module | Metadata display, parsing, and related UI logic. Common subdirectories: `components/` |
+| `sys-admin/` | System management | System-level administration features. Common subdirectories: `components/`, `pages/` |
+| `tests/` | Test assets | Frontend test files, mocks, and test helpers. Common subdirectories: `__mocks__/`, `utils/` |
+| `translation.js` | Translation bootstrap | Shared translation helper and i18n initialization entry |
+| `utils/` | Utility functions | General utility functions. Common files: `date.js`, `format.js`, `validate.js` |
 
 ### Finding Code Paths
 
@@ -261,7 +316,7 @@ import './index.css';
 
 ```bash
 # Enter the frontend directory
-cd /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+cd /seaqa-web/frontend
 
 # Check code
 npm run lint
@@ -305,8 +360,8 @@ npm run build         # Build verification
 Please handle the following task according to the seaqa-web project rules:
 
 📁 Project paths:
-- Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-- Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+- Root: /seaqa-web
+- Frontend: /seaqa-web/frontend
 
 🎯 Task goal:
 [write the task here]
@@ -329,8 +384,8 @@ Please handle the following task according to the seaqa-web project rules:
 ```text
 Please handle this task according to the seaqa-web project rules.
 
-Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+Root: /seaqa-web
+Frontend: /seaqa-web/frontend
 
 Task: [write the task]
 Target file: [write the file or directory]
@@ -344,8 +399,8 @@ Requirement: find existing implementation first, make minimal changes, reuse dep
 Please handle the following task according to the seaqa-web project conventions:
 
 📁 Project paths:
-- Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-- Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+- Root: /seaqa-web
+- Frontend: /seaqa-web/frontend
 
 ⚙️ Technical constraints:
 - Use axios for requests
@@ -522,8 +577,8 @@ When assigning a task to AI, provide the information in this order:
 
 ```text
 Please handle the task according to the seaqa-web project rules.
-Project root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-Frontend directory: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+Project root: /seaqa-web
+Frontend directory: /seaqa-web/frontend
 
 Task: Fix the search feature on the user list page
 Target file: frontend/src/org-admin/users/index.js
