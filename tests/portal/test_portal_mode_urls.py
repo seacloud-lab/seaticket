@@ -5,10 +5,12 @@ from django.urls import Resolver404, resolve
 
 PORTAL_URLCONF = 'seahub.portal_site_urls'
 PORTAL_DOMAIN_MIDDLEWARE = 'seahub.portal.middleware.PortalCustomDomainMiddleware'
+CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
 
 
 def test_portal_domain_middleware_matches_runtime_mode(settings):
     assert (PORTAL_DOMAIN_MIDDLEWARE in settings.MIDDLEWARE) is bool(settings.IS_PORTAL_MODE)
+    assert CSRF_MIDDLEWARE in settings.MIDDLEWARE
 
 
 def test_portal_mode_resolves_public_portal_routes():

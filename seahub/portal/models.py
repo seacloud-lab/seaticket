@@ -86,11 +86,11 @@ class PortalExternalInvitation(models.Model):
     def is_expired(self):
         return timezone.now() >= self.expire_time
 
-    @property
-    def link(self):
+    def get_link(self, request):
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(self.project_uuid)).first()
         if custom_domain and custom_domain.verified:
-            return 'https://%s/external/accept/%s/' % (custom_domain.domain, self.token)
+            path = '/external/accept/%s/' % self.token
+            return '%s://%s%s' % (request.scheme, custom_domain.domain, path)
 
         base = get_service_url().rstrip('/')
         path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
@@ -122,8 +122,7 @@ class ProjectExternalUser(models.Model):
 class PortalDomainAliasManager(models.Manager):
 
     def _prefix_cache_key(self, prefix):
-        normalized_prefix = normalize_portal_subdomain_prefix(prefix)
-        return 'portal_domain_alias:prefix:%s' % normalized_prefix
+        return 'portal_domain_alias:prefix:%s' % prefix
 
     def get_by_prefix(self, prefix):
         try:
@@ -225,8 +224,7 @@ class PortalDomainAlias(models.Model):
 class PortalCustomDomainManager(models.Manager):
 
     def _domain_cache_key(self, domain):
-        normalized_domain = normalize_portal_custom_domain(domain)
-        return 'portal_custom_domain:domain:%s' % normalized_domain
+        return 'portal_custom_domain:domain:%s' % domain
 
     def get_by_domain(self, domain):
         try:

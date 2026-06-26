@@ -25,7 +25,7 @@ from seahub.portal.apis import (
     PortalPreviewTokenView,
     SQLGeneratorOptionInvalidError,
 )
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, get_portal_tls_ask_cache_key
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
@@ -1044,6 +1044,28 @@ class TestPortalCustomDomainTLSAskView:
 @pytest.mark.django_db
 class TestPortalExternalInvitationsView:
 
+    def test_get_uses_verified_custom_domain_link(self, factory, project_creator, real_project):
+        project = real_project
+        PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username,
+            email='external@example.com',
+            project_uuid=str(project.uuid),
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/external-invitations/")
+        request.user = project_creator
+
+        resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert len(resp.data['invite_list']) == 1
+        invitation_link = resp.data['invite_list'][0]['link']
+        assert invitation_link == 'http://support.local.test/external/accept/%s/' % invitation.token
+
     def test_post_uses_verified_custom_domain_link_in_email(self, factory, project_creator, real_project):
         project = real_project
         PortalCustomDomain.objects.create(
@@ -1069,7 +1091,7 @@ class TestPortalExternalInvitationsView:
 
         assert resp.status_code == 200
         invitation_link = captured_context['invitation_link']
-        assert invitation_link.startswith('https://support.local.test/external/accept/')
+        assert invitation_link.startswith('http://support.local.test/external/accept/')
         assert invitation_link.endswith('/')
         assert '/portal-external/accept/' not in invitation_link
 

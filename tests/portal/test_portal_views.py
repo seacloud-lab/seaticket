@@ -8,10 +8,9 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import Http404, HttpResponse
 from django.test import RequestFactory, override_settings
 
-from seahub.portal.csrf import is_portal_origin_verified
 from seahub.portal.middleware import PortalCustomDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
-from seahub.portal.utils import set_portal_preview_session
+from seahub.portal.utils import PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain, set_portal_preview_session
 from seahub.portal.views import portal_accounts_login_view, portal_external_logout_view, portal_view
 
 
@@ -301,6 +300,21 @@ def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_p
 
 
 @pytest.mark.django_db
+def test_resolve_portal_domain_normalizes_service_alias_host(real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=str(real_project.uuid),
+    )
+
+    portal_domain = resolve_portal_domain('My-Brand.Seaticket-Portal.Test:8443')
+
+    assert portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS
+    assert portal_domain.domain == 'my-brand.seaticket-portal.test'
+    assert portal_domain.project_uuid == str(real_project.uuid)
+
+
+@pytest.mark.django_db
 def test_service_domain_alias_redirects_to_verified_custom_domain(factory, real_project, settings):
     settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
     PortalDomainAlias.objects.create(
@@ -360,41 +374,3 @@ def test_service_domain_alias_does_not_redirect_to_unverified_custom_domain(fact
 
     assert response is None
     assert request.path_info == f'/portal/{real_project.uuid}/'
-
-
-@pytest.mark.django_db
-def test_portal_origin_verified_for_same_project_alias(factory, real_project, settings):
-    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-    PortalDomainAlias.objects.create(
-        prefix='my-brand',
-        project_uuid=str(real_project.uuid),
-    )
-    request = factory.post(
-        '/',
-        HTTP_HOST='my-brand.seaticket-portal.test',
-        HTTP_ORIGIN='https://my-brand.seaticket-portal.test',
-    )
-    process_custom_domain_request(request)
-
-    assert is_portal_origin_verified(request) is True
-
-
-@pytest.mark.django_db
-def test_portal_origin_rejects_other_project_alias(factory, real_project, settings):
-    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-    PortalDomainAlias.objects.create(
-        prefix='my-brand',
-        project_uuid=str(real_project.uuid),
-    )
-    PortalDomainAlias.objects.create(
-        prefix='other-brand',
-        project_uuid=str(uuid4()),
-    )
-    request = factory.post(
-        '/',
-        HTTP_HOST='my-brand.seaticket-portal.test',
-        HTTP_ORIGIN='https://other-brand.seaticket-portal.test',
-    )
-    process_custom_domain_request(request)
-
-    assert is_portal_origin_verified(request) is False

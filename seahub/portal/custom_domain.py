@@ -58,7 +58,7 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
     if service_host:
         reserved_domains.add(service_host.lower())
 
-    portal_root_domain = (getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '') or '').strip().lower().rstrip('.')
+    portal_root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
     if portal_root_domain:
         try:
             portal_root_domain = portal_root_domain.encode('idna').decode('ascii')
@@ -124,9 +124,8 @@ def validate_portal_subdomain_prefix_available(prefix):
     return normalized_prefix
 
 def build_portal_service_domain(prefix):
-    prefix = normalize_portal_subdomain_prefix(prefix)
     root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-    if not root_domain:
+    if not prefix or not root_domain:
         return ''
     return '%s.%s' % (prefix, root_domain)
 
@@ -143,17 +142,6 @@ def get_portal_subdomain_prefix(host):
     if '.' in prefix:
         return ''
     return normalize_portal_subdomain_prefix(prefix)
-
-
-def get_request_host_without_port(request):
-    try:
-        host = request.get_host()
-    except Exception:
-        host = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or ''
-
-    parsed = urlsplit('//%s' % host)
-    return (parsed.hostname or '').lower()
-
 
 def query_dns_txt_values(record_name):
     try:
@@ -179,16 +167,9 @@ def query_dns_txt_values(record_name):
 
 
 def verify_portal_custom_domain_dns(domain, verification_token):
-    record_name = '%s.%s' % (CUSTOM_DOMAIN_TXT_RECORD_PREFIX, normalize_portal_custom_domain(domain))
+    record_name = '%s.%s' % (CUSTOM_DOMAIN_TXT_RECORD_PREFIX, domain)
     expected_value = '%s%s' % (CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, verification_token)
     return expected_value in query_dns_txt_values(record_name)
-
-
-def is_request_using_portal_custom_domain(request, project_uuid=None):
-    binding = getattr(request, 'portal_custom_domain', None)
-    if project_uuid is None:
-        return bool(binding)
-    return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))
 
 
 def is_request_using_portal_domain(request, project_uuid=None):

@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 
 from django.conf import settings
 from django.core.cache import cache
@@ -20,10 +21,13 @@ from seahub.portal.visitor_session import (
     set_visitor_cookie,
     touch_visitor_session,
 )
-from seahub.portal.custom_domain import is_request_using_portal_domain
+from seahub.portal.custom_domain import build_portal_service_domain, is_request_using_portal_domain
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
 
 
 
+PORTAL_DOMAIN_TYPE_SERVICE_ALIAS = 'service_alias'
+PORTAL_DOMAIN_TYPE_CUSTOM = 'custom'
 PORTAL_EXTERNAL_LOGIN_CODE_TTL = 10 * 60
 PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN = 60
 PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT = 5
@@ -32,6 +36,29 @@ PORTAL_PREVIEW_TOKEN_SALT = 'seahub.portal.preview'
 PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
 PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
+
+
+def resolve_portal_domain(host):
+    alias = PortalDomainAlias.objects.get_by_host(host)
+    if alias:
+        return SimpleNamespace(
+            domain_type=PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
+            domain=build_portal_service_domain(alias.prefix),
+            project_uuid=alias.project_uuid,
+            binding=alias,
+        )
+
+    custom_domain = PortalCustomDomain.objects.get_by_domain(host)
+    if custom_domain and custom_domain.verified:
+        return SimpleNamespace(
+            domain_type=PORTAL_DOMAIN_TYPE_CUSTOM,
+            domain=custom_domain.domain,
+            project_uuid=custom_domain.project_uuid,
+            binding=custom_domain,
+        )
+
+    return None
+
 
 def load_portal_preview_token(token):
     try:
@@ -277,3 +304,10 @@ def portal_endpoint(func):
         response = func(self, request, *args, **kwargs)
         return finalize_visitor_session_response(response, identity)
     return wrapper
+
+
+def build_absolute_portal_url(request, domain, path='/'):
+    if not domain:
+        return ''
+    normalized_path = path if path.startswith('/') else '/%s' % path
+    return '%s://%s%s' % (request.scheme, domain, normalized_path)

@@ -3,9 +3,8 @@ from django.http import Http404, HttpResponseRedirect
 from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
-from seahub.portal.custom_domain import get_request_host_without_port
-from seahub.portal.domain_resolver import PORTAL_DOMAIN_TYPE_CUSTOM, PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
 from seahub.portal.models import PortalCustomDomain
+from seahub.portal.utils import PORTAL_DOMAIN_TYPE_CUSTOM, PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
 
 
 # Static and auth resources needed by Portal custom-domain pages.
@@ -69,9 +68,15 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
     def process_request(self, request):
         path = request.path_info or '/'
         normalized_path = ('/%s' % path.lstrip('/')).rstrip('/') or '/'
-        request_host = get_request_host_without_port(request)
+        try:
+            host = request.get_host()
+        except Exception:
+            host = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or ''
+        parsed = urlsplit('//%s' % (host or '').strip())
+        request_host = (parsed.hostname or '').lower().rstrip('.')
         if not request_host:
             return None
+
         seaticket_server_hostname = getattr(settings, 'SEATICKET_SERVER_HOSTNAME', '').lower()
         if seaticket_server_hostname and request_host == seaticket_server_hostname:
             return None
@@ -87,10 +92,7 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
             requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
             if requested_project_uuid and str(requested_project_uuid) != str(portal_domain.project_uuid):
                 raise Http404
-            custom_domain = PortalCustomDomain.objects.filter(
-                project_uuid=str(portal_domain.project_uuid),
-                verified=True,
-            ).first()
+            custom_domain = PortalCustomDomain.objects.filter(project_uuid=portal_domain.project_uuid, verified=True).first()
             if custom_domain:
                 return HttpResponseRedirect('%s://%s%s' % (
                     request.scheme,

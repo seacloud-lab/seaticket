@@ -47,7 +47,7 @@ from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
     is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
-    get_portal_settings
+    get_portal_settings, build_absolute_portal_url
 from seahub.portal.custom_domain import build_portal_service_domain, verify_portal_custom_domain_dns, normalize_portal_subdomain_prefix,\
     normalize_portal_custom_domain, get_portal_reserved_subdomain_prefixes
 from seahub.utils.verify import get_random_code
@@ -68,13 +68,6 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
-
-
-def _build_absolute_portal_url(request, domain, path='/'):
-    if not domain:
-        return ''
-    normalized_path = path if path.startswith('/') else '/%s' % path
-    return '%s://%s%s' % (request.scheme, domain, normalized_path)
 
 
 def _replace_kb_file_urls_for_portal(project_uuid, value):
@@ -1602,11 +1595,8 @@ class PortalPreviewTokenView(APIView):
         token_path = '/portal-preview/%s/' % quote(token, safe='')
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=project_uuid, verified=True).first()
         if custom_domain:
-            preview_url = _build_absolute_portal_url(request, custom_domain.domain, token_path)
-            return Response({
-                'token': token,
-                'preview_url': preview_url,
-            })
+            preview_url = build_absolute_portal_url(request, custom_domain.domain, token_path)
+            return Response({'token': token, 'preview_url': preview_url})
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
         portal_settings = get_portal_settings(project)
         enable_portal = portal_settings.get('enable_portal')
@@ -1614,22 +1604,15 @@ class PortalPreviewTokenView(APIView):
         if enable_portal and root_domain:
             alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
         if alias:
-            preview_url = _build_absolute_portal_url(request, build_portal_service_domain(alias.prefix), token_path)
-            return Response({
-                'token': token,
-                'preview_url': preview_url,
-            })
+            preview_url = build_absolute_portal_url(request, build_portal_service_domain(alias.prefix), token_path)
+            return Response({'token': token, 'preview_url': preview_url})
 
-        return Response({
-                'token': token,
-                'preview_url': request.build_absolute_uri(token_path),
-            })
+        return Response({'token': token, 'preview_url': request.build_absolute_uri(token_path)})
 
 class PortalDomainAliasView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
-
 
     @require_org_context
     def get(self, request, project_uuid):
@@ -1792,7 +1775,7 @@ class PortalExternalInvitationsView(APIView):
             for iv in invites:
                 data.append({
                     'token': iv.token,
-                    'link': iv.link,
+                    'link': iv.get_link(request),
                     'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
                     'email': iv.email,
                     'inviter': iv.inviter,
@@ -1843,7 +1826,7 @@ class PortalExternalInvitationsView(APIView):
             'token': invitation.token,
             'inviter_name': email2nickname(username),
             'project_uuid': str(project.uuid),
-            'invitation_link': invitation.link,
+            'invitation_link': invitation.get_link(request),
         }
         sent = False
         try:

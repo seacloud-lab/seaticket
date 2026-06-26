@@ -119,15 +119,14 @@ ENABLE_REMOTE_USER_AUTHENTICATION = False
 # only the customer-facing portal URL surface.
 SEAQA_APP_MODE = os.environ.get('SEAQA_APP_MODE', 'main')
 IS_PORTAL_MODE = SEAQA_APP_MODE == 'portal'
-PORTAL_DOMAIN_MIDDLEWARE = ['seahub.portal.middleware.PortalCustomDomainMiddleware', 'seahub.portal.csrf.PortalAwareCsrfViewMiddleware'] \
-                            if IS_PORTAL_MODE else ['django.middleware.csrf.CsrfViewMiddleware']
 
 # Order is important
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
-] + PORTAL_DOMAIN_MIDDLEWARE + [
+    *(['seahub.portal.middleware.PortalCustomDomainMiddleware'] if IS_PORTAL_MODE else []),
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'seahub.auth.middleware.AuthenticationMiddleware',
     'seahub.base.middleware.BaseMiddleware',
