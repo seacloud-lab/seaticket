@@ -43,8 +43,6 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + (queryString ? '?' + queryString : '');
-    } else if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW || isNumber(Number(pageSlugId))) {
-      urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + childrenPageSlugId + '/';
