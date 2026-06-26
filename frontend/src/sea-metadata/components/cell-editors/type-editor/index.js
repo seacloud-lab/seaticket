@@ -32,7 +32,7 @@ const TypeEditor = forwardRef(({
   }, [options, value]);
 
   const style = useMemo(() => {
-    return { width: column.width, top: rowHeight - 1 };
+    return { width: 300, top: 0 };
   }, [column, rowHeight]);
 
   const onSubmit = useCallback((value) => {

@@ -11,8 +11,7 @@ import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
-// whole search input height is 32px, bottom border is 1px, so the inner height is 31px
-const SEARCH_HEIGHT = 31;
+const SEARCH_HEIGHT = 28;
 
 const OptionEditorContainer = forwardRef(({
   id,
@@ -129,7 +128,7 @@ const OptionEditorContainer = forwardRef(({
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
-            isShowClearIcon={isShowClearIcon}
+            isShowClearIcon={searchValue ? isShowClearIcon : false}
             onClear={() => setSearchValue('')}
           />
         </div>

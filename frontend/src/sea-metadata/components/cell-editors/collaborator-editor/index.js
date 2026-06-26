@@ -56,7 +56,7 @@ const CollaboratorEditor = forwardRef(({
   return (
     <div
       className="sea-metadata-collaborator-editor popover collaborator-editor-popover"
-      style={{ top: rowHeight - 1, left: isBeyondScreen ? 'unset' : 0, right: isBeyondScreen ? -column.width : 'unset' }}
+      style={{ top: 0, left: isBeyondScreen ? 'unset' : 0, right: isBeyondScreen ? -column.width : 'unset' }}
       ref={editorRef}
     >
       <Main

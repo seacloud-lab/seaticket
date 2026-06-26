@@ -97,3 +97,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.sea-metadata-single-select-editor .seaqa-search-input-wrapper .seaqa-search-input {
+  font-size: 13px;
+}

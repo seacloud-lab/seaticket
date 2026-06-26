@@ -26,7 +26,6 @@
 
 .canvas-groups-rows .group-item .group-container-right {
   border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
 }
 
 /* background of group header */
@@ -308,8 +307,7 @@
   border-bottom-left-radius: 8px;
 }
 
-.canvas-groups-rows.disabled-add-row .sea-metadata-last-table-row,
-.canvas-groups-rows.disabled-add-row .sea-metadata-last-table-row .last-cell {
+.canvas-groups-rows.disabled-add-row .sea-metadata-last-table-row {
   border-bottom-right-radius: 8px;
 }
 

@@ -96,6 +96,10 @@
   background-color: var(--bs-th-bg);
 }
 
+.static-sea-metadata-table-content .sea-metadata-table-row .sea-metadata-table-cell.column {
+  padding-left: 5px;
+}
+
 .sea-metadata-row-header-cell .sea-metadata-table-cell {
   overflow: unset;
 }
