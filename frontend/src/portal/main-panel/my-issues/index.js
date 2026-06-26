@@ -21,7 +21,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   const [expandIssueID, setExpandIssueId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const currentViewID = useRef(null);
+  const listQueryStringRef = useRef('');
 
   const myIssueViewsData = useMemo(() => ({
     navigation: [
@@ -100,8 +100,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
 
   const openIssue = useCallback((issueID) => {
     const { search } = window.location;
-    const currentUrlParams = new URLSearchParams(search);
-    currentViewID.current = currentUrlParams.get('view');
+    listQueryStringRef.current = new URLSearchParams(search).toString();
     const basePath = isEditMode ? 'portal-edit' : 'portal';
     const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${issueID}/`;
     history.replaceState(null, null, url);
@@ -110,11 +109,12 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
 
   const closeIssue = useCallback(() => {
     const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/?view=${currentViewID.current || ''} `;
+    const queryString = listQueryStringRef.current;
+    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${queryString ? `?${queryString}` : ''}`;
     history.replaceState(null, null, url);
-    currentViewID.current = null;
+    listQueryStringRef.current = '';
     setExpandIssueId(null);
-  }, []);
+  }, [isEditMode, projectUuid]);
 
   useEffect(() => {
     const { pathname } = window.location;

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { PORTAL_ISSUE_PAGE_SLUG_ID, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID } from '../constants';
@@ -14,6 +14,7 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(PORTAL_ISSUE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL);
+  const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
@@ -28,7 +29,9 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
 
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
       const currentUrlParams = new URLSearchParams(window.location.search);
-      const queryString = currentUrlParams.toString();
+      const currentQueryString = currentUrlParams.toString();
+      const queryString = currentQueryString || listQueryStringRef.current;
+      listQueryStringRef.current = queryString;
       urlPart = urlPart + (queryString ? '?' + queryString : '');
     }
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL) {
@@ -38,16 +41,21 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       urlPart = urlPart + childrenPageSlugId + '/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, type]);
+  }, [workspaceID, projectName, type]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL) => {
+    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      listQueryStringRef.current = currentUrlParams.toString();
+    }
+    resetURL(newPageSlugId, newChildrenPageSlugId);
     if (pageSlugId !== newPageSlugId) {
       setPageSlugId(newPageSlugId);
     }
     if (childrenPageSlugId !== newChildrenPageSlugId) {
       setChildrenPageSlugId(newChildrenPageSlugId);
     }
-  }, [pageSlugId, childrenPageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
     const eventBus = context.eventBus;
