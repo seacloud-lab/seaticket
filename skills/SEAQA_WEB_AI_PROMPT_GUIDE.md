@@ -1,112 +1,112 @@
-# seaqa-web AI 提示词指南
+# seaqa-web AI Prompt Guide
 
-这个文档把 `seaqa-web` 项目的前端使用规则、技术规范和可复用提示词模板整理在一起。
+This document collects the frontend usage rules, technical conventions, and reusable prompt templates for the `seaqa-web` project.
 
-你可以直接把它作为给 AI 的工作指令基础，也可以按需替换其中的占位内容。
+You can use it directly as the basis for AI work instructions, or replace the placeholders as needed.
 
 ---
 
-## 📋 快速开始
+## Quick Start
 
 ```text
-请按照 seaqa-web 项目规则处理这个任务。
-项目根目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-前端目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
-任务：[你的任务]
-目标文件：[文件路径]
-要求：优先复用现有实现，最小改动，改后说明影响范围和验证命令。
+Please handle this task according to the seaqa-web project rules.
+Project root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
+Frontend directory: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+Task: [your task]
+Target file: [file path]
+Requirement: Prefer existing implementations, make minimal changes, and explain the impact scope and verification commands after the change.
 ```
 
-## 1. 项目基本信息
+## 1. Project Basics
 
-### 目录结构
+### Directory Structure
 
-| 目录 | 路径 | 用途 |
+| Directory | Path | Purpose |
 |------|------|------|
-| 仓库根目录 | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web` | 项目根目录 |
-| 前端目录 | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend` | 前端代码根目录 |
-| 前端脚本 | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/scripts` | 构建和启动脚本 |
+| Repository root | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web` | Project root |
+| Frontend directory | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend` | Frontend code root |
+| Frontend scripts | `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/scripts` | Build and startup scripts |
 
-### 核心源码目录
+### Core Source Tree
 
-```
+```text
 frontend/src/
-├── components/          # 通用组件（Icon、Button、Modal 等）
-├── home/                # 首页或主业务入口
-├── project/             # 项目相关页面和逻辑
-├── profile-settings/    # 用户设置相关
-├── org-admin/           # 团队管理相关
-├── sys-admin/           # 系统管理相关
-├── api/                 # 接口封装
-├── utils/               # 工具函数
-├── models/              # 数据模型
-├── constants/           # 常量定义
-├── css/                 # 全局样式
-├── assets/              # 静态资源
-└── _i18n/               # 国际化资源
+├── components/          # Shared components such as Icon, Button, Modal
+├── home/                # Home page or main business entry point
+├── project/             # Project-related pages and logic
+├── profile-settings/    # User settings
+├── org-admin/           # Team administration
+├── sys-admin/           # System administration
+├── api/                 # API wrappers
+├── utils/               # Utility functions
+├── models/              # Data models
+├── constants/           # Constant definitions
+├── css/                 # Global styles
+├── assets/              # Static assets
+└── _i18n/               # Internationalization resources
 ```
 
-## 2. 技术栈摘要
+## 2. Tech Stack Summary
 
-### 版本概览
+### Version Overview
 
-| 分类 | 依赖 | 版本 |
+| Category | Dependency | Version |
 |------|------|------|
 | React | `react` | 18.3.1 |
 | React DOM | `react-dom` | 18.3.1 |
-| 类型检查 | `prop-types` | ^15.6.2 |
-| 样式工具 | `classnames` | ^2.3.2 |
-| 路由 | `@gatsbyjs/reach-router` | 2.0.1 |
-| HTTP 请求 | `axios` | ~1.16.1 |
-| 工具库 | `lodash` | ^4.17.21 |
-| 日期处理 | `dayjs` | 1.10.7 |
-| 国际化 | `i18next` / `react-i18next` | ^25.2.1 |
-| 拖拽 | `react-dnd` | ^16.0.1 |
-| UI 组件 | `reactstrap` | 9.2.3 |
-| 构建工具 | `webpack` | 自定义配置 |
-| 测试框架 | `jest` | - |
+| Type checking | `prop-types` | ^15.6.2 |
+| Styling helper | `classnames` | ^2.3.2 |
+| Routing | `@gatsbyjs/reach-router` | 2.0.1 |
+| HTTP requests | `axios` | ~1.16.1 |
+| Utility library | `lodash` | ^4.17.21 |
+| Date handling | `dayjs` | 1.10.7 |
+| Internationalization | `i18next` / `react-i18next` | ^25.2.1 |
+| Drag and drop | `react-dnd` | ^16.0.1 |
+| UI components | `reactstrap` | 9.2.3 |
+| Build tool | `webpack` | Custom configuration |
+| Test framework | `jest` | - |
 
-### 核心框架
+### Core Framework
 
 - `react` 18.3.1
 - `react-dom` 18.3.1
 - `prop-types` ^15.6.2
 - `classnames` ^2.3.2
 
-### 路由
+### Routing
 
 - `@gatsbyjs/reach-router`
 
-### 请求与工具
+### Requests and Utilities
 
-- `axios` ~1.16.1 - HTTP 请求
-- `lodash` ^4.17.21 - 工具函数库
-- `deep-copy` ^1.4.2 - 深拷贝
-- `copy-to-clipboard` 3.3.1 - 复制到剪贴板
-- `js-cookie` ^3.0.7 - Cookie 操作
-- `slugid` ^2.0.0 - UUID 生成
-- `jszip` ^3.10.1 - ZIP 文件处理
+- `axios` ~1.16.1 - HTTP requests
+- `lodash` ^4.17.21 - utility functions
+- `deep-copy` ^1.4.2 - deep copy
+- `copy-to-clipboard` 3.3.1 - clipboard copy
+- `js-cookie` ^3.0.7 - cookie handling
+- `slugid` ^2.0.0 - UUID generation
+- `jszip` ^3.10.1 - ZIP file handling
 
-### 国际化
+### Internationalization
 
 - `i18next`
 - `react-i18next`
 - `i18next-browser-languagedetector`
 - `i18next-http-backend`
 
-### 日期与可视化
+### Dates and Visualization
 
 - `dayjs`
 - `d3`
 - `embedding-atlas`
 
-### 拖拽与交互
+### Drag and Drop / Interaction
 
 - `react-dnd`
 - `react-dnd-html5-backend`
 - `is-hotkey`
 
-### UI 与表单
+### UI and Forms
 
 - `reactstrap`
 - `react-select`
@@ -115,15 +115,15 @@ frontend/src/
 - `rmc-feedback`
 - `rmc-tabs`
 
-### 富文本与内容处理
+### Rich Text and Content Handling
 
-- `@seafile/seafile-editor` 3.0.27 - 富文本编辑器
-- `@seafile/sea-email-editor` ^0.0.13 - 邮件编辑器
-- `@seafile/react-image-lightbox` ^5.0.4 - 图片预览
-- `@seafile/seafile-calendar` 1.0.12 - 日历组件
-- `unified` 7.0.0 - Markdown 处理
+- `@seafile/seafile-editor` 3.0.27 - rich text editor
+- `@seafile/sea-email-editor` ^0.0.13 - email editor
+- `@seafile/react-image-lightbox` ^5.0.4 - image preview
+- `@seafile/seafile-calendar` 1.0.12 - calendar component
+- `unified` 7.0.0 - Markdown processing
 
-### 构建与样式
+### Build and Styling
 
 - `webpack`
 - `webpack-dev-server`
@@ -140,513 +140,513 @@ frontend/src/
 - `autoprefixer`
 - `postcss-preset-env`
 
-### 测试与质量
+### Testing and Quality
 
-- `jest` - 测试框架
-- `jest-environment-jsdom` - JSDOM 环境
-- `@testing-library/react` - React 测试工具
-- `@testing-library/jest-dom` - DOM 断言
-- `@testing-library/user-event` - 用户事件模拟
-- `eslint` - JavaScript 代码检查
-- `eslint-config-react-app` - ESLint 配置
-- `stylelint` ^17.12.0 - CSS 代码检查
+- `jest` - test framework
+- `jest-environment-jsdom` - JSDOM environment
+- `@testing-library/react` - React testing utilities
+- `@testing-library/jest-dom` - DOM assertions
+- `@testing-library/user-event` - user event simulation
+- `eslint` - JavaScript linting
+- `eslint-config-react-app` - ESLint configuration
+- `stylelint` ^17.12.0 - CSS linting
 
-## 3. 使用原则
+## 3. Usage Principles
 
-### 开发原则
+### Development Principles
 
-✅ 优先复用：优先查找并复用现有代码、组件和工具函数
+✅ Prefer reuse: look for and reuse existing code, components, and utility functions first
 
-✅ 最小改动：尽量做最小改动，避免无必要的重构
+✅ Minimal changes: make the smallest change possible and avoid unnecessary refactors
 
-✅ 风格一致：保持代码风格与项目现有实现一致
+✅ Consistent style: keep code style aligned with the project's existing implementation
 
-✅ 不添新依赖：不要随意引入新依赖
+✅ No new dependencies: do not add new dependencies casually
 
-### 代码规范
+### Code Conventions
 
-| 类型 | 规范 |
+| Type | Convention |
 |------|------|
-| 组件命名 | PascalCase（如 `MyComponent`） |
-| 函数/变量 | camelCase（如 `myFunction`） |
-| 常量 | UPPER_CASE（如 `MAX_LENGTH`） |
-| CSS 类名 | kebab-case 风格（如 `.seaqa-element-modifier`） |
-| 文件命名 | kebab-case 风格（如 `my-component.js`） |
+| Component names | PascalCase, such as `MyComponent` |
+| Functions/variables | camelCase, such as `myFunction` |
+| Constants | UPPER_CASE, such as `MAX_LENGTH` |
+| CSS class names | kebab-case, such as `.seaqa-element-modifier` |
+| File names | kebab-case, such as `my-component.js` |
 
-### 导入顺序
+### Import Order
 
 ```javascript
-// 1. 外部依赖（按字母顺序）
+// 1. External dependencies (alphabetical order)
 import React from 'react';
 import { Button, Modal } from 'reactstrap';
 
-// 2. 项目内部依赖（按路径深度）
+// 2. Internal project dependencies (by path depth)
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 
-// 3. 样式文件
+// 3. Style files
 import './index.css';
 ```
 
-### 数据与交互
+### Data and Interaction
 
-- 请求统一使用 `axios`
-- 日期统一使用 `dayjs`
-- 拖拽统一使用 `react-dnd`
-- 国际化统一走 `i18next` / `react-i18next`
-- 面向用户的文案优先进入国际化资源
+- Use `axios` for requests
+- Use `dayjs` for dates
+- Use `react-dnd` for drag and drop
+- Use `i18next` / `react-i18next` for internationalization
+- User-facing copy should be added to internationalization resources first
 
-### 测试与构建
+### Testing and Build
 
-- 修改后优先考虑 `lint`、`test`、`build` 的影响
-- 修改样式、loader、构建配置后要验证构建链路
+- After changes, consider the impact on `lint`, `test`, and `build`
+- After changing styles, loaders, or build configuration, verify the build pipeline
 
-## 4. 目录理解方式
+## 4. Directory Interpretation
 
-### 目录职责表
+### Directory Responsibility Table
 
-| 目录 | 职责 | 说明 |
+| Directory | Responsibility | Description |
 |------|------|------|
-| `components/` | 通用组件 | Icon、Button、Modal 等可复用组件 |
-| `home/` | 首页入口 | 工作台首页及主业务入口 |
-| `project/` | 项目业务 | 项目相关页面和核心业务逻辑 |
-| `profile-settings/` | 用户设置 | 用户个人设置相关 |
-| `org-admin/` | 组织管理 | 组织级别管理功能 |
-| `sys-admin/` | 系统管理 | 系统级别管理功能 |
-| `api/` | 接口封装 | API 请求封装 |
-| `utils/` | 工具函数 | 通用工具函数 |
-| `models/` | 数据模型 | 数据实体模型 |
-| `constants/` | 常量定义 | 全局常量和枚举 |
-| `css/` | 全局样式 | 全局 CSS 和主题 |
-| `assets/` | 静态资源 | 图标、图片等静态文件 |
-| `_i18n/` | 国际化 | 多语言资源文件 |
+| `components/` | Shared components | Reusable components such as Icon, Button, and Modal |
+| `home/` | Home entry point | Dashboard home page and main business entry point |
+| `project/` | Project business | Project-related pages and core business logic |
+| `profile-settings/` | User settings | User profile settings |
+| `org-admin/` | Organization management | Organization-level administration features |
+| `sys-admin/` | System management | System-level administration features |
+| `api/` | API wrappers | Encapsulated API requests |
+| `utils/` | Utility functions | General utility functions |
+| `models/` | Data models | Data entity models |
+| `constants/` | Constant definitions | Global constants and enums |
+| `css/` | Global styles | Global CSS and theme styles |
+| `assets/` | Static assets | Static files such as icons and images |
+| `_i18n/` | Internationalization | Multi-language resource files |
 
-### 查找代码路径
+### Finding Code Paths
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    需求分析                                   
+│                    Requirement analysis                      │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. 判断功能归属：首页? 项目? 设置? 管理?                    
+│ 1. Determine the feature area: home? project? settings? admin? │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. 查找同类实现：搜索现有组件/页面                          
+│ 2. Find similar implementations: search existing components/pages │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. 复用或扩展：优先复用，必要时扩展                         
+│ 3. Reuse or extend: prefer reuse, extend only when necessary │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 5. 常用命令
+## 5. Common Commands
 
-### 命令速查表
+### Command Cheat Sheet
 
-| 命令 | 作用 | 说明 |
+| Command | Purpose | Description |
 |------|------|------|
-| `npm run lint` | 检查 JS 代码 | ESLint 检查 `src/` 目录 |
-| `npm run lint-fix` | 自动修复 lint | 自动修复可修复的 ESLint 问题 |
-| `npm run start` | 启动开发环境 | 热更新开发服务器 |
-| `npm run build` | 生产构建 | 完整生产构建 |
-| `npm run test` | 运行测试 | Jest 测试套件 |
-| `npm run dev` | 启动本地服务 | 开发模式服务器 |
+| `npm run lint` | Check JS code | ESLint checks the `src/` directory |
+| `npm run lint-fix` | Auto-fix lint issues | Automatically fixes fixable ESLint issues |
+| `npm run start` | Start development environment | Hot-reload development server |
+| `npm run build` | Production build | Full production build |
+| `npm run test` | Run tests | Jest test suite |
+| `npm run dev` | Start local service | Development-mode server |
 
-### 使用示例
+### Usage Example
 
 ```bash
-# 进入前端目录
+# Enter the frontend directory
 cd /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
 
-# 检查代码
+# Check code
 npm run lint
 
-# 自动修复
+# Auto-fix
 npm run lint-fix
 
-# 开发
+# Development
 npm run start
 
-# 构建
+# Build
 npm run build
 
-# 测试
+# Tests
 npm run test
 ```
 
-### 验证流程
-
-```
-修改代码
-    │
-    ▼
-npm run lint          # 检查 JS
-    │
-    ▼
-npm run lint:css      # 检查 CSS
-    │
-    ▼
-npm run test          # 运行测试
-    │
-    ▼
-npm run build         # 构建验证
-```
-
-## 6. 给 AI 的通用提示词模板
-
-### 6.1 标准版（推荐）
+### Verification Flow
 
 ```text
-请按照 seaqa-web 项目规则处理以下任务：
-
-📁 项目路径：
-- 根目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-- 前端目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
-
-🎯 任务目标：
-[在这里写具体任务]
-
-📄 目标文件/目录：
-[在这里写具体文件或目录]
-
-📋 要求：
-1. 先定位相关代码和现有实现
-2. 优先复用现有依赖和目录结构
-3. 不要随意引入新依赖
-4. 尽量做最小改动
-5. 面向用户的文案优先走国际化（gettext/t）
-6. 修改后说明影响范围和验证方式
-7. 如果涉及测试，请给出建议命令
-```
-
-### 6.2 精简版
-
-```text
-请按照 seaqa-web 项目规则处理任务。
-
-根目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-前端目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
-
-任务：[写任务]
-目标文件：[写文件或目录]
-
-要求：先找现有实现，最小改动，复用依赖，改后说明影响和验证命令。
-```
-
-### 6.3 详细版
-
-```text
-请按照 seaqa-web 项目约定处理以下任务：
-
-📁 项目路径：
-- 根目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-- 前端目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
-
-⚙️ 技术约束：
-- 请求统一使用 axios
-- 日期统一使用 dayjs
-- 国际化使用 i18next / react-i18next（gettext/t）
-- 拖拽使用 react-dnd
-- UI 组件优先使用 reactstrap
-- 状态管理使用 React Hooks（useState/useReducer）
-
-📋 开发原则：
-- 优先复用现有组件、工具函数和目录结构
-- 不要无必要引入新依赖或大范围重构
-- 保持代码风格与现有实现一致
-- 面向用户的文案必须进入国际化资源
-
-🎯 本次任务：
-[写任务]
-
-📄 目标位置：
-[写文件或目录]
-
-🔧 额外要求：
-[例如：只改前端、补测试、保持现有接口不变、需要后端配合]
-
-✅ 输出要求：
-1. 修改的文件和内容
-2. 影响范围分析
-3. 验证命令
-4. 如果有测试，给出测试建议
-```
-
-## 7. 按任务类型使用的模板
-
-### 7.1 改 Bug
-
-```text
-请帮我排查并修复 seaqa-web 前端 bug。
-
-🐛 问题描述：
-[描述现象，如：点击按钮无响应、样式错乱、接口报错等]
-
-🔄 复现步骤：
-1. [步骤1]
-2. [步骤2]
-3. [步骤3]
-
-✅ 预期结果：
-[写预期行为]
-
-📄 当前相关文件：
-[列文件或目录，如：frontend/src/components/xxx.js]
-
-🔍 已有线索（可选）：
-[如有错误日志、截图、相关代码片段请粘贴]
-
-📋 要求：
-1. 先定位根因
-2. 给出最小修复方案
-3. 如果有测试，补上回归测试
-4. 最后说明如何验证修复结果
-```
-
-### 7.2 新增页面或功能
-
-```text
-请在 seaqa-web 前端中新增功能。
-
-🎯 功能目标：
-[写功能描述，如：新增用户管理页面]
-
-📁 页面/模块位置：
-[写目录或路由位置，如：frontend/src/org-admin/users/]
-
-🖱️ 交互要求：
-1. [交互1，如：点击列表项跳转到详情]
-2. [交互2，如：支持搜索过滤]
-
-📊 数据要求：
-[写接口或数据结构，如：GET /api/v2/users/ 返回用户列表]
-
-🎨 UI 参考（可选）：
-[如有设计稿链接或截图描述]
-
-📋 要求：
-1. 优先复用已有页面结构和组件
-2. 文案接入国际化（gettext/t）
-3. 说明需要修改的文件
-4. 给出验证命令
-5. 如果需要后端配合，说明接口需求
-```
-
-### 7.3 接口联调
-
-```text
-请帮我处理 seaqa-web 前端的接口联调问题。
-
-🌐 接口信息：
-- 方法：[GET/POST/PUT/DELETE]
-- 地址：[接口路径，如：/api/v2/projects/{id}]
-- 参数：[请求参数，如：{ name: string }]
-- 返回：[响应结构，如：{ data: [], count: number }]
-
-🔴 当前问题：
-[写当前报错或异常行为，如：404 错误、数据解析失败、无响应等]
-
-📄 涉及文件：
-[列相关文件，如：frontend/src/api/project-api.js]
-
-📋 要求：
-1. 先确认现有请求封装方式
-2. 按项目现有方式修改 axios 调用
-3. 处理错误状态和空数据
-4. 添加适当的错误提示
-5. 如有必要，补充测试或 mock
-```
-
-### 7.4 修测试
-
-```text
-请帮我修复 seaqa-web 前端测试。
-
-🔴 失败信息：
-[粘贴完整报错信息]
-
-📄 相关测试文件：
-[列文件，如：frontend/src/components/Button.test.js]
-
-📄 相关源码文件：
-[如有涉及的源码文件]
-
-📋 要求：
-1. 先定位测试失败原因
-2. 尽量小范围修复
-3. 保持现有测试风格（使用 @testing-library/*）
-4. 说明是否需要修改代码实现
-5. 给出运行测试的命令
-```
-
-### 7.5 样式调整
-
-```text
-请帮我调整 seaqa-web 前端样式。
-
-🎨 调整目标：
-[描述样式需求，如：修改按钮颜色、调整间距等]
-
-📄 相关文件：
-[列 CSS/SCSS 文件]
-
-🎯 设计参考（可选）：
-[如有设计稿或具体数值]
-
-📋 要求：
-1. 使用项目现有样式变量和类名
-2. 保持响应式兼容性
-3. 说明影响范围
-4. 建议验证方式
-```
-
-## 8. AI 工作流程建议
-
-### 任务描述结构
-
-给 AI 下任务时，建议按这个顺序提供信息：
-
-1. 项目标识：说明是 seaqa-web 项目
-2. 目录路径：给出根目录和前端目录
-3. 目标文件：指定要修改的文件或目录
-4. 任务目标：清晰描述要做什么
-5. 额外约束：技术限制、业务规则
-6. 输出要求：期望的交付物
-
-### 推荐写法示例
-
-```text
-请按照 seaqa-web 项目规则处理任务。
-项目根目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
-前端目录：/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
-
-任务：修复用户列表页面的搜索功能
-目标文件：frontend/src/org-admin/users/index.js
-
-要求：
-- 先查看现有搜索实现
-- 使用 axios 发起请求
-- 文案使用 gettext 国际化
-- 改后给出验证命令
-```
-
-### AI 工作流程
-
-```
-用户给出任务
+Modify code
     │
     ▼
-1. 理解需求
+npm run lint          # JS checks
     │
     ▼
-2. 定位相关代码（搜索现有实现）
+npm run lint:css      # CSS checks
     │
     ▼
-3. 分析现有模式（依赖、样式、结构）
+npm run test          # Run tests
     │
     ▼
-4. 制定修改方案
-    │
-    ▼
-5. 实施修改（最小改动）
-    │
-    ▼
-6. 说明影响范围
-    │
-    ▼
-7. 给出验证命令
+npm run build         # Build verification
 ```
 
-## 9. 常见排查顺序
+## 6. General Prompt Templates for AI
 
-### 前端问题排查清单
+### 6.1 Standard Version (Recommended)
 
-| 序号 | 检查项 | 排查方法 |
-|------|--------|----------|
-| 1 | 代码导入 | 检查 import 路径是否正确 |
-| 2 | 接口参数 | 查看 Network 请求参数和响应 |
-| 3 | 国际化 key | 检查 gettext/t 的 key 是否存在 |
-| 4 | 组件状态 | 使用 React DevTools 检查 state |
-| 5 | 样式问题 | 检查 CSS 选择器优先级、模块作用域 |
-| 6 | 测试失败 | 检查测试断言和 mock 数据 |
-| 7 | 构建失败 | 检查 webpack 配置、loader 版本 |
-| 8 | 类型错误 | 检查 PropTypes 定义 |
-| 9 | 事件绑定 | 检查事件处理器是否正确绑定 |
-| 10 | 生命周期 | 检查 useEffect 依赖数组 |
+```text
+Please handle the following task according to the seaqa-web project rules:
 
-### 错误分类与处理
+📁 Project paths:
+- Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
+- Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
 
+🎯 Task goal:
+[write the task here]
+
+📄 Target file/directory:
+[write the file or directory here]
+
+📋 Requirements:
+1. First locate the relevant code and existing implementation
+2. Prefer existing dependencies and directory structure
+3. Do not add new dependencies casually
+4. Make the smallest change possible
+5. Prefer internationalization for user-facing copy (gettext/t)
+6. After the change, explain the impact scope and verification method
+7. If tests are involved, provide suggested commands
 ```
+
+### 6.2 Minimal Version
+
+```text
+Please handle this task according to the seaqa-web project rules.
+
+Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
+Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+
+Task: [write the task]
+Target file: [write the file or directory]
+
+Requirement: find existing implementation first, make minimal changes, reuse dependencies, and explain the impact and verification commands after the change.
+```
+
+### 6.3 Detailed Version
+
+```text
+Please handle the following task according to the seaqa-web project conventions:
+
+📁 Project paths:
+- Root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
+- Frontend: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+
+⚙️ Technical constraints:
+- Use axios for requests
+- Use dayjs for dates
+- Use i18next / react-i18next for internationalization (gettext/t)
+- Use react-dnd for drag and drop
+- Prefer reactstrap for UI components
+- Use React Hooks (useState/useReducer) for state management
+
+📋 Development principles:
+- Prefer existing components, utility functions, and directory structure
+- Do not introduce new dependencies or large refactors unless necessary
+- Keep code style consistent with existing implementations
+- User-facing copy must be added to internationalization resources
+
+🎯 Task:
+[write the task]
+
+📄 Target location:
+[write the file or directory]
+
+🔧 Additional requirements:
+[for example: frontend only, add tests, keep the current API unchanged, backend coordination needed]
+
+✅ Output requirements:
+1. Files and content changed
+2. Impact scope analysis
+3. Verification commands
+4. If tests are added, provide test suggestions
+```
+
+## 7. Templates by Task Type
+
+### 7.1 Bug Fix
+
+```text
+Please help me investigate and fix a seaqa-web frontend bug.
+
+🐛 Problem description:
+[describe the symptom, such as: clicking a button does nothing, broken styles, API errors, etc.]
+
+🔄 Steps to reproduce:
+1. [step 1]
+2. [step 2]
+3. [step 3]
+
+✅ Expected result:
+[write the expected behavior]
+
+📄 Current related files:
+[list files or directories, such as: frontend/src/components/xxx.js]
+
+🔍 Existing clues (optional):
+[paste error logs, screenshots, or relevant code snippets if available]
+
+📋 Requirements:
+1. Find the root cause first
+2. Provide the smallest possible fix
+3. If tests exist, add a regression test
+4. Finally explain how to verify the fix
+```
+
+### 7.2 Add a Page or Feature
+
+```text
+Please add a new feature to the seaqa-web frontend.
+
+🎯 Feature goal:
+[write the feature description, such as: add a user management page]
+
+📁 Page/module location:
+[write the directory or route location, such as: frontend/src/org-admin/users/]
+
+🖱️ Interaction requirements:
+1. [interaction 1, such as: clicking a list item opens details]
+2. [interaction 2, such as: support search filtering]
+
+📊 Data requirements:
+[write the API or data structure, such as: GET /api/v2/users/ returns a user list]
+
+🎨 UI reference (optional):
+[design link or screenshot description, if available]
+
+📋 Requirements:
+1. Prefer existing page structures and components
+2. Connect user-facing copy to internationalization (gettext/t)
+3. Explain which files need to be modified
+4. Provide verification commands
+5. If backend support is needed, describe the API requirements
+```
+
+### 7.3 API Integration
+
+```text
+Please help me handle a frontend API integration issue in seaqa-web.
+
+🌐 API information:
+- Method: [GET/POST/PUT/DELETE]
+- URL: [API path, such as: /api/v2/projects/{id}]
+- Parameters: [request parameters, such as: { name: string }]
+- Response: [response structure, such as: { data: [], count: number }]
+
+🔴 Current issue:
+[write the current error or abnormal behavior, such as: 404 error, parsing failure, no response, etc.]
+
+📄 Related files:
+[list related files, such as: frontend/src/api/project-api.js]
+
+📋 Requirements:
+1. First confirm the existing request wrapper pattern
+2. Modify the axios call according to the project's existing approach
+3. Handle error states and empty data
+4. Add appropriate error messages
+5. Add tests or mocks if necessary
+```
+
+### 7.4 Fix Tests
+
+```text
+Please help me fix a seaqa-web frontend test.
+
+🔴 Failure message:
+[paste the full error message]
+
+📄 Related test files:
+[list files, such as: frontend/src/components/Button.test.js]
+
+📄 Related source files:
+[source files involved, if any]
+
+📋 Requirements:
+1. First identify why the test failed
+2. Keep the fix as small as possible
+3. Keep the existing testing style (use @testing-library/*)
+4. Explain whether the implementation code also needs changes
+5. Provide the command to run the test
+```
+
+### 7.5 Style Adjustment
+
+```text
+Please help me adjust the seaqa-web frontend styles.
+
+🎨 Adjustment goal:
+[describe the style change, such as: change button color, adjust spacing, etc.]
+
+📄 Related files:
+[list CSS/SCSS files]
+
+🎯 Design reference (optional):
+[design mock or specific values, if available]
+
+📋 Requirements:
+1. Use the project's existing style variables and class names
+2. Keep responsive compatibility
+3. Explain the impact scope
+4. Suggest how to verify the change
+```
+
+## 8. AI Workflow Recommendations
+
+### Task Description Structure
+
+When assigning a task to AI, provide the information in this order:
+
+1. Project identifier: state that it is the seaqa-web project
+2. Directory paths: provide the root directory and frontend directory
+3. Target files: specify the files or directories to modify
+4. Task goal: clearly describe what needs to be done
+5. Additional constraints: technical limits, business rules
+6. Output requirements: expected deliverables
+
+### Recommended Example
+
+```text
+Please handle the task according to the seaqa-web project rules.
+Project root: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web
+Frontend directory: /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
+
+Task: Fix the search feature on the user list page
+Target file: frontend/src/org-admin/users/index.js
+
+Requirements:
+- First review the existing search implementation
+- Use axios to send requests
+- Use gettext for internationalized copy
+- Provide verification commands after the change
+```
+
+### AI Workflow
+
+```text
+User provides a task
+    │
+    ▼
+1. Understand the requirement
+    │
+    ▼
+2. Locate the relevant code (search for existing implementation)
+    │
+    ▼
+3. Analyze existing patterns (dependencies, styles, structure)
+    │
+    ▼
+4. Plan the change
+    │
+    ▼
+5. Implement the change (minimal edits)
+    │
+    ▼
+6. Explain the impact scope
+    │
+    ▼
+7. Provide verification commands
+```
+
+## 9. Common Troubleshooting Order
+
+### Frontend Troubleshooting Checklist
+
+| No. | Check | How to investigate |
+|------|------|------|
+| 1 | Code imports | Check whether the import path is correct |
+| 2 | API parameters | Inspect Network request parameters and response |
+| 3 | i18n keys | Check whether the gettext/t key exists |
+| 4 | Component state | Use React DevTools to inspect state |
+| 5 | Style issues | Check CSS selector specificity and module scoping |
+| 6 | Test failures | Check test assertions and mock data |
+| 7 | Build failures | Check webpack config and loader versions |
+| 8 | Type errors | Check PropTypes definitions |
+| 9 | Event binding | Check whether event handlers are bound correctly |
+| 10 | Lifecycle | Check the `useEffect` dependency array |
+
+### Error Classification and Handling
+
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    错误类型                                 │
+│                    Error type                               │
 ├──────────────────┬──────────────────────────────────────────┤
-│ 编译错误          │ 检查语法、导入、类型                       │
+│ Compilation error │ Check syntax, imports, and types        │
 ├──────────────────┼──────────────────────────────────────────┤
-│ 运行时错误        │ 检查状态、props、接口响应                  │
+│ Runtime error     │ Check state, props, and API response    │
 ├──────────────────┼──────────────────────────────────────────┤
-│ 样式错误          │ 检查选择器、优先级、CSS 变量               │
+│ Style error       │ Check selectors, specificity, CSS vars  │
 ├──────────────────┼──────────────────────────────────────────┤
-│ 测试失败          │ 检查断言、mock、测试数据                  │
+│ Test failure      │ Check assertions, mocks, test data      │
 ├──────────────────┼──────────────────────────────────────────┤
-│ 构建失败          │ 检查 webpack 配置、依赖版本               │
+│ Build failure     │ Check webpack config and dependency versions │
 └──────────────────┴──────────────────────────────────────────┘
 ```
 
-## 10. 维护建议
+## 10. Maintenance Recommendations
 
-### 文档维护规则
+### Documentation Maintenance Rules
 
-| 变更类型 | 更新内容 | 负责人 |
+| Change type | Update content | Owner |
 |----------|----------|--------|
-| 依赖升级 | 更新技术栈摘要中的版本号 | 前端负责人 |
-| 目录变化 | 更新目录理解方式 | 架构师 |
-| 新增命令 | 补充到常用命令区 | 构建负责人 |
-| 规范更新 | 更新使用原则和代码规范 | 技术负责人 |
-| 模板新增 | 添加到按任务类型模板 | 团队成员 |
+| Dependency upgrade | Update version numbers in the tech stack summary | Frontend lead |
+| Directory changes | Update the directory interpretation section | Architect |
+| New command | Add it to the common commands section | Build owner |
+| Convention updates | Update usage principles and code conventions | Technical lead |
+| New templates | Add them to the task-type template section | Team members |
 
-### 维护流程
+### Maintenance Process
 
+```text
+1. When the project has a major change
+    │
+    ▼
+2. Update the relevant sections of this guide
+    │
+    ▼
+3. Notify the team members
+    │
+    ▼
+4. Update the AI prompt templates
 ```
-1. 当项目有重大变更时
-    │
-    ▼
-2. 更新本指南相关章节
-    │
-    ▼
-3. 同步告知团队成员
-    │
-    ▼
-4. 更新 AI 提示词模板
-```
 
-### 更新记录
+### Update Log
 
-| 日期 | 更新内容 | 更新人 |
+| Date | Changes | Updated by |
 |------|----------|--------|
-| 2026-06-10 | 初始版本，整理项目规则和模板 | - |
+| 2026-06-10 | Initial version, organized project rules and templates | - |
 
 ---
 
-## 📝 附录：常用代码片段
+## Appendix: Common Code Snippets
 
-### 国际化
+### Internationalization
 
 ```javascript
 import { gettext } from '@/constants';
 
-// 使用 gettext
+// Using gettext
 const label = gettext('Submit');
 
-// JSX 中使用
+// Using in JSX
 <span>{gettext('Welcome')}</span>
 ```
 
-### API 请求
+### API Request
 
 ```javascript
 import axios from 'axios';
@@ -684,11 +684,11 @@ const MyComponent = () => {
 };
 ```
 
-### Icon 组件
+### Icon Component
 
 ```javascript
 import { Icon } from '@/components';
 
-// 使用图标
+// Use an icon
 <Icon symbol="check-circle-filled" className="status-icon" />
 ```

@@ -1,32 +1,32 @@
-# seaqa-web 项目技能
+# seaqa-web Project Skill
 
-## 这个技能的用途
+## Purpose
 
-这个技能用于指导 `seaqa-web` 仓库中的前端开发、排查和维护工作。
+This skill guides frontend development, troubleshooting, and maintenance work in the `seaqa-web` repository.
 
-它会帮助你在处理页面、组件、接口、国际化、拖拽、编辑器、构建和测试问题时，优先遵循这个项目当前已经在用的技术栈和目录约定。
+It helps you follow the project's existing tech stack and directory conventions first when working on pages, components, APIs, internationalization, drag and drop, editors, builds, and tests.
 
-## 项目范围
+## Project Scope
 
-- 仓库根目录：`/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web`
-- 前端目录：`/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend`
-- 前端配置：`/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/config`
-- 前端脚本：`/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/scripts`
+- Repository root: `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web`
+- Frontend directory: `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend`
+- Frontend config: `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/config`
+- Frontend scripts: `/Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend/scripts`
 
-## 技术栈和版本
+## Tech Stack and Versions
 
-### 核心框架
+### Core Framework
 
 - `react` 18.3.1
 - `react-dom` 18.3.1
 - `prop-types` ^15.6.2
 - `classnames` ^2.3.2
 
-### 路由
+### Routing
 
 - `@gatsbyjs/reach-router` 2.0.1
 
-### 数据请求与工具
+### Data Fetching and Utilities
 
 - `axios` ~1.16.1
 - `lodash` ^4.17.21
@@ -36,26 +36,26 @@
 - `slugid` ^2.0.0
 - `jszip` ^3.10.1
 
-### 国际化
+### Internationalization
 
 - `i18next` ^25.2.1
 - `react-i18next` ^15.5.2
 - `i18next-browser-languagedetector` ^8.1.0
 - `i18next-http-backend` ^3.0.2
 
-### 日期与可视化
+### Dates and Visualization
 
 - `dayjs` 1.10.7
 - `d3` ~7.9.0
 - `embedding-atlas` ^0.15.0
 
-### 拖拽与交互
+### Drag and Drop / Interaction
 
 - `react-dnd` ^16.0.1
 - `react-dnd-html5-backend` ^16.0.1
 - `is-hotkey` 0.2.0
 
-### 表单与 UI
+### Forms and UI
 
 - `reactstrap` 9.2.3
 - `react-select` 5.9.0
@@ -64,7 +64,7 @@
 - `rmc-feedback` 2.0.0
 - `rmc-tabs` 1.2.29
 
-### 富文本与内容处理
+### Rich Text and Content Handling
 
 - `@seafile/seafile-editor` 3.0.27
 - `@seafile/sea-email-editor` ^0.0.13
@@ -72,9 +72,9 @@
 - `@seafile/seafile-calendar` 1.0.12
 - `unified` 7.0.0
 
-### 构建与样式
+### Build and Styling
 
-- `webpack` (自定义配置)
+- `webpack` (custom configuration)
 - `webpack-dev-server`
 - `webpack-manifest-plugin`
 - `webpack-bundle-tracker`
@@ -89,7 +89,7 @@
 - `autoprefixer` 10.4.24
 - `postcss-preset-env`
 
-### 测试与质量
+### Testing and Quality
 
 - `jest`
 - `jest-environment-jsdom`
@@ -100,74 +100,74 @@
 - `eslint-config-react-app`
 - `stylelint` ^17.12.0
 
-## 目录理解方式
+## Directory Mapping
 
-在做前端任务时，优先关注这些目录：
+When working on frontend tasks, focus on these directories first:
 
-| 目录 | 用途 |
+| Directory | Purpose |
 |------|------|
-| `frontend/src/components` | 通用组件（Icon、Button、Modal 等） |
-| `frontend/src/home` | 首页或主业务入口 |
-| `frontend/src/project` | 项目相关页面和逻辑（核心业务） |
-| `frontend/src/profile-settings` | 用户设置相关 |
-| `frontend/src/org-admin` | 组织管理相关 |
-| `frontend/src/sys-admin` | 系统管理相关 |
-| `frontend/src/api` | 接口封装 |
-| `frontend/src/utils` | 工具函数 |
-| `frontend/src/models` | 状态或数据模型 |
-| `frontend/src/constants` | 常量定义 |
-| `frontend/src/css` | 全局样式 |
-| `frontend/src/assets` | 静态资源（图标、图片等） |
-| `frontend/src/_i18n` | 国际化资源 |
-| `frontend/src/tests` | 测试相关 |
+| `frontend/src/components` | Shared components (Icon, Button, Modal, etc.) |
+| `frontend/src/home` | Home page or main business entry point |
+| `frontend/src/project` | Project-related pages and logic (core business) |
+| `frontend/src/profile-settings` | User settings |
+| `frontend/src/org-admin` | Organization administration |
+| `frontend/src/sys-admin` | System administration |
+| `frontend/src/api` | API wrappers |
+| `frontend/src/utils` | Utility functions |
+| `frontend/src/models` | State or data models |
+| `frontend/src/constants` | Constant definitions |
+| `frontend/src/css` | Global styles |
+| `frontend/src/assets` | Static assets such as icons and images |
+| `frontend/src/_i18n` | Internationalization resources |
+| `frontend/src/tests` | Test-related files |
 
-## 适用场景
+## Applicable Scenarios
 
-当任务涉及以下内容时，使用这个技能作为工作准则：
+Use this skill as the working guideline when tasks involve any of the following:
 
-- 新增或修改 React 页面、组件、Hooks
-- 调整接口请求、参数传递、错误处理
-- 新增或修改国际化文案
-- 处理拖拽、选择器、弹窗、响应式布局
-- 富文本编辑器、邮件编辑器、图片预览等功能
-- 排查构建失败、测试失败、样式编译失败、浏览器兼容问题
+- Adding or modifying React pages, components, or Hooks
+- Adjusting API requests, parameter passing, or error handling
+- Adding or modifying i18n copy
+- Handling drag and drop, selectors, modals, or responsive layouts
+- Rich text editor, email editor, image preview, and similar features
+- Troubleshooting build failures, test failures, style compilation failures, or browser compatibility issues
 
-## 推荐工作方式
+## Recommended Workflow
 
-### 1. 先定位代码
+### 1. Locate the Code First
 
-- 从 `frontend/src` 里找相关模块，而不是先全局改动
-- 优先复用已有组件和工具函数
-- 如果功能已有同类实现，参考现有实现风格再改
+- Find the relevant module under `frontend/src` instead of making broad global changes first
+- Prefer reusing existing components and utility functions
+- If a similar implementation already exists, follow that style before making changes
 
-### 2. 再确认依赖
+### 2. Confirm Dependencies
 
-- 请求统一使用 `axios`
-- 日期统一使用 `dayjs`
-- 国际化统一走 `i18next` / `react-i18next`
-- 拖拽统一走 `react-dnd`
-- 表单和弹窗优先沿用仓库已存在的 UI 组件（reactstrap、rmc-dialog）
+- Use `axios` for requests
+- Use `dayjs` for dates
+- Use `i18next` / `react-i18next` for internationalization
+- Use `react-dnd` for drag and drop
+- Prefer existing UI components already in the repository for forms and dialogs (`reactstrap`, `rmc-dialog`)
 
-### 3. 最后验证
+### 3. Verify Last
 
-- 先跑 `lint`
-- 再跑相关测试
-- 如果改动了构建链路，再跑 `build`
+- Run `lint` first
+- Then run the relevant tests
+- If the build pipeline changed, run `build`
 
-## 常用命令
+## Common Commands
 
-以下命令都在 `frontend` 目录下执行：
+Run all of the following commands from the `frontend` directory:
 
-| 命令 | 作用 |
+| Command | Purpose |
 |------|------|
-| `npm run lint` | 检查 `src/` 下的 JavaScript 代码 |
-| `npm run lint-fix` | 自动修复可修复的 lint 问题 |
-| `npm run start` | 启动前端开发环境 |
-| `npm run build` | 生产构建 |
-| `npm run test` | 运行 Jest 测试 |
-| `npm run dev` | 启动本地开发服务 |
+| `npm run lint` | Check JavaScript code under `src/` |
+| `npm run lint-fix` | Automatically fix lint issues that can be fixed |
+| `npm run start` | Start the frontend development environment |
+| `npm run build` | Production build |
+| `npm run test` | Run Jest tests |
+| `npm run dev` | Start the local development service |
 
-示例：
+Example:
 
 ```bash
 cd /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web/frontend
@@ -175,98 +175,98 @@ npm run lint
 npm run build
 ```
 
-## 代码规范
+## Code Style
 
-### JavaScript/React 规范
+### JavaScript / React Style
 
-1. 命名规范：组件使用 PascalCase，函数/变量使用 camelCase，常量使用 UPPER_CASE
-2. 导入顺序：外部依赖 → 项目内部依赖 → 样式文件
-3. React Hooks：遵循 Hooks 规则，只在函数顶层调用
-4. Props 验证：使用 `prop-types` 进行类型验证
-5. 条件渲染：优先使用三元运算符或 &&，复杂逻辑抽离为变量
+1. Naming: use PascalCase for components, camelCase for functions and variables, and UPPER_CASE for constants
+2. Import order: external dependencies -> internal project dependencies -> style files
+3. React Hooks: follow the Rules of Hooks and only call hooks at the top level of a function
+4. Props validation: use `prop-types` for type checking
+5. Conditional rendering: prefer ternaries or `&&`; extract complex logic into variables
 
-### CSS 规范
+### CSS Style
 
-1. 类名命名：使用连字符风格（`.seaqa-block-element-modifier`），使用 `seaqa-` 前缀
-2. 属性顺序：布局属性 → 盒模型 → 视觉属性
-3. 单位使用：使用 `rem` 或 `px`，保持一致性
-4. 尽量避免 !important：优先通过选择器优先级解决冲突
+1. Class naming: use hyphenated style (`.seaqa-block-element-modifier`) with the `seaqa-` prefix
+2. Property order: layout properties -> box model -> visual properties
+3. Units: use `rem` or `px` consistently
+4. Avoid `!important` when possible: resolve conflicts through selector specificity first
 
-## 国际化规范
+## Internationalization Rules
 
-1. 文案提取：所有用户可见文案必须使用 `gettext()` 包裹
-2. Key 命名：使用语义化的 key，如 `gettext('Connect Linear')`
-3. 翻译文件：发布新版前，统一更新语言资源文件
+1. Copy extraction: all user-visible text must be wrapped in `gettext()`
+2. Key naming: use semantic keys, such as `gettext('Connect Linear')`
+3. Translation files: update language resource files before a new release
 
-## 具体使用方法
+## How to Use
 
-### 作为 AI 工作指令使用
+### As AI Work Instructions
 
-如果你把这个技能交给 AI，建议这样使用：
+If you give this skill to an AI, use it like this:
 
-1. 先把这个文件内容作为上下文提供给 AI
-2. 再说明当前任务所在目录和目标文件
-3. 要求 AI 优先遵循这里列出的目录、命令和依赖
-4. 如果是修改代码，要求 AI 同时给出验证步骤
+1. Provide the content of this file to the AI as context first
+2. Then specify the current task directory and target files
+3. Ask the AI to follow the directories, commands, and dependencies listed here first
+4. If code changes are involved, ask the AI to include verification steps as well
 
-### 作为团队约定使用
+### As a Team Convention
 
-- 新人接手前端任务时，先读一遍这个技能
-- 做需求开发时，先判断功能属于哪个目录域
-- 提交代码前，按这里的命令顺序做检查
+- New frontend contributors should read this skill first
+- When developing features, identify which directory domain the feature belongs to first
+- Before submitting code, follow the command order listed here for checks
 
-## 任务规则
+## Task Rules
 
-### 代码修改原则
+### Code Change Principles
 
-- 优先做最小改动
-- 不要引入无必要的新依赖
-- 不要为了单次修改随意重构大范围代码
-- 保持命名与现有代码一致
+- Prefer minimal changes
+- Do not introduce unnecessary new dependencies
+- Do not casually refactor large areas of code for a one-off change
+- Keep naming consistent with the existing codebase
 
-### 文案与国际化
+### Copy and Internationalization
 
-- 面向用户的文本优先进入国际化资源
-- 不要在组件里硬编码长文案
-- 新增文案后，确认对应语言资源都已补齐
+- User-facing text should go into i18n resources first
+- Do not hardcode long copy directly in components
+- After adding copy, make sure the corresponding language resources are complete
 
-### 测试原则
+### Testing Principles
 
-- 新增功能尽量补测试
-- 修改已有逻辑时，优先补回归测试
+- Add tests for new features when possible
+- When changing existing logic, prioritize regression tests
 
-### 构建原则
+### Build Principles
 
-- 修改资源加载时注意 webpack loader 的影响面
-- 修改构建配置后，优先验证 `build` 是否通过
+- When changing asset loading, pay attention to the impact of webpack loaders
+- After changing build configuration, verify that `build` still passes
 
-## 常见排查顺序
+## Common Troubleshooting Order
 
-1. 代码是否导入正确
-2. 接口参数是否变化
-3. 国际化 key 是否缺失
-4. 组件状态是否更新正确
-5. 样式是否被 loader 或模块作用域影响
-6. 测试是否需要补 mock
-7. 构建配置是否兼容当前依赖版本
+1. Whether the code is imported correctly
+2. Whether API parameters changed
+3. Whether any i18n keys are missing
+4. Whether component state updates correctly
+5. Whether styles are affected by loaders or module scoping
+6. Whether tests need additional mocks
+7. Whether the build configuration is compatible with the current dependency versions
 
-## 适合交给 AI 的任务描述模板
+## Task Description Template for AI
 
-你可以直接这样说：
+You can say this directly:
 
 ```text
-请按照 seaqa-web 项目技能处理这个任务。
-项目根目录是 /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web。
-前端代码在 frontend 目录。
-请优先复用现有依赖和目录结构，修改后给我说明影响范围和验证方式。
+Please handle this task according to the seaqa-web project skill.
+The project root is /Users/seafile/dev/seaqa-dev/data/dev/seaqa-web.
+The frontend code is in the frontend directory.
+Please prioritize existing dependencies and directory structure, and after the changes explain the impact scope and verification steps.
 ```
 
-## 备注
+## Notes
 
-- 如果后续 package.json 依赖变化，这个技能文档也要同步更新。
+- If package.json dependencies change later, this skill document should be updated accordingly.
 
-## 更新记录
+## Changelog
 
-| 日期 | 更新内容 |
+| Date | Changes |
 |------|----------|
-| 2026-06-10 | 更新技术栈版本，补充目录说明，添加代码规范 |
+| 2026-06-10 | Updated tech stack versions, expanded directory notes, added code style guidelines |
