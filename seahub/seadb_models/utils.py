@@ -481,6 +481,7 @@ def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
     return issue, column_metadata, linked_ticket_title
 
 
+# discourse
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
     topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     replies_table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
@@ -505,6 +506,44 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
     return topic_record, column_metadata, linked_ticket_title
 
 
+def get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
+    topics_sql = f"SELECT `_pk`, `title`, `topic_id`, `linked_ticket`, `ai_summary` FROM `{topics_table_name}` WHERE _pk = {_pk}"
+    try:
+        topic_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topics_record = topic_res.get('results', [])
+        topics_record = topics_record[0] if topics_record else {}
+        column_metadata = topic_res.get('metadata')
+        linked_ticket = topics_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        topics_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
+    return topics_record, column_metadata, linked_ticket_title
+
+
+def get_discourse_topic_by_topic_id(seadb_api, project_uuid, connection_id, topic_id):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
+    topics_sql = f"SELECT `_pk`, `title`, `topic_id`, `linked_ticket`, `ai_summary`  FROM `{topics_table_name}` WHERE topic_id = {topic_id}"
+    try:
+        topic_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topics_records = topic_res.get('results', [])
+        topics_record = topics_records[0] if topics_records else {}
+        column_metadata = topic_res.get('metadata')
+        linked_ticket = topics_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        topics_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
+    return topics_record, column_metadata, linked_ticket_title
+
+
 def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
     topics_table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     pks_str = ','.join([str(pk) for pk in pks])
@@ -518,62 +557,48 @@ def list_discourse_topics(seadb_api, project_uuid, connection_id, pks):
     return topics_records
 
 
-def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connection_type, pks):
-    if not pks:
-        return []
-
-    pks_str = ','.join([str(pk) for pk in pks])
-
-    sql = ''
-    if connection_type == ConnectionType.GITHUB_ISSUE.value:
-        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
-        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
-    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
-    elif connection_type == ConnectionType.SITE.value:
-        table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
-    elif connection_type == ConnectionType.SEAFILE.value:
-        table_name = SchemaTables.SEAFILE.table_name(connection_id)
-    elif connection_type == ConnectionType.EMAIL.value:
-        table_name = SchemaTables.THREAD.table_name(connection_id)
-    elif connection_type == ConnectionType.GENERAL_TASK.value:
-        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
-    elif connection_type == ConnectionType.LINEAR.value:
-        table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
-    else:
-        return []
-
-    if not sql:
-        sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
-    try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
-    except Exception as e:
-        logger.error(f'SeaDB query error for record titles {table_name}: {e}')
-        records = []
-    return records
-
-
+# GitHub issue
 def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
-    issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, issue_number, state, state_reason, labels, issue_type, `url`, `linked_ticket`, `outdated`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `issue_number`, `state`, `state_reason`, `labels`, `issue_type`, `url`, `linked_ticket`, `outdated`, `ai_summary`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0]
         column_metadata = issue_res.get('metadata')
+        linked_ticket = issue_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
-        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
         issue_record = {}
         column_metadata = []
-    return issue_record, column_metadata
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
+    return issue_record, column_metadata, linked_ticket_title
+
+
+def get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, issue_number):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    issue_table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+    issue_sql = f"SELECT `_pk`, `title`, `state`, `url`, `linked_ticket`, `ai_summary`  FROM `{issue_table_name}` WHERE issue_number = {issue_number}"
+    try:
+        issue_res = seadb_api.query_rows(project_uuid, issue_sql)
+        issue_record = issue_res.get('results')[0]
+        column_metadata = issue_res.get('metadata')
+        linked_ticket = issue_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
+    return issue_record, column_metadata, linked_ticket_title
 
 
 def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""
     comments_table_name = SchemaTables.GITHUB_ISSUE_COMMENTS.table_name(connection_id)
-    from seahub.tickets.ticket_utils import get_ticket_title
     try:
-        issue_record, column_metadata = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        issue_record, column_metadata, linked_ticket_title = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         issue_id = issue_record.get('issue_id')
         issue_record.pop('issue_id')
         issue_record.pop('issue_number')
@@ -581,8 +606,6 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record['comments'] = comments_record
-        linked_ticket = issue_record.get('linked_ticket')
-        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
         logger.error(f'SeaDB query error for issue details {comments_table_name}: {e}')
         issue_record = {}
@@ -591,23 +614,36 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
     return issue_record, column_metadata, linked_ticket_title
 
 
-def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+# linear
+def get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
-    comments_table_name = SchemaTables.LINEAR_ISSUE_COMMENTS.table_name(connection_id)
-    issue_sql = f"SELECT _pk, title, author, content, created_time, issue_id, identifier, state, labels FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
-        column_metadata = issue_res.get('metadata')
         issue_record = issue_res.get('results')[0]
-        issue_id = issue_res.get('results')[0].get('issue_id')
+        column_metadata = issue_res.get('metadata')
+        linked_ticket = issue_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        logger.error(f'SeaDB query error for issue details {issue_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return issue_record, column_metadata, linked_ticket_title
+
+
+def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    issue_table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
+    comments_table_name = SchemaTables.LINEAR_ISSUE_COMMENTS.table_name(connection_id)
+    try:
+        issue_record, column_metadata, linked_ticket_title = get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        issue_id = issue_record.get('issue_id')
         issue_record.pop('issue_id')
         comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = '{issue_id}' ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record['comments'] = comments_record
-        linked_ticket = issue_record.get('linked_ticket')
-        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
         logger.error(f'SeaDB query error for Linear issue details {issue_table_name} or {comments_table_name}: {e}')
         issue_record = {}
@@ -616,9 +652,10 @@ def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk
     return issue_record, column_metadata, linked_ticket_title
 
 
-def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
+# seafile
+def get_seafile_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     seafile_table_name = SchemaTables.SEAFILE.table_name(connection_id)
-    sql = f"SELECT `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]
@@ -630,9 +667,15 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, ''
 
 
-def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
-    general_task_table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
+    record, column_metadata, linked_ticket_title = get_seafile_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    return record, column_metadata, linked_ticket_title
+
+
+# task
+def get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
+    general_task_table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     sql = (
         f"SELECT `_pk`, `title`, `status`, `size`, `priority`, `assignees`, `participants`, `others`, "
         f"`content`, `url`, `due_date`, `modified_time`, `created_time`, `ai_summary`, `ai_processed_time`, "
@@ -652,9 +695,22 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
     return record, column_metadata, linked_ticket_title
 
 
-def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
+def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk):
+    general_task_table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+    try:
+        record, column_metadata, linked_ticket_title = get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    except Exception as e:
+        logger.error(f'SeaDB query error for general task details {general_task_table_name}: {e}')
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return record, column_metadata, linked_ticket_title
+
+
+# site
+def get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk):
     site_table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
-    sql = f"SELECT `title`, `url`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `title`, `url`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]
@@ -666,15 +722,39 @@ def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, ''
 
 
+def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
+    try:
+        record, column_metadata, linked_ticket_title = get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    except Exception as e:
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return record, column_metadata, linked_ticket_title
+
+
+# email
+def get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    thread_table_name = SchemaTables.THREAD.table_name(connection_id)
+    sql = f"SELECT `title`, `modified_time`, `linked_ticket`, `outdated`, `tags`, `unread` FROM `{thread_table_name}` WHERE _pk = {_pk}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results')[0]
+        column_metadata = res.get('metadata')
+        linked_ticket = record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        logger.error(f'SeaDB query error for site details {thread_table_name}: {e}')
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return record, column_metadata, linked_ticket_title
+
+
 def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     email_table_name = SchemaTables.EMAIL.table_name(connection_id)
-    thread_table_name = SchemaTables.THREAD.table_name(connection_id)
-    from seahub.tickets.ticket_utils import get_ticket_title
     try:
-        thread_sql = f"SELECT `title`, `modified_time`, `linked_ticket`, `outdated`, `tags`, `unread` FROM `{thread_table_name}` WHERE _pk = {_pk}"
-        thread_res = seadb_api.query_rows(project_uuid, thread_sql)
-        thread_record = thread_res.get('results')[0]
-        column_metadata = thread_res.get('metadata')
+        thread_record, column_metadata, linked_ticket_title = get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         email_sql = f"""
         SELECT 
         email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk
@@ -683,10 +763,8 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         email_res = seadb_api.query_rows(project_uuid, email_sql)
         email_record = email_res.get('results', [])
         thread_record['emails'] = email_record
-        linked_ticket = thread_record.get('linked_ticket')
-        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
-        logger.error(f'SeaDB query error for email details {thread_table_name} or {email_table_name}: {e}')
+        logger.error(f'SeaDB query error for email details {email_table_name}: {e}')
         thread_record = {}
         column_metadata = []
         linked_ticket_title = ''
@@ -895,15 +973,82 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
     ]
 
 
-def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
+# notion
+def get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk):
     notion_table_name = SchemaTables.NOTION.table_name(connection_id)
     sql = f"SELECT title, content, created_time, modified_time, creator, page_id  FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)
-        notion_record = notion_res.get('results')[0]
+        record = notion_res.get('results')[0]
         column_metadata = notion_res.get('metadata')
     except Exception as e:
         logger.error(f'SeaDB query error for notion details {notion_table_name}: {e}')
-        notion_record = {}
+        record = {}
         column_metadata = []
-    return notion_record, column_metadata, ''
+    return record, column_metadata, ''
+
+
+def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
+    record, columns, _ = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    return record, columns, ''
+
+
+# func
+def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connection_type, pks):
+    if not pks:
+        return []
+
+    pks_str = ','.join([str(pk) for pk in pks])
+
+    sql = ''
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
+    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
+    elif connection_type == ConnectionType.SITE.value:
+        table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
+    elif connection_type == ConnectionType.SEAFILE.value:
+        table_name = SchemaTables.SEAFILE.table_name(connection_id)
+    elif connection_type == ConnectionType.EMAIL.value:
+        table_name = SchemaTables.THREAD.table_name(connection_id)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+    elif connection_type == ConnectionType.LINEAR.value:
+        table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
+    else:
+        return []
+
+    if not sql:
+        sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for record titles {table_name}: {e}')
+        records = []
+    return records
+
+
+def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, _pk):
+    if connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        record, columns, linked_ticket_title = get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.SITE.value:
+        record, columns, linked_ticket_title = get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.GITHUB_ISSUE.value:
+        record, columns, linked_ticket_title = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.SEAFILE.value:
+        record, columns, linked_ticket_title = get_seafile_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.EMAIL.value:
+        record, columns, linked_ticket_title = get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.NOTION.value:
+        record, columns, linked_ticket_title = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.GENERAL_TASK.value:
+        record, columns, linked_ticket_title = get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.LINEAR.value:
+        record, columns, linked_ticket_title = get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    else:
+        record = {}
+        columns = []
+        linked_ticket_title = ''
+    return record, columns, linked_ticket_title

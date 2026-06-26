@@ -130,7 +130,7 @@ def oauth_callback(request):
         token = session.fetch_token(
             TOKEN_URL,
             client_secret=CLIENT_SECRET,
-            authorization_response=settings.DTABLE_WEB_SERVICE_URL + request.get_full_path().split('/', 1)[1])
+            authorization_response=settings.SEAQA_WEB_SERVICE_URL + request.get_full_path().split('/', 1)[1])
 
         # Remove comment in the next line to get detailed information about "token from IdP" in dtable_web.log
         #logger.error('DEBUG TOKEN: %s' % token)

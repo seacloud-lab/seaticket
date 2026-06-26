@@ -4,7 +4,7 @@ import logging
 import hashlib
 import requests
 import json
-from urllib.parse import quote_plus, quote
+from urllib.parse import quote_plus, quote, urlparse, unquote
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
@@ -16,6 +16,7 @@ from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.core.cache import cache
+from django.db import connection
 from rest_framework import status
 from django.db import connection
 
@@ -719,3 +720,110 @@ def build_ticket_related_url(request, project, ticket_id):
     return build_project_page_related_url(
         request, project, f'tickets/{ticket_id}/'
     )
+
+
+def is_url_end_with_number(url):
+    path = urlparse(url).path.rstrip("/")
+    if not path:
+        return False
+    last_segment = path.split("/")[-1]
+    return last_segment.isdigit()
+
+
+def parse_webpage_url(webpage_url):
+    """ Retrieve the external_ref_id, the configured URL and connection_type via the webpage.
+    `external_ref_id` is the GitHub issue ID or Discourse topic ID.
+
+    """
+    parsed = urlparse(webpage_url)
+    scheme = parsed.scheme
+    host = parsed.netloc
+    if 'github' in webpage_url and 'issues' in webpage_url:
+        path_parts = parsed.path.strip("/").split("/")
+        parts = parsed.path.strip("/").split("/")
+        if len(parts) >= 4 and parts[2] == "issues" and path_parts[3].isdigit():
+            owner = path_parts[0]
+            repo = path_parts[1]
+            issue_id = path_parts[3]
+
+            repo_full_url = f"{scheme}://{host}/{owner}/{repo}"
+            return repo_full_url, issue_id, ConnectionType.GITHUB_ISSUE.value
+        return None, None, None
+    else:
+        parsed = urlparse(webpage_url)
+        path = parsed.path.rstrip('/')
+        match = re.search(r'/t/(?:[^/]+/)?(?P<topic_id>\d+)(?:/\d+)?$', path)
+        if not match:
+            return None, None, None
+        base_domain = f"{scheme}://{host}"
+        return base_domain, int(match.group('topic_id')), ConnectionType.DISCOURSE_FORUM.value
+
+
+def is_current_server(url):
+    parsed = urlparse(url)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    return origin.rstrip('/') == SERVICE_URL.rstrip('/')
+
+
+def extract_fields_from_url(url):
+    parsed = urlparse(url)
+    segments = [unquote(segment) for segment in parsed.path.split('/') if segment]
+
+    try:
+        workspace_idx = segments.index('workspace')
+        project_idx = segments.index('project', workspace_idx + 1)
+        connections_idx = segments.index('connections', project_idx + 1)
+        records_idx = segments.index('records', connections_idx + 1)
+
+        workspace_id = int(segments[workspace_idx + 1])
+        project_name = segments[project_idx + 1]
+        connection_id = int(segments[connections_idx + 1])
+        record_id = int(segments[records_idx + 1])
+    except (ValueError, IndexError):
+        return {}
+
+    return {
+        'workspace_id': workspace_id,
+        'project_name': project_name,
+        'connection_id': connection_id,
+        'record_id': record_id
+    }
+
+
+def get_org_project_connections_by_prefix_url(org_id, url, connection_type):
+    sql = """
+    SELECT w.`owner`, p.color, p.icon, p.name, p.text_color, p.uuid, p.workspace_id, pc.id as connection_id,
+      w.deleted as workspace_deleted, p.deleted as project_deleted, pc.deleted as connection_deleted FROM workspaces w 
+    INNER JOIN projects p ON w.id=p.workspace_id 
+    INNER JOIN project_connection pc ON pc.project_uuid=p.uuid
+    WHERE w.org_id=%s AND pc.type=%s
+    """
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        sql += """AND JSON_UNQUOTE(JSON_EXTRACT(pc.config, '$.repository')) LIKE CONCAT(%s, '%%')"""
+    else:
+        sql += """AND JSON_UNQUOTE(JSON_EXTRACT(pc.config, '$.url')) LIKE CONCAT(%s, '%%')"""
+
+    with connection.cursor() as cur:
+        cur.execute(sql, [org_id, connection_type, url])
+        columns = [col[0] for col in cur.description]
+        result = [dict(zip(columns, row)) for row in cur.fetchall()]
+        return result
+
+
+def get_org_project_connections_by_connection_ids(org_id, connection_ids):
+    if not connection_ids:
+        return []
+    placeholders = ", ".join(["%s"] * len(connection_ids))
+    sql = f"""
+    SELECT w.`owner`, p.color, p.icon, p.name, p.text_color, p.uuid, p.workspace_id, pc.id as connection_id,
+      w.deleted as workspace_deleted, p.deleted as project_deleted, pc.deleted as connection_deleted FROM workspaces w 
+    INNER JOIN projects p ON w.id=p.workspace_id 
+    INNER JOIN project_connection pc ON pc.project_uuid=p.uuid
+    WHERE w.org_id=%s AND pc.id in ({placeholders})
+    """
+    params = [org_id] + connection_ids
+    with connection.cursor() as cur:
+        cur.execute(sql, params)
+        columns = [col[0] for col in cur.description]
+        result = [dict(zip(columns, row)) for row in cur.fetchall()]
+        return result

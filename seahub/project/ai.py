@@ -37,7 +37,7 @@ class ConvertRecordToTicket(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    @require_org_context    
+    @require_org_context
     def post(self, request):
 
         connection_id = request.data.get('connection_id')

@@ -1,17 +1,22 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+from urllib.parse import quote
 
 import pytest
 
 from seahub.api2.endpoints.project import (
+    RelatedProjectsView,
     ProjectsView,
     ProjectView,
     SearchView,
     TrashProjectView,
     TrashProjectsView,
     WorkspacesView,
+    extract_fields_from_url,
 )
+from seahub.constants import PERMISSION_READ_WRITE
 from seahub.organizations.models import OrgGroup
+from seahub.project.constants import ConnectionType
 from seahub.project.models import Projects, Workspaces
 
 
@@ -337,6 +342,98 @@ class TestSearchView:
 
         assert resp.status_code == 200
         assert resp.data == {'results': reranked_results}
+
+
+@pytest.mark.django_db
+class TestRelatedProjectsView:
+
+    def test_extract_fields_from_url(self):
+        parts = extract_fields_from_url(
+            'https://example.com/workspace/10/project/my%20project/connections/11/records/12?foo=bar'
+        )
+        assert parts == {'workspace_id': 10, 'project_name': 'my project', 'connection_id': 11, 'record_id': 12}
+
+    def test_current_server_branch_checks_permission(self, factory, auth_user, real_project):
+        project = real_project
+        workspace = project.workspace
+        request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': f'https://example.com/workspace/{workspace.id}/project/{quote(project.name)}/connections/1/records/2?foo=bar'},
+        )
+        request.user = auth_user
+
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=True), \
+                patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
+                patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project) as get_project, \
+                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=SimpleNamespace(project_uuid=project.uuid)) as get_connection:
+            resp = RelatedProjectsView.as_view()(request)
+
+        assert resp.status_code == 403
+        get_project.assert_not_called()
+        get_connection.assert_not_called()
+
+    def test_current_server_branch_returns_related_project(self, factory, project_creator, real_project):
+        project = real_project
+        workspace = project.workspace
+        request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': f'https://example.com/workspace/{workspace.id}/project/{quote(project.name)}/connections/1/records/2?foo=bar'},
+        )
+        request.user = project_creator
+
+        connection = SimpleNamespace(project_uuid=project.uuid, type=ConnectionType.GITHUB_ISSUE.value)
+
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=True), \
+                patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
+                patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project), \
+                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
+                patch('seahub.api2.endpoints.project.SeaDBAPI'), \
+                patch('seahub.api2.endpoints.project.get_connection_record_by_pk', return_value=({'_pk': 2}, [], 'linked title')):
+            resp = RelatedProjectsView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert len(resp.data['projects']) == 1
+        related_project = resp.data['projects'][0]
+        assert related_project['permission'] == PERMISSION_READ_WRITE
+        assert related_project['related_info']['connection_type'] == ConnectionType.GITHUB_ISSUE.value
+        assert related_project['related_info']['connection_id'] == 1
+
+    def test_external_branch_returns_related_project(self, factory, project_creator, real_project):
+        project = real_project
+        workspace = project.workspace
+        request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': 'https://github.com/seafile-ltd/seahub/issues/12'},
+        )
+        request.user = project_creator
+
+        connection_row = [{
+            'owner': project_creator.username,
+            'color': project.color,
+            'icon': project.icon,
+            'name': project.name,
+            'text_color': project.text_color,
+            'uuid': project.uuid,
+            'workspace_id': workspace.id,
+            'connection_id': 8,
+            'workspace_deleted': False,
+            'project_deleted': False,
+            'connection_deleted': False,
+        }]
+
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
+                patch('seahub.api2.endpoints.project.SeaDBAPI'), \
+                patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
+            resp = RelatedProjectsView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert len(resp.data['projects']) == 1
+        related_project = resp.data['projects'][0]
+        assert related_project['permission'] == PERMISSION_READ_WRITE
+        assert related_project['workspace_type'] == 'personal'
+        assert related_project['related_info']['connection_type'] == ConnectionType.GITHUB_ISSUE.value
+        assert related_project['related_info']['connection_id'] == 8
 
 
 @pytest.mark.django_db
