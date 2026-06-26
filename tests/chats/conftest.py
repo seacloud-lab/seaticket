@@ -7,6 +7,8 @@ from rest_framework.test import APIRequestFactory
 from seahub.project.models import Projects, Workspaces
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.project.models import ProjectConnections
+from seahub.group.models import GroupUser
+from seahub.organizations.models import OrgGroup
 
 
 @pytest.fixture
@@ -130,4 +132,45 @@ def site_connection(real_project, project_creator):
         connection_type='site',
         name='site-conn',
         config={},
+    )
+
+
+@pytest.fixture
+def group_project(db):
+    owner = f"owner_{uuid4().hex[:6]}@example.com"
+    member = f"member_{uuid4().hex[:6]}@example.com"
+    group = OrgGroup.objects.create_org_group(1, f"group-{uuid4().hex[:6]}", owner)
+    GroupUser.objects.group_add_member(group.group_id, member)
+    workspace = Workspaces.objects.create(owner=f'{group.group_id}@seafile_group', org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name=f"proj-{uuid4().hex[:6]}",
+    )
+    return SimpleNamespace(project=project, owner=owner, member=member, group=group)
+
+
+@pytest.fixture
+def group_project_owner(group_project):
+    return SimpleNamespace(
+        id=4,
+        pk=4,
+        username=group_project.owner,
+        is_authenticated=True,
+        is_active=True,
+        org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True),
+    )
+
+
+@pytest.fixture
+def group_project_member(group_project):
+    return SimpleNamespace(
+        id=5,
+        pk=5,
+        username=group_project.member,
+        is_authenticated=True,
+        is_active=True,
+        org=SimpleNamespace(org_id=1),
+        permissions=SimpleNamespace(can_add_project=lambda: True),
     )

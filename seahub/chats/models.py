@@ -2,6 +2,7 @@
 import uuid
 import json
 from django.db import models
+from django.db import transaction
 
 
 class ChatSessionsManager(models.Manager):
@@ -32,6 +33,44 @@ class ChatSessionsManager(models.Manager):
         """Retrieve all shared chat sessions of the team"""
         queryset = self.filter(project_uuid=project_uuid, is_shared=True)
         return queryset.order_by('-updated_at')
+
+    def copy_session(self, source_session, username):
+        """Create a user's own session from an existing session history."""
+        with transaction.atomic():
+            new_session = self.create_session(
+                project_uuid=source_session.project_uuid,
+                session_name=source_session.session_name,
+                username=username
+            )
+
+            source_messages = ChatMessages.objects.get_messages_by_session(source_session.session_uuid)
+            ChatMessages.objects.bulk_create([
+                ChatMessages(
+                    session_uuid=new_session.session_uuid,
+                    message_id=message.message_id,
+                    role=message.role,
+                    content=message.content,
+                    attachments=message.attachments,
+                    sources=message.sources,
+                    as_context=message.as_context,
+                )
+                for message in source_messages
+            ])
+
+            source_thought_processes = ChatMessageThoughtProcess.objects.filter(
+                session_uuid=source_session.session_uuid
+            )
+            if source_thought_processes:
+                ChatMessageThoughtProcess.objects.bulk_create([
+                    ChatMessageThoughtProcess(
+                        session_uuid=new_session.session_uuid,
+                        message_id=thought_process.message_id,
+                        thought_process=thought_process.thought_process,
+                    )
+                    for thought_process in source_thought_processes
+                ])
+
+            return new_session
 
 class ChatSessions(models.Model):
     id = models.BigAutoField(primary_key=True)

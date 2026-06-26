@@ -152,6 +152,10 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+            if str(session.project_uuid) != str(project_uuid):
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
             if session.username != username:
                 error_msg = 'Permission denied. Only the session owner can modify this session.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -193,6 +197,19 @@ class ChatSessionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if str(session.project_uuid) != str(project_uuid):
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if session.username != username:
+                error_msg = 'Permission denied. Only the session owner can delete this session.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
             delete_sessions([session_uuid])
             return Response({'success': True})
 
@@ -240,6 +257,10 @@ class ChatSessionTitleView(APIView):
             error_msg = 'Session not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if str(session.project_uuid) != str(project_uuid):
+            error_msg = 'Session not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
         if session.username != username:
             error_msg = 'Permission denied. Only the session owner can modify this session.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -256,6 +277,57 @@ class ChatSessionTitleView(APIView):
             'success': True,
             'session_name': session_name,
         })
+
+
+class ChatSessionCopyView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, session_uuid):
+        """Create a new chat session from an existing session history."""
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if str(session.project_uuid) != str(project_uuid):
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if session.username != username and not session.is_shared:
+                error_msg = 'Permission denied. You can only copy your own sessions or shared team sessions.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if cache.get(gen_chat_task_id(session.session_uuid)) is not None:
+                error_msg = 'There are unfinished tasks in the current session, please try again later.'
+                return api_error(status.HTTP_409_CONFLICT, error_msg)
+
+            new_session = ChatSessions.objects.copy_session(session, username)
+            return Response({'session': new_session.to_dict()}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
 
 class ChatMessagesView(APIView):
@@ -290,6 +362,14 @@ class ChatMessagesView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+            if str(session.project_uuid) != str(project_uuid):
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if session.username != username and not session.is_shared:
+                error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
             messages = ChatMessages.objects.get_messages_by_session(session_uuid)
 
             message_ids = set([message.message_id for message in messages])
@@ -306,6 +386,7 @@ class ChatMessagesView(APIView):
                 messages_data.append(data)
             chat_task_info = cache.get(gen_chat_task_id(session_uuid))
             results = {
+                'session': session.to_dict(),
                 'messages': messages_data,
                 'running_task': chat_task_info is not None
             }
@@ -341,6 +422,16 @@ class ChatView(APIView):
             if not project:
                 error_msg = 'project not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            workspace = project.workspace
+            username = request.user.username
+            if not check_project_permission(username, workspace.owner):
+                error_msg = 'Permission denied.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+            if session.username != username and not session.is_shared:
+                error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
             chat_task_id_info = gen_chat_task_id(session_uuid)
             while cache.get(chat_task_id_info) is not None:
@@ -431,15 +522,18 @@ class ChatView(APIView):
             if not session:
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            if str(session.project_uuid) != str(project_uuid):
+                error_msg = f'Chat session {session_uuid} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             
-            # permission check: current user must be the session owner or the session is shared
+            # Only the session owner can continue or clear context in this session.
             if session.username != username:
-                if clear_context:
-                    error_msg = 'Permission denied. You can only clear the context in your own sessions'
-                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-                elif not session.is_shared:
+                if session.is_shared:
+                    error_msg = 'Permission denied. Only the session owner can continue this chat. Start a new chat from this conversation to continue.'
+                else:
                     error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
-                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
             elif clear_context:
                 ChatMessages.objects.clear_context(session_uuid)
         

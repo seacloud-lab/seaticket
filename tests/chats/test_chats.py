@@ -1,6 +1,8 @@
 from unittest.mock import patch
-from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView, ChatSessionTitleView
-from seahub.chats.models import ChatSessions, ChatMessages
+from django.core.cache import cache
+from seahub.chats.view import ChatSessionsView, ChatSessionView, ChatMessagesView, ChatView, ChatSessionTitleView, ChatSessionCopyView
+from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
+from seahub.chats.utils import gen_chat_task_id
 
 
 class TestChatSessionsView:
@@ -151,6 +153,117 @@ class TestChatMessagesView:
         assert assistant_msg['thought_process'] == {'x': 1}
 
 
+class TestChatSessionCopyView:
+
+    def test_post_missing_project_uuid(self, factory, project_creator, chat_session):
+        request = factory.post(
+            f'/api/v1/chat/sessions/{chat_session.session_uuid}/copy/',
+            data={},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatSessionCopyView.as_view()(request, session_uuid=chat_session.session_uuid)
+
+        assert resp.status_code == 400
+
+    def test_post_shared_session_success_for_team_member(self, factory, group_project, group_project_owner, group_project_member):
+        project = group_project.project
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(project.uuid),
+            session_name='shared chat',
+            username=group_project_owner.username,
+        )
+        session.is_shared = True
+        session.save(update_fields=['is_shared'])
+        ChatMessages.objects.create_message(
+            session.session_uuid,
+            'm1',
+            'user',
+            'hello',
+            attachments=[{'type': 'ticket', 'record_id': 1}],
+        )
+        ChatMessages.objects.create_message(
+            session.session_uuid,
+            'm2',
+            'assistant',
+            'hi',
+            sources='[]',
+        )
+        ChatMessageThoughtProcess.objects.create_thought_process(
+            session.session_uuid,
+            'm2',
+            {'tool': 'search'},
+        )
+        request = factory.post(
+            f'/api/v1/chat/sessions/{session.session_uuid}/copy/',
+            data={'project_uuid': str(project.uuid)},
+            format='json'
+        )
+        request.user = group_project_member
+
+        resp = ChatSessionCopyView.as_view()(request, session_uuid=session.session_uuid)
+
+        assert resp.status_code == 201
+        copied_session = ChatSessions.objects.get_session_by_uuid(resp.data['session']['session_uuid'])
+        assert copied_session.username == group_project_member.username
+        assert copied_session.session_uuid != session.session_uuid
+        assert copied_session.session_name == session.session_name
+        assert copied_session.is_shared is False
+
+        copied_messages = list(ChatMessages.objects.get_messages_by_session(copied_session.session_uuid))
+        assert len(copied_messages) == 2
+        assert [message.role for message in copied_messages] == ['user', 'assistant']
+        assert copied_messages[0].to_dict()['attachments'] == [{'type': 'ticket', 'record_id': 1}]
+        assert ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(
+            copied_session.session_uuid,
+            'm2'
+        ) == {'tool': 'search'}
+
+    def test_post_private_session_denied_for_team_member(self, factory, group_project, group_project_owner, group_project_member):
+        project = group_project.project
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(project.uuid),
+            session_name='private chat',
+            username=group_project_owner.username,
+        )
+        request = factory.post(
+            f'/api/v1/chat/sessions/{session.session_uuid}/copy/',
+            data={'project_uuid': str(project.uuid)},
+            format='json'
+        )
+        request.user = group_project_member
+
+        resp = ChatSessionCopyView.as_view()(request, session_uuid=session.session_uuid)
+
+        assert resp.status_code == 403
+
+    def test_post_running_session_denied(self, factory, group_project, group_project_owner, group_project_member):
+        project = group_project.project
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(project.uuid),
+            session_name='shared chat',
+            username=group_project_owner.username,
+        )
+        session.is_shared = True
+        session.save(update_fields=['is_shared'])
+        request = factory.post(
+            f'/api/v1/chat/sessions/{session.session_uuid}/copy/',
+            data={'project_uuid': str(project.uuid)},
+            format='json'
+        )
+        request.user = group_project_member
+
+        task_id = gen_chat_task_id(session.session_uuid)
+        cache.set(task_id, {'user_input': {'message': 'hello', 'attachments': []}}, 60)
+        try:
+            resp = ChatSessionCopyView.as_view()(request, session_uuid=session.session_uuid)
+        finally:
+            cache.delete(task_id)
+
+        assert resp.status_code == 409
+
+
 class TestChatView:
 
     def test_post_missing_project_uuid(self, factory, project_creator):
@@ -199,6 +312,59 @@ class TestChatView:
         resp = ChatView.as_view()(request)
 
         assert resp.status_code == 404
+
+    def test_post_shared_session_denied_for_non_owner(self, factory, group_project, group_project_owner, group_project_member):
+        project = group_project.project
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(project.uuid),
+            session_name='shared chat',
+            username=group_project_owner.username,
+        )
+        session.is_shared = True
+        session.save(update_fields=['is_shared'])
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={
+                'project_uuid': str(project.uuid),
+                'query': 'q',
+                'session_uuid': session.session_uuid,
+                'stream': False,
+            },
+            format='json'
+        )
+        request.user = group_project_member
+
+        resp = ChatView.as_view()(request)
+
+        assert resp.status_code == 403
+        assert ChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 0
+
+    def test_post_shared_session_owner_can_continue(self, factory, group_project, group_project_owner):
+        project = group_project.project
+        session = ChatSessions.objects.create_session(
+            project_uuid=str(project.uuid),
+            session_name='shared chat',
+            username=group_project_owner.username,
+        )
+        session.is_shared = True
+        session.save(update_fields=['is_shared'])
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={
+                'project_uuid': str(project.uuid),
+                'query': 'q',
+                'session_uuid': session.session_uuid,
+                'stream': False,
+            },
+            format='json'
+        )
+        request.user = group_project_owner
+
+        with patch('seahub.chats.view.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
+            resp = ChatView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert resp.data['session_uuid'] == session.session_uuid
 
     def test_post_get_ai_reply_exception_fallback(self, factory, project_creator, real_project):
         project = real_project

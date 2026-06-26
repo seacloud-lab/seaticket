@@ -148,6 +148,14 @@ class ChatAPI {
     return this.req.post(url, data);
   }
 
+  copyChatSession(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/copy/';
+    const data = {
+      project_uuid: projectUuid
+    };
+    return this.req.post(url, data);
+  }
+
   deleteChatSession(projectUuid, sessionUuid) {
     const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
     const data = {
