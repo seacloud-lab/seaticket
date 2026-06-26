@@ -49,7 +49,7 @@ urlpatterns = [
     re_path(r'^groups/(?P<group_id>\d+)/members/$', AdminGroupMembers.as_view(), name='api-v1-admin-group-members'),
     re_path(r'^groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', AdminGroupMember.as_view(), name='api-v1-admin-group-member'),
     re_path(r'^groups/(?P<group_id>\d+)/projects/$', AdminGroupProjects.as_view(), name='api-v1-admin-group-projects'),
-    re_path(r'^groups/(?P<group_id>\d+)/projects/(?P<project_uuid>[-0-9a-f]+)/$', AdminGroupProject.as_view(), name='api-v1-admin-group-delete-project'),
+    re_path(r'^groups/(?P<group_id>\d+)/projects/(?P<project_uuid>[-0-9a-f]{36})/$', AdminGroupProject.as_view(), name='api-v1-admin-group-delete-project'),
 
     ## admin::organizations
     re_path(r'^organizations/$', AdminOrganizations.as_view(), name='api-v1-admin-organizations'),
@@ -65,7 +65,7 @@ urlpatterns = [
 
     ## admin::projects
     re_path(r'^projects/$', AdminProjects.as_view(), name='api-v1-admin-projects'),
-    re_path(r'^projects/(?P<project_uuid>[-0-9a-f]+)/$', AdminProject.as_view(), name='api-v1-admin-project'),
+    re_path(r'^projects/(?P<project_uuid>[-0-9a-f]{36})/$', AdminProject.as_view(), name='api-v1-admin-project'),
     re_path(r'^trash-projects/$', AdminTrashProjectsView.as_view(), name='api-v1-admin-trash-projects'),
     re_path(r'^trash-projects/(?P<project_id>\d+)/$', AdminTrashProjectView.as_view(), name='api-v1-admin-trash-project'),
     re_path(r'^search-projects/$', AdminSearchProjectsView.as_view(), name='api-v1-admin-search-projects'),

@@ -38,7 +38,7 @@ urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', AdminGroupMember.as_view(), name='api-admin-group-member'),
 
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/projects/$', OrgAdminGroupProjects.as_view(), name='api-v1-org-admin-group-projects'),
-    re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/projects/(?P<project_uuid>[-0-9a-f]+)/$', OrgAdminGroupProject.as_view(), name='api-v1-org-admin-group-project'),
+    re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/projects/(?P<project_uuid>[-0-9a-f]{36})/$', OrgAdminGroupProject.as_view(), name='api-v1-org-admin-group-project'),
 
     re_path(r'^admin/info/$', OrgAdminInfo.as_view(), name='api-v1-org-admin-info'),
     re_path(r'^admin/settings/$', OrgAdminSettingsView.as_view(), name='api-v1-org-admin-setting'),

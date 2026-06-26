@@ -56,7 +56,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
     # user: related users
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/related-users/$', ProjectRelatedUsersView.as_view(), name='api-v1-project-related-users'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/related-users/$', ProjectRelatedUsersView.as_view(), name='api-v1-project-related-users'),
 
     # project: items search
     re_path(r'^api/v1/project/items-search/$', ProjectItemsSearchView.as_view(), name='api-v1-project-items-search'),
@@ -97,10 +97,10 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/reply-discourse/$', ProjectConnectionReplyDiscourseView.as_view(), name='api-v1-connection-reply-discourse'),
 
     # connection views
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v1-connection-views'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v1-connection-view'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v1-connection-views-move'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v1-connection-view-duplicate'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v1-connection-views'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v1-connection-view'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v1-connection-views-move'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v1-connection-view-duplicate'),
 
     # search
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets/$', SearchTicketsView.as_view(), name='api-v1-search-tickets'),
@@ -114,27 +114,27 @@ urlpatterns = [
     re_path(r'^api/v1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v1-ai-related-records'),
 
     # tag
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', TagsAPIView.as_view(), name='api-v1-project-tags'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', TagAPIView.as_view(), name='api-v1-project-tag'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tags/$', TagsAPIView.as_view(), name='api-v1-project-tags'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tags/(?P<tag_id>\d+)/$', TagAPIView.as_view(), name='api-v1-project-tag'),
 
     # agent
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/$', AgentRunsView.as_view(), name='api-v1-project-agent-runs'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/$', AgentRunDetailView.as_view(), name='api-v1-project-agent-run-detail'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/confirm/$', AgentActionConfirmView.as_view(), name='api-v1-project-agent-action-confirm'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/$', AgentActionUpdateView.as_view(), name='api-v1-project-agent-action-update'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/github/issue-types/$', GithubIssueTypesView.as_view(), name='api-v1-project-github-issue-types'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/$', AgentRunsView.as_view(), name='api-v1-project-agent-runs'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/$', AgentRunDetailView.as_view(), name='api-v1-project-agent-run-detail'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/confirm/$', AgentActionConfirmView.as_view(), name='api-v1-project-agent-action-confirm'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/$', AgentActionUpdateView.as_view(), name='api-v1-project-agent-action-update'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/github/issue-types/$', GithubIssueTypesView.as_view(), name='api-v1-project-github-issue-types'),
 ]
 
 # files, must at last
 urlpatterns += [
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/zip-attachments/$', ZipEmailAttachments.as_view(), name='api-v1-zip-attachments'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/download-attachments/$', DownloadEmailAttachments.as_view(), name='api-v1-download-attachments'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/zip-attachments/$', ZipEmailAttachments.as_view(), name='api-v1-zip-attachments'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/email/(?P<email_id>\d+)/download-attachments/$', DownloadEmailAttachments.as_view(), name='api-v1-download-attachments'),
     re_path(r'^api/v1/query-io-status/$', QueryIOStatus.as_view(), name='api-v1-query-io-status'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/upload-file/$', ProjectUploadFileAPIView.as_view(), name='api-v1-project-upload-file'),
-    re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v1-get-project-upload-file'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/upload-file/$', ProjectUploadFileAPIView.as_view(), name='api-v1-project-upload-file'),
+    re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v1-get-project-upload-file'),
 
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', ProjectFileAPIView.as_view(), name='api-v1-project-file'),
-    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/path/(?P<file_path>.*)$', ConnectionFileView.as_view(), name='api-v1-connection-file'),
-    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectFileView.as_view(), name='api-v1-get-project-file'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', ProjectFileAPIView.as_view(), name='api-v1-project-file'),
+    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/path/(?P<file_path>.*)$', ConnectionFileView.as_view(), name='api-v1-connection-file'),
+    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', GetProjectFileView.as_view(), name='api-v1-get-project-file'),
 ]
