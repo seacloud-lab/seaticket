@@ -3,15 +3,14 @@
 .sea-metadata-all-views-btn-wrapper {
   display: flex;
   align-items: center;
-  border-right: 1px solid #EAEAEA;
   border-left: 1px solid #EAEAEA;
   padding: 0 8px;
 }
 
 .sea-metadata-all-views-btn {
   width: 90px;
-  height: 26px;
-  line-height: 26px;
+  height: 24px;
+  line-height: 24px;
   color: #212529;
 }
 

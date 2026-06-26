@@ -21,6 +21,12 @@
   padding-left: 8px;
 }
 
+.sea-metadata-table-footer .rows-row > span {
+  padding-bottom: 4px;
+  line-height: 32px;
+  text-align: center;
+}
+
 .load-all-tip {
   display: flex;
   align-items: center;

@@ -134,6 +134,8 @@ const AllViews = ({
               <SearchInput
                 autoFocus={true}
                 isShowSearchIcon={true}
+                isShowClearIcon={searchValue ? true : false}
+                onClear={() => setSearchValue('')}
                 value={searchValue}
                 size={32}
                 placeholder={gettext('Search view')}

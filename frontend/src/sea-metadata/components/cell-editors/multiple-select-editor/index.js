@@ -29,7 +29,7 @@ const MultipleSelectEditor = forwardRef(({
   }, [column]);
 
   const style = useMemo(() => {
-    return { width: Math.max(column.width, 300), top: rowHeight - 1 };
+    return { width: 300, top: 0 };
   }, [column, rowHeight]);
 
   const createOption = useCallback((name) => {

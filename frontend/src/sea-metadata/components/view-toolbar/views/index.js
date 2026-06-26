@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IconButton, CustomizeNameDialog } from '@/components';
+import classNames from 'classnames';
 import { useViewsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 import ViewItem from './view-item';
@@ -199,7 +200,12 @@ const Views = ({ view, toggleView }) => {
             />
           </div>
         )}
-        <div className="sea-metadata-views-nav-container" ref={viewsNavContainerRef} onScroll={onScroll} onWheel={onWheel}>
+        <div
+          ref={viewsNavContainerRef}
+          onScroll={onScroll}
+          onWheel={onWheel}
+          className={classNames('sea-metadata-views-nav-container', canViewsScroll ? 'mr-2' : '')}
+        >
           {allViews.map(v => {
             const isSelect = isFunction(toggleView) && v._id === viewID;
             return (
@@ -245,13 +251,15 @@ const Views = ({ view, toggleView }) => {
           </>
         )}
         {context.canInsertView() &&
-          <IconButton
-            icon="plus"
-            className='ml-2'
-            onClick={() => openViewNameDialog()}
-            title={gettext('Add view')}
-            aria-label={gettext('Add view')}
-          />
+          <div style={{ borderLeft: '1px solid #EAEAEA' }}>
+            <IconButton
+              icon="plus"
+              className="ml-2"
+              onClick={() => openViewNameDialog()}
+              title={gettext('Add view')}
+              aria-label={gettext('Add view')}
+            />
+          </div>
         }
       </div>
       {isShowViewNameDialog && (

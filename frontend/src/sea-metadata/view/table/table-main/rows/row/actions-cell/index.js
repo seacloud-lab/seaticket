@@ -79,7 +79,7 @@ class ActionsCell extends Component {
           </div>
         </div>
         {rowColor && <div className="row-color-indicator" style={{ backgroundColor: rowColor }}></div>}
-        {isShowRowExpandBtn && (
+        {isShowRowExpandBtn ? (
           <IconTooltip
             icon="expand"
             className="row-expand"
@@ -90,7 +90,7 @@ class ActionsCell extends Component {
             hoverBackground={true}
             placement="bottom"
           />
-        )}
+        ) : <div style={{ width: '10px' }}>{/* space for make checkbox center */}</div>}
       </div>
     );
   }

@@ -75,7 +75,7 @@ const ViewItem = ({
 
   const openDropdownMenu = useCallback(() => {
     const { left, bottom } = viewRef.current.getBoundingClientRect();
-    menuStyle.current = { left, top: bottom };
+    menuStyle.current = { left, top: bottom - 4 };
     setIsShowDropdownMenu(true);
   }, []);
 

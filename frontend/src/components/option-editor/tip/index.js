@@ -13,7 +13,7 @@ const Tip = ({ isSearchEnabled, hasAvailableOptions, searchValue, tip }) => {
 
   if (searchValue) {
     return (
-      <div className="option-editor-search-no-results-tip my-6">{tip}</div>
+      <div className="option-editor-search-no-results-tip">{tip}</div>
     );
   }
 

@@ -30,6 +30,10 @@
 
 .sea-metadata-long-text-preview .sea-metadata-longtext-container .article {
   padding: 24px !important;
+  /* The design requirement here specifies 24px on both top and bottom,
+  but the markdown-editor internally renders a Paragraph node with a default 12px margin-bottom,
+  so set padding-bottom 12px needs to be subtracted here */
+  padding-bottom: 12px !important;
   border: unset;
 }
 
