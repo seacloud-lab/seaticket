@@ -25,8 +25,8 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, delete_project, restore_trash_project_name, \
-    rank_vector_search_results, is_url_ends_with_number, parse_webpage_url, is_current_server, extract_current_server_related_webpage_parts, \
-    get_related_connections_by_url, get_related_connections_by_connection_ids
+    rank_vector_search_results, is_url_end_with_number, parse_webpage_url, is_current_server, extract_fields_from_url, \
+    get_org_project_connections_by_prefix_url, get_org_project_connections_by_connection_ids
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, ensure_portal_issues_seadb_table, retrieve_vector_search_rerank_data
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
@@ -151,26 +151,45 @@ class RelatedProjectsView(APIView):
     def get(self, request):
         """get all related projects
         """
-
         username = request.user.username
         org_id = request.user.org.org_id
         webpage = request.GET.get('webpage', '')
 
-        if not webpage or not is_url_ends_with_number(webpage):
+        if not webpage or not is_url_end_with_number(webpage):
             error_msg = 'webpage invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         if is_current_server(webpage):
-            current_server_related_parts = extract_current_server_related_webpage_parts(webpage)
-            if not current_server_related_parts:
+            url_params = extract_fields_from_url(webpage)
+            if not url_params:
                 error_msg = 'Not support url'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            workspace_id, project_name, connection_id, record_id = current_server_related_parts
+            workspace_id = url_params.get('workspace_id')
+            project_name = url_params.get('project_name')
+            connection_id = url_params.get('connection_id')
+            record_id = url_params.get('record_id')
             workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
             if not workspace:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Workspace does not exist.')
-            
+
+            permission = check_project_permission(username, workspace.owner)
+            if not permission:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+            project = Projects.objects.get_project(workspace, project_name)
+            if not project:
+                return api_error(status.HTTP_404_NOT_FOUND, _('This project does not exist'))
+
+            project_uuid = project.uuid
+            project_name = project.name
+            project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+            if not project_connection or str(project_connection.project_uuid) != str(project_uuid):
+                error_msg = f'project_connection {connection_id} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            connection_type = project_connection.type
+
             workspace_owner = workspace.owner
             if '@seafile_group' in workspace_owner:
                 group_id = int(workspace_owner.split('@')[0])
@@ -180,27 +199,9 @@ class RelatedProjectsView(APIView):
                 workspace_type = 'personal'
                 workspace_name = 'personal'
 
-            permission = check_project_permission(username, workspace.owner)
-            if not permission:
-                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-            project = Projects.objects.get_project(workspace, project_name)
-            if not project:
-                return api_error(status.HTTP_404_NOT_FOUND, _('This project does not exist'))
-            
-            project_uuid = project.uuid
-            project_name = project.name
-            project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-            
-            if not project_connection or str(project_connection.project_uuid) != str(project_uuid):
-                error_msg = f'project_connection {connection_id} not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            connection_type = project_connection.type
-
             seadb_api = SeaDBAPI()
             record, columns, linked_ticket_title = get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, record_id)
-            return Response({ 'projects': [
+            return Response({'projects': [
                 {
                     'uuid': project_uuid,
                     'name': project_name,
@@ -218,7 +219,7 @@ class RelatedProjectsView(APIView):
                         'linked_ticket_title': linked_ticket_title
                     }
                 }
-            ] }, status=status.HTTP_200_OK)
+            ]}, status=status.HTTP_200_OK)
 
         external_ref_url, external_ref_id, connection_type = parse_webpage_url(webpage)
         if not external_ref_id or not external_ref_url:
@@ -226,16 +227,16 @@ class RelatedProjectsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         related_projects = []
-        connection_cache_key = normalize_cache_key((str(org_id) + external_ref_url), REF_URL_CONNECTION_CACHE_PREFIX)
+        connection_cache_key = normalize_cache_key((str(org_id) + '_' + external_ref_url), REF_URL_CONNECTION_CACHE_PREFIX)
         connection_ids = cache.get(connection_cache_key, None)
         has_connection_cache = False
         if connection_ids is not None:
             has_connection_cache = True
             if not connection_ids:
-                return Response({ 'projects': related_projects }, status=status.HTTP_200_OK)
-            workspace_project_connections = get_related_connections_by_connection_ids(org_id, connection_ids)
+                return Response({'projects': related_projects}, status=status.HTTP_200_OK)
+            workspace_project_connections = get_org_project_connections_by_connection_ids(org_id, connection_ids)
         else:
-            workspace_project_connections = get_related_connections_by_url(org_id, external_ref_url, connection_type)
+            workspace_project_connections = get_org_project_connections_by_prefix_url(org_id, external_ref_url, connection_type)
 
         seadb_api = SeaDBAPI()
         related_connections = []
@@ -278,11 +279,11 @@ class RelatedProjectsView(APIView):
             project_info['workspace_id'] = wpc.get('workspace_id')
             project_info['permission'] = permission
             related_projects.append(project_info)
-        
+
         if not has_connection_cache:
             cache.set(connection_cache_key, related_connections, REF_URL_CONNECTION_CACHE_TIMEOUT)
 
-        return Response({ 'projects': related_projects }, status=status.HTTP_200_OK)
+        return Response({'projects': related_projects}, status=status.HTTP_200_OK)
 
 
 class ProjectsView(APIView):

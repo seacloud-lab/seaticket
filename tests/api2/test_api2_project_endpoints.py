@@ -12,7 +12,7 @@ from seahub.api2.endpoints.project import (
     TrashProjectView,
     TrashProjectsView,
     WorkspacesView,
-    extract_current_server_related_webpage_parts,
+    extract_fields_from_url,
 )
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.organizations.models import OrgGroup
@@ -347,12 +347,11 @@ class TestSearchView:
 @pytest.mark.django_db
 class TestRelatedProjectsView:
 
-    def test_extract_current_server_related_webpage_parts(self):
-        parts = extract_current_server_related_webpage_parts(
+    def test_extract_fields_from_url(self):
+        parts = extract_fields_from_url(
             'https://example.com/workspace/10/project/my%20project/connections/11/records/12?foo=bar'
         )
-        assert parts == (10, 'my project', 11, 12)
-
+        assert parts == {'workspace_id': 10, 'project_name': 'my project', 'connection_id': 11, 'record_id': 12}
 
     def test_current_server_branch_checks_permission(self, factory, auth_user, real_project):
         project = real_project
@@ -423,7 +422,7 @@ class TestRelatedProjectsView:
         }]
 
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
-                patch('seahub.api2.endpoints.project.get_related_connections_by_url', return_value=connection_row), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
             resp = RelatedProjectsView.as_view()(request)

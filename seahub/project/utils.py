@@ -722,10 +722,12 @@ def build_ticket_related_url(request, project, ticket_id):
     )
 
 
-def is_url_ends_with_number(url):
-    url = urlparse(url).path.rstrip('/')
-    pattern = r'/\d+$'
-    return bool(re.search(pattern, url))
+def is_url_end_with_number(url):
+    path = urlparse(url).path.rstrip("/")
+    if not path:
+        return False
+    last_segment = path.split("/")[-1]
+    return last_segment.isdigit()
 
 
 def parse_webpage_url(webpage_url):
@@ -757,14 +759,14 @@ def parse_webpage_url(webpage_url):
         return base_domain, int(match.group('topic_id')), ConnectionType.DISCOURSE_FORUM.value
 
 
-def is_current_server(url=''):
+def is_current_server(url):
     parsed = urlparse(url)
     origin = f"{parsed.scheme}://{parsed.netloc}"
     return origin.rstrip('/') == SERVICE_URL.rstrip('/')
 
 
-def extract_current_server_related_webpage_parts(webpage):
-    parsed = urlparse(webpage)
+def extract_fields_from_url(url):
+    parsed = urlparse(url)
     segments = [unquote(segment) for segment in parsed.path.split('/') if segment]
 
     try:
@@ -778,12 +780,17 @@ def extract_current_server_related_webpage_parts(webpage):
         connection_id = int(segments[connections_idx + 1])
         record_id = int(segments[records_idx + 1])
     except (ValueError, IndexError):
-        return None, None, None, None
+        return {}
 
-    return workspace_id, project_name, connection_id, record_id
+    return {
+        'workspace_id': workspace_id,
+        'project_name': project_name,
+        'connection_id': connection_id,
+        'record_id': record_id
+    }
 
 
-def get_related_connections_by_url(org_id, url, connection_type):
+def get_org_project_connections_by_prefix_url(org_id, url, connection_type):
     sql = """
     SELECT w.`owner`, p.color, p.icon, p.name, p.text_color, p.uuid, p.workspace_id, pc.id as connection_id,
       w.deleted as workspace_deleted, p.deleted as project_deleted, pc.deleted as connection_deleted FROM workspaces w 
@@ -803,17 +810,20 @@ def get_related_connections_by_url(org_id, url, connection_type):
         return result
 
 
-def get_related_connections_by_connection_ids(org_id, connection_ids):
-    sql = """
+def get_org_project_connections_by_connection_ids(org_id, connection_ids):
+    if not connection_ids:
+        return []
+    placeholders = ", ".join(["%s"] * len(connection_ids))
+    sql = f"""
     SELECT w.`owner`, p.color, p.icon, p.name, p.text_color, p.uuid, p.workspace_id, pc.id as connection_id,
       w.deleted as workspace_deleted, p.deleted as project_deleted, pc.deleted as connection_deleted FROM workspaces w 
     INNER JOIN projects p ON w.id=p.workspace_id 
     INNER JOIN project_connection pc ON pc.project_uuid=p.uuid
-    WHERE w.org_id=%s AND pc.id in %s
+    WHERE w.org_id=%s AND pc.id in ({placeholders})
     """
-
+    params = [org_id] + connection_ids
     with connection.cursor() as cur:
-        cur.execute(sql, [org_id, connection_ids])
+        cur.execute(sql, params)
         columns = [col[0] for col in cur.description]
         result = [dict(zip(columns, row)) for row in cur.fetchall()]
         return result
