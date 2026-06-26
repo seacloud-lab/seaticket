@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID } from '../constants';
@@ -14,13 +14,20 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+  const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
     const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     const currentUrlParams = new URLSearchParams(window.location.search);
-    const queryString = currentUrlParams.toString();
+    const currentQueryString = currentUrlParams.toString();
+    let queryString = '';
+
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
+      queryString = currentQueryString || listQueryStringRef.current;
+      listQueryStringRef.current = queryString;
+    }
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
       let myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
@@ -54,13 +61,18 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   }, [workspaceID, projectName, type]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL) => {
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      listQueryStringRef.current = currentUrlParams.toString();
+    }
+    resetURL(newPageSlugId, newChildrenPageSlugId);
     if (pageSlugId !== newPageSlugId) {
       setPageSlugId(newPageSlugId);
     }
     if (childrenPageSlugId !== newChildrenPageSlugId) {
       setChildrenPageSlugId(newChildrenPageSlugId);
     }
-  }, [pageSlugId, childrenPageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
     const eventBus = context.eventBus;
