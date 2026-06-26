@@ -28,7 +28,7 @@ from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
 from seahub.api2.utils import api_error, get_user_common_info
-from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
+from seahub.utils import normalize_cache_key, uuid_str_to_32_chars, get_service_url
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_record_attachments_from_s3
@@ -762,7 +762,7 @@ def parse_webpage_url(webpage_url):
 def is_current_server(url):
     parsed = urlparse(url)
     origin = f"{parsed.scheme}://{parsed.netloc}"
-    return origin.rstrip('/') == SERVICE_URL.rstrip('/')
+    return origin.rstrip('/') == get_service_url().rstrip('/')
 
 
 def extract_fields_from_url(url):

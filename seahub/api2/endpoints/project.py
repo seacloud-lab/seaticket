@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context, uuid_str_to_32_chars
+from seahub.utils import is_org_context, uuid_str_to_32_chars, uuid_str_to_36_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     ProjectAPIToken, ProjectConnections
@@ -275,7 +275,7 @@ class RelatedProjectsView(APIView):
                 project_info['workspace_name'] = 'personal'
                 project_info['workspace_type'] = 'personal'
             project_info['name'] = wpc.get('name')
-            project_info['uuid'] = wpc.get('uuid')
+            project_info['uuid'] = uuid_str_to_36_chars(project_uuid)
             project_info['workspace_id'] = wpc.get('workspace_id')
             project_info['permission'] = permission
             related_projects.append(project_info)
