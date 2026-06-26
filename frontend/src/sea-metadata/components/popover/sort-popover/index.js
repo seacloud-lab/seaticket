@@ -145,6 +145,7 @@ class SortPopover extends Component {
       const { type, display_name: name } = column;
       return {
         value: { column },
+        selectedKey: `column:${column.key}`,
         name: name,
         label: (
           <Fragment>
@@ -162,6 +163,7 @@ class SortPopover extends Component {
     return SORT_TYPES.map(sortType => {
       return {
         value: { sortType: sortType.value },
+        selectedKey: `sortType:${sortType.value}`,
         label: <span className="select-option-name">{sortType.name}</span>
       };
     });

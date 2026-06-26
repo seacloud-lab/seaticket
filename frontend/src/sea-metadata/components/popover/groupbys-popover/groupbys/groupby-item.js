@@ -116,6 +116,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
     return granularityList.map((granularity) => {
       return {
         value: granularity,
+        selectedKey: `groupCountType:${granularity}`,
         label: <span className="select-option-name">{DISPLAY_GROUP_DATE_GRANULARITY_TEXT[displayGranularity[granularity]]}</span>,
       };
     });
@@ -126,6 +127,8 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
     const countType = getSelectedCountType(column, count_type);
     if (countType) {
       return {
+        value: countType,
+        selectedKey: `groupCountType:${count_type || getDefaultCountType(column)}`,
         label: <span className="select-option-name">{DISPLAY_GROUP_DATE_GRANULARITY_TEXT[countType]}</span>
       };
     }
@@ -149,8 +152,8 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
   }, [groupby, index, onUpdate]);
 
   const selectCountType = useCallback((countType) => {
-    const { sort_type } = groupby;
-    if (countType === sort_type) return;
+    const { count_type } = groupby;
+    if (countType === count_type) return;
     const newGroupby = { ...groupby, count_type: countType };
     onUpdate(newGroupby, index);
   }, [groupby, index, onUpdate]);
@@ -192,6 +195,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
             <CustomizeSelect
               disabled={readOnly}
               value={selectedCountType}
+              selectedKey={selectedCountType?.selectedKey}
               onChange={selectCountType}
               options={countTypeOptions}
             />

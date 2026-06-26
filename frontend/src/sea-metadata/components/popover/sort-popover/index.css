@@ -71,7 +71,7 @@
   display: inline-block;
   height: 14px;
   width: 14px;
-  color: #666;
+  color: var(--bs-icon-color);
   cursor: pointer;
 }
 
@@ -93,5 +93,6 @@
 
 .sea-metadata-sort-popover .popover-add-tool .customize-add-tool .customize-add-tool-icon {
   margin-right: 8px;
-  font-size: 14px;
+  width: 14px;
+  height: 14px;
 }

@@ -34,7 +34,7 @@ class Option extends Component {
         onMouseLeave={this.onMouseLeave}
       >
         <span className="option-content">{this.props.children}</span>
-        {isSelected && <Icon symbol="check-mark" className="option-check-icon" />}
+        {isSelected && <Icon symbol="check-mark-option" className="option-check-icon" />}
       </div>
     );
   }

@@ -212,12 +212,14 @@
   height: 24px;
   border-radius: 4px;
   margin-right: 14px;
-  text-align: center;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sea-metadata-filters-list .delete-filter:hover {
-  background-color: #f5f5f5;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .delete-filter .seaqa-icon-svg-close {
@@ -309,6 +311,14 @@
   min-width: 140px;
 }
 
+.sea-metadata-filters-list .filter-term-modifier .option-group {
+  padding: 0;
+}
+
+.sea-metadata-filters-list .filter-term .sea-metadata-collaborator-selector-popover {
+  padding: 0 !important;
+}
+
 .sea-metadata-filters-list .seaqa-customize-select .selected-option-show .remove-container {
   display: none;
 }
@@ -324,6 +334,10 @@
 .sea-metadata-select-icon .seaqa-icon-svg {
   cursor: default;
   margin-top: -2px;
+}
+
+.option-group .option .sea-metadata-filter-header-icon .seaqa-icon-svg {
+  color: var(--bs-icon-secondary-color);
 }
 
 [data-bs-theme=dark] .sea-metadata-setting-selector__control {
