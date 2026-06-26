@@ -337,6 +337,7 @@ class FilterItem extends React.Component {
       <CustomizeSelect
         className="sea-metadata-selector-multiple-select"
         value={selectedOptionNames}
+        selectedKeys={Array.isArray(filterTerm) ? filterTerm.map(item => `columnOption:${item}`) : []}
         options={dataOptions}
         onChange={this.onSelectMultiple}
         placeholder={gettext('Select option(s)')}
@@ -384,6 +385,7 @@ class FilterItem extends React.Component {
       <CustomizeSelect
         className="sea-metadata-selector-tags-select"
         value={selectedOptionNames}
+        selectedKeys={Array.isArray(filterTerm) ? filterTerm.map(item => `tag:${item}`) : []}
         options={dataOptions}
         onChange={this.onSelectTag}
         placeholder={gettext('Select tag(s)')}
@@ -453,6 +455,7 @@ class FilterItem extends React.Component {
             filter_predicate={filter_predicate}
             collaborators={creators}
             onSelectCollaborator={this.onSelectCreator}
+            filterColumn={filterColumn}
           />
         );
       }
@@ -484,6 +487,7 @@ class FilterItem extends React.Component {
             disabled={readOnly}
             className="sea-metadata-selector-single-select"
             value={selectedOptionDom}
+            selectedKey={filter_term !== undefined && filter_term !== null ? `columnOption:${filter_term}` : undefined}
             options={dataOptions || []}
             onChange={this.onSelectSingle}
             placeholder={gettext('Select an option')}
@@ -504,8 +508,8 @@ class FilterItem extends React.Component {
             filterTerm={filter_term || []}
             filter_predicate={filter_predicate}
             collaborators={allCollaborators}
-            placeholder={gettext('Select collaborators')}
             onSelectCollaborator={this.onSelectCollaborator}
+            filterColumn={filterColumn}
           />
         );
       }
@@ -521,6 +525,7 @@ class FilterItem extends React.Component {
           const isSelected = Number(filter_term) === priority.value;
           return {
             value: priority.value,
+            selectedKey: `priority:${priority.value}`,
             label: (
               <>
                 <span className="priority-filter-option-check">
@@ -543,6 +548,7 @@ class FilterItem extends React.Component {
             disabled={readOnly}
             className="sea-metadata-selector-priority seaqa-priority-editor-popover"
             value={{ label: <PriorityFormatter value={Number(filter_term)} showName={true} className={readOnly ? '' : 'cursor-pointer'} /> }}
+            selectedKey={filter_term !== undefined && filter_term !== null ? `priority:${Number(filter_term)}` : undefined}
             options={options || []}
             onChange={this.onChangePriority}
             isInModal={this.props.isInModal}

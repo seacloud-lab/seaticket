@@ -16,6 +16,7 @@ class FilterItemUtils {
     const { type, display_name: name } = column;
     return {
       value: { column },
+      selectedKey: `column:${column.key}`,
       name: name,
       label: (
         <>
@@ -34,6 +35,7 @@ class FilterItemUtils {
 
     return {
       value: { filterPredicate },
+      selectedKey: `filterPredicate:${filterPredicate}`,
       label: <span className="select-option-name">{translatedPredicateText}</span>
     };
   }
@@ -41,6 +43,7 @@ class FilterItemUtils {
   static generatorTermModifierOption(filterTermModifier) {
     return {
       value: { filterTermModifier },
+      selectedKey: `filterTermModifier:${filterTermModifier}`,
       label: <span className="select-option-name">{FILTER_TERM_MODIFIER_SHOW[filterTermModifier]}</span>
     };
   }
@@ -48,6 +51,7 @@ class FilterItemUtils {
   static generatorSingleSelectOption(option, selectedOption) {
     return {
       value: { columnOption: option },
+      selectedKey: `columnOption:${option.id}`,
       name: getOptionDisplayNameByOption(option),
       label: (
         <div className="select-option-name single-option-name">
@@ -61,6 +65,7 @@ class FilterItemUtils {
   static generatorMultipleSelectOption(option, filterTerm) {
     return {
       value: { columnOption: option },
+      selectedKey: `columnOption:${option.id}`,
       name: getOptionDisplayNameByOption(option),
       label: (
         <div className="select-option-name multiple-option-name">
@@ -74,6 +79,7 @@ class FilterItemUtils {
   static generatorTagOption(tag, filterTerm) {
     return {
       value: { tag },
+      selectedKey: `tag:${tag.id}`,
       name: tag.name,
       label: (
         <div className="select-option-name multiple-option-name">
@@ -88,6 +94,7 @@ class FilterItemUtils {
     return [
       {
         value: { filterConjunction: 'And' },
+        selectedKey: 'filterConjunction:And',
         label: (
           <div className="select-option-name conjunction-option-name">
             <span>{gettext('And')}</span>
@@ -96,6 +103,7 @@ class FilterItemUtils {
       },
       {
         value: { filterConjunction: 'Or' },
+        selectedKey: 'filterConjunction:Or',
         label: (
           <div className="select-option-name conjunction-option-name">
             <span>{gettext('Or')}</span>
@@ -109,6 +117,7 @@ class FilterItemUtils {
     if (conjunction === 'And') {
       return {
         value: { filterConjunction: 'And' },
+        selectedKey: 'filterConjunction:And',
         label: (
           <div className="select-option-name conjunction-option-name">
             <span>{gettext('And')}</span>
@@ -118,6 +127,7 @@ class FilterItemUtils {
     }
     return {
       value: { filterConjunction: 'Or' },
+      selectedKey: 'filterConjunction:Or',
       label: (
         <div className="select-option-name conjunction-option-name">
           <span>{gettext('Or')}</span>

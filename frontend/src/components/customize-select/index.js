@@ -91,6 +91,8 @@ class CustomizeSelect extends Component {
         {this.state.isShowSelectOptions && !isInModal && (
           <OptionGroup
             value={value}
+            selectedKey={this.props.selectedKey}
+            selectedKeys={this.props.selectedKeys}
             addOptionAble={addOptionAble}
             component={component}
             isShowSelected={this.props.isShowSelected}
@@ -111,6 +113,8 @@ class CustomizeSelect extends Component {
             <OptionGroup
               className={className}
               value={value}
+              selectedKey={this.props.selectedKey}
+              selectedKeys={this.props.selectedKeys}
               addOptionAble={addOptionAble}
               component={component}
               isShowSelected={this.props.isShowSelected}
@@ -147,6 +151,8 @@ CustomizeSelect.propTypes = {
   noOptionsPlaceholder: PropTypes.string,
   component: PropTypes.object,
   supportMultipleSelect: PropTypes.bool,
+  selectedKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedKeys: PropTypes.array,
   isShowSelected: PropTypes.bool,
   isInModal: PropTypes.bool, // if select component in a modal (option group need ModalPortal to show)
 };

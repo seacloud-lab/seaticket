@@ -47,6 +47,31 @@
   justify-content: space-between;
 }
 
+.sea-metadata-filters .sea-metadata-selector-single-select .select-option-name,
+.sea-metadata-filters .sea-metadata-selector-multiple-select .select-option-name {
+  margin-top: 0;
+}
+
+.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-single-select .option-group,
+.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-multiple-select .option-group {
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search,
+.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search {
+  padding: 0;
+}
+
+.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search .seaqa-search-input,
+.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search .seaqa-search-input {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-radius: 0px;
+  border-color: var(--bs-border-color);
+}
+
 .sea-metadata-selector-single-select .select-option-name .single-check-icon,
 .sea-metadata-selector-multiple-select .select-option-name .single-check-icon {
   height: 20px;

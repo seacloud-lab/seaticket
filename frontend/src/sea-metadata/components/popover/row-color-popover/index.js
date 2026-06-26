@@ -167,7 +167,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       placement="bottom-end"
       modifiers={[
         { name: 'preventOverflow', options: { boundary: document.body } },
-        { name: 'offset', options: { offset: [-6, 8] } }
+        { name: 'offset', options: { offset: [0, 8] } }
       ]}
     >
       <div className="seaqa-row-color-body px-2 pt-2 pb-0" style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}>

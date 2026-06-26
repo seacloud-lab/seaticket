@@ -147,6 +147,7 @@ SearchInput.propTypes = {
   placeholder: PropTypes.string,
   autoFocus: PropTypes.bool,
   isShowSearchIcon: PropTypes.bool,
+  isShowClearIcon: PropTypes.bool,
   className: PropTypes.string,
   inputClassName: PropTypes.string,
   onChange: PropTypes.func.isRequired,

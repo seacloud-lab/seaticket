@@ -14,11 +14,54 @@ const SUPPORT_MULTIPLE_SELECT_OPTIONS = [
   FILTER_PREDICATE_TYPE.IS_EXACTLY,
 ];
 
-const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, filter_predicate, onSelectCollaborator }) => {
+const COLLABORATOR_FILTER_TEXT_MAP = {
+  default: {
+    placeholder: gettext('Select collaborators'),
+    searchPlaceholder: gettext('Search collaborators'),
+    removeItemText: gettext('Remove collaborator'),
+    clearAllText: gettext('Clear all collaborators'),
+    emptyTipText: gettext('No collaborators'),
+  },
+  creator: {
+    placeholder: gettext('Select creator'),
+    searchPlaceholder: gettext('Search creator'),
+    removeItemText: gettext('Remove creator'),
+    clearAllText: gettext('Clear all creators'),
+    emptyTipText: gettext('No creators'),
+  },
+  assignees: {
+    placeholder: gettext('Select assignees'),
+    searchPlaceholder: gettext('Search assignees'),
+    removeItemText: gettext('Remove assignee'),
+    clearAllText: gettext('Clear all assignees'),
+    emptyTipText: gettext('No assignees'),
+  },
+  participants: {
+    placeholder: gettext('Select participants'),
+    searchPlaceholder: gettext('Search participants'),
+    removeItemText: gettext('Remove participant'),
+    clearAllText: gettext('Clear all participants'),
+    emptyTipText: gettext('No participants'),
+  },
+};
+
+const getCollaboratorFilterText = (filterColumnName, key) => {
+  const textMap = COLLABORATOR_FILTER_TEXT_MAP[filterColumnName] || COLLABORATOR_FILTER_TEXT_MAP.default;
+  return textMap[key];
+};
+
+const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, filter_predicate, onSelectCollaborator, filterColumn }) => {
+
   const [isShowEditor, setIsShowEditor] = useState(false);
   const optionEditorContainerRef = useRef(null);
 
   const isSupportMultipleSelect = useMemo(() => SUPPORT_MULTIPLE_SELECT_OPTIONS.includes(filter_predicate), [filter_predicate]);
+  const filterColumnName = filterColumn?.name;
+  const placeholder = getCollaboratorFilterText(filterColumnName, 'placeholder');
+  const searchPlaceholder = getCollaboratorFilterText(filterColumnName, 'searchPlaceholder');
+  const removeItemText = getCollaboratorFilterText(filterColumnName, 'removeItemText');
+  const clearAllText = getCollaboratorFilterText(filterColumnName, 'clearAllText');
+  const emptyTipText = getCollaboratorFilterText(filterColumnName, 'emptyTipText');
 
   const selectedCollaboratorEmails = useMemo(() => {
     if (isSupportMultipleSelect) {
@@ -127,7 +170,7 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, 
                 );
               })}
             </div>
-          ) : placeholder}
+          ) : <span style={{ color: '#868E96' }}>{placeholder}</span>}
         </span>
         {!readOnly && (<Icon symbol="arrow-down" />)}
       </div>
@@ -137,8 +180,8 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, 
             <OptionEditorContainer
               ref={optionEditorContainerRef}
               isMultiple={isSupportMultipleSelect}
-              placeholder={gettext('Search collaborator')}
-              emptyTip={gettext('No collaborators')}
+              placeholder={searchPlaceholder}
+              emptyTip={emptyTipText}
               value={isSupportMultipleSelect ? selectedCollaboratorEmails : (selectedCollaboratorEmails[0] || '')}
               options={options}
               onChange={handleChange}
@@ -166,8 +209,8 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, 
                               handleDeselect(email);
                             }}
                             role="button"
-                            aria-label={gettext('Remove collaborator')}
-                            title={gettext('Remove collaborator')}
+                            aria-label={removeItemText}
+                            title={removeItemText}
                           >
                             <Icon symbol="close" />
                           </span>
@@ -183,8 +226,8 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, placeholder, 
                       handleClearAll();
                     }}
                     role="button"
-                    aria-label={gettext('Clear all collaborators')}
-                    title={gettext('Clear all collaborators')}
+                    aria-label={clearAllText}
+                    title={clearAllText}
                   >
                     <Icon symbol="close" className="seaqa-collaborator-filter-clear-all" />
                   </div>
@@ -204,7 +247,9 @@ CollaboratorFilter.propTypes = {
   collaborators: PropTypes.array,
   onSelectCollaborator: PropTypes.func,
   readOnly: PropTypes.bool,
-  placeholder: PropTypes.string,
+  filterColumn: PropTypes.shape({
+    name: PropTypes.string,
+  }),
 };
 
 export default CollaboratorFilter;

@@ -11,14 +11,24 @@ import './index.css';
 
 const OPTION_HEIGHT = 32;
 
-const getComparableValue = (value) => {
-  if (!value || typeof value !== 'object') return value;
+const getSelectKey = (value) => {
+  if (value == null) return null;
+  if (typeof value !== 'object') return `${value}`;
+
+  if (value.selectedKey !== undefined) return `${value.selectedKey}`;
+  if (value.selectedKeys !== undefined && Array.isArray(value.selectedKeys)) return value.selectedKeys.map(item => `${item}`).join('|');
+  if (value.value !== undefined) return getSelectKey(value.value);
   if (value.column && value.column.key !== undefined) return `column:${value.column.key}`;
   if (value.sortType !== undefined) return `sortType:${value.sortType}`;
+  if (value.filterPredicate !== undefined) return `filterPredicate:${value.filterPredicate}`;
+  if (value.filterConjunction !== undefined) return `filterConjunction:${value.filterConjunction}`;
+  if (value.filterTermModifier !== undefined) return `filterTermModifier:${value.filterTermModifier}`;
   if (value.id !== undefined) return `id:${value.id}`;
   if (value.key !== undefined) return `key:${value.key}`;
-  if (value.filterConjunction !== undefined) return `filterConjunction:${value.filterConjunction}`;
-  return value;
+  if (value.columnOption && value.columnOption.id !== undefined) return `columnOption:${value.columnOption.id}`;
+  if (value.tag && value.tag.id !== undefined) return `tag:${value.tag.id}`;
+
+  return null;
 };
 
 class OptionGroup extends Component {
@@ -151,20 +161,22 @@ class OptionGroup extends Component {
     }
   };
 
+  onClear = () => {
+    this.setState({ searchVal: '', activeIndex: -1, });
+  };
+
   renderOptGroup = (searchVal) => {
     let { noOptionsPlaceholder, onChange, value } = this.props;
     this.filterOptions = this.props.getFilterOptions(searchVal);
+    const selectedKeys = this.getSelectedKeys(value);
     if (this.filterOptions.length === 0) {
       return (<Tip searchValue={searchVal} tip={noOptionsPlaceholder} />);
     }
     return this.filterOptions.map((opt, i) => {
       let key = opt.value.column ? opt.value.column.key : i;
       let isActive = this.state.activeIndex === i;
-      let isSelected = false;
-      if (value) {
-        const valueToCompare = value.value !== undefined ? value.value : value;
-        isSelected = getComparableValue(valueToCompare) === getComparableValue(opt.value);
-      }
+      const optionKey = opt.selectedKey !== undefined ? `${opt.selectedKey}` : getSelectKey(opt.value);
+      const isSelected = selectedKeys.includes(optionKey);
       return (
         <Option
           key={`${key}-${i}`}
@@ -181,6 +193,18 @@ class OptionGroup extends Component {
         </Option>
       );
     });
+  };
+
+  getSelectedKeys = (value) => {
+    const { selectedKey, selectedKeys } = this.props;
+    if (Array.isArray(selectedKeys)) {
+      return selectedKeys.map(item => `${item}`);
+    }
+    if (selectedKey !== undefined && selectedKey !== null) {
+      return [`${selectedKey}`];
+    }
+    const resolvedKey = getSelectKey(value);
+    return resolvedKey === null ? [] : [`${resolvedKey}`];
   };
 
   render() {
@@ -226,6 +250,8 @@ class OptionGroup extends Component {
                 isShowSearchIcon={false}
                 size={32}
                 ref={this.searchInputRef}
+                isShowClearIcon={searchVal ? true : false}
+                onClear={this.onClear}
               />
             </div>
           )}
@@ -255,6 +281,8 @@ OptionGroup.propTypes = {
   getFilterOptions: PropTypes.func.isRequired,
   supportMultipleSelect: PropTypes.bool,
   value: PropTypes.object,
+  selectedKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedKeys: PropTypes.array,
   isShowSelected: PropTypes.bool,
   stopClickEvent: PropTypes.bool,
   isInModal: PropTypes.bool,
