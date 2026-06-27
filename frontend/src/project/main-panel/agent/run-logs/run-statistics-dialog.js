@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
+import { agentAPI } from '@/project/api';
 
 import './run-statistics-dialog.css';
+
+const { projectUuid } = window.app.pageOptions;
 
 const parseStatistics = (statisticsStr) => {
   if (!statisticsStr) return null;
@@ -19,8 +22,48 @@ const formatDuration = (durationMs) => {
   return (durationMs / 1000).toFixed(2);
 };
 
-const RunStatisticsDialog = ({ run, onToggle }) => {
-  const { items = [], actions = [] } = run;
+const getActionStepIndex = (action) => {
+  const step = action?.step;
+  if (Number.isInteger(step)) return step;
+  if (typeof step === 'string' && step.trim() !== '') {
+    const parsedStep = Number(step);
+    if (Number.isInteger(parsedStep)) return parsedStep;
+  }
+  return null;
+};
+
+const getActionPhase = (action) => action?.phase || 'unknown';
+
+const getStepGroupKey = (action, fallbackStep) => {
+  const phase = getActionPhase(action);
+  const step = getActionStepIndex(action);
+  const stepKey = step !== null ? step : `action-${fallbackStep}`;
+  return `${phase}-${stepKey}`;
+};
+
+const getToolName = (action) => action.tool_name || action.type || '-';
+
+const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
+  const [run, setRun] = useState(initialRun);
+
+  useEffect(() => {
+    let isMounted = true;
+    setRun(initialRun);
+
+    agentAPI.getAgentRunDetails(projectUuid, runId, { includeDetails: true }).then((res) => {
+      if (!isMounted) return;
+      setRun(res.data);
+    }).catch(() => {
+      if (!isMounted) return;
+      setRun(initialRun);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialRun, runId]);
+
+  const { items = [], actions = [] } = run || {};
 
   const allActions = useMemo(() => {
     const result = [];
@@ -46,6 +89,7 @@ const RunStatisticsDialog = ({ run, onToggle }) => {
     let totalOutputTokens = 0;
     let totalTokens = 0;
     let totalDurationMs = 0;
+    const stepGroupIndexes = new Map();
 
     allActions.forEach((action, index) => {
       const stats = parseStatistics(action.statistics);
@@ -53,16 +97,30 @@ const RunStatisticsDialog = ({ run, onToggle }) => {
       const outputTokens = stats?.output_tokens || 0;
       const stepTotalTokens = stats?.total_tokens || 0;
       const durationMs = stats?.duration_ms || 0;
+      const fallbackStep = index + 1;
+      const groupKey = getStepGroupKey(action, fallbackStep);
 
-      stepStats.push({
-        step: index + 1,
-        toolName: action.tool_name || action.type || '-',
-        inputTokens,
-        outputTokens,
-        totalTokens: stepTotalTokens,
-        durationMs,
-        durationSec: formatDuration(durationMs),
-      });
+      if (!stepGroupIndexes.has(groupKey)) {
+        stepGroupIndexes.set(groupKey, stepStats.length);
+        stepStats.push({
+          id: groupKey,
+          step: stepStats.length + 1,
+          toolNames: [],
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+          durationMs: 0,
+          durationSec: formatDuration(0),
+        });
+      }
+
+      const stepStat = stepStats[stepGroupIndexes.get(groupKey)];
+      stepStat.toolNames.push(getToolName(action));
+      stepStat.inputTokens += inputTokens;
+      stepStat.outputTokens += outputTokens;
+      stepStat.totalTokens += stepTotalTokens;
+      stepStat.durationMs += durationMs;
+      stepStat.durationSec = formatDuration(stepStat.durationMs);
 
       totalInputTokens += inputTokens;
       totalOutputTokens += outputTokens;
@@ -123,9 +181,9 @@ const RunStatisticsDialog = ({ run, onToggle }) => {
                 </thead>
                 <tbody>
                   {stepStats.map((step) => (
-                    <tr key={step.step}>
+                    <tr key={step.id}>
                       <td>{step.step}</td>
-                      <td className="tool-name-cell" title={step.toolName}>{step.toolName}</td>
+                      <td className="tool-name-cell" title={step.toolNames.join(', ')}>{step.toolNames.join(', ')}</td>
                       <td>{step.durationSec}</td>
                       <td>{step.inputTokens}</td>
                       <td>{step.outputTokens}</td>

@@ -34,6 +34,19 @@ const getActionTitle = (action, index) => {
   return `${gettext('Action')} ${index + 1}: ${actionName}`;
 };
 
+const getStepTitle = (actionGroup, index) => {
+  const firstAction = actionGroup?.[0] || {};
+  const step = Number.isInteger(firstAction.step) ? firstAction.step + 1 : index + 1;
+  const actionName = firstAction?.tool_name || firstAction?.type || '-';
+  if (actionGroup.length === 1) return `${gettext('Step')} ${step}: ${actionName}`;
+  return `${gettext('Step')} ${step}`;
+};
+
+const getSubstepTitle = (action, index) => {
+  const actionName = action?.tool_name || action?.type || '-';
+  return `${gettext('Substep')} ${index + 1}: ${actionName}`;
+};
+
 const hasOwnKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 const DetailValueFormatter = ({ className, value }) => (
@@ -106,6 +119,34 @@ const collectRunActions = (run) => {
   return [...itemActions, ...actions];
 };
 
+const groupActionsByStep = (actions = []) => {
+  const groups = [];
+  const groupIndexes = new Map();
+
+  actions.forEach((action) => {
+    const hasStep = Number.isInteger(action?.step);
+    const groupKey = hasStep ? `step-${action.step}` : `action-${groups.length}`;
+    if (!groupIndexes.has(groupKey)) {
+      groupIndexes.set(groupKey, groups.length);
+      groups.push([]);
+    }
+    groups[groupIndexes.get(groupKey)].push(action);
+  });
+
+  return groups;
+};
+
+const buildActionDetailNode = (action, actionIndex, options = {}) => {
+  const children = buildDetailsChildren(action, options);
+  if (children.length === 0) return null;
+
+  return {
+    id: action.id || `action-${actionIndex}`,
+    name: getActionTitle(action, actionIndex),
+    children,
+  };
+};
+
 const buildPhaseGroupedActionNodes = (actions = []) => {
   const actionsByPhase = PHASE_ORDER.reduce((acc, phase) => {
     acc[phase] = [];
@@ -128,14 +169,38 @@ const buildPhaseGroupedActionNodes = (actions = []) => {
     const shouldExcludeActionPrompt = Boolean(promptNode);
     const phaseContextNodes = [promptNode, inputNode].filter(Boolean);
 
-    const actionNodes = phaseActions.map((action, actionIndex) => {
-      const children = buildDetailsChildren(action, { excludePrompt: shouldExcludeActionPrompt });
-      if (children.length === 0) return null;
+    const actionNodes = groupActionsByStep(phaseActions).map((actionGroup, groupIndex) => {
+      if (actionGroup.length === 1) {
+        const actionNode = buildActionDetailNode(actionGroup[0], groupIndex, { excludePrompt: shouldExcludeActionPrompt });
+        if (!actionNode) return null;
+        return {
+          ...actionNode,
+          id: actionNode.id || `${phase}-step-${groupIndex}`,
+          name: getStepTitle(actionGroup, groupIndex),
+        };
+      }
 
+      const substepNodes = actionGroup.map((action, substepIndex) => {
+        const actionNode = buildActionDetailNode(action, substepIndex, { excludePrompt: shouldExcludeActionPrompt });
+        if (!actionNode) return null;
+        return {
+          ...actionNode,
+          id: action.id || `${phase}-step-${groupIndex}-substep-${substepIndex}`,
+          name: getSubstepTitle(action, substepIndex),
+        };
+      }).filter(Boolean);
+
+      if (substepNodes.length === 0) return null;
       return {
-        id: action.id || `${phase}-action-${actionIndex}`,
-        name: getActionTitle(action, actionIndex),
-        children,
+        id: `${phase}-step-${actionGroup[0]?.step ?? groupIndex}`,
+        name: getStepTitle(actionGroup, groupIndex),
+        children: [
+          {
+            id: `${phase}-step-${actionGroup[0]?.step ?? groupIndex}-substeps`,
+            name: gettext('Substep'),
+            children: substepNodes,
+          },
+        ],
       };
     }).filter(Boolean);
 
