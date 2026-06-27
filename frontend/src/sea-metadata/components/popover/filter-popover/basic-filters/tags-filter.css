@@ -45,6 +45,35 @@
   height: 12px;
 }
 
+.seaqa-tags-filter .sea-metadata-tags-filter-selected-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 4px;
+}
+
+.seaqa-tags-filter .sea-metadata-tags-filter-selected-list {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.seaqa-tags-filter .sea-metadata-tags-filter-selected-list .sea-metadata-tag {
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 22px;
+  flex: 0 1 auto;
+}
+
+.seaqa-tags-filter .sea-metadata-tags-filter-selected-list .sea-metadata-tag .sea-metadata-tag-text {
+  white-space: normal;
+  text-overflow: clip;
+}
+
 .seaqa-tags-filter .seaqa-search-input-wrapper .seaqa-search-input {
   width: 100%;
   padding-left: 2.5rem;

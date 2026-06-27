@@ -34,7 +34,7 @@
 }
 
 .option-editor-container.selected-value-display.search-enabled .option-editor-search-wrapper {
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .option-editor-container.option-editor-container-multiple .option-editor-search-wrapper {
@@ -43,7 +43,7 @@
 }
 
 .option-editor-container.selected-value-display.search-enabled.small-size-option .option-editor-search-wrapper {
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .option-editor-container:not(.search-enabled) .option-editor-content {

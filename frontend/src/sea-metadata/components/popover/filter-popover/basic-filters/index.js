@@ -48,7 +48,7 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
   return (
     <FormGroup className="filter-group-basic filter-group px-4 mt-2">
       <Label className="filter-group-name mb-3">{gettext('Basic')}</Label>
-      <div className="filter-group-container" style={{ marginBottom: 40 }}>
+      <div className="filter-group-container" style={{ marginBottom: 28 }}>
         <div className="sea-metadata-filters-list">
           {filters.map(filter => {
             const { column_key, filter_term } = filter;

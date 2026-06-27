@@ -67,7 +67,7 @@ class CustomizeSelect extends Component {
   };
 
   render() {
-    let { className, value, options, placeholder, searchable, searchPlaceholder, noOptionsPlaceholder,
+    let { className, value, options, placeholder, searchable, searchPlaceholder, noOptionsPlaceholder, hideSelectedValue,
       disabled, isInModal, addOptionAble, component, id } = this.props;
     return (
       <div
@@ -106,6 +106,7 @@ class CustomizeSelect extends Component {
             closeSelect={this.closeSelect}
             getFilterOptions={this.getFilterOptions}
             supportMultipleSelect={this.props.supportMultipleSelect}
+            hideSelectedValue={hideSelectedValue}
           />
         )}
         {this.state.isShowSelectOptions && isInModal && (
@@ -130,6 +131,7 @@ class CustomizeSelect extends Component {
               closeSelect={this.closeSelect}
               getFilterOptions={this.getFilterOptions}
               supportMultipleSelect={this.props.supportMultipleSelect}
+              hideSelectedValue={hideSelectedValue}
             />
           </ModalPortal>
         )}

@@ -98,6 +98,9 @@
   width: auto;
   overflow-x: auto;
   line-height: 1.5;
+  padding: 0 6px;
+  height: 28px;
+  border-radius: 4px;
 }
 
 .sea-metadata-filters-list .seaqa-customize-select .seaqa-icon-svg-arrow-down {

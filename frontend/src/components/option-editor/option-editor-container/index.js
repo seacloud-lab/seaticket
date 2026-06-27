@@ -11,7 +11,7 @@ import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
-const SEARCH_HEIGHT = 28;
+const DEFAULT_SEARCH_HEIGHT = 28;
 
 const OptionEditorContainer = forwardRef(({
   id,
@@ -20,6 +20,7 @@ const OptionEditorContainer = forwardRef(({
   checkPlacement = 'right',
   className,
   optionClassName,
+  searchHeight = DEFAULT_SEARCH_HEIGHT,
   placeholder,
   emptyTip = gettext('No options available'),
   value: propsValue = '',
@@ -110,7 +111,7 @@ const OptionEditorContainer = forwardRef(({
         'search-enabled': isSearchEnabled,
         'selected-value-display': children,
         'add-search-result-enabled': isSearchEnabled && showCreateBtn,
-        'small-size-option': SEARCH_HEIGHT <= 30
+        'small-size-option': searchHeight <= 30
       })}
     >
       {children && (
@@ -124,7 +125,7 @@ const OptionEditorContainer = forwardRef(({
             isShowSearchIcon={false}
             autoFocus={true}
             value={searchValue}
-            size={SEARCH_HEIGHT}
+            size={searchHeight}
             placeholder={placeholder}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
