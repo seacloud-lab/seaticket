@@ -85,7 +85,6 @@ class ActionsCell extends Component {
             className="row-expand"
             iconClassName="row-expand-icon"
             onClick={this.handleShowExpandedProps}
-            tipIcon="row-expand-icon"
             tip={gettext('Expand')}
             hoverBackground={true}
             placement="bottom"

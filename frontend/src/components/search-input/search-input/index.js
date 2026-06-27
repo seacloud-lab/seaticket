@@ -103,7 +103,7 @@ class SearchInput extends Component {
     const isSmallSize = size <= 30;
     let paddingLeft = size - 2;
     if (!isShowSearchIcon) {
-      paddingLeft = isSmallSize ? 8 : 12;
+      paddingLeft = 8;
     }
     let paddingRight = 8;
     if (isShowClearIcon && isFunction(onClear)) {

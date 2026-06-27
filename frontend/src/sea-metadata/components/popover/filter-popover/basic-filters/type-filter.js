@@ -73,7 +73,7 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
       </div>
       {isShowEditor && (
         <ClickOutside onClickOutside={closeEditor}>
-          <div className="sea-metadata-type-selector-popover popover seaqa-type-selector-popover option-editor-popover sea-metadata-basic-filter-type-selector hide-description seaqa-type-filter seaqa-type-filter-popover p-2">
+          <div className="sea-metadata-type-selector-popover popover seaqa-type-selector-popover option-editor-popover sea-metadata-basic-filter-type-selector hide-description seaqa-type-filter seaqa-type-filter-popover">
             <OptionEditorContainer
               ref={optionEditorContainerRef}
               isMultiple={true}
@@ -83,10 +83,11 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
               options={options}
               onChange={handleChange}
               isShowClearIcon={false}
+              searchHeight={32}
             >
               {(Array.isArray(value) && value.length > 0) && (
-                <div className="d-flex align-items-center w-100">
-                  <div className="d-flex justify-content-start align-items-center gap-1 flex-grow-1">
+                <div className="seaqa-type-filter-selected-wrapper w-100">
+                  <div className="seaqa-type-filter-selected-list">
                     {selectedTypes.map(type => {
                       const typeId = `${type._id}`;
                       return (

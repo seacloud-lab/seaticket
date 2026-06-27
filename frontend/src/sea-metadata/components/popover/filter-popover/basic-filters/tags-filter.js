@@ -86,7 +86,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         </div>
         {isShowEditor && (
           <ClickOutside onClickOutside={closeEditor}>
-            <div className="sea-metadata-tags-selector-popover popover seaqa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description seaqa-tags-filter p-2">
+            <div className="sea-metadata-tags-selector-popover popover seaqa-tags-selector-popover option-editor-popover sea-metadata-basic-filter-tags-selector hide-description seaqa-tags-filter">
               <OptionEditorContainer
                 ref={optionEditorContainerRef}
                 isMultiple={true}
@@ -96,10 +96,11 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
                 options={tagOptions}
                 onChange={handleChange}
                 isShowClearIcon={false}
+                searchHeight={32}
               >
                 {(Array.isArray(value) && value.length > 0) &&
-                  <div className="d-flex align-items-center w-100">
-                    <div className="d-flex justify-content-start align-items-center gap-1 flex-grow-1">
+                  <div className="sea-metadata-tags-filter-selected-wrapper w-100">
+                    <div className="sea-metadata-tags-filter-selected-list">
                       {value.map(v => {
                         const tag = getRowById(tagsData, v);
                         return (

@@ -39,15 +39,10 @@
 
 .seaqa-select.custom-select:hover {
   cursor: pointer;
-  border-color: rgb(179, 179, 179);
 }
 
 .seaqa-select .seaqa-icon-svg-arrow-down {
-  color: #999;
-}
-
-.seaqa-select .seaqa-icon-svg-arrow-down:hover {
-  color: #555;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-select .selected-option {

@@ -68,6 +68,36 @@
   height: 12px;
 }
 
+.seaqa-type-filter .seaqa-type-filter-selected-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 4px;
+}
+
+.seaqa-type-filter .seaqa-type-filter-selected-list {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.seaqa-type-filter .seaqa-type-filter-selected-list .seaqa-type-filter-tag {
+  max-width: 100%;
+  min-width: 0;
+  display: inline-flex !important;
+  align-items: center;
+  height: auto !important;
+  min-height: 20px;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  text-align: left !important;
+}
+
 .seaqa-type-filter .seaqa-type-filter-tag {
   max-width: 250px;
 }

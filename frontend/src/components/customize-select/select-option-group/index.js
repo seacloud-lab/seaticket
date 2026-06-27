@@ -166,7 +166,7 @@ class OptionGroup extends Component {
   };
 
   renderOptGroup = (searchVal) => {
-    let { noOptionsPlaceholder, onChange, value } = this.props;
+    let { noOptionsPlaceholder, onChange, value, hideSelectedValue } = this.props;
     this.filterOptions = this.props.getFilterOptions(searchVal);
     const selectedKeys = this.getSelectedKeys(value);
     if (this.filterOptions.length === 0) {
@@ -176,7 +176,7 @@ class OptionGroup extends Component {
       let key = opt.value.column ? opt.value.column.key : i;
       let isActive = this.state.activeIndex === i;
       const optionKey = opt.selectedKey !== undefined ? `${opt.selectedKey}` : getSelectKey(opt.value);
-      const isSelected = selectedKeys.includes(optionKey);
+      const isSelected = hideSelectedValue ? false : selectedKeys.includes(optionKey);
       return (
         <Option
           key={`${key}-${i}`}

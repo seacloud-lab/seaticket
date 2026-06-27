@@ -164,12 +164,7 @@
 .sea-metadata-filters-list .filter-column .option-group {
   min-width: 200px;
   max-width: 400px;
-  margin: 0;
   padding: 0;
-}
-
-.sea-metadata-filters-list .filter-column .option-group .option .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-filters-list .filter-column .option-group .option-group-search {
@@ -181,5 +176,5 @@
   border-left: none;
   border-right: none;
   border-radius: 0px;
-  border-color: var(--bs-border-color);
+  border-color: #eee;
 }

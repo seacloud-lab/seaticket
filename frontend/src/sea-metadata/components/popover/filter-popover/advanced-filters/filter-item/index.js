@@ -552,6 +552,7 @@ class FilterItem extends React.Component {
             options={options || []}
             onChange={this.onChangePriority}
             isInModal={this.props.isInModal}
+            hideSelectedValue={true}
           />
         );
       }
