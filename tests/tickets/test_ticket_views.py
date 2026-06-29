@@ -12,7 +12,7 @@ def test_ticket_views_route_accepts_36_char_project_uuid(real_project):
     match = resolve(f'/api/v1/project/{str(real_project.uuid)}/ticket-views/')
 
     assert match.url_name == 'api-v1-project-ticket-views'
-    assert match.kwargs['project_uuid'] == str(str(real_project.uuid))
+    assert match.kwargs['project_uuid'] == str(real_project.uuid)
 
 
 def test_ticket_views_route_rejects_short_project_uuid(real_project):
