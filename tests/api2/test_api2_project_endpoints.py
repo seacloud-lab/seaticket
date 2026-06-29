@@ -23,14 +23,14 @@ from seahub.utils import uuid_str_to_32_chars
 
 
 def test_trash_project_route_accepts_36_char_project_uuid(real_project):
-    match = resolve(f'/api/v1/trash-projects/{real_project.uuid}/')
+    match = resolve(f'/api/v1/trash-projects/{str(real_project.uuid)}/')
 
     assert match.url_name == 'api-v1-trash-project'
     assert match.kwargs['project_uuid'] == str(real_project.uuid)
 
 
 def test_trash_project_route_rejects_32_project_uuid(real_project):
-    route = f'/api/v1/trash-projects/{uuid_str_to_32_chars(real_project.uuid)}/'
+    route = f'/api/v1/trash-projects/{uuid_str_to_32_chars(str(real_project.uuid))}/'
     with pytest.raises(Resolver404):
         resolve(route)
 

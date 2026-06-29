@@ -9,14 +9,14 @@ from seahub.utils import uuid_str_to_32_chars
 
 
 def test_ticket_views_route_accepts_36_char_project_uuid(real_project):
-    match = resolve(f'/api/v1/project/{real_project.uuid}/ticket-views/')
+    match = resolve(f'/api/v1/project/{str(real_project.uuid)}/ticket-views/')
 
     assert match.url_name == 'api-v1-project-ticket-views'
-    assert match.kwargs['project_uuid'] == str(real_project.uuid)
+    assert match.kwargs['project_uuid'] == str(str(real_project.uuid))
 
 
 def test_ticket_views_route_rejects_short_project_uuid(real_project):
-    route = f'/api/v1/project/{uuid_str_to_32_chars(real_project.uuid)}/ticket-views/'
+    route = f'/api/v1/project/{uuid_str_to_32_chars(str(real_project.uuid))}/ticket-views/'
     with pytest.raises(Resolver404):
         resolve(route)
 
