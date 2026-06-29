@@ -90,7 +90,7 @@ urlpatterns = [
     re_path(r'^api/v1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v1-group-member'),
     re_path(r'^api/v1/groups/trash-projects/$', ManagedGroupsTrashProjectsView.as_view(), name='api-v1-groups-trash-projects'),
     re_path(r'^api/v1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v1-group-trash-projects'),
-    re_path(r'^api/v1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v1-group-trash-project'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]{36})/$', GroupTrashProjectView.as_view(), name='api-v1-group-trash-project'),
     re_path(r'^api/v1/groups/(?P<group_id>\d+)/invite-links/$', GroupInviteLinks.as_view(), name='api-v1-group-invite-links'),
     re_path(r'^api/v1/groups/(?P<group_id>\d+)/invite-links/(?P<token>[-0-9a-f]{8})/$', GroupInviteLink.as_view(), name='api-v1-group-invite-link'),
     re_path(r'^api/v1/search-group/$', SearchGroup.as_view(), name='api-v1-search-group'),
@@ -105,7 +105,7 @@ urlpatterns = [
     re_path(r'^api/v1/projects/$', ProjectsView.as_view(), name='api-v1-projects'),
     re_path(r'^api/v1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v1-workspace-project'),
     re_path(r'^api/v1/trash-projects/$', TrashProjectsView.as_view(), name='api-v1-trash-projects'),
-    re_path(r'^api/v1/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', TrashProjectView.as_view(), name='api-v1-trash-project'),
+    re_path(r'^api/v1/trash-projects/(?P<project_uuid>[-0-9a-f]{36})/$', TrashProjectView.as_view(), name='api-v1-trash-project'),
 
     ## access project from project_api_tokens
     re_path(r'^api/v1/via-project-token/search/$', ViaProjectSearchView.as_view(), name='api-v1-via-project-token-search'),

@@ -80,21 +80,21 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/(?P<comment_id>\d+)/$', PortalIssueCommentView.as_view(), name='api-v1-portal-issue-comment'),
 
     # portal issues views API
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/$', PortalIssueViewsView.as_view(), name='api-v1-portal-issues-views'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/move/$', PortalIssueViewsMoveView.as_view(), name='api-v1-portal-issues-views-move'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/duplicate/$', PortalIssueViewsDuplicateView.as_view(), name='api-v1-portal-issues-view-duplicate'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/views/$', PortalIssueViewsView.as_view(), name='api-v1-portal-issues-views'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/views/move/$', PortalIssueViewsMoveView.as_view(), name='api-v1-portal-issues-views-move'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/views/duplicate/$', PortalIssueViewsDuplicateView.as_view(), name='api-v1-portal-issues-view-duplicate'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/views/(?P<view_id>.+)/$', PortalIssueViewView.as_view(), name='api-v1-portal-issues-view'),
 
     # portal issue types API
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/types/$', PortalIssueTypesAPIView.as_view(), name='api-v1-portal-issues-types'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/types/(?P<type_id>[^/]+)/$', PortalIssueTypeAPIView.as_view(), name='api-v1-portal-issues-type'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/types/$', PortalIssueTypesAPIView.as_view(), name='api-v1-portal-issues-types'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/types/(?P<type_id>[^/]+)/$', PortalIssueTypeAPIView.as_view(), name='api-v1-portal-issues-type'),
 
     # portal issue substates API
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/substates/$', PortalIssueSubstatesAPIView.as_view(), name='api-v1-portal-issues-substates'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/substates/(?P<substate_id>[^/]+)/$', PortalIssueSubstateAPIView.as_view(), name='api-v1-portal-issues-substate'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/substates/$', PortalIssueSubstatesAPIView.as_view(), name='api-v1-portal-issues-substates'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/substates/(?P<substate_id>[^/]+)/$', PortalIssueSubstateAPIView.as_view(), name='api-v1-portal-issues-substate'),
 
     # portal issues trash API
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]+)/portal-issues/trash/$', PortalIssueTrashAPIView.as_view(), name='api-v1-portal-issues-trash'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/portal-issues/trash/$', PortalIssueTrashAPIView.as_view(), name='api-v1-portal-issues-trash'),
 
     # portal chat API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/$', PortalChatView.as_view(), name='api-v1-portal-chat'),
