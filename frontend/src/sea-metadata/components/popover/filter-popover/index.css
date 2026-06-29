@@ -39,8 +39,11 @@
   width: fit-content;
   max-width: 100%;
   font-weight: 400;
-  background-color: rgba(0, 0, 0, 0.04);
   padding-left: 12px;
+}
+
+.sea-metadata-filter-popover .customize-add-tool.popover-add-tool:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-metadata-filter-popover .customize-add-tool .seaqa-icon-svg {

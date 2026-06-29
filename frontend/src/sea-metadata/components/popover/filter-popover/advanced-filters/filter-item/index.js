@@ -260,6 +260,7 @@ class FilterItem extends React.Component {
           autoFocus={false}
           disabled={readOnly}
           className='text-truncate'
+          inputStyle={{ padding: '0 16px' }}
         />
       );
     } else if (type === 'checkbox') {

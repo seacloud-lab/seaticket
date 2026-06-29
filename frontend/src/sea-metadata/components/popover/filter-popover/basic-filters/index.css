@@ -74,6 +74,10 @@
   display: flex;
 }
 
+.filter-group-basic .sea-metadata-filters-list .seaqa-customize-select .selected-option {
+  padding: 0 6px;
+}
+
 .sea-metadata-table-group-by-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox {
   display: inline-flex;
   align-items: center;
