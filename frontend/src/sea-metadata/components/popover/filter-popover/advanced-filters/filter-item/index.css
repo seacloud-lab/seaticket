@@ -172,9 +172,7 @@
 }
 
 .sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-search-input {
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  border-radius: 0px;
-  border-color: #eee;
+  border: none;
+  border-bottom: 1px solid #eee;
+  border-radius: 0;
 }

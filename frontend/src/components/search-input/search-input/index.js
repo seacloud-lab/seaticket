@@ -96,7 +96,7 @@ class SearchInput extends Component {
     const {
       placeholder, autoFocus, className, inputClassName, disabled, style,
       isShowSearchIcon = true, size = 38, isShowClearIcon = false,
-      onClear, onKeyDown,
+      onClear, onKeyDown, inputStyle = {},
     } = this.props;
     const { searchValue } = this.state;
 
@@ -133,7 +133,7 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={{ height: size, paddingLeft: paddingLeft, paddingRight: paddingRight }}
+          style={Object.assign({}, { height: size, paddingLeft: paddingLeft, paddingRight: paddingRight }, inputStyle)}
           name="search-input"
           autoComplete="off"
         />
@@ -157,6 +157,7 @@ SearchInput.propTypes = {
   size: PropTypes.number,
   onClear: PropTypes.func,
   value: PropTypes.string,
+  inputStyle: PropTypes.object,
 };
 
 export default SearchInput;
