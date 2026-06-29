@@ -565,18 +565,19 @@ class TestPortalDomainAliasView:
         assert resp.data['default_public_url'] == 'http://x765cd.seaticket-portal.test/'
         assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
-    def test_get_returns_empty_default_alias_when_missing(self, factory, project_creator, real_project, settings):
+    def test_get_backfills_missing_default_alias(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
         request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
         request.user = project_creator
 
-        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+        with patch.object(PortalDomainAlias.objects, 'generate_unique_prefix', return_value='x765cd'):
+            resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['default_subdomain_prefix'] == ''
-        assert resp.data['default_public_url'] == ''
-        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
+        assert resp.data['default_subdomain_prefix'] == 'x765cd'
+        assert resp.data['default_public_url'] == 'http://x765cd.seaticket-portal.test/'
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
 
     def test_get_does_not_create_default_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
@@ -693,6 +694,19 @@ class TestPortalDomainAliasView:
         assert resp.status_code == 200
         assert resp.data['custom_subdomain_prefix'] == 'my-brand'
         assert resp.data['custom_public_url'] == ''
+
+    def test_get_does_not_backfill_alias_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/domain-alias/")
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['default_subdomain_prefix'] == ''
+        assert resp.data['default_public_url'] == ''
+        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
     def test_post_rejects_reserved_alias_prefix(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
@@ -1066,6 +1080,46 @@ class TestPortalExternalInvitationsView:
         invitation_link = resp.data['invite_list'][0]['link']
         assert invitation_link == 'http://support.local.test/external/accept/%s/' % invitation.token
 
+    def test_get_uses_portal_alias_link_when_no_verified_custom_domain(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='x765cd',
+        )
+        invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username,
+            email='external@example.com',
+            project_uuid=str(project.uuid),
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/external-invitations/")
+        request.user = project_creator
+
+        resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        invitation_link = resp.data['invite_list'][0]['link']
+        assert invitation_link == 'http://x765cd.seaticket-portal.test/external/accept/%s/' % invitation.token
+
+    def test_get_backfills_portal_alias_link_when_portal_enabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username,
+            email='external@example.com',
+            project_uuid=str(project.uuid),
+        )
+        request = factory.get(f"/api/v1/portal/{project.uuid}/external-invitations/")
+        request.user = project_creator
+
+        with patch.object(PortalDomainAlias.objects, 'generate_unique_prefix', return_value='x765cd'):
+            resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        invitation_link = resp.data['invite_list'][0]['link']
+        assert invitation_link == 'http://x765cd.seaticket-portal.test/external/accept/%s/' % invitation.token
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
+
     def test_post_uses_verified_custom_domain_link_in_email(self, factory, project_creator, real_project):
         project = real_project
         PortalCustomDomain.objects.create(
@@ -1094,6 +1148,62 @@ class TestPortalExternalInvitationsView:
         assert invitation_link.startswith('http://support.local.test/external/accept/')
         assert invitation_link.endswith('/')
         assert '/portal-external/accept/' not in invitation_link
+
+    def test_post_uses_portal_alias_link_in_email_when_no_verified_custom_domain(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='x765cd',
+        )
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/external-invitations/",
+            data={'email': 'external@example.com'},
+            format='json'
+        )
+        request.user = project_creator
+        captured_context = {}
+
+        def send_mail(_email, _subject, _template, context):
+            captured_context.update(context)
+            return True
+
+        with patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True), \
+                patch('seahub.portal.apis.send_html_email_with_dj_template', side_effect=send_mail):
+            resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        invitation_link = captured_context['invitation_link']
+        assert invitation_link.startswith('http://x765cd.seaticket-portal.test/external/accept/')
+        assert invitation_link.endswith('/')
+        assert '/portal-external/accept/' not in invitation_link
+
+    def test_post_backfills_portal_alias_link_in_email_when_portal_enabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/external-invitations/",
+            data={'email': 'external@example.com'},
+            format='json'
+        )
+        request.user = project_creator
+        captured_context = {}
+
+        def send_mail(_email, _subject, _template, context):
+            captured_context.update(context)
+            return True
+
+        with patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True), \
+                patch('seahub.portal.apis.send_html_email_with_dj_template', side_effect=send_mail), \
+                patch.object(PortalDomainAlias.objects, 'generate_unique_prefix', return_value='x765cd'):
+            resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        invitation_link = captured_context['invitation_link']
+        assert invitation_link.startswith('http://x765cd.seaticket-portal.test/external/accept/')
+        assert invitation_link.endswith('/')
+        assert '/portal-external/accept/' not in invitation_link
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
 
 
 @pytest.mark.django_db

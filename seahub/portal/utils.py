@@ -1,8 +1,10 @@
 import json
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import DisallowedHost
 from django.core import signing
 from django.core.signing import BadSignature, SignatureExpired
 
@@ -38,22 +40,51 @@ PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
 
 
+def get_host_without_port(host):
+    try:
+        parsed = urlsplit('//%s' % (host or '').strip())
+    except ValueError:
+        return ''
+    return (parsed.hostname or '').lower().rstrip('.')
+
+
+def get_request_host_without_port(request):
+    try:
+        host = request.get_host()
+    except DisallowedHost:
+        host = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or ''
+    return get_host_without_port(host)
+
+
+def is_portal_service_host(host):
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+    if not root_domain:
+        return False
+    return host == root_domain or host.endswith('.%s' % root_domain)
+
+
 def resolve_portal_domain(host):
+    host = get_host_without_port(host)
+    if not host:
+        return None
+
     alias = PortalDomainAlias.objects.get_by_host(host)
     if alias:
         return SimpleNamespace(
             domain_type=PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
             domain=build_portal_service_domain(alias.prefix),
-            project_uuid=alias.project_uuid,
             binding=alias,
         )
 
+    if is_portal_service_host(host):
+        return None
+
+    # Non-service hosts may be verified customer-owned domains.
     custom_domain = PortalCustomDomain.objects.get_by_domain(host)
     if custom_domain and custom_domain.verified:
         return SimpleNamespace(
             domain_type=PORTAL_DOMAIN_TYPE_CUSTOM,
             domain=custom_domain.domain,
-            project_uuid=custom_domain.project_uuid,
             binding=custom_domain,
         )
 

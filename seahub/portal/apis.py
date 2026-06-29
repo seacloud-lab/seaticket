@@ -1593,7 +1593,7 @@ class PortalPreviewTokenView(APIView):
 
         token = signing.dumps({'project_uuid': project_uuid,'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
         token_path = '/portal-preview/%s/' % quote(token, safe='')
-        custom_domain = PortalCustomDomain.objects.filter(project_uuid=project_uuid, verified=True).first()
+        custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
         if custom_domain:
             preview_url = build_absolute_portal_url(request, custom_domain.domain, token_path)
             return Response({'token': token, 'preview_url': preview_url})
@@ -1627,9 +1627,11 @@ class PortalDomainAliasView(APIView):
         enable_portal = portal_settings.get('enable_portal')
         if enable_portal:
             alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
+            if not alias and root_domain:
+                alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
         prefix = alias.prefix if alias else ''
         domain = build_portal_service_domain(prefix) if root_domain and prefix else ''
-        public_url = _build_absolute_portal_url(request, domain)
+        public_url = build_absolute_portal_url(request, domain)
         return Response({
             'portal_service_root_domain': root_domain,
             'default_subdomain_prefix': prefix,
@@ -1775,7 +1777,7 @@ class PortalExternalInvitationsView(APIView):
             for iv in invites:
                 data.append({
                     'token': iv.token,
-                    'link': iv.get_link(request),
+                    'link': iv.get_link(request, project),
                     'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
                     'email': iv.email,
                     'inviter': iv.inviter,
@@ -1826,7 +1828,7 @@ class PortalExternalInvitationsView(APIView):
             'token': invitation.token,
             'inviter_name': email2nickname(username),
             'project_uuid': str(project.uuid),
-            'invitation_link': invitation.get_link(request),
+            'invitation_link': invitation.get_link(request, project),
         }
         sent = False
         try:

@@ -4,7 +4,7 @@ import pytest
 from django.urls import Resolver404, resolve
 
 PORTAL_URLCONF = 'seahub.portal_site_urls'
-PORTAL_DOMAIN_MIDDLEWARE = 'seahub.portal.middleware.PortalCustomDomainMiddleware'
+PORTAL_DOMAIN_MIDDLEWARE = 'seahub.portal.middleware.PortalDomainMiddleware'
 CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
 
 

@@ -128,7 +128,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
-        'is_portal_custom_domain': is_request_using_portal_domain(request, project_uuid),
+        'is_portal_domain': is_request_using_portal_domain(request, project_uuid),
         'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
     if not has_ticket_access:
@@ -225,7 +225,7 @@ def portal_anonymous_validate(request, project_uuid):
                 'portal_logo': portal_settings.get('portal_logo', ''),
             },
             'need_password': True,
-            'is_portal_custom_domain': is_request_using_portal_domain(request, project_uuid),
+            'is_portal_domain': is_request_using_portal_domain(request, project_uuid),
             'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
         }
         return render(request, 'portal_view_react.html', return_dict)
@@ -328,7 +328,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
         },
-        'is_portal_custom_domain': False,
+        'is_portal_domain': False,
         'portal_base_url': portal_path(request, project_uuid, is_edit_mode=True).rstrip('/'),
     }
     return render(request, 'portal_view_react.html', return_dict)

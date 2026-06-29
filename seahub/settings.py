@@ -125,7 +125,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
-    *(['seahub.portal.middleware.PortalCustomDomainMiddleware'] if IS_PORTAL_MODE else []),
+    *(['seahub.portal.middleware.PortalDomainMiddleware'] if IS_PORTAL_MODE else []),
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'seahub.auth.middleware.AuthenticationMiddleware',

@@ -4,10 +4,14 @@ from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.models import PortalCustomDomain
-from seahub.portal.utils import PORTAL_DOMAIN_TYPE_CUSTOM, PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
+from seahub.portal.utils import (
+    PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
+    get_request_host_without_port,
+    resolve_portal_domain,
+)
 
 
-# Static and auth resources needed by Portal custom-domain pages.
+# Static and auth resources needed by Portal domain pages.
 PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/media/', '/portal-preview/', '/static/')
 
 # Existing Portal APIs and file routes handled by normal URLConf.
@@ -32,7 +36,7 @@ def _get_project_uuid_from_origin_path(normalized_path):
     return ''
 
 
-def _get_internal_path_for_custom_domain(project_uuid, normalized_path):
+def _get_internal_path_for_portal_domain(project_uuid, normalized_path):
     site_root = getattr(settings, 'SITE_ROOT', '/') or '/'
     site_root = site_root if site_root.endswith('/') else '%s/' % site_root
     segments = normalized_path.strip('/').split('/') if normalized_path != '/' else []
@@ -63,17 +67,12 @@ def _get_internal_path_for_custom_domain(project_uuid, normalized_path):
     return ''
 
 
-class PortalCustomDomainMiddleware(MiddlewareMixin):
+class PortalDomainMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         path = request.path_info or '/'
         normalized_path = ('/%s' % path.lstrip('/')).rstrip('/') or '/'
-        try:
-            host = request.get_host()
-        except Exception:
-            host = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or ''
-        parsed = urlsplit('//%s' % (host or '').strip())
-        request_host = (parsed.hostname or '').lower().rstrip('.')
+        request_host = get_request_host_without_port(request)
         if not request_host:
             return None
 
@@ -86,13 +85,12 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
             return None
 
         request.portal_domain = portal_domain
-        if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_CUSTOM:
-            request.portal_custom_domain = portal_domain.binding
-        elif portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
+        project_uuid = portal_domain.binding.project_uuid
+        if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
             requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
-            if requested_project_uuid and str(requested_project_uuid) != str(portal_domain.project_uuid):
+            if requested_project_uuid and str(requested_project_uuid) != str(project_uuid):
                 raise Http404
-            custom_domain = PortalCustomDomain.objects.filter(project_uuid=portal_domain.project_uuid, verified=True).first()
+            custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
             if custom_domain:
                 return HttpResponseRedirect('%s://%s%s' % (
                     request.scheme,
@@ -104,7 +102,7 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
             return None
 
         requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
-        if requested_project_uuid and str(requested_project_uuid) != str(portal_domain.project_uuid):
+        if requested_project_uuid and str(requested_project_uuid) != str(project_uuid):
             raise Http404
         if requested_project_uuid and any(
             normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix)
@@ -112,7 +110,7 @@ class PortalCustomDomainMiddleware(MiddlewareMixin):
         ):
             return None
 
-        internal_path = _get_internal_path_for_custom_domain(portal_domain.project_uuid, normalized_path)
+        internal_path = _get_internal_path_for_portal_domain(project_uuid, normalized_path)
         if not internal_path:
             raise Http404
 

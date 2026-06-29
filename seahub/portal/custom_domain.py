@@ -173,7 +173,8 @@ def verify_portal_custom_domain_dns(domain, verification_token):
 
 
 def is_request_using_portal_domain(request, project_uuid=None):
-    binding = getattr(request, 'portal_domain', None)
+    portal_domain = getattr(request, 'portal_domain', None)
     if project_uuid is None:
-        return bool(binding)
-    return bool(binding and str(getattr(binding, 'project_uuid', '')) == str(project_uuid))
+        return bool(portal_domain)
+    binding = getattr(portal_domain, 'binding', None)
+    return bool(binding and str(binding.project_uuid) == str(project_uuid))

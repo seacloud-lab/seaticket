@@ -98,6 +98,14 @@ const Settings = () => {
     setCustomSubdomainPublicUrl(data.custom_public_url || '');
   }, []);
 
+  const loadDomainAlias = useCallback(() => {
+    return portalAPI.getDomainAlias(projectUuid).then(res => {
+      applyLoadedDomainAlias(res.data || {});
+    }).catch(() => {
+      applyLoadedDomainAlias({});
+    });
+  }, [applyLoadedDomainAlias]);
+
   useEffect(() => {
     portalAPI.getSettings(projectUuid).then(res => {
       applyLoadedSettings(res.data || {});
@@ -117,12 +125,8 @@ const Settings = () => {
   }, [applyLoadedCustomDomain]);
 
   useEffect(() => {
-    portalAPI.getDomainAlias(projectUuid).then(res => {
-      applyLoadedDomainAlias(res.data || {});
-    }).catch(() => {
-      applyLoadedDomainAlias({});
-    });
-  }, [applyLoadedDomainAlias]);
+    loadDomainAlias();
+  }, [loadDomainAlias]);
 
   useEffect(() => {
     setIsConnectionsLoading(true);
@@ -277,16 +281,15 @@ const Settings = () => {
     portalAPI.updateDomainAlias(projectUuid, {
       custom_subdomain_prefix: customSubdomainPrefix,
     }).then(() => {
-      return portalAPI.getDomainAlias(projectUuid);
-    }).then(res => {
-      applyLoadedDomainAlias(res.data || {});
+      return loadDomainAlias();
+    }).then(() => {
       toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     }).finally(() => {
       setIsSavingDomainAlias(false);
     });
-  }, [customSubdomainPrefix, isSavingDomainAlias, applyLoadedDomainAlias]);
+  }, [customSubdomainPrefix, isSavingDomainAlias, loadDomainAlias]);
 
   const onSaveSettings = useCallback(() => {
     const needPwd = allowAnonymous && enablePassword;
