@@ -64,25 +64,24 @@
   border-color: var(--bs-input-focus-border-color);
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-settings-container {
+.seaqa-project-new-ticket.s .seaqa-project-ticket-settings-container {
   display: flex;
   flex-direction: column;
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-content-settings {
+.seaqa-project-new-ticket.s .seaqa-project-ticket-content-settings {
   width: 100%;
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings {
-  padding-left: 0;
+.seaqa-project-new-ticket.s .seaqa-project-ticket-other-settings {
   width: 100%;
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-other-settings .seaqa-settings-item:last-child {
+.seaqa-project-new-ticket.s .seaqa-project-ticket-other-settings .seaqa-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 
-.seaqa-project-new-ticket.small .seaqa-project-ticket-footer {
+.seaqa-project-new-ticket.s .seaqa-project-ticket-footer {
   padding-bottom: 16px;
 }
 

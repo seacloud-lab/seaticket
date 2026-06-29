@@ -1,8 +1,8 @@
 .seaqa-project-ticket-other-settings {
-  width: 30%;
-  padding-left: 24px;
+  width: calc((100% - 24px) * 0.3);
   display: flex;
   flex-direction: column;
+  margin-left: 24px;
 }
 
 .seaqa-settings-item {
@@ -12,6 +12,7 @@
 
 .seaqa-settings-item:last-child {
   border-bottom: none;
+  margin-bottom: 0 !important;
 }
 
 .longtext-preview-container {

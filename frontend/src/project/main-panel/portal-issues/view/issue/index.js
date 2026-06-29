@@ -444,7 +444,7 @@ const Issue = ({
 
   return (
     <div
-      className={classnames('seaqa-project-ticket', { 'small': isSmallScreen })}
+      className={classnames('seaqa-project-ticket', { 's': isSmallScreen })}
       onScroll={handleScroll}
       ref={issueRef}
     >

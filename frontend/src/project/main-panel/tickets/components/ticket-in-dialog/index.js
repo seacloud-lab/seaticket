@@ -249,16 +249,16 @@ const TicketInDialog = ({
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
   if (!ticket) return (<CenteredError>{ticketType === TICKET_TYPE ? gettext('Ticket not found') : gettext('Issue not found')}</CenteredError>);
 
-  const isSmallScreen = containerWidth < 780;
+  const isSmallSize = containerWidth < 720;
   const isPortalIssue = ticketType !== TICKET_TYPE;
 
   const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   return (
-    <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 'small': isSmallScreen })} ref={ticketRef}>
+    <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 's': isSmallSize })} ref={ticketRef}>
       <div className="seaqa-project-ticket-content-wrapper">
         <div className="seaqa-project-ticket-comment-container-wrapper">
           <Comment
-            isSmallScreen={isSmallScreen}
+            isSmallScreen={isSmallSize}
             comment={ticket}
             isShowStatus={true}
             readonly={true}
@@ -268,7 +268,7 @@ const TicketInDialog = ({
             return (
               <Comment
                 key={comment.id}
-                isSmallScreen={isSmallScreen}
+                isSmallScreen={isSmallSize}
                 readonly={true}
                 comment={comment}
                 projectUuid={projectUuid}

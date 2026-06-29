@@ -147,11 +147,11 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   }, [disabled, togglePageSlugId, onSubmit, shouldShowCancelBtn]);
 
   // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = containerWidth < 892;
+  const isSmallSize = containerWidth < 892;
 
   return (
-    <div className={classnames('seaqa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
-      {!isSmallScreen && (
+    <div className={classnames('seaqa-project-new-ticket', { 's': isSmallSize })} ref={ticketRef}>
+      {!isSmallSize && (
         <div className="seaqa-project-ticket-user">
           <img src={user.avatar_url} alt={user.name} />
         </div>
@@ -202,7 +202,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </div>
             <div className="seaqa-project-ticket-footer">
               <UploadFilesButton onChange={handleFiles} />
-              {!isSmallScreen && renderSubmitBtns()}
+              {!isSmallSize && renderSubmitBtns()}
             </div>
           </div>
           <div className="seaqa-project-ticket-other-settings">
@@ -253,7 +253,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               onChange={setParticipants}
             />
           </div>
-          {isSmallScreen && renderSubmitBtns('seaqa-project-ticket-submit-btns')}
+          {isSmallSize && renderSubmitBtns('seaqa-project-ticket-submit-btns')}
         </div>
       </div>
       {isShowKeyboardShortcuts && (

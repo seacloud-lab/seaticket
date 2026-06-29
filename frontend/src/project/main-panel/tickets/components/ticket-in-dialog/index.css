@@ -1,9 +1,26 @@
 @import url('../../view/ticket/index.css');
 
 .seaqa-project-ticket.seaqa-project-ticket-in-dialog {
-  height: 100%;
+  height: fit-content;
+  padding: 0;
+}
+
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog .seaqa-project-ticket-content-wrapper {
+  padding: 0;
 }
 
 .seaqa-project-ticket.seaqa-project-ticket-in-dialog .seaqa-project-ticket-comment::after {
   display: none;
+}
+
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog.s .seaqa-project-ticket-content-wrapper {
+  gap: 24px;
+}
+
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog.s .seaqa-project-ticket-comment-container-wrapper {
+  padding-bottom: 0;
+}
+
+.seaqa-project-ticket.seaqa-project-ticket-in-dialog.s .seaqa-project-ticket-comment:last-of-type {
+  margin-bottom: 0;
 }

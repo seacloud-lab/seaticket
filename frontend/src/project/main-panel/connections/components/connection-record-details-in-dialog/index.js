@@ -1,38 +1,44 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
 import User from '@/models/user';
 
 // hooks
-import { useConnections } from '../../main-panel/connections/hooks';
+import { useConnections } from '../../hooks';
 import { useData, useMetadata, useTags } from '@/project/hooks';
 
 // components
 import { toaster } from '@/components';
-import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../main-panel/connections/components/connection-resource-details';
+import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../connection-resource-details';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 
 // utils
 import { Utils } from '@/utils/utils';
-import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../main-panel/connections/utils';
+import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 
 // constants
 import { PERMISSION_TYPES } from '@/constants';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
-import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../main-panel/connections/constants';
+import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
 import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
-const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdateResourceDetails }) => {
+import './index.css';
+
+const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permission, onUpdateResourceDetails }) => {
   const [connectionDetails, setConnectionDetails] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const { connections } = useConnections();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
   const { tagsData } = useTags();
+
+  const detailsRef = useRef(null);
 
   const connection = useMemo(() => connections.find(c => c.id === resource?.connection_id), [connections, resource?.connection_id]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
@@ -174,20 +180,37 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
     ].filter(Boolean);
   }, [connection, connectionDetails, permission, targetColumns, resource]);
 
+  useEffect(() => {
+    const dom = detailsRef.current;
+    const handleResize = () => {
+      if (!dom) return;
+      setContainerWidth(dom.offsetWidth);
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    dom && resizeObserver.observe(dom);
+
+    return () => {
+      dom && resizeObserver.unobserve(dom);
+    };
+  }, []);
+
+  const isSmallSize = containerWidth < 720;
+
   return (
     <>
-      <div className="seaqa-resource-connection-details-dialog-body">
-        <div className="seaqa-resource-connection-details-dialog-main">
+      <div className={classnames('seaqa-connection-record-details-in-dialog', { 's': isSmallSize })} ref={detailsRef}>
+        <div className="seaqa-connection-record-details-in-dialog-main">
           <ConnectionResourceDetails
             resource={resource}
             columns={columns}
             projectUuid={projectUuid}
             permission={permission}
+            isSmallScreen={isSmallSize}
             updateResource={updateResourceDetails}
           />
         </div>
         {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connectionDetails?.record && (
-          <div className="seaqa-resource-connection-details-dialog-others">
+          <div className="seaqa-connection-record-details-in-dialog-others">
             <ConnectionResourceOtherDetails
               connection={connection}
               record={connectionDetails.record}
@@ -224,4 +247,4 @@ const ConnectionDetails = ({ projectUuid, resource, columns, permission, onUpdat
   );
 };
 
-export default ConnectionDetails;
+export default ConnectionRecordDetailsInDialog;

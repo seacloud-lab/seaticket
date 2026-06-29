@@ -2,6 +2,26 @@
   height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
+.seaqa-resource-details-dialog.l {
+  width: 960px;
+  max-width: 960px;
+}
+
+.seaqa-resource-details-dialog.m {
+  width: 860px;
+  max-width: 860px;
+}
+
+.seaqa-resource-details-dialog.s {
+  width: 720px;
+  max-width: 720px;
+}
+
+.seaqa-resource-details-dialog.xs {
+  width: calc(100vw - 48px);
+  max-width: calc(100vw - 48px);
+}
+
 .seaqa-resource-details-dialog .modal-content {
   height: 100%;
 }
@@ -67,30 +87,8 @@
 }
 
 .seaqa-resource-details-dialog .modal-content .modal-body {
-  padding: 0px;
-  overflow: hidden;
-}
-
-.seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-body {
-  display: flex;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-body .seaqa-connection-resource-details {
-  overflow: unset;
-}
-
-.seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-main {
-  min-width: 0;
-  flex: 1;
-}
-
-.seaqa-resource-details-dialog .seaqa-resource-connection-details-dialog-others {
-  width: 260px;
-  min-width: 260px;
-  padding: 16px 16px 16px 0px;
-  margin-left: 8px;
+  padding: 16px;
+  overflow: auto;
 }
 
 .seaqa-resource-details-dialog .seaqa-resource-type-avatar {

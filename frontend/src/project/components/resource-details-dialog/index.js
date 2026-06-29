@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
 import { gettext } from '@/constants';
@@ -7,7 +7,7 @@ import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../mai
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { useConnections } from '../../main-panel/connections/hooks';
-import ConnectionDetails from './connection-details';
+import ConnectionRecordDetailsInDialog from '@/project/main-panel/connections/components/connection-record-details-in-dialog';
 import { getInternalNetworkAddress, getResourceIconURL, getResourceOriginalURL } from '@/project/utils';
 import { KBInDialog } from '../../main-panel/knowledge-base/components';
 import TicketInDialog from '../../main-panel/tickets/components/ticket-in-dialog';
@@ -38,12 +38,13 @@ const ResourceDetailsDialog = ({
   getKB,
   getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
 }) => {
-  const type = useMemo(() => resource?.type, [resource]);
-
   const [resourceDetails, setResourceDetails] = useState(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [innerWidth, setInnerWidth] = useState(window.innerWidth);
 
   const { connections } = useConnections();
+
+  const type = useMemo(() => resource?.type, [resource]);
 
   const currentResourceDetails = useMemo(() => {
     return resourceDetails?.record || resourceDetails || null;
@@ -86,6 +87,13 @@ const ResourceDetailsDialog = ({
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
   }, [type, resource]);
 
+  const size = useMemo(() => {
+    if (innerWidth >= 1440) return 'l';
+    if (innerWidth >= 1080) return 'm';
+    if (innerWidth > 768) return 's';
+    return 'xs';
+  }, [innerWidth]);
+
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
     switchResource(step);
   }, [switchResource]), 300);
@@ -102,6 +110,17 @@ const ResourceDetailsDialog = ({
     setResourceDetails(issue);
   }, []);
 
+  useEffect(() => {
+    const resetInnerWidth = () => {
+      setInnerWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', resetInnerWidth);
+    return () => {
+      window.removeEventListener('resize', resetInnerWidth);
+    };
+  }, []);
+
   const props = {
     columns,
     projectUuid,
@@ -109,7 +128,11 @@ const ResourceDetailsDialog = ({
   };
 
   return (
-    <Modal className="seaqa-resource-details-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 800 }}>
+    <Modal
+      className={`seaqa-resource-details-dialog ${size}`}
+      isOpen={true}
+      toggle={onToggle}
+    >
       <ModalHeader toggle={onToggle}>
         <div className="d-flex align-items-center">
           {switchResource && (
@@ -175,7 +198,7 @@ const ResourceDetailsDialog = ({
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (
-          <ConnectionDetails
+          <ConnectionRecordDetailsInDialog
             projectUuid={projectUuid}
             resource={resource}
             columns={columns}

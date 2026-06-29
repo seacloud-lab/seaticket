@@ -1,4 +1,4 @@
 .seaqa-kb-in-dialog {
-  height: 100%;
-  padding: 24px 24px 40px 24px;
+  height: fit-content;
+  padding: 0;
 }

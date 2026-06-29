@@ -56,11 +56,11 @@
 }
 
 .seaqa-connection-record-details .seaqa-connection-record-details-body .seaqa-connection-record-details-container {
-  width: calc((100% - 16px) * 0.8);
+  width: calc((100% - 24px) * 0.7);
 }
 
 .seaqa-connection-record-details .seaqa-connection-record-details-body .seaqa-connection-record-details-others {
-  width: calc((100% - 16px) * 0.2);
+  width: calc((100% - 24px) * 0.3);
   display: flex;
   flex-direction: column;
 }

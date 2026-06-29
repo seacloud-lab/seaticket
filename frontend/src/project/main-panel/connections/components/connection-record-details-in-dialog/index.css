@@ -1,0 +1,46 @@
+.seaqa-connection-record-details-in-dialog {
+  display: flex;
+  height: fit-content;
+  min-height: 100%;
+  gap: 24px;
+}
+
+.seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-main .empty-tip {
+  height: calc(100% - 56px - 37px - 32px);
+}
+
+.seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-others {
+  width: calc((100% - 24px) * 0.3);
+  height: fit-content;
+}
+
+.seaqa-connection-record-details-in-dialog .seaqa-connection-resource-details {
+  overflow: unset;
+  padding: 0 !important;
+}
+
+.seaqa-connection-record-details-in-dialog .seaqa-connection-seafile-resource-details .article,
+.seaqa-connection-record-details-in-dialog .seaqa-connection-general_task-resource-details .article,
+.seaqa-connection-record-details-in-dialog .seaqa-connection-site-resource-details .article,
+.seaqa-connection-record-details-in-dialog .seaqa-connection-notion-resource-details .article,
+.seaqa-connection-record-details-in-dialog .seaqa-connection-liner-resource-details .article {
+  padding: 0 !important;
+}
+
+.seaqa-connection-record-details-in-dialog.s {
+  flex-direction: column;
+}
+
+.seaqa-connection-record-details-in-dialog.s .seaqa-project-ticket-comment:last-child {
+  margin-bottom: 0;
+}
+
+.seaqa-connection-record-details-in-dialog.s .seaqa-connection-record-details-in-dialog-others {
+  width: 100%;
+  padding: 0;
+}

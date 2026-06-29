@@ -47,7 +47,7 @@
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-comment-container-wrapper {
-  width: 70%;
+  width: calc((100% - 24px) * 0.7);
   display: flex;
   flex-direction: column;
 }
@@ -100,18 +100,18 @@
 }
 
 /* small */
-.seaqa-project-ticket.small .seaqa-project-ticket-content-wrapper {
+.seaqa-project-ticket.s .seaqa-project-ticket-content-wrapper {
   flex-direction: column;
 }
 
-.seaqa-project-ticket.small .seaqa-project-ticket-content-wrapper .seaqa-project-ticket-comment-container-wrapper {
+.seaqa-project-ticket.s .seaqa-project-ticket-content-wrapper .seaqa-project-ticket-comment-container-wrapper {
   width: 100%;
   padding-bottom: 50px;
 }
 
-.seaqa-project-ticket.small .seaqa-project-ticket-content-wrapper .seaqa-project-ticket-other-settings {
+.seaqa-project-ticket.s .seaqa-project-ticket-content-wrapper .seaqa-project-ticket-other-settings {
   width: 100%;
-  padding-left: 0;
+  margin-left: 0;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-footer {
@@ -128,11 +128,11 @@
   justify-content: flex-end;
 }
 
-.seaqa-project-ticket.small .seaqa-project-ticket-footer {
+.seaqa-project-ticket.s .seaqa-project-ticket-footer {
   padding-left: 0;
 }
 
-.seaqa-project-ticket.small .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
+.seaqa-project-ticket.s .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
   width: 100%;
   display: flex;
   align-items: center;
